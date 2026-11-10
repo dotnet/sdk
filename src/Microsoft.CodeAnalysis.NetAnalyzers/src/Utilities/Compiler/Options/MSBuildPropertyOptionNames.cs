@@ -3,6 +3,10 @@
 
 using System.Diagnostics;
 
+#if CODEANALYSIS_V3_OR_BETTER
+using System.Linq;
+#endif
+
 namespace Analyzer.Utilities
 {
     /// <summary>
@@ -28,7 +32,9 @@ namespace Analyzer.Utilities
         [Conditional("DEBUG")]
         public static void VerifySupportedPropertyOptionName(string propertyOptionName)
         {
+#if CODEANALYSIS_V3_OR_BETTER
             Debug.Assert(typeof(MSBuildPropertyOptionNames).GetFields().Single(f => f.Name == propertyOptionName) != null);
+#endif
         }
     }
 }

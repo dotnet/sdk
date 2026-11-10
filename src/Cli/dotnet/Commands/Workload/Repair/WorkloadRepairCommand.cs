@@ -8,6 +8,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Repair;
@@ -31,7 +32,10 @@ internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepair
         INuGetPackageDownloader nugetPackageDownloader = null)
         : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
     {
-        _packageSourceLocation = parseResult.ToPackageSourceLocation(Definition.ConfigOption, Definition.SourceOption);
+        var configOption = parseResult.GetValue(Definition.ConfigOption);
+        var sourceOption = parseResult.GetValue(Definition.SourceOption);
+        _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
+            new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
 
         _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 

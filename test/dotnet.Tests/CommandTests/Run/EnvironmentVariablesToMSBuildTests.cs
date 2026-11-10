@@ -10,9 +10,8 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-// ProjectCollection caches MSBuild toolset paths, so initialize SdkTestContext before using it.
 [TestClass]
-public sealed class EnvironmentVariablesToMSBuildTests : SdkTest
+public sealed class EnvironmentVariablesToMSBuildTests
 {
     [TestMethod]
     public void HasRuntimeEnvironmentVariableSupport_ReturnsTrue_WhenCapabilityIsPresent()

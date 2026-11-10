@@ -1,20 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Pipes;
-using System.Text;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.IPC;
 
 internal sealed class NamedPipeServer : NamedPipeBase
 {
-    // macOS allows 104 bytes in sockaddr_un.sun_path, including the NUL terminator.
-    internal const int MaxUnixDomainSocketPathLengthInBytes = 103;
-    internal const string PipeDirectoryEnvironmentVariable = "TESTINGPLATFORM_PIPE_DIRECTORY";
-    internal const int MaximumFrameSize = HttpTestHostGateway.MaximumFrameSize;
-
     private static bool IsUnix => Path.DirectorySeparatorChar == '/';
 
     private readonly Func<NamedPipeServer, IRequest, Task<IResponse>> _callback;
@@ -78,114 +74,141 @@ internal sealed class NamedPipeServer : NamedPipeBase
     /// </summary>
     private async Task InternalLoopAsync(CancellationToken cancellationToken)
     {
+        // This is an indicator when reading from the pipe whether we are at the start of a new message (i.e, we should read 4 bytes as message size)
+        // Note that the implementation assumes no overlapping messages in the pipe.
+        // The flow goes like:
+        // 1. MTP sends a request (and acquires lock).
+        // 2. SDK reads the request.
+        // 3. SDK sends a response.
+        // 4. MTP reads the response (and releases lock).
+        // This means that no two requests can be in the pipe at the same time.
+        bool isStartOfNewMessage = true;
+        int remainingBytesToReadOfWholeMessage = 0;
         while (!cancellationToken.IsCancellationRequested)
         {
-            IRequest? deserializedObject = await ReadRequestAsync(_namedPipeServerStream, cancellationToken);
-            if (deserializedObject is null)
+            // If we are at the start of a new message, we need to read at least the message size.
+            int currentReadBytes = isStartOfNewMessage
+                ? await _namedPipeServerStream.ReadAtLeastAsync(_readBuffer, minimumBytes: sizeof(int), throwOnEndOfStream: false, cancellationToken)
+                : await _namedPipeServerStream.ReadAsync(_readBuffer, cancellationToken);
+
+            if (currentReadBytes == 0 || (isStartOfNewMessage && currentReadBytes < sizeof(int)))
             {
+                // The client has disconnected
                 return;
             }
 
-            IResponse response = await _callback(this, deserializedObject);
-            INamedPipeSerializer responseNamedPipeSerializer = GetSerializer(response.GetType());
+            // The local remainingBytesToProcess tracks the remaining bytes of what we have read from the pipe but not yet processed.
+            // At the beginning here, it contains everything we have read from the pipe.
+            // As we are processing the data in it, we continue to slice it.
+            Memory<byte> remainingBytesToProcess = _readBuffer.AsMemory(0, currentReadBytes);
 
-            ResetBuffer(_serializationBuffer);
-            responseNamedPipeSerializer.Serialize(response, _serializationBuffer);
-
-            int sizeOfTheWholeMessage = checked((int)_serializationBuffer.Position + sizeof(int));
-            ResetBuffer(_messageBuffer);
-
-            byte[] bytes = _sizeOfIntArray;
-            if (!BitConverter.TryWriteBytes(bytes, sizeOfTheWholeMessage))
+            // If the current read is the start of a new message, we need to read the message size first.
+            if (isStartOfNewMessage)
             {
-                throw new UnreachableException();
+                // We need to read the message size, first 4 bytes
+                remainingBytesToReadOfWholeMessage = BitConverter.ToInt32(remainingBytesToProcess.Span);
+
+                // Now that we have read the size, we slice the remainingBytesToProcess.
+                remainingBytesToProcess = remainingBytesToProcess.Slice(sizeof(int));
+
+                // Now that we have read the size, we are no longer at the start of a new message.
+                // If the current chunk ended up to be the full message, we will set this back to true later.
+                isStartOfNewMessage = false;
             }
 
-            await _messageBuffer.WriteAsync(bytes, cancellationToken);
-
-            if (!BitConverter.TryWriteBytes(bytes, responseNamedPipeSerializer.Id))
+            // We read the rest of the message.
+            // Note that this assumes that no messages are overlapping in the pipe.
+            if (remainingBytesToProcess.Length > 0)
             {
-                throw new UnreachableException();
+                // We need to read the rest of the message
+                await _messageBuffer.WriteAsync(remainingBytesToProcess, cancellationToken);
+                remainingBytesToReadOfWholeMessage -= remainingBytesToProcess.Length;
+
+                // At this point, we have read everything in the remainingBytesToProcess.
+                // Note that while remainingBytesToProcess isn't accessed after this point, we still maintain the
+                // invariant that it tracks what we have read from the pipe but not yet processed.
+                remainingBytesToProcess = Memory<byte>.Empty;
             }
 
-            await _messageBuffer.WriteAsync(bytes.AsMemory(0, sizeof(int)), cancellationToken);
-            await _messageBuffer.WriteAsync(_serializationBuffer.GetBuffer().AsMemory(0, (int)_serializationBuffer.Position), cancellationToken);
-
-            try
+            if (remainingBytesToReadOfWholeMessage < 0)
             {
-                await _namedPipeServerStream.WriteAsync(_messageBuffer.GetBuffer().AsMemory(0, (int)_messageBuffer.Position), cancellationToken);
-                await _namedPipeServerStream.FlushAsync(cancellationToken);
+                throw new UnreachableException(CliCommandStrings.DotnetTestPipeOverlapping);
             }
-            finally
-            {
-                ResetBuffer(_messageBuffer);
-                ResetBuffer(_serializationBuffer);
-            }
-        }
-    }
 
-    internal async Task<IRequest?> ReadRequestAsync(Stream stream, CancellationToken cancellationToken)
-    {
-        ResetBuffer(_messageBuffer);
-
-        try
-        {
-            int headerBytesRead = 0;
-            while (headerBytesRead < sizeof(int))
+            // If we have read all the message, we can deserialize it
+            if (remainingBytesToReadOfWholeMessage == 0)
             {
-                int bytesRead = await stream.ReadAsync(
-                    _readBuffer.AsMemory(headerBytesRead, sizeof(int) - headerBytesRead),
-                    cancellationToken);
-                if (bytesRead == 0)
+                // Deserialize the message
+                _messageBuffer.Position = 0;
+
+                // Get the serializer id
+                int serializerId = BitConverter.ToInt32(_messageBuffer.GetBuffer(), 0);
+
+                // Get the serializer
+                INamedPipeSerializer requestNamedPipeSerializer = GetSerializer(serializerId, _skipUnknownMessages);
+
+                // Deserialize the message
+                _messageBuffer.Position += sizeof(int); // Skip the serializer id
+                var deserializedObject = (IRequest)requestNamedPipeSerializer.Deserialize(_messageBuffer);
+
+                // Call the callback
+                IResponse response = await _callback(this, deserializedObject);
+
+                // Write the message size
+                _messageBuffer.Position = 0;
+
+                // Get the response serializer
+                INamedPipeSerializer responseNamedPipeSerializer = GetSerializer(response.GetType());
+
+                // Serialize the response
+                responseNamedPipeSerializer.Serialize(response, _serializationBuffer);
+
+                // The length of the message is the size of the message plus one byte to store the serializer id
+                // Space for the message
+                int sizeOfTheWholeMessage = (int)_serializationBuffer.Position;
+
+                // Space for the serializer id
+                sizeOfTheWholeMessage += sizeof(int);
+
+                // Write the message size
+                byte[] bytes = _sizeOfIntArray;
+                if (!BitConverter.TryWriteBytes(bytes, sizeOfTheWholeMessage))
                 {
-                    return null;
+                    throw new UnreachableException();
                 }
 
-                headerBytesRead += bytesRead;
-            }
+                await _messageBuffer.WriteAsync(bytes, cancellationToken);
 
-            int payloadLength = BitConverter.ToInt32(_readBuffer, 0);
-            if (payloadLength < sizeof(int) || payloadLength > MaximumFrameSize - sizeof(int))
-            {
-                throw new InvalidDataException(string.Format(
-                    CultureInfo.InvariantCulture,
-                    "The dotnet test pipe frame payload length {0} is invalid; expected {1} to {2} bytes.",
-                    payloadLength,
-                    sizeof(int),
-                    MaximumFrameSize - sizeof(int)));
-            }
-
-            int remainingBytes = payloadLength;
-            while (remainingBytes > 0)
-            {
-                int bytesRead = await stream.ReadAsync(
-                    _readBuffer.AsMemory(0, Math.Min(_readBuffer.Length, remainingBytes)),
-                    cancellationToken);
-                if (bytesRead == 0)
+                // Write the serializer id
+                bytes = _sizeOfIntArray;
+                if (!BitConverter.TryWriteBytes(bytes, responseNamedPipeSerializer.Id))
                 {
-                    return null;
+                    throw new UnreachableException();
                 }
 
-                await _messageBuffer.WriteAsync(_readBuffer.AsMemory(0, bytesRead), cancellationToken);
-                remainingBytes -= bytesRead;
+                await _messageBuffer.WriteAsync(bytes.AsMemory(0, sizeof(int)), cancellationToken);
+
+                // Write the message
+                await _messageBuffer.WriteAsync(_serializationBuffer.GetBuffer().AsMemory(0, (int)_serializationBuffer.Position), cancellationToken);
+
+                // Send the message
+                try
+                {
+                    await _namedPipeServerStream.WriteAsync(_messageBuffer.GetBuffer().AsMemory(0, (int)_messageBuffer.Position), cancellationToken);
+                    await _namedPipeServerStream.FlushAsync(cancellationToken);
+                }
+                finally
+                {
+                    // Reset the buffers
+                    _messageBuffer.Position = 0;
+                    _serializationBuffer.Position = 0;
+                }
+
+                // Reset the control variables
+                isStartOfNewMessage = true;
+                remainingBytesToReadOfWholeMessage = 0;
             }
-
-            _messageBuffer.Position = 0;
-            int serializerId = BitConverter.ToInt32(_messageBuffer.GetBuffer(), 0);
-            INamedPipeSerializer requestNamedPipeSerializer = GetSerializer(serializerId, _skipUnknownMessages);
-            _messageBuffer.Position += sizeof(int);
-            return (IRequest)requestNamedPipeSerializer.Deserialize(_messageBuffer);
         }
-        finally
-        {
-            ResetBuffer(_messageBuffer);
-        }
-    }
-
-    private static void ResetBuffer(MemoryStream buffer)
-    {
-        buffer.Position = 0;
-        buffer.SetLength(0);
     }
 
     public static string GetPipeName(string name)
@@ -195,66 +218,8 @@ internal sealed class NamedPipeServer : NamedPipeBase
             return $"testingplatform.pipe.{name.Replace('\\', '.')}";
         }
 
-        (string directory, bool isExplicitOverride) = ResolvePipeDirectory(
-            Environment.GetEnvironmentVariable(PipeDirectoryEnvironmentVariable),
-            Path.GetTempPath());
-        directory = Path.GetFullPath(directory);
-
-        if (isExplicitOverride)
-        {
-            EnsureDirectoryIsWritable(directory);
-        }
-
-        return GetUnixPipePath(name, directory);
-    }
-
-    internal static (string Directory, bool IsExplicitOverride) ResolvePipeDirectory(string? overrideDirectory, string? tempPath)
-    {
-        if (!string.IsNullOrWhiteSpace(overrideDirectory))
-        {
-            return (overrideDirectory, true);
-        }
-
-        return string.IsNullOrWhiteSpace(tempPath)
-            ? ("/tmp", false)
-            : (tempPath, false);
-    }
-
-    internal static string GetUnixPipePath(string name, string directory)
-    {
-        string path = Path.Combine(Path.GetFullPath(directory), name);
-        EnsurePathLengthWithinLimit(path);
-        return path;
-    }
-
-    internal static void EnsureDirectoryIsWritable(string directory)
-    {
-        try
-        {
-            Directory.CreateDirectory(directory);
-            string probePath = Path.Combine(directory, $"testingplatform.probe.{Guid.NewGuid():N}");
-            using (File.Create(probePath))
-            {
-            }
-
-            File.Delete(probePath);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException or NotSupportedException or ArgumentException)
-        {
-            throw new InvalidOperationException(
-                $"The test pipe directory '{directory}' is not writable. Set {PipeDirectoryEnvironmentVariable} to a writable directory. {ex.Message}",
-                ex);
-        }
-    }
-
-    internal static void EnsurePathLengthWithinLimit(string path)
-    {
-        int byteLength = Encoding.UTF8.GetByteCount(path);
-        if (byteLength > MaxUnixDomainSocketPathLengthInBytes)
-        {
-            throw new InvalidOperationException(
-                $"The test pipe path '{path}' is {byteLength} UTF-8 bytes; maximum is {MaxUnixDomainSocketPathLengthInBytes}. Set {PipeDirectoryEnvironmentVariable} to a shorter path.");
-        }
+        // Similar to https://github.com/dotnet/roslyn/blob/99bf83c7bc52fa1ff27cf792db38755d5767c004/src/Compilers/Shared/NamedPipeUtil.cs#L26-L42
+        return Path.Combine("/tmp", name);
     }
 
     public void Dispose()

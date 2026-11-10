@@ -20,11 +20,6 @@ public abstract class SdkTest
     private ITestOutputHelper? _log;
     private TestAssetsManager? _testAssetsManager;
 
-    protected SdkTest()
-    {
-        _ = SdkTestContext.Current;
-    }
-
     /// <summary>
     /// Set by the MSTest runtime before each test runs.
     /// </summary>

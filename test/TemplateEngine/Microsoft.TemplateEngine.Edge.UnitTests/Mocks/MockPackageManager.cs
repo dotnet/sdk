@@ -13,8 +13,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
     internal class MockPackageManager : IDownloader, IUpdateChecker
     {
         internal const string DefaultFeed = "test_feed";
-        internal const string PackageSourceMappingMatchNotFound = "PackageSourceMappingMatchNotFound";
         private readonly NuGetPackageInfo? _downloadResult;
+        internal const string PackageSourceMappingMatchNotFound = "PackageSourceMappingMatchNotFound";
         private readonly PackageManager? _packageManager;
         private readonly string? _packageToPack;
 
@@ -57,7 +57,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
             {
                 return Task.FromResult(_downloadResult);
             }
-
             if (_packageManager == null)
             {
                 throw new InvalidOperationException($"{nameof(_packageManager)} was not initialized");

@@ -31,7 +31,6 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [DataRow(new string[] { "--version-suffix", "<versionsuffix>" }, new string[] { "--property:VersionSuffix=<versionsuffix>" })]
         [DataRow(new string[] { "-s" }, new string[] { "--property:Serviceable=true" })]
         [DataRow(new string[] { "--serviceable" }, new string[] { "--property:Serviceable=true" })]
-        [DataRow(new string[] { "--no-default-excludes" }, new string[] { "--property:NoDefaultExcludes=true" })]
         [DataRow(new string[] { "-v", "diag" }, new string[] { "--verbosity:diag" })]
         [DataRow(new string[] { "--verbosity", "diag" }, new string[] { "--verbosity:diag" })]
         [DataRow(new string[] { "<project>" }, new string[] { "<project>" })]
@@ -45,7 +44,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (PackCommand)PackCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
+                var command = (PackCommand)PackCommand.FromArgs(args, msbuildPath);
                 var expectedPrefix = args.FirstOrDefault() == "--no-build" ? ExpectedNoBuildPrefix : [.. ExpectedPrefix, .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore];
 
                 command.SeparateRestoreCommand.Should().BeNull();
@@ -56,3 +55,4 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
+

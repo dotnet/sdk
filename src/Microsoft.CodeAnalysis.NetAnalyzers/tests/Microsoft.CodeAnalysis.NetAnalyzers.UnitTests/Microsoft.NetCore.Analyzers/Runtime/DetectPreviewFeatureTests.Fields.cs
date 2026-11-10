@@ -16,50 +16,48 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestDictionaryFieldWithPreviewType()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        using System.Collections.Generic;
+        namespace Preview_Feature_Scratch
+        {
 
-                        using System.Runtime.Versioning; using System;
-                        using System.Collections.Generic;
-                        namespace Preview_Feature_Scratch
-                        {
-
-                            class Program
-                            {
-                                private Dictionary<int, {|#0:PreviewType|}> _genericPreviewFieldDictionary;
-                #nullable enable
-                                private Dictionary<int, {|#3:PreviewType|}?>? _genericPreviewFieldDictionaryWithNullable;
-                #nullable disable
-                                private List<List<List<List<{|#1:PreviewType|}>>>> _genericPreviewField;
-                                private List<List<AGenericClass<Int32>>> _genericClassField;
-                                private List<List<{|#2:AGenericPreviewClass<Int32>|}>> _genericPreviewClassField;
+            class Program
+            {
+                private Dictionary<int, {|#0:PreviewType|}> _genericPreviewFieldDictionary;
+#nullable enable
+                private Dictionary<int, {|#3:PreviewType|}?>? _genericPreviewFieldDictionaryWithNullable;
+#nullable disable
+                private List<List<List<List<{|#1:PreviewType|}>>>> _genericPreviewField;
+                private List<List<AGenericClass<Int32>>> _genericClassField;
+                private List<List<{|#2:AGenericPreviewClass<Int32>|}>> _genericPreviewClassField;
 
 
-                                public Program()
-                                {
-                                }
+                public Program()
+                {
+                } 
 
-                                static void Main(string[] args)
-                                {
-                                }
-                            }
+                static void Main(string[] args)
+                {
+                }
+            }
 
-                            [RequiresPreviewFeatures]
-                            class PreviewType
-                            {
+            [RequiresPreviewFeatures]
+            class PreviewType
+            {
 
-                            }
+            }
 
-                            class AGenericClass<T>
-                            {
-                            }
+            class AGenericClass<T>
+            {
+            }
 
-                            [RequiresPreviewFeatures]
-                            class AGenericPreviewClass<T>
-                            {
-                            }
+            [RequiresPreviewFeatures]
+            class AGenericPreviewClass<T>
+            {
+            }
 
-                        }
-                """;
+        }";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(0).WithArguments("_genericPreviewFieldDictionary", "PreviewType", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -72,40 +70,38 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestPreviewTypeField()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
 
-                        using System.Runtime.Versioning; using System;
-                        namespace Preview_Feature_Scratch
-                        {
+            class Program
+            {
+                private {|#0:PreviewType|} _field;
+                private AGenericClass<{|#2:PreviewType|}> _genericPreviewField;
+                private AGenericClass<bool> _noDiagnosticField;
 
-                            class Program
-                            {
-                                private {|#0:PreviewType|} _field;
-                                private AGenericClass<{|#2:PreviewType|}> _genericPreviewField;
-                                private AGenericClass<bool> _noDiagnosticField;
+                public Program()
+                {
+                    _field = {|#1:new PreviewType()|};
+                } 
 
-                                public Program()
-                                {
-                                    _field = {|#1:new PreviewType()|};
-                                }
+                static void Main(string[] args)
+                {
+                }
+            }
 
-                                static void Main(string[] args)
-                                {
-                                }
-                            }
+            [RequiresPreviewFeatures]
+            class PreviewType
+            {
 
-                            [RequiresPreviewFeatures]
-                            class PreviewType
-                            {
+            }
 
-                            }
+            class AGenericClass<T>
+            {
 
-                            class AGenericClass<T>
-                            {
-
-                            }
-                        }
-                """;
+            }
+        }";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(0).WithArguments("_field", "PreviewType", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -113,28 +109,26 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(2).WithArguments("_genericPreviewField", "PreviewType", DetectPreviewFeatureAnalyzer.DefaultURL));
             await test.RunAsync(CancellationToken.None);
 
-            var vbInput = """
+            var vbInput = @" 
+        Imports System
+        Imports System.Runtime.Versioning
+        Imports System.Collections.Generic
+        Module Preview_Feature_Scratch
+            Public Class Program
+                Private _field As {|#0:PreviewType|}
+                Private _genericPreviewField As AGenericClass(Of {|#2:PreviewType|})
+                Private _noDiagnosticField As AGenericClass(Of Boolean)
+            End Class
 
-                        Imports System
-                        Imports System.Runtime.Versioning
-                        Imports System.Collections.Generic
-                        Module Preview_Feature_Scratch
-                            Public Class Program
-                                Private _field As {|#0:PreviewType|}
-                                Private _genericPreviewField As AGenericClass(Of {|#2:PreviewType|})
-                                Private _noDiagnosticField As AGenericClass(Of Boolean)
-                            End Class
+            <RequiresPreviewFeatures>
+            Public Class PreviewType
+            End Class
 
-                            <RequiresPreviewFeatures>
-                            Public Class PreviewType
-                            End Class
+            Public Class AGenericClass(Of T)
+            End Class
 
-                            Public Class AGenericClass(Of T)
-                            End Class
-
-                        End Module
-
-                """;
+        End Module
+            ";
 
             var testVb = TestVB(vbInput);
             testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(0).WithArguments("_field", "PreviewType", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -145,52 +139,50 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestArrayOfGenericPreviewFields()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
 
-                        using System.Runtime.Versioning; using System;
-                        namespace Preview_Feature_Scratch
-                        {
+            public class Program
+            {
+                private {|#0:PreviewType|} _field;
+                private {|#4:PreviewType|}[] _fieldArray;
+                private {|#5:PreviewType|}[][] _fieldArrayOfArray;
+                private AGenericClass<{|#2:PreviewType|}>[] _genericPreviewField;
 
-                            public class Program
-                            {
-                                private {|#0:PreviewType|} _field;
-                                private {|#4:PreviewType|}[] _fieldArray;
-                                private {|#5:PreviewType|}[][] _fieldArrayOfArray;
-                                private AGenericClass<{|#2:PreviewType|}>[] _genericPreviewField;
+                public Program()
+                {
+                    _field = {|#1:new PreviewType()|};
+                } 
 
-                                public Program()
-                                {
-                                    _field = {|#1:new PreviewType()|};
-                                }
+                static void Main(string[] args)
+                {
+                }
+            }
 
-                                static void Main(string[] args)
-                                {
-                                }
-                            }
+            [RequiresPreviewFeatures(""Lib is in preview."", Url = ""https://aka.ms/aspnet/kestrel/http3reqs"")]
+            public class PreviewType
+            {
 
-                            [RequiresPreviewFeatures("Lib is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
-                            public class PreviewType
-                            {
+            }
 
-                            }
+            public class AGenericClass<T>
+                where T : {|#3:PreviewType|}
+            {
 
-                            public class AGenericClass<T>
-                                where T : {|#3:PreviewType|}
-                            {
+            }
 
-                            }
-
-                #nullable enable
-                            public class AGenericClassWithNullable<T>
-                                where T : {|#6:PreviewType?|}
-                            {
-                                private {|#7:PreviewType|}? _fieldNullable;
-                                private {|#8:PreviewType|}[]? _fieldArrayNullable;
-                                private {|#9:PreviewType|}[][]? _fieldArrayOfArrayNullable;
-                            }
-                #nullable disable
-                        }
-                """;
+#nullable enable
+            public class AGenericClassWithNullable<T>
+                where T : {|#6:PreviewType?|}
+            {
+                private {|#7:PreviewType|}? _fieldNullable;
+                private {|#8:PreviewType|}[]? _fieldArrayNullable;
+                private {|#9:PreviewType|}[][]? _fieldArrayOfArrayNullable;
+            }
+#nullable disable
+        }";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRuleWithCustomMessage).WithLocation(0).WithArguments("_field", "PreviewType", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
@@ -209,41 +201,39 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestPreviewTypeArrayOfGenericPreviewFields()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
 
-                        using System.Runtime.Versioning; using System;
-                        namespace Preview_Feature_Scratch
-                        {
+            public class Program
+            {
+                private {|#0:PreviewType|} _field;
+                private {|#3:AGenericClass<{|#2:PreviewType|}>|}[] _genericPreviewField;
 
-                            public class Program
-                            {
-                                private {|#0:PreviewType|} _field;
-                                private {|#3:AGenericClass<{|#2:PreviewType|}>|}[] _genericPreviewField;
+                public Program()
+                {
+                    _field = {|#1:new PreviewType()|};
+                } 
 
-                                public Program()
-                                {
-                                    _field = {|#1:new PreviewType()|};
-                                }
+                static void Main(string[] args)
+                {
+                }
+            }
 
-                                static void Main(string[] args)
-                                {
-                                }
-                            }
+            [RequiresPreviewFeatures]
+            public class PreviewType
+            {
 
-                            [RequiresPreviewFeatures]
-                            public class PreviewType
-                            {
+            }
 
-                            }
+            [RequiresPreviewFeatures]
+            public class AGenericClass<T>
+                where T : PreviewType
+            {
 
-                            [RequiresPreviewFeatures]
-                            public class AGenericClass<T>
-                                where T : PreviewType
-                            {
-
-                            }
-                        }
-                """;
+            }
+        }";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(0).WithArguments("_field", "PreviewType", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -252,33 +242,31 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(3).WithArguments("_genericPreviewField", "AGenericClass", DetectPreviewFeatureAnalyzer.DefaultURL));
             await test.RunAsync(CancellationToken.None);
 
-            var vbInput = """
+            var vbInput = @" 
+        Imports System.Runtime.Versioning
+        Imports System
 
-                        Imports System.Runtime.Versioning
-                        Imports System
+        Namespace Preview_Feature_Scratch
+            Public Class Program
+                Private _field As {|#0:PreviewType|}
+                Private _genericPreviewField As {|#3:AGenericClass(Of {|#2:PreviewType|})|}()
 
-                        Namespace Preview_Feature_Scratch
-                            Public Class Program
-                                Private _field As {|#0:PreviewType|}
-                                Private _genericPreviewField As {|#3:AGenericClass(Of {|#2:PreviewType|})|}()
+                Public Sub New()
+                    _field = {|#1:New PreviewType()|}
+                End Sub
 
-                                Public Sub New()
-                                    _field = {|#1:New PreviewType()|}
-                                End Sub
+                Private Shared Sub Main(ByVal args As String())
+                End Sub
+            End Class
 
-                                Private Shared Sub Main(ByVal args As String())
-                                End Sub
-                            End Class
+            <RequiresPreviewFeatures>
+            Public Class PreviewType
+            End Class
 
-                            <RequiresPreviewFeatures>
-                            Public Class PreviewType
-                            End Class
-
-                            <RequiresPreviewFeatures>
-                            Public Class AGenericClass(Of T As PreviewType)
-                            End Class
-                        End Namespace
-                """;
+            <RequiresPreviewFeatures>
+            Public Class AGenericClass(Of T As PreviewType)
+            End Class
+        End Namespace";
 
             var vbTest = TestVB(vbInput);
             vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(0).WithArguments("_field", "PreviewType", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -291,28 +279,26 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestField()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
 
-                        using System.Runtime.Versioning; using System;
-                        namespace Preview_Feature_Scratch
-                        {
+            class Program
+            {
+                [RequiresPreviewFeatures]
+                private bool _field;
 
-                            class Program
-                            {
-                                [RequiresPreviewFeatures]
-                                private bool _field;
+                public Program()
+                {
+                    {|#0:_field|} = true;
+                } 
 
-                                public Program()
-                                {
-                                    {|#0:_field|} = true;
-                                }
-
-                                static void Main(string[] args)
-                                {
-                                }
-                            }
-                        }
-                """;
+                static void Main(string[] args)
+                {
+                }
+            }
+        }";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("_field", DetectPreviewFeatureAnalyzer.DefaultURL));

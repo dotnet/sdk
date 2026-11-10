@@ -152,15 +152,19 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [TestMethod]
-        [DataRow(true, "netcoreapp2.1")]
-        [DataRow(false, "netcoreapp2.1")]
-        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
-        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
-        public void It_uses_customized_PackagedShimOutputRootDirectory(bool multiTarget, string targetFramework)
+        [DataRow(true, "netcoreapp2.1", false)]
+        [DataRow(false, "netcoreapp2.1", false)]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework, false)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework, false)]
+        [DataRow(true, "netcoreapp2.1", true)]
+        [DataRow(false, "netcoreapp2.1", true)]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework, true)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework, true)]
+        public void It_uses_customized_PackagedShimOutputRootDirectory(bool multiTarget, string targetFramework, bool relativePath)
         {
-            string shimoutputPath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "shimoutput");
+            string shimoutputPath = relativePath ? "shimoutput" : Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "shimoutput");
             TestAsset helloWorldAsset = TestAssetsManager
-                .CopyTestAsset("PortableTool", "PackagedShimOutputRootDirectory" + multiTarget.ToString(), identifier: multiTarget.ToString() + targetFramework)
+                .CopyTestAsset("PortableTool", "PackagedShimOutputRootDirectory" + multiTarget.ToString(), identifier: multiTarget.ToString() + targetFramework + relativePath)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
@@ -174,11 +178,13 @@ namespace Microsoft.NET.ToolPack.Tests
 
             _testRoot = helloWorldAsset.TestRoot;
 
-            new PackCommand(Log, helloWorldAsset.TestRoot).Execute().Should().Pass();
+            new PackCommand(Log, helloWorldAsset.TestRoot)
+                .WithWorkingDirectory(SdkTestContext.Current.TestExecutionDirectory)
+                .Execute().Should().Pass();
 
-            string windowShimPath = Path.Combine(shimoutputPath, $"shims/{targetFramework}/win-x64/{_customToolCommandName}.exe");
+            string windowShimPath = Path.Combine(helloWorldAsset.TestRoot, shimoutputPath, $"shims/{targetFramework}/win-x64/{_customToolCommandName}.exe");
             File.Exists(windowShimPath).Should().BeTrue($"Shim {windowShimPath} should exist");
-            string osxShimPath = Path.Combine(shimoutputPath, $"shims/{targetFramework}/{ToolsetInfo.LatestMacRuntimeIdentifier}-x64/{_customToolCommandName}");
+            string osxShimPath = Path.Combine(helloWorldAsset.TestRoot, shimoutputPath, $"shims/{targetFramework}/{ToolsetInfo.LatestMacRuntimeIdentifier}-x64/{_customToolCommandName}");
             File.Exists(osxShimPath).Should().BeTrue($"Shim {osxShimPath} should exist");
         }
 
@@ -199,6 +205,7 @@ namespace Microsoft.NET.ToolPack.Tests
             _testRoot = helloWorldAsset.TestRoot;
 
             var packCommand = new PackCommand(helloWorldAsset);
+            packCommand.WithWorkingDirectory(SdkTestContext.Current.TestExecutionDirectory);
             var outputDirectory = packCommand.GetOutputDirectory(targetFramework);
             packCommand.Execute().Should().Pass();
 

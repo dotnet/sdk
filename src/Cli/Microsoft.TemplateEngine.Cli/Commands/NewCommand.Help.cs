@@ -17,13 +17,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     throw new ArgumentException($"{nameof(context)} should be for {nameof(NewCommand)}");
                 }
                 NewCommandArgs args = new(newCommand, context.ParseResult);
-                InstantiateCommandArgs instantiateCommandArgs = InstantiateCommandArgs.FromNewCommandArgs(args);
-                if (InstantiateCommand.TryWriteCommandHelp(context, instantiateCommandArgs))
-                {
-                    return;
-                }
-
                 using IEngineEnvironmentSettings environmentSettings = CreateEnvironmentSettings(args, context.ParseResult);
+                InstantiateCommandArgs instantiateCommandArgs = InstantiateCommandArgs.FromNewCommandArgs(args);
                 InstantiateCommand.WriteHelp(context, instantiateCommandArgs, environmentSettings);
             };
         }

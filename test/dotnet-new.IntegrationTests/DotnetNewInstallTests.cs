@@ -36,8 +36,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [TestMethod]
         public void CanInstallToPathWithAt()
         {
-            string testRoot = CreateTemporaryFolder();
-            string path = Path.Combine(testRoot, "repro@4");
+            string path = Path.Combine(Path.GetTempPath(), "repro@4");
             try
             {
                 Directory.CreateDirectory(path);
@@ -47,10 +46,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
             finally
             {
-                if (!PathUtility.TryDeleteDirectory(testRoot))
-                {
-                    _log.WriteLine($"Failed to delete temporary directory '{testRoot}'.");
-                }
+                Directory.Delete(path, recursive: true);
             }
         }
 

@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NETFRAMEWORK
-using System.Runtime.InteropServices;
-#endif
-
 namespace Microsoft.DotNet.Configurer
 {
     class CliFolderPathCalculatorCore
@@ -51,7 +47,7 @@ namespace Microsoft.DotNet.Configurer
                 // MSBuild tasks running with an isolated TaskEnvironment do not read ambient
                 // process state. Mirror what Environment.GetFolderPath(SpecialFolder.UserProfile)
                 // does internally: USERPROFILE on Windows, HOME on Unix.
-                var userProfileVariableName = IsWindows()
+                var userProfileVariableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                     ? "USERPROFILE"
                     : "HOME";
                 home = _getEnvironmentVariable(userProfileVariableName);
@@ -69,15 +65,6 @@ namespace Microsoft.DotNet.Configurer
             }
 
             return home;
-        }
-
-        private static bool IsWindows()
-        {
-#if NETFRAMEWORK
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-#else
-            return OperatingSystem.IsWindows();
-#endif
         }
 
     }

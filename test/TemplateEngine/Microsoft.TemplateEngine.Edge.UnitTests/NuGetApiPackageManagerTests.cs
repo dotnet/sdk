@@ -229,67 +229,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         }
 
         [TestMethod]
-        public void RemoveInsecurePackages_AllInsecure()
-        {
-            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
-
-            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
-            List<PackageSource> allPackages = new List<PackageSource>()
-            {
-                new PackageSource("http://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"),
-                new PackageSource("http://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"),
-                new PackageSource("http://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json"),
-                new PackageSource("http://insecure-feed.org")
-            };
-            var securePackages = packageManager.RemoveInsecurePackages(allPackages);
-
-            securePackages.Should().BeEmpty();
-        }
-
-        [TestMethod]
-        public void RemoveInsecurePackages_AllSecure()
-        {
-            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
-
-            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
-            List<PackageSource> allPackages = new List<PackageSource>()
-            {
-                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"),
-                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"),
-                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json")
-            };
-            var securePackages = packageManager.RemoveInsecurePackages(allPackages);
-
-            securePackages.Should().NotBeEmpty();
-            Assert.AreSequenceEqual(allPackages, securePackages);
-        }
-
-        [TestMethod]
-        public void RemoveInsecurePackages_Mixed()
-        {
-            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
-
-            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
-            List<PackageSource> allPackages = new List<PackageSource>()
-            {
-                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"),
-                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"),
-                new PackageSource("http://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json"),
-                new PackageSource("http://insecure-feed.org")
-            };
-            var securePackages = packageManager.RemoveInsecurePackages(allPackages);
-
-            var expectedOutcome = new List<PackageSource>()
-            {
-                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"),
-                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json")
-            };
-
-            securePackages.Should().NotBeEmpty();
-            securePackages.Should().Equal(expectedOutcome);
-        }
-
-        [TestMethod]
         public void LoadNuGetSources_PackageSourceMappingEnabled_ReturnsMappedSources()
         {
             IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -415,7 +354,68 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 .Which.Name.Should().Be("other-feed");
         }
 
-        private static ISettings CreateSettingsWithPackageSourceMapping(
+        [TestMethod]
+        public void RemoveInsecurePackages_AllInsecure()
+        {
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+            List<PackageSource> allPackages = new List<PackageSource>()
+            {
+                new PackageSource("http://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"),
+                new PackageSource("http://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"),
+                new PackageSource("http://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json"),
+                new PackageSource("http://insecure-feed.org")
+            };
+            var securePackages = packageManager.RemoveInsecurePackages(allPackages);
+
+            securePackages.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void RemoveInsecurePackages_AllSecure()
+        {
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+            List<PackageSource> allPackages = new List<PackageSource>()
+            {
+                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"),
+                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"),
+                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json")
+            };
+            var securePackages = packageManager.RemoveInsecurePackages(allPackages);
+
+            securePackages.Should().NotBeEmpty();
+            Assert.AreSequenceEqual(allPackages, securePackages);
+        }
+
+        [TestMethod]
+        public void RemoveInsecurePackages_Mixed()
+        {
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+            List<PackageSource> allPackages = new List<PackageSource>()
+            {
+                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"),
+                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"),
+                new PackageSource("http://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json"),
+                new PackageSource("http://insecure-feed.org")
+            };
+            var securePackages = packageManager.RemoveInsecurePackages(allPackages);
+
+            var expectedOutcome = new List<PackageSource>()
+            {
+                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"),
+                new PackageSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json")
+            };
+
+            securePackages.Should().NotBeEmpty();
+            securePackages.Should().Equal(expectedOutcome);
+        }
+
+        private ISettings CreateSettingsWithPackageSourceMapping(
             bool disableTemplateSource = false,
             bool includePackageSourceMapping = true)
         {

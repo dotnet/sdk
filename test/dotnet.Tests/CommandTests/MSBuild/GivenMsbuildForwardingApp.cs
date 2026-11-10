@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void DotnetExeIsExecuted()
         {
             var msbuildPath = "<msbuildpath>";
-            new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
+            new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                 .GetProcessStartInfo().FileName.Should().EndWith("dotnet.exe");
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void DotnetIsExecuted()
         {
             var msbuildPath = "<msbuildpath>";
-            new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
+            new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                 .GetProcessStartInfo().FileName.Should().EndWith("dotnet");
         }
 
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void ItSetsEnvironmentalVariables(string envVarName)
         {
             var msbuildPath = "<msbuildpath>";
-            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM()).GetProcessStartInfo();
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath).GetProcessStartInfo();
             startInfo.Environment.ContainsKey(envVarName).Should().BeTrue();
         }
 
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .Start();
             activity.TraceStateString = "vendor=value";
 
-            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), "<msbuildpath>", TestCommandServices.CreateNonLLM()).GetProcessStartInfo();
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), "<msbuildpath>").GetProcessStartInfo();
 
             startInfo.Environment[Activities.TRACEPARENT]
                 .Should().Be($"00-{activity.TraceId}-{activity.SpanId}-{(byte)activity.Context.TraceFlags:x2}");
@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             var envVar = "MSBuildExtensionsPath";
-            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
+            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                                 .GetProcessStartInfo()
                                 .Environment[envVar])
                 .Should()
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             var envVar = "MSBuildSDKsPath";
-            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
+            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                                 .GetProcessStartInfo()
                                 .Environment[envVar])
                 .Should()
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             var envVar = "DOTNET_CLI_TELEMETRY_SESSIONID";
-            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                 .GetProcessStartInfo();
 
             string sessionId = startInfo.Environment[envVar];
@@ -109,7 +109,6 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
-        // TelemetryClient static state is process-wide and is accessed by code that cannot participate in a resource lock.
         [DoNotParallelize]
         public void ItUsesSeededTelemetrySessionId()
         {
@@ -131,7 +130,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
                 _ = new TelemetryClient(sessionId: null, environmentProvider: environmentProvider.Object);
 
-                var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
+                var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                     .GetProcessStartInfo();
 
                 startInfo.Environment["DOTNET_CLI_TELEMETRY_SESSIONID"].Should().Be(sessionId);
@@ -146,7 +145,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void ItDoesNotSetCurrentWorkingDirectory()
         {
             var msbuildPath = "<msbuildpath>";
-            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                 .GetProcessStartInfo().WorkingDirectory.Should().Be("");
         }
 
@@ -162,12 +161,12 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
 
             var msbuildPath = "<msbuildpath>";
-            var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath, TestCommandServices.CreateNonLLM()).GetProcessStartInfo();
+            var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath).GetProcessStartInfo();
             startInfo.Environment["MSBUILDUSESERVER"].Should().Be("1");
         }
 
         [TestMethod]
-        [ResourceLock(WellKnownResources.EnvironmentVariables)]
+        [DoNotParallelize]
         [DataRow(null, "0")]
         [DataRow("", "0")]
         [DataRow("0", "0")]
@@ -183,7 +182,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 Environment.SetEnvironmentVariable("MSBUILDUSESERVER", msbuildUseServer);
 
                 var msbuildPath = "<msbuildpath>";
-                var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath, TestCommandServices.CreateNonLLM()).GetProcessStartInfo();
+                var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath).GetProcessStartInfo();
                 startInfo.Environment["MSBUILDUSESERVER"].Should().Be(expected);
             }
             finally
