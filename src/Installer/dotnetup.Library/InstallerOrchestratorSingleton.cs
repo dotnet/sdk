@@ -227,15 +227,16 @@ internal class InstallerOrchestratorSingleton
         public ResolvedInstallRequest ResolvedRequest { get; }
         public DotnetInstallRequest Request => ResolvedRequest.Request;
         public ReleaseVersion Version => ResolvedRequest.ResolvedVersion;
-        public DotnetInstall Install { get; }
         public IInstallArtifact Artifact { get; }
 
-        public PreparedInstall(ResolvedInstallRequest resolvedRequest, DotnetInstall install,
-            IInstallArtifact artifact)
+        /// <summary>The install, including the product version of the prepared payload.</summary>
+        public DotnetInstall Install { get; }
+
+        public PreparedInstall(ResolvedInstallRequest resolvedRequest, IInstallArtifact artifact)
         {
             ResolvedRequest = resolvedRequest;
-            Install = install;
             Artifact = artifact;
+            Install = new DotnetInstall(Request.InstallRoot, Version, Request.Component).WithProductVersion(artifact.ProductVersion);
         }
 
         public void Dispose() => Artifact.Dispose();
@@ -280,7 +281,7 @@ internal class InstallerOrchestratorSingleton
             throw;
         }
 
-        return new PreparedInstall(resolvedRequest, install, artifact);
+        return new PreparedInstall(resolvedRequest, artifact);
     }
 #pragma warning restore CA1822
 
@@ -297,19 +298,9 @@ internal class InstallerOrchestratorSingleton
 
         using var finalizeLock = ModifyInstallStateMutex();
 
-        if (manifest?.InstallAlreadyExists(install) == true)
+        if (FindAlreadyInstalled(installRequest, install, manifest, installationValidator) is { } alreadyInstalled)
         {
-            manifest.RecordInstallSpec(installRequest);
-            return new InstallResult(install, WasAlreadyInstalled: true);
-        }
-
-        // For --untracked installs the manifest is null, so the check above is
-        // skipped. Fall back to a filesystem check using the same validation
-        // that CommitPreparedInstall uses post-install. This runs inside the
-        // mutex so another dotnetup process can't be mid-extraction when we probe.
-        if (installRequest.Options.Untracked && installationValidator.Validate(install))
-        {
-            return new InstallResult(install, WasAlreadyInstalled: true);
+            return alreadyInstalled;
         }
 
         if (!installRequest.Options.Untracked
@@ -331,6 +322,36 @@ internal class InstallerOrchestratorSingleton
             && installRequest.InstallRoot.Path is not null)
         {
             MuxerHandler.EnsureMuxerIsWritable(installRequest.InstallRoot.Path);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Returns an already-installed result when the manifest records the install, or for global.json requests a build
+    /// in the same folder, recording the install spec. Must be called while holding the install-state mutex.
+    /// </summary>
+    private static InstallResult? FindAlreadyInstalled(
+        DotnetInstallRequest installRequest,
+        DotnetInstall install,
+        DotnetupSharedManifest? manifest,
+        IInstallationValidator installationValidator)
+    {
+        bool fromGlobalJson = installRequest.Options.InstallSource == InstallRequestSource.GlobalJson;
+        if (manifest?.FindExistingInstall(install, matchLayoutVersion: fromGlobalJson) is { } existingInstall)
+        {
+            manifest.RecordInstallSpec(installRequest);
+            return new InstallResult(existingInstall, WasAlreadyInstalled: true);
+        }
+
+        // For --untracked installs the manifest is null, so fall back to a filesystem check.
+        // Archive installs defer this until the download shows whether the existing folder holds the same build,
+        // except for global.json requests, which the host satisfies with whatever build is in the folder.
+        if (installRequest.Options.Untracked
+            && (installRequest.Options.InstallMechanism != InstallMechanism.Archive || fromGlobalJson)
+            && installationValidator.Validate(install))
+        {
+            return new InstallResult(install, WasAlreadyInstalled: true);
         }
 
         return null;
@@ -373,9 +394,25 @@ internal class InstallerOrchestratorSingleton
         using (var finalizeLock = ModifyInstallStateMutex())
         {
             IInstallationValidator validator = installationValidator ?? CreateInstallationValidator();
-            if (manifest?.InstallAlreadyExists(prepared.Install) == true
-                || (prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle
-                    && validator.Validate(prepared.Install)))
+            // Another process may have installed a matching build while this one downloaded.
+            if (FindAlreadyInstalled(prepared.Request, prepared.Install, manifest, validator) is { } alreadyInstalled)
+            {
+                return alreadyInstalled;
+            }
+
+            if (!prepared.Request.Options.Untracked
+                && prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle
+                && validator.Validate(prepared.Install))
+            {
+                return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
+            }
+
+            ThrowIfLayoutConflict(prepared, manifest);
+            prepared.Artifact.ThrowIfExistingLayoutDiffers();
+
+            if (manifest is null
+                && prepared.Request.Options.InstallMechanism == InstallMechanism.Archive
+                && validator.Validate(prepared.Install))
             {
                 return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
             }
@@ -388,17 +425,65 @@ internal class InstallerOrchestratorSingleton
 
             manifest?.RecordInstallSpec(prepared.Request);
 
-            manifest?.AddInstallation(prepared.Request.InstallRoot, new Installation
-            {
-                Component = prepared.Request.Component,
-                Version = prepared.Version.ToString(),
-                Subcomponents = [.. prepared.Artifact.ExtractedSubcomponents],
-            });
+            manifest?.AddInstallation(prepared.Request.InstallRoot,
+                Installation.FromDotnetInstall(prepared.Install, prepared.Artifact.ExtractedSubcomponents));
         }
 
         return new InstallResult(prepared.Install, WasAlreadyInstalled: false, Repaired: repaired, DownloadedBytes: prepared.Artifact.DownloadedBytes);
     }
 #pragma warning restore CA1822
+
+    /// <summary>
+    /// Rejects an install whose on-disk version folder is tracked for a different build of the component,
+    /// because extraction would keep the existing files while recording the new build. Archive installs are
+    /// allowed when the folder's <c>.version</c> files match the archive, such as a release over the daily
+    /// build it was promoted from; both records then reference the folder.
+    /// </summary>
+    private static void ThrowIfLayoutConflict(PreparedInstall prepared, DotnetupSharedManifest? manifest)
+    {
+        var install = prepared.Install;
+        string component = install.Component.GetDisplayName();
+        if (manifest?.FindLayoutConflict(install) is { } layoutConflict)
+        {
+            if (prepared.Request.Options.InstallMechanism == InstallMechanism.Archive)
+            {
+                try
+                {
+                    prepared.Artifact.ThrowIfExistingLayoutDiffers();
+                    return;
+                }
+                catch (DotnetInstallException ex) when (ex.ErrorCode == DotnetInstallErrorCode.InstallLayoutConflict)
+                {
+                }
+            }
+
+            var (existing, owningSpecs) = layoutConflict;
+            string existingVersions = string.Join(", ", existing.Select(installation => installation.Version));
+            string action = owningSpecs.Count == 0
+                ? string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictRemoveFolder, component, existingVersions, install.ComponentDirectory)
+                : string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictRunCommand,
+                    string.Join(", ", owningSpecs.Select(spec => $"'{GetUninstallCommand(spec, install.InstallRoot, prepared.Request.Options.ManifestPath)}'")));
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InstallLayoutConflict,
+                string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflict, component, install.Version, existingVersions, install.LayoutVersion, action),
+                version: install.Version.ToString(),
+                component: install.Component.ToString());
+        }
+    }
+
+    private static string GetUninstallCommand(InstallSpec spec, DotnetInstallRoot installRoot, string? manifestPath)
+    {
+        string target = spec.Component == InstallComponent.SDK
+            ? $"sdk uninstall {spec.VersionOrChannel}"
+            : $"runtime uninstall {Commands.Runtime.Install.RuntimeInstallCommand.FormatComponentSpec(spec.Component, spec.VersionOrChannel)}";
+        string command = $"dotnetup {target} {CommonOptions.InstallPathOption.Name} \"{installRoot.Path}\"";
+        if (spec.InstallSource != InstallSource.Explicit)
+        {
+            command += $" {CommonOptions.SourceOption.Name} {spec.InstallSource.ToString().ToLowerInvariant()}";
+        }
+
+        return manifestPath is null ? command : $"{command} {CommonOptions.ManifestPathOption.Name} \"{manifestPath}\"";
+    }
 
     /// <summary>
     /// Handles an install that reported success without its files: repairs the artifact once and validates

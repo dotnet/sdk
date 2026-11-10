@@ -91,7 +91,7 @@ internal class InstallWorkflow
         // flags control whether the global.json file is mutated.
         if (_command.UpdateGlobalJson)
         {
-            _command.DotnetEnvironment.ApplyGlobalJsonModifications(requests);
+            _command.DotnetEnvironment.ApplyGlobalJsonModifications(requests, _command.CompletedInstalls);
         }
 
     }

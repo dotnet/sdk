@@ -70,11 +70,22 @@ public class InstallSummaryTests
             $"  {InstallComponent.SDK.GetDisplayName()} 10.0.100  failed: boom");
     }
 
+    [TestMethod]
+    public void Summary_MatchesExistingBuildOfAnotherVersionToItsRequest()
+    {
+        var request = Request(InstallComponent.SDK, "11.0.100");
+        var batch = new InstallBatchResult([Result(request, alreadyInstalled: true, installedVersion: "11.0.100-rtm.26510.101")], []);
+
+        CaptureLines(() => InstallExecutor.DisplaySummaryInRequestOrder([request], batch, RootPath)).Should().Equal(
+            $"  {InstallComponent.SDK.GetDisplayName()} 11.0.100  already present as 11.0.100-rtm.26510.101, skipped",
+            $"Installed at {RootPath}.");
+    }
+
     private static ResolvedInstallRequest Request(InstallComponent component, string version) =>
         new(new DotnetInstallRequest(s_root, new UpdateChannel(version), component, new InstallRequestOptions()), new ReleaseVersion(version));
 
-    private static InstallResult Result(ResolvedInstallRequest request, bool alreadyInstalled = false, long? downloadedBytes = null, bool repaired = false) =>
-        new(new DotnetInstall(s_root, request.ResolvedVersion, request.Request.Component), alreadyInstalled, repaired, downloadedBytes);
+    private static InstallResult Result(ResolvedInstallRequest request, bool alreadyInstalled = false, long? downloadedBytes = null, bool repaired = false, string? installedVersion = null) =>
+        new(new DotnetInstall(s_root, installedVersion is null ? request.ResolvedVersion : new ReleaseVersion(installedVersion), request.Request.Component), alreadyInstalled, repaired, downloadedBytes);
 
     private static string[] CaptureLines(Action action)
     {

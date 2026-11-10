@@ -8,11 +8,29 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// <summary>
 /// Represents a .NET installation with a fully specified version.
 /// The MuxerDirectory is the directory of the corresponding .NET host that has visibility into this .NET installation.
+/// <see cref="Version"/> is the tracked build identity; use <see cref="LayoutVersion"/> for on-disk paths.
 /// </summary>
 internal record DotnetInstall(
     DotnetInstallRoot InstallRoot,
     ReleaseVersion Version,
-    InstallComponent Component);
+    InstallComponent Component,
+    ReleaseVersion? ProductVersion = null)
+{
+    /// <summary>The version folder on disk, which is also what <c>dotnet --version</c> reports.</summary>
+    public ReleaseVersion LayoutVersion => ProductVersion ?? Version;
+
+    /// <summary>The install's folder relative to the install root, such as <c>sdk/10.0.100</c>.</summary>
+    public string LayoutPath => Component.GetLayoutPath(LayoutVersion.ToString());
+
+    /// <summary>The install's folder on disk.</summary>
+    public string ComponentDirectory => Path.Combine(InstallRoot.Path!, LayoutPath.Replace('/', Path.DirectorySeparatorChar));
+
+    /// <summary>Records the payload's product version, keeping it null when it matches <see cref="Version"/>.</summary>
+    public DotnetInstall WithProductVersion(ReleaseVersion? productVersion) =>
+        productVersion is null || productVersion.Equals(Version)
+            ? this
+            : this with { ProductVersion = productVersion };
+}
 
 /// <summary>
 /// A lightweight specification for an install request before path resolution and

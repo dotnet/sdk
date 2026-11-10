@@ -11,13 +11,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 internal sealed class InstallationValidator : IInstallationValidator
 {
-    private static readonly Dictionary<InstallComponent, string> s_runtimeMonikerByComponent = new()
-    {
-        [InstallComponent.Runtime] = InstallComponentExtensions.RuntimeFrameworkName,
-        [InstallComponent.ASPNETCore] = InstallComponentExtensions.AspNetCoreFrameworkName,
-        [InstallComponent.WindowsDesktop] = InstallComponentExtensions.WindowsDesktopFrameworkName
-    };
-
 #pragma warning disable CA1822 // Validate methods implement IInstallationValidator and cannot be made static
     public bool Validate(DotnetInstall install)
     {
@@ -43,23 +36,17 @@ internal sealed class InstallationValidator : IInstallationValidator
         string dotnetMuxerPath = GetMuxerPath(installRoot);
         if (!File.Exists(dotnetMuxerPath))
         {
-            if (install.Component == InstallComponent.WindowsDesktop)
+            if (install.Component == InstallComponent.WindowsDesktop && ValidateComponentLayout(install))
             {
-                string resolvedVersionLayout = install.Version.ToString();
-                if (ValidateComponentLayout(installRoot, resolvedVersionLayout, install.Component))
-                {
-                    return true;
-                }
+                return true;
             }
             failureReason = $"Muxer not found at '{dotnetMuxerPath}'.";
             return false;
         }
 
-        string resolvedVersion = install.Version.ToString();
-        if (!ValidateComponentLayout(installRoot, resolvedVersion, install.Component))
+        if (!ValidateComponentLayout(install))
         {
-            string expectedDir = GetComponentDirectory(installRoot, install.Component, resolvedVersion) ?? "<unknown>";
-            failureReason = $"Component layout validation failed. Expected '{expectedDir}' to contain {(install.Component == InstallComponent.SDK ? "dotnet.dll" : "the framework .deps.json")}.";
+            failureReason = $"Component layout validation failed. Expected '{install.ComponentDirectory}' to contain {(install.Component == InstallComponent.SDK ? "dotnet.dll" : "the framework .deps.json")}.";
             return false;
         }
 
@@ -73,33 +60,14 @@ internal sealed class InstallationValidator : IInstallationValidator
     /// Matches how hostfxr recognizes installs: an SDK version folder must contain <c>dotnet.dll</c>, and a
     /// runtime version folder must contain <c>&lt;framework name&gt;.deps.json</c>.
     /// </summary>
-    private static bool ValidateComponentLayout(string installRoot, string resolvedVersion, InstallComponent component)
+    private static bool ValidateComponentLayout(DotnetInstall install)
     {
-        string? componentDirectory = GetComponentDirectory(installRoot, component, resolvedVersion);
-        if (componentDirectory is null)
-        {
-            return false;
-        }
-
-        string markerFile = component == InstallComponent.SDK
+        string markerFile = install.Component == InstallComponent.SDK
             ? "dotnet.dll"
-            : s_runtimeMonikerByComponent[component] + ".deps.json";
-        return File.Exists(Path.Combine(componentDirectory, markerFile));
+            : install.Component.GetFrameworkName() + ".deps.json";
+        return File.Exists(Path.Combine(install.ComponentDirectory, markerFile));
     }
 
     /// <summary>Gets the path of the <c>dotnet</c> muxer in an install root.</summary>
     internal static string GetMuxerPath(string installRoot) => Path.Combine(installRoot, DotnetupUtilities.GetDotnetExeName());
-
-    /// <summary>Gets the directory a specific version of a component is installed to, or null for an unknown component.</summary>
-    internal static string? GetComponentDirectory(string installRoot, InstallComponent component, string resolvedVersion)
-    {
-        if (component == InstallComponent.SDK)
-        {
-            return Path.Combine(installRoot, "sdk", resolvedVersion);
-        }
-
-        return s_runtimeMonikerByComponent.TryGetValue(component, out string? runtimeMoniker)
-            ? Path.Combine(installRoot, "shared", runtimeMoniker, resolvedVersion)
-            : null;
-    }
 }

@@ -8,6 +8,8 @@ using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
@@ -25,6 +27,406 @@ public class DotnetArchiveExtractorTests
     public DotnetArchiveExtractorTests(TestContext testContext)
     {
         _log = new TestContextOutputHelper(testContext);
+    }
+
+    [TestMethod]
+    [DataRow("11.0.100-rtm.26552.115", "11.0.100", InstallComponent.SDK, "sdk/11.0.100/dotnet.dll")]
+    [DataRow("10.0.115-servicing.26552.102", "10.0.115", InstallComponent.SDK, "sdk/10.0.115/dotnet.dll")]
+    [DataRow("11.0.0-rtm.26552.115", "11.0.0", InstallComponent.Runtime, "shared/Microsoft.NETCore.App/11.0.0/Microsoft.NETCore.App.deps.json")]
+    public void Commit_DailyReleasePayload_ValidatesAndTracksBothVersions(
+        string buildVersion, string productVersion, InstallComponent component, string markerPath)
+    {
+        using var testEnv = new TestEnvironment();
+        var resolvedVersion = new ReleaseVersion(buildVersion);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        using var prepared = PrepareArchiveInstall(testEnv, component, "daily", buildVersion, productVersion, markerPath, "component marker");
+        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
+
+        result.Install.Version.Should().Be(resolvedVersion);
+        new InstallationValidator().Validate(result.Install).Should().BeTrue();
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var installation = manifest.ReadManifest().DotnetRoots.Single().Installations.Single();
+            installation.Version.Should().Be(buildVersion);
+            installation.ProductVersion.Should().Be(productVersion);
+            manifest.InstallAlreadyExists(new DotnetInstall(root, resolvedVersion, component)).Should().BeTrue();
+        }
+
+        var listed = InstallationLister.GetListData(verify: true, manifestPath: testEnv.ManifestPath).Installations.Single();
+        listed.Version.Should().Be(buildVersion);
+        listed.IsValid.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow("11-daily", "11.0.100-rtm.26552.115", "11.0.100", "11-daily", "11.0.100-rtm.26553.101", "11.0.100", "sdk uninstall 11-daily")]
+    [DataRow("11-daily", "11.0.100-rtm.26552.115", "11.0.100", "11.0.100", "11.0.100", null, "sdk uninstall 11-daily")]
+    [DataRow("11.0.100", "11.0.100", null, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", "sdk uninstall 11.0.100")]
+    public void Commit_DifferentBuildWithSameLayout_RejectsWithoutChangingExistingInstall(
+        string existingChannel, string existingVersion, string? existingPayload,
+        string newChannel, string newVersion, string? newPayload, string expectedUninstall)
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var existing = PrepareArchiveInstall(testEnv, InstallComponent.SDK, existingChannel, existingVersion, existingPayload, markerPath, "existing"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(existing);
+        }
+        using var replacement = PrepareArchiveInstall(testEnv, InstallComponent.SDK, newChannel, newVersion, newPayload, markerPath, "replacement");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(replacement));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+        ex.Message.Should().Contain($".NET SDK {newVersion} replaces .NET SDK {existingVersion}")
+            .And.Contain($"dotnetup {expectedUninstall} --install-path");
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("existing");
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        new DotnetupSharedManifest(testEnv.ManifestPath).ReadManifest().DotnetRoots.Single().Installations
+            .Should().ContainSingle().Which.Version.Should().Be(existingVersion);
+    }
+
+    [TestMethod]
+    public void Commit_TrackedReleaseOverDailyBuildFromSameCommit_RecordsBothInstallations()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "same-build"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily);
+        }
+        using var release = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.100", "11.0.100", null, markerPath, "same-build");
+
+        InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(release).WasAlreadyInstalled.Should().BeFalse();
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        new DotnetupSharedManifest(testEnv.ManifestPath).ReadManifest().DotnetRoots.Single().Installations
+            .Should().HaveCount(2).And.OnlyContain(i => i.LayoutVersion == "11.0.100" && i.Subcomponents.Contains("sdk/11.0.100"));
+    }
+
+    [TestMethod]
+    public void Commit_LayoutConflict_SuggestsOnlySpecsThatKeepTheConflictingInstall()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var pinned = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.100", "11.0.100", null, markerPath, "existing"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(pinned);
+        }
+        using (var band = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.1xx", "11.0.105", null, "sdk/11.0.105/dotnet.dll", "newer"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(band);
+        }
+        using var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "daily");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily));
+
+        ex.Message.Should().Contain("sdk uninstall 11.0.100 ").And.NotContain("11.0.1xx");
+    }
+
+    [TestMethod]
+    public void Commit_LayoutConflict_SuggestsSpecsOfEveryInstallSharingTheFolder()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "same-build"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily);
+        }
+        using (var release = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.100", "11.0.100", null, markerPath, "same-build"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(release);
+        }
+        using var nextDaily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.1xx-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "next-build");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(nextDaily));
+
+        ex.Message.Should().Contain("sdk uninstall 11-daily ").And.Contain("sdk uninstall 11.0.100 ");
+    }
+
+    [TestMethod]
+    public void Commit_LayoutConflictKeptByNoSpec_SuggestsRemovingFolderWithoutRemovingAnything()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "old-build"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily);
+        }
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var data = manifest.ReadManifest();
+            data.DotnetRoots.Single().InstallSpecs.Clear();
+            manifest.WriteManifest(data);
+        }
+        string folder = Path.Combine(testEnv.InstallPath, "sdk", "11.0.100");
+        using var nextDaily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "new-build");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(nextDaily));
+
+        ex.Message.Should().Contain($"Remove '{folder}'");
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("old-build");
+
+        Directory.Delete(folder, recursive: true);
+        InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(nextDaily).WasAlreadyInstalled.Should().BeFalse();
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("new-build");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Commit_GlobalJsonPinSatisfiedByBuildInstalledDuringDownload_ReturnsExistingInstall(bool untracked)
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        var globalJson = Path.Combine(testEnv.TempRoot, "global.json");
+        File.WriteAllText(globalJson, """{"sdk":{"version":"11.0.100","rollForward":"disable"}}""");
+        using var pinned = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.100", "11.0.100", null, markerPath, "release",
+            untracked, globalJsonPath: globalJson);
+        using (var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "daily", untracked))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily);
+        }
+
+        InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(pinned).WasAlreadyInstalled.Should().BeTrue();
+
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("daily");
+        if (!untracked)
+        {
+            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+            new DotnetupSharedManifest(testEnv.ManifestPath).ReadManifest().DotnetRoots.Single().InstallSpecs
+                .Should().Contain(spec => spec.InstallSource == InstallSource.GlobalJson);
+        }
+    }
+
+    [TestMethod]
+    public void Commit_UntrackedDailyBuildWithExistingLayout_Rejects()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var existing = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "existing", untracked: true))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(existing);
+        }
+        using var replacement = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "replacement", untracked: true);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(replacement));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+        ex.Message.Should().Contain("Remove '");
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("existing");
+    }
+
+    [TestMethod]
+    public void Commit_TrackedRootDailyBuildWithUntrackedLayout_Rejects()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var existing = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.100", "11.0.100", null, markerPath, "existing", untracked: true))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(existing);
+        }
+        using (var tracked = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "10.0.100", "10.0.100", null, "sdk/10.0.100/dotnet.dll", "tracked"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(tracked);
+        }
+        using var replacement = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "replacement");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(replacement));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+        ex.Message.Should().Contain("Remove '");
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("existing");
+    }
+
+    [TestMethod]
+    public void Commit_LayoutConflictWithGlobalJsonSpec_SuggestsSourceAndManifestPath()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        var globalJson = Path.Combine(testEnv.TempRoot, "global.json");
+        File.WriteAllText(globalJson, """{"sdk":{"version":"11.0.100"}}""");
+        using (var existing = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.100", "11.0.100", null, markerPath, "existing", globalJsonPath: globalJson))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(existing);
+        }
+        using var replacement = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "replacement");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(replacement));
+
+        ex.Message.Should().Contain("--source globaljson").And.Contain($"--manifest-path \"{testEnv.ManifestPath}\"");
+    }
+
+    [TestMethod]
+    [DataRow("daily-build", false)]
+    [DataRow("release-build", true)]
+    public void Commit_UntrackedReleaseOverDailyBuild_ChecksBuildCommit(string releaseCommit, bool expectConflict)
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "daily-build", untracked: true))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily);
+        }
+        using var release = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.100", "11.0.100", null, markerPath, releaseCommit, untracked: true);
+
+        if (expectConflict)
+        {
+            var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(release));
+            ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+            ex.Message.Should().Contain("holds a different build");
+        }
+        else
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(release).WasAlreadyInstalled.Should().BeTrue();
+        }
+
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("daily-build");
+    }
+
+    [TestMethod]
+    [DataRow("runtime-build", false)]
+    [DataRow("other-runtime-build", true)]
+    public void Commit_SdkBundlingExistingRuntimeFolder_ChecksBuildCommit(string bundledRuntimeCommit, bool expectConflict)
+    {
+        using var testEnv = new TestEnvironment();
+        const string runtimeFolder = "shared/Microsoft.NETCore.App/11.0.0";
+        using (var runtime = PrepareArchiveInstall(testEnv, InstallComponent.Runtime, "11.0-daily", "11.0.0-rtm.26552.115", "11.0.0",
+            $"{runtimeFolder}/Microsoft.NETCore.App.deps.json", "runtime-build"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(runtime);
+        }
+        using var sdk = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100",
+            "sdk/11.0.100/dotnet.dll", "sdk-build", extraFiles: ($"{runtimeFolder}/.version", $"{bundledRuntimeCommit}\n11.0.0"));
+
+        if (expectConflict)
+        {
+            var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(sdk));
+            ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+            ex.Message.Should().Contain("Microsoft.NETCore.App");
+            Directory.Exists(Path.Combine(testEnv.InstallPath, "sdk", "11.0.100")).Should().BeFalse();
+        }
+        else
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(sdk).WasAlreadyInstalled.Should().BeFalse();
+        }
+    }
+
+    [TestMethod]
+    public void Commit_ExistingLayoutWithoutVersionFile_Rejects()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "11.0.100"));
+        File.WriteAllText(Path.Combine(testEnv.InstallPath, markerPath), "existing");
+        using var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "daily", untracked: true);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+        ex.Message.Should().Contain("has no .version file");
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("existing");
+    }
+
+    [TestMethod]
+    public void Commit_SdkFromSameCommitWithDifferentBuildVersion_Rejects()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var first = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "first",
+            untracked: true, versionFile: "commit\n11.0.100\nwin-x64\n11.0.100-rtm.26552.115\n11.0.100"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(first);
+        }
+        using var rebuild = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.116", "11.0.100", markerPath, "rebuild",
+            untracked: true, versionFile: "commit\n11.0.100\nwin-x64\n11.0.100-rtm.26552.116\n11.0.100");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(rebuild));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("first");
+    }
+
+    [TestMethod]
+    public void PrepareInstall_TrackedDailyBuildAlreadyInstalled_ReturnsOnDiskVersion()
+    {
+        using var testEnv = new TestEnvironment();
+        using (var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", "sdk/11.0.100/dotnet.dll", "daily"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily);
+        }
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var request = new DotnetInstallRequest(root, new UpdateChannel("11-daily"), InstallComponent.SDK,
+            new InstallRequestOptions { ManifestPath = testEnv.ManifestPath });
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+
+        var prepared = InstallerOrchestratorSingleton.Instance.PrepareInstall(
+            new ResolvedInstallRequest(request, new ReleaseVersion("11.0.100-rtm.26552.115")), new InstallBatchContext(reporter, 0), out var result);
+
+        prepared.Should().BeNull();
+        result!.WasAlreadyInstalled.Should().BeTrue();
+        result.Install.LayoutVersion.ToString().Should().Be("11.0.100");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void PrepareInstall_GlobalJsonPinSatisfiedByDailyBuildFolder_DoesNotDownload(bool untracked)
+    {
+        using var testEnv = new TestEnvironment();
+        using (var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100",
+            "sdk/11.0.100/dotnet.dll", "daily", untracked))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily);
+        }
+        var globalJson = Path.Combine(testEnv.TempRoot, "global.json");
+        File.WriteAllText(globalJson, """{"sdk":{"version":"11.0.100","rollForward":"disable"}}""");
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var request = new DotnetInstallRequest(root, new UpdateChannel("11.0.100"), InstallComponent.SDK,
+            new InstallRequestOptions
+            {
+                ManifestPath = testEnv.ManifestPath, Untracked = untracked,
+                GlobalJsonPath = globalJson, InstallSource = InstallRequestSource.GlobalJson,
+            });
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+
+        var prepared = InstallerOrchestratorSingleton.Instance.PrepareInstall(
+            new ResolvedInstallRequest(request, new ReleaseVersion("11.0.100")), new InstallBatchContext(reporter, 0), out var result);
+
+        prepared.Should().BeNull();
+        result!.WasAlreadyInstalled.Should().BeTrue();
+        result.Install.LayoutVersion.ToString().Should().Be("11.0.100");
+    }
+
+    private static InstallerOrchestratorSingleton.PreparedInstall PrepareArchiveInstall(
+        TestEnvironment testEnv, InstallComponent component, string channel, string version, string? payloadVersion,
+        string markerPath, string markerContent, bool untracked = false, string? globalJsonPath = null, string? versionFile = null,
+        params (string path, string content)[] extraFiles)
+    {
+        var resolvedVersion = new ReleaseVersion(version);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var request = new DotnetInstallRequest(root, new UpdateChannel(channel), component,
+            new InstallRequestOptions
+            {
+                ManifestPath = testEnv.ManifestPath,
+                Untracked = untracked,
+                GlobalJsonPath = globalJsonPath,
+                InstallSource = globalJsonPath is null ? InstallRequestSource.Explicit : InstallRequestSource.GlobalJson,
+            });
+        var downloader = new MockArchiveDownloader
+        {
+            ArchiveFileExtension = ".tar.gz",
+            FakeArchiveContent = CreateTarGzWithFiles([
+                (markerPath, markerContent),
+                ($"{markerPath[..markerPath.LastIndexOf('/')]}/.version", versionFile ?? $"{markerContent}\n{payloadVersion ?? version}"),
+                (DotnetupUtilities.GetDotnetExeName(), "muxer"),
+                .. extraFiles]),
+            ProductVersion = payloadVersion is null ? null : new ReleaseVersion(payloadVersion),
+            IsUnsigned = true
+        };
+        var extractor = new DotnetArchiveExtractor(request, resolvedVersion, new ReleaseManifest(), new NullProgressTarget(), downloader);
+        extractor.Prepare();
+        return new InstallerOrchestratorSingleton.PreparedInstall(new ResolvedInstallRequest(request, resolvedVersion), extractor);
     }
 
     [TestMethod]

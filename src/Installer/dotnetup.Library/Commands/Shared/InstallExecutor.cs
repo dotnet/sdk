@@ -87,10 +87,11 @@ internal class InstallExecutor
     {
         var labels = requests.Select(r => $"{r.Request.Component.GetDisplayName()} {r.ResolvedVersion}").ToList();
         int labelWidth = labels.Max(label => label.Length);
+        var results = MatchResultsToRequests(requests, batchResult);
 
         for (int i = 0; i < requests.Count; i++)
         {
-            SpectreAnsiConsole.WriteLine($"  {labels[i].PadRight(labelWidth)}  {DescribeOutcome(requests[i], batchResult)}");
+            SpectreAnsiConsole.WriteLine($"  {labels[i].PadRight(labelWidth)}  {DescribeOutcome(requests[i], results[i], batchResult)}");
         }
 
         if (batchResult.Successes.Count > 0)
@@ -99,15 +100,50 @@ internal class InstallExecutor
         }
     }
 
-    private static string DescribeOutcome(ResolvedInstallRequest request, InstallBatchResult batchResult)
+    /// <summary>
+    /// Pairs each request with its success, preferring an exact version match. A request satisfied by an existing
+    /// build of another version (for example a daily build for a global.json pin) takes a remaining result of its component.
+    /// </summary>
+    private static InstallResult?[] MatchResultsToRequests(IReadOnlyList<ResolvedInstallRequest> requests, InstallBatchResult batchResult)
+    {
+        var unclaimed = batchResult.Successes.ToList();
+        var matches = new InstallResult?[requests.Count];
+        InstallResult? Claim(Func<InstallResult, bool> predicate)
+        {
+            InstallResult? match = unclaimed.FirstOrDefault(predicate);
+            if (match is not null)
+            {
+                unclaimed.Remove(match);
+            }
+
+            return match;
+        }
+
+        for (int i = 0; i < requests.Count; i++)
+        {
+            var request = requests[i];
+            matches[i] = Claim(r => r.Install.Component == request.Request.Component && r.Install.Version.Equals(request.ResolvedVersion));
+        }
+
+        for (int i = 0; i < requests.Count; i++)
+        {
+            var request = requests[i];
+            if (matches[i] is null && !batchResult.Failures.Any(f => ReferenceEquals(f.Request, request)))
+            {
+                matches[i] = Claim(r => r.Install.Component == request.Request.Component);
+            }
+        }
+
+        return matches;
+    }
+
+    private static string DescribeOutcome(ResolvedInstallRequest request, InstallResult? result, InstallBatchResult batchResult)
     {
         if (batchResult.Failures.FirstOrDefault(f => ReferenceEquals(f.Request, request)) is { } failure)
         {
             return $"failed: {failure.Exception.Message}";
         }
 
-        InstallResult? result = batchResult.Successes.FirstOrDefault(r =>
-            r.Install.Component == request.Request.Component && r.Install.Version.Equals(request.ResolvedVersion));
         if (result is null)
         {
             return "not installed";
@@ -115,7 +151,9 @@ internal class InstallExecutor
 
         if (result.WasAlreadyInstalled)
         {
-            return "already present, skipped";
+            return result.Install.Version.Equals(request.ResolvedVersion)
+                ? "already present, skipped"
+                : $"already present as {result.Install.Version}, skipped";
         }
 
         var details = new List<string>();
@@ -133,7 +171,7 @@ internal class InstallExecutor
     }
 
     /// <summary>
-    /// Executes a batch of resolved install requests, records install-result telemetry on
+    /// Executes a batch of resolved install requests, records install-result telemetry and the completed installs on
     /// <paramref name="command"/>, and throws if any request failed. This is the standard
     /// entry point for production code paths that need failures to surface as exceptions
     /// rather than be silently swallowed.
@@ -141,9 +179,10 @@ internal class InstallExecutor
     public static void ExecuteInstallsAndThrowOnFailure(
         List<ResolvedInstallRequest> requests,
         ProgressMode progress,
-        CommandBase command)
+        InstallCommand command)
     {
         var batchResult = ExecuteInstalls(requests, progress);
+        command.CompletedInstalls.AddRange(batchResult.Successes);
 
         int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
         int alreadyInstalled = batchResult.Successes.Count(r => r.WasAlreadyInstalled);

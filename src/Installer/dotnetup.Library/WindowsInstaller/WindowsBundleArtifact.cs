@@ -71,6 +71,8 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
 
     public bool RequiresPostInstallValidation { get; private set; } = true;
 
+    public ReleaseVersion? ProductVersion => _download?.ProductVersion;
+
     public IReadOnlyList<string> ExtractedSubcomponents => [];
 
     public long? DownloadedBytes { get; private set; }

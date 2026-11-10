@@ -1,65 +1,79 @@
-# Publishing dotnetup Preview Builds
+# Building and releasing dotnetup
 
-The `dotnetup` bootstrap scripts install from the `preview` quality by default. Publishing a
-build to that quality updates links under:
+The official `dotnet-dnup-official-ci` pipeline invokes the build command three times
+on each RID agent, selecting preview, GA, then daily branding with
+`DotnetupBuildVariant`. Intermediate and output directories are isolated; the
+channel identity is compiled into dotnetup and its libraries, not changed at promotion.
 
-```text
-https://aka.ms/dotnet/dotnetup/preview/
+| Variant | Example version | Default self-update channel | BAR |
+| --- | --- | --- | --- |
+| daily | `0.3.0-daily.26530.1` | daily | Yes |
+| preview | `0.3.0-preview.1.26530.1` | preview | No |
+| ga | `0.3.0` | stable | No |
+
+GA variants are **placeholders**, not approved releases. They have stable version
+branding so the build/release handoff can be exercised before GA support is enabled.
+
+## Artifact contract
+
+Each RID job uploads a `Build_<job-name>` pipeline artifact containing
+`<variant>/<version>/`. Each directory contains the RID-suffixed executable, its
+SHA-512 checksum, and `release.json` with the source Azure DevOps build ID, commit,
+version, variant, RID, schema version, and placeholder flag. The win-x64 artifact
+also contains signed bootstrap scripts and their checksums, copied identically into
+each variant after signing. Checksums describe the final signed bytes.
+
+All native variants are signed in the normal Arcade signing phase. Preview and GA
+use Arcade's `Artifact.SkipPublish` sign-only contract, which also excludes their
+checksums from the publishing manifest. Only daily assets are registered in BAR.
+
+Daily publication uses Arcade V4 publishing. Each RID job additionally uploads a
+`<job-name>_Artifacts` pipeline artifact containing staged daily assets and a V4
+manifest. The BAR job merges these manifests into the `AssetManifests` pipeline
+artifact. Preview and GA remain exclusively in the `Build_<job-name>` candidate
+artifacts; the release pipeline's input contract is unchanged. The shared SDK build
+job templates use V4 publishing without a V3 compatibility option.
+
+To produce variants locally:
+
+```powershell
+foreach ($variant in @('preview', 'ga', 'daily')) {
+    $artifacts = Join-Path $PWD 'artifacts'
+    if ($variant -ne 'daily') { $artifacts = Join-Path $artifacts $variant }
+    .\eng\common\build.ps1 -restore -build -pack -configuration Release `
+        "/p:Projects=$PWD\dotnetup.slnf" "/p:DotnetupBuildVariant=$variant" `
+        "/p:ArtifactsDir=$artifacts\"
+    if ($LASTEXITCODE -ne 0) { throw "The $variant build failed." }
+}
 ```
 
-Publishing an older build through the same process rolls those links back without rebuilding.
+Daily uses the normal `artifacts` root;
+preview and GA use `artifacts\preview` and `artifacts\ga` for their isolated outputs.
+The final daily invocation additionally signs all three variants, stages the
+candidates, and publishes only daily assets. Local nonofficial
+builds retain Arcade's development versions; an `OfficialBuildId` produces the
+date-stamped identities shown above.
 
-## Select a build
+## Releasing
 
-Use a successful
-[`dotnet-dnup-official-ci`](https://dev.azure.com/dnceng/internal/_build?definitionId=1544)
-run from the `release/dnup` branch. The build's tags include:
+Daily publication uses the build's configured Maestro default channels. Preview and
+GA promotion consume the corresponding pipeline artifacts, without rebuilding or
+restamping the binaries.
 
-```text
-BAR ID - <build-id>
-```
+1. Select the input run from
+   [dotnet-dnup-official-ci](https://dev.azure.com/dnceng/internal/_build?definitionId=1544).
+2. Run [dotnetup-release](https://dev.azure.com/dnceng/internal/_build?definitionId=1710).
+   Select that run for the `candidate` pipeline resource and choose `preview` or `ga`
+   for `quality`. The source run is an Azure DevOps build, not a BAR build ID.
+3. Inspect `release-plan.json` attached to the release execution task's logs.
+   The planner validates the eight RID manifests against the selected build and final-byte
+   checksums before generating any publication operations.
 
-If the build tags do not include a BAR ID, you can find it at the end of the job `📤 Publish to BAR`, under the step `Publish Using Darc`.
+The release pipeline is currently **dry-run only**. It prints the versioned uploads
+to both CDN origin accounts and the conditional aka.ms link updates; it does not call
+their write APIs. Aka.ms ownership parameters remain `UNCONFIGURED` until approved.
 
-Use that numeric Build Asset Registry (BAR) ID when promoting the build. Normal non-test runs
-of the official pipeline are PME-signed and have a `PME Signed` tag. Use the tag to confirm
-signing completed; do not promote a test build or a build without the tag.
-
-## Promote the build
-
-Run the
-[`Maestro Build Promotion`](https://dev.azure.com/dnceng/internal/_build?definitionId=750)
-pipeline with these parameters:
-
-| Parameter | Value |
-| --- | --- |
-| `BARBuildId` | The BAR ID from the selected build |
-| `PromoteToChannelIds` | `10506` (`dotnetup Daily`) |
-| `ArtifactsPublishingAdditionalParameters` ( NOT `symbol` parameters ) | `/p:BuildQuality=preview` |
-
-Leave the remaining parameters at their defaults. The Maestro channel retains its historical
-`dotnetup Daily` name; `BuildQuality=preview` controls the quality segment in the generated
-aka.ms links.
-
-The overall pipeline can report `PartiallySucceeded` because optional artifacts are downloaded
-with `continueOnError`. The `Publish packages, blobs and symbols` step must succeed.
-
-## Verify the promotion
-
-Check that the executable link resolves to the selected build's version:
-
-```pwsh
-curl.exe -sI https://aka.ms/dotnet/dotnetup/preview/dotnetup-win-x64.exe |
-  Select-String Location
-```
-
-Then install into an isolated directory and check the running executable:
-
-```pwsh
-$script = Join-Path $env:TEMP 'get-dotnetup-preview.ps1'
-$installDir = Join-Path $env:TEMP 'dotnetup-preview-test'
-
-Invoke-WebRequest https://aka.ms/dotnet/dotnetup/preview/get-dotnetup.ps1 -OutFile $script
-& $script -InstallDir $installDir
-& (Join-Path $installDir 'dotnetup.exe') --info
-```
+Preview links use `https://aka.ms/dotnet/dotnetup/preview/`; GA links use
+`https://aka.ms/dotnet/dotnetup/stable/`. GA plans remain explicitly marked as
+placeholders. Each plan contains 40 blob uploads and 20 link operations, including
+the bootstrap scripts and checksums.
