@@ -172,16 +172,11 @@ internal sealed class SilenceDrivenHeartbeatRenderer(
         builder.Append(detail.Text);
         builder.Append(" (");
         builder.Append(item.AssemblyName);
-        if (item.TargetFramework is not null)
+        string displayName = TestFrameworkDisplay.GetDisplayName(item.TargetFramework, item.Architecture, item.RuntimeFramework);
+        if (displayName.Length > 0)
         {
             builder.Append('|');
-            builder.Append(item.TargetFramework);
-        }
-
-        if (item.Architecture is not null)
-        {
-            builder.Append('|');
-            builder.Append(item.Architecture);
+            builder.Append(displayName);
         }
 
         builder.Append(')');
