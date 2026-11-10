@@ -1,0 +1,5 @@
+<Project DefaultTargets="Build">
+  <Target Name="Build">
+    <Message Text="AOT_MANAGED_FALLBACK:$(MSBuildRuntimeType)" Importance="high" />
+  </Target>
+</Project>

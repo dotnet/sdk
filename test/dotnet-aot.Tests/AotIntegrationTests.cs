@@ -795,14 +795,11 @@ public partial class AotIntegrationTests
         Directory.CreateDirectory(testDirectory);
         try
         {
-            string projectPath = Path.Join(testDirectory, "ManagedFallback.proj");
-            File.WriteAllText(projectPath, """
-                <Project DefaultTargets="Build">
-                  <Target Name="Build">
-                    <Message Text="AOT_MANAGED_FALLBACK:$(MSBuildRuntimeType)" Importance="high" />
-                  </Target>
-                </Project>
-                """);
+            const string projectFileName = "ManagedFallback.proj";
+            string projectPath = Path.Join(testDirectory, projectFileName);
+            File.Copy(
+                Path.Join(AppContext.BaseDirectory, "TestAssets", "AotManagedFallback", projectFileName),
+                projectPath);
 
             var (exitCode, stdout, stderr) = RunDn(
                 ["build", projectPath, "--no-restore", "--verbosity", "minimal", "-nologo"],
