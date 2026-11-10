@@ -196,6 +196,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>A newer build that the Windows installer would not downgrade is already installed (or the installer exited with 1638).</summary>
     NewerVersionInstalled,
+
+    /// <summary>A Windows installer bundle request was skipped because a newer request in the same batch would replace it.</summary>
+    SupersededInBatch,
 }
 
 /// <summary>

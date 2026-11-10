@@ -652,6 +652,46 @@ public class InstallerOrchestratorTests
         check.Should().NotThrow();
     }
 
+    [TestMethod]
+    public void FindSupersededBundleRequests_SkipsOlderBundleRequestsInTheSameInstallerFamily()
+    {
+        var sdk100 = MakeBatchRequest(InstallComponent.SDK, "10.0.100");
+        var sdk114 = MakeBatchRequest(InstallComponent.SDK, "10.0.114");
+        var sdk201 = MakeBatchRequest(InstallComponent.SDK, "10.0.201");
+        var runtime1 = MakeBatchRequest(InstallComponent.Runtime, "10.0.1");
+        var runtime3 = MakeBatchRequest(InstallComponent.Runtime, "10.0.3");
+        var runtime5 = MakeBatchRequest(InstallComponent.Runtime, "10.0.5");
+        var aspnet1 = MakeBatchRequest(InstallComponent.ASPNETCore, "10.0.1");
+        var arm64Sdk100 = MakeBatchRequest(InstallComponent.SDK, "10.0.100", InstallArchitecture.arm64);
+
+        var superseded = InstallerOrchestratorSingleton.FindSupersededBundleRequests(
+            [sdk100, sdk114, sdk201, runtime5, runtime1, runtime3, aspnet1, arm64Sdk100]);
+
+        superseded.Should().BeEquivalentTo(new[] { (sdk100, sdk114), (runtime1, runtime5), (runtime3, runtime5) });
+    }
+
+    [TestMethod]
+    public void FindSupersededBundleRequests_IgnoresArchiveRequests()
+    {
+        var older = MakeBatchRequest(InstallComponent.SDK, "10.0.100", mechanism: InstallMechanism.Archive);
+        var newer = MakeBatchRequest(InstallComponent.SDK, "10.0.114", mechanism: InstallMechanism.Archive);
+
+        InstallerOrchestratorSingleton.FindSupersededBundleRequests([older, newer]).Should().BeEmpty();
+    }
+
+    private static ResolvedInstallRequest MakeBatchRequest(
+        InstallComponent component,
+        string version,
+        InstallArchitecture architecture = InstallArchitecture.x64,
+        InstallMechanism mechanism = InstallMechanism.WindowsInstallerBundle) =>
+        new(
+            new DotnetInstallRequest(
+                new DotnetInstallRoot(@"C:\Program Files\dotnet", architecture),
+                new UpdateChannel(version),
+                component,
+                new InstallRequestOptions { Untracked = true, InstallMechanism = mechanism }),
+            new ReleaseVersion(version));
+
     private static ResolvedInstallRequest MakeResolvedRequest(TestEnvironment testEnv, InstallMechanism mechanism, bool untracked)
     {
         var request = new DotnetInstallRequest(

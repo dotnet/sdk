@@ -120,11 +120,17 @@ internal class InstallerOrchestratorSingleton
     {
         const int maxConcurrentDownloads = 3;
 
-        // Skip conflicting admin install requests that would fail and mark them as skipped and avoid downloading anything for them
+        var superseded = FindSupersededBundleRequests(requests);
+        lock (installResultCollectionLock)
+        {
+            failures.AddRange(superseded.Select(s => new InstallFailure(s.Request, CreateSupersededException(s.Request, s.Newer))));
+        }
+
+        var requestsToPrepare = requests.Except(superseded.Select(s => s.Request)).ToList();
 
         try
         {
-            Parallel.ForEach(requests, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentDownloads }, request =>
+            Parallel.ForEach(requestsToPrepare, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentDownloads }, request =>
             {
                 try
                 {
@@ -222,6 +228,39 @@ internal class InstallerOrchestratorSingleton
         component: prepared.Request.Component.ToString());
 
     /// <summary>
+    /// Returns the Windows installer bundle requests that a newer request in the same batch would replace, each paired
+    /// with the newest such request. Installing both would leave only the newer build, whichever commits first.
+    /// </summary>
+    internal static List<(ResolvedInstallRequest Request, ResolvedInstallRequest Newer)> FindSupersededBundleRequests(IReadOnlyList<ResolvedInstallRequest> requests)
+    {
+        var bundleRequests = requests
+            .Where(r => r.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle)
+            .Select(r => (Request: r, Install: new DotnetInstall(r.Request.InstallRoot, r.ResolvedVersion, r.Request.Component)))
+            .ToList();
+
+        var superseded = new List<(ResolvedInstallRequest Request, ResolvedInstallRequest Newer)>();
+        foreach (var (request, install) in bundleRequests)
+        {
+            var newer = bundleRequests
+                .Where(other => IsSameInstallerFamily(other.Install, install) && other.Install.Version.CompareTo(install.Version) > 0)
+                .Select(other => other.Request)
+                .MaxBy(other => other.ResolvedVersion);
+            if (newer is not null)
+            {
+                superseded.Add((request, newer));
+            }
+        }
+
+        return superseded;
+    }
+
+    private static DotnetInstallException CreateSupersededException(ResolvedInstallRequest request, ResolvedInstallRequest newer) => new(
+        DotnetInstallErrorCode.SupersededInBatch,
+        string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerSupersededInBatch, request.Request.Component.GetDisplayName(), request.ResolvedVersion, newer.ResolvedVersion),
+        version: request.ResolvedVersion.ToString(),
+        component: request.Request.Component.ToString());
+
+    /// <summary>
     /// Represents a prepared (downloaded but not yet committed) installation.
     /// </summary>
     internal sealed class PreparedInstall : IDisposable
@@ -312,12 +351,7 @@ internal class InstallerOrchestratorSingleton
 
         // Conservative: runtime folders that an SDK bundle laid down also count, even if the runtime bundle might install alongside them.
         DotnetInstall? newer = systemInstalls
-            .Where(i => i.Component == requested.Component
-                && i.InstallRoot.Architecture == requested.InstallRoot.Architecture
-                && i.Version.Major == version.Major
-                && i.Version.Minor == version.Minor
-                && (requested.Component != InstallComponent.SDK || i.Version.SdkFeatureBand == version.SdkFeatureBand)
-                && i.Version.CompareTo(version) > 0)
+            .Where(i => IsSameInstallerFamily(i, requested) && i.Version.CompareTo(version) > 0)
             .MaxBy(i => i.Version);
 
         if (newer is not null)
@@ -340,6 +374,17 @@ internal class InstallerOrchestratorSingleton
             ThrowIfNewerVersionInstalled(prepared.Install, getRegisteredSystemInstalls(prepared.Install.InstallRoot.Architecture));
         }
     }
+
+    /// <summary>
+    /// Whether two installs share a Windows installer upgrade family: the same component and architecture, and the same
+    /// SDK feature band or runtime major.minor. The installer keeps only the newest build in a family.
+    /// </summary>
+    private static bool IsSameInstallerFamily(DotnetInstall a, DotnetInstall b) =>
+        a.Component == b.Component
+        && a.InstallRoot.Architecture == b.InstallRoot.Architecture
+        && a.Version.Major == b.Version.Major
+        && a.Version.Minor == b.Version.Minor
+        && (a.Component != InstallComponent.SDK || a.Version.SdkFeatureBand == b.Version.SdkFeatureBand);
 
     /// <summary>
     /// Under the install-state mutex, returns an already-installed result when the install exists,

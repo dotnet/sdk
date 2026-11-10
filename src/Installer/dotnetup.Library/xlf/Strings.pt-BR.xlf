@@ -981,6 +981,11 @@ Or open a new terminal.</target>
         <target state="new">The installer for {0} failed Authenticode signature verification: {1}</target>
         <note>{Locked="Authenticode"} {0} is the component display name and version. {1} is the signature verification error.</note>
       </trans-unit>
+      <trans-unit id="WindowsInstallerSupersededInBatch">
+        <source>Skipped {0} {1} because this request also installs {0} {2}, and the Windows installer would replace {1} with {2}.</source>
+        <target state="new">Skipped {0} {1} because this request also installs {0} {2}, and the Windows installer would replace {1} with {2}.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the skipped older version. {2} is the newer version requested in the same command.</note>
+      </trans-unit>
       <trans-unit id="WindowsInstallerWrongFileExtension">
         <source>Expected a Windows installer (.exe) for {0}, but the download resolved to '{1}'.</source>
         <target state="new">Expected a Windows installer (.exe) for {0}, but the download resolved to '{1}'.</target>

@@ -76,6 +76,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.NoUserInstallableArtifact => ErrorCategory.User,
             DotnetInstallErrorCode.InstallLayoutConflict => ErrorCategory.User,
             DotnetInstallErrorCode.NewerVersionInstalled => ErrorCategory.User,
+            DotnetInstallErrorCode.SupersededInBatch => ErrorCategory.User,
             DotnetInstallErrorCode.InvalidModeSelection => ErrorCategory.Product,
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,
 
