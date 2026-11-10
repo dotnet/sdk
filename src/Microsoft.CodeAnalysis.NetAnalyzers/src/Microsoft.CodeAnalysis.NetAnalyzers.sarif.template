@@ -4910,6 +4910,26 @@
             ]
           }
         },
+        "CA2269": {
+          "id": "CA2269",
+          "shortDescription": "Pass the event ID from EventAttribute to WriteEvent",
+          "fullDescription": "An EventSource event method must pass the same event ID to WriteEvent as the ID specified in its EventAttribute. A mismatched ID causes the event to be written with the wrong metadata or to fail at run time.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2269",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "UseMatchingEventSourceEventIdAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2300": {
           "id": "CA2300",
           "shortDescription": "Do not use insecure deserializer BinaryFormatter",
