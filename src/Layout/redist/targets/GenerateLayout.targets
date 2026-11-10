@@ -88,11 +88,14 @@
                       WriteOnlyWhenDifferent="true" />
   </Target>
 
-  <Target Name="_PublishRoslynFiles">
+  <Target Name="_PrepareRoslynPackagePath">
     <PropertyGroup>
       <RoslynPackagePath>$(NuGetPackageRoot)microsoft.net.compilers.toolset\$(MicrosoftNetCompilersToolsetVersion)\tasks\netcore\</RoslynPackagePath>
     </PropertyGroup>
+  </Target>
 
+  <Target Name="_PublishRoslynFiles"
+          DependsOnTargets="_PrepareRoslynPackagePath">
     <ItemGroup>
       <RoslynFrameworkAssembly Include="$(RoslynPackagePath)System.*.dll;
                                         $(RoslynPackagePath)runtimes\**\System.*.dll"
@@ -138,7 +141,7 @@
   </Target>
 
   <Target Name="_PrepareRoslynAppHostInputs"
-          DependsOnTargets="_PublishRoslynFiles;_PrepareAppHostGeneration">
+          DependsOnTargets="_PrepareRoslynPackagePath;_PrepareAppHostGeneration">
     <PropertyGroup>
       <_RoslynEntitlements>$(MSBuildProjectDirectory)/roslyn-entitlements.plist</_RoslynEntitlements>
       <_RoslynEntitlementInput />
@@ -178,8 +181,11 @@
     <Delete Files="$(_RoslynHostToDelete)" />
   </Target>
 
+  <Target Name="CreateRoslynAppHosts"
+          DependsOnTargets="_GenerateRoslynAppHosts" />
+
   <Target Name="PublishRoslyn"
-          DependsOnTargets="_PublishRoslynFiles;_GenerateRoslynAppHosts" />
+          DependsOnTargets="_PublishRoslynFiles;CreateRoslynAppHosts" />
 
   <Target Name="_PrepareMSBuildAppHostInput"
           DependsOnTargets="_PrepareAppHostGeneration">

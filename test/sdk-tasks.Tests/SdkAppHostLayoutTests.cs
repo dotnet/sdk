@@ -131,6 +131,52 @@ public class SdkAppHostLayoutTests : SdkTest
     }
 
     [TestMethod]
+    public void CreateRoslynAppHostsUsesStagedAssembliesWithoutRepublishing()
+    {
+        AppHostProject project = new(TestAssetsManager.CreateTestDirectory(identifier: Guid.NewGuid().ToString("N")).Path);
+        string[] compilerHosts = Hosts.Where(host => host != "MSBuild").ToArray();
+        foreach (string host in compilerHosts)
+        {
+            string stagedAssembly = Path.Combine(project.OutputDirectory, "Roslyn", "bincore", host + ".dll");
+            Write(stagedAssembly, $"staged {host}.dll");
+            File.SetLastWriteTimeUtc(stagedAssembly, DateTime.UtcNow.AddHours(-2));
+        }
+
+        project.Build("CreateRoslynAppHosts;CreateMSBuildAppHost");
+        Dictionary<string, string> generated = project.ReadHosts();
+        foreach (string host in compilerHosts)
+        {
+            string stagedAssembly = Path.Combine(project.OutputDirectory, "Roslyn", "bincore", host + ".dll");
+            File.ReadAllText(stagedAssembly).Should().Be($"staged {host}.dll");
+            generated[host].Should().StartWith($"{host}.dll|resources=staged {host}.dll|");
+            File.Delete(project.AssemblyPath(host));
+        }
+
+        project.Build("CreateRoslynAppHosts;CreateMSBuildAppHost");
+        project.ReadHosts().Should().Equal(generated);
+
+        File.Delete(project.HostPath("csc"));
+        project.Build("CreateRoslynAppHosts;CreateMSBuildAppHost");
+        Dictionary<string, string> repaired = project.ReadHosts();
+        repaired["csc"].Should().NotBe(generated["csc"]).And.StartWith("csc.dll|resources=staged csc.dll|");
+        foreach (string host in Hosts.Where(host => host != "csc"))
+        {
+            repaired[host].Should().Be(generated[host]);
+        }
+
+        project.SwitchCompilerVersion("2.0.0");
+        project.Build("CreateRoslynAppHosts;CreateMSBuildAppHost");
+        Dictionary<string, string> updatedPackage = project.ReadHosts();
+        foreach (string host in compilerHosts)
+        {
+            updatedPackage[host].Should().NotBe(repaired[host]).And.StartWith($"{host}.dll|resources=staged {host}.dll|");
+        }
+        updatedPackage["MSBuild"].Should().Be(repaired["MSBuild"]);
+        project.Build("CreateRoslynAppHosts;CreateMSBuildAppHost");
+        project.ReadHosts().Should().Equal(updatedPackage);
+    }
+
+    [TestMethod]
     public void PackageChangesRegenerateHostsEvenWhenAssembliesAreOlder()
     {
         AppHostProject project = new(TestAssetsManager.CreateTestDirectory(identifier: Guid.NewGuid().ToString("N")).Path);
@@ -246,7 +292,7 @@ public class SdkAppHostLayoutTests : SdkTest
         File.ReadAllText(project.HostPath("extra")).Should().Be(extraHost);
 
         File.Delete(project.HostPath("extra"));
-        project.Build();
+        project.Build("CreateRoslynAppHosts");
         File.ReadAllText(project.HostPath("extra")).Should().NotBe(extraHost).And.EndWith("|signed");
         project.ReadHosts().Should().Equal(repaired);
 

@@ -139,9 +139,11 @@ and uses each host's `SigningIdentifier`. Signing paths and identifiers are pass
 `Exec`'s task-scoped environment and expanded inside double quotes, rather than interpolated
 into shell source, so literal dollar signs and backticks remain part of the values.
 A failed generation or signing removes the affected host so the next build repairs it.
-`PublishRoslyn` and `CreateMSBuildAppHost`
-keep their public names; the optional Windows type-library copy lives outside the skippable generation
-target. Layout copy producers use `SkipUnchangedFiles`, including the Containers imports,
+`PublishRoslyn` stages compiler files before calling `CreateRoslynAppHosts`. The latter
+also works directly on an existing layout without publishing those files or requiring the
+Roslyn package; both entry points initialize the package path used in host fingerprints.
+`CreateMSBuildAppHost` keeps the optional Windows type-library copy outside the skippable
+generation target. Layout copy producers use `SkipUnchangedFiles`, including the Containers imports,
 while the Containers child `Publish` still runs. Coverage is in
 [`SdkAppHostLayoutTests`](../../test/sdk-tasks.Tests/SdkAppHostLayoutTests.cs); the
 entitlements are declared in `test/UnitTests.proj` for Helix.
