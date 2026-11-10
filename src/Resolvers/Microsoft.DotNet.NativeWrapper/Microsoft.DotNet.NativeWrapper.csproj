@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+    <PublishWindowsPdb Condition="'$(TargetFramework)' == 'net472' and
+                                 '$(OS)' == 'Windows_NT' and
+                                 '$(DotNetBuildSourceOnly)' != 'true'">true</PublishWindowsPdb>
   </PropertyGroup>
 
   <ItemGroup>
