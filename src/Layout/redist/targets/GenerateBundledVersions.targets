@@ -334,6 +334,7 @@
       <Net120AppHostRids Include="@(Net110AppHostRids)" />
 
       <Net120RuntimePackRids Include="@(Net110RuntimePackRids)" />
+      <Net120RuntimePackRids Remove="iossimulator-x64;tvossimulator-x64" />
 
       <NetCoreAppHostRids Include="@(Net120AppHostRids)" />
 
@@ -409,6 +410,7 @@
       <Net110MonoRuntimePackRids Include="@(Net100MonoRuntimePackRids)" />
 
       <Net120MonoRuntimePackRids Include="@(Net110MonoRuntimePackRids)" />
+      <Net120MonoRuntimePackRids Remove="iossimulator-x64;tvossimulator-x64" />
 
       <MonoRuntimePackRids Include="@(Net120MonoRuntimePackRids)" />
 
@@ -609,6 +611,7 @@
         " />
 
       <Net120NativeAOTRuntimePackRids Include="@(Net110NativeAOTRuntimePackRids)" />
+      <Net120NativeAOTRuntimePackRids Remove="iossimulator-x64;tvossimulator-x64" />
 
       <NativeAOTRuntimePackRids Include="
         @(Net120NativeAOTRuntimePackRids);

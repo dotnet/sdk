@@ -73,8 +73,7 @@
       "description": "iOS Mono Runtime and AOT Workload",
       "packs": [
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.ios-arm64",
-        "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.iossimulator-arm64",
-        "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.iossimulator-x64"
+        "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.iossimulator-arm64"
       ],
       "extends": [ "runtimes-ios" ],
       "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
@@ -84,8 +83,7 @@
       "description": "iOS Mono Runtime Packs",
       "packs": [
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.ios-arm64",
-        "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.iossimulator-arm64",
-        "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.iossimulator-x64"
+        "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.iossimulator-arm64"
       ],
       "extends": [ "microsoft-net-runtime-mono-tooling" ],
       "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
@@ -127,8 +125,7 @@
       "description": "tvOS Mono Runtime and AOT Workload",
       "packs": [
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.tvos-arm64",
-        "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.tvossimulator-arm64",
-        "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.tvossimulator-x64"
+        "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.tvossimulator-arm64"
       ],
       "extends": [ "runtimes-tvos" ],
       "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
@@ -138,8 +135,7 @@
       "description": "tvOS Mono Runtime Packs",
       "packs": [
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvos-arm64",
-        "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvossimulator-arm64",
-        "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvossimulator-x64"
+        "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvossimulator-arm64"
       ],
       "extends": [ "microsoft-net-runtime-mono-tooling" ],
       "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
@@ -332,13 +328,6 @@
         "any": "Microsoft.NETCore.App.Runtime.Mono.iossimulator-arm64"
       }
     },
-    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.iossimulator-x64" : {
-      "kind": "framework",
-      "version": "${RuntimeVersion}",
-      "alias-to": {
-          "any": "Microsoft.NETCore.App.Runtime.Mono.iossimulator-x64"
-      }
-    },
     "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.tvos-arm64": {
       "kind": "Sdk",
       "version": "${RuntimeVersion}",
@@ -359,13 +348,6 @@
       "version": "${RuntimeVersion}",
       "alias-to": {
         "any": "Microsoft.NETCore.App.Runtime.Mono.tvossimulator-arm64"
-      }
-    },
-    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvossimulator-x64" : {
-      "kind": "framework",
-      "version": "${RuntimeVersion}",
-      "alias-to": {
-        "any": "Microsoft.NETCore.App.Runtime.Mono.tvossimulator-x64"
       }
     },
     "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.maccatalyst-arm64": {
@@ -392,14 +374,6 @@
         "osx-x64": "Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.tvossimulator-arm64"
       }
     },
-    "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.tvossimulator-x64": {
-      "kind": "Sdk",
-      "version": "${RuntimeVersion}",
-      "alias-to": {
-        "osx-arm64": "Microsoft.NETCore.App.Runtime.AOT.osx-arm64.Cross.tvossimulator-x64",
-        "osx-x64": "Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.tvossimulator-x64"
-      }
-    },
     "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.ios-arm64": {
       "kind": "Sdk",
       "version": "${RuntimeVersion}",
@@ -414,14 +388,6 @@
       "alias-to": {
         "osx-arm64": "Microsoft.NETCore.App.Runtime.AOT.osx-arm64.Cross.iossimulator-arm64",
         "osx-x64": "Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.iossimulator-arm64"
-      }
-    },
-    "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.iossimulator-x64": {
-      "kind": "Sdk",
-      "version": "${RuntimeVersion}",
-      "alias-to": {
-        "osx-arm64": "Microsoft.NETCore.App.Runtime.AOT.osx-arm64.Cross.iossimulator-x64",
-        "osx-x64": "Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.iossimulator-x64"
       }
     },
     "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.browser-wasm": {

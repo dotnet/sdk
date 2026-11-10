@@ -83,12 +83,10 @@
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.android-x86" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.ios-arm64" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.iossimulator-arm64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.iossimulator-x64" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.maccatalyst-arm64" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.maccatalyst-x64" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.tvos-arm64" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.tvossimulator-arm64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.tvossimulator-x64" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.browser-wasm" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.multithread.browser-wasm" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.browser-wasm" />
