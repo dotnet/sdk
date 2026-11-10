@@ -46,7 +46,7 @@ internal record class InProcTestWatcher(
 
     public async ValueTask DisposeAsync()
     {
-        _ = Assert.IsNotNull(_lazyTask);
+        Assert.IsNotNull(_lazyTask);
 
         if (!ShutdownSource.IsCancellationRequested)
         {
