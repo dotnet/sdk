@@ -193,6 +193,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>The install would overwrite a different build of the same component that uses the same on-disk version folder.</summary>
     InstallLayoutConflict,
+
+    /// <summary>A newer build that the Windows installer would not downgrade is already installed (or the installer exited with 1638).</summary>
+    NewerVersionInstalled,
 }
 
 /// <summary>

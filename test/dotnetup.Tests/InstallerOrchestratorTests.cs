@@ -11,6 +11,7 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
+using Microsoft.DotNet.Tools.Bootstrapper.Tests;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
@@ -537,6 +538,71 @@ public class InstallerOrchestratorTests
     {
         var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
         return (resolvedRequest, new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK));
+    }
+
+    [TestMethod]
+    public void PrepareInstall_BundleWithNewerSdkInSameFeatureBand_ThrowsBeforeDownloading()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
+        var systemRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var environment = new MockDotnetInstallManager(
+            testEnv.InstallPath,
+            existingSystemInstalls: [new DotnetInstall(systemRoot, new ReleaseVersion("10.0.114"), InstallComponent.SDK)]);
+
+        var prepare = () => InstallerOrchestratorSingleton.Instance.PrepareInstall(
+            resolvedRequest,
+            new InstallBatchContext(reporter, 8),
+            out _,
+            new MockInstallationValidator(validateResult: false),
+            environment);
+
+        prepare.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
+        environment.GetExistingSystemInstallsCallCount.Should().Be(1);
+    }
+
+    [TestMethod]
+    [DataRow(InstallComponent.SDK, "11.0.100-rc.1.26425.128", InstallComponent.SDK, "11.0.100-rc.2.26504.105", true)]
+    [DataRow(InstallComponent.SDK, "10.0.100", InstallComponent.SDK, "10.0.114", true)]
+    [DataRow(InstallComponent.SDK, "10.0.100", InstallComponent.SDK, "10.0.401", false)]
+    [DataRow(InstallComponent.SDK, "10.0.114", InstallComponent.SDK, "10.0.100", false)]
+    [DataRow(InstallComponent.SDK, "10.0.100", InstallComponent.SDK, "10.0.100", false)]
+    [DataRow(InstallComponent.Runtime, "11.0.0-rc.1.26425.128", InstallComponent.Runtime, "11.0.0-rc.3.26522.148", true)]
+    [DataRow(InstallComponent.WindowsDesktop, "10.0.1", InstallComponent.WindowsDesktop, "10.0.5", true)]
+    [DataRow(InstallComponent.Runtime, "10.0.1", InstallComponent.Runtime, "11.0.0", false)]
+    [DataRow(InstallComponent.Runtime, "10.0.1", InstallComponent.ASPNETCore, "10.0.5", false)]
+    public void ThrowIfNewerVersionInstalled_RejectsDowngradesWithinTheInstallerFamily(
+        InstallComponent requestedComponent, string requestedVersion, InstallComponent installedComponent, string installedVersion, bool expectThrow)
+    {
+        var root = new DotnetInstallRoot(@"C:\Program Files\dotnet", InstallArchitecture.x64);
+        var requested = new DotnetInstall(root, new ReleaseVersion(requestedVersion), requestedComponent);
+        DotnetInstall[] installed = [new DotnetInstall(root, new ReleaseVersion(installedVersion), installedComponent)];
+
+        var check = () => InstallerOrchestratorSingleton.ThrowIfNewerVersionInstalled(requested, installed);
+
+        if (expectThrow)
+        {
+            var ex = check.Should().Throw<DotnetInstallException>().Which;
+            ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
+            ex.Message.Should().Contain(installedVersion).And.Contain(requestedVersion);
+        }
+        else
+        {
+            check.Should().NotThrow();
+        }
+    }
+
+    [TestMethod]
+    public void ThrowIfNewerVersionInstalled_IgnoresOtherArchitectures()
+    {
+        var requested = new DotnetInstall(new DotnetInstallRoot(@"C:\Program Files\dotnet", InstallArchitecture.x64), new ReleaseVersion("10.0.100"), InstallComponent.SDK);
+        DotnetInstall[] installed = [new DotnetInstall(new DotnetInstallRoot(@"C:\Program Files\dotnet\x64", InstallArchitecture.arm64), new ReleaseVersion("10.0.114"), InstallComponent.SDK)];
+
+        var check = () => InstallerOrchestratorSingleton.ThrowIfNewerVersionInstalled(requested, installed);
+
+        check.Should().NotThrow();
     }
 
     private static ResolvedInstallRequest MakeResolvedRequest(TestEnvironment testEnv, InstallMechanism mechanism, bool untracked)

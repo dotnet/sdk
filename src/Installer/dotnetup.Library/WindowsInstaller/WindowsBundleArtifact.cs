@@ -31,6 +31,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     private readonly InstallBatchContext _batchContext;
     private readonly TextWriter _notices;
     private VerifiedDownload? _download;
+    private IProgressTask? _installTask;
 
     // Denies write and delete access from the moment the bundle is verified until this artifact is
     // disposed, so the file that was verified is the file that runs.
@@ -107,7 +108,15 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         HandleExitCode(RunInstaller(download.Path, InstallArguments));
 
         installTask.Value = installTask.MaxValue;
-        _progress.CompleteExtraction(installTask);
+        _installTask = installTask;
+    }
+
+    public void CompleteCommitProgress()
+    {
+        if (_installTask is { } installTask)
+        {
+            _progress.CompleteExtraction(installTask);
+        }
     }
 
     /// <summary>
@@ -272,6 +281,9 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         BundleExitOutcome.ElevationRequired => CreateException(
             DotnetInstallErrorCode.InstallerFailed,
             Format(Strings.WindowsInstallerElevationRequired, Describe(), exitCode)),
+        BundleExitOutcome.NewerVersionInstalled => CreateException(
+            DotnetInstallErrorCode.NewerVersionInstalled,
+            Format(Strings.WindowsInstallerNewerVersionInstalledExitCode, Describe(), exitCode)),
         _ => CreateException(
             DotnetInstallErrorCode.InstallerFailed,
             Format(Strings.WindowsInstallerFailed, Describe(), exitCode, exitCode)),

@@ -252,13 +252,15 @@ internal class InstallerOrchestratorSingleton
     /// <param name="batchContext">Shared per-batch progress reporter and version-column width. For single-install scenarios, pass a context whose width matches the request's version length.</param>
     /// <param name="alreadyInstalledResult">Set when the install is already present; null otherwise.</param>
     /// <param name="installationValidator">Optional validator override used to determine whether an untracked installation already exists on disk.</param>
+    /// <param name="dotnetEnvironment">Optional environment override used to find the system installs a Windows installer bundle would conflict with.</param>
     /// <returns>A PreparedInstall that can be committed later, or null if already installed.</returns>
 #pragma warning disable CA1822
     public PreparedInstall? PrepareInstall(
         ResolvedInstallRequest resolvedRequest,
         InstallBatchContext batchContext,
         out InstallResult? alreadyInstalledResult,
-        IInstallationValidator? installationValidator = null)
+        IInstallationValidator? installationValidator = null,
+        IDotnetEnvironmentManager? dotnetEnvironment = null)
     {
         var installRequest = resolvedRequest.Request;
         var install = new DotnetInstall(installRequest.InstallRoot, resolvedRequest.ResolvedVersion, installRequest.Component);
@@ -268,6 +270,11 @@ internal class InstallerOrchestratorSingleton
         if (alreadyInstalledResult is not null)
         {
             return null;
+        }
+
+        if (installRequest.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle)
+        {
+            ThrowIfNewerVersionInstalled(install, (dotnetEnvironment ?? new DotnetEnvironmentManager()).GetExistingSystemInstalls());
         }
 
         IInstallArtifact artifact = CreateInstallArtifact(resolvedRequest, ReleaseManifest.Default, batchContext);
@@ -284,6 +291,34 @@ internal class InstallerOrchestratorSingleton
         return new PreparedInstall(resolvedRequest, artifact);
     }
 #pragma warning restore CA1822
+
+    /// <summary>
+    /// Windows installer bundles report success without installing anything when a newer build of the same
+    /// SDK feature band, or of the same runtime major.minor, is installed. Refuse such a downgrade up front.
+    /// </summary>
+    internal static void ThrowIfNewerVersionInstalled(DotnetInstall requested, IEnumerable<DotnetInstall> systemInstalls)
+    {
+        ReleaseVersion version = requested.Version;
+        // Conservative: runtime folders that an SDK bundle laid down also count, though the runtime bundle might install alongside them.
+        DotnetInstall? newer = systemInstalls
+            .Where(i => i.Component == requested.Component
+                && i.InstallRoot.Architecture == requested.InstallRoot.Architecture
+                && i.Version.Major == version.Major
+                && i.Version.Minor == version.Minor
+                && (requested.Component != InstallComponent.SDK || i.Version.SdkFeatureBand == version.SdkFeatureBand)
+                && i.Version.CompareTo(version) > 0)
+            .MaxBy(i => i.Version);
+
+        if (newer is not null)
+        {
+            string displayName = requested.Component.GetDisplayName();
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.NewerVersionInstalled,
+                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerNewerVersionInstalled, displayName, newer.Version, version),
+                version: version.ToString(),
+                component: requested.Component.ToString());
+        }
+    }
 
     /// <summary>
     /// Under the install-state mutex, returns an already-installed result when the install exists,
@@ -422,6 +457,7 @@ internal class InstallerOrchestratorSingleton
             repaired = prepared.Artifact.RequiresPostInstallValidation
                 && !validator.Validate(prepared.Install, out string? validationFailure)
                 && RepairOrThrow(prepared, validator, validationFailure);
+            prepared.Artifact.CompleteCommitProgress();
 
             manifest?.RecordInstallSpec(prepared.Request);
 
