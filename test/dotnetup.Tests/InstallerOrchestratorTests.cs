@@ -679,6 +679,32 @@ public class InstallerOrchestratorTests
         InstallerOrchestratorSingleton.FindSupersededBundleRequests([older, newer]).Should().BeEmpty();
     }
 
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void CheckSupersededRequest_ReportsSupersessionOnlyWhenNotAlreadyInstalled(bool alreadyInstalled)
+    {
+        var older = MakeBatchRequest(InstallComponent.Runtime, "10.0.1");
+        var newer = MakeBatchRequest(InstallComponent.Runtime, "10.0.5");
+        var validator = new MockInstallationValidator(validateResult: alreadyInstalled);
+
+        var check = () => InstallerOrchestratorSingleton.CheckSupersededRequest(older, newer, validator);
+
+        if (alreadyInstalled)
+        {
+            var result = check();
+            result.WasAlreadyInstalled.Should().BeTrue();
+            result.Install.Version.ToString().Should().Be("10.0.1");
+        }
+        else
+        {
+            check.Should().Throw<DotnetInstallException>()
+                .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.SupersededInBatch);
+        }
+
+        validator.ValidateCalls.Should().Be(1);
+    }
+
     private static ResolvedInstallRequest MakeBatchRequest(
         InstallComponent component,
         string version,

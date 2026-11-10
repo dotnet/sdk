@@ -120,20 +120,25 @@ internal class InstallerOrchestratorSingleton
     {
         const int maxConcurrentDownloads = 3;
 
-        var superseded = FindSupersededBundleRequests(requests);
-        lock (installResultCollectionLock)
+        var supersededBy = new Dictionary<ResolvedInstallRequest, ResolvedInstallRequest>(ReferenceEqualityComparer.Instance);
+        foreach (var (request, newer) in FindSupersededBundleRequests(requests))
         {
-            failures.AddRange(superseded.Select(s => new InstallFailure(s.Request, CreateSupersededException(s.Request, s.Newer))));
+            supersededBy[request] = newer;
         }
-
-        var requestsToPrepare = requests.Except(superseded.Select(s => s.Request)).ToList();
 
         try
         {
-            Parallel.ForEach(requestsToPrepare, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentDownloads }, request =>
+            Parallel.ForEach(requests, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentDownloads }, request =>
             {
                 try
                 {
+                    if (supersededBy.TryGetValue(request, out var newer))
+                    {
+                        var existing = CheckSupersededRequest(request, newer, CreateInstallationValidator());
+                        lock (installResultCollectionLock) { results.Add(existing); }
+                        return;
+                    }
+
                     var prepared = PrepareInstall(request, batchContext, out var existingResult);
                     lock (installResultCollectionLock)
                     {
@@ -252,6 +257,16 @@ internal class InstallerOrchestratorSingleton
         }
 
         return superseded;
+    }
+
+    /// <summary>
+    /// Returns the already-installed result for a superseded request, or throws <see cref="DotnetInstallErrorCode.SupersededInBatch"/> when it would need installing.
+    /// </summary>
+    internal static InstallResult CheckSupersededRequest(ResolvedInstallRequest request, ResolvedInstallRequest newer, IInstallationValidator installationValidator)
+    {
+        var install = new DotnetInstall(request.Request.InstallRoot, request.ResolvedVersion, request.Request.Component);
+        return CheckExistingInstallState(request.Request, install, installationValidator)
+            ?? throw CreateSupersededException(request, newer);
     }
 
     private static DotnetInstallException CreateSupersededException(ResolvedInstallRequest request, ResolvedInstallRequest newer) => new(
