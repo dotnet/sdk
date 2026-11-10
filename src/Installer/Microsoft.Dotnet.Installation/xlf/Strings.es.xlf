@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="es" original="../Strings.resx">
+    <body>
+      <trans-unit id="AdminModeSignatureRequired">
+        <source>Signature validation is required when using admin mode.</source>
+        <target state="new">Signature validation is required when using admin mode.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArchiveCorrupted">
+        <source>Archive is corrupted or truncated for version {0}: {1}</source>
+        <target state="new">Archive is corrupted or truncated for version {0}: {1}</target>
+        <note>{0}=resolved version, {1}=underlying error message.</note>
+      </trans-unit>
+      <trans-unit id="ArchiveDownloadFailed">
+        <source>Failed to download .NET archive for version {0}: {1}</source>
+        <target state="new">Failed to download .NET archive for version {0}: {1}</target>
+        <note>{0}=resolved version, {1}=underlying error message.</note>
+      </trans-unit>
+      <trans-unit id="ArchiveExtractFailed">
+        <source>Failed to extract .NET archive for version {0}: {1}</source>
+        <target state="new">Failed to extract .NET archive for version {0}: {1}</target>
+        <note>{0}=resolved version, {1}=underlying error message.</note>
+      </trans-unit>
+      <trans-unit id="ArchiveExtractPermissionDenied">
+        <source>Permission denied while extracting .NET archive for version {0}: {1}</source>
+        <target state="new">Permission denied while extracting .NET archive for version {0}: {1}</target>
+        <note>{0}=resolved version, {1}=underlying error message.</note>
+      </trans-unit>
+      <trans-unit id="ArchiveReadFailed">
+        <source>Failed to read .NET files for version {0}: {1}</source>
+        <target state="new">Failed to read .NET files for version {0}: {1}</target>
+        <note>{0}=resolved version, {1}=underlying error message. Shown when reading .version files from the archive or install root fails.</note>
+      </trans-unit>
+      <trans-unit id="ArchiveReadPermissionDenied">
+        <source>Permission denied while trying to read .NET files for version {0}: {1}</source>
+        <target state="new">Permission denied while trying to read .NET files for version {0}: {1}</target>
+        <note>{0}=resolved version, {1}=underlying error message. Shown when reading .version files from the archive or install root fails.</note>
+      </trans-unit>
+      <trans-unit id="ExistingLayoutDifferentBuild">
+        <source>'{0}' holds a different build than {1} {2} includes, and installing would keep the existing files. Remove '{0}' or uninstall the component that installed it first to proceed.</source>
+        <target state="new">'{0}' holds a different build than {1} {2} includes, and installing would keep the existing files. Remove '{0}' or uninstall the component that installed it first to proceed.</target>
+        <note>{0}=existing SDK or framework folder path, {1}=component display name, {2}=resolved version.</note>
+      </trans-unit>
+      <trans-unit id="ExistingLayoutMissingVersionFile">
+        <source>'{0}' has no .version file to verify it holds the same build as {1} {2} includes, and installing would keep the existing files. Remove '{0}' or uninstall the component that installed it first to proceed.</source>
+        <target state="new">'{0}' has no .version file to verify it holds the same build as {1} {2} includes, and installing would keep the existing files. Remove '{0}' or uninstall the component that installed it first to proceed.</target>
+        <note>{0}=existing SDK or framework folder path, {1}=component display name, {2}=resolved version.</note>
+      </trans-unit>
+      <trans-unit id="NativeTarBothExtractorsFailed">
+        <source>Both Windows native TAR extraction and the .NET TAR fallback failed.</source>
+        <target state="new">Both Windows native TAR extraction and the .NET TAR fallback failed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NativeTarExtractionFailed">
+        <source>Native TAR executable '{0}' exited with code {1} while extracting '{2}' to '{3}'.{4}</source>
+        <target state="new">Native TAR executable '{0}' exited with code {1} while extracting '{2}' to '{3}'.{4}</target>
+        <note>{0}=native TAR executable name or path, {1}=exit code, {2}=archive path, {3}=staging destination, {4}=optional standard-error details.</note>
+      </trans-unit>
+      <trans-unit id="NativeTarFallbackWarning">
+        <source>Warning: {0} Falling back to the .NET TAR extractor.</source>
+        <target state="new">Warning: {0} Falling back to the .NET TAR extractor.</target>
+        <note>{0}=reason native TAR extraction could not be used.</note>
+      </trans-unit>
+      <trans-unit id="NativeTarProcessStartReturnedFalse">
+        <source>The process API returned false while starting native TAR executable '{0}'.</source>
+        <target state="new">The process API returned false while starting native TAR executable '{0}'.</target>
+        <note>{0}=native TAR executable name or path.</note>
+      </trans-unit>
+      <trans-unit id="NativeTarStandardErrorDetails">
+        <source> Error output: {0}</source>
+        <target state="new"> Error output: {0}</target>
+        <note>{0}=bounded standard-error output from the native TAR process. The leading space separates this optional sentence from the preceding failure message.</note>
+      </trans-unit>
+      <trans-unit id="NativeTarStartFailed">
+        <source>Failed to start native TAR executable '{0}': {1}</source>
+        <target state="new">Failed to start native TAR executable '{0}': {1}</target>
+        <note>{0}=native TAR executable name or path, {1}=process-start failure message.</note>
+      </trans-unit>
+      <trans-unit id="NoUserInstallableArtifact">
+        <source>.NET {0} {1} has no released artifacts for user-level installation. Choose a different version or install it at the system level.</source>
+        <target state="new">.NET {0} {1} has no released artifacts for user-level installation. Choose a different version or install it at the system level.</target>
+        <note>{0}=component name (e.g. WindowsDesktop), {1}=resolved version. Shown when a release publishes only non-installable artifacts (e.g. .exe installers) for the platform and dotnetup cannot perform a user-level install.</note>
+      </trans-unit>
+      <trans-unit id="ProgressActionDownloaded">
+        <source>Downloaded</source>
+        <target state="new">Downloaded</target>
+        <note>Action verb shown in progress bar after downloading a component.</note>
+      </trans-unit>
+      <trans-unit id="ProgressActionDownloading">
+        <source>Downloading</source>
+        <target state="new">Downloading</target>
+        <note>Action verb shown in progress bar while downloading a component.</note>
+      </trans-unit>
+      <trans-unit id="ProgressActionInstalled">
+        <source>Installed</source>
+        <target state="new">Installed</target>
+        <note>Action verb shown in progress bar after installing a component.</note>
+      </trans-unit>
+      <trans-unit id="ProgressActionInstalling">
+        <source>Installing</source>
+        <target state="new">Installing</target>
+        <note>Action verb shown in progress bar while installing a component.</note>
+      </trans-unit>
+      <trans-unit id="UnsignedBlobFeedWarning">
+        <source>⚠  Daily builds are not code-signed. Only the SHA-512 hash is verified.</source>
+        <target state="new">⚠  Daily builds are not code-signed. Only the SHA-512 hash is verified.</target>
+        <note>Warning shown up-front when an install batch may pull from the public blob feed (daily channel or unknown prerelease version) where no detached CMS signature is published.</note>
+      </trans-unit>
+      <trans-unit id="UnsignedDownloadBlockedByPolicy">
+        <source>Current Machine Policy requires signature verification. Installing daily or unsigned prerelease builds is thus blocked. Remove {0} to continue.</source>
+        <target state="new">Current Machine Policy requires signature verification. Installing daily or unsigned prerelease builds is thus blocked. Remove {0} to continue.</target>
+        <note>{0}=OS-specific policy location: the full registry value path (e.g. HKLM\SOFTWARE\Policies\Microsoft\dotnet\Dotnetup\BlockUnsignedDownloads) on Windows, or the policy file path (e.g. /etc/dotnet/dnup-block-unsigned-downloads) on Linux/macOS.</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

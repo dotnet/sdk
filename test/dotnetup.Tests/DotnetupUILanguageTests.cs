@@ -99,7 +99,9 @@ public class DotnetupUILanguageTests
         // removing a Strings.*.xlf without updating SupportedUILanguages (and its mapping rules)
         // fails this test.
         IEnumerable<string> shipped = Directory.EnumerateDirectories(AppContext.BaseDirectory)
-            .Where(directory => File.Exists(Path.Combine(directory, "dotnetup.Library.resources.dll")))
+            .Where(directory =>
+                File.Exists(Path.Combine(directory, "dotnetup.Library.resources.dll")) &&
+                File.Exists(Path.Combine(directory, "Microsoft.Dotnet.Installation.resources.dll")))
             .Select(directory => Path.GetFileName(directory));
 
         shipped.Should().BeEquivalentTo(
