@@ -20,27 +20,25 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                class C : Attribute
-                {
-                }
-                """);
+class C : Attribute
+{
+}
+");
         }
 
         [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_ApplicationExceptionAsync()
         {
-            var source = """
+            var source = @"
+using System;
 
-                using System;
-
-                public class C1 : ApplicationException
-                {
-                }
-
-                """;
+public class C1 : ApplicationException
+{
+}
+";
             DiagnosticResult[] expected = new[]
             {
                 GetCSharpApplicationExceptionResultAt(4, 14, "C1", "System.ApplicationException")
@@ -52,13 +50,13 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_ApplicationException_InternalAsync()
         {
-            var source = """
-                using System;
+            var source = @"
+using System;
 
-                class C1 : ApplicationException
-                {
-                }
-                """;
+class C1 : ApplicationException
+{
+}
+";
 
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
@@ -66,15 +64,13 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_XmlDocumentAsync()
         {
-            var source = """
+            var source = @"
+using System.Xml;
 
-                using System.Xml;
-
-                public class C1 : XmlDocument
-                {
-                }
-
-                """;
+public class C1 : XmlDocument
+{
+}
+";
             DiagnosticResult[] expected = new[]
             {
                 GetCSharpXmlDocumentResultAt(4, 14, "C1", "System.Xml.XmlDocument")
@@ -86,13 +82,13 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_XmlDocument_InternalAsync()
         {
-            var source = """
-                using System.Xml;
+            var source = @"
+using System.Xml;
 
-                class C1 : XmlDocument
-                {
-                }
-                """;
+class C1 : XmlDocument
+{
+}
+";
 
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
@@ -100,34 +96,32 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_CollectionAsync()
         {
-            var source = """
+            var source = @"
+using System.Collections;
 
-                using System.Collections;
+public class C1 : CollectionBase
+{
+}
 
-                public class C1 : CollectionBase
-                {
-                }
+public class C2 : DictionaryBase
+{
+}
 
-                public class C2 : DictionaryBase
-                {
-                }
+public class C3 : Queue
+{
+}
 
-                public class C3 : Queue
-                {
-                }
+public class C4 : ReadOnlyCollectionBase
+{
+}
 
-                public class C4 : ReadOnlyCollectionBase
-                {
-                }
+public class C5 : SortedList
+{
+}
 
-                public class C5 : SortedList
-                {
-                }
-
-                public class C6 : Stack
-                {
-                }
-                """;
+public class C6 : Stack
+{
+}";
             DiagnosticResult[] expected = new[]
             {
                 GetCSharpCollectionBaseResultAt(4, 14, "C1", "System.Collections.CollectionBase"),
@@ -144,36 +138,35 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_Collection_InternalAsync()
         {
-            var source = """
-                using System.Collections;
+            var source = @"
+using System.Collections;
 
-                class C1 : CollectionBase
-                {
-                }
+class C1 : CollectionBase
+{
+}
 
-                class C2 : DictionaryBase
-                {
-                }
+class C2 : DictionaryBase
+{
+}
 
-                class C3 : Queue
-                {
-                }
+class C3 : Queue
+{
+}
 
-                class C4 : ReadOnlyCollectionBase
-                {
-                }
+class C4 : ReadOnlyCollectionBase
+{
+}
 
-                internal class C5 : SortedList
-                {
-                }
+internal class C5 : SortedList
+{
+}
 
-                public class C6
-                {
-                    private class Inner : Stack
-                    {
-                    }
-                }
-                """;
+public class C6
+{
+    private class Inner : Stack
+    {
+    }
+}";
 
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
@@ -181,30 +174,28 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Public Class Class2
-                    Inherits Attribute
+Public Class Class2
+    Inherits Attribute
 
-                End Class
-                """);
+End Class
+");
         }
 
         [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_ApplicationExceptionAsync()
         {
-            var source = """
+            var source = @"
+Imports System
 
-                Imports System
+Public Class C1
+    Inherits ApplicationException
 
-                Public Class C1
-                    Inherits ApplicationException
+End Class
 
-                End Class
-
-
-                """;
+";
             DiagnosticResult[] expected = new[]
             {
                 GetBasicApplicationExceptionResultAt(4, 14, "C1", "System.ApplicationException")
@@ -216,14 +207,15 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_ApplicationException_InternalAsync()
         {
-            var source = """
-                Imports System
+            var source = @"
+Imports System
 
-                Friend Class C1
-                    Inherits ApplicationException
+Friend Class C1
+    Inherits ApplicationException
 
-                End Class
-                """;
+End Class
+
+";
 
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
@@ -231,16 +223,14 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_XmlDocumentAsync()
         {
-            var source = """
+            var source = @"
+Imports System.Xml
 
-                Imports System.Xml
+Public Class C1
+    Inherits XmlDocument
 
-                Public Class C1
-                    Inherits XmlDocument
-
-                End Class
-
-                """;
+End Class
+";
             DiagnosticResult[] expected = new[]
             {
                 GetBasicXmlDocumentResultAt(4, 14, "C1", "System.Xml.XmlDocument")
@@ -252,14 +242,14 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_XmlDocument_InternalAsync()
         {
-            var source = """
-                Imports System.Xml
+            var source = @"
+Imports System.Xml
 
-                Friend Class C1
-                    Inherits XmlDocument
+Friend Class C1
+    Inherits XmlDocument
 
-                End Class
-                """;
+End Class
+";
 
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
@@ -267,41 +257,39 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_CollectionAsync()
         {
-            var source = """
+            var source = @"
+Imports System.Collections
 
-                Imports System.Collections
+Public Class C1
+    Inherits CollectionBase
 
-                Public Class C1
-                    Inherits CollectionBase
+End Class
 
-                End Class
+Public Class C2
+    Inherits DictionaryBase
 
-                Public Class C2
-                    Inherits DictionaryBase
+End Class
 
-                End Class
+Public Class C3
+    Inherits Queue
 
-                Public Class C3
-                    Inherits Queue
+End Class
 
-                End Class
+Public Class C4
+    Inherits ReadOnlyCollectionBase
 
-                Public Class C4
-                    Inherits ReadOnlyCollectionBase
+End Class
 
-                End Class
+Public Class C5
+    Inherits SortedList
 
-                Public Class C5
-                    Inherits SortedList
+End Class
 
-                End Class
+Public Class C6
+    Inherits Stack
 
-                Public Class C6
-                    Inherits Stack
-
-                End Class
-
-                """;
+End Class
+";
             DiagnosticResult[] expected = new[]
             {
                 GetBasicCollectionBaseResultAt(4, 14, "C1", "System.Collections.CollectionBase"),
@@ -318,40 +306,40 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_Collection_InternalAsync()
         {
-            var source = """
-                Imports System.Collections
+            var source = @"
+Imports System.Collections
 
-                Class C1
-                    Inherits CollectionBase
+Class C1
+    Inherits CollectionBase
 
-                End Class
+End Class
 
-                Class C2
-                    Inherits DictionaryBase
+Class C2
+    Inherits DictionaryBase
 
-                End Class
+End Class
 
-                Class C3
-                    Inherits Queue
+Class C3
+    Inherits Queue
 
-                End Class
+End Class
 
-                Class C4
-                    Inherits ReadOnlyCollectionBase
+Class C4
+    Inherits ReadOnlyCollectionBase
 
-                End Class
+End Class
 
-                Friend Class C5
-                    Inherits SortedList
+Friend Class C5
+    Inherits SortedList
 
-                End Class
+End Class
 
-                Public Class C6
-                    Private Class InnerClass
-                        Inherits Stack
-                    End Class
-                End Class
-                """;
+Public Class C6
+    Private Class InnerClass
+        Inherits Stack
+    End Class
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 

@@ -10,7 +10,6 @@ using NuGet.ProjectModel;
 namespace Microsoft.NET.Restore.Tests
 {
     [TestClass]
-    [ResourceLock(RestoreTestResources.NuGetCache)]
     public class GivenThatWeWantToRestoreDotNetCliToolReference : SdkTest
     {
         private const string ProjectToolVersion = "1.0.0";

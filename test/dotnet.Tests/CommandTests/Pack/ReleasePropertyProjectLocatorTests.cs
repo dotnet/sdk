@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli;
 namespace Microsoft.DotNet.Pack.Tests;
 
 [TestClass]
-[ResourceLock(WellKnownResources.EnvironmentVariables)]
+[DoNotParallelize]
 public class ReleasePropertyProjectLocatorTests : SdkTest
 {
     private string? _disablePublishAndPackRelease;

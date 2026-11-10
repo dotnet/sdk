@@ -4,7 +4,6 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <PropertyGroup>

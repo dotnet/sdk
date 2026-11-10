@@ -6,7 +6,6 @@
 namespace Microsoft.NET.Restore.Tests
 {
     [TestClass]
-    [ResourceLock(RestoreTestResources.NuGetCache)]
     public class GivenThatWeWantToIgnoreObsoleteDotNetCliToolPackages : SdkTest
     {
         [TestMethod]

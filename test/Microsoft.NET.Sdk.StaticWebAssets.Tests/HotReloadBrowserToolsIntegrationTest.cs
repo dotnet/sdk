@@ -31,12 +31,42 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         private const string ClientFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js";
         private const string InitializerFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js";
 
-        // Contract with Microsoft.DotNet.Watch.BrowserToolsBuildOutputs.
+        // Contract with Microsoft.DotNet.Watch.SharedSecretBuildOutputs.
         private const string PublicKeyFileName = "browser-tools-key.public.json";
         private const string PrivateKeyFileName = "browser-tools-key.private.json";
 
         private string GeneratedDirectory(MSBuildCommand command)
             => Path.Combine(command.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(), "HotReload");
+
+        [TestMethod]
+        [DataRow(TestAsset, null, "true")]
+        [DataRow("BlazorWasmMinimal", null, "true")]
+        [DataRow("VanillaWasm", null, "true")]
+        [DataRow(TestAsset, "EnableHotReloadInRuntimeConfigDevFile=false", "false")]
+        [DataRow(TestAsset, "JSModulesEnabled=false", "false")]
+        [DataRow(TestAsset, "StaticWebAssetsEnabled=false", "")]
+        [DataRow("BlazorWasmMinimal", "JSModulesEnabled=false", "false")]
+        [DataRow("BlazorWasmMinimal", "StaticWebAssetsEnabled=false", "")]
+        public void Evaluation_ResolvesBrowserToolsEnabledBeforeRunningTargets(string testAsset, string property, string expectedEnabled)
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{property}");
+            var command = new MSBuildCommand(projectDirectory, target: "") { ShouldRestore = false };
+            command.WithWorkingDirectory(projectDirectory.TestRoot);
+            var arguments = new List<string>
+            {
+                "-getProperty:HotReloadBrowserToolsEnabled",
+                "/p:DesignTimeBuild=true"
+            };
+            if (property != null)
+            {
+                arguments.Add($"/p:{property}");
+            }
+
+            var result = ExecuteCommand(command, arguments.ToArray());
+            result.Should().Pass();
+            result.StdOut.Trim().Should().Be(expectedEnabled);
+            new DirectoryInfo(command.GetIntermediateDirectory(DefaultTfm, "Debug").ToString()).Should().NotExist();
+        }
 
         [TestMethod]
         public void Build_GeneratesKeyPairInDeterministicIntermediatePaths()

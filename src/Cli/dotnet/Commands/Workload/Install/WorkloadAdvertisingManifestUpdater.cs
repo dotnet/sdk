@@ -100,7 +100,7 @@ internal class WorkloadAdvertisingManifestUpdater(
     public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
     {
         string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
-        var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+        var installStateContents = InstallStateContents.FromPath(path);
         return installStateContents.ShouldUseWorkloadSets();
     }
 
@@ -244,10 +244,7 @@ internal class WorkloadAdvertisingManifestUpdater(
         }
         catch (Exception e)
         {
-            if (_displayManifestUpdates)
-            {
-                _reporter.WriteLine(CliCommandStrings.FailedAdManifestUpdate, manifestId, e.Message);
-            }
+            _reporter.WriteLine(CliCommandStrings.FailedAdManifestUpdate, manifestId, e.Message);
             return false;
         }
         finally
@@ -286,10 +283,7 @@ internal class WorkloadAdvertisingManifestUpdater(
             }
         }
 
-        if (_displayManifestUpdates)
-        {
-            _reporter.WriteLine(CliCommandStrings.AdManifestPackageDoesNotExist, manifest.Id);
-        }
+        _reporter.WriteLine(CliCommandStrings.AdManifestPackageDoesNotExist, manifest.Id);
     }
 
     private (ManifestVersionWithBand ManifestWithBand, WorkloadCollection Workloads)? GetAdvertisingManifestVersionAndWorkloads(ManifestId manifestId)

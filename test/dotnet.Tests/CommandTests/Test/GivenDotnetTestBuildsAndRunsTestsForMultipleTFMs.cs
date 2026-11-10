@@ -110,7 +110,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnvironmentVariable("DOTNET_TEST_PARALLELIZATION_DIRECTORY", testInstance.Path)
                                     .Execute("--property", $"TestTfmsInParallel={testTfmsInParallel}");
 
             if (testTfmsInParallel)
@@ -137,6 +136,25 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             {
                 result.ExitCode.Should().Be(ExitCodes.Success);
             }
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void RunProjectWithMultipleTFMsUsingRelativePath_ShouldSucceed(bool useProjectOption)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsParallelization", Guid.NewGuid().ToString())
+                .WithSource();
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
+
+            string projectPath = Path.Combine("TestProject", "TestProject.csproj");
+            string[] projectArguments = useProjectOption ? ["--project", projectPath] : [projectPath];
+
+            new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute([.. projectArguments, "--property", "TestTfmsInParallel=false"])
+                .Should()
+                .Pass();
         }
 
         [DataRow(TestingConstants.Debug)]

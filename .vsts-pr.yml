@@ -39,6 +39,7 @@ pr:
     - /eng/pipelines/templates/jobs/dotnetup/*
     - src/Installer/*
     - test/dotnetup.Tests/*
+    - test/dotnetup.Telemetry.Tests/*
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml

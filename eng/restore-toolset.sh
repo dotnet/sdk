@@ -74,6 +74,36 @@ function ReadVersionDetailsProperty {
   sed -n "s:.*<$property_name>\([^<]*\)</$property_name>.*:\1:p" "$repo_root/eng/Version.Details.props" | head -n 1
 }
 
+function GetRuntimeInstallVersion {
+  local component=$1
+  local version=$2
+  local product_version build_version_property
+  case "$component" in
+    dotnet)
+      product_version=$(ReadVersionDetailsProperty "MicrosoftNETCoreAppRefPackageVersion")
+      build_version_property="MicrosoftNETCorePlatformsPackageVersion"
+      ;;
+    aspnetcore)
+      product_version=$(ReadVersionDetailsProperty "MicrosoftAspNetCoreAppRefPackageVersion")
+      build_version_property="MicrosoftAspNetCoreAppRefInternalPackageVersion"
+      ;;
+    *) echo "$version"; return ;;
+  esac
+
+  if [[ "$version" != "$product_version" ]]; then
+    echo "$version"
+    return
+  fi
+
+  local build_version
+  build_version=$(ReadVersionDetailsProperty "$build_version_property")
+  if [[ -z "$build_version" ]]; then
+    echo "Missing runtime build version property '$build_version_property' in eng/Version.Details.props." >&2
+    return 1
+  fi
+  echo "$build_version"
+}
+
 # Maps a dotnetup component (aspnetcore/windowsdesktop/dotnet) to the name of
 # its shared-framework folder under <dotnet root>/shared.
 function GetSharedFrameworkName {
@@ -95,10 +125,12 @@ function GetSharedFrameworkPath {
 
 # Returns success (0) if a shared framework matching $version (a major.minor
 # channel such as 6.0 or an exact version) is already present for $component.
+# Stabilized product folders also require a matching stamp when a build is specified.
 function IsSharedFrameworkInstalled {
   local dotnet_root=$1
   local component=$2
   local version=$3
+  local build_version=${4:-}
   local fx_root
   fx_root="$(GetSharedFrameworkPath "$dotnet_root" "$component")"
 
@@ -107,9 +139,17 @@ function IsSharedFrameworkInstalled {
   # spuriously match an installed 8.0.10.
   if [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
     compgen -G "$fx_root/$version*" > /dev/null 2>&1
-  else
-    [[ -d "$fx_root/$version" ]]
+    return $?
   fi
+
+  local framework_path="$fx_root/$version"
+  [[ -d "$framework_path" ]] || return 1
+  if [[ -n "$build_version" && "$build_version" != "$version" ]]; then
+    local build_version_file="$framework_path/.sdk-runtime-build-version"
+    [[ -f "$build_version_file" ]] && [[ "$(cat "$build_version_file")" == "$build_version" ]]
+    return $?
+  fi
+  return 0
 }
 
 # Installs additional shared frameworks for testing purposes.
@@ -130,7 +170,9 @@ function InstallDotNetSharedFrameworks {
       version="${spec#*@}"
     fi
 
-    if ! IsSharedFrameworkInstalled "$dotnet_root" "$component" "$version"; then
+    local runtime_install_version
+    runtime_install_version=$(GetRuntimeInstallVersion "$component" "$version") || return 1
+    if ! IsSharedFrameworkInstalled "$dotnet_root" "$component" "$version" "$runtime_install_version"; then
       specs_to_install+=("$spec")
     fi
   done
@@ -148,6 +190,29 @@ function InstallDotNetSharedFrameworks {
   # directly since it honors --architecture.
   if [[ -n "$arch" ]]; then
     InstallDotNetSharedFrameworksWithInstallScript "$dotnet_root" "$arch" "${specs_to_install[@]}"
+    return
+  fi
+
+  local dotnetup_specs=()
+  for spec in "${specs_to_install[@]}"; do
+    local component="dotnet"
+    local version="$spec"
+    if [[ "$spec" == *@* ]]; then
+      component="${spec%@*}"
+      version="${spec#*@}"
+    fi
+    local runtime_install_version
+    runtime_install_version=$(GetRuntimeInstallVersion "$component" "$version") || return 1
+    if [[ "$runtime_install_version" != "$version" ]]; then
+      # Stabilized runtimes live under build-stamped directories before the GA release is published.
+      # Explicit native architecture avoids installing x64 runtimes under Rosetta.
+      InstallDotNetSharedFrameworksWithInstallScript "$dotnet_root" "$(GetNativeMachineArchitecture)" "$spec" || return $?
+    else
+      dotnetup_specs+=("$spec")
+    fi
+  done
+  specs_to_install=("${dotnetup_specs[@]}")
+  if [[ ${#specs_to_install[@]} -eq 0 ]]; then
     return
   fi
 
@@ -190,12 +255,26 @@ function InstallDotNetSharedFrameworksWithInstallScript {
     fi
     # Map dotnetup channel (e.g. "9.0") to the specific version the install
     # script's --version parameter expects (e.g. "9.0.0").
-    local install_version="$version"
+    local runtime_install_version
+    runtime_install_version=$(GetRuntimeInstallVersion "$component" "$version") || return 1
+    local install_version="$runtime_install_version"
     if [[ "$install_version" =~ ^[0-9]+\.[0-9]+$ ]]; then
       install_version="$install_version.0"
     fi
 
     local install_args=(--version "$install_version" --install-dir "$dotnet_root" --runtime "$component" --skip-non-versioned-files)
+    if [[ "$runtime_install_version" != "$version" ]]; then
+      # The installer resolves the stabilized filename using this build's productVersion.txt.
+      install_args+=(--azure-feed "https://ci.dot.net/public")
+
+      # Installers skip existing versioned directories, even if they contain an older build.
+      local framework_path
+      framework_path="$(GetSharedFrameworkPath "$dotnet_root" "$component")/$version"
+      rm -rf -- "$framework_path" || return $?
+      if [[ "$component" == "dotnet" ]]; then
+        rm -rf -- "$dotnet_root/host/fxr/$version" || return $?
+      fi
+    fi
     if [[ -n "$arch" ]]; then
       install_args+=(--architecture "$arch")
     fi
@@ -222,6 +301,9 @@ function InstallDotNetSharedFrameworksWithInstallScript {
       fi
       echo "Failed to install shared framework spec '$spec' to '$dotnet_root' using dotnet install script${architecture_message} (exit code '$lastexitcode', installed '$framework_installed')."
       ExitWithExitCode $lastexitcode
+    fi
+    if [[ "$runtime_install_version" != "$version" ]]; then
+      printf '%s' "$runtime_install_version" > "$framework_path/.sdk-runtime-build-version" || return $?
     fi
   done
 }

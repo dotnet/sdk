@@ -5,7 +5,6 @@ namespace Microsoft.DotNet.Watch;
 
 internal static class PropertyNames
 {
-    public const string Configuration = nameof(Configuration);
     public const string TargetFramework = nameof(TargetFramework);
     public const string NetCoreSdkVersion = nameof(NetCoreSdkVersion);
     public const string TargetFrameworkIdentifier = nameof(TargetFrameworkIdentifier);
@@ -24,12 +23,7 @@ internal static class PropertyNames
     public const string SkipCompilerExecution = nameof(SkipCompilerExecution);
     public const string ProvideCommandLineArgs = nameof(ProvideCommandLineArgs);
     public const string NonExistentFile = nameof(NonExistentFile);
-    // Evaluated properties that mirror the condition guarding the target which produces the browser
-    // tools build outputs. They are read, never set: the build owns the browser tools key pair and
-    // dotnet-watch discovers its outputs. See BrowserToolsBuildOutputs.
-    public const string HotReloadBrowserToolsAssetPrefix = nameof(HotReloadBrowserToolsAssetPrefix);
-    public const string StaticWebAssetsEnabled = nameof(StaticWebAssetsEnabled);
-    public const string JSModulesEnabled = nameof(JSModulesEnabled);
+    public const string HotReloadBrowserToolsEnabled = nameof(HotReloadBrowserToolsEnabled);
     public const string StartupHookSupport = nameof(StartupHookSupport);
     public const string MetadataUpdaterSupport = nameof(MetadataUpdaterSupport);
     public const string Optimize = nameof(Optimize);

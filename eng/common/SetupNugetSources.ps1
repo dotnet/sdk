@@ -38,6 +38,11 @@ Set-StrictMode -Version 2.0
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $feedCredential = if ($env:Token) { $env:Token } else { $Credential }
 
+# This script only consumes helper functions from tools.ps1 to configure NuGet feeds.
+# Skip importing configure-toolset.ps1 so that repo-specific toolset setup (e.g. acquiring
+# a bootstrap SDK) is not triggered as a side effect of feed configuration.
+$disableConfigureToolsetImport = $true
+
 . $PSScriptRoot\tools.ps1
 
 # Adds or enables the package source with the given name
@@ -168,7 +173,7 @@ if ($disabledSources -ne $null) {
     Write-Host "Checking for any darc-int disabled package sources in the disabledPackageSources node"
     EnableMaestroInternalPackageSources -DisabledPackageSources $disabledSources -Creds $creds -Credential $feedCredential
 }
-$dotnetVersions = @('5','6','7','8','9','10','11')
+$dotnetVersions = @('5','6','7','8','9','10')
 
 foreach ($dotnetVersion in $dotnetVersions) {
     $feedPrefix = "dotnet" + $dotnetVersion;

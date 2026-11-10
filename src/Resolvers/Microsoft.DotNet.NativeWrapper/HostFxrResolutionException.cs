@@ -18,11 +18,6 @@ namespace Microsoft.DotNet.NativeWrapper
             : base(message)
         {
         }
-
-        public HostFxrResolutionException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
     }
 
     /// <summary>
@@ -30,18 +25,8 @@ namespace Microsoft.DotNet.NativeWrapper
     /// </summary>
     public sealed class HostFxrNotFoundException : HostFxrResolutionException
     {
-        public HostFxrNotFoundException()
-            : base()
-        {
-        }
-
         public HostFxrNotFoundException(string message)
             : base(message)
-        {
-        }
-
-        public HostFxrNotFoundException(string message, Exception innerException)
-            : base(message, innerException)
         {
         }
     }
@@ -54,16 +39,6 @@ namespace Microsoft.DotNet.NativeWrapper
     {
         public HostFxrRuntimePropertyNotSetException()
             : base()
-        {
-        }
-
-        public HostFxrRuntimePropertyNotSetException(string message)
-            : base(message)
-        {
-        }
-
-        public HostFxrRuntimePropertyNotSetException(string message, Exception innerException)
-            : base(message, innerException)
         {
         }
     }

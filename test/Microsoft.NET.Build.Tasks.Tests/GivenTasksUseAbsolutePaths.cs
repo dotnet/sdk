@@ -18,7 +18,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests;
 /// passing RELATIVE paths and expecting tasks to resolve them via TaskEnvironment.
 /// </summary>
 [TestClass]
-[DoNotParallelize]
 public class GivenTasksUseAbsolutePaths : IDisposable
 {
     private readonly TaskTestEnvironment _env;
@@ -365,7 +364,6 @@ public class GivenTasksUseAbsolutePaths : IDisposable
     }
 
     #endregion
-
 
     #region ResolveOverlappingItemGroupConflicts
 
