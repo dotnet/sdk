@@ -371,6 +371,46 @@ public class InstallerOrchestratorTests
     }
 
     [TestMethod]
+    public void CommitPreparedInstall_NewerVersionRegisteredAfterPrepare_ThrowsBeforeRunningInstaller()
+    {
+        using var testEnv = new TestEnvironment();
+        var (resolvedRequest, install) = MakeUntrackedBundleSdkInstall(testEnv);
+        var artifact = new FakeArtifact();
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(
+            resolvedRequest,
+            artifact,
+            arch => [new DotnetInstall(new DotnetInstallRoot(testEnv.InstallPath, arch), new ReleaseVersion("10.0.114"), InstallComponent.SDK)]);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
+        artifact.CommitCalls.Should().Be(0);
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_NewerVersionRegisteredDuringInstall_ThrowsWithoutRepairing()
+    {
+        using var testEnv = new TestEnvironment();
+        var (resolvedRequest, install) = MakeUntrackedBundleSdkInstall(testEnv);
+        bool newerRegistered = false;
+        var artifact = new FakeArtifact { OnCommit = () => newerRegistered = true, OnRepair = () => true };
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(
+            resolvedRequest,
+            artifact,
+            arch => newerRegistered
+                ? [new DotnetInstall(new DotnetInstallRoot(testEnv.InstallPath, arch), new ReleaseVersion("10.0.114"), InstallComponent.SDK)]
+                : []);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
+        ex.IsRepairFailed().Should().BeFalse("no repair should be attempted");
+        artifact.CommitCalls.Should().Be(1);
+        artifact.RepairCalls.Should().Be(0);
+        File.Exists(testEnv.ManifestPath).Should().BeFalse();
+    }
+
+    [TestMethod]
     public void CommitPreparedInstall_BundleFilesMissing_RepairsAndSucceeds()
     {
         using var testEnv = new TestEnvironment();
@@ -546,21 +586,24 @@ public class InstallerOrchestratorTests
         using var testEnv = new TestEnvironment();
         using var reporter = new LazyProgressReporter(new NullProgressTarget());
         var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
-        var systemRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
-        var environment = new MockDotnetInstallManager(
-            testEnv.InstallPath,
-            existingSystemInstalls: [new DotnetInstall(systemRoot, new ReleaseVersion("10.0.114"), InstallComponent.SDK)]);
+        var architecture = resolvedRequest.Request.InstallRoot.Architecture;
+        var registeredRoot = new DotnetInstallRoot(testEnv.InstallPath, architecture);
+        var queriedArchitectures = new List<InstallArchitecture>();
 
         var prepare = () => InstallerOrchestratorSingleton.Instance.PrepareInstall(
             resolvedRequest,
             new InstallBatchContext(reporter, 8),
             out _,
             new MockInstallationValidator(validateResult: false),
-            environment);
+            arch =>
+            {
+                queriedArchitectures.Add(arch);
+                return [new DotnetInstall(registeredRoot, new ReleaseVersion("10.0.114"), InstallComponent.SDK)];
+            });
 
         prepare.Should().Throw<DotnetInstallException>()
             .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
-        environment.GetExistingSystemInstallsCallCount.Should().Be(1);
+        queriedArchitectures.Should().Equal(architecture);
     }
 
     [TestMethod]
@@ -589,7 +632,8 @@ public class InstallerOrchestratorTests
         {
             var ex = check.Should().Throw<DotnetInstallException>().Which;
             ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
-            ex.Message.Should().Contain(installedVersion).And.Contain(requestedVersion);
+            ex.Message.Should().Contain(installedVersion).And.Contain(requestedVersion)
+                .And.Contain(DotnetEnvironmentManager.GetRegistryVersionsKeyName(requestedComponent, InstallArchitecture.x64));
         }
         else
         {

@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.Versioning;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using Microsoft.Win32;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 using CliEnvironmentProvider = Microsoft.DotNet.Cli.Utils.EnvironmentProvider;
@@ -108,6 +111,74 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         }
 
         return FilterToNativeArchAndSort(installs);
+    }
+
+    internal const string InstalledVersionsRegistryKeyPath = @"SOFTWARE\dotnet\Setup\InstalledVersions";
+
+    /// <summary>
+    /// Returns the SDKs and runtimes that Windows installers registered under
+    /// <c>HKEY_LOCAL_MACHINE\SOFTWARE\dotnet\Setup\InstalledVersions\{architecture}</c>.
+    /// A registration outlives deleted payload files, so this reports installs no longer on disk.
+    /// </summary>
+    public static List<DotnetInstall> GetSystemRegistryInstallState(InstallArchitecture architecture)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return [];
+        }
+
+        // Install Path Keys on 64 bit machines are available via the WOW node. They won't be on such a node on a 32 bit machine.
+        // See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md#current-state-on-windows
+        using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+        using var installedVersionsKey = baseKey.OpenSubKey(InstalledVersionsRegistryKeyPath);
+        return installedVersionsKey is null ? [] : ReadRegistryInstallState(installedVersionsKey, architecture);
+    }
+
+    /// <summary>
+    /// Reads the <c>sdk</c> and <c>sharedfx\{framework}</c> version value names under the architecture subkey of
+    /// <paramref name="installedVersionsKey"/>. Value names that are not versions are skipped.
+    /// </summary>
+    [SupportedOSPlatform("windows")]
+    internal static List<DotnetInstall> ReadRegistryInstallState(RegistryKey installedVersionsKey, InstallArchitecture architecture)
+    {
+        using var architectureKey = installedVersionsKey.OpenSubKey(architecture.ToString());
+        if (architectureKey is null)
+        {
+            return [];
+        }
+
+        string installLocation = (architectureKey.GetValue("InstallLocation") as string)?.TrimEnd(Path.DirectorySeparatorChar) ?? string.Empty;
+        var installRoot = new DotnetInstallRoot(installLocation, architecture);
+        var installs = new List<DotnetInstall>();
+        foreach (var component in Enum.GetValues<InstallComponent>())
+        {
+            AddRegisteredVersions(installs, architectureKey, GetRegistryVersionsSubKey(component), component, installRoot);
+        }
+
+        return installs;
+    }
+
+    private static string GetRegistryVersionsSubKey(InstallComponent component) =>
+        component == InstallComponent.SDK ? "sdk" : $@"sharedfx\{component.GetFrameworkName()}";
+
+    /// <summary>The registry key, as Registry Editor shows it, whose value names are the registered versions of a component.</summary>
+    internal static string GetRegistryVersionsKeyName(InstallComponent component, InstallArchitecture architecture)
+    {
+        string wowNode = Environment.Is64BitOperatingSystem ? @"WOW6432Node\" : string.Empty;
+        return $@"HKEY_LOCAL_MACHINE\SOFTWARE\{wowNode}dotnet\Setup\InstalledVersions\{architecture}\{GetRegistryVersionsSubKey(component)}";
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static void AddRegisteredVersions(List<DotnetInstall> installs, RegistryKey architectureKey, string subKeyPath, InstallComponent component, DotnetInstallRoot installRoot)
+    {
+        using var versionsKey = architectureKey.OpenSubKey(subKeyPath);
+        foreach (string valueName in versionsKey?.GetValueNames() ?? [])
+        {
+            if (ReleaseVersion.TryParse(valueName, out var version))
+            {
+                installs.Add(new DotnetInstall(installRoot, version, component));
+            }
+        }
     }
 
     /// <summary>

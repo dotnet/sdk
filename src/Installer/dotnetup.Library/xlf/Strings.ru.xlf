@@ -937,9 +937,9 @@ Or open a new terminal.</target>
         <note>{0} is the component display name and version.</note>
       </trans-unit>
       <trans-unit id="WindowsInstallerNewerVersionInstalled">
-        <source>{0} {1} is already installed, and the Windows installer will not install the older {0} {2} alongside it. Uninstall {0} {1} first (with Visual Studio Installer if Visual Studio installed it), or use {1} or later.</source>
-        <target state="new">{0} {1} is already installed, and the Windows installer will not install the older {0} {2} alongside it. Uninstall {0} {1} first (with Visual Studio Installer if Visual Studio installed it), or use {1} or later.</target>
-        <note>{0} is the component display name, such as .NET SDK. {1} is the installed newer version. {2} is the requested older version.</note>
+        <source>{0} {1} is already installed, and the Windows installer will not install the older {0} {2} alongside it. Uninstall {0} {1} first (with Visual Studio Installer if Visual Studio installed it), or use {1} or later. If {0} {1} is not actually installed, delete the stale value '{1}' from the registry key '{3}'.</source>
+        <target state="new">{0} {1} is already installed, and the Windows installer will not install the older {0} {2} alongside it. Uninstall {0} {1} first (with Visual Studio Installer if Visual Studio installed it), or use {1} or later. If {0} {1} is not actually installed, delete the stale value '{1}' from the registry key '{3}'.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the installed newer version. {2} is the requested older version. {3} is a Windows registry key path.</note>
       </trans-unit>
       <trans-unit id="WindowsInstallerNewerVersionInstalledExitCode">
         <source>The installer for {0} did not install it because a newer version of the same product is already installed (installer exit code {1}). Uninstall the newer version first, or use it instead.</source>

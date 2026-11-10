@@ -120,6 +120,8 @@ internal class InstallerOrchestratorSingleton
     {
         const int maxConcurrentDownloads = 3;
 
+        // Skip conflicting admin install requests that would fail and mark them as skipped and avoid downloading anything for them
+
         try
         {
             Parallel.ForEach(requests, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentDownloads }, request =>
@@ -232,11 +234,18 @@ internal class InstallerOrchestratorSingleton
         /// <summary>The install, including the product version of the prepared payload.</summary>
         public DotnetInstall Install { get; }
 
-        public PreparedInstall(ResolvedInstallRequest resolvedRequest, IInstallArtifact artifact)
+        /// <summary>Returns the installs Windows Installer has registered for an architecture; null when the install mechanism doesn't need it.</summary>
+        public Func<InstallArchitecture, IEnumerable<DotnetInstall>>? GetRegisteredSystemInstalls { get; }
+
+        public PreparedInstall(
+            ResolvedInstallRequest resolvedRequest,
+            IInstallArtifact artifact,
+            Func<InstallArchitecture, IEnumerable<DotnetInstall>>? getRegisteredSystemInstalls = null)
         {
             ResolvedRequest = resolvedRequest;
             Artifact = artifact;
             Install = new DotnetInstall(Request.InstallRoot, Version, Request.Component).WithProductVersion(artifact.ProductVersion);
+            GetRegisteredSystemInstalls = getRegisteredSystemInstalls;
         }
 
         public void Dispose() => Artifact.Dispose();
@@ -252,7 +261,7 @@ internal class InstallerOrchestratorSingleton
     /// <param name="batchContext">Shared per-batch progress reporter and version-column width. For single-install scenarios, pass a context whose width matches the request's version length.</param>
     /// <param name="alreadyInstalledResult">Set when the install is already present; null otherwise.</param>
     /// <param name="installationValidator">Optional validator override used to determine whether an untracked installation already exists on disk.</param>
-    /// <param name="dotnetEnvironment">Optional environment override used to find the system installs a Windows installer bundle would conflict with.</param>
+    /// <param name="getRegisteredSystemInstalls">Optional override returning the system installs Windows Installer has registered for an architecture, which a Windows installer bundle would conflict with.</param>
     /// <returns>A PreparedInstall that can be committed later, or null if already installed.</returns>
 #pragma warning disable CA1822
     public PreparedInstall? PrepareInstall(
@@ -260,7 +269,7 @@ internal class InstallerOrchestratorSingleton
         InstallBatchContext batchContext,
         out InstallResult? alreadyInstalledResult,
         IInstallationValidator? installationValidator = null,
-        IDotnetEnvironmentManager? dotnetEnvironment = null)
+        Func<InstallArchitecture, IEnumerable<DotnetInstall>>? getRegisteredSystemInstalls = null)
     {
         var installRequest = resolvedRequest.Request;
         var install = new DotnetInstall(installRequest.InstallRoot, resolvedRequest.ResolvedVersion, installRequest.Component);
@@ -274,7 +283,8 @@ internal class InstallerOrchestratorSingleton
 
         if (installRequest.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle)
         {
-            ThrowIfNewerVersionInstalled(install, (dotnetEnvironment ?? new DotnetEnvironmentManager()).GetExistingSystemInstalls());
+            getRegisteredSystemInstalls ??= DotnetEnvironmentManager.GetSystemRegistryInstallState;
+            ThrowIfNewerVersionInstalled(install, getRegisteredSystemInstalls(install.InstallRoot.Architecture));
         }
 
         IInstallArtifact artifact = CreateInstallArtifact(resolvedRequest, ReleaseManifest.Default, batchContext);
@@ -288,7 +298,7 @@ internal class InstallerOrchestratorSingleton
             throw;
         }
 
-        return new PreparedInstall(resolvedRequest, artifact);
+        return new PreparedInstall(resolvedRequest, artifact, getRegisteredSystemInstalls);
     }
 #pragma warning restore CA1822
 
@@ -313,11 +323,21 @@ internal class InstallerOrchestratorSingleton
         if (newer is not null)
         {
             string displayName = requested.Component.GetDisplayName();
+            string registryKey = DotnetEnvironmentManager.GetRegistryVersionsKeyName(requested.Component, requested.InstallRoot.Architecture);
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.NewerVersionInstalled,
-                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerNewerVersionInstalled, displayName, newer.Version, version),
+                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerNewerVersionInstalled, displayName, newer.Version, version, registryKey),
                 version: version.ToString(),
                 component: requested.Component.ToString());
+        }
+    }
+
+    // Other Admin Install Calls Don't Respect our Mutex
+    private static void ThrowIfNewerVersionRegistered(PreparedInstall prepared)
+    {
+        if (prepared.GetRegisteredSystemInstalls is { } getRegisteredSystemInstalls)
+        {
+            ThrowIfNewerVersionInstalled(prepared.Install, getRegisteredSystemInstalls(prepared.Install.InstallRoot.Architecture));
         }
     }
 
@@ -453,6 +473,7 @@ internal class InstallerOrchestratorSingleton
                 return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
             }
 
+            ThrowIfNewerVersionRegistered(prepared);
             prepared.Artifact.Commit();
 
             repaired = prepared.Artifact.RequiresPostInstallValidation
@@ -531,6 +552,9 @@ internal class InstallerOrchestratorSingleton
     /// </summary>
     private static bool RepairOrThrow(PreparedInstall prepared, IInstallationValidator validator, string? validationFailure)
     {
+        // A bundle that found a newer build reports success without installing; repairing it cannot help.
+        ThrowIfNewerVersionRegistered(prepared);
+
         bool repairAttempted;
         try
         {
