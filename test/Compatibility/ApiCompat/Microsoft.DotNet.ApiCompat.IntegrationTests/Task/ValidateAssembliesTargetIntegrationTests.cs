@@ -136,3 +136,4 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
         }
     }
 }
+
