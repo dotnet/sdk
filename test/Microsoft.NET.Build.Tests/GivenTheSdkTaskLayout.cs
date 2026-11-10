@@ -37,6 +37,18 @@ public sealed class GivenTheSdkTaskLayout : SdkTest
     }
 
     [TestMethod]
+    [DataRow("Microsoft.NET.Build.Tasks.dll")]
+    [DataRow("Microsoft.DotNet.ApiCompat.Task.dll")]
+    public void TaskDependencyFilesAreNotDeployedWithTheSdk(string assembly)
+    {
+        var depsPath = Path.Combine(
+            SdkTestContext.Current.ToolsetUnderTest.SdksPath,
+            "Microsoft.NET.Sdk", "tools", ToolsetInfo.SdkTargetFramework, Path.ChangeExtension(assembly, ".deps.json"));
+
+        File.Exists(depsPath).Should().BeFalse();
+    }
+
+    [TestMethod]
     public void FrameworkProvidedDependencyInjectionAbstractionsAreNotDuplicatedInTheSdk()
     {
         var assemblyPath = Path.Combine(
