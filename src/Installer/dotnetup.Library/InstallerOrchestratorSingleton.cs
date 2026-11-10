@@ -299,7 +299,8 @@ internal class InstallerOrchestratorSingleton
     internal static void ThrowIfNewerVersionInstalled(DotnetInstall requested, IEnumerable<DotnetInstall> systemInstalls)
     {
         ReleaseVersion version = requested.Version;
-        // Conservative: runtime folders that an SDK bundle laid down also count, though the runtime bundle might install alongside them.
+
+        // Conservative: runtime folders that an SDK bundle laid down also count, even if the runtime bundle might install alongside them.
         DotnetInstall? newer = systemInstalls
             .Where(i => i.Component == requested.Component
                 && i.InstallRoot.Architecture == requested.InstallRoot.Architecture
