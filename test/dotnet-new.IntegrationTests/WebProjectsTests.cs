@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [DataRow("emptyweb_cs-100", "web", "-f", "net10.0")]
         [DataRow("mvc_cs-100", "mvc", "-f", "net10.0")]
         [DataRow("mvc_fs-100", "mvc", "-lang", "F#", "-f", "net10.0")]
-        [DataRow("api_cs-100", "webapi", "-f", "net10.0")]
+        [DataRow("api_cs-100", "webapi", "-f", "net10.0", "--no-openapi")]
         [DataRow("emptyweb_cs-110", "web", "-f", "net11.0")]
         [DataRow("mvc_cs-110", "mvc", "-f", "net11.0")]
         [DataRow("mvc_fs-110", "mvc", "-lang", "F#", "-f", "net11.0")]
