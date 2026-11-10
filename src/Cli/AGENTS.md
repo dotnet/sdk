@@ -163,6 +163,11 @@ suffixes only for comparison; preserve the full target in output and distinguish
 runtime-derived target. Keep start, results, completion, recaps and progress consistent,
 and omit secondary runtime information before primary identity in narrow cursor frames.
 
+[`ArtifactPostProcessingManager`](dotnet/Commands/Test/MTP/ArtifactPostProcessingManager.cs)
+can learn capabilities from a controller before the target is known. Fill only a missing
+target when later handshake metadata arrives, even if capabilities are not repeated;
+preserve an already known target.
+
 ## MTP coverage summaries
 
 Keep coverage scoped by execution, instance, session, and producer. Never add counts or

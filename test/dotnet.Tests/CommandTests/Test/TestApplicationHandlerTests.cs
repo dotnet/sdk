@@ -414,6 +414,37 @@ public class TestApplicationHandlerTests : IDisposable
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void OnHandshakeReceived_LaterHostTargetEnrichesControllerCapabilities(bool hostAdvertisesCapabilities)
+    {
+        var manager = new ArtifactPostProcessingManager();
+        (TestApplicationHandler handler, _, _) = CreateHandler(
+            isHelp: false, isDiscovery: false, artifactPostProcessingManager: manager, targetFramework: null);
+        HandshakeMessage controller = BuildHandshake(
+            HandshakeMessageExecutionModes.Run,
+            hostType: "TestHostController",
+            includeInstanceId: false,
+            supportedPostProcessorKinds: "microsoft.testing.trx");
+        controller.Properties[HandshakeMessagePropertyNames.Framework] = ".NET Framework 4.8.1";
+        handler.OnHandshakeReceived(controller, gotSupportedVersion: true).Should().BeTrue();
+        manager.SnapshotApplications().Should().ContainSingle().Which.TargetFramework.Should().BeNull();
+
+        HandshakeMessage host = BuildHandshake(
+            HandshakeMessageExecutionModes.Run,
+            supportedPostProcessorKinds: hostAdvertisesCapabilities ? "example.junit" : null);
+        host.Properties[HandshakeMessagePropertyNames.Framework] = ".NET Framework 4.8.1";
+        host.Properties[HandshakeMessagePropertyNames.TargetFramework] = "net472";
+
+        handler.OnHandshakeReceived(host, gotSupportedVersion: true).Should().BeTrue();
+
+        ArtifactPostProcessingApplication application = manager.SnapshotApplications().Should().ContainSingle().Subject;
+        application.TargetFramework.Should().Be("net472");
+        string[] expectedKinds = hostAdvertisesCapabilities ? ["microsoft.testing.trx", "example.junit"] : ["microsoft.testing.trx"];
+        application.SupportedKinds.Should().BeEquivalentTo(expectedKinds);
+    }
+
+    [TestMethod]
     public void OnFileArtifactsReceived_RecordsArtifactMetadata()
     {
         var manager = new ArtifactPostProcessingManager();
