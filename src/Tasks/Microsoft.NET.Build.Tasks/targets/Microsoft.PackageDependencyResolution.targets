@@ -18,6 +18,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     *************************************
     -->
 
+  <Import Project="Microsoft.NET.Sdk.ProjectAssetsFile.props" />
+
   <!-- General Properties -->
   <PropertyGroup>
     <!-- Note that the assets.cache file has contents that are unique to the current TFM and configuration and therefore cannot

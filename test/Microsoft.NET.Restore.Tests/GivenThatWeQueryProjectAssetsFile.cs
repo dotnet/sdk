@@ -123,4 +123,92 @@ public class GivenThatWeQueryProjectAssetsFile : SdkTest
             ? relativeAssetsFile
             : Path.Combine(projectDirectory, "custom", "renamed.assets.json"));
     }
+
+    [TestMethod]
+    [CombinatorialData]
+    public void Imports_before_sdk_targets_can_set_the_assets_file_path(
+        bool multiTarget,
+        [CombinatorialValues("before-sdk", "directory-targets", "generated-props", "generated-targets")] string import)
+    {
+        var testProject = new TestProject
+        {
+            Name = "ImportedAssetsPath",
+            TargetFrameworks = multiTarget
+                ? $"{ToolsetInfo.CurrentTargetFramework};netstandard2.1"
+                : ToolsetInfo.CurrentTargetFramework
+        };
+        bool generatedImport = import is "generated-props" or "generated-targets";
+        if (!generatedImport)
+        {
+            string property = import == "before-sdk" ? "BeforeMicrosoftNETSdkTargets" : "DirectoryBuildTargetsPath";
+            testProject.AdditionalProperties[property] = "$(MSBuildProjectDirectory)/Override.targets";
+        }
+
+        var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{multiTarget}_{import}");
+        string projectDirectory = Path.Combine(testAsset.TestRoot, testProject.Name);
+        string importFile = Path.Combine(projectDirectory, "Override.targets");
+        if (generatedImport)
+        {
+            Directory.CreateDirectory(Path.Combine(projectDirectory, "obj"));
+            string extension = import == "generated-props" ? "props" : "targets";
+            importFile = Path.Combine(projectDirectory, "obj", $"{testProject.Name}.csproj.nuget.g.{extension}");
+        }
+
+        File.WriteAllText(importFile, """
+            <Project>
+              <PropertyGroup>
+                <AssetsBeforeOverride>$(ProjectAssetsFile)</AssetsBeforeOverride>
+                <ProjectAssetsFile Condition="'$(ProjectAssetsFile)' == ''">custom/../custom/imported.assets.json</ProjectAssetsFile>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var result = new DotnetCommand(Log, "msbuild", "--getProperty:ProjectAssetsFile,AssetsBeforeOverride")
+            .WithWorkingDirectory(projectDirectory)
+            .Execute();
+        result.Should().Pass();
+
+        using var document = JsonDocument.Parse(result.StdOut!);
+        var properties = document.RootElement.GetProperty("Properties");
+        properties.GetProperty("AssetsBeforeOverride").GetString().Should().BeEmpty();
+        properties.GetProperty("ProjectAssetsFile").GetString().Should()
+            .Be(Path.Combine(projectDirectory, "custom", "imported.assets.json"));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Importing_common_targets_does_not_apply_package_dependency_defaults(bool packageReferences)
+    {
+        string projectDirectory = TestAssetsManager.CreateTestDirectory(identifier: packageReferences.ToString()).Path;
+        string dependencyTargets = packageReferences
+            ? "Microsoft.PackageDependencyResolution.targets"
+            : "Microsoft.PackageDependencyResolutionStubs.targets";
+        File.WriteAllText(Path.Combine(projectDirectory, "Assets.proj"), $$"""
+            <Project>
+              <PropertyGroup>
+                <Language>C++</Language>
+                <MSBuildProjectExtensionsPath>$(MSBuildProjectDirectory)/custom/</MSBuildProjectExtensionsPath>
+                <IntermediateOutputPath>obj/</IntermediateOutputPath>
+              </PropertyGroup>
+              <Import Project="$(MSBuildSDKsPath)/Microsoft.NET.Sdk/targets/Microsoft.NET.Sdk.Common.targets" />
+              <PropertyGroup>
+                <AssetsAfterCommon>$(ProjectAssetsFile)</AssetsAfterCommon>
+              </PropertyGroup>
+              <Import Project="$(MSBuildSDKsPath)/Microsoft.NET.Sdk/targets/{{dependencyTargets}}" />
+            </Project>
+            """);
+
+        var result = new DotnetCommand(Log, "msbuild", "Assets.proj", "--getProperty:ProjectAssetsFile,AssetsAfterCommon")
+            .WithWorkingDirectory(projectDirectory)
+            .Execute();
+        result.Should().Pass();
+
+        using var document = JsonDocument.Parse(result.StdOut!);
+        var properties = document.RootElement.GetProperty("Properties");
+        properties.GetProperty("AssetsAfterCommon").GetString().Should().BeEmpty();
+        properties.GetProperty("ProjectAssetsFile").GetString().Should().Be(packageReferences
+            ? Path.Combine(projectDirectory, "custom", "project.assets.json")
+            : "");
+    }
 }
