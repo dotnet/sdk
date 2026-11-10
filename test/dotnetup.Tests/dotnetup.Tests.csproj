@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\eng\dotnetup-release\dotnetup-release.csproj" />
     <ProjectReference Include="..\..\src\Installer\dotnetup.Library\dotnetup.Library.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
