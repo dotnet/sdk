@@ -1,0 +1,15 @@
+// IMPORTANT: This file is read by the merge flow from main branch only.
+// It is used by .github/workflows/inter-branch-merge-flow-dnup.yml, which runs on pushes to
+// the source branch below. It is separate from github-merge-flow.jsonc because each source
+// branch can only have one MergeToBranch per configuration file.
+{
+    "merge-flow-configurations": {
+        // dotnetup is to remain on the latest *stable* .NET version.
+        // CODEOWNERS is reset to keep dnup's minimal ownership and avoid review pings.
+        "release/11.0.2xx":{
+            "MergeToBranch": "release/dnup",
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "CODEOWNERS"
+        }
+    }
+}
