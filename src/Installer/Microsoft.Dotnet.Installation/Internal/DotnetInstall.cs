@@ -62,7 +62,11 @@ internal record DotnetInstallRequest(
 /// </summary>
 internal record ResolvedInstallRequest(
     DotnetInstallRequest Request,
-    ReleaseVersion ResolvedVersion);
+    ReleaseVersion ResolvedVersion)
+{
+    /// <summary>The install this request produces.</summary>
+    public DotnetInstall ToInstall() => new(Request.InstallRoot, ResolvedVersion, Request.Component);
+}
 
 internal record InstallRequestOptions()
 {

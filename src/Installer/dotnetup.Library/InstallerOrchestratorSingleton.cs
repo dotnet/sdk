@@ -18,6 +18,16 @@ internal class InstallerOrchestratorSingleton
 
     private static ScopedMutex ModifyInstallStateMutex() => new(Constants.MutexNames.ModifyInstallationStates);
 
+    [ThreadStatic]
+    private static Func<InstallArchitecture, IEnumerable<DotnetInstall>>? t_registeredSystemInstallsOverride;
+
+    /// <summary>
+    /// Sets a thread-local replacement for the Windows Installer registrations read by <see cref="DotnetEnvironmentManager.GetSystemRegistryInstallState"/>, for testing.
+    /// Pass null to clear it.
+    /// </summary>
+    internal static void SetRegisteredSystemInstallsOverride(Func<InstallArchitecture, IEnumerable<DotnetInstall>>? getRegisteredSystemInstalls) =>
+        t_registeredSystemInstallsOverride = getRegisteredSystemInstalls;
+
     /// <summary>
     /// Downloads the archive for an already-resolved install request into the download cache
     /// without installing. This allows a background task to warm the cache while the user
@@ -226,11 +236,13 @@ internal class InstallerOrchestratorSingleton
         }
     }
 
-    private static DotnetInstallException CreateCancelledBeforeStartException(PreparedInstall prepared) => new(
+    private static DotnetInstallException CreateInstallException(DotnetInstallErrorCode errorCode, DotnetInstall install, string message) =>
+        new(errorCode, message, version: install.Version.ToString(), component: install.Component.ToString());
+
+    private static DotnetInstallException CreateCancelledBeforeStartException(PreparedInstall prepared) => CreateInstallException(
         DotnetInstallErrorCode.OperationCancelled,
-        string.Format(CultureInfo.CurrentCulture, Strings.InstallCancelledBeforeStart, prepared.Request.Component.GetDisplayName(), prepared.Version),
-        version: prepared.Version.ToString(),
-        component: prepared.Request.Component.ToString());
+        prepared.Install,
+        string.Format(CultureInfo.CurrentCulture, Strings.InstallCancelledBeforeStart, prepared.Request.Component.GetDisplayName(), prepared.Version));
 
     /// <summary>
     /// Returns the Windows installer bundle requests that a newer request in the same batch would replace, each paired
@@ -240,7 +252,7 @@ internal class InstallerOrchestratorSingleton
     {
         var bundleRequests = requests
             .Where(r => r.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle)
-            .Select(r => (Request: r, Install: new DotnetInstall(r.Request.InstallRoot, r.ResolvedVersion, r.Request.Component)))
+            .Select(r => (Request: r, Install: r.ToInstall()))
             .ToList();
 
         var superseded = new List<(ResolvedInstallRequest Request, ResolvedInstallRequest Newer)>();
@@ -264,16 +276,13 @@ internal class InstallerOrchestratorSingleton
     /// </summary>
     internal static InstallResult CheckSupersededRequest(ResolvedInstallRequest request, ResolvedInstallRequest newer, IInstallationValidator installationValidator)
     {
-        var install = new DotnetInstall(request.Request.InstallRoot, request.ResolvedVersion, request.Request.Component);
+        var install = request.ToInstall();
         return CheckExistingInstallState(request.Request, install, installationValidator)
-            ?? throw CreateSupersededException(request, newer);
+            ?? throw CreateInstallException(
+                DotnetInstallErrorCode.SupersededInBatch,
+                install,
+                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerSupersededInBatch, install.Component.GetDisplayName(), install.Version, newer.ResolvedVersion));
     }
-
-    private static DotnetInstallException CreateSupersededException(ResolvedInstallRequest request, ResolvedInstallRequest newer) => new(
-        DotnetInstallErrorCode.SupersededInBatch,
-        string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerSupersededInBatch, request.Request.Component.GetDisplayName(), request.ResolvedVersion, newer.ResolvedVersion),
-        version: request.ResolvedVersion.ToString(),
-        component: request.Request.Component.ToString());
 
     /// <summary>
     /// Represents a prepared (downloaded but not yet committed) installation.
@@ -288,18 +297,11 @@ internal class InstallerOrchestratorSingleton
         /// <summary>The install, including the product version of the prepared payload.</summary>
         public DotnetInstall Install { get; }
 
-        /// <summary>Returns the installs Windows Installer has registered for an architecture; null when the install mechanism doesn't need it.</summary>
-        public Func<InstallArchitecture, IEnumerable<DotnetInstall>>? GetRegisteredSystemInstalls { get; }
-
-        public PreparedInstall(
-            ResolvedInstallRequest resolvedRequest,
-            IInstallArtifact artifact,
-            Func<InstallArchitecture, IEnumerable<DotnetInstall>>? getRegisteredSystemInstalls = null)
+        public PreparedInstall(ResolvedInstallRequest resolvedRequest, IInstallArtifact artifact)
         {
             ResolvedRequest = resolvedRequest;
             Artifact = artifact;
-            Install = new DotnetInstall(Request.InstallRoot, Version, Request.Component).WithProductVersion(artifact.ProductVersion);
-            GetRegisteredSystemInstalls = getRegisteredSystemInstalls;
+            Install = resolvedRequest.ToInstall().WithProductVersion(artifact.ProductVersion);
         }
 
         public void Dispose() => Artifact.Dispose();
@@ -315,18 +317,16 @@ internal class InstallerOrchestratorSingleton
     /// <param name="batchContext">Shared per-batch progress reporter and version-column width. For single-install scenarios, pass a context whose width matches the request's version length.</param>
     /// <param name="alreadyInstalledResult">Set when the install is already present; null otherwise.</param>
     /// <param name="installationValidator">Optional validator override used to determine whether an untracked installation already exists on disk.</param>
-    /// <param name="getRegisteredSystemInstalls">Optional override returning the system installs Windows Installer has registered for an architecture, which a Windows installer bundle would conflict with.</param>
     /// <returns>A PreparedInstall that can be committed later, or null if already installed.</returns>
 #pragma warning disable CA1822
     public PreparedInstall? PrepareInstall(
         ResolvedInstallRequest resolvedRequest,
         InstallBatchContext batchContext,
         out InstallResult? alreadyInstalledResult,
-        IInstallationValidator? installationValidator = null,
-        Func<InstallArchitecture, IEnumerable<DotnetInstall>>? getRegisteredSystemInstalls = null)
+        IInstallationValidator? installationValidator = null)
     {
         var installRequest = resolvedRequest.Request;
-        var install = new DotnetInstall(installRequest.InstallRoot, resolvedRequest.ResolvedVersion, installRequest.Component);
+        var install = resolvedRequest.ToInstall();
         installationValidator ??= CreateInstallationValidator();
 
         alreadyInstalledResult = CheckExistingInstallState(installRequest, install, installationValidator);
@@ -335,11 +335,7 @@ internal class InstallerOrchestratorSingleton
             return null;
         }
 
-        if (installRequest.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle)
-        {
-            getRegisteredSystemInstalls ??= DotnetEnvironmentManager.GetSystemRegistryInstallState;
-            ThrowIfNewerVersionInstalled(install, getRegisteredSystemInstalls(install.InstallRoot.Architecture));
-        }
+        ThrowIfNewerVersionRegistered(installRequest, install);
 
         IInstallArtifact artifact = CreateInstallArtifact(resolvedRequest, ReleaseManifest.Default, batchContext);
         try
@@ -352,7 +348,7 @@ internal class InstallerOrchestratorSingleton
             throw;
         }
 
-        return new PreparedInstall(resolvedRequest, artifact, getRegisteredSystemInstalls);
+        return new PreparedInstall(resolvedRequest, artifact);
     }
 #pragma warning restore CA1822
 
@@ -373,20 +369,20 @@ internal class InstallerOrchestratorSingleton
         {
             string displayName = requested.Component.GetDisplayName();
             string registryKey = DotnetEnvironmentManager.GetRegistryVersionsKeyName(requested.Component, requested.InstallRoot.Architecture);
-            throw new DotnetInstallException(
+            throw CreateInstallException(
                 DotnetInstallErrorCode.NewerVersionInstalled,
-                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerNewerVersionInstalled, displayName, newer.Version, version, registryKey),
-                version: version.ToString(),
-                component: requested.Component.ToString());
+                requested,
+                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerNewerVersionInstalled, displayName, newer.Version, version, registryKey));
         }
     }
 
-    // Other Admin Install Calls Don't Respect our Mutex
-    private static void ThrowIfNewerVersionRegistered(PreparedInstall prepared)
+    // Installs outside dotnetup (MSI, Visual Studio, other bundles) don't take our mutex, so recheck the registry before each bundle run.
+    private static void ThrowIfNewerVersionRegistered(DotnetInstallRequest request, DotnetInstall install)
     {
-        if (prepared.GetRegisteredSystemInstalls is { } getRegisteredSystemInstalls)
+        if (request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle)
         {
-            ThrowIfNewerVersionInstalled(prepared.Install, getRegisteredSystemInstalls(prepared.Install.InstallRoot.Architecture));
+            var getRegisteredSystemInstalls = t_registeredSystemInstallsOverride ?? DotnetEnvironmentManager.GetSystemRegistryInstallState;
+            ThrowIfNewerVersionInstalled(install, getRegisteredSystemInstalls(install.InstallRoot.Architecture));
         }
     }
 
@@ -533,7 +529,7 @@ internal class InstallerOrchestratorSingleton
                 return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
             }
 
-            ThrowIfNewerVersionRegistered(prepared);
+            ThrowIfNewerVersionRegistered(prepared.Request, prepared.Install);
             prepared.Artifact.Commit();
 
             repaired = prepared.Artifact.RequiresPostInstallValidation
@@ -613,7 +609,7 @@ internal class InstallerOrchestratorSingleton
     private static bool RepairOrThrow(PreparedInstall prepared, IInstallationValidator validator, string? validationFailure)
     {
         // A bundle that found a newer build reports success without installing; repairing it cannot help.
-        ThrowIfNewerVersionRegistered(prepared);
+        ThrowIfNewerVersionRegistered(prepared.Request, prepared.Install);
 
         bool repairAttempted;
         try
@@ -644,13 +640,12 @@ internal class InstallerOrchestratorSingleton
     private static DotnetInstallException CreatePostInstallValidationException(PreparedInstall prepared, string? validationFailure)
     {
         bool isBundle = prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle;
-        return new DotnetInstallException(
+        return CreateInstallException(
             isBundle ? DotnetInstallErrorCode.InstallerPostInstallVerificationFailed : DotnetInstallErrorCode.InstallFailed,
+            prepared.Install,
             string.Format(
                 CultureInfo.CurrentCulture,
                 isBundle ? Strings.WindowsInstallerPostInstallVerificationFailed : Strings.InstallValidationFailed,
-                validationFailure),
-            version: prepared.Version.ToString(),
-            component: prepared.Request.Component.ToString());
+                validationFailure));
     }
 }
