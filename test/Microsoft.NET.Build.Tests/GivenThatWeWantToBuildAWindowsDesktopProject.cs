@@ -334,6 +334,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var testProject = new TestProject()
             {
+                Name = "App",
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0"
             };
 
