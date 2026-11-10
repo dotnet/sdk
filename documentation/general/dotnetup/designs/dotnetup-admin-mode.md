@@ -279,7 +279,9 @@ https://github.com/dotnet/vscode-dotnet-runtime/blob/f54c68789e1bdfca13e8262045c
 
 After exit code `0`, `dotnetup` confirms that the requested version is installed and otherwise fails with `InstallerPostInstallVerificationFailed`. Exit codes `3010` and `1641` skip this validation because pending file replacements may not be completed until the restart.
 
-The installers report success without installing anything when asked to downgrade: an SDK older than an installed SDK in the same feature band, or a runtime older than an installed runtime of the same major.minor. Before downloading, `dotnetup` checks the system installs and fails such a request with `NewerVersionInstalled`, naming the installed version.
+The installers report success without installing anything when asked to downgrade. This happens for SDKs within the same feature band and Runtimes within the same `major.minor`.
+
+In this case, `dotnetup` checks the system installs and fails with `NewerVersionInstalled`.
 
 Future work: a bounded wait for an interrupted parent that confirms the original installation has ended, re-queries the installation state, and retries at most once only if installation is still needed. If the original operation's status cannot be established, report an actionable failure without launching another installer.
 
