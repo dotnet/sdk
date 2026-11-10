@@ -20,6 +20,8 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateDependencyFile>false</GenerateDependencyFile>
+    <GenerateDependencyFile Condition="'$(_IsPacking)' == 'true' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</GenerateDependencyFile>
+    <ProjectDepsFilePath Condition="'$(_IsPacking)' == 'true' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\$(AssemblyName).deps.json</ProjectDepsFilePath>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddBuildTaskDepsToPackage</TargetsForTfmSpecificContentInPackage>
 
@@ -173,17 +175,8 @@
   </Target>
 
   <Target Name="_AddBuildTaskDepsToPackage" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
-    <PropertyGroup>
-      <_PackageTaskDepsDirectory>$(IntermediateOutputPath)package\</_PackageTaskDepsDirectory>
-      <_PackageTaskDepsFile>$(_PackageTaskDepsDirectory)$(AssemblyName).deps.json</_PackageTaskDepsFile>
-    </PropertyGroup>
-
-    <MakeDir Directories="$(_PackageTaskDepsDirectory)" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="GenerateBuildDependencyFile"
-             Properties="GenerateDependencyFile=true;ProjectDepsFilePath=$(_PackageTaskDepsFile)" />
-
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(_PackageTaskDepsFile)" PackagePath="tools/$(TargetFramework)/$(AssemblyName).deps.json" />
+      <TfmSpecificPackageFile Include="$(ProjectDepsFilePath)" PackagePath="tools/$(TargetFramework)/$(AssemblyName).deps.json" />
     </ItemGroup>
   </Target>
 
