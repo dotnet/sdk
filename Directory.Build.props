@@ -34,6 +34,17 @@
     <PortableTargetRid Condition="'$(PortableTargetRid)' == ''">$(OSName)-$(TargetArchitecture)</PortableTargetRid>
   </PropertyGroup>
 
+  <!--
+    openharmony has no NativeAOT toolchain in this build: the vendored NativeAotSupported.props
+    (eng/common/native) does not reject it. Without this override, dotnet-aot would restore
+    openharmony runtime packs that do not exist (NETSDK1203). linux-musl stays enabled.
+  -->
+  <PropertyGroup>
+    <NativeAotSupported Condition="'$(OSName)' == 'openharmony'">false</NativeAotSupported>
+    <!-- The OpenHarmony SDK ships no workloads; the layout validates that the manifest list is non-empty for every other platform. -->
+    <SkipWorkloadManifestValidation Condition="'$(OSName)' == 'openharmony'">true</SkipWorkloadManifestValidation>
+  </PropertyGroup>
+
   <PropertyGroup>
     <Nullable>enable</Nullable>
   </PropertyGroup>
