@@ -27,8 +27,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
-          "baseline_blob_sha": "65e4cbe0ee2c2ce45aa2acfa2aa278de89f2285b",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "5106ce03ba89f3a437abb5797b468e47d8ce211e",
           "scope": "wire constants (TestStates, SessionEventTypes, HandshakeMessage*, ProtocolConstants)"
         }
       ]
@@ -50,8 +50,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.ErroredAssemblies.cs",
-          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
-          "baseline_blob_sha": "653dc2e36dd6d477f72b0f37f30494980b1f06ed",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "3de05fb2fe7c08018ee3508c0e32517db28cca04",
           "scope": "reporter partial"
         },
         {
@@ -66,8 +66,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Formatting.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
-          "baseline_blob_sha": "4f74feeb8a89ff3dee999d2788aebd8a88aa5d71",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "422663f28daf6e53d6d8236c4781897728658e54",
           "scope": "reporter partial"
         },
         {
@@ -82,8 +82,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Lifecycle.cs",
-          "baseline_ref_sha": "3c6614c5ae19ee4ddca55cbf9b3375bbaad3496b",
-          "baseline_blob_sha": "4f78d4a53c21f192ea52264b0a292eec306915fb",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "a580d536a056d4e0046d259568ecf8fb8afbaa7c",
           "scope": "reporter partial"
         },
         {
@@ -206,8 +206,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.Append.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
-          "baseline_blob_sha": "810d4de6999083d24c13dec85ce7dfc57e00c70f",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "46a0c0ceae74d22e4f11f09c8b862355f242e3a0",
           "scope": "frame partial; split out of AnsiTerminalTestProgressFrame.cs"
         },
         {
@@ -336,14 +336,14 @@
     {
       "id": "dotnet-test-terminal-simpleterminalbase",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/SimpleTerminalBase.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. Module identity uses the shared TestFrameworkDisplay helper, preserving the target/process tuple and labelling differing or otherwise unclassified runtimes separately.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SimpleTerminalBase.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
-          "baseline_blob_sha": "84565fedfeaa1045272f36001ecd18da9218e429",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "8a81b8882d4010ad84d6de904ec17a4535bbee74",
           "scope": "entire file"
         }
       ]
@@ -426,14 +426,14 @@
     {
       "id": "dotnet-test-terminal-testprogressstate",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestProgressState.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx. The upstream Results/Summary partial split changes file organization, so the SDK keeps its single-file fork and tracks both new partials below. The SDK implements instance-based retry/flaky accounting; framework-level retry attribution still needs IPC metadata. HasIncompleteTestResults is SDK-owned session-lifecycle state, not a recovered-artifact count.",
+      "notes": "Terminal reporter support type hard-forked from testfx. The upstream Results/Summary partial split changes file organization, so the SDK keeps its single-file fork and tracks both new partials below. The SDK implements instance-based retry/flaky accounting; framework-level retry attribution still needs IPC metadata. HasIncompleteTestResults is SDK-owned session-lifecycle state, not a recovered-artifact count. RuntimeFramework is immutable execution metadata separate from TargetFramework and Architecture; the SDK appends its constructor argument after existing retry/visibility settings.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
-          "baseline_blob_sha": "5a4bfa97640c39637b571e863ea3797bc9020d1d",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "31c3b2bf3de5d8f576838e6d84cfd6c47be18c0a",
           "scope": "entire file"
         },
         {
@@ -517,14 +517,14 @@
     {
       "id": "dotnet-test-terminal-targetframeworkparser",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TargetFrameworkParser.cs",
-      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder. Reconciled at 005e8f82: the SDK already guards short descriptions, missing major versions, and trailing dots using an early length check rather than upstream's clamped IndexOf start index.",
+      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder. Reconciled at 005e8f82: the SDK already guards short descriptions, missing major versions, and trailing dots using an early length check rather than upstream's clamped IndexOf start index. Upstream's genuine assembly-target metadata parser is producer-owned and intentionally not copied: the SDK gets targets from evaluated projects or optional handshake field 21, never from runtime fallback.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
-          "baseline_blob_sha": "7dc0e55149a1e9ac520031d1635169148647ba0c",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "749841e7c0ac661df54aff1f0020107e71a6970a",
           "scope": "entire file"
         }
       ]
@@ -622,14 +622,14 @@
     {
       "id": "dotnet-test-terminal-silence-heartbeat",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/SilenceDrivenHeartbeatRenderer.cs",
-      "notes": "Visible-output silence, cumulative results, completion age, and exponential slow-test reporting. SDK adapts namespace/resources and retains GetRunningTasks(1).FirstOrDefault() semantics rather than importing unrelated allocation optimizations.",
+      "notes": "Visible-output silence, cumulative results, completion age, and exponential slow-test reporting. SDK adapts namespace/resources and retains GetRunningTasks(1).FirstOrDefault() semantics rather than importing unrelated allocation optimizations. Slow-test descriptions use the shared target/process/runtime display helper.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SilenceDrivenHeartbeatRenderer.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
-          "baseline_blob_sha": "4d935360673b90b20c49da359e77b9f0b49287ad",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "7eee145aef15e20474737dd06e42be99360a308c",
           "scope": "heartbeat and slow-test behavior"
         }
       ]
@@ -667,15 +667,30 @@
     {
       "id": "dotnet-test-terminal-progress-resources",
       "local_path": "src/Cli/dotnet/Commands/CliCommandStrings.resx",
-      "notes": "TerminalProgressHeartbeat*, TerminalProgressSlowTest and ErroredAssembliesHeader are adapted into the managed CLI resource owner. Captured-output help descriptions are adapted into CommandDefinitionStrings.resx so the SDK advertises its Failed default even when an older test application supplies help metadata. SDK-only collection and reporting-completeness messages have no upstream equivalent.",
+      "notes": "TerminalProgressHeartbeat*, TerminalProgressSlowTest, ErroredAssembliesHeader and RuntimeFramework are adapted into the managed CLI resource owner. Captured-output help descriptions are adapted into CommandDefinitionStrings.resx so the SDK advertises its Failed default even when an older test application supplies help metadata. SDK-only collection and reporting-completeness messages have no upstream equivalent.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalResources.resx",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
-          "baseline_blob_sha": "fc13b308ce14aa6dc1e8b9e444111c201b6ab966",
-          "scope": "progress and errored-assembly strings; captured-output help in Definitions"
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "9c1a54cce452de8017042f3143aa372902823b2a",
+          "scope": "progress, errored-assembly and runtime-annotation strings; captured-output help in Definitions"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-framework-display",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestFrameworkDisplay.cs",
+      "notes": "Shared module target/process/runtime presentation. Known equal runtimes stay compact; target platform suffixes are ignored only for comparison, and unknown targets/runtimes never imply equality. SDK adaptations are namespace, resource owner, repository header and string.IsNullOrWhiteSpace in place of RoslynString. FrameworkDescription normalization remains caller-owned.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestFrameworkDisplay.cs",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "6e2c9842fa96f3662330833fedce45ec5fb6409c",
+          "scope": "entire helper; namespace/resources adapted"
         }
       ]
     }
