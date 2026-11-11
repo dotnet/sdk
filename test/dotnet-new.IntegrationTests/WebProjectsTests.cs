@@ -43,6 +43,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [DataRow("mvc_cs-90", "mvc", "-f", "net9.0")]
         [DataRow("mvc_fs-90", "mvc", "-lang", "F#", "-f", "net9.0")]
         [DataRow("api_cs-90", "webapi", "-f", "net9.0")]
+        [DataRow("emptyweb_cs-100", "web", "-f", "net10.0")]
+        [DataRow("mvc_cs-100", "mvc", "-f", "net10.0")]
+        [DataRow("mvc_fs-100", "mvc", "-lang", "F#", "-f", "net10.0")]
+        [DataRow("api_cs-100", "webapi", "-f", "net10.0")]
+        [DataRow("emptyweb_cs-110", "web", "-f", "net11.0")]
+        [DataRow("mvc_cs-110", "mvc", "-f", "net11.0")]
+        [DataRow("mvc_fs-110", "mvc", "-lang", "F#", "-f", "net11.0")]
+        [DataRow("api_cs-110", "webapi", "-f", "net11.0")]
         public void AllWebProjectsRestoreAndBuild(string testName, params string[] args)
         {
             string workingDir = Path.Combine(_fixture.BaseWorkingDirectory, testName);
@@ -148,6 +156,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates70Path, BaseWorkingDirectory);
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates80Path, BaseWorkingDirectory);
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates90Path, BaseWorkingDirectory);
+            InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates100Path, BaseWorkingDirectory);
+            InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates110Path, BaseWorkingDirectory);
         }
 
         internal string BaseWorkingDirectory { get; private set; }

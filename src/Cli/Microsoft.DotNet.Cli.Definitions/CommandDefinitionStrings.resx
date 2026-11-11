@@ -661,6 +661,16 @@ If not specified the file will be generated inside the default 'TestResults' dir
   <data name="CmdTestOutputDescription" xml:space="preserve">
     <value>Verbosity of test output.</value>
   </data>
+  <data name="CmdTestShowStdoutDescription" xml:space="preserve">
+    <value>Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</value>
+    <comment>{Locked="All"}{Locked="Failed"}{Locked="None"}</comment>
+  </data>
+  <data name="CmdTestShowStderrDescription" xml:space="preserve">
+    <value>Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</value>
+    <comment>{Locked="All"}{Locked="Failed"}{Locked="None"}</comment>
+  </data>
   <data name="CmdTransitiveDescription" xml:space="preserve">
     <value>Lists transitive and top-level packages.</value>
   </data>
@@ -1027,6 +1037,9 @@ The default is to publish a framework-dependent application.</value>
   </data>
   <data name="ReferenceAddProjectPathArgumentName" xml:space="preserve">
     <value>PROJECT_PATH</value>
+  </data>
+  <data name="ReferenceCommandDescription" xml:space="preserve">
+    <value>Add, remove, or list ProjectReferences for a .NET project.</value>
   </data>
   <data name="ReferenceListAppFullName" xml:space="preserve">
     <value>List all project-to-project references of the project.</value>

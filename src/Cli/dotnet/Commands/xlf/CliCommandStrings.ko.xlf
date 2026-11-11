@@ -3130,6 +3130,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">&lt;application&gt;.runtimeconfig.json 파일의 경로입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RuntimeFramework">
+        <source>runtime: {0}</source>
+        <target state="new">runtime: {0}</target>
+        <note>Additional runtime information after the test assembly's target framework and process architecture. {0} is a compact runtime moniker such as net481 or net9.0.</note>
+      </trans-unit>
       <trans-unit id="RuntimePropertyNotFound">
         <source>Runtime property 'HOSTFXR_PATH' was not set or empty.</source>
         <target state="translated">런타임 속성 'HOSTFXR_PATH'이(가) 설정되지 않았거나 비어 있습니다.</target>

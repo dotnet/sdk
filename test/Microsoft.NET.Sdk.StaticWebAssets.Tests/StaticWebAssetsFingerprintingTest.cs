@@ -71,7 +71,8 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest : AspNetSdkBase
         var build = CreateBuildCommand(ProjectDirectory);
         ExecuteCommand(build, "-p:OverrideHtmlAssetPlaceholders=true", $"-p:FingerprintUserJavascriptAssets={fingerprintUserJavascriptAssets.ToString().ToLower()}").Should().Pass();
 
-        var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+        var targetFramework = testAsset == "VanillaWasm" ? ToolsetInfo.CurrentTargetFramework : DefaultTfm;
+        var intermediateOutputPath = build.GetIntermediateDirectory(targetFramework, "Debug").ToString();
         var indexHtmlPath = Directory.EnumerateFiles(Path.Combine(intermediateOutputPath, "staticwebassets", "htmlassetplaceholders", "build"), "*.html").Single();
         var endpointsManifestPath = Path.Combine(intermediateOutputPath, $"staticwebassets.build.endpoints.json");
 
@@ -89,7 +90,7 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest : AspNetSdkBase
         var build = CreateBuildCommand(ProjectDirectory);
         ExecuteCommand(build, "-p:OverrideHtmlAssetPlaceholders=true", "-p:FingerprintUserJavascriptAssets=true").Should().Pass();
 
-        var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+        var intermediateOutputPath = build.GetIntermediateDirectory(ToolsetInfo.CurrentTargetFramework, "Debug").ToString();
         var endpointsManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.endpoints.json");
         AssertAdditionalEndpointDefinitionsExist(endpointsManifestPath);
     }
@@ -107,7 +108,8 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest : AspNetSdkBase
         var publish = CreatePublishCommand(ProjectDirectory);
         ExecuteCommand(publish, "-p:OverrideHtmlAssetPlaceholders=true", $"-p:FingerprintUserJavascriptAssets={fingerprintUserJavascriptAssets.ToString().ToLower()}").Should().Pass();
 
-        var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+        var targetFramework = testAsset == "VanillaWasm" ? ToolsetInfo.CurrentTargetFramework : DefaultTfm;
+        var outputPath = publish.GetOutputDirectory(targetFramework, "Debug").ToString();
         var indexHtmlOutputPath = Path.Combine(outputPath, "wwwroot", "index.html");
         var endpointsManifestPath = Path.Combine(outputPath, $"{projectName}.staticwebassets.endpoints.json");
 
@@ -126,7 +128,7 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest : AspNetSdkBase
         var publish = CreatePublishCommand(ProjectDirectory);
         ExecuteCommand(publish, "-p:OverrideHtmlAssetPlaceholders=true", "-p:FingerprintUserJavascriptAssets=true").Should().Pass();
 
-        var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+        var outputPath = publish.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework, "Debug").ToString();
         var endpointsManifestPath = Path.Combine(outputPath, $"{projectName}.staticwebassets.endpoints.json");
         AssertAdditionalEndpointDefinitionsExist(endpointsManifestPath);
     }

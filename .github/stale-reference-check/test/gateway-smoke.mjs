@@ -3,19 +3,28 @@
 
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
-import { randomUUID } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
+import os from "node:os";
+import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
+import { maxSubmissionBytes, sendRecordingRequest } from "../source-tools.mjs";
 
 const lock = await readFile(new URL("../../workflows/stale-reference-interpret.lock.yml", import.meta.url), "utf8");
-const image = process.argv[2] ?? lock.match(/ghcr\.io\/github\/gh-aw-mcpg:v0\.4\.25@sha256:[a-f0-9]{64}/)?.[0];
+const image = process.argv[2] ?? lock.match(/ghcr\.io\/github\/gh-aw-mcpg:v[\d.]+@sha256:[a-f0-9]{64}/)?.[0];
 assert.match(image, /^ghcr\.io\/github\/gh-aw-mcpg:v[\d.]+@sha256:[a-f0-9]{64}$/);
 
 const tools = [
     { name: "read_batch", description: "Read synthetic source.", inputSchema: { type: "object" } },
-    { name: "prepare_interpretations", description: "Prepare synthetic output.", inputSchema: { type: "object" } },
+    { name: "prepare_interpretations", description: "Prepare synthetic output.",
+        inputSchema: { type: "object", properties: { payload: { type: "object" } }, required: ["payload"] } },
+    { name: "record_interpretations", description: "Record synthetic output.",
+        inputSchema: { type: "object", properties: { receipt: { type: "string" }, payload: { type: "string" } },
+            required: ["receipt", "payload"] } },
 ];
+const preparedPayloads = new Map();
+const recordedPayloads = [];
 const token = randomUUID();
 const backend = createServer(async (request, response) =>
 {
@@ -48,15 +57,32 @@ const backend = createServer(async (request, response) =>
         }));
         return;
     }
+    const serializedPayload = message.method === "tools/call" && message.params.name === "prepare_interpretations"
+        ? JSON.stringify(message.params.arguments.payload) : null;
+    if (serializedPayload)
+    {
+        preparedPayloads.set(createHash("sha256").update(serializedPayload).digest("hex"), serializedPayload);
+    }
+    const recording = message.method === "tools/call" && message.params.name === "record_interpretations";
+    if (recording)
+    {
+        assert.equal(message.params.arguments.payload, preparedPayloads.get(message.params.arguments.receipt));
+        recordedPayloads.push(message.params.arguments.payload);
+    }
     const result = message.method === "initialize"
         ? { protocolVersion: "2025-11-25", capabilities: { tools: {} }, serverInfo: { name: "fixture", version: "1" } }
         : message.method === "tools/list" ? { tools }
+        : serializedPayload ? { content: [{ type: "text", text: JSON.stringify({
+            receipt: createHash("sha256").update(serializedPayload).digest("hex"),
+        }) }] }
+        : recording ? { content: [{ type: "text", text: JSON.stringify({ result: "success" }) }] }
         : { content: [{ type: "text", text: "synthetic fixture" }] };
     response.writeHead(200, { "Content-Type": "application/json" });
     response.end(JSON.stringify({ jsonrpc: "2.0", id: message.id, result }));
 });
 await new Promise(resolve => backend.listen(0, "0.0.0.0", resolve));
 const name = `stale-reference-gateway-${randomUUID()}`;
+const temporary = await mkdtemp(path.join(os.tmpdir(), "stale-reference-gateway-"));
 const child = spawn("docker", ["run", "--rm", "-i", "--name", name,
     "--add-host", "host.docker.internal:host-gateway", "-p", "127.0.0.1::8080",
     "-v", "/var/run/docker.sock:/var/run/docker.sock:ro",
@@ -80,6 +106,11 @@ child.stdin.end(JSON.stringify({
             url: `http://host.docker.internal:${backend.address().port}`,
             headers: { Authorization: token },
         },
+        safeoutputs: {
+            type: "http",
+            url: `http://host.docker.internal:${backend.address().port}`,
+            headers: { Authorization: token },
+        },
     },
     gateway: { port: 8080, agentId: token, domain: "localhost", startupTimeout: 30 },
 }));
@@ -95,6 +126,10 @@ try
         await delay(500);
     }
     const address = execFileSync("docker", ["port", name, "8080/tcp"], { encoding: "utf8" }).trim();
+    const config = path.join(temporary, "mcp-config.json");
+    await writeFile(config, JSON.stringify({ mcpServers: { safeoutputs: {
+        type: "http", url: `http://${address}/mcp/safeoutputs`, headers: { Authorization: token },
+    } } }), { mode: 0o600 });
     const url = `http://${address}/mcp/fixture`;
     let id = 0;
     let session;
@@ -147,12 +182,24 @@ try
     const listed = await rpc("tools/list", {});
     assert.ok(listed.result?.tools, `Native tool discovery failed: ${JSON.stringify(listed)}`);
     assert.deepEqual(listed.result.tools.map(tool => tool.name).sort(), tools.map(tool => tool.name).sort());
-    for (const tool of tools)
+    const read = await rpc("tools/call", { name: "read_batch", arguments: {} });
+    assert.equal(read.result?.content?.[0]?.text, "synthetic fixture", JSON.stringify(read));
+    for (const character of ["\\", "&"])
     {
-        const called = await rpc("tools/call", { name: tool.name, arguments: {} });
-        assert.equal(called.result?.content?.[0]?.text, "synthetic fixture", JSON.stringify(called));
+        const payload = { value: "" };
+        const remaining = maxSubmissionBytes - Buffer.byteLength(JSON.stringify(payload));
+        const encodedLength = character === "\\" ? 2 : 1;
+        payload.value = character.repeat(Math.floor(remaining / encodedLength)) + "a".repeat(remaining % encodedLength);
+        const expectedPayload = JSON.stringify(payload);
+        assert.equal(Buffer.byteLength(expectedPayload), maxSubmissionBytes);
+        const called = await rpc("tools/call", { name: "prepare_interpretations", arguments: { payload } });
+        const accepted = JSON.parse(called.result?.content?.[0]?.text);
+        assert.deepEqual(accepted, { receipt: createHash("sha256").update(expectedPayload).digest("hex") });
+        assert.equal(accepted.receipt, createHash("sha256").update(expectedPayload).digest("hex"));
+        assert.deepEqual(await sendRecordingRequest(config, { receipt: accepted.receipt, payload: expectedPayload }), { queued: true });
+        assert.equal(recordedPayloads.at(-1), expectedPayload, "Trusted queueing must preserve the full bounded payload without file tools.");
     }
-    console.log(`Native discovery, session initialization, tools/list, and both tool calls passed: ${image}`);
+    console.log(`Native discovery, session initialization, tools/list, and bounded native recording passed: ${image}`);
 }
 finally
 {
@@ -171,5 +218,6 @@ finally
     {
         backend.closeAllConnections();
         await new Promise(resolve => backend.close(resolve));
+        await rm(temporary, { recursive: true, force: true });
     }
 }
