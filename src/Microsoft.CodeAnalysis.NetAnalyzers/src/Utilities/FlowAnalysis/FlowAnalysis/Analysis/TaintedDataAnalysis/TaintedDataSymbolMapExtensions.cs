@@ -21,32 +21,58 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
     internal static class TaintedDataSymbolMapExtensions
     {
         /// <summary>
-        /// Determines if the given method is a tainted data source and get the tainted target set.
+        /// Checks an original-tree invocation for a source without collecting tainted targets.
         /// </summary>
-        /// <param name="sourceSymbolMap"></param>
-        /// <param name="method"></param>
-        /// <param name="arguments"></param>
-        /// <param name="pointsToFactory">If the method needs to do PointsToAnalysis, the PointsToAnalysis result will be produced by the passed value factory.</param>
-        /// <param name="valueContentFactory">If the method needs to do ValueContentAnalysis, the ValueContentAnalysis result will be produced by the passed value factory.</param>
-        /// <param name="allTaintedTargets"></param>
-        /// <returns></returns>
         public static bool IsSourceMethod(
             this TaintedDataSymbolMap<SourceInfo> sourceSymbolMap,
             IMethodSymbol method,
             ImmutableArray<IArgumentOperation> arguments,
             Lazy<PointsToAnalysisResult?> pointsToFactory,
-            Lazy<(PointsToAnalysisResult? p, ValueContentAnalysisResult? v)> valueContentFactory,
+            Lazy<(PointsToAnalysisResult? p, ValueContentAnalysisResult? v)> valueContentFactory)
+            => IsSourceMethodCore(sourceSymbolMap, method, arguments, isPrepass: true,
+                pointsToFactory, valueContentFactory, null, null, out _);
+
+        /// <summary>
+        /// Collects source targets using argument operations and analysis results from the CFG.
+        /// </summary>
+        public static bool IsSourceMethod(
+            this TaintedDataSymbolMap<SourceInfo> sourceSymbolMap,
+            IMethodSymbol method,
+            ImmutableArray<IArgumentOperation> arguments,
+            PointsToAnalysisResult? pointsToAnalysisResult,
+            ValueContentAnalysisResult? valueContentAnalysisResult,
             [NotNullWhen(returnValue: true)] out PooledHashSet<string>? allTaintedTargets)
         {
+            IsSourceMethodCore(sourceSymbolMap, method, arguments, isPrepass: false,
+                null, null, pointsToAnalysisResult, valueContentAnalysisResult, out allTaintedTargets);
+            return allTaintedTargets != null;
+        }
+
+        private static bool IsSourceMethodCore(
+            TaintedDataSymbolMap<SourceInfo> sourceSymbolMap,
+            IMethodSymbol method,
+            ImmutableArray<IArgumentOperation> arguments,
+            bool isPrepass,
+            Lazy<PointsToAnalysisResult?>? pointsToFactory,
+            Lazy<(PointsToAnalysisResult? p, ValueContentAnalysisResult? v)>? valueContentFactory,
+            PointsToAnalysisResult? pointsToAnalysisResult,
+            ValueContentAnalysisResult? valueContentAnalysisResult,
+            out PooledHashSet<string>? allTaintedTargets)
+        {
             allTaintedTargets = null;
-            PointsToAnalysisResult? pointsToAnalysisResult = null;
-            ValueContentAnalysisResult? valueContentAnalysisResult = null;
+            ImmutableArray<PointsToAbstractValue> argumentPointsToValues = default;
+            ImmutableArray<ValueContentAbstractValue> argumentValueContents = default;
             foreach (SourceInfo sourceInfo in sourceSymbolMap.GetInfosForType(method.ContainingType))
             {
                 foreach ((MethodMatcher methodMatcher, ImmutableHashSet<string> taintedTargets) in sourceInfo.TaintedMethods)
                 {
                     if (methodMatcher(method.Name, arguments))
                     {
+                        if (isPrepass)
+                        {
+                            return true;
+                        }
+
                         allTaintedTargets ??= PooledHashSet<string>.GetInstance();
 
                         allTaintedTargets.UnionWith(taintedTargets);
@@ -55,53 +81,94 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
 
                 foreach ((MethodMatcher methodMatcher, ImmutableHashSet<(PointsToCheck pointsToCheck, string)> pointsToTaintedTargets) in sourceInfo.TaintedMethodsNeedsPointsToAnalysis)
                 {
-                    if (pointsToTaintedTargets.Any() && methodMatcher(method.Name, arguments))
+                    if (!pointsToTaintedTargets.IsEmpty && methodMatcher(method.Name, arguments))
                     {
-                        pointsToAnalysisResult ??= pointsToFactory.Value;
+                        pointsToAnalysisResult ??= pointsToFactory?.Value;
                         if (pointsToAnalysisResult == null)
                         {
                             break;
                         }
 
-                        IEnumerable<(PointsToCheck, string target)> positivePointsToTaintedTargets = pointsToTaintedTargets.Where(s =>
-                            s.pointsToCheck(
-                                arguments.Select(o =>
-                                    pointsToAnalysisResult[o.Kind, o.Syntax]).ToImmutableArray()));
-                        if (positivePointsToTaintedTargets.Any())
+                        if (argumentPointsToValues.IsDefault)
                         {
-                            allTaintedTargets ??= PooledHashSet<string>.GetInstance();
+                            argumentPointsToValues = GetArgumentValues(pointsToAnalysisResult, arguments, isPrepass);
+                        }
 
-                            allTaintedTargets.UnionWith(positivePointsToTaintedTargets.Select(s => s.target));
+                        foreach (var (check, target) in pointsToTaintedTargets)
+                        {
+                            if (check(argumentPointsToValues))
+                            {
+                                if (isPrepass)
+                                {
+                                    return true;
+                                }
+
+                                allTaintedTargets ??= PooledHashSet<string>.GetInstance();
+                                allTaintedTargets.Add(target);
+                            }
                         }
                     }
                 }
 
                 foreach ((MethodMatcher methodMatcher, ImmutableHashSet<(ValueContentCheck valueContentCheck, string)> valueContentTaintedTargets) in sourceInfo.TaintedMethodsNeedsValueContentAnalysis)
                 {
-                    if (valueContentTaintedTargets.Any() && methodMatcher(method.Name, arguments))
+                    if (!valueContentTaintedTargets.IsEmpty && methodMatcher(method.Name, arguments))
                     {
-                        pointsToAnalysisResult ??= valueContentFactory.Value.p;
-                        valueContentAnalysisResult ??= valueContentFactory.Value.v;
+                        if (valueContentAnalysisResult == null && valueContentFactory != null)
+                        {
+                            var results = valueContentFactory.Value;
+                            pointsToAnalysisResult ??= results.p;
+                            valueContentAnalysisResult = results.v;
+                        }
+
                         if (pointsToAnalysisResult == null || valueContentAnalysisResult == null)
                         {
                             break;
                         }
 
-                        IEnumerable<(ValueContentCheck, string target)> positiveValueContentTaintedTargets = valueContentTaintedTargets.Where(s =>
-                            s.valueContentCheck(
-                                arguments.Select(o => pointsToAnalysisResult[o.Kind, o.Syntax]).ToImmutableArray(),
-                                arguments.Select(o => valueContentAnalysisResult[o.Kind, o.Syntax]).ToImmutableArray()));
-                        if (positiveValueContentTaintedTargets.Any())
+                        if (argumentPointsToValues.IsDefault)
                         {
-                            allTaintedTargets ??= PooledHashSet<string>.GetInstance();
+                            argumentPointsToValues = GetArgumentValues(pointsToAnalysisResult, arguments, isPrepass);
+                        }
 
-                            allTaintedTargets.UnionWith(positiveValueContentTaintedTargets.Select(s => s.target));
+                        if (argumentValueContents.IsDefault)
+                        {
+                            argumentValueContents = GetArgumentValues(valueContentAnalysisResult, arguments, isPrepass);
+                        }
+
+                        foreach (var (check, target) in valueContentTaintedTargets)
+                        {
+                            if (check(argumentPointsToValues, argumentValueContents))
+                            {
+                                if (isPrepass)
+                                {
+                                    return true;
+                                }
+
+                                allTaintedTargets ??= PooledHashSet<string>.GetInstance();
+                                allTaintedTargets.Add(target);
+                            }
                         }
                     }
                 }
             }
 
             return allTaintedTargets != null;
+        }
+
+        private static ImmutableArray<TValue> GetArgumentValues<TBlockResult, TValue>(
+            DataFlowAnalysisResult<TBlockResult, TValue> result,
+            ImmutableArray<IArgumentOperation> arguments,
+            bool isPrepass)
+            where TBlockResult : AbstractBlockAnalysisResult
+        {
+            using var values = ArrayBuilder<TValue>.GetInstance();
+            foreach (var argument in arguments)
+            {
+                values.Add(isPrepass ? result[argument.Kind, argument.Syntax] : result[argument]);
+            }
+
+            return values.ToImmutable();
         }
 
         /// <summary>

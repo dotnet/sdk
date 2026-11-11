@@ -100,7 +100,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                             WellKnownTypeProvider wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
                             Lazy<ControlFlowGraph?> controlFlowGraphFactory = new Lazy<ControlFlowGraph?>(
-                                () => operationBlockStartContext.OperationBlocks.GetControlFlowGraph());
+                                () => operationBlockStartContext.GetControlFlowGraph());
                             Lazy<PointsToAnalysisResult?> pointsToFactory = new Lazy<PointsToAnalysisResult?>(
                                 () =>
                                 {
@@ -156,6 +156,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                             operationBlockStartContext.RegisterOperationAction(
                                 operationAnalysisContext =>
                                 {
+                                    if (Volatile.Read(ref hasSource) != 0)
+                                    {
+                                        return;
+                                    }
+
                                     IPropertyReferenceOperation propertyReferenceOperation = (IPropertyReferenceOperation)operationAnalysisContext.Operation;
                                     if (sourceInfoSymbolMap.IsSourceProperty(propertyReferenceOperation.Property))
                                     {
@@ -169,6 +174,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 operationBlockStartContext.RegisterOperationAction(
                                     operationAnalysisContext =>
                                     {
+                                        if (Volatile.Read(ref hasSource) != 0)
+                                        {
+                                            return;
+                                        }
+
                                         IParameterReferenceOperation parameterReferenceOperation = (IParameterReferenceOperation)operationAnalysisContext.Operation;
                                         if (sourceInfoSymbolMap.IsSourceParameter(parameterReferenceOperation.Parameter, wellKnownTypeProvider))
                                         {
@@ -181,6 +191,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                             operationBlockStartContext.RegisterOperationAction(
                                 operationAnalysisContext =>
                                 {
+                                    if (Volatile.Read(ref hasSource) != 0)
+                                    {
+                                        return;
+                                    }
+
                                     IInvocationOperation invocationOperation = (IInvocationOperation)operationAnalysisContext.Operation;
                                     if (mayReachSink is not null &&
                                         sourceInfoSymbolMap.GetInfosForType(invocationOperation.TargetMethod.ContainingType).Any() &&
@@ -193,8 +208,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             invocationOperation.TargetMethod,
                                             invocationOperation.Arguments,
                                             pointsToFactory,
-                                            valueContentFactory,
-                                            out _))
+                                            valueContentFactory))
                                     {
                                         Interlocked.Exchange(ref hasSource, 1);
                                     }
@@ -206,6 +220,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 operationBlockStartContext.RegisterOperationAction(
                                     operationAnalysisContext =>
                                     {
+                                        if (Volatile.Read(ref hasSource) != 0)
+                                        {
+                                            return;
+                                        }
+
                                         IArrayInitializerOperation arrayInitializerOperation = (IArrayInitializerOperation)operationAnalysisContext.Operation;
                                         if (arrayInitializerOperation.GetAncestor<IArrayCreationOperation>(OperationKind.ArrayCreation)?.Type is IArrayTypeSymbol arrayTypeSymbol
                                             && sourceInfoSymbolMap.IsSourceConstantArrayOfType(arrayTypeSymbol, arrayInitializerOperation))
@@ -263,6 +282,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             continue;
                                         }
 
+                                        var sinkSymbolDisplay = sourceSink.Sink.Symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+                                        var sinkMethodDisplay = sourceSink.Sink.AccessingMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                                         foreach (SymbolAccess sourceOrigin in sourceSink.SourceOrigins)
                                         {
                                             // Something like:
@@ -272,8 +293,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                 sourceSink.Sink.Location,
                                                 additionalLocations: new Location[] { sourceOrigin.Location },
                                                 messageArgs: new object[] {
-                                            sourceSink.Sink.Symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
-                                            sourceSink.Sink.AccessingMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+                                            sinkSymbolDisplay,
+                                            sinkMethodDisplay,
                                             sourceOrigin.Symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
                                             sourceOrigin.AccessingMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)});
                                             operationBlockAnalysisContext.ReportDiagnostic(diagnostic);
