@@ -19,8 +19,17 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [TestMethod]
         public void HelpDescriptionIndicatesDeprecation()
         {
-            new StoreCommandDefinition().Description.Should().StartWith(
-                "Warning: The dotnet store command and the runtime package store feature are deprecated and no longer supported.");
+            var originalUICulture = System.Globalization.CultureInfo.CurrentUICulture;
+            try
+            {
+                System.Globalization.CultureInfo.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+                new StoreCommandDefinition().Description.Should().StartWith(
+                    "Warning: The dotnet store command and the runtime package store feature are deprecated and no longer supported.");
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentUICulture = originalUICulture;
+            }
         }
 
         [TestMethod]
