@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         private readonly ImmutableDictionary<IOperation, TAbstractAnalysisValue>.Builder _valueCacheBuilder;
         private readonly ImmutableDictionary<IOperation, PredicateValueKind>.Builder _predicateValueKindCacheBuilder;
         private readonly HashSet<IArgumentOperation> _pendingArgumentsToReset;
-        private readonly List<IArgumentOperation> _pendingArgumentsToPostProcess;
+        private readonly Dictionary<IOperation, (IArgumentOperation First, List<IArgumentOperation>? Additional)> _pendingArgumentsToPostProcess;
         private readonly HashSet<IOperation> _visitedFlowBranchConditions;
         private readonly HashSet<IFlowAnonymousFunctionOperation> _visitedLambdas;
         private readonly HashSet<IOperation>? _returnValueOperations;
@@ -272,7 +272,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             _valueCacheBuilder = ImmutableDictionary.CreateBuilder<IOperation, TAbstractAnalysisValue>();
             _predicateValueKindCacheBuilder = ImmutableDictionary.CreateBuilder<IOperation, PredicateValueKind>();
             _pendingArgumentsToReset = new HashSet<IArgumentOperation>();
-            _pendingArgumentsToPostProcess = new List<IArgumentOperation>();
+            _pendingArgumentsToPostProcess = new Dictionary<IOperation, (IArgumentOperation, List<IArgumentOperation>?)>();
             _visitedFlowBranchConditions = new HashSet<IOperation>();
             _visitedLambdas = new HashSet<IFlowAnonymousFunctionOperation>();
             _returnValueOperations = OwningSymbol is IMethodSymbol method && !method.ReturnsVoid ? new HashSet<IOperation>() : null;
@@ -2781,27 +2781,34 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                     HandlePossibleThrowingOperation(operation);
                 }
 
-                var pendingArguments = _pendingArgumentsToPostProcess.ExtractAll(static (arg, operation) => arg.Parent == operation, operation);
-                foreach (IArgumentOperation argumentOperation in pendingArguments)
+                if (_pendingArgumentsToPostProcess.TryGetValue(operation, out var pendingArguments))
                 {
-                    bool isEscaped;
-                    if (_pendingArgumentsToReset.Remove(argumentOperation))
+                    _pendingArgumentsToPostProcess.Remove(operation);
+                    PostProcessPendingArgument(pendingArguments.First);
+                    if (pendingArguments.Additional != null)
                     {
-                        PostProcessEscapedArgument(argumentOperation);
-                        isEscaped = true;
+                        foreach (var argumentOperation in pendingArguments.Additional)
+                        {
+                            PostProcessPendingArgument(argumentOperation);
+                        }
                     }
-                    else
-                    {
-                        isEscaped = false;
-                    }
-
-                    PostProcessArgument(argumentOperation, isEscaped);
                 }
 
                 return value;
             }
 
             return ValueDomain.UnknownOrMayBeValue;
+        }
+
+        private void PostProcessPendingArgument(IArgumentOperation operation)
+        {
+            var isEscaped = _pendingArgumentsToReset.Remove(operation);
+            if (isEscaped)
+            {
+                PostProcessEscapedArgument(operation);
+            }
+
+            PostProcessArgument(operation, isEscaped);
         }
 
         private TAbstractAnalysisValue VisitCore(IOperation operation, object? argument)
@@ -3086,7 +3093,22 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 FlowBranchConditionKind = ControlFlowConditionKind.None;
             }
 
-            _pendingArgumentsToPostProcess.Add(operation);
+            RoslynDebug.Assert(operation.Parent != null);
+            if (_pendingArgumentsToPostProcess.TryGetValue(operation.Parent, out var pendingArguments))
+            {
+                if (pendingArguments.Additional == null)
+                {
+                    pendingArguments.Additional = new List<IArgumentOperation>();
+                    _pendingArgumentsToPostProcess[operation.Parent] = pendingArguments;
+                }
+
+                pendingArguments.Additional.Add(operation);
+            }
+            else
+            {
+                _pendingArgumentsToPostProcess.Add(operation.Parent, (operation, null));
+            }
+
             _pendingArgumentsToReset.Add(operation);
             return value;
         }

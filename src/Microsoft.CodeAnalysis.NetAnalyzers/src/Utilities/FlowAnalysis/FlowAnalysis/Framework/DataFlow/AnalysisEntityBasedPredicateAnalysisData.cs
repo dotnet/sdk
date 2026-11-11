@@ -7,7 +7,9 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 
 namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
 {
@@ -17,6 +19,9 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
     /// </summary>
     public abstract class AnalysisEntityBasedPredicateAnalysisData<TValue> : PredicatedAnalysisData<AnalysisEntity, TValue>
     {
+        private Dictionary<PointsToAbstractValue, HashSet<AnalysisEntity>>? _lazyChildrenByInstanceLocation;
+        private Dictionary<(int LocationHash, int Rank), List<AnalysisEntity>>? _lazyIndexedEntities;
+
         protected AnalysisEntityBasedPredicateAnalysisData()
         {
             CoreAnalysisData = new DictionaryAnalysisData<AnalysisEntity, TValue>();
@@ -165,6 +170,109 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
 
         public void AddTrackedEntities(HashSet<AnalysisEntity> builder) => builder.UnionWith(CoreAnalysisData.Keys);
 
+        internal IEnumerable<AnalysisEntity> GetChildAnalysisEntityCandidates(PointsToAbstractValue instanceLocation)
+        {
+            if (_lazyChildrenByInstanceLocation == null)
+            {
+                EnsureEntityIndexTracking();
+                _lazyChildrenByInstanceLocation = new Dictionary<PointsToAbstractValue, HashSet<AnalysisEntity>>();
+                foreach (var entity in CoreAnalysisData.Keys)
+                {
+                    UpdateChildEntityIndex(entity, added: true);
+                }
+
+            }
+
+            return _lazyChildrenByInstanceLocation.TryGetValue(instanceLocation, out var children)
+                ? children
+                : Array.Empty<AnalysisEntity>();
+        }
+
+        private void UpdateChildEntityIndex(AnalysisEntity entity, bool added)
+        {
+            if (!entity.IsChildOrInstanceMember || entity.InstanceLocation == PointsToAbstractValue.NoLocation)
+            {
+                return;
+            }
+
+            RoslynDebug.Assert(_lazyChildrenByInstanceLocation != null);
+            if (added)
+            {
+                if (!_lazyChildrenByInstanceLocation.TryGetValue(entity.InstanceLocation, out var children))
+                {
+                    children = new HashSet<AnalysisEntity>();
+                    _lazyChildrenByInstanceLocation.Add(entity.InstanceLocation, children);
+                }
+
+                children.Add(entity);
+            }
+            else
+            {
+                var children = _lazyChildrenByInstanceLocation[entity.InstanceLocation];
+                var removed = children.Remove(entity);
+                Debug.Assert(removed);
+                if (children.Count == 0)
+                {
+                    _lazyChildrenByInstanceLocation.Remove(entity.InstanceLocation);
+                }
+            }
+        }
+
+        private void EnsureEntityIndexTracking()
+        {
+            if (_lazyChildrenByInstanceLocation == null && _lazyIndexedEntities == null)
+            {
+                // Predicates, copy analysis, imports, and cleanup can mutate CoreAnalysisData directly.
+                CoreAnalysisData.KeySetChanged += UpdateEntityIndexes;
+                CoreAnalysisData.KeysCleared += ClearEntityIndexes;
+            }
+        }
+
+        private void UpdateEntityIndexes(AnalysisEntity entity, bool added)
+        {
+            if (_lazyChildrenByInstanceLocation != null)
+            {
+                UpdateChildEntityIndex(entity, added);
+            }
+
+            // Rebuild candidates in dictionary enumeration order after any key change.
+            // Reusing a removed dictionary slot can change the relative order of indexed keys.
+            _lazyIndexedEntities?.Clear();
+        }
+
+        private void ClearEntityIndexes()
+        {
+            _lazyChildrenByInstanceLocation?.Clear();
+            _lazyIndexedEntities?.Clear();
+        }
+
+        private List<AnalysisEntity> GetIndexedEntityCandidates(AnalysisEntity entity)
+        {
+            if (_lazyIndexedEntities == null)
+            {
+                EnsureEntityIndexTracking();
+                _lazyIndexedEntities = new Dictionary<(int, int), List<AnalysisEntity>>();
+            }
+
+            var key = (LocationHash: entity.InstanceLocation.GetHashCode(), Rank: entity.Indices.Length);
+            if (!_lazyIndexedEntities.TryGetValue(key, out var entities))
+            {
+                entities = new List<AnalysisEntity>();
+                foreach (var candidate in CoreAnalysisData.Keys)
+                {
+                    if (candidate.Indices.Length == key.Rank &&
+                        candidate.InstanceLocation.GetHashCode() == key.LocationHash)
+                    {
+                        entities.Add(candidate);
+                    }
+                }
+
+                _lazyIndexedEntities.Add(key, entities);
+            }
+
+            return entities;
+        }
+
         private void ClearOverlappingAnalysisDataForIndexedEntity(AnalysisEntity analysisEntity, TValue value)
         {
             if (!analysisEntity.Indices.Any(index => !index.IsConstant()))
@@ -172,15 +280,12 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 return;
             }
 
-            // Collect all the overlapping indexed entities whose value needs to be updated into a builder.
-            // Ensure that we perform these state updates after the foreach loop to avoid modifying the
-            // underlying CoreAnalysisData within the loop.
-            // See https://github.com/dotnet/roslyn-analyzers/issues/6929 for more details.
-            using var builder = ArrayBuilder<(AnalysisEntity, TValue)>.GetInstance(CoreAnalysisData.Count);
-            foreach (var entity in CoreAnalysisData.Keys)
+            // Snapshot updates before calling virtual setters, which may change the candidate index.
+            // See https://github.com/dotnet/roslyn-analyzers/issues/6929.
+            using var builder = ArrayBuilder<(AnalysisEntity, TValue)>.GetInstance();
+            foreach (var entity in GetIndexedEntityCandidates(analysisEntity))
             {
-                if (entity.Indices.Length != analysisEntity.Indices.Length ||
-                    entity == analysisEntity)
+                if (entity == analysisEntity)
                 {
                     continue;
                 }
@@ -198,7 +303,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 }
 
                 if (canOverlap &&
-                    entity.WithIndices(analysisEntity.Indices).Equals(analysisEntity) &&
+                    entity.EqualsIgnoringIndices(analysisEntity) &&
                     CoreAnalysisData.TryGetValue(entity, out var existingValue))
                 {
                     var mergedValue = ValueDomain.Merge(value, existingValue);
@@ -209,9 +314,12 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 }
             }
 
-            foreach (var (entity, newValue) in builder.AsEnumerable())
+            // Preserve captured values and synchronous virtual-setter completion: widening can
+            // discard literals, and overrides may inspect overlapping state after calling base.
+            for (var index = 0; index < builder.Count; index++)
             {
-                SetAbstractValue(entity, newValue);
+                var (entity, updatedValue) = builder[index];
+                SetAbstractValue(entity, updatedValue);
             }
         }
 
@@ -225,6 +333,8 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             if (disposing)
             {
                 CoreAnalysisData.Dispose();
+                _lazyChildrenByInstanceLocation = null;
+                _lazyIndexedEntities = null;
             }
 
             base.Dispose(disposing);

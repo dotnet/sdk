@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 
 namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
 {
@@ -20,6 +22,10 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             : base(analysisContext)
         {
         }
+
+        protected override ImmutableHashSet<AnalysisEntity> GetChildAnalysisEntitiesCore(
+            PointsToAbstractValue instanceLocation, Func<AnalysisEntity, bool> predicate)
+            => FilterChildAnalysisEntities(CurrentAnalysisData.GetChildAnalysisEntityCandidates(instanceLocation), predicate);
 
         #region Predicate analysis
         protected sealed override bool SupportsPredicateAnalysis => true;

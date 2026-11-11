@@ -111,13 +111,14 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
 
             using var allEntities = PooledHashSet<AnalysisEntity>.GetInstance();
             AddTrackedEntities(allEntities);
+            ILookup<PointsToAbstractValue, AnalysisEntity>? childrenByLocation = null;
 
             // Stop tracking entities for locals and capture Ids that are now out of scope.
             foreach (var local in locals)
             {
                 if (AnalysisEntityFactory.TryCreateForSymbolDeclaration(local, out var analysisEntity))
                 {
-                    StopTrackingDataForEntity(analysisEntity, allEntities);
+                    StopTrackingDataForEntity(analysisEntity, CurrentAnalysisData, allEntities, ref childrenByLocation);
                 }
                 else
                 {
@@ -129,15 +130,14 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             {
                 if (AnalysisEntityFactory.TryGetForFlowCapture(captureId, out var analysisEntity))
                 {
-                    StopTrackingDataForEntity(analysisEntity, allEntities);
+                    StopTrackingDataForEntity(analysisEntity, CurrentAnalysisData, allEntities, ref childrenByLocation);
                 }
             }
         }
 
-        private void StopTrackingDataForEntity(AnalysisEntity analysisEntity, PooledHashSet<AnalysisEntity> allEntities)
-            => StopTrackingDataForEntity(analysisEntity, CurrentAnalysisData, allEntities);
-
-        private void StopTrackingDataForEntity(AnalysisEntity analysisEntity, TAnalysisData analysisData, PooledHashSet<AnalysisEntity> allEntities)
+        private void StopTrackingDataForEntity(
+            AnalysisEntity analysisEntity, TAnalysisData analysisData, PooledHashSet<AnalysisEntity> allEntities,
+            ref ILookup<PointsToAbstractValue, AnalysisEntity>? childrenByLocation)
         {
             if (!allEntities.Contains(analysisEntity))
             {
@@ -150,7 +150,9 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             // Additionally, stop tracking all the child entities if the entity type has value copy semantics.
             if (analysisEntity.Type.HasValueCopySemantics())
             {
-                foreach (var childEntity in GetChildAnalysisEntities(analysisEntity, allEntities))
+                childrenByLocation ??= allEntities.Where(entity => entity.IsChildOrInstanceMember)
+                    .ToLookup(entity => entity.InstanceLocation);
+                foreach (var childEntity in GetChildAnalysisEntities(analysisEntity, childrenByLocation[analysisEntity.InstanceLocation]))
                 {
                     StopTrackingEntity(childEntity, analysisData);
                 }
@@ -180,10 +182,11 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             {
                 using var allEntities = PooledHashSet<AnalysisEntity>.GetInstance();
                 AddTrackedEntities(allEntities);
+                ILookup<PointsToAbstractValue, AnalysisEntity>? childrenByLocation = null;
 
                 foreach (var (parameter, parameterEntity) in parameterEntities)
                 {
-                    StopTrackingDataForEntity(parameterEntity, CurrentAnalysisData, allEntities);
+                    StopTrackingDataForEntity(parameterEntity, CurrentAnalysisData, allEntities, ref childrenByLocation);
 
                     if (parameter.IsParams)
                     {
@@ -411,11 +414,11 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             return GetChildAnalysisEntities(analysisEntity.InstanceLocation, entity => IsChildAnalysisEntity(entity, analysisEntity));
         }
 
-        private static IEnumerable<AnalysisEntity> GetChildAnalysisEntities(AnalysisEntity analysisEntity, HashSet<AnalysisEntity> allEntities)
+        private static IEnumerable<AnalysisEntity> GetChildAnalysisEntities(AnalysisEntity analysisEntity, IEnumerable<AnalysisEntity> candidates)
         {
             Debug.Assert(analysisEntity.Type.HasValueCopySemantics());
 
-            foreach (var entity in allEntities)
+            foreach (var entity in candidates)
             {
                 if (IsChildAnalysisEntity(entity, ancestorEntity: analysisEntity))
                 {
@@ -438,14 +441,15 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         private ImmutableHashSet<AnalysisEntity> GetChildAnalysisEntities(PointsToAbstractValue? instanceLocation, Func<AnalysisEntity, bool>? predicate)
         {
             // We are interested only in dependent child/member infos, not the root info.
-            if (instanceLocation == null || instanceLocation.Kind == PointsToAbstractValueKind.Unknown)
+            if (instanceLocation == null || instanceLocation == PointsToAbstractValue.NoLocation ||
+                instanceLocation.Kind == PointsToAbstractValueKind.Unknown)
             {
                 return ImmutableHashSet<AnalysisEntity>.Empty;
             }
 
             predicate ??= entity => IsChildAnalysisEntity(entity, instanceLocation);
 
-            return GetChildAnalysisEntities(predicate);
+            return GetChildAnalysisEntitiesCore(instanceLocation, predicate);
         }
 
         protected static bool IsChildAnalysisEntity(AnalysisEntity entity, PointsToAbstractValue instanceLocation)
@@ -455,12 +459,28 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 entity.IsChildOrInstanceMember;
         }
 
-        private ImmutableHashSet<AnalysisEntity> GetChildAnalysisEntities(Func<AnalysisEntity, bool> predicate)
+        protected virtual ImmutableHashSet<AnalysisEntity> GetChildAnalysisEntitiesCore(
+            PointsToAbstractValue instanceLocation, Func<AnalysisEntity, bool> predicate)
         {
             var trackedEntitiesBuilder = PooledHashSet<AnalysisEntity>.GetInstance();
             AddTrackedEntities(trackedEntitiesBuilder);
             trackedEntitiesBuilder.RemoveWhere(entity => !predicate(entity));
             return trackedEntitiesBuilder.ToImmutableAndFree();
+        }
+
+        protected static ImmutableHashSet<AnalysisEntity> FilterChildAnalysisEntities(
+            IEnumerable<AnalysisEntity> candidates, Func<AnalysisEntity, bool> predicate)
+        {
+            using var builder = PooledHashSet<AnalysisEntity>.GetInstance();
+            foreach (var entity in candidates)
+            {
+                if (predicate(entity))
+                {
+                    builder.Add(entity);
+                }
+            }
+
+            return builder.ToImmutable();
         }
 
         #endregion
@@ -1074,13 +1094,14 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                     AddTrackedEntities(dataAtException, allAnalysisEntities, forInterproceduralAnalysis: true);
                 }
 
+                ILookup<PointsToAbstractValue, AnalysisEntity>? childrenByLocation = null;
                 foreach (var entity in allAnalysisEntities)
                 {
                     if (ShouldStopTrackingEntityAtExit(entity))
                     {
                         foreach (var dataAtException in AnalysisDataForUnhandledThrowOperations.Values)
                         {
-                            StopTrackingDataForEntity(entity, dataAtException, allAnalysisEntities);
+                            StopTrackingDataForEntity(entity, dataAtException, allAnalysisEntities, ref childrenByLocation);
                         }
                     }
                 }

@@ -160,14 +160,19 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.ValueContentAnalysis
         }
 
         /// <summary>
-        /// Performs the union of this state and the other state 
-        /// and returns a new <see cref="ValueContentAbstractValue"/> with the result.
+        /// Performs the union of this state and the other state,
+        /// reusing an existing <see cref="ValueContentAbstractValue"/> when unchanged.
         /// </summary>
         internal ValueContentAbstractValue Merge(ValueContentAbstractValue otherState)
         {
             if (otherState == null)
             {
                 throw new ArgumentNullException(nameof(otherState));
+            }
+
+            if (ReferenceEquals(this, otherState))
+            {
+                return LiteralValues.Count > LiteralsBound ? MayBeContainsNonLiteralState : this;
             }
 
             ImmutableHashSet<object?> mergedLiteralValues = LiteralValues.AddRange(otherState.LiteralValues);
@@ -177,6 +182,16 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.ValueContentAnalysis
             }
 
             ValueContainsNonLiteralState mergedNonLiteralState = Merge(NonLiteralState, otherState.NonLiteralState);
+            if (ReferenceEquals(mergedLiteralValues, LiteralValues) && mergedNonLiteralState == NonLiteralState)
+            {
+                return this;
+            }
+
+            if (ReferenceEquals(mergedLiteralValues, otherState.LiteralValues) && mergedNonLiteralState == otherState.NonLiteralState)
+            {
+                return otherState;
+            }
+
             return Create(mergedLiteralValues, mergedNonLiteralState);
         }
 

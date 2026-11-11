@@ -19,6 +19,39 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
     [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
     public partial class AvoidDeadConditionalCodeTests
     {
+        [TestMethod]
+        public Task BinaryProductSelfMergeAtBranchJoinCSharp_NoDiagnosticAsync()
+            => VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    void M(int first, int second, bool flag)
+                    {
+                        int a = first == 0 ? 2 : first == 1 ? 3 : first == 2 ? 5 : 7;
+                        int b = second == 0 ? 11 : second == 1 ? 13 : second == 2 ? 17 : 19;
+                        int product = a * b;
+                        if (flag) { flag = false; }
+                        if (product == -1) { }
+                    }
+                }
+                """);
+
+        [TestMethod]
+        public Task BinaryProductSelfMergeAtBranchJoinVisualBasic_NoDiagnosticAsync()
+            => VerifyBasicAnalyzerAsync("""
+                Class Test
+                    Sub M(first As Integer, second As Integer, flag As Boolean)
+                        Dim a = If(first = 0, 2, If(first = 1, 3, If(first = 2, 5, 7)))
+                        Dim b = If(second = 0, 11, If(second = 1, 13, If(second = 2, 17, 19)))
+                        Dim product = a * b
+                        If flag Then
+                            flag = False
+                        End If
+                        If product = -1 Then
+                        End If
+                    End Sub
+                End Class
+                """);
+
         [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [TestMethod]
         public async Task SimpleStringCompare_NoDiagnosticAsync()

@@ -141,6 +141,23 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
                     }
                 }
             }
+
+            protected override ImmutableHashSet<AnalysisEntity> GetChildAnalysisEntitiesCore(
+                PointsToAbstractValue instanceLocation, Func<AnalysisEntity, bool> predicate)
+            {
+                using var builder = PooledHashSet<AnalysisEntity>.GetInstance();
+                foreach (var entity in TrackedEntitiesBuilder.EnumerateChildEntities(instanceLocation))
+                {
+                    if ((CurrentAnalysisData.HasAbstractValue(entity) || _defaultPointsToValueGenerator.IsTrackedEntity(entity)) &&
+                        predicate(entity))
+                    {
+                        builder.Add(entity);
+                    }
+                }
+
+                return builder.ToImmutable();
+            }
+
             internal override bool IsPointsToAnalysis => true;
 
             protected override bool HasAbstractValue(AnalysisEntity analysisEntity) => CurrentAnalysisData.HasAbstractValue(analysisEntity);

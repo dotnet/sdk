@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Operations;
@@ -28,6 +29,10 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         private readonly ImmutableDictionary<IMethodSymbol, IDataFlowAnalysisResult<TAbstractAnalysisValue>> _standaloneLocalFunctionAnalysisResultsMap;
         private readonly TAbstractAnalysisValue _defaultUnknownValue;
         private readonly object? _analysisDataForUnhandledThrowOperations;
+        private ImmutableDictionary<OperationKind, Dictionary<SyntaxNode, IOperation>> _lazyOperationsByKind
+            = ImmutableDictionary<OperationKind, Dictionary<SyntaxNode, IOperation>>.Empty;
+        private IOperation? _lastSyntaxOperation;
+        private long _syntaxLookupOperationCount;
 
         internal DataFlowAnalysisResult(
             ImmutableDictionary<BasicBlock, TBlockAnalysisResult> basicBlockStateMap,
@@ -123,24 +128,77 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         {
             get
             {
+                if (_operationStateMap.IsEmpty)
+                {
+                    return _defaultUnknownValue;
+                }
+
+                var lastOperation = Volatile.Read(ref _lastSyntaxOperation);
+                if (lastOperation != null && lastOperation.Kind == operationKind && lastOperation.Syntax == syntax)
+                {
+                    return _operationStateMap[lastOperation];
+                }
+
+                if (Volatile.Read(ref _lazyOperationsByKind).TryGetValue(operationKind, out var operationBySyntax)
+                    || Volatile.Read(ref _syntaxLookupOperationCount) >= _operationStateMap.Count)
+                {
+                    operationBySyntax ??= GetOrCreateOperationBySyntax(operationKind);
+                    if (operationBySyntax.TryGetValue(syntax, out var operation))
+                    {
+                        Volatile.Write(ref _lastSyntaxOperation, operation);
+                        return _operationStateMap[operation];
+                    }
+
+                    return _defaultUnknownValue;
+                }
+
+                // Keep isolated lookups allocation-free. Index once cumulative scans
+                // have examined a map's worth of operations, without a query-count cutoff.
+                var examined = 0;
                 var value = _defaultUnknownValue;
+                IOperation? matchedOperation = null;
                 foreach (var kvp in _operationStateMap)
                 {
+                    examined++;
                     if (kvp.Key.Kind == operationKind && kvp.Key.Syntax == syntax)
                     {
                         if (!kvp.Key.IsImplicit)
                         {
+                            Interlocked.Add(ref _syntaxLookupOperationCount, examined);
+                            Volatile.Write(ref _lastSyntaxOperation, kvp.Key);
                             return kvp.Value;
                         }
                         else
                         {
                             value = kvp.Value;
+                            matchedOperation = kvp.Key;
                         }
                     }
                 }
 
+                Interlocked.Add(ref _syntaxLookupOperationCount, examined);
+                if (matchedOperation != null)
+                {
+                    Volatile.Write(ref _lastSyntaxOperation, matchedOperation);
+                }
+
                 return value;
             }
+        }
+
+        private Dictionary<SyntaxNode, IOperation> GetOrCreateOperationBySyntax(OperationKind operationKind)
+        {
+            var index = new Dictionary<SyntaxNode, IOperation>();
+            foreach (var operation in _operationStateMap.Keys)
+            {
+                if (operation.Kind == operationKind
+                    && (!index.TryGetValue(operation.Syntax, out var current) || current.IsImplicit))
+                {
+                    index[operation.Syntax] = operation;
+                }
+            }
+
+            return ImmutableInterlocked.GetOrAdd(ref _lazyOperationsByKind, operationKind, index);
         }
 
         internal DataFlowAnalysisResult<TBlockAnalysisResult, TAbstractAnalysisValue>? TryGetInterproceduralResult(IOperation operation)

@@ -27,6 +27,8 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
         /// </summary>
         private PooledHashSet<PointsToAbstractValue> PointsToValues { get; }
 
+        private Dictionary<PointsToAbstractValue, List<AnalysisEntity>>? _childEntitiesByInstanceLocation;
+
         public TrackedEntitiesBuilder(PointsToAnalysisKind pointsToAnalysisKind)
         {
             Debug.Assert(pointsToAnalysisKind != PointsToAnalysisKind.None);
@@ -42,13 +44,18 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
         {
             AllEntities.Dispose();
             PointsToValues.Dispose();
+            _childEntitiesByInstanceLocation = null;
         }
 
         public void AddEntityAndPointsToValue(AnalysisEntity analysisEntity, PointsToAbstractValue value)
         {
             Debug.Assert(analysisEntity.ShouldBeTrackedForPointsToAnalysis(PointsToAnalysisKind));
 
-            AllEntities.Add(analysisEntity);
+            if (AllEntities.Add(analysisEntity) && _childEntitiesByInstanceLocation != null)
+            {
+                IndexChildEntity(analysisEntity, _childEntitiesByInstanceLocation);
+            }
+
             AddTrackedPointsToValue(value);
         }
 
@@ -57,6 +64,39 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
 
         public IEnumerable<AnalysisEntity> EnumerateEntities()
             => AllEntities;
+
+        public IEnumerable<AnalysisEntity> EnumerateChildEntities(PointsToAbstractValue instanceLocation)
+        {
+            if (_childEntitiesByInstanceLocation == null)
+            {
+                _childEntitiesByInstanceLocation = new Dictionary<PointsToAbstractValue, List<AnalysisEntity>>();
+                foreach (var entity in AllEntities)
+                {
+                    IndexChildEntity(entity, _childEntitiesByInstanceLocation);
+                }
+            }
+
+            return _childEntitiesByInstanceLocation.TryGetValue(instanceLocation, out var children)
+                ? children
+                : Array.Empty<AnalysisEntity>();
+        }
+
+        private static void IndexChildEntity(
+            AnalysisEntity entity, Dictionary<PointsToAbstractValue, List<AnalysisEntity>> index)
+        {
+            if (!entity.IsChildOrInstanceMember || entity.InstanceLocation == PointsToAbstractValue.NoLocation)
+            {
+                return;
+            }
+
+            if (!index.TryGetValue(entity.InstanceLocation, out var children))
+            {
+                children = new List<AnalysisEntity>();
+                index.Add(entity.InstanceLocation, children);
+            }
+
+            children.Add(entity);
+        }
 
         public bool IsTrackedPointsToValue(PointsToAbstractValue value)
             => PointsToValues.Contains(value);
