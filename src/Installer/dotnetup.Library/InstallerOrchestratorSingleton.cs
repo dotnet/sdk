@@ -259,7 +259,7 @@ internal class InstallerOrchestratorSingleton
         foreach (var (request, install) in bundleRequests)
         {
             var newer = bundleRequests
-                .Where(other => IsSameInstallerFamily(other.Install, install) && other.Install.Version.CompareTo(install.Version) > 0)
+                .Where(other => BundleUpgradeCodes.ShareFamily(other.Install, install) && other.Install.Version.CompareTo(install.Version) > 0)
                 .Select(other => other.Request)
                 .MaxBy(other => other.ResolvedVersion);
             if (newer is not null)
@@ -361,7 +361,7 @@ internal class InstallerOrchestratorSingleton
         ReleaseVersion version = requested.Version;
 
         InstalledBundle? newer = installedBundles
-            .Where(b => IsSameInstallerFamily(b.Install, requested) && b.Install.Version.CompareTo(version) > 0)
+            .Where(b => BundleUpgradeCodes.ShareFamily(b.Install, requested) && b.Install.Version.CompareTo(version) > 0)
             .MaxBy(b => b.Install.Version);
 
         if (newer is not null)
@@ -383,17 +383,6 @@ internal class InstallerOrchestratorSingleton
             ThrowIfNewerVersionInstalled(install, getInstalledBundles(install));
         }
     }
-
-    /// <summary>
-    /// Whether two installs share a Windows installer upgrade family: the same component and architecture, and the same
-    /// SDK feature band or runtime major.minor. The installer keeps only the newest build in a family.
-    /// </summary>
-    private static bool IsSameInstallerFamily(DotnetInstall a, DotnetInstall b) =>
-        a.Component == b.Component
-        && a.InstallRoot.Architecture == b.InstallRoot.Architecture
-        && a.Version.Major == b.Version.Major
-        && a.Version.Minor == b.Version.Minor
-        && (a.Component != InstallComponent.SDK || a.Version.SdkFeatureBand == b.Version.SdkFeatureBand);
 
     /// <summary>
     /// Under the install-state mutex, returns an already-installed result when the install exists,

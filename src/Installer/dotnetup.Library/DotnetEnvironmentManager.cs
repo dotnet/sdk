@@ -147,11 +147,21 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         var bundles = new List<InstalledBundle>();
         foreach (string subKeyName in uninstallKey.GetSubKeyNames())
         {
-            using var entry = uninstallKey.OpenSubKey(subKeyName);
-            if (entry is not null
-                && GetBundleUpgradeCodes(entry).Any(familyCodes.Contains)
-                && entry.GetValue("DisplayName") is string displayName
-                && TryParseDisplayNameVersion(displayName) is { } version)
+            string? displayName;
+            try
+            {
+                using var entry = uninstallKey.OpenSubKey(subKeyName);
+                displayName = entry is not null && GetBundleUpgradeCodes(entry).Any(familyCodes.Contains)
+                    ? entry.GetValue("DisplayName") as string
+                    : null;
+            }
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+            {
+                // Other products' entries can deny read access; the installer's exit code still catches a missed downgrade.
+                continue;
+            }
+
+            if (displayName is not null && TryParseDisplayNameVersion(displayName) is { } version)
             {
                 var install = new DotnetInstall(new DotnetInstallRoot(string.Empty, requested.InstallRoot.Architecture), version, requested.Component);
                 bundles.Add(new InstalledBundle(install, displayName));

@@ -4,6 +4,7 @@
 using System.Net;
 using System.Security.Cryptography;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation.Internal;
 using static Microsoft.DotNet.Build.Tasks.GenerateGuidFromName;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
@@ -17,6 +18,10 @@ internal static class BundleUpgradeCodes
 {
     // https://github.com/dotnet/aspnetcore/blob/60ef0101bf97cfccb49ede034b38659c15474d1b/src/Installers/Windows/Wix.props#L24
     private static readonly Guid s_aspNetCoreSharedFrameworkNamespace = new("C43D5520-11B3-4D62-B6FE-5D6840B04101");
+
+    /// <summary>Whether the installers for <paramref name="a"/> and <paramref name="b"/> share an upgrade code, so only the newer can stay installed.</summary>
+    public static bool ShareFamily(DotnetInstall a, DotnetInstall b) =>
+        For(a.Component, a.Version, a.InstallRoot.Architecture).Intersect(For(b.Component, b.Version, b.InstallRoot.Architecture)).Any();
 
     /// <summary>Returns the upgrade codes a bundle for <paramref name="component"/> <paramref name="version"/> can have.</summary>
     public static IReadOnlyList<Guid> For(InstallComponent component, ReleaseVersion version, InstallArchitecture architecture)
