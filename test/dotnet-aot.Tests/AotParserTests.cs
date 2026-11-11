@@ -256,6 +256,21 @@ public partial class AotParserTests
         Assert.IsNull(exception);
     }
 
+    [TestMethod]
+    [DataRow("reference", "Add, remove, or list ProjectReferences for a .NET project.")]
+    [DataRow("reference add", "Add a project-to-project reference to the project.")]
+    [DataRow("reference list", "List all project-to-project references of the project.")]
+    [DataRow("reference remove", "Remove a project-to-project reference from the project.")]
+    public void InvokeReferenceHelp_RendersCommandDescriptionFromAotWithoutFallback(string commandLine, string description)
+    {
+        var (exitCode, stdout, stderr) = InvokeWithCapture([.. commandLine.Split(' '), "--help"]);
+
+        Assert.AreEqual(0, exitCode);
+        stdout.Should().ContainVisuallySameFragmentIfNotLocalized(
+            $"Description:{Environment.NewLine}  {description}");
+        stderr.Should().BeEmpty();
+    }
+
     /// <summary>Verifies that run help renders directly from the Native AOT command tree.</summary>
     [TestMethod]
     public void InvokeRunHelp_RendersFromAotWithoutFallback()

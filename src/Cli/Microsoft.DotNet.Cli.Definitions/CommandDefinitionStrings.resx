@@ -1038,6 +1038,9 @@ The default is to publish a framework-dependent application.</value>
   <data name="ReferenceAddProjectPathArgumentName" xml:space="preserve">
     <value>PROJECT_PATH</value>
   </data>
+  <data name="ReferenceCommandDescription" xml:space="preserve">
+    <value>Add, remove, or list ProjectReferences for a .NET project.</value>
+  </data>
   <data name="ReferenceListAppFullName" xml:space="preserve">
     <value>List all project-to-project references of the project.</value>
   </data>

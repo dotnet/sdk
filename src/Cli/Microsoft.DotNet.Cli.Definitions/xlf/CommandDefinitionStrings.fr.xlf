@@ -1749,6 +1749,11 @@ La valeur par défaut est de publier une application dépendante du framework.</
         <target state="translated">PROJECT_PATH</target>
         <note />
       </trans-unit>
+      <trans-unit id="ReferenceCommandDescription">
+        <source>Add, remove, or list ProjectReferences for a .NET project.</source>
+        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ReferenceListAppFullName">
         <source>List all project-to-project references of the project.</source>
         <target state="translated">Listez toutes les références projet à projet du projet.</target>
