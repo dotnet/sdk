@@ -4,6 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using NuGet.Versioning;
 using System.CommandLine.StaticCompletions;
 
 namespace Microsoft.DotNet.Cli;
@@ -113,10 +114,7 @@ internal readonly struct TargetPlatformOptions
         var ridFileName = "NETCoreSdkRuntimeIdentifierChain.txt";
         var sdkPath = dotnetRootPath is not null ? Path.Combine(dotnetRootPath, "sdk") : "sdk";
 
-        // When running under test the Product.Version might be empty or point to version not installed in dotnetRootPath.
-        string runtimeIdentifierChainPath = string.IsNullOrEmpty(Product.Version) || !Directory.Exists(Path.Combine(sdkPath, Product.Version)) ?
-            Path.Combine(Directory.GetDirectories(sdkPath)[0], ridFileName) :
-            Path.Combine(sdkPath, Product.Version, ridFileName);
+        string runtimeIdentifierChainPath = GetRuntimeIdentifierChainPath(sdkPath, Product.Version, ridFileName);
         string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ? [.. File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l))] : [];
         if (currentRuntimeIdentifiers == null || !currentRuntimeIdentifiers.Any() || !currentRuntimeIdentifiers[0].Contains("-"))
         {
@@ -125,11 +123,34 @@ internal readonly struct TargetPlatformOptions
         return currentRuntimeIdentifiers[0]; // First rid is the most specific (ex win-x64)
     }
 
+    internal static string GetRuntimeIdentifierChainPath(string sdkPath, string? productVersion, string ridFileName = "NETCoreSdkRuntimeIdentifierChain.txt")
+    {
+        string productVersionPath = Path.Combine(sdkPath, productVersion ?? string.Empty, ridFileName);
+        if (File.Exists(productVersionPath))
+        {
+            return productVersionPath;
+        }
+
+        // Product.Version comes from the test assembly when this code runs in-process in tests,
+        // so it may not identify an SDK installed under the dotnet root.
+        string? latestSdkPath = Directory.EnumerateDirectories(sdkPath)
+            .Select(path => new
+            {
+                Path = path,
+                Version = NuGetVersion.TryParse(Path.GetFileName(path), out NuGetVersion? version) ? version : null
+            })
+            .Where(sdk => sdk.Version is not null && File.Exists(Path.Combine(sdk.Path, ridFileName)))
+            .OrderByDescending(sdk => sdk.Version)
+            .Select(sdk => sdk.Path)
+            .FirstOrDefault();
+
+        return latestSdkPath is null ? productVersionPath : Path.Combine(latestSdkPath, ridFileName);
+    }
+
     private static string GetOsFromRid(string rid)
         => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
 
     private static string GetArchFromRid(string rid)
         => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
 }
-
 

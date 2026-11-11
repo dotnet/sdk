@@ -389,9 +389,10 @@ internal sealed class HotReloadDotNetWatcher
                                 {
                                     fileWatcher.WatchFiles(projectGraph.BuildFiles);
 
-                                    evaluationResult = await TryEvaluateProjectGraphAsync(projectGraph, targetFramework, restore: true, iterationCancellationToken);
-                                    if (evaluationResult != null)
+                                    var newEvaluationResult = await TryEvaluateProjectGraphAsync(projectGraph, targetFramework, restore: true, iterationCancellationToken);
+                                    if (newEvaluationResult != null)
                                     {
+                                        evaluationResult = newEvaluationResult;
                                         break;
                                     }
                                 }
@@ -1265,7 +1266,7 @@ internal sealed class HotReloadDotNetWatcher
 
         if (device != null)
         {
-            arguments.Add($"-p:Device={device.Id}");
+            arguments.Add($"-p:Device={MSBuildPropertyEscaping.Escape(device.Id)}");
 
             if (!string.IsNullOrEmpty(device.RuntimeIdentifier))
             {

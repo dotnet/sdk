@@ -14,8 +14,8 @@ namespace Microsoft.DotNet.Cli.Tests;
 
 /// <summary>
 ///  Tests for the AOT-compiled CLI parser (the #if CLI_AOT path in Parser.cs).
-///  Validates that --version, --info, --help, default usage, and build-free test-module
-///  orchestration are served entirely
+///  Validates that --version, --info, --help, root completion, default usage, and
+///  build-free test-module orchestration are served entirely
 ///  from AOT, that the full command surface now parses (matching the managed CLI),
 ///  and that commands which require the managed CLI report this via
 ///  <see cref="CommandNotAvailableInAotException"/> so the bridge can fall back.
@@ -70,7 +70,6 @@ public partial class AotParserTests
 
     [TestMethod]
     [DataRow("build --help")]
-    [DataRow("package --help")]
     [DataRow("sln --help")]
     [DataRow("tool --help")]
     [DataRow("workload --help")]
@@ -93,6 +92,8 @@ public partial class AotParserTests
     [DataRow("new create --help")]
     [DataRow("test --help")]
     [DataRow("completions --help")]
+    [DataRow("package --help")]
+    [DataRow("package -?")]
     public void ParseGenericCommandHelp_RejectsDynamicHelp(string commandLine)
     {
         Assert.IsFalse(Parser.TryParseGenericCommandHelp(commandLine.Split(' '), out ParseResult? parseResult));
@@ -102,7 +103,7 @@ public partial class AotParserTests
     [TestMethod]
     public void ParseGenericCommandHelp_CoversEveryEligibleTopLevelCommand()
     {
-        HashSet<string> excludedCommands = ["new", "test", "completions"];
+        HashSet<string> excludedCommands = ["new", "test", "completions", "package"];
 
         foreach (System.CommandLine.Command command in Parser.RootCommand.Subcommands)
         {
@@ -357,6 +358,33 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    [DataRow("package --help")]
+    [DataRow("package update --help")]
+    [DataRow("package add --help")]
+    public void InvokePackageHelp_FallsBackToManaged(string commandLine)
+    {
+        // The managed CLI adds NuGet-contributed `package` subcommands (e.g. `package update`) that are
+        // absent from the static AOT tree. Requesting help suppresses the unknown-subcommand parse
+        // error, so help for the `package` subtree must defer to the managed CLI to list and describe them.
+        var result = Parser.Parse(commandLine.Split(' '));
+        Assert.IsEmpty(result.Errors);
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void ParseNuGetWhyHelp_ResolvesToNuGetTreeForForwarding()
+    {
+        // `nuget why` is contributed only by the managed CLI, but help for anything in the `nuget` tree
+        // is forwarded to the NuGet CLI (which knows `why`) in both modes, so AOT must not need the
+        // subcommand statically. Verify the parse lands in the `nuget` tree with the tokens preserved.
+        var result = Parser.Parse(["nuget", "why", "--help"]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.AreSame(Parser.RootCommand.NuGetCommand, result.CommandResult.Command);
+        Assert.AreSequenceEqual(new[] { "why", "--help" }, result.GetArguments());
+    }
+
+    [TestMethod]
     public void InvokeTestModulesWithoutMatches_IsHandledInAot()
     {
         string rootDirectory = Path.Combine(Path.GetTempPath(), $"aot-test-modules-{Guid.NewGuid():N}");
@@ -403,6 +431,28 @@ public partial class AotParserTests
         {
             Directory.Delete(rootDirectory);
         }
+    }
+
+    [TestMethod]
+    public void ParseTestModules_RejectsRootDirectoryWithoutTestModules()
+    {
+        ParseResult parseResult = ParseAotTestCommand([
+            "--root-directory", Path.GetTempPath(),
+        ]);
+
+        Assert.HasCount(1, parseResult.Errors);
+        parseResult.Errors[0].Message.Should().Contain("--test-modules");
+    }
+
+    [TestMethod]
+    public void ParseTestModules_RejectsNonPositiveParallelism()
+    {
+        ParseResult parseResult = ParseAotTestCommand([
+            "--test-modules", "**/*.dll",
+            "--max-parallel-test-modules", "0",
+        ]);
+
+        Assert.HasCount(1, parseResult.Errors);
     }
 
     [TestMethod]
@@ -461,6 +511,46 @@ public partial class AotParserTests
         stdout.Should().Contain($"\"version\": \"{Product.Version}\"");
         stdout.Should().Contain("\"subcommands\"");
         stdout.Should().Contain("\"build\"");
+    }
+
+    [TestMethod]
+    [DataRow("dotnet bu", 9, new[] { "build", "build-server", "msbuild" })]
+    [DataRow("dotnet --ver", 12, new[] { "--version" })]
+    public void InvokeComplete_RendersCompletionsFromAot(string input, int position, string[] expected)
+    {
+        var (exitCode, stdout, stderr) = InvokeWithCapture([
+            "complete",
+            "--position", position.ToString(),
+            input,
+        ]);
+
+        Assert.AreEqual(0, exitCode);
+        Assert.IsTrue(string.IsNullOrEmpty(stderr));
+        Assert.AreSequenceEqual(
+            expected,
+            stdout.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    [TestMethod]
+    [DataRow("dotnet new ")]
+    [DataRow("dotnet build --framework ")]
+    [DataRow("dotnet add package ")]
+    [DataRow("new ")]
+    [DataRow("dotnet package update ")]
+    [DataRow("dotnet build --unknown-option ")]
+    public void InvokeComplete_CommandSpecificCompletionsFallBackToManaged(string input)
+    {
+        var result = Parser.Parse(["complete", input]);
+
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void InvokeComplete_CommandSpecificCompletionsBeyondInputFallBackToManaged()
+    {
+        var result = Parser.Parse(["complete", "--position", "13", "dotnet build"]);
+
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
     }
 
     [TestMethod]
@@ -554,6 +644,35 @@ public partial class AotParserTests
         var (exitCode, _, _) = InvokeWithCapture(commandLine.Split(' '));
 
         Assert.AreEqual(0, exitCode);
+    }
+
+    [TestMethod]
+    public void InvokeAotToolSearchCommand_ExecutesWithoutManagedFallback()
+    {
+        string configPath = Path.Combine(Path.GetTempPath(), $"aot-tool-search-{Guid.NewGuid():N}.config");
+        File.WriteAllText(
+            configPath,
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <configuration>
+              <packageSources>
+                <clear />
+              </packageSources>
+            </configuration>
+            """);
+
+        try
+        {
+            var (exitCode, _, stderr) = InvokeWithCapture(
+                ["tool", "search", "mysearchterm", "--configfile", configPath]);
+
+            Assert.AreEqual(1, exitCode);
+            stderr.Should().Contain("No NuGet package sources are configured or enabled.");
+        }
+        finally
+        {
+            File.Delete(configPath);
+        }
     }
 
     [TestMethod]

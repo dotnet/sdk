@@ -26,7 +26,6 @@ using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Pack;
-using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Commands.Project;
 using Microsoft.DotNet.Cli.Commands.Publish;
 using Microsoft.DotNet.Cli.Commands.Reference;
@@ -50,6 +49,7 @@ using Command = System.CommandLine.Command;
 
 #if !CLI_AOT
 using System.CommandLine.StaticCompletions;
+using Microsoft.DotNet.Cli.Commands.Package;
 #endif
 
 namespace Microsoft.DotNet.Cli;
@@ -186,7 +186,9 @@ public static class Parser
             "msbuild" => new MSBuildCommandDefinition(),
             "nuget" => new NuGetCommandDefinition(),
             "pack" => new PackCommandDefinition(),
+#if !CLI_AOT
             "package" => new PackageCommandDefinition(),
+#endif
             "parse" => new ParseCommandDefinition(),
             "project" => new ProjectCommandDefinition(),
             "publish" => new PublishCommandDefinition(),
@@ -228,9 +230,18 @@ public static class Parser
                 //     short-name/args usage line, the Arguments section, and per-template options.
                 //   * `test` (Microsoft.Testing.Platform mode) builds and forwards `--help` to the test
                 //     application, which contributes the "Extension Options:" section and per-extension options.
+                //   * `package` gains NuGet-contributed subcommands (e.g. `package update`) only in the managed
+                //     CLI. Help suppresses the parse error for the unknown subcommand, so without this the
+                //     static parent's help would be printed and omit those subcommands. (`nuget why` needs no
+                //     entry: help for the `nuget` tree is forwarded to the NuGet CLI in both modes.)
                 // Rendering the static definition's help here would omit all of that, so defer help for those
                 // subtrees to the managed CLI to keep the output in parity.
-                helpOption.Action = new AotPrintHelpAction(helpOption, DotnetHelpBuilder.Instance.Value, rootCommand.NewCommand, rootCommand.TestCommand);
+                helpOption.Action = new AotPrintHelpAction(
+                    helpOption,
+                    DotnetHelpBuilder.Instance.Value,
+                    rootCommand.NewCommand,
+                    rootCommand.TestCommand,
+                    rootCommand.PackageCommand);
 #else
                 helpOption.Action = new PrintHelpAction(helpOption, DotnetHelpBuilder.Instance.Value);
 #endif
@@ -330,6 +341,10 @@ public static class Parser
         // Project, solution, file-based, VSTest, and unsupported option shapes retain managed fallback.
         AotTestCommand.ConfigureCommand(rootCommand.TestCommand);
 
+        // Root command and option labels come from the shared command tree. Once the completion
+        // input selects a command, defer so managed parser configuration supplies its providers.
+        CompleteCommandParser.ConfigureCommand(rootCommand.CompleteCommand);
+
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
         rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);
         rootCommand.CliSchemaOption.Action = new PrintCliSchemaAction(rootCommand.CliSchemaOption);
@@ -373,9 +388,9 @@ public static class Parser
     ///  <see cref="CommandNotAvailableInAotException"/> so <c>NativeEntryPoint</c> defers to the managed
     ///  CLI, whose help output the snapshot tests expect. Such commands include <c>new</c> (the managed
     ///  CLI replaces it with a template-engine-backed command that adds the template short-name/args usage
-    ///  line, the Arguments section, and per-template options) and <c>test</c> (Microsoft.Testing.Platform
-    ///  mode builds and forwards <c>--help</c> to the test application, which contributes the
-    ///  "Extension Options:" section and per-extension options).
+    ///  line, the Arguments section, and per-template options), <c>test</c> (Microsoft.Testing.Platform
+    ///  mode builds and forwards <c>--help</c> to the test application), and <c>package</c> (whose
+    ///  managed tree includes NuGet-contributed subcommands).
     /// </summary>
     private sealed class AotPrintHelpAction(Option option, HelpBuilder builder, params Command[] managedHelpCommands)
         : PrintHelpAction(option, builder)
@@ -565,7 +580,10 @@ public static class Parser
             }
             else if (command is MSBuildCommandDefinition)
             {
-                new MSBuildForwardingApp(MSBuildArgs.ForHelp).Execute();
+                new MSBuildForwardingApp(
+                    MSBuildArgs.ForHelp,
+                    msbuildPath: null,
+                    CommandServices.CreateDefault()).Execute();
                 context.Output.WriteLine();
                 additionalOption(context);
             }

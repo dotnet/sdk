@@ -54,8 +54,9 @@ internal static class Logger
 
     static Logger()
     {
-        _traceFilePath = Environment.GetEnvironmentVariable(CliConstants.TestTraceLoggingEnvVar);
-        TraceEnabled = !string.IsNullOrEmpty(_traceFilePath);
+        string? traceFilePath = Environment.GetEnvironmentVariable(CliConstants.TestTraceLoggingEnvVar);
+        TraceEnabled = !string.IsNullOrEmpty(traceFilePath);
+        _traceFilePath = TraceEnabled ? Path.GetFullPath(traceFilePath!) : null;
 
         string? directoryPath = Path.GetDirectoryName(_traceFilePath);
         if (!string.IsNullOrEmpty(directoryPath))

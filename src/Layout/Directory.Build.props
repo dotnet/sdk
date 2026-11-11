@@ -13,6 +13,11 @@
     <IsRPMBasedDistro Condition="$(HostRid.StartsWith('centos'))">true</IsRPMBasedDistro>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Installer group identity, not the target framework of every bundled template. -->
+    <TemplateFrameworkVersion>$(MajorMinorVersion)</TemplateFrameworkVersion>
+  </PropertyGroup>
+
   <Import Project="$(RepositoryEngineeringDir)common\native\NativeAotSupported.props" />
 
   <PropertyGroup>
@@ -131,13 +136,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\csc.dll" />
-    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\vbc.dll" />
-    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\VBCSCompiler.dll" />
+    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\csc.dll" SigningIdentifier="com.microsoft.dotnet.csc" />
+    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\vbc.dll" SigningIdentifier="com.microsoft.dotnet.vbc" />
+    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\VBCSCompiler.dll" SigningIdentifier="com.microsoft.dotnet.vbcscompiler" />
   </ItemGroup>
 
   <ItemGroup>
-    <_MSBuildAppHost Include="$(OutputPath)MSBuild.dll" />
+    <_MSBuildAppHost Include="$(OutputPath)MSBuild.dll" SigningIdentifier="com.microsoft.dotnet.msbuild" />
   </ItemGroup>
 
 </Project>

@@ -224,6 +224,8 @@ public class PreferQuotedFileBasedProgramDirectiveTests
     [DataRow("#:package Package@1.0.0 ExcludeAssets=runtime PrivateAssets=all")]
     [DataRow("#:project ../Lib Private=false")]
     [DataRow("#:ref ../lib.cs Aliases=lib")]
+    [DataRow("#:include data.json CopyToOutputDirectory=PreserveNewest Note=value Empty=")]
+    [DataRow("#:include \"data file.json\" CopyToOutputDirectory = PreserveNewest Note=\"two words\"")]
     public async Task NewForm_NoDiagnosticAsync(string directive)
     {
         await new VerifyCS.Test
@@ -234,6 +236,28 @@ public class PreferQuotedFileBasedProgramDirectiveTests
                 {
                     ("Test0.cs", $$"""
                         {{directive}}
+                        class Program { static void Main() { } }
+                        """),
+                },
+            },
+            SolutionTransforms = { EnableFileBasedProgramFeature },
+        }.RunAsync(CancellationToken.None);
+    }
+
+    [TestMethod]
+    [DataRow("unknown")]
+    [DataRow("PACKAGE")]
+    [DataRow("INCLUDE")]
+    public async Task UnknownKind_NoDiagnosticAsync(string kind)
+    {
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                Sources =
+                {
+                    ("Test0.cs", $$"""
+                        #:{{kind}} path with spaces
                         class Program { static void Main() { } }
                         """),
                 },

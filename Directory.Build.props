@@ -66,6 +66,7 @@
     <IsShippingPackage>false</IsShippingPackage>
 
     <!-- TFMs -->
+    <NetCurrent>net12.0</NetCurrent>
     <SdkTargetFramework>$(NetCurrent)</SdkTargetFramework>
 
     <!-- TFM for projects that are deployed to run on .NET shipping with Visual Studio -->

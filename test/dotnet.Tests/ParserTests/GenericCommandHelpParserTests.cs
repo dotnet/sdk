@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.CommandLine.Completions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add;
 using Microsoft.DotNet.Cli.Commands.Package;
@@ -147,18 +148,18 @@ public class GenericCommandHelpParserTests
     [TestMethod]
     [DataRow("add")]
     [DataRow("package")]
-    public void TryParseGenericCommandHelp_DoesNotEvaluatePackageIdCompletionsWhenRenderingParentHelp(string commandName)
+    public void TryParseGenericCommandHelp_PreservesPackageIdCompletionsInParentHelp(string commandName)
     {
         Assert.IsTrue(Parser.TryParseGenericCommandHelp([commandName, "--help"], out ParseResult? parseResult));
 
         Argument packageIdArgument = GetPackageIdArgument(parseResult.RootCommandResult.Command.Subcommands.Single());
         packageIdArgument.CompletionSources.Clear();
-        packageIdArgument.CompletionSources.Add(_ => throw new InvalidOperationException("Package ID completions should not be evaluated when rendering help."));
+        packageIdArgument.CompletionSources.Add(_ => [new CompletionItem("Example.Package")]);
 
         (int exitCode, string output, string error) = InvokeWithCapture(parseResult);
 
         Assert.AreEqual(0, exitCode);
-        Assert.IsNotEmpty(output);
+        Assert.Contains("Example.Package", output);
         Assert.IsEmpty(error);
         Assert.HasCount(1, packageIdArgument.CompletionSources);
     }
@@ -179,7 +180,6 @@ public class GenericCommandHelpParserTests
     [DataRow("new --help")]
     [DataRow("new create --help")]
     [DataRow("build --help")]
-    [DataRow("add --help")]
     [DataRow("build-server --help")]
     [DataRow("clean --help")]
     [DataRow("complete --help")]
@@ -189,7 +189,6 @@ public class GenericCommandHelpParserTests
     [DataRow("internal-reportinstallsuccess --help")]
     [DataRow("list --help")]
     [DataRow("pack --help")]
-    [DataRow("package --help")]
     [DataRow("parse --help")]
     [DataRow("project --help")]
     [DataRow("publish --help")]

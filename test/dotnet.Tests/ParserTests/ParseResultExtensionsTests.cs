@@ -54,6 +54,19 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [TestMethod]
+        [DataRow("[diagram] nuget --help")]
+        [DataRow("--help nuget")]
+        [DataRow("dotnet -d nuget why package")]
+        [DataRow("test app.dll -- -d value")]
+        public void GetArguments_PreservesExistingForwardedTokens(string input)
+        {
+            ParseResult parseResult = Parser.Parse(input);
+            string[] originalArguments = parseResult.Tokens.Select(token => token.Value).ToArray().GetSubArguments();
+
+            parseResult.GetArguments().Should().Equal(originalArguments);
+        }
+
+        [TestMethod]
         public void CanBeInvoked_RecognizesCommandFromReducedTree()
         {
             RootCommand rootCommand = new();
@@ -63,8 +76,21 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [TestMethod]
+        [DataRow("Build")]
+        [DataRow("Build --help")]
+        [DataRow("MSBUILD --help")]
+        public void CanBeInvoked_RecognizesBuiltInNamesIgnoringCase(string input)
+        {
+            ParseResult parseResult = Parser.Parse(input);
+
+            parseResult.IsDotnetBuiltInCommand().Should().BeTrue();
+            parseResult.CanBeInvoked().Should().BeTrue();
+        }
+
+        [TestMethod]
         [DataRow("watch run")]
         [DataRow("Program.cs build")]
+        [DataRow("BuildExternal --help")]
         public void CanBeInvoked_BuiltInLookingArgument_DoesNotMakeExternalCommandInvocable(string input)
         {
             ParseResult parseResult = Parser.Parse(input);

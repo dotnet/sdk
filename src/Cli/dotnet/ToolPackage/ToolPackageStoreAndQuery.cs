@@ -10,6 +10,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 
 internal class ToolPackageStoreAndQuery(DirectoryPath root, IFileSystem fileSystem = null) : IToolPackageStoreQuery, IToolPackageStore
 {
+    public const string LockDirectory = ".locks";
     public const string StagingDirectory = ".stage";
 
     public DirectoryPath Root { get; private set; } = new DirectoryPath(Path.GetFullPath(root.Value));
@@ -67,7 +68,7 @@ internal class ToolPackageStoreAndQuery(DirectoryPath root, IFileSystem fileSyst
             var packageId = new PackageId(name);
 
             // Ignore the staging directory and any directory that isn't the same as the package id
-            if (name == StagingDirectory || name != packageId.ToString())
+            if (name is LockDirectory or StagingDirectory || name != packageId.ToString())
             {
                 continue;
             }

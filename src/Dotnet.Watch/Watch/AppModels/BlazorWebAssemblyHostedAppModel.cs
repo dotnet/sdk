@@ -18,10 +18,10 @@ internal sealed class BlazorWebAssemblyHostedAppModel(DotNetWatchContext context
     : WebApplicationAppModel(context)
 {
     public override ProjectGraphNode LaunchingProject => serverProject;
-
     public override ProjectGraphNode BrowserToolsProject => clientProject;
 
     public override bool ManagedHotReloadRequiresBrowserRefresh => true;
+    public override bool HasGatewayProxy => false;
 
     protected override ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
     {
@@ -29,7 +29,13 @@ internal sealed class BlazorWebAssemblyHostedAppModel(DotNetWatchContext context
         return
         [
             CreateWebAssemblyClient(clientLogger, agentLogger, browserRefreshServer, clientProject),
-            new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(serverProject), handlesStaticAssetUpdates: false, new NamedPipeClientTransport(clientLogger))
+            new DefaultHotReloadClient(
+                clientLogger,
+                agentLogger,
+                GetStartupHookPath(serverProject),
+                new NamedPipeClientTransport(clientLogger),
+                handlesStaticAssetUpdates: false,
+                hasRemoteAgent: false)
         ];
     }
 }

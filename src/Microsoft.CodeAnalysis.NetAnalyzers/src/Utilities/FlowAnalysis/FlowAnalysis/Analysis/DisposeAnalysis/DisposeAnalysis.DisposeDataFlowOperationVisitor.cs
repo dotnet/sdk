@@ -303,9 +303,10 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.DisposeAnalysis
                 DisposeAnalysisData resultData,
                 bool isLambdaOrLocalFunction,
                 bool hasDelegateTypeArgument,
-                DisposeAnalysisResult analysisResult)
+                DisposeAnalysisResult analysisResult,
+                bool initialDataIsTrimmed)
             {
-                base.ApplyInterproceduralAnalysisResult(resultData, isLambdaOrLocalFunction, hasDelegateTypeArgument, analysisResult);
+                base.ApplyInterproceduralAnalysisResult(resultData, isLambdaOrLocalFunction, hasDelegateTypeArgument, analysisResult, initialDataIsTrimmed);
 
                 // Apply the tracked instance field locations from interprocedural analysis.
                 if (_trackedInstanceFieldLocations != null &&
