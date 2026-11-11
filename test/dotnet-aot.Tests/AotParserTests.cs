@@ -88,6 +88,28 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    [DataRow(null, "dotnet")]
+    [DataRow("", "dotnet")]
+    [DataRow("custom-host", "custom-host")]
+    [DoNotParallelize] // AppContext is shared with all parser tests.
+    public void ParseGenericCommandHelp_InitializesExecutableName(string? configuredName, string expectedName)
+    {
+        const string key = "System.CommandLine.ExecutableName";
+        object? originalName = AppContext.GetData(key);
+        try
+        {
+            AppContext.SetData(key, configuredName);
+
+            Assert.IsTrue(Parser.TryParseGenericCommandHelp(["help", "--help"], out _));
+            Assert.AreEqual(expectedName, AppContext.GetData(key) as string);
+        }
+        finally
+        {
+            AppContext.SetData(key, originalName);
+        }
+    }
+
+    [TestMethod]
     [DataRow("new --help")]
     [DataRow("new create --help")]
     [DataRow("test --help")]

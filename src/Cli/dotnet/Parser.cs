@@ -131,6 +131,7 @@ public static class Parser
             return false;
         }
 
+        DotNetCommandDefinition.EnsureExecutableName();
         RootCommand rootCommand = new();
         foreach (Option option in rootCommand.Options)
         {
@@ -156,6 +157,10 @@ public static class Parser
         {
             PackageCommandParser.ConfigureCommand(packageCommand);
             NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.CreateInteractiveOption(acceptArgument: true), NuGetVirtualProjectBuilder.Instance);
+        }
+        else if (command is ReferenceCommandDefinition referenceCommand)
+        {
+            ReferenceCommandParser.ConfigureCommand(referenceCommand);
         }
 #endif
 
