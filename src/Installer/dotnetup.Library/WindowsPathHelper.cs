@@ -150,9 +150,9 @@ internal sealed partial class WindowsPathHelper : IDisposable
             .ToList();
 
         // Fallback: if registry yielded nothing, check the default Program Files location.
-        if (paths.Count == 0 && GetDefaultProgramFilesDotnetPath(ProgramFilesFolder) is { } defaultPath)
+        if (paths.Count == 0 && GetFallbackProgramFilesDotnetPath(ProgramFilesFolder) is { } fallbackPath)
         {
-            paths.Add(defaultPath);
+            paths.Add(fallbackPath);
         }
 
         return paths;
@@ -160,11 +160,30 @@ internal sealed partial class WindowsPathHelper : IDisposable
 
     /// <summary>
     /// Gets the same Program Files dotnet roots as <see cref="GetProgramFilesDotnetPaths"/>, each with the architecture of
-    /// the <c>InstalledVersions</c> subkey that registered it. When the registry registers nothing, falls back to the
-    /// default root for this process's architecture rather than to %ProgramFiles%\dotnet.
+    /// the <c>InstalledVersions</c> subkey that registered it. Nothing is created; the registry is read and folders are
+    /// checked for existence. When the registry registers nothing, returns the fallback root for this process's
+    /// architecture instead.
     /// </summary>
     public static List<DotnetInstallRoot> GetProgramFilesDotnetRoots() =>
-        CreateDotnetRoots(ReadRegisteredDotnetLocations(), new AdminInstallRootResolver(), InstallerUtilities.GetDefaultInstallArchitecture());
+        GetProgramFilesDotnetRoots(ReadRegisteredDotnetLocations(), new AdminInstallRootResolver(), InstallerUtilities.GetDefaultInstallArchitecture());
+
+    /// <summary>
+    /// Returns the roots for <paramref name="registeredLocations"/>, or the fallback root for
+    /// <paramref name="processArchitecture"/> when the registry registers no directory at all. Unknown subkeys still
+    /// count as registrations, matching <see cref="GetProgramFilesDotnetPaths"/>.
+    /// </summary>
+    internal static List<DotnetInstallRoot> GetProgramFilesDotnetRoots(
+        IReadOnlyList<KeyValuePair<string, string>> registeredLocations,
+        AdminInstallRootResolver fallbackRootResolver,
+        InstallArchitecture processArchitecture)
+    {
+        if (registeredLocations.Count > 0)
+        {
+            return ToDotnetInstallRoots(registeredLocations);
+        }
+
+        return GetFallbackProgramFilesDotnetRoot(fallbackRootResolver, processArchitecture) is { } fallbackRoot ? [fallbackRoot] : [];
+    }
 
     private static string ProgramFilesFolder => Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
 
@@ -276,20 +295,11 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Creates a root for each registered location whose subkey names a supported architecture, keeping the first
-    /// architecture that registers a directory. When the registry registers no directory at all (the same condition
-    /// <see cref="GetProgramFilesDotnetPaths"/> uses), falls back to <see cref="GetDefaultProgramFilesDotnetRoot"/>.
+    /// Converts registered locations into roots labeled with their subkey's architecture. Subkeys that do not name a
+    /// supported architecture are dropped, and a directory registered by several architectures keeps the first one.
     /// </summary>
-    internal static List<DotnetInstallRoot> CreateDotnetRoots(
-        IReadOnlyList<KeyValuePair<string, string>> registeredLocations,
-        AdminInstallRootResolver defaultRootResolver,
-        InstallArchitecture processArchitecture)
+    internal static List<DotnetInstallRoot> ToDotnetInstallRoots(IReadOnlyList<KeyValuePair<string, string>> registeredLocations)
     {
-        if (registeredLocations.Count == 0)
-        {
-            return GetDefaultProgramFilesDotnetRoot(defaultRootResolver, processArchitecture) is { } defaultRoot ? [defaultRoot] : [];
-        }
-
         var roots = new List<DotnetInstallRoot>();
         foreach (var (architectureName, path) in registeredLocations)
         {
@@ -303,16 +313,20 @@ internal sealed partial class WindowsPathHelper : IDisposable
         return roots;
     }
 
-    /// <summary>Returns %ProgramFiles%\dotnet if it exists, or null when the Program Files folder is unknown.</summary>
-    internal static string? GetDefaultProgramFilesDotnetPath(string? programFilesFolder) =>
+    /// <summary>
+    /// The fallback for <see cref="GetProgramFilesDotnetPaths"/>: %ProgramFiles%\dotnet if it exists, or null when it is
+    /// missing or the Program Files folder is unknown.
+    /// </summary>
+    internal static string? GetFallbackProgramFilesDotnetPath(string? programFilesFolder) =>
         string.IsNullOrEmpty(programFilesFolder) ? null : GetExistingDirectory(Path.Combine(programFilesFolder, "dotnet"));
 
     /// <summary>
-    /// Returns the default install root that the .NET installer uses for <paramref name="architecture"/>, if it exists:
-    /// Program Files\dotnet for the OS architecture, Program Files (x86)\dotnet for x86, and Program Files\dotnet\x64 for
-    /// x64 on Arm64 Windows. Returns null when the combination is unsupported or the Program Files folder is unknown.
+    /// The fallback for <see cref="GetProgramFilesDotnetRoots()"/>: the folder the .NET installer uses for
+    /// <paramref name="architecture"/>, if it exists. That is Program Files\dotnet for the OS architecture,
+    /// Program Files (x86)\dotnet for x86, and Program Files\dotnet\x64 for x64 on Arm64 Windows. Returns null when the
+    /// folder is missing, the combination is unsupported, or the Program Files folder is unknown.
     /// </summary>
-    internal static DotnetInstallRoot? GetDefaultProgramFilesDotnetRoot(AdminInstallRootResolver resolver, InstallArchitecture architecture)
+    internal static DotnetInstallRoot? GetFallbackProgramFilesDotnetRoot(AdminInstallRootResolver resolver, InstallArchitecture architecture)
     {
         DotnetInstallRoot root;
         try
