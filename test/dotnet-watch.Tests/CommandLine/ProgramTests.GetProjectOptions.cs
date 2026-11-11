@@ -214,6 +214,25 @@ public class Program_GetProjectOptionsTests
     }
 
     [TestMethod]
+    [DataRow("-mt")]
+    [DataRow("-mt:\"true\"")]
+    [DataRow("-mt:\"false\"")]
+    [DataRow("-mt:\"\"")]
+    [DataRow("\"--mt:false\"")]
+    public void CSharpFileSpecifiedAfterMultiThreadedOption(string option)
+    {
+        var tempDir = CreateTempDirectory();
+        var csFilePath = Path.Combine(tempDir, "App.cs");
+        File.WriteAllText(csFilePath, "Console.WriteLine(\"Hello\");");
+
+        var options = ParseOptions([option, csFilePath]);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(csFilePath, result.Representation.EntryPointFilePath);
+    }
+
+    [TestMethod]
     public void FileWithShebangSpecifiedAsArgument()
     {
         var tempDir = CreateTempDirectory();

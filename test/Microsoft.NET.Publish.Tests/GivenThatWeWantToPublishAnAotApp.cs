@@ -34,6 +34,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.RecordPropertiesBeforeTarget("Publish");
             testProject.AdditionalProperties["PublishAot"] = "true";
             // Linux symbol files are embedded and require additional steps to be stripped to a separate file
             // assumes /bin (or /usr/bin) are in the PATH
@@ -124,6 +125,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateAppForConfigCheck(targetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.RecordPropertiesBeforeTarget("Publish");
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["Configuration"] = projectConfiguration;
             // Linux symbol files are embedded and require additional steps to be stripped to a separate file
@@ -176,6 +178,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateAppForConfigCheck(targetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.RecordPropertiesBeforeTarget("Publish");
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["Configuration"] = projectConfiguration;
             // Linux symbol files are embedded and require additional steps to be stripped to a separate file
@@ -267,6 +270,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.RecordPropertiesBeforeTarget("Publish");
             testProject.AdditionalProperties["PublishAot"] = "true";
 
             // This will add a reference to a package that will also be automatically imported by the SDK
@@ -389,18 +393,23 @@ namespace Microsoft.NET.Publish.Tests
                 var rid = "win-arm64";
 
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
-                testProject.RecordProperties("BundledNETCoreAppPackageVersion");
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                // This will add a reference to a package that will also be automatically imported by the SDK
-                testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", "$(BundledNETCoreAppPackageVersion)"));
-                testProject.AddItem("PackageDownload", new Dictionary<string, string>
-                {
-                    { "Include", "Microsoft.NETCore.App.Runtime.NativeAOT.win-arm64" },
-                    { "Version", $"[$(BundledNETCoreAppPackageVersion)]" }
-                });
-
                 var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                GetKnownILCompilerPackVersion(testAsset, targetFramework, out string expectedVersion);
+
+                testAsset.WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Add(new XElement(ns + "ItemGroup",
+                        // These duplicate references verify that explicit and SDK-generated items are collated.
+                        new XElement(ns + "PackageReference",
+                            new XAttribute("Include", "Microsoft.DotNet.ILCompiler"),
+                            new XAttribute("Version", expectedVersion)),
+                        new XElement(ns + "PackageDownload",
+                            new XAttribute("Include", "Microsoft.NETCore.App.Runtime.NativeAOT.win-arm64"),
+                            new XAttribute("Version", $"[{expectedVersion}]"))));
+                });
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -410,16 +419,13 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning")
                 .And.HaveStdOutContaining("Microsoft.DotNet.ILCompiler");
 
-                var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
-                var targetVersion = buildProperties["BundledNETCoreAppPackageVersion"];
-
                 var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
                 var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
                 var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
                 File.Exists(publishedDll).Should().BeFalse();
                 File.Exists(publishedExe).Should().BeTrue();
 
-                CheckIlcVersions(testAsset, targetFramework, rid, targetVersion, useRuntimePackLayout: true);
+                CheckIlcVersions(testAsset, targetFramework, rid, expectedVersion, useRuntimePackLayout: true);
             }
         }
 
@@ -732,6 +738,7 @@ namespace Microsoft.NET.Publish.Tests
             // PublishAot should enable the EnableAotAnalyzer, EnableTrimAnalyzer and EnableSingleFileAnalyzer
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.RecordPropertiesBeforeTarget("Publish");
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
@@ -829,6 +836,7 @@ namespace Microsoft.NET.Publish.Tests
             // only if they don't have a predefined value
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.RecordPropertiesBeforeTarget("Publish");
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "false";
             testProject.AdditionalProperties["EnableTrimAnalyzer"] = "false";
@@ -869,6 +877,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectWithAotLibrary(targetFramework, projectName);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.RecordPropertiesBeforeTarget("Publish");
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
@@ -925,6 +934,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectWithAotLibrary(targetFramework, projectName);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.RecordPropertiesBeforeTarget("Publish");
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.AdditionalProperties["NativeLib"] = "Shared";
@@ -1085,6 +1095,7 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "NativeAotAppWithSatellites";
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.RecordPropertiesBeforeTarget("Publish");
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["SatelliteResourceLanguages"] = "fr;de";
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -1378,6 +1389,429 @@ public class NativeLibraryClass
             {
                 return true;
             }
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void NativeAot_publish_validates_platform_target(bool useOptimizedPublish)
+        {
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "NativeAotInvalidPlatform", true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x64";
+            testProject.AdditionalProperties["PlatformTarget"] = "x86";
+            testProject.AdditionalProperties["UseOptimizedPublish"] = useOptimizedPublish.ToString();
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: useOptimizedPublish.ToString());
+
+            new PublishCommand(testAsset)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdOutContaining("NETSDK1032");
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void NativeAot_optimized_publish_tracks_intermediate_outputs_for_clean(bool buildFirst)
+        {
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "NativeAotCleanIntermediates", true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = RuntimeInformation.RuntimeIdentifier;
+            testProject.AdditionalProperties["GenerateDocumentationFile"] = "true";
+            // Exercise compiler documentation tracking independently of publishing documentation.
+            testProject.AdditionalProperties["PublishDocumentationFile"] = "false";
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: buildFirst.ToString());
+            var publishCommand = new PublishCommand(testAsset);
+
+            if (buildFirst)
+            {
+                new BuildCommand(testAsset).Execute().Should().Pass();
+            }
+
+            publishCommand.Execute().Should().Pass();
+            publishCommand.Execute().Should().Pass();
+
+            var intermediateDirectory = publishCommand.GetIntermediateDirectory(
+                ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier).FullName;
+            string[] intermediateFiles = [
+                $"{testProject.Name}.dll",
+                $"{testProject.Name}.pdb",
+                $"{testProject.Name}.xml",
+                $"{testProject.Name}.AssemblyInfo.cs",
+                $"{testProject.Name}.AssemblyInfoInputs.cache",
+                $"{testProject.Name}.csproj.CoreCompileInputs.cache"];
+            foreach (var file in intermediateFiles)
+            {
+                File.Exists(Path.Combine(intermediateDirectory, file)).Should().BeTrue(file);
+            }
+
+            var publishDirectory = publishCommand.GetOutputDirectory(
+                ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier).FullName;
+            File.Exists(Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}")).Should().BeTrue();
+            Directory.GetFiles(Path.GetDirectoryName(publishDirectory)).Should().BeEmpty();
+
+            new CleanCommand(testAsset).Execute().Should().Pass();
+            foreach (var file in intermediateFiles)
+            {
+                File.Exists(Path.Combine(intermediateDirectory, file)).Should().BeFalse(file);
+            }
+        }
+
+        [TestMethod]
+        [DataRow("BeforeTargets")]
+        [DataRow("AfterTargets")]
+        public void NativeAot_failed_optimized_publish_tracks_generated_files_for_clean(string hook)
+        {
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "NativeAotFailedClean", true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = RuntimeInformation.RuntimeIdentifier;
+            testProject.AdditionalProperties["GenerateDocumentationFile"] = "true";
+            testProject.AdditionalProperties["PublishDocumentationFile"] = "false";
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: hook)
+                .WithProjectChanges(project => project.Root.Add(XElement.Parse($"""
+                    <Target Name="FailDuringOptimizedBuild" {hook}="Compile">
+                      <WriteLinesToFile File="$(IntermediateOutputPath)generated-before-error.txt" Lines="generated" Overwrite="true" />
+                      <ItemGroup>
+                        <FileWrites Include="$(IntermediateOutputPath)generated-before-error.txt" />
+                      </ItemGroup>
+                      <Error Text="Intentional optimized build failure" />
+                    </Target>
+                    """)));
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute().Should().Fail()
+                .And.HaveStdOutContaining("Intentional optimized build failure");
+
+            var intermediateDirectory = publishCommand.GetIntermediateDirectory(
+                ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier).FullName;
+            var generatedFile = Path.Combine(intermediateDirectory, "generated-before-error.txt");
+            File.Exists(generatedFile).Should().BeTrue();
+            string[] compileOutputs = [$"{testProject.Name}.dll", $"{testProject.Name}.pdb", $"{testProject.Name}.xml"];
+            if (hook == "AfterTargets")
+            {
+                foreach (var file in compileOutputs)
+                {
+                    File.Exists(Path.Combine(intermediateDirectory, file)).Should().BeTrue(file);
+                }
+            }
+
+            new CleanCommand(testAsset).Execute().Should().Pass();
+            File.Exists(generatedFile).Should().BeFalse();
+            foreach (var file in compileOutputs)
+            {
+                File.Exists(Path.Combine(intermediateDirectory, file)).Should().BeFalse(file);
+            }
+        }
+
+        [TestMethod]
+        public void Aot_optimized_publish_targets_are_reviewed_when_CoreBuildDependsOn_changes()
+        {
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "CoreBuildDependsOn", true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            var getValuesCommand = new GetValuesCommand(testAsset, "CoreBuildDependsOn")
+            {
+                ShouldCompile = false
+            };
+
+            getValuesCommand
+                .Execute()
+                .Should().Pass();
+
+            getValuesCommand.GetValues().Should().Equal([
+                "_CheckForBuildWithNoBuild",
+                "BuildOnlySettings",
+                "PrepareForBuild",
+                "PreBuildEvent",
+                "ResolveReferences",
+                "PrepareResources",
+                "ResolveKeySource",
+                "Compile",
+                "ExportWindowsMDFile",
+                "UnmanagedUnregistration",
+                "GenerateSerializationAssemblies",
+                "CreateSatelliteAssemblies",
+                "GenerateManifests",
+                "GetTargetPath",
+                "PrepareForRun",
+                "UnmanagedRegistration",
+                "IncrementalClean",
+                "PostBuildEvent",
+                "GenerateBuildDependencyFile",
+                "GenerateBuildRuntimeConfigurationFiles"],
+                because: "CoreBuildDependsOn changed. Review added or removed targets for their impact on optimized publish, update the optimized target chain if necessary, then update this expected list.");
+
+            var optimizedPublishTargetsCommand = new GetValuesCommand(testAsset, "_BeforeOptimizedPublishTargets")
+            {
+                ShouldCompile = false
+            };
+
+            optimizedPublishTargetsCommand
+                .Execute()
+                .Should().Pass();
+
+            optimizedPublishTargetsCommand.GetValues().Should().Equal([
+                "_CheckForInvalidConfigurationAndPlatform",
+                "BuildOnlySettings",
+                "PrepareForBuild",
+                "PreBuildEvent",
+                "ResolveReferences",
+                "PrepareResources",
+                "ResolveKeySource",
+                "Compile",
+                "CreateSatelliteAssemblies"]);
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        public void NativeAot_publish_includes_resources_added_before_ResolveReferences()
+        {
+            var projectName = "NativeAotGeneratedResource";
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, projectName, true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.RecordPropertiesBeforeTarget("Publish");
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                testProject.AdditionalProperties["StripSymbols"] = "true";
+            }
+            testProject.SourceFiles[$"{projectName}.cs"] = """
+                using System;
+                using System.IO;
+
+                class Test
+                {
+                    static int Main()
+                    {
+                        using var resource = typeof(Test).Assembly.GetManifestResourceStream("!Generated");
+                        if (resource is null)
+                        {
+                            Console.Error.WriteLine("Generated resource is missing");
+                            return 1;
+                        }
+
+                        using var reader = new StreamReader(resource);
+                        var contents = reader.ReadToEnd().Trim();
+                        Console.WriteLine(contents);
+                        return contents == "Generated resource contents" ? 0 : 2;
+                    }
+                }
+                """;
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project =>
+                {
+                    project.Root.Add(XElement.Parse("""
+                        <Target Name="AddGeneratedResource" BeforeTargets="ResolveReferences">
+                          <WriteLinesToFile File="$(IntermediateOutputPath)generated.bin"
+                                            Lines="Generated resource contents"
+                                            Overwrite="true" />
+                          <ItemGroup>
+                            <EmbeddedResource Include="$(IntermediateOutputPath)generated.bin" LogicalName="!Generated" />
+                          </ItemGroup>
+                        </Target>
+                        """));
+                });
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute("/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
+                .Should().Pass();
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, ToolsetInfo.CurrentTargetFramework);
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: rid).FullName;
+            var publishedExe = Path.Combine(publishDirectory, $"{projectName}{Constants.ExeSuffix}");
+            IsNativeImage(publishedExe).Should().BeTrue();
+
+            new RunExeCommand(Log, publishedExe)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Generated resource contents");
+        }
+
+        [TestMethod]
+        public void UseOptimizedPublish_does_not_skip_build_for_unsupported_publish_modes()
+        {
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "UnsupportedOptimizedPublish", true);
+            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project =>
+                {
+                    project.Root.Add(XElement.Parse("""
+                        <Target Name="ConfirmBuildExecuted" AfterTargets="Build">
+                          <Message Importance="High" Text="Build target executed" />
+                        </Target>
+                        """));
+                });
+
+            new PublishCommand(testAsset)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Build target executed");
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(null, false)]
+        [DataRow("false", false)]
+        [DataRow("true", false)]
+        [DataRow(null, true)]
+        [DataRow("false", true)]
+        [DataRow("true", true)]
+        public void NativeAot_publish_respects_optimized_publish_and_no_build(string useOptimizedPublish, bool noBuild)
+        {
+            var projectName = "NativeAotCleanOutput";
+            bool optimized = useOptimizedPublish == "true";
+
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, projectName, true);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier", "UseOptimizedPublish");
+            testProject.RecordPropertiesBeforeTarget("Publish");
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["GenerateDocumentationFile"] = "true";
+            if (useOptimizedPublish != null)
+            {
+                testProject.AdditionalProperties["UseOptimizedPublish"] = useOptimizedPublish;
+            }
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                testProject.AdditionalProperties["StripSymbols"] = "true";
+            }
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{useOptimizedPublish ?? "default"}_{noBuild}")
+                .WithProjectChanges(project =>
+                {
+                    project.Root.Add(XElement.Parse("""
+                        <Target Name="ConfirmBeforeBuildExecuted" BeforeTargets="BeforeBuild">
+                          <Message Importance="High" Text="BeforeBuild hook executed" />
+                        </Target>
+                        """));
+                    project.Root.Add(XElement.Parse("""
+                        <Target Name="ConfirmAfterBuildExecuted" AfterTargets="AfterBuild">
+                          <Message Importance="High" Text="AfterBuild hook executed" />
+                        </Target>
+                        """));
+                });
+
+            if (noBuild)
+            {
+                new BuildCommand(testAsset).Execute("/p:UseCurrentRuntimeIdentifier=true")
+                    .Should().Pass();
+            }
+
+            var publishCommand = new PublishCommand(testAsset);
+            var result = publishCommand.Execute($"/p:NoBuild={noBuild}");
+            result.Should().Pass();
+            if (optimized || noBuild)
+            {
+                result.Should().NotHaveStdOutContaining("BeforeBuild hook executed")
+                    .And.NotHaveStdOutContaining("AfterBuild hook executed");
+            }
+            else
+            {
+                result.Should().HaveStdOutContaining("BeforeBuild hook executed")
+                    .And.HaveStdOutContaining("AfterBuild hook executed");
+            }
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, ToolsetInfo.CurrentTargetFramework);
+            buildProperties["UseOptimizedPublish"].Should().Be(useOptimizedPublish ?? "false");
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: rid).FullName;
+            var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
+
+            // The publish directory should contain the native AOT binary
+            File.Exists(publishedExe).Should().BeTrue("the AOT-compiled native binary should exist in the publish directory");
+            IsNativeImage(publishedExe).Should().BeTrue("the published binary should be a native image");
+            File.Exists(Path.Combine(publishDirectory, $"{testProject.Name}.xml"))
+                .Should().BeTrue("the generated XML documentation file should be published");
+
+            var outputDirectory = Path.GetDirectoryName(publishDirectory);
+            if (optimized && !noBuild)
+            {
+                Directory.GetFiles(outputDirectory).Should().BeEmpty(
+                    "the AOT-optimized publish should not produce Build output files");
+            }
+            else
+            {
+                foreach (var file in new[] { $"{projectName}.dll",
+                    $"{projectName}.deps.json", $"{projectName}.runtimeconfig.json" })
+                {
+                    File.Exists(Path.Combine(outputDirectory, file)).Should().BeTrue(
+                        "{0} should be preserved when Build runs", file);
+                }
+            }
+
+            new RunExeCommand(Log, publishedExe).Execute().Should().Pass()
+                .And.HaveStdOutContaining("Hello World");
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        public void NativeAot_publish_with_project_reference_succeeds()
+        {
+            // Verify that AOT publish still builds project references correctly via
+            // Compile → ResolveReferences → ResolveProjectReferences.
+            var referencedProject = new TestProject()
+            {
+                Name = "AotRefLib",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+            referencedProject.SourceFiles["AotRefLib.cs"] = @"
+namespace AotRefLib
+{
+    public class Greeter
+    {
+        public static string Greet() => ""Hello from referenced project"";
+    }
+}";
+
+            var testProject = new TestProject()
+            {
+                Name = "AotAppWithRef",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                testProject.AdditionalProperties["StripSymbols"] = "true";
+            }
+            testProject.ReferencedProjects.Add(referencedProject);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            // Record properties before Publish since Build is skipped for AOT
+            testProject.RecordPropertiesBeforeTarget("Publish");
+            testProject.SourceFiles["AotAppWithRef.cs"] = @"
+using System;
+class Test
+{
+    static void Main()
+    {
+        Console.WriteLine(AotRefLib.Greeter.Greet());
+    }
+}";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand
+                .Execute("/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
+                .Should().Pass();
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, ToolsetInfo.CurrentTargetFramework);
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: rid).FullName;
+            var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
+
+            File.Exists(publishedExe).Should().BeTrue("the AOT-compiled native binary should exist");
+            IsNativeImage(publishedExe).Should().BeTrue("the published binary should be a native image");
+
+            var result = new RunExeCommand(Log, publishedExe)
+                .Execute();
+            result.Should().Pass()
+                .And.HaveStdOutContaining("Hello from referenced project");
         }
 
         private void AddRuntimeConfigOption(XDocument project)

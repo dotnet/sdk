@@ -40,6 +40,9 @@ internal static class CommandLineOptionMessageFieldsId
     public const ushort IsHidden = 3;
     public const ushort IsBuiltIn = 4;
     // Reserved: field ID 5 was ObsolescenceMessage, removed as unused.
+    public const ushort ProviderUid = 6;
+    public const ushort MinimumArity = 7;
+    public const ushort MaximumArity = 8;
 }
 
 // Reserved: serializer ID 4 was ModuleSerializer, removed as unused.
@@ -92,6 +95,8 @@ internal static class SuccessfulTestResultMessageFieldsId
     public const ushort StandardOutput = 6;
     public const ushort ErrorOutput = 7;
     public const ushort SessionUid = 8;
+    public const ushort RetryAttemptNumber = 9;
+    public const ushort IsSuperseded = 10;
 }
 
 internal static class FailedTestResultMessageFieldsId
@@ -113,6 +118,8 @@ internal static class FailedTestResultMessageFieldsId
     // after SessionUid; older readers skip unrecognized field ids, so this stays backwards compatible.
     public const ushort Expected = 10;
     public const ushort Actual = 11;
+    public const ushort RetryAttemptNumber = 12;
+    public const ushort IsSuperseded = 13;
 }
 
 internal static class ExceptionMessageFieldsId
@@ -141,6 +148,7 @@ internal static class FileArtifactMessageFieldsId
     public const ushort SessionUid = 6;
     public const ushort Kind = 7;
     public const ushort InputArtifactPaths = 8;
+    public const ushort CoverageSummary = 9;
 }
 
 internal static class TestSessionEventFieldsId
@@ -201,4 +209,25 @@ internal static class ServerControlMessageFieldsId
     public const int MessagesSerializerId = 14;
 
     public const ushort Kind = 1;
+}
+
+internal static class CoverageSummaryMessagesFieldsId
+{
+    public const int MessagesSerializerId = 15;
+
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort Summaries = 3;
+}
+
+internal static class CoverageSummaryMessageFieldsId
+{
+    public const ushort SessionUid = 1;
+    public const ushort ProducerId = 2;
+    public const ushort ScopeLevel = 3;
+    public const ushort ScopeName = 4;
+    public const ushort Metric = 5;
+    public const ushort CustomMetricName = 6;
+    public const ushort CoveredCount = 7;
+    public const ushort CoverableCount = 8;
 }

@@ -9,6 +9,7 @@ using Microsoft.DotNet.Cli.Commands.Format;
 using Microsoft.DotNet.Cli.Commands.Fsi;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
+using Microsoft.DotNet.Cli.Commands.Hidden.Complete;
 using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
@@ -38,7 +39,6 @@ using Microsoft.DotNet.Cli.Commands.BuildServer;
 using Microsoft.DotNet.Cli.Commands.Clean;
 using Microsoft.DotNet.Cli.Commands.Dnx;
 using Microsoft.DotNet.Cli.Commands.Help;
-using Microsoft.DotNet.Cli.Commands.Hidden.Complete;
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Commands.Hidden.Parse;
 using Microsoft.DotNet.Cli.Commands.Hidden.Remove;
@@ -130,9 +130,18 @@ public static class Parser
                 //     short-name/args usage line, the Arguments section, and per-template options.
                 //   * `test` (Microsoft.Testing.Platform mode) builds and forwards `--help` to the test
                 //     application, which contributes the "Extension Options:" section and per-extension options.
+                //   * `package` gains NuGet-contributed subcommands (e.g. `package update`) only in the managed
+                //     CLI. Help suppresses the parse error for the unknown subcommand, so without this the
+                //     static parent's help would be printed and omit those subcommands. (`nuget why` needs no
+                //     entry: help for the `nuget` tree is forwarded to the NuGet CLI in both modes.)
                 // Rendering the static definition's help here would omit all of that, so defer help for those
                 // subtrees to the managed CLI to keep the output in parity.
-                helpOption.Action = new AotPrintHelpAction(helpOption, DotnetHelpBuilder.Instance.Value, rootCommand.NewCommand, rootCommand.TestCommand);
+                helpOption.Action = new AotPrintHelpAction(
+                    helpOption,
+                    DotnetHelpBuilder.Instance.Value,
+                    rootCommand.NewCommand,
+                    rootCommand.TestCommand,
+                    rootCommand.PackageCommand);
 #else
                 helpOption.Action = new PrintHelpAction(helpOption, DotnetHelpBuilder.Instance.Value);
 #endif
@@ -227,6 +236,14 @@ public static class Parser
         // Narrow file-based run fast path: explicit, positional, and shorthand invocations can
         // reuse a synthetic CSC cache or a validated cached run contract. Other shapes fall back.
         AotRunCommand.ConfigureCommand(rootCommand.RunCommand);
+
+        // Build-free Microsoft.Testing.Platform invocations over explicit --test-modules run in AOT.
+        // Project, solution, file-based, VSTest, and unsupported option shapes retain managed fallback.
+        AotTestCommand.ConfigureCommand(rootCommand.TestCommand);
+
+        // Root command and option labels come from the shared command tree. Once the completion
+        // input selects a command, defer so managed parser configuration supplies its providers.
+        CompleteCommandParser.ConfigureCommand(rootCommand.CompleteCommand);
 
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
         rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);
@@ -463,7 +480,10 @@ public static class Parser
             }
             else if (command is MSBuildCommandDefinition)
             {
-                new MSBuildForwardingApp(MSBuildArgs.ForHelp).Execute();
+                new MSBuildForwardingApp(
+                    MSBuildArgs.ForHelp,
+                    msbuildPath: null,
+                    CommandServices.CreateDefault()).Execute();
                 context.Output.WriteLine();
                 additionalOption(context);
             }

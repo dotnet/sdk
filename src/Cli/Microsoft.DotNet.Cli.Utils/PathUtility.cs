@@ -390,4 +390,16 @@ public static class PathUtility
 
         return null;
     }
+
+#if NET
+    public static FileSystemInfo ResolveLinkTargetOrSelf(FileSystemInfo fileSystemInfo)
+    {
+        if (!fileSystemInfo.Exists)
+        {
+            return fileSystemInfo;
+        }
+
+        return fileSystemInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileSystemInfo;
+    }
+#endif
 }

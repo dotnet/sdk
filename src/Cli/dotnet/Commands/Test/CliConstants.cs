@@ -22,9 +22,6 @@ internal static class CliConstants
     public static readonly string[] SolutionExtensions = [".sln", ".slnx", ".slnf"];
 
     public const string ProjectExtensionPattern = "*.*proj";
-    public const string SolutionExtensionPattern = "*.sln";
-    public const string SolutionXExtensionPattern = "*.slnx";
-    public const string SolutionFilterExtensionPattern = "*.slnf";
 
     public const string BinLogFileName = "msbuild.binlog";
 
@@ -85,6 +82,11 @@ internal static class HandshakeMessagePropertyNames
     // it, in which case the SDK falls back to its previous (no-validation) behavior.
     internal const byte ExecutionMode = 10;
 
+    // Identifies the extension responsible for a test-host orchestrator. Optional and
+    // additive so older consumers can ignore it and newer consumers can recognize known
+    // orchestrators without rejecting unknown ones.
+    internal const byte OrchestratorFeature = 11;
+
     // Reply-only capability that tells Microsoft.Testing.Platform where to open
     // the reverse channel used for server-initiated session cancellation.
     internal const byte ServerControlPipeName = 12;
@@ -100,6 +102,15 @@ internal static class HandshakeMessagePropertyNames
     internal const byte SupportedPostProcessorExtensionsLegacy = 15;
     internal const byte SupportedTruncatedRunPostProcessorKinds = 16;
     internal const byte SupportedTruncatedRunPostProcessorExtensionsLegacy = 17;
+
+    // Subset of SupportedPostProcessorKinds that must run even for a single input.
+    internal const byte RequiredPostProcessorKinds = 18;
+
+    // Reply-only capability promising required processing and an authoritative runSummary.
+    internal const byte RequiredPostProcessingSupported = 19;
+
+    // Independently negotiated so coverage does not enable the 1.4 server-control protocol.
+    internal const byte CoverageSummaryVersion = 20;
 }
 
 internal static class HandshakeMessageExecutionModes
@@ -120,15 +131,20 @@ internal static class HandshakeMessageExecutionModes
 internal static class HandshakeMessageHostTypes
 {
     internal const string TestHost = "TestHost";
+    internal const string TestHostOrchestrator = "TestHostOrchestrator";
     internal const string ArtifactPostProcessor = "ArtifactPostProcessor";
 }
 
 internal static class ProtocolConstants
 {
+    internal const string CoverageSummaryVersion = "1";
+
     /// <summary>
     /// The protocol versions that are supported by the current SDK. Multiple versions can be present and be semicolon separated.
     /// </summary>
-    // 1.2.0 adds AzureDevOpsLogMessage (serializer id 11) forwarding; 1.3.0 adds DisplayMessage (serializer id 12) forwarding.
+    // 1.2.0 adds AzureDevOpsLogMessage (serializer id 11) forwarding.
+    // 1.3.0 adds DisplayMessage (serializer id 12) forwarding, including GitHub Actions workflow commands
+    // sent at the Information level so the SDK writes their text verbatim without warning/error formatting.
     // NOTE: 1.4.0 (the reverse server-control pipe / server-initiated cancellation) is intentionally NOT advertised yet:
     // it is a separate, larger feature that is out of scope here.
     internal const string SupportedVersions = "1.0.0;1.1.0;1.2.0;1.3.0";

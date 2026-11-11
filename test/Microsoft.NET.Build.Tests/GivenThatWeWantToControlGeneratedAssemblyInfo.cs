@@ -363,9 +363,10 @@ namespace Microsoft.NET.Build.Tests
         [TestMethod]
         [RequiresMSBuildVersion("17.0.0.32901")]
         [DataRow(true, true, "net5.0")]
-        [DataRow(true, true, ToolsetInfo.CurrentTargetFramework)]
-        [DataRow(true, false, ToolsetInfo.CurrentTargetFramework)]
-        [DataRow(false, false, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(true, true, "net11.0")]
+        [DataRow(true, true, ToolsetInfo.SdkTargetFramework)]
+        [DataRow(true, false, ToolsetInfo.SdkTargetFramework)]
+        [DataRow(false, false, ToolsetInfo.SdkTargetFramework)]
         public void TestPreviewFeatures(bool enablePreviewFeatures, bool generateRequiresPreviewFeaturesAttribute, string targetFramework)
         {
             var testAsset = TestAssetsManager
@@ -412,7 +413,7 @@ namespace Microsoft.NET.Build.Tests
 
             if (enablePreviewFeatures && generateRequiresPreviewFeaturesAttribute)
             {
-                if (targetFramework == ToolsetInfo.CurrentTargetFramework)
+                if (targetFramework == ToolsetInfo.SdkTargetFramework)
                 {
                     Assert.AreEqual("Preview", langVersion);
                     Assert.IsTrue(contains);
@@ -814,7 +815,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/45148")]
         [DataRow("netcoreapp3.1", ".NET Core 3.1")]
         [DataRow("netcoreapp2.1", ".NET Core 2.1")]
         [DataRow("netstandard2.1", ".NET Standard 2.1")]
@@ -827,6 +827,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFrameworkVersion
             };
             libraryProject.AdditionalProperties["NoWarn"] = "NETSDK1138";
+            libraryProject.AdditionalProperties["NuGetAudit"] = "false";
             libraryProject.SourceFiles["Class.cs"] = @"
 public class LibraryClass{}
 ";
@@ -837,6 +838,7 @@ public class LibraryClass{}
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true
             };
+            testProject.AdditionalProperties["NuGetAudit"] = "false";
 
             testProject.ReferencedProjects.Add(libraryProject);
             testProject.SourceFiles["Program.cs"] = @"

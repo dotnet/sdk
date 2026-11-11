@@ -18,6 +18,9 @@ This spec describes how `dotnet watch` provides Hot Reload for mobile platforms 
 ```
 
 Mobile workloads (Android, iOS) add this capability to their SDK targets. This allows any workload to opt into WebSocket-based hot reload.
+Mobile workloads also declare `RuntimeEnvironmentVariableSupport` so that the workload can
+include the build-owned public key and launch settings in the app's runtime
+environment.
 
 ## SDK Changes ([dotnet/sdk#52581](https://github.com/dotnet/sdk/pull/52581))
 
@@ -40,19 +43,35 @@ The mobile transport (`WebSocketClientTransport`) composes a sealed `KestrelWebS
 
 ### WebSocket Authentication
 
-To prevent unauthorized processes from connecting to the hot reload server, `WebSocketClientTransport` uses RSA-based authentication identical to `BrowserRefreshServer`:
+Mobile uses the same RSA-OAEP-SHA256 exchange as WASM/browser tools:
 
-1. **Server generates RSA key pair:** `SharedSecretProvider` creates a 2048-bit RSA key on startup
-2. **Public key exported:** The public key (X.509 SubjectPublicKeyInfo, Base64-encoded) is passed to the app via `DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY`
-3. **Client encrypts secret:** The startup hook generates a random 32-byte secret, encrypts it with RSA-OAEP-SHA256 using the public key
-4. **Secret sent as subprotocol:** The encrypted secret is Base64-encoded (URL-safe: `-` for `+`, `_` for `/`, no padding) and sent as the WebSocket subprotocol header
-5. **Server validates:** `WebSocketClientTransport.HandleRequestAsync` decrypts the subprotocol value and accepts the connection only if decryption succeeds
+1. **Build the key pair.** For `.NETCoreApp` projects with `HotReloadWebSockets`,
+   [`EnsureHotReloadWebSocketKey`](../../src/Tasks/Microsoft.NET.Build.Tasks/EnsureHotReloadWebSocketKey.cs)
+   creates an RSA-2048 pair under `$(IntermediateOutputPath)HotReload/`, in
+   `websocket-key.public.json` and `websocket-key.private.json`. It shares
+   [`HotReloadKeyPair`](../../src/Common/HotReloadKeyPair.cs) with the browser task.
+   Valid keys are reused; missing or invalid keys are regenerated. `Clean` removes
+   both files. Design-time builds skip generation; configuration and
+   `EnableHotReloadInRuntimeConfigDevFile` do not control it.
+2. **Pin the public key.** The build supplies the Base64 SubjectPublicKeyInfo as
+   `DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY` through a `RuntimeEnvironmentVariable` item.
+   The workload consumes it as an app setting, without changing the environment of
+   `dotnet run` or its build processes. This also runs before deployment and
+   run-argument computation for `--no-build`, and replaces any launch-supplied key.
+   The private key stays in the intermediate directory.
+3. **Send a secret.** The agent generates 32 random bytes, encrypts them with the
+   public key, and sends URL-encoded standard Base64 as the WebSocket subprotocol.
+4. **Echo the secret.** Watch loads the current key pair when the app connects.
+   It returns HTTP 500 for unusable key files or HTTP 401 for invalid credentials,
+   before upgrade. On success, its first WebSocket text message is the decrypted
+   secret encoded as Base64.
+5. **Verify the provider.** The agent checks the echo before sending initialization
+   or accepting updates. The connection timeout covers this check.
 
-This ensures only processes that received the public key via the environment variable can connect. The URL-safe Base64 encoding is required because WebSocket subprotocol tokens cannot contain `+`, `/`, or `=` characters.
-
-**Environment variables:**
-- `DOTNET_WATCH_HOTRELOAD_WEBSOCKET_ENDPOINT` — WebSocket URL (e.g., `ws://127.0.0.1:5432`)
-- `DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY` — RSA public key (Base64-encoded)
+This authenticates the provider to the app, not an exclusive client identity.
+The transport accepts one app connection per launch; additional connections receive
+HTTP 409. Watch passes the endpoint through `DOTNET_WATCH_HOTRELOAD_WEBSOCKET_ENDPOINT`
+but does not supply the public key.
 
 ### 1. WebSocket Capability Detection
 
@@ -71,7 +90,6 @@ dotnet run --no-build \
   -e DOTNET_WATCH=1 \
   -e DOTNET_MODIFIABLE_ASSEMBLIES=debug \
   -e DOTNET_WATCH_HOTRELOAD_WEBSOCKET_ENDPOINT=ws://127.0.0.1:<port> \
-  -e DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY=<base64-encoded-rsa-public-key> \
   -e DOTNET_STARTUP_HOOKS=<path to DeltaApplier.dll>
 ```
 
@@ -98,13 +116,13 @@ Enables the Android workload to receive env vars from `dotnet run -e`:
 ## Data Flow
 
 1. **Build:** `dotnet-watch` builds the project, detects `HotReloadWebSockets` capability
-2. **Launch:** `dotnet run -e DOTNET_WATCH_HOTRELOAD_WEBSOCKET_ENDPOINT=ws://127.0.0.1:<port> -e DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY=<key> -e DOTNET_STARTUP_HOOKS=...`
+2. **Launch:** `dotnet run -e DOTNET_WATCH_HOTRELOAD_WEBSOCKET_ENDPOINT=ws://127.0.0.1:<port> -e DOTNET_STARTUP_HOOKS=...`
 3. **Workload:** Android build tasks:
    - Include the startup hook DLL in the APK
    - Set up ADB port forwarding for the dynamically assigned port
    - Rewrite env vars for on-device paths
 4. **Device:** App starts → StartupHook loads → `Transport.TryCreate()` reads env vars → `WebSocketTransport` encrypts secret with RSA public key → connects to `ws://127.0.0.1:<port>` with encrypted secret as subprotocol
-5. **Server:** `WebSocketClientTransport` validates the encrypted secret, accepts connection
+5. **Server:** `WebSocketClientTransport` reads the build-owned key, decrypts the secret, and echoes it. The app checks the echo before it sends its initialization response.
 6. **Hot Reload:** File change → delta compiled → sent over WebSocket → applied on device
 
 ## iOS

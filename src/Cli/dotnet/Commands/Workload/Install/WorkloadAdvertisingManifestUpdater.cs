@@ -100,7 +100,7 @@ internal class WorkloadAdvertisingManifestUpdater(
     public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
     {
         string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
-        var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+        var installStateContents = InstallStateContents.FromPath(path);
         return installStateContents.ShouldUseWorkloadSets();
     }
 
@@ -244,7 +244,10 @@ internal class WorkloadAdvertisingManifestUpdater(
         }
         catch (Exception e)
         {
-            _reporter.WriteLine(CliCommandStrings.FailedAdManifestUpdate, manifestId, e.Message);
+            if (_displayManifestUpdates)
+            {
+                _reporter.WriteLine(CliCommandStrings.FailedAdManifestUpdate, manifestId, e.Message);
+            }
             return false;
         }
         finally
@@ -283,7 +286,10 @@ internal class WorkloadAdvertisingManifestUpdater(
             }
         }
 
-        _reporter.WriteLine(CliCommandStrings.AdManifestPackageDoesNotExist, manifest.Id);
+        if (_displayManifestUpdates)
+        {
+            _reporter.WriteLine(CliCommandStrings.AdManifestPackageDoesNotExist, manifest.Id);
+        }
     }
 
     private (ManifestVersionWithBand ManifestWithBand, WorkloadCollection Workloads)? GetAdvertisingManifestVersionAndWorkloads(ManifestId manifestId)
@@ -341,9 +347,8 @@ internal class WorkloadAdvertisingManifestUpdater(
     private async Task<bool> UpdatedAdManifestPackagesExistAsync()
     {
         var manifests = GetInstalledManifestIds();
-        //  TODO: This doesn't seem to account for differing feature bands
         var availableUpdates = await Task.WhenAll(manifests.Select(manifest => NewerManifestPackageExists(manifest))).ConfigureAwait(false);
-        return availableUpdates.Any();
+        return availableUpdates.Any(updateAvailable => updateAvailable);
     }
 
     private async Task<bool> NewerManifestPackageExists(ManifestId manifest)
@@ -351,13 +356,28 @@ internal class WorkloadAdvertisingManifestUpdater(
         try
         {
             var currentVersion = NuGetVersion.Parse(_workloadResolver.GetManifestVersion(manifest.ToString()));
-            var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(_workloadManifestInstaller.GetManifestPackageId(manifest, _sdkFeatureBand));
-            return latestVersion > currentVersion;
+            var fallbackFeatureBand = new SdkFeatureBand(_workloadResolver.GetManifestFeatureBand(manifest.ToString()));
+            foreach (SdkFeatureBand band in new[] { _sdkFeatureBand, fallbackFeatureBand }.Distinct())
+            {
+                try
+                {
+                    var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(
+                        _workloadManifestInstaller.GetManifestPackageId(manifest, band),
+                        _packageSourceLocation);
+                    if (latestVersion > currentVersion)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception)
+                {
+                }
+            }
         }
         catch (Exception)
         {
-            return false;
         }
+        return false;
     }
 
     private string GetAdvertisingManifestSentinelPath(SdkFeatureBand featureBand) => Path.Combine(_userProfileDir, $".workloadAdvertisingManifestSentinel{featureBand}");

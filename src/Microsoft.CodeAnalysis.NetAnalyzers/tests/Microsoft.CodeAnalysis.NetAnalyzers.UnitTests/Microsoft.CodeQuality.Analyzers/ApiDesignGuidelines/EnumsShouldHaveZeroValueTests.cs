@@ -20,44 +20,46 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CSharp_EnumsShouldZeroValueFlagsRenameAsync()
         {
-            var code = @"
-public class Outer
-{
-    [System.Flags]
-    public enum E
-    {
-        A = 0,
-        B = 3
-    }
-}
+            var code = """
 
-[System.Flags]
-public enum E2
-{
-    A2 = 0,
-    B2 = 1
-}
+                public class Outer
+                {
+                    [System.Flags]
+                    public enum E
+                    {
+                        A = 0,
+                        B = 3
+                    }
+                }
 
-[System.Flags]
-public enum E3
-{
-    A3 = (ushort)0,
-    B3 = (ushort)1
-}
+                [System.Flags]
+                public enum E2
+                {
+                    A2 = 0,
+                    B2 = 1
+                }
 
-[System.Flags]
-public enum E4
-{
-    A4 = 0,
-    B4 = (int)2  // Sample comment
-}
+                [System.Flags]
+                public enum E3
+                {
+                    A3 = (ushort)0,
+                    B3 = (ushort)1
+                }
 
-[System.Flags]
-public enum NoZeroValuedField
-{
-    A5 = 1,
-    B5 = 2
-}";
+                [System.Flags]
+                public enum E4
+                {
+                    A4 = 0,
+                    B4 = (int)2  // Sample comment
+                }
+
+                [System.Flags]
+                public enum NoZeroValuedField
+                {
+                    A5 = 1,
+                    B5 = 2
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpRenameResultAt(7, 9, "E", "A"),
                 GetCSharpRenameResultAt(15, 5, "E2", "A2"),
@@ -68,68 +70,71 @@ public enum NoZeroValuedField
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_EnumsShouldZeroValueFlagsRename_InternalAsync()
         {
-            var code = @"
-class Outer
-{
-    [System.Flags]
-    private enum E
-    {
-        A = 0,
-        B = 3
-    }
-}
+            var code = """
+                class Outer
+                {
+                    [System.Flags]
+                    private enum E
+                    {
+                        A = 0,
+                        B = 3
+                    }
+                }
 
-[System.Flags]
-internal enum E2
-{
-    A2 = 0,
-    B2 = 1
-}
+                [System.Flags]
+                internal enum E2
+                {
+                    A2 = 0,
+                    B2 = 1
+                }
 
-[System.Flags]
-internal enum E3
-{
-    A3 = (ushort)0,
-    B3 = (ushort)1
-}
+                [System.Flags]
+                internal enum E3
+                {
+                    A3 = (ushort)0,
+                    B3 = (ushort)1
+                }
 
-[System.Flags]
-internal enum E4
-{
-    A4 = 0,
-    B4 = (int)2  // Sample comment
-}
+                [System.Flags]
+                internal enum E4
+                {
+                    A4 = 0,
+                    B4 = (int)2  // Sample comment
+                }
 
-[System.Flags]
-internal enum NoZeroValuedField
-{
-    A5 = 1,
-    B5 = 2
-}";
+                [System.Flags]
+                internal enum NoZeroValuedField
+                {
+                    A5 = 1,
+                    B5 = 2
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZeroAsync()
         {
-            var code = @"// Some comment
-public class Outer
-{
-    [System.Flags]
-    public enum E
-    {
-        None = 0,
-        A = 0
-    }
-}
+            var code = """
+                // Some comment
+                public class Outer
+                {
+                    [System.Flags]
+                    public enum E
+                    {
+                        None = 0,
+                        A = 0
+                    }
+                }
 
-// Some comment
-[System.Flags]
-public enum E2
-{
-    None = 0,
-    A = None
-}";
+                // Some comment
+                [System.Flags]
+                public enum E2
+                {
+                    None = 0,
+                    A = None
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpMultipleZeroResultAt(5, 17, "E"),
                 GetCSharpMultipleZeroResultAt(14, 13, "E2"));
@@ -138,57 +143,61 @@ public enum E2
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZero_InternalAsync()
         {
-            var code = @"// Some comment
-public class Outer
-{
-    [System.Flags]
-    private enum E
-    {
-        None = 0,
-        A = 0
-    }
-}
+            var code = """
+                // Some comment
+                public class Outer
+                {
+                    [System.Flags]
+                    private enum E
+                    {
+                        None = 0,
+                        A = 0
+                    }
+                }
 
-// Some comment
-[System.Flags]
-internal enum E2
-{
-    None = 0,
-    A = None
-}";
+                // Some comment
+                [System.Flags]
+                internal enum E2
+                {
+                    None = 0,
+                    A = None
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValueAsync()
         {
-            var code = @"
-public class Outer
-{
-    public enum E
-    {
-        A = 1
-    }
+            var code = """
 
-    public enum E2
-    {
-        None = 1,
-        A = 2
-    }
-}
+                public class Outer
+                {
+                    public enum E
+                    {
+                        A = 1
+                    }
 
-public enum E3
-{
-    None = 0,
-    A = 1
-}
+                    public enum E2
+                    {
+                        None = 1,
+                        A = 2
+                    }
+                }
 
-public enum E4
-{
-    None = 0,
-    A = 0
-}
-";
+                public enum E3
+                {
+                    None = 0,
+                    A = 1
+                }
+
+                public enum E4
+                {
+                    None = 0,
+                    A = 0
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpNoZeroResultAt(4, 17, "E"),
                 GetCSharpNoZeroResultAt(9, 17, "E2"));
@@ -197,66 +206,68 @@ public enum E4
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValue_InternalAsync()
         {
-            var code = @"
-public class Outer
-{
-    private enum E
-    {
-        A = 1
-    }
+            var code = """
+                public class Outer
+                {
+                    private enum E
+                    {
+                        A = 1
+                    }
 
-    private enum E2
-    {
-        None = 1,
-        A = 2
-    }
-}
+                    private enum E2
+                    {
+                        None = 1,
+                        A = 2
+                    }
+                }
 
-enum E3
-{
-    None = 0,
-    A = 1
-}
+                enum E3
+                {
+                    None = 0,
+                    A = 1
+                }
 
-internal enum E4
-{
-    None = 0,
-    A = 0
-}
-";
+                internal enum E4
+                {
+                    None = 0,
+                    A = 0
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsRenameAsync()
         {
-            var code = @"
-Public Class C
-    <System.Flags>
-    Public Enum E
-        A = 0
-        B = 1
-    End Enum
-End Class
+            var code = """
 
-<System.Flags>
-Public Enum E2
-    A2 = 0
-    B2 = 1
-End Enum
+                Public Class C
+                    <System.Flags>
+                    Public Enum E
+                        A = 0
+                        B = 1
+                    End Enum
+                End Class
 
-<System.Flags>
-Public Enum E3
-    A3 = CUShort(0)
-    B3 = CUShort(1)
-End Enum
+                <System.Flags>
+                Public Enum E2
+                    A2 = 0
+                    B2 = 1
+                End Enum
 
-<System.Flags>
-Public Enum NoZeroValuedField
-    A5 = 1
-    B5 = 2
-End Enum
-";
+                <System.Flags>
+                Public Enum E3
+                    A3 = CUShort(0)
+                    B3 = CUShort(1)
+                End Enum
+
+                <System.Flags>
+                Public Enum NoZeroValuedField
+                    A5 = 1
+                    B5 = 2
+                End Enum
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicRenameResultAt(5, 9, "E", "A"),
                 GetBasicRenameResultAt(12, 5, "E2", "A2"),
@@ -266,33 +277,33 @@ End Enum
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_InternalAsync()
         {
-            var code = @"
-Public Class C
-    <System.Flags>
-    Private Enum E
-        A = 0
-        B = 1
-    End Enum
-End Class
+            var code = """
+                Public Class C
+                    <System.Flags>
+                    Private Enum E
+                        A = 0
+                        B = 1
+                    End Enum
+                End Class
 
-<System.Flags>
-Enum E2
-    A2 = 0
-    B2 = 1
-End Enum
+                <System.Flags>
+                Enum E2
+                    A2 = 0
+                    B2 = 1
+                End Enum
 
-<System.Flags>
-Friend Enum E3
-    A3 = CUShort(0)
-    B3 = CUShort(1)
-End Enum
+                <System.Flags>
+                Friend Enum E3
+                    A3 = CUShort(0)
+                    B3 = CUShort(1)
+                End Enum
 
-<System.Flags>
-Friend Enum NoZeroValuedField
-    A5 = 1
-    B5 = 2
-End Enum
-";
+                <System.Flags>
+                Friend Enum NoZeroValuedField
+                    A5 = 1
+                    B5 = 2
+                End Enum
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
@@ -300,33 +311,35 @@ End Enum
         [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_AttributeListHasTriviaAsync()
         {
-            var code = @"
-Public Class Outer
-    <System.Flags> _
-    Public Enum E
-	    A = 0
-	    B = 1
-    End Enum
-End Class
+            var code = """
 
-<System.Flags> _
-Public Enum E2
-	A2 = 0
-	B2 = 1
-End Enum
+                Public Class Outer
+                    <System.Flags> _
+                    Public Enum E
+                	    A = 0
+                	    B = 1
+                    End Enum
+                End Class
 
-<System.Flags> _
-Public Enum E3
-	A3 = CUShort(0)
-	B3 = CUShort(1)
-End Enum
+                <System.Flags> _
+                Public Enum E2
+                	A2 = 0
+                	B2 = 1
+                End Enum
 
-<System.Flags> _
-Public Enum NoZeroValuedField
-	A5 = 1
-	B5 = 2
-End Enum
-";
+                <System.Flags> _
+                Public Enum E3
+                	A3 = CUShort(0)
+                	B3 = CUShort(1)
+                End Enum
+
+                <System.Flags> _
+                Public Enum NoZeroValuedField
+                	A5 = 1
+                	B5 = 2
+                End Enum
+
+                """;
             await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicRenameResultAt(5, 6, "E", "A"),
                 GetBasicRenameResultAt(12, 2, "E2", "A2"),
@@ -336,26 +349,28 @@ End Enum
         [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZeroAsync()
         {
-            var code = @"
-Public Class Outer
-    <System.Flags>
-    Public Enum E
-	    None = 0
-	    A = 0
-    End Enum
-End Class
+            var code = """
 
-<System.Flags>
-Public Enum E2
-	None = 0
-	A = None
-End Enum
+                Public Class Outer
+                    <System.Flags>
+                    Public Enum E
+                	    None = 0
+                	    A = 0
+                    End Enum
+                End Class
 
-<System.Flags>
-Public Enum E3
-    A3 = 0
-    B3 = CUInt(0)  ' Not a constant
-End Enum";
+                <System.Flags>
+                Public Enum E2
+                	None = 0
+                	A = None
+                End Enum
+
+                <System.Flags>
+                Public Enum E3
+                    A3 = 0
+                    B3 = CUInt(0)  ' Not a constant
+                End Enum
+                """;
 
             await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicMultipleZeroResultAt(4, 17, "E"),
@@ -366,26 +381,27 @@ End Enum";
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZero_InternalAsync()
         {
-            var code = @"
-Public Class Outer
-    <System.Flags>
-    Private Enum E
-	    None = 0
-	    A = 0
-    End Enum
-End Class
+            var code = """
+                Public Class Outer
+                    <System.Flags>
+                    Private Enum E
+                	    None = 0
+                	    A = 0
+                    End Enum
+                End Class
 
-<System.Flags>
-Enum E2
-	None = 0
-	A = None
-End Enum
+                <System.Flags>
+                Enum E2
+                	None = 0
+                	A = None
+                End Enum
 
-<System.Flags>
-Friend Enum E3
-	A3 = 0
-	B3 = CUInt(0)  ' Not a constant
-End Enum";
+                <System.Flags>
+                Friend Enum E3
+                	A3 = 0
+                	B3 = CUInt(0)  ' Not a constant
+                End Enum
+                """;
 
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
@@ -393,28 +409,30 @@ End Enum";
         [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValueAsync()
         {
-            var code = @"
-Public Class Outer
-    Public Enum E
-	    A = 1
-    End Enum
+            var code = """
 
-    Public Enum E2
-	    None = 1
-	    A = 2
-    End Enum
-End Class
+                Public Class Outer
+                    Public Enum E
+                	    A = 1
+                    End Enum
 
-Public Enum E3
-    None = 0
-    A = 1
-End Enum
+                    Public Enum E2
+                	    None = 1
+                	    A = 2
+                    End Enum
+                End Class
 
-Public Enum E4
-    None = 0
-    A = 0
-End Enum
-";
+                Public Enum E3
+                    None = 0
+                    A = 1
+                End Enum
+
+                Public Enum E4
+                    None = 0
+                    A = 0
+                End Enum
+
+                """;
 
             await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicNoZeroResultAt(3, 17, "E"),
@@ -424,28 +442,28 @@ End Enum
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValue_InternalAsync()
         {
-            var code = @"
-Public Class Outer
-    Private Enum E
-	    A = 1
-    End Enum
+            var code = """
+                Public Class Outer
+                    Private Enum E
+                	    A = 1
+                    End Enum
 
-    Friend Enum E2
-	    None = 1
-	    A = 2
-    End Enum
-End Class
+                    Friend Enum E2
+                	    None = 1
+                	    A = 2
+                    End Enum
+                End Class
 
-Enum E3
-    None = 0
-    A = 1
-End Enum
+                Enum E3
+                    None = 0
+                    A = 1
+                End Enum
 
-Friend Enum E4
-    None = 0
-    A = 0
-End Enum
-";
+                Friend Enum E4
+                    None = 0
+                    A = 0
+                End Enum
+                """;
 
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
@@ -464,34 +482,38 @@ End Enum
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
 
-[Flags]
-public enum E1
-{
-    None = 0,
-    A = 1
-}
+                            using System;
 
-[Flags]
-public enum E2
-{
-    Never = 0,
-    A = 1
-}
+                            [Flags]
+                            public enum E1
+                            {
+                                None = 0,
+                                A = 1
+                            }
 
-[Flags]
-public enum E3
-{
-    Zero = 0,
-    A = 1
-}"},
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                            [Flags]
+                            public enum E2
+                            {
+                                Never = 0,
+                                A = 1
+                            }
 
-[*]
-{editorConfigText}
-"), },
+                            [Flags]
+                            public enum E3
+                            {
+                                Zero = 0,
+                                A = 1
+                            }
+                            """},
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """), },
                 },
             };
 
@@ -513,31 +535,35 @@ public enum E3
                 {
                     Sources =
                     {
-                        @"
-Imports System
+                        """
 
-<System.Flags>
-Public Enum E
-    None = 0
-    A = 1
-End Enum
+                            Imports System
 
-<Flags>
-Public Enum E2
-    Never = 0
-    A = 1
-End Enum
+                            <System.Flags>
+                            Public Enum E
+                                None = 0
+                                A = 1
+                            End Enum
 
-<Flags>
-Public Enum E3
-    Zero = 0
-    A = 1
-End Enum"},
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                            <Flags>
+                            Public Enum E2
+                                Never = 0
+                                A = 1
+                            End Enum
 
-[*]
-{editorConfigText}
-"), },
+                            <Flags>
+                            Public Enum E3
+                                Zero = 0
+                                A = 1
+                            End Enum
+                            """},
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """), },
                 },
             };
 

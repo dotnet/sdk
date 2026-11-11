@@ -2,15 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using Microsoft.DotNet.HotReload;
 using Moq;
 
-namespace Microsoft.DotNet.Watch.UnitTests
+namespace Microsoft.DotNet.HotReload.UnitTests
 {
     [TestClass]
     public class HotReloadAgentTest
     {
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void ClearHotReloadEnvironmentVariables_DoesNotThrow_WhenStartupHooksNotSet()
         {
             // Ensure DOTNET_STARTUP_HOOKS is not set

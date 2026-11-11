@@ -11,7 +11,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
 #pragma warning disable MSTEST0016
-    [TestClass]
     public abstract class WasmPublishIntegrationTestBase : AspNetSdkTest
     {
         protected static void VerifyBootManifestHashes(TestAsset testAsset, string blazorPublishDirectory)

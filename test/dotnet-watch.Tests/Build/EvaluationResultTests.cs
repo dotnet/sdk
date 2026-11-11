@@ -167,4 +167,17 @@ public class EvaluationResultTests
             "main (net8.0)",
         ], requests.Select(r => r.ProjectInstance.GetDisplayName()));
     }
+
+    [TestMethod]
+    public void GetGlobalBuildProperties_PreservesUserProperties()
+    {
+        // Hot Reload no longer reserves any build property for the browser tools: the build owns
+        // the browser tools key pair and settings document, and Hot Reload reads them back.
+        var properties = EvaluationResult.GetGlobalBuildProperties(["-p:CustomProperty=user-value"]);
+
+        Assert.AreEqual("user-value", properties["CustomProperty"]);
+        Assert.AreEqual("true", properties["DesignTimeBuild"]);
+        Assert.IsFalse(properties.ContainsKey("HotReloadBrowserTools"));
+        Assert.IsFalse(properties.ContainsKey("HotReloadBrowserToolsPublicKey"));
+    }
 }

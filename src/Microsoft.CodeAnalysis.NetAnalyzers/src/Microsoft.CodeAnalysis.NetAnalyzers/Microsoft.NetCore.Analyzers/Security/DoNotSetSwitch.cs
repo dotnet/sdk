@@ -57,6 +57,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                 }.Select(
                     (o) => new KeyValuePair<string, (bool, DiagnosticDescriptor)>(o.Item1, o.Item2)));
 
+        // Per-analyzer observer keeps performance assertions isolated across concurrent tests.
+        internal Action? ValueContentAnalysisStarted { get; set; }
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
             DoNotDisableSchUseStrongCryptoRule,
             DoNotDisableSpmSecurityProtocolsRule);
@@ -107,14 +110,26 @@ namespace Microsoft.NetCore.Analyzers.Security
                         return;
                     }
 
-                    var values = invocationOperation.Arguments.Select(s => s.Value.ConstantValue).ToArray();
-
-                    if (values[0].HasValue &&
-                        values[1].HasValue)
+                    Optional<object?> switchNameValue = invocationOperation.Arguments[0].Value.ConstantValue;
+                    if (switchNameValue.HasValue &&
+                        (switchNameValue.Value is not string name || !BadSwitches.ContainsKey(name)))
                     {
-                        if (values[0].Value is string switchName &&
+                        return;
+                    }
+
+                    Optional<object?> switchValueConstant = invocationOperation.Arguments[1].Value.ConstantValue;
+                    if (switchValueConstant.HasValue &&
+                        switchValueConstant.Value is bool value &&
+                        BadSwitches.Values.All(pair => pair.BadValue != value))
+                    {
+                        return;
+                    }
+
+                    if (switchNameValue.HasValue && switchValueConstant.HasValue)
+                    {
+                        if (switchNameValue.Value is string switchName &&
                             BadSwitches.TryGetValue(switchName, out var pair) &&
-                            pair.BadValue.Equals(values[1].Value) &&
+                            pair.BadValue.Equals(switchValueConstant.Value) &&
                             !IsConfiguredToSkipAnalysis(pair.Rule, operationAnalysisContext))
                         {
                             operationAnalysisContext.ReportDiagnostic(
@@ -125,6 +140,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     }
                     else if (invocationOperation.TryGetEnclosingControlFlowGraph(out var cfg))
                     {
+                        ValueContentAnalysisStarted?.Invoke();
                         var valueContentResult = ValueContentAnalysis.TryGetOrComputeResult(
                             cfg,
                             operationAnalysisContext.ContainingSymbol,

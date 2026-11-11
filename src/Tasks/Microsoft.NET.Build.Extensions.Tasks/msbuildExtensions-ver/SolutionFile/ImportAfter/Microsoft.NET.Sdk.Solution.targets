@@ -21,7 +21,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   ============================================================
    -->
   <Target Name="_CheckForSolutionLevelRuntimeIdentifier"
-          BeforeTargets="Build;_MTPBuild"
+          BeforeTargets="Build;Rebuild;_MTPBuild"
           Condition="'$(RuntimeIdentifier)' != ''">
 
     <NETSdkError ResourceName="CannotHaveSolutionLevelRuntimeIdentifier" />

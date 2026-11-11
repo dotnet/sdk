@@ -231,7 +231,17 @@ internal partial class MicrosoftTestingPlatformTestCommand : ICustomHelp
         {
             if (option.IsHidden != true)
             {
-                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description ?? string.Empty));
+                string description = option.Description ?? string.Empty;
+                if (option.IsBuiltIn == true)
+                {
+                    description = option.Name switch
+                    {
+                        "show-stdout" => CommandDefinitionStrings.CmdTestShowStdoutDescription,
+                        "show-stderr" => CommandDefinitionStrings.CmdTestShowStderrDescription,
+                        _ => description,
+                    };
+                }
+                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", description));
             }
         }
 

@@ -18,65 +18,81 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
         [TestMethod]
         public async Task CSharp_CodeFixForEmptyStringAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-class C
-{
-    public /*leading*/ static /*intermediate*/ readonly /*trailing*/ string f1 = """";
-}
-",
-                VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.EmptyStringRule).WithSpan(4, 77, 4, 79).WithArguments("f1"),
-                @"
-class C
-{
-    public /*leading*/ const /*intermediate*/  /*trailing*/ string f1 = """";
-}
-");
+            await VerifyCS.VerifyCodeFixAsync("""
 
-            await VerifyVB.VerifyCodeFixAsync(@"
-Class C
-    Public Shared ReadOnly f1 As String = """"
-End Class
-",
+                class C
+                {
+                    public /*leading*/ static /*intermediate*/ readonly /*trailing*/ string f1 = "";
+                }
+
+                """,
+                VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.EmptyStringRule).WithSpan(4, 77, 4, 79).WithArguments("f1"),
+                """
+
+                    class C
+                    {
+                        public /*leading*/ const /*intermediate*/  /*trailing*/ string f1 = "";
+                    }
+
+                    """);
+
+            await VerifyVB.VerifyCodeFixAsync("""
+
+                Class C
+                    Public Shared ReadOnly f1 As String = ""
+                End Class
+
+                """,
                 VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.EmptyStringRule).WithSpan(3, 28, 3, 30).WithArguments("f1"),
-@"
-Class C
-    Public Const f1 As String = """"
-End Class
-");
+"""
+
+    Class C
+        Public Const f1 As String = ""
+    End Class
+
+    """);
         }
 
         [TestMethod]
         public async Task CSharp_CodeFixForNonEmptyStringAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-class C
-{
-    /*leading*/
-    readonly /*intermediate*/ static /*trailing*/ string f1 = ""Nothing"";
-}
-",
-                VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(5, 58, 5, 60).WithArguments("f1"),
-                @"
-class C
-{
-    /*leading*/
-    const /*intermediate*/  /*trailing*/ string f1 = ""Nothing"";
-}
-");
+            await VerifyCS.VerifyCodeFixAsync("""
 
-            await VerifyVB.VerifyCodeFixAsync(@"
-Class C
-    'leading
-    ReadOnly Shared f1 As String = ""Nothing""
-End Class
-",
+                class C
+                {
+                    /*leading*/
+                    readonly /*intermediate*/ static /*trailing*/ string f1 = "Nothing";
+                }
+
+                """,
+                VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(5, 58, 5, 60).WithArguments("f1"),
+                """
+
+                    class C
+                    {
+                        /*leading*/
+                        const /*intermediate*/  /*trailing*/ string f1 = "Nothing";
+                    }
+
+                    """);
+
+            await VerifyVB.VerifyCodeFixAsync("""
+
+                Class C
+                    'leading
+                    ReadOnly Shared f1 As String = "Nothing"
+                End Class
+
+                """,
                 VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(4, 21, 4, 23).WithArguments("f1"),
-@"
-Class C
-    'leading
-    Const f1 As String = ""Nothing""
-End Class
-");
+"""
+
+    Class C
+        'leading
+        Const f1 As String = "Nothing"
+    End Class
+
+    """);
         }
 
         [TestMethod]
@@ -84,66 +100,82 @@ End Class
         {
             // Fixers are disabled on multiple fields, because it may introduce compile error.
 
-            await VerifyCS.VerifyCodeFixAsync(@"
-class C
-{
-    /*leading*/
-    readonly /*intermediate*/ static /*trailing*/ string f3, f4 = ""Message is shown only for f4"";
-}
-",
+            await VerifyCS.VerifyCodeFixAsync("""
+
+                class C
+                {
+                    /*leading*/
+                    readonly /*intermediate*/ static /*trailing*/ string f3, f4 = "Message is shown only for f4";
+                }
+
+                """,
                 VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(5, 62, 5, 64).WithArguments("f4"),
-                @"
-class C
-{
-    /*leading*/
-    readonly /*intermediate*/ static /*trailing*/ string f3, f4 = ""Message is shown only for f4"";
-}
-");
-            await VerifyVB.VerifyCodeFixAsync(@"
-Class C
-    Shared ReadOnly f3 As String, f4 As String = ""Message is shown only for f4""
-End Class
-",
+                """
+
+                    class C
+                    {
+                        /*leading*/
+                        readonly /*intermediate*/ static /*trailing*/ string f3, f4 = "Message is shown only for f4";
+                    }
+
+                    """);
+            await VerifyVB.VerifyCodeFixAsync("""
+
+                Class C
+                    Shared ReadOnly f3 As String, f4 As String = "Message is shown only for f4"
+                End Class
+
+                """,
                 VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(3, 35, 3, 37).WithArguments("f4"),
-@"
-Class C
-    Shared ReadOnly f3 As String, f4 As String = ""Message is shown only for f4""
-End Class
-");
+"""
+
+    Class C
+        Shared ReadOnly f3 As String, f4 As String = "Message is shown only for f4"
+    End Class
+
+    """);
         }
 
         [TestMethod]
         public async Task CSharp_CodeFixForInt32Async()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-class C
-{
-    const int f6 = 3;
-    static readonly int f7 = 8 + f6;
-}
-",
-                VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(5, 25, 5, 27).WithArguments("f7"),
-                @"
-class C
-{
-    const int f6 = 3;
-    const int f7 = 8 + f6;
-}
-");
+            await VerifyCS.VerifyCodeFixAsync("""
 
-            await VerifyVB.VerifyCodeFixAsync(@"
-Class C
-    Const f6 As Integer = 3
-    Friend Shared ReadOnly f7 As Integer = 8 + f6
-End Class
-",
+                class C
+                {
+                    const int f6 = 3;
+                    static readonly int f7 = 8 + f6;
+                }
+
+                """,
+                VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(5, 25, 5, 27).WithArguments("f7"),
+                """
+
+                    class C
+                    {
+                        const int f6 = 3;
+                        const int f7 = 8 + f6;
+                    }
+
+                    """);
+
+            await VerifyVB.VerifyCodeFixAsync("""
+
+                Class C
+                    Const f6 As Integer = 3
+                    Friend Shared ReadOnly f7 As Integer = 8 + f6
+                End Class
+
+                """,
                 VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(4, 28, 4, 30).WithArguments("f7"),
-@"
-Class C
-    Const f6 As Integer = 3
-    Friend Const f7 As Integer = 8 + f6
-End Class
-");
+"""
+
+    Class C
+        Const f6 As Integer = 3
+        Friend Const f7 As Integer = 8 + f6
+    End Class
+
+    """);
         }
 
         [TestMethod]
@@ -152,69 +184,77 @@ End Class
         {
             // At the time of writing the test, constant interpolated strings is preview.
             // A diagnostic should be produced when it's supported in a stable language version (most likely C# 10).
-            var csharpCode = @"
-class C
-{
-    private const string foo = ""foo"";
-    private static readonly string fooBar = $""{foo}bar"";
-}
-";
+            var csharpCode = """
+                class C
+                {
+                    private const string foo = "foo";
+                    private static readonly string fooBar = $"{foo}bar";
+                }
+                """;
             await VerifyCS.VerifyCodeFixAsync(csharpCode, csharpCode);
 
             // Not supported in VB.
-            var vbCode = @"
-Class C
-    Private Const foo As String = ""foo""
-    Private Shared ReadOnly fooBar As String = $""{foo}bar""
-End Class
-";
+            var vbCode = """
+                Class C
+                    Private Const foo As String = "foo"
+                    Private Shared ReadOnly fooBar As String = $"{foo}bar"
+                End Class
+                """;
             await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
         [TestMethod]
         public async Task CSharp_MultipleFields_FixAllRewritesEveryFieldAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-class C
-{
-    internal static readonly int f1 = 1;
-    internal static readonly int f2 = 2;
-}
-",
+            await VerifyCS.VerifyCodeFixAsync("""
+
+                class C
+                {
+                    internal static readonly int f1 = 1;
+                    internal static readonly int f2 = 2;
+                }
+
+                """,
                 new[]
                 {
                     VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(4, 34, 4, 36).WithArguments("f1"),
                     VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(5, 34, 5, 36).WithArguments("f2"),
                 },
-                @"
-class C
-{
-    internal const int f1 = 1;
-    internal const int f2 = 2;
-}
-");
+                """
+
+                    class C
+                    {
+                        internal const int f1 = 1;
+                        internal const int f2 = 2;
+                    }
+
+                    """);
         }
 
         [TestMethod]
         public async Task Basic_MultipleFields_FixAllRewritesEveryFieldAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
-Class C
-    Friend Shared ReadOnly f1 As Integer = 1
-    Friend Shared ReadOnly f2 As Integer = 2
-End Class
-",
+            await VerifyVB.VerifyCodeFixAsync("""
+
+                Class C
+                    Friend Shared ReadOnly f1 As Integer = 1
+                    Friend Shared ReadOnly f2 As Integer = 2
+                End Class
+
+                """,
                 new[]
                 {
                     VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(3, 28, 3, 30).WithArguments("f1"),
                     VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithSpan(4, 28, 4, 30).WithArguments("f2"),
                 },
-                @"
-Class C
-    Friend Const f1 As Integer = 1
-    Friend Const f2 As Integer = 2
-End Class
-");
+                """
+
+                    Class C
+                        Friend Const f1 As Integer = 1
+                        Friend Const f2 As Integer = 2
+                    End Class
+
+                    """);
         }
     }
 }

@@ -6,6 +6,7 @@ namespace Microsoft.DotNet.Watch;
 internal static class PropertyNames
 {
     public const string TargetFramework = nameof(TargetFramework);
+    public const string NetCoreSdkVersion = nameof(NetCoreSdkVersion);
     public const string TargetFrameworkIdentifier = nameof(TargetFrameworkIdentifier);
     public const string TargetFrameworkMoniker = nameof(TargetFrameworkMoniker);
     public const string TargetPath = nameof(TargetPath);
@@ -22,6 +23,7 @@ internal static class PropertyNames
     public const string SkipCompilerExecution = nameof(SkipCompilerExecution);
     public const string ProvideCommandLineArgs = nameof(ProvideCommandLineArgs);
     public const string NonExistentFile = nameof(NonExistentFile);
+    public const string HotReloadBrowserToolsEnabled = nameof(HotReloadBrowserToolsEnabled);
     public const string StartupHookSupport = nameof(StartupHookSupport);
     public const string MetadataUpdaterSupport = nameof(MetadataUpdaterSupport);
     public const string Optimize = nameof(Optimize);

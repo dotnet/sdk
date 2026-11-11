@@ -1,4 +1,6 @@
-﻿<Project Sdk="MSTest.Sdk">
+﻿<Project>
+
+  <Import Project="Sdk.props" Sdk="MSTest.Sdk" />
 
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
@@ -11,8 +13,8 @@
     <OutputPath>$(TestHostFolder)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- Tests rely on global process state, so run serially. None makes MSTest.Sdk emit [assembly: DoNotParallelize]. -->
-    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+    <!-- Methods within a fixture share test state. Cross-fixture process state is isolated with ResourceLock or DoNotParallelize. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +24,6 @@
     <None Include="CommandTests\Test\snapshots\**\*" TargetPath="snapshots\%(RecursiveDir)\%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="ShellShimTests\WpfBinaryTestAssets\testwpf.dll" TargetPath="WpfBinaryTestAssets\testwpf.dll" CopyToOutputDirectory="PreserveNewest" />
     <None Include="CollectCodeCoverage.runsettings" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="queryResultSample.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- Windows-only test files that reference Installer\Windows, VisualStudio, and MSI types -->
@@ -50,10 +51,6 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>XUnitVersion</_Parameter1>
       <_Parameter2>$(XUnitVersion)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>SdkVersion</_Parameter1>
-      <_Parameter2>$(Version)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
@@ -94,13 +91,12 @@
     <PackageReference Include="Verify.DiffPlex" />
     <!-- This package comes from dotnet/runtime-assets -->
     <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />
-    <PackageReference Include="Combinatorial.MSTest" />
   </ItemGroup>
 
   <!-- Global usings -->
   <ItemGroup>
     <Using Include="Microsoft.DotNet.Cli.Telemetry" />
-    <Using Include="Combinatorial.MSTest" />
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial" />
     <!-- Aliases -->
     <!-- Note: '%3C' is for '<' and '%3E' is for '>' -->
     <Using Include="System.Collections.Generic.Dictionary%3CMicrosoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition%3E" Alias="WorkloadCollection" />
@@ -119,4 +115,19 @@
     </ItemGroup>
     <Move SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles-&gt;Replace('received', 'verified'))" />
   </Target>
+
+  <Import Project="Sdk.targets" Sdk="MSTest.Sdk" />
+
+  <!-- SDK targets initialize Version before it is captured in assembly metadata. -->
+  <PropertyGroup>
+    <_ExpectedSdkVersion Condition="'$(StabilizePackageVersion)' == 'true'">$(VersionPrefix)</_ExpectedSdkVersion>
+    <_ExpectedSdkVersion Condition="'$(_ExpectedSdkVersion)' == ''">$(Version)</_ExpectedSdkVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SdkVersion</_Parameter1>
+      <_Parameter2>$(_ExpectedSdkVersion)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

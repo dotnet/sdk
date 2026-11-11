@@ -79,7 +79,7 @@ public class TerminationTests : DotNetWatchTestBase
     public async Task GracefulTermination_WinExe()
     {
         // Test that WinExe apps (WinForms, WPF, MAUI) are terminated gracefully when dotnet-watch
-        // sends Ctrl+C. The `dotnet run` process receives Ctrl+C and calls CloseMainWindow() on the
+        // receives Ctrl+C. The `dotnet run` process receives a targeted Ctrl+Break and calls CloseMainWindow() on the
         // WinForms app. See https://github.com/dotnet/sdk/issues/52473
 
         var testAsset = TestAssets.CopyTestAsset("WinExeApp")

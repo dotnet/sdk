@@ -25,6 +25,7 @@
   <UsingTask TaskName="CreateHelixTestWorkItems" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="CreateLocalHelixTestLayout" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="PrepareHelixNuGetConfig" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
 
   <Choose>
     <When Condition="$(HelixTargetQueue.ToLowerInvariant().Contains('windows'))">
@@ -73,7 +74,7 @@
     <MSBuild Projects="$(_CurrentSDKCustomTestProject)" Targets="PublishWithOutput" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);BuildTestPackages=false;$(_TestPublishRidProperties);$(_CurrentAdditionalProperties)">
       <Output TaskParameter="TargetOutputs" PropertyName="_PublishOutputDir" />
     </MSBuild>
-    <MSBuild Projects="$(_CurrentSDKCustomTestProject)" Targets="GetTargetPath" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_CurrentAdditionalProperties)">
+    <MSBuild Projects="$(_CurrentSDKCustomTestProject)" Targets="GetTargetPath" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_TestPublishRidProperties);$(_CurrentAdditionalProperties)">
       <Output TaskParameter="TargetOutputs" PropertyName="_TargetPath" />
     </MSBuild>
 

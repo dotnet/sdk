@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 {
-    internal class ZipFileFile : FileBase
+    internal class ZipFileFile : FileBase, IKnownLengthFile
     {
         private readonly ZipFileMountPoint _mountPoint;
         private ZipArchiveEntry? _entry;
@@ -20,7 +21,14 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
         public override bool Exists => _entry != null || (_mountPoint.Universe.TryGetValue(FullPath, out var info) && info.Kind == FileSystemInfoKind.File);
 
+        long IKnownLengthFile.Length => GetEntry().Length;
+
         public override Stream OpenRead()
+        {
+            return GetEntry().Open();
+        }
+
+        private ZipArchiveEntry GetEntry()
         {
             if (_entry == null)
             {
@@ -41,7 +49,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
                 _entry = self._entry;
             }
 
-            return _entry.Open();
+            return _entry;
         }
     }
 }

@@ -37,15 +37,6 @@ internal static partial class WebAssemblyHotReload
     /// <summary>
     /// For framework use only.
     /// </summary>
-    internal sealed class Update
-    {
-        public int Id { get; set; }
-        public Delta[] Deltas { get; set; } = default!;
-    }
-
-    /// <summary>
-    /// For framework use only.
-    /// </summary>
     public readonly struct Delta
     {
         public string ModuleId { get; init; }
@@ -55,20 +46,34 @@ internal static partial class WebAssemblyHotReload
         public int[] UpdatedTypes { get; init; }
     }
 
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
-
-    private static bool s_initialized;
     private static HotReloadAgent? s_hotReloadAgent;
+
+    /// <summary>
+    /// Why <see cref="s_hotReloadAgent"/> is null, so that a caller that asks for a managed code update
+    /// gets an actionable error instead of an update that is acknowledged but silently not applied.
+    /// </summary>
+    private static string? s_unavailableReason;
 
     [JSExport]
     [SupportedOSPlatform("browser")]
-    public static async Task InitializeAsync(string baseUri)
+    public static Task InitializeAsync(string baseUri)
     {
-        if (MetadataUpdater.IsSupported && Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true" &&
-            OperatingSystem.IsBrowser())
+        if (!OperatingSystem.IsBrowser())
         {
-            s_initialized = true;
-
+            s_unavailableReason = "the runtime is not running in a browser";
+        }
+        else if (Environment.GetEnvironmentVariable("__DOTNET_WATCH_BROWSER_TOOLS") != "true")
+        {
+            s_unavailableReason = "the app was not started by 'dotnet watch'";
+        }
+        else if (!MetadataUpdater.IsSupported)
+        {
+            // Reached when the app was built without the runtime assets that support metadata updates,
+            // which happens with stale or mismatched build output. Applying an update would be a no-op.
+            s_unavailableReason = "this build of the app does not support runtime metadata updates (System.Reflection.Metadata.MetadataUpdater.IsSupported is false). Rebuild the app and reload the browser";
+        }
+        else
+        {
             // TODO: Implement hotReloadExceptionCreateHandler: https://github.com/dotnet/sdk/issues/51056
             var agent = new HotReloadAgent(assemblyResolvingHandler: null, hotReloadExceptionCreateHandler: null);
 
@@ -77,67 +82,24 @@ internal static partial class WebAssemblyHotReload
             {
                 throw new InvalidOperationException("Hot Reload agent already initialized");
             }
-
-            await ApplyPreviousDeltasAsync(agent, baseUri);
         }
+
+        // Updates applied before the browser connected are replayed by the browser tools client.
+        return Task.CompletedTask;
     }
 
-    private static async ValueTask ApplyPreviousDeltasAsync(HotReloadAgent agent, string baseUri)
-    {
-        string errorMessage;
-
-        using var client = new HttpClient()
-        {
-            BaseAddress = new Uri(baseUri, UriKind.Absolute)
-        };
-
-        try
-        {
-            var response = await client.GetAsync("/_framework/blazor-hotreload");
-            if (response.IsSuccessStatusCode)
-            {
-                var deltasJson = await response.Content.ReadAsStringAsync();
-                var updates = deltasJson != "" ? JsonSerializer.Deserialize<Update[]>(deltasJson, s_jsonSerializerOptions) : null;
-                if (updates == null)
-                {
-                    agent.Reporter.Report($"No previous updates to apply.", AgentMessageSeverity.Verbose);
-                    return;
-                }
-
-                var i = 1;
-                foreach (var update in updates)
-                {
-                    agent.Reporter.Report($"Reapplying update {i}/{updates.Length}.", AgentMessageSeverity.Verbose);
-
-                    agent.ApplyManagedCodeUpdates(
-                        update.Deltas.Select(d => new RuntimeManagedCodeUpdate(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)));
-
-                    i++;
-                }
-
-                return;
-            }
-
-            errorMessage = $"HTTP GET '/_framework/blazor-hotreload' returned {response.StatusCode}";
-        }
-        catch (Exception e)
-        {
-            errorMessage = e.ToString();
-        }
-
-        agent.Reporter.Report($"Failed to retrieve and apply previous deltas from the server: {errorMessage}", AgentMessageSeverity.Error);
-    }
-
-    private static HotReloadAgent? GetAgent()
-        => s_hotReloadAgent ?? (s_initialized ? throw new InvalidOperationException("Hot Reload agent not initialized") : null);
+    /// <summary>
+    /// The agent, or an exception explaining why managed code updates cannot be applied. Never reports
+    /// success without applying, because dotnet-watch reports an update as applied when the browser
+    /// acknowledges it without an error.
+    /// </summary>
+    private static HotReloadAgent GetRequiredAgent()
+        => s_hotReloadAgent ?? throw new InvalidOperationException(
+            $"Unable to apply managed code updates because {s_unavailableReason ?? "the Hot Reload agent has not been initialized"}.");
 
     private static LogEntry[] ApplyHotReloadDeltas(Delta[] deltas, int loggingLevel)
     {
-        var agent = GetAgent();
-        if (agent == null)
-        {
-            return [];
-        }
+        var agent = GetRequiredAgent();
 
         agent.ApplyManagedCodeUpdates(
             deltas.Select(d => new RuntimeManagedCodeUpdate(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)));
@@ -152,7 +114,7 @@ internal static partial class WebAssemblyHotReload
     [SupportedOSPlatform("browser")]
     public static string GetApplyUpdateCapabilities()
     {
-        return GetAgent()?.Capabilities ?? "";
+        return s_hotReloadAgent?.Capabilities ?? "";
     }
 
     [JSExport]

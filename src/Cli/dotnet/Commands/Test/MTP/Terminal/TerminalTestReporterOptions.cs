@@ -11,9 +11,9 @@ internal sealed class TerminalTestReporterOptions
     public string? BaseDirectory { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether we should show passed tests.
+    /// Gets the set of test outcomes whose per-test terminal block is rendered.
     /// </summary>
-    public bool ShowPassedTests { get; init; }
+    public TestResultVisibility ShowTestResults { get; init; } = TestResultVisibility.All;
 
     /// <summary>
     /// Gets a value indicating whether we should show information about which assembly is the source of the data on screen. Turn this off when running directly from an exe to reduce noise, because the path will always be the same.
@@ -31,13 +31,18 @@ internal sealed class TerminalTestReporterOptions
     public int MinimumExpectedTests { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether a run with no selected tests is successful.
+    /// Gets a value indicating whether an otherwise-successful zero-test run is expected.
     /// </summary>
     public bool AllowZeroTests { get; init; }
 
+    public bool CollectTestMap { get; init; }
+
+    public TimeSpan HeartbeatSilenceThreshold { get; init; } = TimeSpan.FromSeconds(60);
+
+    public TimeSpan SlowTestThreshold { get; init; } = TimeSpan.FromSeconds(60);
+
     /// <summary>
-    /// Gets a value indicating whether we should write the progress periodically to screen. When ANSI is allowed we update the progress as often as we can.
-    /// When ANSI is not allowed we never have progress.
+    /// Gets whether to show cursor progress or bounded non-cursor progress after visible-output silence.
     /// </summary>
     public bool ShowProgress { get; init; }
 
@@ -50,6 +55,10 @@ internal sealed class TerminalTestReporterOptions
     /// Gets a value indicating the ANSI mode.
     /// </summary>
     public AnsiMode AnsiMode { get; init; }
+
+    public OutputShowMode ShowStdout { get; init; } = OutputShowMode.Failed;
+
+    public OutputShowMode ShowStderr { get; init; } = OutputShowMode.Failed;
 
     /// <summary>
     /// Gets the format used when listing discovered tests ('--list-tests'). Only relevant in discovery mode.
@@ -80,6 +89,23 @@ internal sealed class TerminalTestReporterOptions
     /// slowest-tests section and the error recaps — is rendered regardless.
     /// </summary>
     public bool ShowRunSummary { get; init; } = true;
+}
+
+internal enum OutputShowMode
+{
+    All,
+    Failed,
+    None,
+}
+
+[Flags]
+internal enum TestResultVisibility
+{
+    None = 0,
+    Passed = 1,
+    Failed = 1 << 1,
+    Skipped = 1 << 2,
+    All = Passed | Failed | Skipped,
 }
 
 internal enum AnsiMode

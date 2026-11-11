@@ -20,6 +20,7 @@ public class AspireHotReloadTests : DotNetWatchTestBase
         var serviceProjectDisplay = $"WatchAspire.ApiService ({ToolsetInfo.CurrentTargetFramework})";
         var webProjectDisplay = $"WatchAspire.Web ({ToolsetInfo.CurrentTargetFramework})";
         var hostProjectDisplay = $"WatchAspire.AppHost ({ToolsetInfo.CurrentTargetFramework})";
+        var migrationProjectDisplay = $"WatchAspire.MigrationService ({ToolsetInfo.CurrentTargetFramework})";
 
         var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
         var serviceProjectPath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "WatchAspire.ApiService.csproj");
@@ -30,10 +31,17 @@ public class AspireHotReloadTests : DotNetWatchTestBase
 
         App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost", testFlags: TestFlags.ReadKeyFromStdin);
 
+        // DEBUG_* environment variables should be set for app host process:
+        await App.WaitUntilOutputContains($"dotnet watch 🕵️ [{hostProjectDisplay}] Setting environment variables (3)");
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         // check that Aspire server output is logged via dotnet-watch reporter:
         await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
+        
+        // environment variables should be set for all resource processes:
+        await App.WaitUntilOutputContains($"dotnet watch 🕵️ [{migrationProjectDisplay}] Setting environment variables");
+        await App.WaitUntilOutputContains($"dotnet watch 🕵️ [{serviceProjectDisplay}] Setting environment variables");
+        await App.WaitUntilOutputContains($"dotnet watch 🕵️ [{webProjectDisplay}] Setting environment variables");
 
         // wait until after all DCP sessions have started:
         await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Session started");

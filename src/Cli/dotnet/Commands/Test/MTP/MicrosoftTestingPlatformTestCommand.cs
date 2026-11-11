@@ -5,34 +5,62 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+#if !CLI_AOT
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+#endif
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
+#if !CLI_AOT
 using Microsoft.DotNet.FileBasedPrograms;
+#endif
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal partial class MicrosoftTestingPlatformTestCommand
 {
+    private const string CommandLineOptionsConfigurationPropertyName = "commandLineOptions";
+    private const string CommandLineOptionDefaultsConfigurationPropertyName = "commandLineOptionDefaults";
+    private const string IgnoreExitCodeOptionName = "--ignore-exit-code";
     private const string MinimumExpectedTestsOptionName = "--minimum-expected-tests";
+    private const string OutputOptionName = "--output";
+    private const string RetryFailedTestsOptionName = "--retry-failed-tests";
+    private const string ShowFlakyTestsOptionName = "--show-flaky-tests";
+    private const string ShowSlowestTestsOptionName = "--show-slowest-tests";
+    private const string ShowStdoutOptionName = "--show-stdout";
+    private const string ShowStderrOptionName = "--show-stderr";
+    private const string ShowTestResultsOptionName = "--show-test-results";
+    private const string TestConfigurationFileSuffix = ".testconfig.json";
+    private const string TestingPlatformExitCodeIgnoreEnvironmentVariable = "TESTINGPLATFORM_EXITCODE_IGNORE";
+    private const string ZeroTestsPolicyOptionName = "--zero-tests-policy";
+    private const string ZeroTestsPolicyStrictArgument = "strict";
 
     public int Run(ParseResult parseResult, bool isHelp)
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
         string invocationWorkingDirectory = Directory.GetCurrentDirectory();
 
-        BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+        BuildOptions buildOptions = TestCommandOptions.GetBuildOptions(parseResult);
         (buildOptions, bool forwardedCollectTestMap, bool forwardedAffectedTests) =
             NormalizeForwardedAffectedTestsOptions(buildOptions);
         bool forwardedMinimumExpectedTests = HasForwardedOption(
             buildOptions.TestApplicationArguments,
             MinimumExpectedTestsOptionName);
+        OutputOptions outputOption = parseResult.GetValue(definition.OutputOption);
+        bool outputOptionSpecified = parseResult.HasOption(definition.OutputOption);
+        TestApplicationSettings fallbackTestApplicationSettings =
+            GetEffectiveTestApplicationSettings(
+                module: null,
+                buildOptions,
+                outputOption,
+                outputOptionSpecified);
 
         bool collectTestMap = parseResult.HasOption(definition.CollectTestMapOption) || forwardedCollectTestMap;
         bool affectedTests = parseResult.HasOption(definition.AffectedTestsOption) || forwardedAffectedTests;
@@ -43,6 +71,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             affectedTests,
             forwardedMinimumExpectedTests);
 
+#if !CLI_AOT
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult, buildOptions.PathOptions);
 
         // --list-devices and --list-tests describe incompatible behaviors: the former lists
@@ -71,6 +100,28 @@ internal partial class MicrosoftTestingPlatformTestCommand
         {
             throw new GracefulException(CliCommandStrings.CmdDeviceOptionsNotSupportedForFileBasedApps);
         }
+#endif
+
+#if CLI_AOT
+        var testHandler = new TestModulesFilterHandler(buildOptions.PathOptions.TestModules!, parseResult);
+        if (!testHandler.Initialize())
+        {
+            return ExitCode.GenericFailure;
+        }
+
+        (bool responseFileCollectTestMap, bool responseFileAffectedTests, bool responseFileMinimumExpectedTests) =
+            DetectAffectedTestsOptionsInForwardedResponseFiles(
+                buildOptions.TestApplicationArguments,
+                testHandler.GetTestApplicationWorkingDirectories(),
+                invocationWorkingDirectory);
+        collectTestMap |= responseFileCollectTestMap;
+        affectedTests |= responseFileAffectedTests;
+        forwardedCollectTestMap |= responseFileCollectTestMap;
+        forwardedAffectedTests |= responseFileAffectedTests;
+        forwardedMinimumExpectedTests |= responseFileMinimumExpectedTests;
+#else
+        // Resolve trace paths before a strict MT build session takes ownership of the process directory.
+        _ = Logger.TraceEnabled;
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], "dotnet-test");
         ITestHandler testHandler;
@@ -135,6 +186,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             buildSession?.Dispose();
             logger?.ReallyShutdown();
         }
+#endif
 
         ValidateAffectedTestsOptions(
             definition,
@@ -143,7 +195,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
             affectedTests,
             forwardedMinimumExpectedTests);
 
-        int degreeOfParallelism = GetDegreeOfParallelism(parseResult, collectTestMap);
+        TestModule[] selectedTestModules = [.. testHandler.EnumerateTestModules()];
+        int testModuleCount = selectedTestModules.Length;
+        int degreeOfParallelism = GetDegreeOfParallelism(parseResult, collectTestMap, testModuleCount);
 
         var testOptions = new TestOptions(
             IsHelp: isHelp,
@@ -156,10 +210,21 @@ internal partial class MicrosoftTestingPlatformTestCommand
             AffectedTestsForwarded = forwardedAffectedTests,
         };
 
-        var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
+        using var output = InitializeOutput(
+            degreeOfParallelism,
+            parseResult,
+            buildOptions,
+            selectedTestModules,
+            testOptions,
+            fallbackTestApplicationSettings);
+        if (testOptions.CollectTestMap)
+        {
+            output.TestMapCollectionStarted(testModuleCount);
+        }
+
         var resultsDirectoryResolver = TestResultsDirectoryResolver.Create(
             buildOptions.PathOptions,
-            testHandler.EnumerateTestModules(),
+            selectedTestModules,
             Directory.GetCurrentDirectory());
 
         using var testRunPolicy = new TestRunPolicy(
@@ -173,7 +238,12 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
         using var queueCancellation = CancellationTokenSource.CreateLinkedTokenSource(ctrlC.Token, testRunPolicy.Token);
-        var artifactPostProcessingManager = new ArtifactPostProcessingManager();
+        var artifactPostProcessingManager = new ArtifactPostProcessingManager(
+            enabled: ShouldPostProcessArtifacts(
+                testOptions,
+                parseResult.GetValue(definition.NoArtifactPostProcessingOption),
+                cancellationRequested: false),
+            cancellationToken: ctrlC.Token);
         int? exitCode = null;
         try
         {
@@ -187,26 +257,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 ctrlC,
                 artifactPostProcessingManager,
                 testRunPolicy,
-                queueCancellation.Token);
+                queueCancellation.Token,
+                outputOption,
+                outputOptionSpecified,
+                fallbackTestApplicationSettings);
             exitCode = testHandler.RunTestApplications(actionQueue);
             TestRunCancellationReason cancellationReason = testRunPolicy.Complete();
-
-            if (cancellationReason == TestRunCancellationReason.MaximumFailedTests)
-            {
-                exitCode = ExitCode.TestExecutionStoppedForMaxFailedTests;
-            }
-            else if (cancellationReason == TestRunCancellationReason.Timeout)
-            {
-                exitCode = ExitCode.TestSessionAborted;
-            }
-
-            if (ShouldPostProcessArtifacts(
-                testOptions,
-                parseResult.GetValue(definition.NoArtifactPostProcessingOption),
-                ctrlC.Token.IsCancellationRequested))
-            {
-                artifactPostProcessingManager.ExecuteAsync(buildOptions, output, ctrlC, cancellationReason).GetAwaiter().GetResult();
-            }
+            exitCode = GetCancellationExitCode(
+                exitCode.Value,
+                ctrlC.Token.IsCancellationRequested,
+                cancellationReason);
 
             // If all test apps exited with 0 exit code, but we detected that handshake didn't happen correctly, map that to generic failure.
             if (exitCode == ExitCode.Success && output.HasHandshakeFailure)
@@ -224,7 +284,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
             else if (exitCode == ExitCode.Success &&
                 !isHelp &&
                 !parseResult.HasOption(definition.MinimumExpectedTestsOption) &&
-                ShouldFailForNoExecutedTests(testOptions.IsAffectedTestsMode, output.TotalTests, output.SkippedTests))
+                ShouldFailForNoExecutedTests(
+                    testOptions.IsAffectedTestsMode,
+                    actionQueue.FailOnAllSkippedTests,
+                    output.TotalTests,
+                    output.SkippedTests))
             {
                 // Whole-run "zero tests ran" verdict. Individual modules that matched no tests return exit
                 // code 8, but TestApplicationActionQueue normalizes that to success so a single empty module
@@ -235,6 +299,23 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 exitCode = ExitCode.ZeroTests;
             }
 
+            exitCode = actionQueue.ApplyExitCodeIgnorePolicy(exitCode.Value);
+
+            if (artifactPostProcessingManager.IsEnabled && testModuleCount > 0 && !ctrlC.Token.IsCancellationRequested)
+            {
+                // Required CI summaries must see the final test-policy verdict, not the raw
+                // module exit codes or a count reconstructed from potentially missing fragments.
+                ArtifactPostProcessingRunSummary runSummary = output.CreateRunSummary(
+                    DateTimeOffset.Now, exitCode.Value, testModuleCount);
+                artifactPostProcessingManager.ExecuteAsync(
+                    buildOptions, output, ctrlC, cancellationReason, runSummary).GetAwaiter().GetResult();
+            }
+
+            // A user cancellation during reporting is distinct from a best-effort worker failure.
+            exitCode = actionQueue.ApplyExitCodeIgnorePolicy(GetCancellationExitCode(
+                exitCode.Value,
+                ctrlC.Token.IsCancellationRequested,
+                cancellationReason));
             return exitCode.Value;
         }
         finally
@@ -258,6 +339,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         bool cancellationRequested)
         => !testOptions.IsHelp
             && !testOptions.IsDiscovery
+            && !testOptions.CollectTestMap
             && !noArtifactPostProcessingRequested
             && !cancellationRequested;
 
@@ -456,13 +538,13 @@ internal partial class MicrosoftTestingPlatformTestCommand
         }
     }
 
-    private static bool HasForwardedOption(ImmutableArray<string> arguments, string canonicalOption)
+    private static bool HasForwardedOption(IReadOnlyList<string> arguments, string canonicalOption)
         => arguments.Any(argument => IsOption(argument, canonicalOption, allowValue: true));
 
     private static bool IsAffectedTestsOption(string argument, string canonicalOption)
         => IsOption(argument, canonicalOption, allowValue: false);
 
-    private static bool IsOption(string argument, string canonicalOption, bool allowValue)
+    internal static bool IsOption(string argument, string canonicalOption, bool allowValue)
     {
         if (argument.Length < 2 ||
             argument[0] != '-' ||
@@ -567,9 +649,537 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 MinimumExpectedTests || other.MinimumExpectedTests);
     }
 
-    internal static bool ShouldFailForNoExecutedTests(bool isAffectedTestsMode, int totalTests, int skippedTests)
+    internal static bool ShouldFailForNoExecutedTests(
+        bool isAffectedTestsMode,
+        bool failOnAllSkippedTests,
+        int totalTests,
+        int skippedTests)
         => (!isAffectedTestsMode && totalTests == 0) ||
-            (totalTests > 0 && totalTests == skippedTests);
+            (failOnAllSkippedTests && totalTests > 0 && totalTests == skippedTests);
+
+    internal static int GetCancellationExitCode(
+        int exitCode,
+        bool ctrlCRequested,
+        TestRunCancellationReason cancellationReason)
+        => ctrlCRequested
+            ? ExitCode.TestSessionAborted
+            : cancellationReason switch
+            {
+                TestRunCancellationReason.MaximumFailedTests => ExitCode.TestExecutionStoppedForMaxFailedTests,
+                TestRunCancellationReason.Timeout => ExitCode.TestSessionAborted,
+                _ => exitCode,
+            };
+
+    internal static bool IsStrictZeroTestsPolicy(IReadOnlyList<string> arguments)
+        => string.Equals(
+            GetForwardedOptionValue(arguments, ZeroTestsPolicyOptionName),
+            ZeroTestsPolicyStrictArgument,
+            StringComparison.OrdinalIgnoreCase);
+
+    internal static string? GetEffectiveIgnoredExitCodes(
+        IReadOnlyList<string> arguments,
+        string? environmentValue,
+        string? configurationValue = null)
+        => !string.IsNullOrEmpty(environmentValue)
+            ? environmentValue
+            : GetForwardedOptionValue(arguments, IgnoreExitCodeOptionName) ?? configurationValue;
+
+    internal static int ApplyExitCodeIgnorePolicy(int exitCode, string? ignoredExitCodes)
+    {
+        if (ignoredExitCodes is null)
+        {
+            return exitCode;
+        }
+
+        foreach (string ignoredExitCode in ignoredExitCodes.Split(';'))
+        {
+            if (int.TryParse(
+                ignoredExitCode,
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out int parsedExitCode) &&
+                parsedExitCode == exitCode)
+            {
+                return ExitCode.Success;
+            }
+        }
+
+        return exitCode;
+    }
+
+    internal static TestApplicationPolicy GetEffectiveTestApplicationPolicy(
+        TestModule? module,
+        BuildOptions buildOptions)
+        => GetEffectiveTestApplicationSettings(module, buildOptions, OutputOptions.Normal).Policy;
+
+    internal static TestApplicationSettings GetEffectiveTestApplicationSettings(
+        TestModule? module,
+        BuildOptions buildOptions,
+        OutputOptions outputOption,
+        bool outputOptionSpecified = false)
+    {
+        IReadOnlyList<string> effectiveArguments = GetEffectiveTestApplicationArguments(module, buildOptions);
+        ProjectLaunchProfile? launchProfile = module?.LaunchSettings as ProjectLaunchProfile;
+        string workingDirectory = string.IsNullOrEmpty(module?.RunProperties.WorkingDirectory)
+            ? Directory.GetCurrentDirectory()
+            : module.RunProperties.WorkingDirectory;
+        string? environmentValue = Environment.GetEnvironmentVariable(TestingPlatformExitCodeIgnoreEnvironmentVariable);
+        if (launchProfile is not null)
+        {
+            environmentValue = ApplyEnvironmentVariableOverrides(
+                environmentValue,
+                launchProfile.EnvironmentVariables);
+        }
+
+        environmentValue = ApplyEnvironmentVariableOverrides(
+            environmentValue,
+            module?.EnvironmentVariables ?? buildOptions.EnvironmentVariables);
+
+        ConfigurationFileSettings configurationSettings =
+            GetConfigurationFileSettings(module, buildOptions, effectiveArguments, workingDirectory);
+        string? commandLineZeroTestsPolicy =
+            GetForwardedOptionValue(effectiveArguments, ZeroTestsPolicyOptionName);
+
+        var policy = new TestApplicationPolicy(
+                commandLineZeroTestsPolicy is null
+                    ? string.Equals(
+                        configurationSettings.ZeroTestsPolicy,
+                        ZeroTestsPolicyStrictArgument,
+                        StringComparison.OrdinalIgnoreCase)
+                    : string.Equals(
+                        commandLineZeroTestsPolicy,
+                        ZeroTestsPolicyStrictArgument,
+                        StringComparison.OrdinalIgnoreCase),
+                GetEffectiveIgnoredExitCodes(
+                    effectiveArguments,
+                    environmentValue,
+                    configurationSettings.IgnoredExitCodes));
+        OutputOptions effectiveOutputOption = GetEffectiveOutputOption(
+            effectiveArguments,
+            configurationSettings.Output,
+            outputOption,
+            outputOptionSpecified);
+
+        return new TestApplicationSettings(
+            policy,
+            GetTestResultVisibility(
+                effectiveOutputOption,
+                effectiveArguments,
+                configurationSettings.ShowTestResults),
+            GetSlowestTestsCount(
+                effectiveArguments,
+                configurationSettings.ShowSlowestTests),
+            GetShowFlakyTests(
+                effectiveArguments,
+                configurationSettings.ShowFlakyTests),
+            HasForwardedOption(effectiveArguments, RetryFailedTestsOptionName)
+                || configurationSettings.RetryFailedTests,
+            GetShowOutputMode(
+                effectiveArguments,
+                ShowStdoutOptionName,
+                configurationSettings.ShowStdout),
+            GetShowOutputMode(
+                effectiveArguments,
+                ShowStderrOptionName,
+                configurationSettings.ShowStderr));
+    }
+
+    internal static IReadOnlyList<string> GetEffectiveTestApplicationArguments(TestModule? module, BuildOptions buildOptions)
+    {
+        var parsedArguments = new List<string>();
+        if (module is not null)
+        {
+            AddParsedArguments(module.RunProperties.Arguments, parsedArguments);
+        }
+
+        parsedArguments.AddRange(buildOptions.TestApplicationArguments);
+        ProjectLaunchProfile? launchProfile = module?.LaunchSettings as ProjectLaunchProfile;
+        if (launchProfile is not null && !buildOptions.NoLaunchProfileArguments)
+        {
+            AddParsedArguments(launchProfile.CommandLineArgs, parsedArguments);
+        }
+
+        string workingDirectory = string.IsNullOrEmpty(module?.RunProperties.WorkingDirectory)
+            ? Directory.GetCurrentDirectory()
+            : module.RunProperties.WorkingDirectory;
+        var expandedArguments = new List<string>();
+        return TryExpandResponseFileArguments(
+            parsedArguments,
+            workingDirectory,
+            new HashSet<string>(FileUtilities.PathComparer),
+            expandedArguments)
+                ? expandedArguments
+                : parsedArguments;
+    }
+
+    private static string? ApplyEnvironmentVariableOverrides(
+        string? currentValue,
+        IEnumerable<KeyValuePair<string, string>> environmentVariables)
+    {
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
+        foreach ((string name, string value) in environmentVariables)
+        {
+            if (string.Equals(name, TestingPlatformExitCodeIgnoreEnvironmentVariable, comparison))
+            {
+                currentValue = value;
+            }
+        }
+
+        return currentValue;
+    }
+
+    private static ConfigurationFileSettings GetConfigurationFileSettings(
+        TestModule? module,
+        BuildOptions buildOptions,
+        IReadOnlyList<string> effectiveArguments,
+        string workingDirectory)
+    {
+        int forwardedConfigurationFileCount = effectiveArguments.Count(argument =>
+            IsOption(
+                argument,
+                TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName,
+                allowValue: true));
+        int configurationFileCount =
+            forwardedConfigurationFileCount + (buildOptions.PathOptions.ConfigFilePath is null ? 0 : 1);
+        if (configurationFileCount > 1)
+        {
+            return default;
+        }
+
+        string? configurationFilePath = forwardedConfigurationFileCount == 1
+            ? GetForwardedOptionValue(
+                effectiveArguments,
+                TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName)
+            : buildOptions.PathOptions.ConfigFilePath;
+        if (configurationFilePath is not null && !Path.IsPathFullyQualified(configurationFilePath))
+        {
+            configurationFilePath = Path.GetFullPath(configurationFilePath, workingDirectory);
+        }
+
+        if (configurationFilePath is null && module is not null && !string.IsNullOrEmpty(module.TargetPath))
+        {
+            configurationFilePath = Path.ChangeExtension(
+                Path.GetFullPath(module.TargetPath, workingDirectory),
+                TestConfigurationFileSuffix);
+        }
+
+        if (configurationFilePath is null || !File.Exists(configurationFilePath))
+        {
+            return default;
+        }
+
+        try
+        {
+            using FileStream stream = File.OpenRead(configurationFilePath);
+            using JsonDocument document = JsonDocument.Parse(
+                stream,
+                new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = true,
+                    CommentHandling = JsonCommentHandling.Skip,
+                });
+
+            if (document.RootElement.ValueKind != JsonValueKind.Object ||
+                HasDuplicatePropertyNames(document.RootElement))
+            {
+                return default;
+            }
+
+            JsonElement commandLineOptions = default;
+            JsonElement commandLineOptionDefaults = default;
+            bool hasCommandLineOptions =
+                TryGetProperty(
+                    document.RootElement,
+                    CommandLineOptionsConfigurationPropertyName,
+                    out commandLineOptions)
+                && commandLineOptions.ValueKind == JsonValueKind.Object;
+            bool hasCommandLineOptionDefaults =
+                TryGetProperty(
+                    document.RootElement,
+                    CommandLineOptionDefaultsConfigurationPropertyName,
+                    out commandLineOptionDefaults)
+                && commandLineOptionDefaults.ValueKind == JsonValueKind.Object;
+            if (!hasCommandLineOptions && !hasCommandLineOptionDefaults)
+            {
+                return default;
+            }
+
+            ConfigurationOption GetOption(string optionName)
+                => hasCommandLineOptions
+                    ? GetConfigurationOption(commandLineOptions, optionName)
+                    : default;
+
+            ConfigurationOption GetOptionOrDefault(string optionName)
+            {
+                ConfigurationOption option = GetOption(optionName);
+                return !option.IsSpecified && hasCommandLineOptionDefaults
+                    ? GetConfigurationOption(commandLineOptionDefaults, optionName)
+                    : option;
+            }
+
+            ConfigurationOption zeroTestsPolicy = GetOption(ZeroTestsPolicyOptionName);
+            ConfigurationOption ignoredExitCodes = GetOption(IgnoreExitCodeOptionName);
+            ConfigurationOption showTestResults = GetOptionOrDefault(ShowTestResultsOptionName);
+            ConfigurationOption showStdout = GetOptionOrDefault(ShowStdoutOptionName);
+            ConfigurationOption showStderr = GetOptionOrDefault(ShowStderrOptionName);
+            ConfigurationOption showSlowestTests = GetOption(ShowSlowestTestsOptionName);
+            ConfigurationOption showFlakyTests = GetOption(ShowFlakyTestsOptionName);
+            ConfigurationOption retryFailedTests = GetOption(RetryFailedTestsOptionName);
+            ConfigurationOption output = GetOption(OutputOptionName);
+
+            return new ConfigurationFileSettings(
+                zeroTestsPolicy.Values is [string zeroTestsPolicyValue]
+                    ? zeroTestsPolicyValue
+                    : null,
+                ignoredExitCodes.Values is [string ignoredExitCodeValue]
+                    ? ignoredExitCodeValue
+                    : null,
+                showTestResults.Enabled ? showTestResults.Values : null,
+                showSlowestTests.Enabled ? showSlowestTests.Values : null,
+                showFlakyTests.IsSpecified
+                    ? showFlakyTests.Enabled
+                        ? showFlakyTests.Values.Count == 0
+                            ? true
+                            : !IsOffValue(showFlakyTests.Values[0])
+                        : false
+                    : null,
+                retryFailedTests.IsSpecified &&
+                    retryFailedTests.Enabled &&
+                    retryFailedTests.Values.Count == 0,
+                output.Values is [string outputValue] ? outputValue : null,
+                showStdout.Enabled ? showStdout.Values : null,
+                showStderr.Enabled ? showStderr.Values : null);
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException or JsonException or ArgumentException or NotSupportedException)
+        {
+            // The test application reports configuration errors. Ignore this source so the SDK does not
+            // replace that diagnostic with a synthesized aggregate verdict.
+            Logger.LogTrace($"Failed to reconstruct test policy from '{configurationFilePath}': {exception}");
+            return default;
+        }
+    }
+
+    private static ConfigurationOption GetConfigurationOption(
+        JsonElement commandLineOptions,
+        string canonicalOption)
+    {
+        return TryGetProperty(commandLineOptions, canonicalOption[2..], out JsonElement configuredValue)
+            ? ParseConfigurationOption(configuredValue)
+            : default;
+    }
+
+    private static ConfigurationOption ParseConfigurationOption(JsonElement value)
+    {
+        if (value.ValueKind == JsonValueKind.False)
+        {
+            return new ConfigurationOption(IsSpecified: true, Enabled: false, []);
+        }
+
+        if (value.ValueKind == JsonValueKind.True)
+        {
+            return new ConfigurationOption(IsSpecified: true, Enabled: true, []);
+        }
+
+        if (value.ValueKind == JsonValueKind.Array)
+        {
+            if (value.GetArrayLength() == 0)
+            {
+                return default;
+            }
+
+            var values = new List<string>();
+            foreach (JsonElement item in value.EnumerateArray())
+            {
+                if (GetConfigurationScalarValue(item) is not { } scalarValue)
+                {
+                    return new ConfigurationOption(IsSpecified: true, Enabled: false, []);
+                }
+
+                values.Add(scalarValue);
+            }
+
+            return new ConfigurationOption(IsSpecified: true, Enabled: true, values);
+        }
+
+        return GetConfigurationScalarValue(value) is { } configuredScalarValue
+            ? new ConfigurationOption(IsSpecified: true, Enabled: true, [configuredScalarValue])
+            : new ConfigurationOption(IsSpecified: true, Enabled: false, []);
+    }
+
+    private static string? GetConfigurationScalarValue(JsonElement value)
+        => value.ValueKind switch
+        {
+            JsonValueKind.Number or JsonValueKind.String or JsonValueKind.True or JsonValueKind.False
+                => value.ToString(),
+            _ => null,
+        };
+
+    private readonly record struct ConfigurationOption(
+        bool IsSpecified,
+        bool Enabled,
+        IReadOnlyList<string> Values);
+
+    private readonly record struct ConfigurationFileSettings(
+        string? ZeroTestsPolicy,
+        string? IgnoredExitCodes,
+        IReadOnlyList<string>? ShowTestResults,
+        IReadOnlyList<string>? ShowSlowestTests,
+        bool? ShowFlakyTests,
+        bool RetryFailedTests,
+        string? Output,
+        IReadOnlyList<string>? ShowStdout,
+        IReadOnlyList<string>? ShowStderr);
+
+    private static bool TryGetProperty(
+        JsonElement element,
+        string propertyName,
+        out JsonElement value)
+    {
+        foreach (JsonProperty property in element.EnumerateObject())
+        {
+            if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                value = property.Value;
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static bool HasDuplicatePropertyNames(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement item in element.EnumerateArray())
+            {
+                if (HasDuplicatePropertyNames(item))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        var propertyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (JsonProperty property in element.EnumerateObject())
+        {
+            if (!propertyNames.Add(property.Name) || HasDuplicatePropertyNames(property.Value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static void AddParsedArguments(string? arguments, List<string> parsedArguments)
+    {
+        if (string.IsNullOrEmpty(arguments))
+        {
+            return;
+        }
+
+        try
+        {
+            parsedArguments.AddRange(SplitResponseFileLine(arguments));
+        }
+        catch (FormatException)
+        {
+            // MTP reports malformed command lines. Ignore this source when reconstructing policy so
+            // the SDK does not replace the child parser's diagnostic with a synthesized verdict.
+        }
+    }
+
+    private static string? GetForwardedOptionValue(IReadOnlyList<string> arguments, string canonicalOption)
+    {
+        for (int i = 0; i < arguments.Count; i++)
+        {
+            string argument = arguments[i];
+            if (!IsOption(argument, canonicalOption, allowValue: true))
+            {
+                continue;
+            }
+
+            int separatorIndex = argument.IndexOfAny('=', ':');
+            if (separatorIndex >= 0)
+            {
+                return Unquote(argument[(separatorIndex + 1)..]);
+            }
+
+            return i + 1 < arguments.Count ? Unquote(arguments[i + 1]) : null;
+        }
+
+        return null;
+    }
+
+    private static string Unquote(string value)
+        => value.Length >= 2 &&
+            ((value[0] == '\'' && value[^1] == '\'') ||
+             (value[0] == '"' && value[^1] == '"'))
+                ? value[1..^1]
+                : value;
+
+    private static bool TryExpandResponseFileArguments(
+        IReadOnlyList<string> arguments,
+        string workingDirectory,
+        HashSet<string> recursionStack,
+        List<string> expandedArguments)
+    {
+        foreach (string argument in arguments)
+        {
+            if (argument.Length <= 1 || argument[0] != '@')
+            {
+                expandedArguments.Add(argument);
+                continue;
+            }
+
+            string fullPath = Path.GetFullPath(argument[1..], workingDirectory);
+            if (!recursionStack.Add(fullPath) || !File.Exists(fullPath))
+            {
+                return false;
+            }
+
+            try
+            {
+                string[] responseFileArguments = [..
+                    File.ReadAllLines(fullPath)
+                        .Select(static line => line.Trim())
+                        .Where(static line => line.Length > 0 && line[0] != '#')
+                        .SelectMany(SplitResponseFileLine)];
+
+                if (!TryExpandResponseFileArguments(
+                    responseFileArguments,
+                    workingDirectory,
+                    recursionStack,
+                    expandedArguments))
+                {
+                    return false;
+                }
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or FormatException)
+            {
+                return false;
+            }
+            finally
+            {
+                recursionStack.Remove(fullPath);
+            }
+        }
+
+        return true;
+    }
 
     private static TestListFormat GetListTestsFormat(ParseResult parseResult, TestCommandDefinition.MicrosoftTestingPlatform definition)
     {
@@ -581,13 +1191,21 @@ internal partial class MicrosoftTestingPlatformTestCommand
             : TestListFormat.Text;
     }
 
-    private static TerminalTestReporter InitializeOutput(int degreeOfParallelism, ParseResult parseResult, TestOptions testOptions)
+    private static TerminalTestReporter InitializeOutput(
+        int degreeOfParallelism,
+        ParseResult parseResult,
+        BuildOptions buildOptions,
+        IEnumerable<TestModule> testModules,
+        TestOptions testOptions,
+        TestApplicationSettings fallbackSettings)
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
         var console = new SystemConsole();
-        var showPassedTests = parseResult.GetValue(definition.OutputOption) == OutputOptions.Detailed;
-        var noProgress = parseResult.HasOption(definition.NoProgressOption);
+        bool noProgress = !GetSharedProgressEnabled(
+            parseResult.HasOption(definition.NoProgressOption),
+            testModules,
+            buildOptions);
         var noAnsi = parseResult.HasOption(definition.NoAnsiOption);
 
         // When emitting machine-readable JSON discovery output, stdout must contain only the JSON
@@ -600,13 +1218,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
             noAnsi = true;
         }
 
-        // TODO: Replace this with proper CI detection that we already have in telemetry. https://github.com/microsoft/testfx/issues/5533#issuecomment-2838893327
-        bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
+        bool inCI = new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
 
         AnsiMode ansiMode = AnsiMode.AnsiIfPossible;
         // In LLM environments, prefer simple text output so that LLM can parse it easily.
-        // Note that NoAnsi also implies no progress.
-        if (noAnsi || new LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment())
+        if (noAnsi || new LLMEnvironmentDetectorForTelemetry(environmentProvider: null).IsLLMEnvironment())
         {
             // User explicitly specified --no-ansi.
             // We should respect that.
@@ -619,28 +1235,159 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         var output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
         {
-            ShowPassedTests = showPassedTests,
+            ShowTestResults = fallbackSettings.TestResultVisibility,
             ShowProgress = !noProgress,
-            ShowActiveTests = !noProgress && ansiMode == AnsiMode.AnsiIfPossible,
+            ShowActiveTests = !noProgress,
             AnsiMode = ansiMode,
             ShowAssembly = !isJsonDiscovery,
             ShowAssemblyStartAndComplete = !isJsonDiscovery,
             MinimumExpectedTests = parseResult.GetValue(definition.MinimumExpectedTestsOption),
             AllowZeroTests = testOptions.IsAffectedTestsMode,
+            CollectTestMap = testOptions.CollectTestMap,
             ListTestsFormat = testOptions.ListTestsFormat,
-            SlowestTestsCount = GetSlowestTestsCount(parseResult.GetArguments()),
-            ShowFlakyTests = GetShowFlakyTests(parseResult.GetArguments()),
+            SlowestTestsCount = fallbackSettings.SlowestTestsCount,
+            ShowFlakyTests = fallbackSettings.ShowFlakyTests,
+            ShowStdout = fallbackSettings.ShowStdout,
+            ShowStderr = fallbackSettings.ShowStderr,
+            HeartbeatSilenceThreshold = GetProgressThreshold(Environment.GetEnvironmentVariable("MTP_PROGRESS_SILENCE_SECONDS")),
+            SlowTestThreshold = GetProgressThreshold(Environment.GetEnvironmentVariable("MTP_PROGRESS_SLOW_TEST_SECONDS")),
         });
 
         // Ctrl+C handling is wired in Run() through CtrlCCancellationManager so that
         // a second press can force-kill running test app child processes and exit with
         // ExitCode.TestSessionAborted (see issue https://github.com/dotnet/sdk/issues/50732).
 
-        // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
-        var isRetry = parseResult.GetArguments().Contains("--retry-failed-tests");
-
+        // Retry-specific rendering is enabled authoritatively by the retry orchestrator handshake.
+        // Keep the raw option check only for older platform versions that support retries but do not
+        // send that handshake, so they can still label attempt 1.
+        bool isRetry = fallbackSettings.LegacyRetryEnabled;
         output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, testOptions.IsDiscovery, testOptions.IsHelp, isRetry);
         return output;
+    }
+
+    internal static TimeSpan GetProgressThreshold(string? value)
+        => int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int seconds) && seconds >= 0
+            ? TimeSpan.FromSeconds(seconds)
+            : TimeSpan.FromSeconds(60);
+
+    internal static bool GetSharedProgressEnabled(
+        bool noProgress,
+        IEnumerable<TestModule> testModules,
+        BuildOptions buildOptions)
+    {
+        // Progress is shared, so honor every selected module's effective opt-out. With no modules,
+        // preserve the command-line-only fallback by resolving arguments for a null module.
+        return testModules.DefaultIfEmpty().All(module =>
+            GetProgressEnabled(noProgress, GetEffectiveTestApplicationArguments(module, buildOptions)));
+    }
+
+    internal static bool GetProgressEnabled(bool noProgress, IReadOnlyList<string> arguments)
+        => GetForwardedOptionValue(arguments, "--progress")?.ToLowerInvariant() switch
+        {
+            "off" or "false" or "disable" or "0" => false,
+            "on" or "true" or "enable" or "1" or "auto" => true,
+            _ => !noProgress && !HasForwardedOption(arguments, "--no-progress"),
+        };
+
+    internal static bool IsLegacyRetryOptionEnabled(IReadOnlyList<string> arguments)
+        => HasForwardedOption(arguments, RetryFailedTestsOptionName);
+
+    private static OutputShowMode GetShowOutputMode(
+        IReadOnlyList<string> arguments,
+        string optionName,
+        IReadOnlyList<string>? configuredValues)
+    {
+        bool hasExplicitOption = HasForwardedOption(arguments, optionName);
+        string? value = hasExplicitOption
+            ? GetForwardedOptionValue(arguments, optionName)
+            : configuredValues is [string configuredValue] ? configuredValue : null;
+        if (value is null && !hasExplicitOption && configuredValues is null)
+        {
+            return OutputShowMode.Failed;
+        }
+
+        switch (value?.ToLowerInvariant())
+        {
+            case "all":
+                return OutputShowMode.All;
+            case "failed":
+                return OutputShowMode.Failed;
+            case "none":
+                return OutputShowMode.None;
+            default:
+                // The test application owns validation of forwarded options and reports the error.
+                Logger.LogTrace($"Invalid '{optionName}' arguments while reconstructing captured-output policy.");
+                return OutputShowMode.Failed;
+        }
+    }
+
+    internal static TestResultVisibility GetTestResultVisibility(
+        OutputOptions output,
+        IReadOnlyList<string> arguments,
+        IReadOnlyList<string>? configuredValues = null)
+    {
+        TestResultVisibility visibility = TestResultVisibility.None;
+        bool hasExplicitSelection = false;
+
+        for (int i = 0; i < arguments.Count; i++)
+        {
+            string argument = arguments[i];
+            if (!string.Equals(argument, "--show-test-results", StringComparison.Ordinal)
+                && !argument.StartsWith("--show-test-results=", StringComparison.Ordinal)
+                && !argument.StartsWith("--show-test-results:", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            int separatorIndex = argument.IndexOfAny('=', ':');
+            if (separatorIndex >= 0)
+            {
+                AddValues(argument[(separatorIndex + 1)..]);
+                continue;
+            }
+
+            while (i + 1 < arguments.Count && !arguments[i + 1].StartsWith("-", StringComparison.Ordinal))
+            {
+                AddValues(arguments[++i]);
+            }
+        }
+
+        if (!hasExplicitSelection && configuredValues is not null)
+        {
+            foreach (string configuredValue in configuredValues)
+            {
+                AddValues(configuredValue);
+            }
+        }
+
+        if (hasExplicitSelection)
+        {
+            return visibility;
+        }
+
+        return output switch
+        {
+            OutputOptions.Minimal => TestResultVisibility.Failed,
+            OutputOptions.Detailed => TestResultVisibility.All,
+            _ => TestResultVisibility.Failed | TestResultVisibility.Skipped,
+        };
+
+        void AddValues(string value)
+        {
+            foreach (string item in value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                hasExplicitSelection = true;
+                visibility |= item.ToLowerInvariant() switch
+                {
+                    "passed" => TestResultVisibility.Passed,
+                    "failed" => TestResultVisibility.Failed,
+                    "skipped" => TestResultVisibility.Skipped,
+                    "all" => TestResultVisibility.All,
+                    "none" => TestResultVisibility.None,
+                    _ => TestResultVisibility.None,
+                };
+            }
+        }
     }
 
     /// <summary>
@@ -650,29 +1397,39 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// The option belongs to the test application, not to the 'dotnet test' CLI, so it is forwarded verbatim. Under
     /// the pipe protocol the test host's own terminal reporter is not plugged in (the SDK owns user-facing output),
     /// so the section has to be rendered by the SDK's reporter instead — which means the SDK has to observe the
-    /// option. Same approach as the '--retry-failed-tests' detection above. A missing, non-numeric or non-positive
-    /// argument leaves the section off, mirroring the upstream option validator.
+    /// option. A missing, non-numeric or non-positive argument leaves the section off, mirroring the upstream
+    /// option validator.
     /// </remarks>
-    internal static int GetSlowestTestsCount(IReadOnlyList<string> arguments)
+    internal static int GetSlowestTestsCount(
+        IReadOnlyList<string> arguments,
+        IReadOnlyList<string>? configuredValues = null)
     {
         for (int i = 0; i < arguments.Count; i++)
         {
-            if (!string.Equals(arguments[i], "--show-slowest-tests", StringComparison.Ordinal))
+            string argument = arguments[i];
+            if (argument.StartsWith(ShowSlowestTestsOptionName + "=", StringComparison.Ordinal) ||
+                argument.StartsWith(ShowSlowestTestsOptionName + ":", StringComparison.Ordinal))
+            {
+                return ParseCount(argument[(ShowSlowestTestsOptionName.Length + 1)..]);
+            }
+
+            if (!string.Equals(argument, ShowSlowestTestsOptionName, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            if (i + 1 < arguments.Count &&
-                int.TryParse(arguments[i + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int count) &&
-                count >= 1)
-            {
-                return count;
-            }
-
-            return 0;
+            return i + 1 < arguments.Count ? ParseCount(arguments[i + 1]) : 0;
         }
 
-        return 0;
+        return configuredValues is [string configuredValue]
+            ? ParseCount(configuredValue)
+            : 0;
+
+        static int ParseCount(string value)
+            => int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int count) &&
+                count >= 1
+                    ? count
+                    : 0;
     }
 
     /// <summary>
@@ -680,11 +1437,20 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// A bare '--show-flaky-tests' means "on", which is also the default when the option is absent.
     /// See <see cref="GetSlowestTestsCount"/> for why the SDK inspects the forwarded arguments.
     /// </summary>
-    internal static bool GetShowFlakyTests(IReadOnlyList<string> arguments)
+    internal static bool GetShowFlakyTests(
+        IReadOnlyList<string> arguments,
+        bool? configuredValue = null)
     {
         for (int i = 0; i < arguments.Count; i++)
         {
-            if (!string.Equals(arguments[i], "--show-flaky-tests", StringComparison.Ordinal))
+            string argument = arguments[i];
+            if (argument.StartsWith(ShowFlakyTestsOptionName + "=", StringComparison.Ordinal) ||
+                argument.StartsWith(ShowFlakyTestsOptionName + ":", StringComparison.Ordinal))
+            {
+                return !IsOffValue(argument[(ShowFlakyTestsOptionName.Length + 1)..]);
+            }
+
+            if (!string.Equals(argument, ShowFlakyTestsOptionName, StringComparison.Ordinal))
             {
                 continue;
             }
@@ -692,17 +1458,43 @@ internal partial class MicrosoftTestingPlatformTestCommand
             return i + 1 >= arguments.Count || !IsOffValue(arguments[i + 1]);
         }
 
-        return true;
-
-        static bool IsOffValue(string argument)
-            => string.Equals(argument, "off", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(argument, "false", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(argument, "disable", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(argument, "0", StringComparison.Ordinal);
+        return configuredValue ?? true;
     }
 
-    private static int GetDegreeOfParallelism(ParseResult parseResult, bool collectTestMap)
+    private static bool IsOffValue(string argument)
+        => string.Equals(argument, "off", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(argument, "false", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(argument, "disable", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(argument, "0", StringComparison.Ordinal);
+
+    private static OutputOptions GetEffectiveOutputOption(
+        IReadOnlyList<string> arguments,
+        string? configuredValue,
+        OutputOptions fallback,
+        bool fallbackSpecified)
     {
+        string? value = GetForwardedOptionValue(arguments, OutputOptionName);
+        if (value is null && fallbackSpecified)
+        {
+            return fallback;
+        }
+
+        value ??= configuredValue;
+        return Enum.TryParse(value, ignoreCase: true, out OutputOptions outputOption)
+            ? outputOption
+            : fallback;
+    }
+
+    internal static int GetDegreeOfParallelism(
+        ParseResult parseResult,
+        bool collectTestMap,
+        int testModuleCount)
+    {
+        if (testModuleCount <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(testModuleCount));
+        }
+
         if (collectTestMap)
         {
             return 1;
@@ -713,9 +1505,10 @@ internal partial class MicrosoftTestingPlatformTestCommand
         var degreeOfParallelism = parseResult.GetValue(definition.MaxParallelTestModulesOption);
         if (degreeOfParallelism <= 0)
             degreeOfParallelism = Environment.ProcessorCount;
-        return degreeOfParallelism;
+        return Math.Min(degreeOfParallelism, testModuleCount);
     }
 
+#if !CLI_AOT
     /// <summary>
     /// Creates the MSBuild session shared by every target the test command invokes itself. It owns the
     /// project collection all those projects have to be evaluated in; the collection has no global
@@ -762,15 +1555,20 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 globalProperties,
                 logger is null ? null : [logger],
                 ToolsetDefinitionLocations.Default);
-            var projectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
+            string targetFramework;
+            string targetFrameworks;
+            using (Activities.PerformanceSource.StartActivity("test-target-framework-discovery"))
             {
-                GlobalProperties = globalProperties,
-                EvaluationStage = ProjectEvaluationStage.Properties,
-                ProjectCollection = collection,
-            });
+                var projectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
+                {
+                    GlobalProperties = globalProperties,
+                    EvaluationStage = ProjectEvaluationStage.Properties,
+                    ProjectCollection = collection,
+                });
 
-            var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
-            var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
+                targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
+                targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
+            }
 
             // Only prompt if multi-targeted (no single TargetFramework set)
             if (string.IsNullOrEmpty(targetFramework) && !string.IsNullOrEmpty(targetFrameworks))
@@ -802,7 +1600,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         // Add Device to MSBuild args so the build and evaluation see it
         return buildOptions with
         {
-            MSBuildArgs = [.. buildOptions.MSBuildArgs, $"-p:Device={buildOptions.Device}"]
+            MSBuildArgs = [.. buildOptions.MSBuildArgs, $"-p:Device={MSBuildPropertyEscaping.Escape(buildOptions.Device!)}"]
         };
     }
 
@@ -873,4 +1671,5 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         return ExitCode.Success;
     }
+#endif
 }

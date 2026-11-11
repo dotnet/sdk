@@ -3,7 +3,6 @@
 
 using System.Xml;
 using Microsoft.DotNet.Cli.Commands;
-using Microsoft.DotNet.FileBasedPrograms;
 using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.List.Reference.Tests
@@ -258,8 +257,7 @@ Lib/Lib.csproj";
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = Path.Join(testInstance.Path, "Program.cs");
-            File.WriteAllText(appFile, $$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+            File.WriteAllText(appFile, """
                 #:project Lib/Lib.csproj
                 #:ref Util.cs
 
@@ -290,8 +288,7 @@ Util.cs";
             var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = Path.Join(testInstance.Path, "Program.cs");
             var utilFile = Path.Join(testInstance.Path, "Util.cs");
-            File.WriteAllText(appFile, $$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+            File.WriteAllText(appFile, """
                 #:ref $(MSBuildThisFileDirectory)Util.cs
 
                 Console.WriteLine();
@@ -318,8 +315,7 @@ $(MSBuildThisFileDirectory)Util.cs";
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
             var appFile = Path.Join(testInstance.Path, "Program.cs");
-            File.WriteAllText(appFile, $$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+            File.WriteAllText(appFile, """
                 #:ref Missing
 
                 Console.WriteLine();

@@ -109,7 +109,10 @@ internal abstract class RunApiInput
         {
             var msbuildArgs = MSBuildArgs.FromVerbosity(VerbosityOptions.quiet);
             var buildCommand = new VirtualProjectBuildingCommand(
-                EntryPointFileFullPath, msbuildArgs, artifactsPath: ArtifactsPath);
+                EntryPointFileFullPath,
+                msbuildArgs,
+                CommandServices.CreateDefault(),
+                artifactsPath: ArtifactsPath);
 
             buildCommand.MarkArtifactsFolderUsed();
 
@@ -130,7 +133,10 @@ internal abstract class RunApiInput
                 readCodeFromStdin: false,
                 environmentVariables: ReadOnlyDictionary<string, string>.Empty);
 
-            var result = runCommand.ReadLaunchProfileSettings();
+            var result = runCommand.ReadLaunchProfileSettings(
+                buildCommand.CreateProjectInstance,
+                expandExecutableProfile: true,
+                out _);
             var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
             return new RunApiOutput.RunCommand

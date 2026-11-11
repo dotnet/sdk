@@ -156,6 +156,9 @@ Inspect each dependency for trim/AOT warnings, reflection/dynamic code, serializ
 resources/localization, build assets, static initialization, process-global state, native libraries,
 and binary-size contribution.
 
+Review the [size and trimming contracts](../../../src/Cli/dotnet-aot/DESIGN.md#size-and-trimming-contracts)
+when changing resources or platform providers.
+
 ### 5. Preserve both preprocessor views
 
 Condition the smallest incompatible block. Compare the managed and AOT views for lost comments,
@@ -195,10 +198,14 @@ and binary-size delta.
 - **`DotnetCsproj` is defined for dotnet-aot.** A newly linked file can expose extra conditional code.
   Inspect that closure and narrow the owning conditional; do not copy a helper merely to avoid tracing it.
 - **Do not pass `-noRestore` with `-getItem`.** The response file already appends it (`MSB1001`).
-- **`dotnet-aot.Tests` uses Microsoft.Testing.Platform.** `dotnet test` is not the runner; invoke the
-  built executable for a focused managed iteration or use `run-aot-tests.ps1` for native execution.
+- **`dotnet-aot.Tests` uses Microsoft.Testing.Platform.** Invoke the
+  [`run-tests`](../run-tests/SKILL.md) skill for a
+  focused managed iteration and use `run-aot-tests.ps1` for native execution.
 - **Existing tests may assert exclusions.** Search before enabling a command; an intentional
   `DoesNotContain` can need a carefully justified inversion.
+- **Completion eligibility is cursor-context-sensitive.** Root command and option labels can come from
+  shared definitions. Once the input selects a command, fall back before producing output so managed
+  parser configuration owns template, project, package, and other command-specific providers.
 - **A Roslyn pragma is not native-publish evidence.** ILC can report the same trim/AOT warning during
   publish. Use **dotnet-aot-compat**, keep suppression scope narrow, and reference an existing tracking
   issue for temporary dependency warnings. Ask the user before creating a new issue.
@@ -264,19 +271,17 @@ Common blockers:
 
 ## Validation ladder
 
-Run the cheapest discriminating check after each edit, then broaden. Use the **targeted-test** skill when
-the request explicitly asks to select or run narrow SDK tests.
+Run the cheapest discriminating check after each edit, then broaden. Invoke the
+[`run-tests`](../run-tests/SKILL.md) skill when
+the request explicitly asks to select or run SDK tests.
 
 ### 1. Focused parser/entry-point test
 
-Use the targeted-test runner so it builds the project, resolves the evaluated `TargetPath`, and invokes
-the Microsoft.Testing.Platform application without assuming its generated executable is on `PATH`:
-
-```powershell
-.\.dotnet\dotnet.exe .github\skills\targeted-test\scripts\RunTargetedTests.cs -- `
-  --project test\dotnet-aot.Tests\dotnet-aot.Tests.csproj `
-  --filter "FullyQualifiedName~<name>"
-```
+Invoke the [`run-tests`](../run-tests/SKILL.md) skill for
+`test/dotnet-aot.Tests/dotnet-aot.Tests.csproj` with a
+filter for the affected test. It builds the project, resolves the evaluated `TargetPath`,
+and invokes the Microsoft.Testing.Platform application without assuming its generated
+executable is on `PATH`.
 
 Record whether the test asserts AOT handling, fallback, or semantics. Do not call this a native run.
 
@@ -309,8 +314,24 @@ on each affected OS rather than cross-publishing and assuming native execution.
 ```
 
 The script publishes the MTP test application, product `dotnet-aot` library, and `dn` host with Native
-AOT. It loads the test-built library while using a complete installed SDK for SDK-relative assets and
-managed fallback, then runs the suite and can emit a TRX. Report executed, passed, failed, and skipped
+AOT. Build the matching redist SDK first. Both runners use
+[`PrepareTestSdk.proj`](../../../test/dotnet-aot.Tests/PrepareTestSdk.proj) to copy its pre-crossgen SDK content
+into an isolated installation under `test/dotnet-aot.Tests/artifacts/test-sdk/<configuration>/<RID>`.
+The installation uses the host-native bootstrap muxer, hostfxr and CoreCLR from the runtime pack
+matching the native CLI's runtime version, the host-native apphost pack, host-RID SDK metadata, and
+the test-built native library. Copy managed SDK assemblies from the redist project's evaluated
+output directory, not the installer or test-host SDK directory: those contain target-architecture
+ReadyToRun images after `CrossgenLayout` and can fail to load in the host-native managed CLI.
+The pre-crossgen layout still contains target-native compiler and MSBuild apphosts; regenerate
+them for the host RID through the
+[redist targets](../../../src/Layout/redist/targets/GenerateLayout.targets), including their macOS code signing.
+Use `CreateRoslynAppHosts`, not `PublishRoslyn`: the existing SDK already has the compiler
+files, and the original Roslyn package need not be present when CI prepares the test layout.
+The bootstrap SDK is used for compilation, not managed setup or fallback. Do not execute a cross-built
+redist host (for example, arm64 redist on an x64 macOS agent) or overlay host-native binaries into that
+redist. Mixing bootstrap-managed setup with a newly built native CLI can invalidate run-file caches
+or produce apps targeting an unavailable runtime. The script runs the suite and can emit a TRX.
+Report executed, passed, failed, and skipped
 counts; required `dn` integration tests must not be skipped.
 
 ### 5. Real `dn` integration and parity
@@ -361,4 +382,4 @@ Report:
 - **code-review** - findings-first review presentation for PR or local changes.
 - **dotnet-aot-compat** - resolve IL trim/AOT warnings surfaced by native publish.
 - **incremental-test** - run managed `dotnet.Tests` against the redist SDK layout.
-- **targeted-test** - select and run the smallest relevant SDK tests with retained diagnostics.
+- [**run-tests**](../run-tests/SKILL.md) - select and run SDK tests through the diagnostic-preserving local entry point.

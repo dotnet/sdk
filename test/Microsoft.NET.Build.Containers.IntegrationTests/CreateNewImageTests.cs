@@ -10,6 +10,7 @@ using Microsoft.NET.Build.Containers.IntegrationTests;
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
 [TestClass]
+[ResourceLock(TestSettings.DockerDaemonResource)]
 public class CreateNewImageTests : SdkTest
 {
     [TestMethod]
@@ -47,7 +48,7 @@ public class CreateNewImageTests : SdkTest
         task.OutputRegistry = "localhost:5010";
         task.LocalRegistry = DockerUnavailableCondition.LocalRegistry;
         task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-arm64", "publish");
-        task.Repository = "dotnet/create-new-image-baseline";
+        task.Repository = $"dotnet/create-new-image-baseline-{TestSettings.TestRunId}";
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
         task.ContainerRuntimeIdentifier = "linux-arm64";
@@ -90,10 +91,11 @@ public class CreateNewImageTests : SdkTest
         ParseContainerProperties pcp = new();
         (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
         pcp.BuildEngine = buildEngine;
+        string repository = $"dotnet/testimage-{TestSettings.TestRunId}";
 
         pcp.FullyQualifiedBaseImageName = "mcr.microsoft.com/dotnet/runtime:7.0";
         pcp.ContainerRegistry = "localhost:5010";
-        pcp.ContainerRepository = "dotnet/testimage";
+        pcp.ContainerRepository = repository;
         pcp.ContainerImageTags = new[] { "5.0", "latest" };
 
         Assert.IsTrue(pcp.Execute(), FormatBuildMessages(errors));
@@ -101,7 +103,7 @@ public class CreateNewImageTests : SdkTest
         Assert.AreEqual("dotnet/runtime", pcp.ParsedContainerImage);
         Assert.AreEqual("7.0", pcp.ParsedContainerTag);
 
-        Assert.AreEqual("dotnet/testimage", pcp.NewContainerRepository);
+        Assert.AreEqual(repository, pcp.NewContainerRepository);
         pcp.NewContainerTags.Should().BeEquivalentTo(new[] { "5.0", "latest" });
 
         CreateNewImage cni = new();
@@ -159,10 +161,11 @@ public class CreateNewImageTests : SdkTest
         ParseContainerProperties pcp = new();
         (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
         pcp.BuildEngine = buildEngine;
+        string repository = $"dotnet/envvarvalidation-{TestSettings.TestRunId}";
 
         pcp.FullyQualifiedBaseImageName = $"mcr.microsoft.com/{DockerRegistryManager.RuntimeBaseImage}:{DockerRegistryManager.Net9ImageTag}";
         pcp.ContainerRegistry = "";
-        pcp.ContainerRepository = "dotnet/envvarvalidation";
+        pcp.ContainerRepository = repository;
         pcp.ContainerImageTag = "latest";
 
         Dictionary<string, string> dict = new();
@@ -177,7 +180,7 @@ public class CreateNewImageTests : SdkTest
         Assert.ContainsSingle(pcp.NewContainerEnvironmentVariables);
         Assert.AreEqual("Foo", pcp.NewContainerEnvironmentVariables[0].GetMetadata("Value"));
 
-        Assert.AreEqual("dotnet/envvarvalidation", pcp.NewContainerRepository);
+        Assert.AreEqual(repository, pcp.NewContainerRepository);
         Assert.AreEqual("latest", pcp.NewContainerTags[0]);
 
         CreateNewImage cni = new();
@@ -218,8 +221,8 @@ public class CreateNewImageTests : SdkTest
     [Ignore("https://github.com/dotnet/sdk/issues/49300")]
     public async System.Threading.Tasks.Task CreateNewImage_RootlessBaseImage()
     {
-        const string RootlessBase = "dotnet/rootlessbase";
-        const string AppImage = "dotnet/testimagerootless";
+        string rootlessBase = $"dotnet/rootlessbase-{TestSettings.TestRunId}";
+        string appImage = $"dotnet/testimagerootless-{TestSettings.TestRunId}";
         const string RootlessUser = "1654";
         var loggerFactory = new TestLoggerFactory(Log);
         var logger = loggerFactory.CreateLogger(nameof(CreateNewImage_RootlessBaseImage));
@@ -240,7 +243,7 @@ public class CreateNewImageTests : SdkTest
         BuiltImage builtImage = imageBuilder.Build();
 
         var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8ImageTag, null);
-        var destinationReference = new DestinationImageReference(registry, RootlessBase, new[] { "latest" });
+        var destinationReference = new DestinationImageReference(registry, rootlessBase, new[] { "latest" });
 
         await registry.PushAsync(builtImage, sourceReference, destinationReference, cancellationToken: default).ConfigureAwait(false);
 
@@ -269,12 +272,12 @@ public class CreateNewImageTests : SdkTest
         var (buildEngine, errors) = SetupBuildEngine();
         task.BuildEngine = buildEngine;
         task.BaseRegistry = "localhost:5010";
-        task.BaseImageName = RootlessBase;
+        task.BaseImageName = rootlessBase;
         task.BaseImageTag = "latest";
 
         task.OutputRegistry = "localhost:5010";
         task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-x64", "publish");
-        task.Repository = AppImage;
+        task.Repository = appImage;
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
         task.ContainerRuntimeIdentifier = "linux-x64";
@@ -286,7 +289,7 @@ public class CreateNewImageTests : SdkTest
 
         // Verify the application image uses the non-root user from the base image.
         imageBuilder = await registry.GetImageManifestAsync(
-            AppImage,
+            appImage,
             "latest",
             "linux-x64",
             ToolsetUtils.RidGraphManifestPicker,
@@ -323,10 +326,11 @@ public class CreateNewImageTests : SdkTest
         ParseContainerProperties pcp = new();
         (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
         pcp.BuildEngine = buildEngine;
+        string repository = $"dotnet/testimage-{TestSettings.TestRunId}";
 
         pcp.FullyQualifiedBaseImageName = "mcr.microsoft.com/dotnet/runtime:9.0";
         pcp.ContainerRegistry = "localhost:5010";
-        pcp.ContainerRepository = "dotnet/testimage";
+        pcp.ContainerRepository = repository;
         pcp.ContainerImageTags = new[] { "5.0", "latest" };
 
         Assert.IsTrue(pcp.Execute(), FormatBuildMessages(errors));
@@ -334,7 +338,7 @@ public class CreateNewImageTests : SdkTest
         Assert.AreEqual("dotnet/runtime", pcp.ParsedContainerImage);
         Assert.AreEqual("9.0", pcp.ParsedContainerTag);
 
-        Assert.AreEqual("dotnet/testimage", pcp.NewContainerRepository);
+        Assert.AreEqual(repository, pcp.NewContainerRepository);
         pcp.NewContainerTags.Should().BeEquivalentTo(new[] { "5.0", "latest" });
 
         CreateNewImage cni = new();

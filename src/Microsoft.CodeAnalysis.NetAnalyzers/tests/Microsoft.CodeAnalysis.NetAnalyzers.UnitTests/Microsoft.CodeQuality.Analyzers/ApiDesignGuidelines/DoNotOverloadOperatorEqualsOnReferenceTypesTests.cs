@@ -17,47 +17,53 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task OperatorEqual_ReferenceType_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    public static bool operator ==(C left, C right) => true;
-    public static bool operator !=(C left, C right) => true;
-}",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public class C
+                {
+                    public static bool operator ==(C left, C right) => true;
+                    public static bool operator !=(C left, C right) => true;
+                }
+                """,
                 VerifyCS.Diagnostic().WithSpan(4, 33, 4, 35).WithArguments("C"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class C
-    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
-End Class",
+                Public Class C
+                    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
+
+                    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
+                End Class
+                """,
                 VerifyVB.Diagnostic().WithSpan(3, 28, 3, 29).WithArguments("C"));
         }
 
         [TestMethod]
         public async Task OperatorEqual_ValueType_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public struct C
-{
-    public static bool operator ==(C left, C right) => true;
-    public static bool operator !=(C left, C right) => true;
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public struct C
+                {
+                    public static bool operator ==(C left, C right) => true;
+                    public static bool operator !=(C left, C right) => true;
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Structure C
-    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Structure C
+                    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
 
-    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
-End Structure");
+                    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
+                End Structure
+                """);
         }
 
         [TestMethod]
@@ -65,34 +71,36 @@ End Structure");
         {
             // Doc states that if type behaves as a value-type and has addition/subtraction it might be safe.
 
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    public static bool operator [|==|](C left, C right) => true;
-    public static bool operator !=(C left, C right) => true;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class C
+                {
+                    public static bool operator [|==|](C left, C right) => true;
+                    public static bool operator !=(C left, C right) => true;
 
-    public static C operator +(C left, C right) => left;
-    public static C operator -(C left, C right) => left;
-}");
+                    public static C operator +(C left, C right) => left;
+                    public static C operator -(C left, C right) => left;
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class C
-    Public Shared Operator [|=|](ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class C
+                    Public Shared Operator [|=|](ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
 
-    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
+                    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
 
-    Public Shared Operator +(ByVal left As C, ByVal right As C) As C
-        Return left
-    End Operator
+                    Public Shared Operator +(ByVal left As C, ByVal right As C) As C
+                        Return left
+                    End Operator
 
-    Public Shared Operator -(ByVal left As C, ByVal right As C) As C
-        Return left
-    End Operator
-End Class");
+                    Public Shared Operator -(ByVal left As C, ByVal right As C) As C
+                        Return left
+                    End Operator
+                End Class
+                """);
         }
 
         [TestMethod]
@@ -113,13 +121,17 @@ End Class");
         [DataRow("internal", "dotnet_code_quality.CA1046.api_surface = all")]
         [DataRow("internal", "dotnet_code_quality.Design.api_surface = all")]
         // General + Specific analyzer option
-        [DataRow("internal", @"dotnet_code_quality.api_surface = private
-                                  dotnet_code_quality.CA1046.api_surface = all")]
+        [DataRow("internal", """
+            dotnet_code_quality.api_surface = private
+                                              dotnet_code_quality.CA1046.api_surface = all
+            """)]
         // Case-insensitive analyzer option
         [DataRow("internal", "DOTNET_code_quality.CA1046.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [DataRow("internal", @"dotnet_code_quality.api_surface = all
-                                  dotnet_code_quality.CA1046.api_surface_2 = private")]
+        [DataRow("internal", """
+            dotnet_code_quality.api_surface = all
+                                              dotnet_code_quality.CA1046.api_surface_2 = private
+            """)]
         public async Task CSharp_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
@@ -128,21 +140,23 @@ End Class");
                 {
                     Sources =
                     {
-                        $@"
-public class OuterClass
-{{
-    {accessibility} class C
-    {{
-        public static bool operator [|==|](C left, C right) => true;
-        public static bool operator !=(C left, C right) => true;
-    }}
-}}"
+                        $$"""
+                            public class OuterClass
+                            {
+                                {{accessibility}} class C
+                                {
+                                    public static bool operator [|==|](C left, C right) => true;
+                                    public static bool operator !=(C left, C right) => true;
+                                }
+                            }
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-"), },
+                        [*]
+                        {editorConfigText}
+                        """), },
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -165,13 +179,17 @@ public class OuterClass
         [DataRow("Friend", "dotnet_code_quality.CA1046.api_surface = All")]
         [DataRow("Friend", "dotnet_code_quality.Design.api_surface = All")]
         // General + Specific analyzer option
-        [DataRow("Friend", @"dotnet_code_quality.api_surface = Private
-                                dotnet_code_quality.CA1046.api_surface = All")]
+        [DataRow("Friend", """
+            dotnet_code_quality.api_surface = Private
+                                            dotnet_code_quality.CA1046.api_surface = All
+            """)]
         // Case-insensitive analyzer option
         [DataRow("Friend", "DOTNET_code_quality.CA1046.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [DataRow("Friend", @"dotnet_code_quality.api_surface = All
-                                dotnet_code_quality.CA1046.api_surface_2 = Private")]
+        [DataRow("Friend", """
+            dotnet_code_quality.api_surface = All
+                                            dotnet_code_quality.CA1046.api_surface_2 = Private
+            """)]
         public async Task VisualBasic_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
@@ -180,24 +198,26 @@ public class OuterClass
                 {
                     Sources =
                     {
-                        $@"
-Public Class OuterClass
-    {accessibility} Class C
-        Public Shared Operator [|=|](ByVal left As C, ByVal right As C) As Boolean
-            Return True
-        End Operator
+                        $"""
+                            Public Class OuterClass
+                                {accessibility} Class C
+                                    Public Shared Operator [|=|](ByVal left As C, ByVal right As C) As Boolean
+                                        Return True
+                                    End Operator
 
-        Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
-            Return True
-        End Operator
-    End Class
-End Class"
+                                    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+                                        Return True
+                                    End Operator
+                                End Class
+                            End Class
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-"), },
+                        [*]
+                        {editorConfigText}
+                        """), },
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -208,15 +228,16 @@ End Class"
 
         public async Task CSharp_OperatorEqual_InternalReferenceType_NoDiagnosticAsync(string accessibility)
         {
-            await VerifyCS.VerifyAnalyzerAsync($@"
-public class OuterClass
-{{
-    {accessibility} class C
-    {{
-        public static bool operator ==(C left, C right) => true;
-        public static bool operator !=(C left, C right) => true;
-    }}
-}}");
+            await VerifyCS.VerifyAnalyzerAsync($$"""
+                public class OuterClass
+                {
+                    {{accessibility}} class C
+                    {
+                        public static bool operator ==(C left, C right) => true;
+                        public static bool operator !=(C left, C right) => true;
+                    }
+                }
+                """);
         }
 
         [TestMethod]
@@ -225,148 +246,154 @@ public class OuterClass
 
         public async Task VisualBasic_OperatorEqual_InternalReferenceType_NoDiagnosticAsync(string accessibility)
         {
-            await VerifyVB.VerifyAnalyzerAsync($@"
-Public Class OuterClass
-    {accessibility} Class C
-        Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
-            Return True
-        End Operator
+            await VerifyVB.VerifyAnalyzerAsync($"""
+                Public Class OuterClass
+                    {accessibility} Class C
+                        Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+                            Return True
+                        End Operator
 
-        Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
-            Return True
-        End Operator
-    End Class
-End Class");
+                        Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+                            Return True
+                        End Operator
+                    End Class
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task OperatorEqual_IEquatable_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-public class C : IEquatable<C>
-{
-    public bool Equals(C other) => true;
-    public static bool operator ==(C left, C right) => true;
-    public static bool operator !=(C left, C right) => true;
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                public class C : IEquatable<C>
+                {
+                    public bool Equals(C other) => true;
+                    public static bool operator ==(C left, C right) => true;
+                    public static bool operator !=(C left, C right) => true;
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Public Class C
-    Implements IEquatable(Of C)
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Public Class C
+                    Implements IEquatable(Of C)
 
-    Public Function Equals(ByVal other As C) As Boolean Implements IEquatable(Of C).Equals
-        Return True
-    End Function
+                    Public Function Equals(ByVal other As C) As Boolean Implements IEquatable(Of C).Equals
+                        Return True
+                    End Function
 
-    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
+                    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
 
-    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
-End Class");
+                    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task OperatorEqual_OverrideObjectEquals_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C
-{
-    public override bool Equals(object obj) => true;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class C
+                {
+                    public override bool Equals(object obj) => true;
 
-    public static bool operator ==(C left, C right) => true;
-    public static bool operator !=(C left, C right) => true;
-}");
+                    public static bool operator ==(C left, C right) => true;
+                    public static bool operator !=(C left, C right) => true;
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class C
-    Public Overrides Function Equals(ByVal obj As Object) As Boolean
-        Return True
-    End Function
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class C
+                    Public Overrides Function Equals(ByVal obj As Object) As Boolean
+                        Return True
+                    End Function
 
-    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
+                    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
 
-    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
-End Class
-");
+                    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task OperatorEqual_ImplementIComparable_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class C : IComparable
-{
-    public int CompareTo(object obj) => 0;
+                public class C : IComparable
+                {
+                    public int CompareTo(object obj) => 0;
 
-    public static bool operator ==(C left, C right) => true;
-    public static bool operator !=(C left, C right) => true;
-}");
+                    public static bool operator ==(C left, C right) => true;
+                    public static bool operator !=(C left, C right) => true;
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Class C
-    Implements IComparable
+                Public Class C
+                    Implements IComparable
 
-    Public Function CompareTo(ByVal obj As Object) As Integer Implements IComparable.CompareTo
-        Return 0
-    End Function
+                    Public Function CompareTo(ByVal obj As Object) As Integer Implements IComparable.CompareTo
+                        Return 0
+                    End Function
 
-    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
+                    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
 
-    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
-End Class
-");
+                    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task OperatorEqual_ImplementIComparableT_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-public class C : IComparable<C>
-{
-    public int CompareTo(C other) => 0;
+                public class C : IComparable<C>
+                {
+                    public int CompareTo(C other) => 0;
 
-    public static bool operator ==(C left, C right) => true;
-    public static bool operator !=(C left, C right) => true;
-}");
+                    public static bool operator ==(C left, C right) => true;
+                    public static bool operator !=(C left, C right) => true;
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Public Class C
-    Implements IComparable(Of C)
+                Public Class C
+                    Implements IComparable(Of C)
 
-    Public Function CompareTo(ByVal other As C) As Integer Implements IComparable(Of C).CompareTo
-        Return 0
-    End Function
+                    Public Function CompareTo(ByVal other As C) As Integer Implements IComparable(Of C).CompareTo
+                        Return 0
+                    End Function
 
-    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
+                    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
 
-    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
-End Class
-");
+                    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+                        Return True
+                    End Operator
+                End Class
+                """);
         }
     }
 }

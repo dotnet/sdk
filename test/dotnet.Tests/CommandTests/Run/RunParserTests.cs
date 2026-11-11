@@ -7,6 +7,9 @@ using Microsoft.NET.TestFramework;
 namespace Microsoft.DotNet.Tests.ParserTests
 {
     [TestClass]
+    // These tests mutate process-wide CurrentDirectory, which production code can read indirectly from other parallel tests.
+    // A resource lock cannot serialize those indirect readers.
+    [DoNotParallelize]
     public class RunParserTests : IDisposable
     {
         private readonly string _previousWorkingDirectory;
@@ -182,6 +185,57 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             runCommand.ApplicationArgs.Should().Equal("b0", "b1", "a0", $"-{name}:val2", "a1");
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().Contain($"-{name}:val1");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
+        }
+
+        [TestMethod]
+        public void DoubleDash_Mt()
+        {
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
+            var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
+            var newWorkingDir = testAsset.Path;
+
+            Directory.SetCurrentDirectory(newWorkingDir);
+
+            var runCommand = RunCommand.FromArgs(["b0", "-mt", "b1", "--", "a0", "-mt", "a1"]);
+
+            runCommand.ApplicationArgs.Should().Equal("b0", "b1", "a0", "-mt", "a1");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().Contain("-mt");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
+        }
+
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("true")]
+        [DataRow("false")]
+        public void DoubleDash_Mt_Value(string value)
+        {
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
+            var testAsset = tam.CopyTestAsset("HelloWorld", identifier: value).WithSource();
+            var newWorkingDir = testAsset.Path;
+
+            Directory.SetCurrentDirectory(newWorkingDir);
+
+            var runCommand = RunCommand.FromArgs(["b0", $"-mt:{value}", "b1", "--", "a0", $"-mt:{value}", "a1"]);
+
+            runCommand.ApplicationArgs.Should().Equal("b0", "b1", "a0", $"-mt:{value}", "a1");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().Contain($"-mt:{value}");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
+        }
+
+        [TestMethod]
+        public void DoubleDash_Mt_Value_Unknown()
+        {
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
+            var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
+            var newWorkingDir = testAsset.Path;
+
+            Directory.SetCurrentDirectory(newWorkingDir);
+
+            var runCommand = RunCommand.FromArgs(["b0", "-mt:val1", "b1", "--", "a0", "-mt:val2", "a1"]);
+
+            runCommand.ApplicationArgs.Should().Equal("b0", "-mt:val1", "b1", "a0", "-mt:val2", "a1");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("-mt:val1");
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
         }
 

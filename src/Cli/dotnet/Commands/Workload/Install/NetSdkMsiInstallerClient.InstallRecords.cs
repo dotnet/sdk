@@ -71,12 +71,14 @@ internal partial class NetSdkMsiInstallerClient
             "Microsoft.NET.Workload.Emscripten.net8",
             "Microsoft.NET.Workload.Emscripten.net9",
             "Microsoft.NET.Workload.Emscripten.net10",
+            "Microsoft.NET.Workload.Emscripten.net11",
             "Microsoft.NET.Workload.Mono.ToolChain.Current",
             "Microsoft.NET.Workload.Mono.ToolChain.net6",
             "Microsoft.NET.Workload.Mono.ToolChain.net7",
             "Microsoft.NET.Workload.Mono.ToolChain.net8",
             "Microsoft.NET.Workload.Mono.ToolChain.net9",
-            "Microsoft.NET.Workload.Mono.ToolChain.net10"
+            "Microsoft.NET.Workload.Mono.ToolChain.net10",
+            "Microsoft.NET.Workload.Mono.ToolChain.net11"
         ];
 
     private static readonly IReadOnlyDictionary<string, string> ManifestIdCasing = CasedManifestIds.ToDictionary(id => id.ToLowerInvariant()).AsReadOnly();

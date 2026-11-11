@@ -19,6 +19,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// and that output metadata preserves the original path form.
     /// </summary>
     [TestClass]
+    [DoNotParallelize]
     public class GivenAResolveAppHostsMultiThreading : IDisposable
     {
         internal const string CollectionName = "ResolveAppHosts current directory tests";

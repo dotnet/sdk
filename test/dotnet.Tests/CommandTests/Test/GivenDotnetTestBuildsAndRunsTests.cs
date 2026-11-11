@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Utils;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
+using TestExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
@@ -20,6 +22,16 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         // The same syntax works on Windows and Unix ($VAR does not get expanded Unix).
         private static string EnvironmentVariableReference(string name)
             => $"%{name}%";
+
+        private static void MakeAllTestsSkipped(TestAsset testInstance)
+        {
+            string programPath = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(
+                programPath,
+                File.ReadAllText(programPath).Replace(
+                    """new PassedTestNodeStateProperty("OK")""",
+                    """new SkippedTestNodeStateProperty("OK skipped too!")"""));
+        }
 
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
@@ -44,6 +56,599 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void RunTestSessionFailure_ShouldNotReportPassedSummary(bool failDuringCreate)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            string programPath = Path.Join(testInstance.Path, "Program.cs");
+            string sessionResult = failDuringCreate ? "CreateTestSessionResult" : "CloseTestSessionResult";
+            File.WriteAllText(
+                programPath,
+                File.ReadAllText(programPath).Replace(
+                    $"new {sessionResult}() {{ IsSuccess = true }}",
+                    $"new {sessionResult}() {{ IsSuccess = false }}",
+                    StringComparison.Ordinal));
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("Test run summary: Failed!")
+                    .And.NotContain("Test run summary: Passed!")
+                    .And.Contain("failed: 0");
+            }
+
+            result.ExitCode.Should().Be(TestExitCode.TestAdapterTestSessionFailure);
+        }
+
+        [TestMethod]
+        [DataRow(false, TestExitCode.Success, TestExitCode.Success)]
+        [DataRow(true, TestExitCode.Success, TestExitCode.Success)]
+        [DataRow(false, TestExitCode.GenericFailure, TestExitCode.GenericFailure)]
+        [DataRow(true, TestExitCode.GenericFailure, TestExitCode.GenericFailure)]
+        [DataRow(false, TestExitCode.ZeroTests, TestExitCode.GenericFailure)]
+        public void RunAffectedTestsWithoutTestHost_ReportsSelectionAndSummary(
+            bool collectTestMap, int orchestratorExitCode, int expectedExitCode)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            string programPath = Path.Join(testInstance.Path, "Program.cs");
+            string feature = collectTestMap ? "RefreshMappingsOrchestrator" : "RunAffectedTestsOrchestrator";
+            string program = File.ReadAllText(programPath).Replace(
+                "var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);",
+                $$"""
+                var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);
+                var extension = new NoSelectionExtension("{{feature}}", {{orchestratorExitCode}});
+                testApplicationBuilder.CommandLine.AddProvider(() => extension);
+                testApplicationBuilder.TestHostOrchestrator.AddTestHostOrchestrator(_ => extension);
+                """,
+                StringComparison.Ordinal);
+            File.WriteAllText(
+                programPath,
+                """
+                #pragma warning disable TPEXP
+                using Microsoft.Testing.Platform.CommandLine;
+                using Microsoft.Testing.Platform.Extensions;
+                using Microsoft.Testing.Platform.Extensions.CommandLine;
+                using Microsoft.Testing.Platform.Extensions.TestHostOrchestrator;
+
+                """ + Environment.NewLine + program + Environment.NewLine + """
+                public sealed class NoSelectionExtension(string feature, int exitCode)
+                    : ITestHostExecutionOrchestrator, ICommandLineOptionsProvider
+                {
+                    public string Uid => feature;
+                    public string Version => "1.0.0";
+                    public string DisplayName => feature;
+                    public string Description => feature;
+                    public Task<bool> IsEnabledAsync() => Task.FromResult(true);
+                    public Task<int> OrchestrateTestHostExecutionAsync(CancellationToken cancellationToken)
+                        => Task.FromResult(exitCode);
+                    public IReadOnlyCollection<CommandLineOption> GetCommandLineOptions() =>
+                    [
+                        new("affected-tests", "Select affected tests.", ArgumentArity.Zero, isHidden: false),
+                        new("collect-test-map", "Collect test mappings.", ArgumentArity.Zero, isHidden: false),
+                    ];
+                    public Task<ValidationResult> ValidateOptionArgumentsAsync(CommandLineOption commandOption, string[] arguments)
+                        => ValidationResult.ValidTask;
+                    public Task<ValidationResult> ValidateCommandLineOptionsAsync(ICommandLineOptions commandLineOptions)
+                        => ValidationResult.ValidTask;
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable(TestCommandDefinition.MicrosoftTestingPlatform.EnableAffectedTestsEnvironmentVariable, "1")
+                .Execute("-c", TestingConstants.Debug, collectTestMap ? "--collect-test-map" : "--affected-tests");
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                if (collectTestMap)
+                {
+                    result.StdOut.Should().Contain(expectedExitCode == TestExitCode.Success
+                        ? "Test map collection: Completed."
+                        : "Test map collection: Failed.");
+                    result.StdOut.Should().NotContain("Test run summary:")
+                        .And.NotContain("total: 0")
+                        .And.NotContain("skipped: 0");
+                }
+                else if (expectedExitCode == TestExitCode.Success)
+                {
+                    result.StdOut
+                        .Should().Contain("Test run summary: Zero tests ran")
+                        .And.Contain("total: 0")
+                        .And.Contain("skipped: 0")
+                        .And.NotContain("Test run summary: Passed!")
+                        .And.NotContain("Handshake failures:");
+                }
+                else
+                {
+                    result.StdOut.Should().Contain("Test run summary: Failed!");
+                }
+
+                if (!collectTestMap && expectedExitCode == TestExitCode.Success)
+                {
+                    result.StdOut.Should().Contain("No affected tests selected");
+                }
+                else
+                {
+                    result.StdOut.Should().NotContain("No affected tests selected");
+                }
+            }
+
+            result.ExitCode.Should().Be(expectedExitCode);
+        }
+
+        [TestMethod]
+        [DataRow("", false, ExitCodes.Success, "Passed!")]
+        [DataRow("allow-skipped", false, ExitCodes.Success, "Passed!")]
+        [DataRow("strict", false, ExitCodes.ZeroTests, "Zero tests ran")]
+        [DataRow("strict", true, ExitCodes.Success, "Passed!")]
+        public void RunAllSkippedTestsHonorsZeroTestsAndIgnoreExitCodePolicies(
+            string zeroTestsPolicy,
+            bool ignoreZeroTestsExitCode,
+            int expectedExitCode,
+            string expectedSummary)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            MakeAllTestsSkipped(testInstance);
+
+            var arguments = new List<string> { "-c", TestingConstants.Debug };
+            if (zeroTestsPolicy.Length > 0)
+            {
+                arguments.Add("--zero-tests-policy");
+                arguments.Add(zeroTestsPolicy);
+            }
+
+            if (ignoreZeroTestsExitCode)
+            {
+                arguments.Add("--ignore-exit-code");
+                arguments.Add(ExitCodes.ZeroTests.ToString());
+            }
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute([.. arguments]);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain($"Test run summary: {expectedSummary}")
+                    .And.Contain("total: 2")
+                    .And.Contain("succeeded: 0")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 2");
+
+                if (expectedExitCode == ExitCodes.Success)
+                {
+                    result.StdOut.Should().NotContain("Test run completed with non-success exit code");
+                }
+                else
+                {
+                    result.StdOut.Should().Contain($"Test run completed with non-success exit code: {expectedExitCode}");
+                }
+            }
+
+            result.ExitCode.Should().Be(expectedExitCode);
+        }
+
+        [TestMethod]
+        [DataRow("--zero-tests-policy\n'strict'", ExitCodes.ZeroTests, "Zero tests ran")]
+        [DataRow("--zero-tests-policy\n'strict'\n--ignore-exit-code\n'8'", ExitCodes.Success, "Passed!")]
+        public void RunAllSkippedTestsHonorsPoliciesFromResponseFile(
+            string responseFileContents,
+            int expectedExitCode,
+            string expectedSummary)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            MakeAllTestsSkipped(testInstance);
+            string responseFilePath = Path.Join(testInstance.Path, "options.rsp");
+            File.WriteAllText(responseFilePath, responseFileContents);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, $"@{responseFilePath}");
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain($"Test run summary: {expectedSummary}");
+            }
+
+            result.ExitCode.Should().Be(expectedExitCode);
+        }
+
+        [TestMethod]
+        public void RunAllSkippedTestsHonorsStrictPolicyFromExplicitConfigurationFile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            MakeAllTestsSkipped(testInstance);
+            string configurationFilePath = Path.Join(testInstance.Path, "strict.testconfig.json");
+            File.WriteAllText(
+                configurationFilePath,
+                """{"commandLineOptions":{"zero-tests-policy":"strict"}}""");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, "--config-file", configurationFilePath);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Test run summary: Zero tests ran");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [TestMethod]
+        public void RunNoTestsHonorsIgnoredExitCodeFromExplicitConfigurationFile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
+                .WithSource();
+            string configurationFilePath = Path.Join(testInstance.Path, "ignore.testconfig.json");
+            File.WriteAllText(
+                configurationFilePath,
+                """{"commandLineOptions":{"ignore-exit-code":"8"}}""");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, "--config-file", configurationFilePath);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("Test run summary: Zero tests ran")
+                    .And.NotContain("Test run summary: Passed!");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        [DataRow(null, null)]
+        [DataRow("all", "all")]
+        [DataRow("all", "none")]
+        [DataRow("none", "all")]
+        [DataRow("none", "none")]
+        public void RunCapturedOutputHonorsDefaultAndIndependentOverrides(string? stdoutMode, string? stderrMode)
+        {
+            TestAsset testInstance = TestAssetsManager
+                .CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+                .WithSource();
+            File.WriteAllText(
+                Path.Join(testInstance.Path, "TestProject", "UnitTest1.cs"),
+                """
+                namespace TestProject;
+
+                [TestClass]
+                public class UnitTest1
+                {
+                    [TestMethod]
+                    public void PassingTest()
+                    {
+                        Console.WriteLine("captured stdout PassingTest");
+                        Console.Error.WriteLine("captured stderr PassingTest");
+                    }
+
+                    [TestMethod]
+                    public void SkippedTest()
+                    {
+                        Console.WriteLine("captured stdout SkippedTest");
+                        Console.Error.WriteLine("captured stderr SkippedTest");
+                        Assert.Inconclusive("intentional skip");
+                    }
+
+                    [TestMethod]
+                    public void FailingTest()
+                    {
+                        Console.WriteLine("captured stdout FailingTest");
+                        Console.Error.WriteLine("captured stderr FailingTest");
+                        Assert.Fail("intentional failure");
+                    }
+                }
+                """);
+            List<string> arguments =
+            [
+                "--project", Path.Join("TestProject", "TestProject.csproj"),
+                "-c", TestingConstants.Debug,
+                "--output", "detailed",
+                "--no-ansi", "--no-progress",
+            ];
+            if (stdoutMode is not null)
+            {
+                arguments.AddRange(["--show-stdout", stdoutMode]);
+            }
+            if (stderrMode is not null)
+            {
+                arguments.AddRange(["--show-stderr", stderrMode]);
+            }
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en")
+                .Execute([.. arguments]);
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+            string output = result.StdOut!;
+            output.Should().Contain("Test run summary: Failed!")
+                .And.Contain("total: 3")
+                .And.Contain("failed: 1")
+                .And.Contain("succeeded: 1")
+                .And.Contain("skipped: 1");
+            foreach (string testName in new[] { "PassingTest", "SkippedTest", "FailingTest" })
+            {
+                Match block = Regex.Match(
+                    output,
+                    $@"(?ms)^(?:passed|failed|skipped) [^\r\n]*\b{testName}\b[^\r\n]*\r?\n.*?(?=^(?:passed|failed|skipped) |\z)");
+                block.Success.Should().BeTrue($"the result for {testName} must remain visible");
+                bool isFailed = testName == "FailingTest";
+                AssertStream("stdout", "Standard output", stdoutMode);
+                AssertStream("stderr", "Error output", stderrMode);
+
+                void AssertStream(string stream, string heading, string? mode)
+                {
+                    string payload = $"captured {stream} {testName}";
+                    if (mode == "all" || (mode is null or "failed" && isFailed))
+                    {
+                        block.Value.Should().Contain(payload).And.Contain(heading);
+                    }
+                    else
+                    {
+                        block.Value.Should().NotContain(payload).And.NotContain(heading);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        [DataRow("--show-stdout")]
+        [DataRow("--show-stderr")]
+        public void RunCapturedOutputInvalidModeRetainsTestApplicationDiagnostic(string option)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en")
+                .Execute("-c", TestingConstants.Debug, option, "invalid");
+
+            result.ExitCode.Should().Be(TestExitCode.InvalidCommandLine);
+            (result.StdOut + result.StdErr).Should().Contain(option)
+                .And.Contain("expect a single parameter with value 'All', 'Failed', or 'None'");
+        }
+
+        [TestMethod]
+        public void RunAppliesReporterOptionsFromResponseFile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            string responseFilePath = Path.Join(testInstance.Path, "reporter.rsp");
+            File.WriteAllText(
+                responseFilePath,
+                "--show-test-results=passed");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, $"@{responseFilePath}");
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("passed Test0")
+                    .And.NotContain("skipped Test1");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        public void RunAppliesReporterOptionsFromConfigurationFile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            string configurationFilePath = Path.Join(testInstance.Path, "reporter.testconfig.json");
+            File.WriteAllText(
+                configurationFilePath,
+                """{"commandLineOptions":{"show-test-results":["passed"]}}""");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, "--config-file", configurationFilePath);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("passed Test0")
+                    .And.NotContain("skipped Test1");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        public void RunAllSkippedTestsHonorsStrictPolicyFromDefaultConfigurationFile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root!.Name.Namespace;
+                    project.Root.Add(
+                        new XElement(
+                            ns + "ItemGroup",
+                            new XElement(
+                                ns + "None",
+                                new XAttribute("Update", "TestProject.testconfig.json"),
+                                new XElement(ns + "CopyToOutputDirectory", "PreserveNewest"))));
+                });
+            MakeAllTestsSkipped(testInstance);
+            File.WriteAllText(
+                Path.Join(testInstance.Path, "TestProject.testconfig.json"),
+                """{"commandLineOptions":{"zero-tests-policy":"strict"}}""");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Test run summary: Zero tests ran");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [TestMethod]
+        public void RunAllSkippedTestsHonorsLaunchProfilePolicyAndEnvironmentPrecedence()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            MakeAllTestsSkipped(testInstance);
+            string propertiesDirectory = Path.Join(testInstance.Path, "Properties");
+            Directory.CreateDirectory(propertiesDirectory);
+            File.WriteAllText(
+                Path.Join(propertiesDirectory, "launchSettings.json"),
+                """
+                {
+                  "profiles": {
+                    "TestProject": {
+                      "commandName": "Project",
+                      "commandLineArgs": "--zero-tests-policy strict --ignore-exit-code 8",
+                      "environmentVariables": {
+                        "TESTINGPLATFORM_EXITCODE_IGNORE": "9"
+                      }
+                    }
+                  }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("Test run summary: Zero tests ran")
+                    .And.Contain($"Test run completed with non-success exit code: {ExitCodes.ZeroTests}");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        public void RunAllSkippedTestsHonorsCaseInsensitiveLaunchProfileEnvironmentOnWindows()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            MakeAllTestsSkipped(testInstance);
+            string propertiesDirectory = Path.Join(testInstance.Path, "Properties");
+            Directory.CreateDirectory(propertiesDirectory);
+            File.WriteAllText(
+                Path.Join(propertiesDirectory, "launchSettings.json"),
+                """
+                {
+                  "profiles": {
+                    "TestProject": {
+                      "commandName": "Project",
+                      "commandLineArgs": "--zero-tests-policy strict --ignore-exit-code 8",
+                      "environmentVariables": {
+                        "testingplatform_exitcode_ignore": "9"
+                      }
+                    }
+                  }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("Test run summary: Zero tests ran")
+                    .And.Contain($"Test run completed with non-success exit code: {ExitCodes.ZeroTests}");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [TestMethod]
+        [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
+        public void RunAllSkippedTestsHonorsCaseSensitiveLaunchProfileEnvironmentOnUnix()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            MakeAllTestsSkipped(testInstance);
+            string propertiesDirectory = Path.Join(testInstance.Path, "Properties");
+            Directory.CreateDirectory(propertiesDirectory);
+            File.WriteAllText(
+                Path.Join(propertiesDirectory, "launchSettings.json"),
+                """
+                {
+                  "profiles": {
+                    "TestProject": {
+                      "commandName": "Project",
+                      "commandLineArgs": "--zero-tests-policy strict",
+                      "environmentVariables": {
+                        "testingplatform_exitcode_ignore": "9"
+                      }
+                    }
+                  }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("TESTINGPLATFORM_EXITCODE_IGNORE", "8")
+                .Execute("-c", TestingConstants.Debug);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Test run summary: Passed!");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        public void RunMinimumExpectedTestsViolationHonorsIgnoreExitCodePolicy()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--minimum-expected-tests", "3",
+                    "--ignore-exit-code", ExitCodes.MinimumExpectedTestsPolicyViolation.ToString());
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("Test run summary: Passed!")
+                    .And.Contain("total: 2")
+                    .And.Contain("succeeded: 1")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 1")
+                    .And.NotContain("Minimum expected tests policy violation")
+                    .And.NotContain("Test run completed with non-success exit code");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [DataRow(TestingConstants.Debug)]
@@ -139,15 +744,23 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
             var runJsonPath = Path.Join(testInstance.Path, "TestProjectWithLaunchSettings.run.json");
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+                <Project>
+                  <PropertyGroup>
+                    <LaunchArgument>--from-launch-settings</LaunchArgument>
+                    <LaunchEnvironment>TestValue1</LaunchEnvironment>
+                  </PropertyGroup>
+                </Project>
+                """);
 
-            File.WriteAllText(launchSettingsPath, $$"""
+            File.WriteAllText(launchSettingsPath, """
                 {
                     "profiles": {
                         "ConsoleApp25": {
                             "commandName": "Project",
-                            "commandLineArgs": "--from-launch-settings",
+                            "commandLineArgs": "$(LaunchArgument)",
                             "environmentVariables": {
-                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "{{EnvironmentVariableReference("TEST_ENV_VAR")}}"
+                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "$(LaunchEnvironment)"
                             }
                         }
                     }
@@ -161,7 +774,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnvironmentVariable("TEST_ENV_VAR", "TestValue1")
                                     .Execute("-c", configuration);
 
             if (!SdkTestContext.IsLocalized())
@@ -178,6 +790,84 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("succeeded: 1")
                     .And.Contain("failed: 0")
                     .And.Contain("skipped: 1");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        public void RunTestProjectWithInvalidMSBuildExpressionInLaunchSettings_ShouldReturnExitCodeSuccess()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests")
+                .WithSource();
+
+            string propertiesDirectory = Path.Join(testInstance.Path, "Properties");
+            Directory.CreateDirectory(propertiesDirectory);
+            File.WriteAllText(Path.Join(propertiesDirectory, "launchSettings.json"), """
+                {
+                    "profiles": {
+                        "TestProjectWithTests": {
+                            "commandName": "Project",
+                            "commandLineArgs": "$([)"
+                        }
+                    }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdErr.Should().Contain("could not be applied");
+                result.StdOut.Should().Contain("Test run summary: Passed!");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        public void RunTestProjectWithIgnoredInvalidLaunchArguments_AppliesEnvironmentVariables()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings")
+                .WithSource();
+
+            File.WriteAllText(Path.Join(testInstance.Path, "Properties", "launchSettings.json"), """
+                {
+                    "profiles": {
+                        "TestProjectWithLaunchSettings": {
+                            "commandName": "Project",
+                            "commandLineArgs": "$([)",
+                            "applicationUrl": "$([)",
+                            "environmentVariables": {
+                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "$(LaunchEnvironment)"
+                            }
+                        }
+                    }
+                }
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+                <Project>
+                  <PropertyGroup>
+                    <LaunchEnvironment>expanded-environment</LaunchEnvironment>
+                  </PropertyGroup>
+                </Project>
+                """);
+            string programPath = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(
+                programPath,
+                File.ReadAllText(programPath).Replace(
+                    "if (!args.Contains(\"--from-launch-settings\"))",
+                    "if (args.Contains(\"--from-launch-settings\"))"));
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, "--no-launch-profile-arguments");
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("MY_VARIABLE_FROM_LAUNCH_SETTINGS=expanded-environment");
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
@@ -834,7 +1524,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("failed: 0")
                     .And.Contain("skipped: 0");
 
-                result.StdOut.Should().Contain("Test run completed with non-success exit code: 1 (see: https://aka.ms/testingplatform/exitcodes)");
+                result.StdOut.Should().Contain("Test run completed with non-success exit code: 1. An unexpected error occurred. See: https://aka.ms/testingplatform/exitcodes");
             }
         }
 
@@ -863,7 +1553,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("failed: 0")
                     .And.Contain("skipped: 0");
 
-                result.StdOut.Should().Contain("Test run completed with non-success exit code: 47 (see: https://aka.ms/testingplatform/exitcodes)");
+                result.StdOut.Should().Contain("Test run completed with non-success exit code: 47. The exit code is not recognized. See: https://aka.ms/testingplatform/exitcodes");
             }
         }
 

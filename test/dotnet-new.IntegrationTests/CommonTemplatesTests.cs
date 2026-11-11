@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
@@ -13,6 +12,9 @@ using TestLoggerFactory = Microsoft.NET.TestFramework.TestLoggerFactory;
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     [TestClass]
+    // Concurrent builds from this class and DotnetClassTemplateTests can hang on two-core Helix agents.
+    // https://github.com/dotnet/sdk/issues/56019
+    [ResourceLock(nameof(DotnetBuildCommand))]
     public class CommonTemplatesTests : BaseIntegrationTest
     {
         private ITestOutputHelper _log => Log;
@@ -35,6 +37,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [DataRow("global.json file", "globaljson", null)]
         [DataRow("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200" })]
         [DataRow("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
+        [DataRow("global.json file", "globaljson", new[] { "--allow-prerelease", "false" })]
+        [DataRow("global.json file", "globaljson", new[] { "--allow-prerelease", "true" })]
+        [DataRow("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--allow-prerelease", "false" })]
+        [DataRow("global.json file", "globaljson", new[] { "--no-sdk-version" })]
+        [DataRow("global.json file", "globaljson", new[] { "--allow-prerelease", "false", "--no-sdk-version" })]
         [DataRow("global.json file", "globaljson", new[] { "--test-runner", "VSTest" })]
         [DataRow("global.json file", "globaljson", new[] { "--test-runner", "Microsoft.Testing.Platform" })]
         [DataRow("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--test-runner", "VSTest" })]
@@ -99,9 +106,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // globaljson is appending current sdk version. Due to the 'base' dotnet used to run test this version differs
             //  on dev and CI runs and possibly from the version within test host. Easiest is just to scrub it away
             if (expectedTemplateName.Equals("global.json file") &&
-                (args == null || !args.Contains("--sdk-version")))
+                (args == null || (!args.Contains("--sdk-version") && !args.Contains("--no-sdk-version"))))
             {
-                string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(TestContext.CancellationToken);
+                string sdkVersionUnderTest = SdkTestContext.Current.ToolsetUnderTest?.SdkVersion
+                    ?? throw new InvalidOperationException("The SDK under test is not configured.");
                 options.CustomScrubbers?.AddScrubber(sb => sb.Replace(sdkVersionUnderTest, "%CURRENT-VER%"), "json");
             }
 
@@ -178,10 +186,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [DataRow(new object[] { "console", "VB" })]
         public async Task AotVariants(string name, string language)
         {
-            // template framework needs to be hardcoded here during the major version transition.
-            string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
-            // string currentDefaultFramework = "net10.0";
-
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{language}");
             string outputDir = "MyProject";
             string projName = name;
@@ -224,7 +228,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             .WithCustomEnvironment(environmentUnderTest!)
             .WithCustomScrubbers(
                 ScrubbersDefinition.Empty
-                    .AddScrubber(sb => sb.Replace($"<TargetFramework>{currentDefaultFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
+                    .AddScrubber(sb => sb.Replace($"<TargetFramework>{CommonTemplateTargetFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
                     .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
                     .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
             );
@@ -350,9 +354,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             bool supportsImplicitUsings,
             bool supportsFileScopedNs)
         {
-            // string currentDefaultFramework = "net10.0";
-            string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
-
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{langVersion ?? "null"}-{framework ?? "null"}");
             string outputDir = "MyProject";
             string projName = name;
@@ -425,7 +426,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             .WithCustomScrubbers(
                 ScrubbersDefinition.Empty
                     .AddScrubber(sb => sb.Replace($"<LangVersion>{langVersion}</LangVersion>", "<LangVersion>%LANG%</LangVersion>"))
-                    .AddScrubber(sb => sb.Replace($"<TargetFramework>{framework ?? currentDefaultFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
+                    .AddScrubber(sb => sb.Replace($"<TargetFramework>{framework ?? CommonTemplateTargetFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
                     .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
                     .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
             );

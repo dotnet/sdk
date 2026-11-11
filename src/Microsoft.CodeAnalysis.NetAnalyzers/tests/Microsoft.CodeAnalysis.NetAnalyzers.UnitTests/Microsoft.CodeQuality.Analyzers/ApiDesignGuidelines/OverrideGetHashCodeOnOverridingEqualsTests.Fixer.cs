@@ -24,29 +24,29 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        @"
-class {|CS0659:C|}
-{
-    public override bool Equals(object obj) => true;
-}
-",
+                        """
+                            class {|CS0659:C|}
+                            {
+                                public override bool Equals(object obj) => true;
+                            }
+                            """,
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        @"
-class C
-{
-    public override bool Equals(object obj) => true;
+                        """
+                            class C
+                            {
+                                public override bool Equals(object obj) => true;
 
-    public override int GetHashCode()
-    {
-        throw new System.NotImplementedException();
-    }
-}
-",
+                                public override int GetHashCode()
+                                {
+                                    throw new System.NotImplementedException();
+                                }
+                            }
+                            """,
                     },
                 },
                 SolutionTransforms =
@@ -70,33 +70,33 @@ class C
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
+                            using System;
 
-class {|CS0659:C|}
-{
-    public override bool Equals(object obj) => true;
-}
-",
+                            class {|CS0659:C|}
+                            {
+                                public override bool Equals(object obj) => true;
+                            }
+                            """,
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
+                            using System;
 
-class C
-{
-    public override bool Equals(object obj) => true;
+                            class C
+                            {
+                                public override bool Equals(object obj) => true;
 
-    public override int GetHashCode()
-    {
-        throw new NotImplementedException();
-    }
-}
-",
+                                public override int GetHashCode()
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+                            """,
                     },
                 },
                 SolutionTransforms =
@@ -114,51 +114,51 @@ class C
         [TestMethod]
         public async Task Basic_CA2218Async()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
-Class [|C|]
-    Public Overrides Function Equals(o As Object) As Boolean
-        Return True
-    End Function
-End Class
-",
-@"
-Class C
-    Public Overrides Function Equals(o As Object) As Boolean
-        Return True
-    End Function
+            await VerifyVB.VerifyCodeFixAsync("""
+                Class [|C|]
+                    Public Overrides Function Equals(o As Object) As Boolean
+                        Return True
+                    End Function
+                End Class
+                """,
+"""
+    Class C
+        Public Overrides Function Equals(o As Object) As Boolean
+            Return True
+        End Function
 
-    Public Overrides Function GetHashCode() As Integer
-        Throw New System.NotImplementedException()
-    End Function
-End Class
-");
+        Public Overrides Function GetHashCode() As Integer
+            Throw New System.NotImplementedException()
+        End Function
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task Basic_CA2218_SimplifiedAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
 
-Class [|C|]
-    Public Overrides Function Equals(o As Object) As Boolean
-        Return True
-    End Function
-End Class
-",
-@"
-Imports System
+                Class [|C|]
+                    Public Overrides Function Equals(o As Object) As Boolean
+                        Return True
+                    End Function
+                End Class
+                """,
+"""
+    Imports System
 
-Class C
-    Public Overrides Function Equals(o As Object) As Boolean
-        Return True
-    End Function
+    Class C
+        Public Overrides Function Equals(o As Object) As Boolean
+            Return True
+        End Function
 
-    Public Overrides Function GetHashCode() As Integer
-        Throw New NotImplementedException()
-    End Function
-End Class
-");
+        Public Overrides Function GetHashCode() As Integer
+            Throw New NotImplementedException()
+        End Function
+    End Class
+    """);
         }
 
         [TestMethod]
@@ -170,44 +170,44 @@ End Class
                 {
                     Sources =
                     {
-                        @"
-class {|CS0659:C|}
-{
-    public override bool Equals(object obj) => true;
+                        """
+                            class {|CS0659:C|}
+                            {
+                                public override bool Equals(object obj) => true;
 
-    class {|CS0659:Nested|}
-    {
-        public override bool Equals(object obj) => true;
-    }
-}
-",
+                                class {|CS0659:Nested|}
+                                {
+                                    public override bool Equals(object obj) => true;
+                                }
+                            }
+                            """,
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        @"
-class C
-{
-    public override bool Equals(object obj) => true;
+                        """
+                            class C
+                            {
+                                public override bool Equals(object obj) => true;
 
-    class Nested
-    {
-        public override bool Equals(object obj) => true;
+                                class Nested
+                                {
+                                    public override bool Equals(object obj) => true;
 
-        public override int GetHashCode()
-        {
-            throw new System.NotImplementedException();
-        }
-    }
+                                    public override int GetHashCode()
+                                    {
+                                        throw new System.NotImplementedException();
+                                    }
+                                }
 
-    public override int GetHashCode()
-    {
-        throw new System.NotImplementedException();
-    }
-}
-",
+                                public override int GetHashCode()
+                                {
+                                    throw new System.NotImplementedException();
+                                }
+                            }
+                            """,
                     },
                 },
                 SolutionTransforms =
@@ -225,40 +225,40 @@ class C
         [TestMethod]
         public async Task Basic_NestedTypes_FixAllOverridesGetHashCodeOnBothAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
-Class [|C|]
-    Public Overrides Function Equals(o As Object) As Boolean
-        Return True
-    End Function
+            await VerifyVB.VerifyCodeFixAsync("""
+                Class [|C|]
+                    Public Overrides Function Equals(o As Object) As Boolean
+                        Return True
+                    End Function
 
-    Class [|Nested|]
+                    Class [|Nested|]
+                        Public Overrides Function Equals(o As Object) As Boolean
+                            Return True
+                        End Function
+                    End Class
+                End Class
+                """,
+"""
+    Class C
         Public Overrides Function Equals(o As Object) As Boolean
             Return True
         End Function
-    End Class
-End Class
-",
-@"
-Class C
-    Public Overrides Function Equals(o As Object) As Boolean
-        Return True
-    End Function
 
-    Class Nested
-        Public Overrides Function Equals(o As Object) As Boolean
-            Return True
-        End Function
+        Class Nested
+            Public Overrides Function Equals(o As Object) As Boolean
+                Return True
+            End Function
+
+            Public Overrides Function GetHashCode() As Integer
+                Throw New System.NotImplementedException()
+            End Function
+        End Class
 
         Public Overrides Function GetHashCode() As Integer
             Throw New System.NotImplementedException()
         End Function
     End Class
-
-    Public Overrides Function GetHashCode() As Integer
-        Throw New System.NotImplementedException()
-    End Function
-End Class
-");
+    """);
         }
     }
 }

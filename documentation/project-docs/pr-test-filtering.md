@@ -157,7 +157,7 @@ scope into concrete project paths with:
 The command writes one repo-relative `Targeted test project:` line for each project
 matched by the scope's `TestProjects` globs. Run those projects individually so a
 failure identifies the affected project. The
-[`targeted-test`](../../.github/skills/targeted-test/SKILL.md) agent skill provides the
+[`run-tests`](../../.github/skills/run-tests/SKILL.md) agent skill provides the
 runner and fallback mappings for change areas that do not yet have a `ConditionalTestScope`.
 
 If a changed file matches `GlobalTriggerPaths`, do not use an individual conditional
@@ -168,7 +168,7 @@ shared changes.
 
 1. Add a `<ConditionalTestScope>` item in `test/ConditionalTests.props`.
 2. Reconcile the fallback table in the
-   [`targeted-test`](../../.github/skills/targeted-test/SKILL.md) agent skill. Remove an
+   [`run-tests`](../../.github/skills/run-tests/SKILL.md) agent skill. Remove an
    entry when the new scope now covers that area, or update it if test-project ownership
    changed. Do not copy configured mappings into the fallback table.
 3. The evaluation script and `UnitTests.proj` are generic and require no per-scope
@@ -254,7 +254,7 @@ too coarse, it can be tuned later — see [Future enhancements](#future-enhancem
 
 - **Single source of truth**: `test/ConditionalTests.props` defines everything about a
   scope — trigger paths, projects, and conditions. The
-  [`targeted-test`](../../.github/skills/targeted-test/SKILL.md) skill reads these mappings
+  [`run-tests`](../../.github/skills/run-tests/SKILL.md) skill reads these mappings
   directly; its separate fallback table contains only common unscoped areas and must be
   reconciled when scopes or test-project ownership change.
 - **Safe by default**: when in doubt, tests run. The system only skips tests when it has

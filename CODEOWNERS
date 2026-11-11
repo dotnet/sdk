@@ -3,14 +3,9 @@
 # Syntax: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-syntax
 
 # These owners will be the default owners for everything in
-# the repo. Unless a later match takes precedence,
-# @dotnet/dotnet-cli  will be requested for
-# review when someone opens a pull request.
+# the repo. However, we don't automatically want to request a review on every PR
+# add an individual if you want a review or ping @dotnet/dotnet-cli for a response
 # Issue/PR labels to use are listed before each section
-
-# Area-CLI
-/src/Cli/ @dotnet/dotnet-cli
-/test/dotnet.Tests/ @dotnet/dotnet-cli
 
 # Area-run-file
 /src/Cli/Microsoft.DotNet.FileBasedPrograms/ @dotnet/run-file
@@ -18,11 +13,6 @@
 /src/Cli/dotnet/Commands/Project/Convert/ @dotnet/run-file
 /test/dotnet.Tests/CommandTests/Run/ @dotnet/run-file
 /test/dotnet.Tests/CommandTests/Project/Convert/ @dotnet/run-file
-
-# Area-NetSDK
-/src/Tasks/Microsoft.NET.Build.Tasks/ @dotnet/dotnet-cli
-/test/Microsoft.NET.Build.Tests/ @dotnet/dotnet-cli
-/test/Microsoft.NET.Publish.Tests/ @dotnet/dotnet-cli
 
 # Area-WebSDK
 /src/WebSdk/ @vijayrkn
@@ -106,13 +96,13 @@
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets @dotnet/illink @dotnet/dotnet-cli
 
 # Area-ClickOnce
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
+/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @dotnet/msbuild-clickonce
 
 # Area-Watch
-/test/TestAssets/TestProjects/Watch*/ @tmat @dotnet/roslyn-ide
-/test/dotnet-watch.Tests/ @tmat @dotnet/roslyn-ide
+/test/TestAssets/TestProjects/Watch*/ @dotnet/hot-reload
+/test/dotnet-watch.Tests/ @dotnet/hot-reload
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/Dotnet.Watch/ @tmat @dotnet/roslyn-ide
+/src/Dotnet.Watch/ @dotnet/hot-reload
 /src/Dotnet.Watch/BrowserRefresh @dotnet/aspnet-blazor-eng
 /src/Dotnet.Watch/AspireService @dotnet/aspnet-blazor-eng
 
@@ -129,9 +119,9 @@
 /src/Microsoft.CodeAnalysis.NetAnalyzers @dotnet/dotnet-analyzers
 
 # Area-Infrastructure
-.vsts-ci.yml @MiYanni @MichaelSimons
-.vsts-pr.yml @MiYanni @MichaelSimons
-/eng/pipelines @MiYanni @MichaelSimons
+.vsts-ci.yml @MiYanni
+.vsts-pr.yml @MiYanni
+/eng/pipelines @MiYanni
 
 # AI
 .github/ @mthalman @lbussell

@@ -506,6 +506,9 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdNoCacheOptionDescription" xml:space="preserve">
     <value>Do not cache packages and http requests.</value>
   </data>
+  <data name="CmdNoDefaultExcludesDescription" xml:space="preserve">
+    <value>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</value>
+  </data>
   <data name="CmdNoDependenciesOptionDescription" xml:space="preserve">
     <value>Do not restore project-to-project references and only restore the specified project.</value>
   </data>
@@ -651,8 +654,22 @@ If not specified the file will be generated inside the default 'TestResults' dir
   <data name="CmdTestModulesRootDirectoryDescription" xml:space="preserve">
     <value>The test modules have the specified root directory.</value>
   </data>
+  <data name="CmdTestModulesRootDirectoryRequiresTestModules" xml:space="preserve">
+    <value>The '--root-directory' option can only be used with '--test-modules'.</value>
+    <comment>{Locked="--root-directory"}{Locked="--test-modules"}</comment>
+  </data>
   <data name="CmdTestOutputDescription" xml:space="preserve">
     <value>Verbosity of test output.</value>
+  </data>
+  <data name="CmdTestShowStdoutDescription" xml:space="preserve">
+    <value>Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</value>
+    <comment>{Locked="All"}{Locked="Failed"}{Locked="None"}</comment>
+  </data>
+  <data name="CmdTestShowStderrDescription" xml:space="preserve">
+    <value>Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</value>
+    <comment>{Locked="All"}{Locked="Failed"}{Locked="None"}</comment>
   </data>
   <data name="CmdTransitiveDescription" xml:space="preserve">
     <value>Lists transitive and top-level packages.</value>
@@ -818,6 +835,9 @@ If not specified the file will be generated inside the default 'TestResults' dir
   </data>
   <data name="ListSolutionFoldersArgumentDescription" xml:space="preserve">
     <value>Display solution folder paths.</value>
+  </data>
+  <data name="SolutionListFormatOptionDescription" xml:space="preserve">
+    <value>The output format for the list of paths. JSON output is an array of paths.</value>
   </data>
   <data name="ManifestOption" xml:space="preserve">
     <value>MANIFEST</value>
@@ -1116,7 +1136,12 @@ The default is to publish a framework-dependent application.</value>
     <comment>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</comment>
   </data>
   <data name="TestCmdNoLogo" xml:space="preserve">
-    <value>Run test(s), without displaying Microsoft Testplatform banner</value>
+    <value>Run test(s), without displaying the Microsoft Test Platform banner</value>
+    <comment>{Locked="Microsoft Test Platform"}</comment>
+  </data>
+  <data name="TestCmdMTPNoLogo" xml:space="preserve">
+    <value>Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</value>
+    <comment>{Locked="Microsoft.Testing.Platform"}{Locked="MTP"}</comment>
   </data>
   <data name="TestCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
@@ -1218,7 +1243,7 @@ The default is to publish a framework-dependent application.</value>
     <value>Arguments forwarded to the tool</value>
   </data>
   <data name="ToolSearchCommandDescription" xml:space="preserve">
-    <value>Search dotnet tools in nuget.org</value>
+    <value>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</value>
   </data>
   <data name="ToolSearchPrereleaseDescription" xml:space="preserve">
     <value>Include pre-release packages.</value>

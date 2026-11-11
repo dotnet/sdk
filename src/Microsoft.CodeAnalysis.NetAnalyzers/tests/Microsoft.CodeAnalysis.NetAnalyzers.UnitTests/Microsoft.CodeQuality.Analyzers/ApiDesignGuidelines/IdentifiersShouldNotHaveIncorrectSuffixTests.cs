@@ -20,7 +20,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         public async Task CA1711_CSharp_Diagnostic_TypeDoesNotDeriveFromAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyBadAttribute {}",
+"public class MyBadAttribute {}",
                 GetCSharpResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -32,8 +32,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         public async Task CA1711_Basic_Diagnostic_TypeDoesNotDeriveFromAttributeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBadAttribute
-End Class",
+"""
+    Public Class MyBadAttribute
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -45,25 +47,29 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
+"""
+    using System;
 
-public class MyAttribute : Attribute {}
-public class MyOtherAttribute : MyAttribute {}");
+    public class MyAttribute : Attribute {}
+    public class MyOtherAttribute : MyAttribute {}
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromAttributeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
+"""
+    Imports System
 
-Public Class MyAttribute
-    Inherits Attribute
-End Class
+    Public Class MyAttribute
+        Inherits Attribute
+    End Class
 
-Public Class MyOtherAttribute
-    Inherits MyAttribute
-End Class");
+    Public Class MyOtherAttribute
+        Inherits MyAttribute
+    End Class
+    """);
         }
 
         [TestMethod]
@@ -82,8 +88,10 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_TypeDoesNotDeriveFromEventArgsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBadEventArgs
-End Class",
+"""
+    Public Class MyBadEventArgs
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -95,25 +103,29 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromEventArgsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
+"""
+    using System;
 
-public class MyEventArgs : EventArgs {}
-public class MyOtherEventArgs : MyEventArgs {}");
+    public class MyEventArgs : EventArgs {}
+    public class MyOtherEventArgs : MyEventArgs {}
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromEventArgsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
+"""
+    Imports System
 
-Public Class MyEventArgs
-    Inherits EventArgs
-End Class
+    Public Class MyEventArgs
+        Inherits EventArgs
+    End Class
 
-Public Class MyOtherEventArgs
-    Inherits MyEventArgs
-End Class");
+    Public Class MyOtherEventArgs
+        Inherits MyEventArgs
+    End Class
+    """);
         }
 
         // There's no need for a test case where the type is derived from EventHandler
@@ -122,7 +134,7 @@ End Class");
         public async Task CA1711_CSharp_Diagnostic_TypeNameEndsWithEventHandlerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyBadEventHandler {}",
+"public class MyBadEventHandler {}",
                 GetCSharpResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -134,8 +146,10 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_TypeNameEndsWithEventHandlerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBadEventHandler
-End Class",
+"""
+    Public Class MyBadEventHandler
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -147,7 +161,7 @@ End Class",
         public async Task CA1711_CSharp_Diagnostic_TypeDoesNotDeriveFromExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyBadException {}",
+"public class MyBadException {}",
                 GetCSharpResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -159,8 +173,10 @@ End Class",
         public async Task CA1711_Basic_Diagnostic_TypeDoesNotDeriveFromExceptionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBadException
-End Class",
+"""
+    Public Class MyBadException
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -172,32 +188,36 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
+"""
+    using System;
 
-public class MyException : Exception {}
-public class MyOtherException : MyException {}");
+    public class MyException : Exception {}
+    public class MyOtherException : MyException {}
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromExceptionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
+"""
+    Imports System
 
-Public Class MyException
-    Inherits Exception
-End Class
+    Public Class MyException
+        Inherits Exception
+    End Class
 
-Public Class MyOtherException
-    Inherits MyException
-End Class");
+    Public Class MyOtherException
+        Inherits MyException
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_Diagnostic_TypeDoesNotDeriveFromIPermissionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyBadPermission {}",
+"public class MyBadPermission {}",
                 GetCSharpResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -209,8 +229,10 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_TypeDoesNotDeriveFromIPermissionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBadPermission
-End Class",
+"""
+    Public Class MyBadPermission
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -222,68 +244,72 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromIPermissionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Security;
+"""
+    using System.Security;
 
-public class MyPermission : IPermission
-{
-    public IPermission Copy() { return null; }
-    public void Demand() {}
-    public void FromXml(SecurityElement e) {}
-    public IPermission Intersect(IPermission other) { return null; }
-    public bool IsSubsetOf(IPermission target) { return false; }
-    public SecurityElement ToXml() { return null; }
-    public IPermission Union(IPermission other) { return null; }
-}
+    public class MyPermission : IPermission
+    {
+        public IPermission Copy() { return null; }
+        public void Demand() {}
+        public void FromXml(SecurityElement e) {}
+        public IPermission Intersect(IPermission other) { return null; }
+        public bool IsSubsetOf(IPermission target) { return false; }
+        public SecurityElement ToXml() { return null; }
+        public IPermission Union(IPermission other) { return null; }
+    }
 
-public class MyOtherPermission : MyPermission {}");
+    public class MyOtherPermission : MyPermission {}
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromIPermissionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Security
+"""
+    Imports System.Security
 
-Public Class MyPermission
-    Implements IPermission
+    Public Class MyPermission
+        Implements IPermission
 
-    Public Sub Demand() Implements IPermission.Demand
-    End Sub
+        Public Sub Demand() Implements IPermission.Demand
+        End Sub
 
-    Public Sub FromXml(e As SecurityElement) Implements ISecurityEncodable.FromXml
-    End Sub
+        Public Sub FromXml(e As SecurityElement) Implements ISecurityEncodable.FromXml
+        End Sub
 
-    Public Function Copy() As IPermission Implements IPermission.Copy
-        Return Nothing
-    End Function
+        Public Function Copy() As IPermission Implements IPermission.Copy
+            Return Nothing
+        End Function
 
-    Public Function Intersect(target As IPermission) As IPermission Implements IPermission.Intersect
-        Return Nothing
-    End Function
+        Public Function Intersect(target As IPermission) As IPermission Implements IPermission.Intersect
+            Return Nothing
+        End Function
 
-    Public Function IsSubsetOf(target As IPermission) As Boolean Implements IPermission.IsSubsetOf
-        Return False
-    End Function
+        Public Function IsSubsetOf(target As IPermission) As Boolean Implements IPermission.IsSubsetOf
+            Return False
+        End Function
 
-    Public Function ToXml() As SecurityElement Implements ISecurityEncodable.ToXml
-        Return Nothing
-    End Function
+        Public Function ToXml() As SecurityElement Implements ISecurityEncodable.ToXml
+            Return Nothing
+        End Function
 
-    Public Function Union(target As IPermission) As IPermission Implements IPermission.Union
-        Return Nothing
-    End Function
-End Class
+        Public Function Union(target As IPermission) As IPermission Implements IPermission.Union
+            Return Nothing
+        End Function
+    End Class
 
-Public Class MyOtherPermission
-    Inherits MyPermission
-End Class");
+    Public Class MyOtherPermission
+        Inherits MyPermission
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_Diagnostic_TypeDoesNotDeriveFromStreamAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyBadStream {}",
+"public class MyBadStream {}",
                 GetCSharpResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -295,8 +321,10 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_TypeDoesNotDeriveFromStreamAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBadStream
-End Class",
+"""
+    Public Class MyBadStream
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -308,113 +336,117 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromStreamAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.IO;
+"""
+    using System.IO;
 
-public class MyStream : Stream
-{
-    public override bool CanRead => false;
-    public override bool CanSeek => false;
-    public override bool CanWrite => false;
-    public override long Length => 0L;
-
-    public override long Position
+    public class MyStream : Stream
     {
-        get { return 0L; }
-        set { }
+        public override bool CanRead => false;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => 0L;
+
+        public override long Position
+        {
+            get { return 0L; }
+            set { }
+        }
+
+        public override void Flush() { }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            return 0;
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            return 0L;
+        }
+
+        public override void SetLength(long value) { }
+
+        public override void Write(byte[] buffer, int offset, int count) { }
     }
 
-    public override void Flush() { }
-
-    public override int Read(byte[] buffer, int offset, int count)
-    {
-        return 0;
-    }
-
-    public override long Seek(long offset, SeekOrigin origin)
-    {
-        return 0L;
-    }
-
-    public override void SetLength(long value) { }
-
-    public override void Write(byte[] buffer, int offset, int count) { }
-}
-
-public class MyOtherStream : MyStream { }");
+    public class MyOtherStream : MyStream { }
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromStreamAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.IO
+"""
+    Imports System.IO
 
-Public Class MyStream
-    Inherits Stream
+    Public Class MyStream
+        Inherits Stream
 
-    Public Overrides ReadOnly Property CanRead As Boolean
-        Get
-            Return False
-        End Get
-    End Property
+        Public Overrides ReadOnly Property CanRead As Boolean
+            Get
+                Return False
+            End Get
+        End Property
 
-    Public Overrides ReadOnly Property CanSeek As Boolean
-        Get
-            Return False
-        End Get
-    End Property
+        Public Overrides ReadOnly Property CanSeek As Boolean
+            Get
+                Return False
+            End Get
+        End Property
 
-    Public Overrides ReadOnly Property CanWrite As Boolean
-        Get
-            Return False
-        End Get
-    End Property
+        Public Overrides ReadOnly Property CanWrite As Boolean
+            Get
+                Return False
+            End Get
+        End Property
 
-    Public Overrides ReadOnly Property Length As Long
-        Get
+        Public Overrides ReadOnly Property Length As Long
+            Get
+                Return 0
+            End Get
+        End Property
+
+        Public Overrides Property Position As Long
+            Get
+                Return 0
+            End Get
+            Set(value As Long)
+            End Set
+        End Property
+
+        Public Overrides Sub Flush()
+        End Sub
+
+        Public Overrides Sub SetLength(value As Long)
+        End Sub
+
+        Public Overrides Sub Write(buffer() As Byte, offset As Integer, count As Integer)
+        End Sub
+
+        Public Overrides Function Read(buffer() As Byte, offset As Integer, count As Integer) As Integer
             Return 0
-        End Get
-    End Property
+        End Function
 
-    Public Overrides Property Position As Long
-        Get
+        Public Overrides Function Seek(offset As Long, origin As SeekOrigin) As Long
             Return 0
-        End Get
-        Set(value As Long)
-        End Set
-    End Property
+        End Function
 
-    Public Overrides Sub Flush()
-    End Sub
+        Public Sub SomeMethodNotPresentInStream()
+        End Sub
+    End Class
 
-    Public Overrides Sub SetLength(value As Long)
-    End Sub
-
-    Public Overrides Sub Write(buffer() As Byte, offset As Integer, count As Integer)
-    End Sub
-
-    Public Overrides Function Read(buffer() As Byte, offset As Integer, count As Integer) As Integer
-        Return 0
-    End Function
-
-    Public Overrides Function Seek(offset As Long, origin As SeekOrigin) As Long
-        Return 0
-    End Function
-
-    Public Sub SomeMethodNotPresentInStream()
-    End Sub
-End Class
-
-Public Class MyOtherStream
-    Inherits MyStream
-End Class");
+    Public Class MyOtherStream
+        Inherits MyStream
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_Diagnostic_TypeNameEndsWithDelegateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public delegate void MyBadDelegate();",
+"public delegate void MyBadDelegate();",
                 GetCSharpResultAt(
                     1, 22,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -426,7 +458,7 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_TypeNameEndsWithDelegateAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Delegate Sub MyBadDelegate()",
+"Public Delegate Sub MyBadDelegate()",
                 GetBasicResultAt(
                     1, 21,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -438,7 +470,7 @@ End Class");
         public async Task CA1711_CSharp_Diagnostic_TypeNameEndsWithEnumAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public enum MyBadEnum { X }",
+"public enum MyBadEnum { X }",
                 GetCSharpResultAt(
                     1, 13,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -450,9 +482,11 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_TypeNameEndsWithEnumAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Enum MyBadEnum
-    X
-End Enum",
+"""
+    Public Enum MyBadEnum
+        X
+    End Enum
+    """,
                 GetBasicResultAt(
                     1, 13,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -464,7 +498,7 @@ End Enum",
         public async Task CA1711_CSharp_Diagnostic_TypeNameEndsWithImplAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyClassImpl {}",
+"public class MyClassImpl {}",
                 GetCSharpResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberWithAlternateRule,
@@ -477,8 +511,10 @@ End Enum",
         public async Task CA1711_Basic_Diagnostic_TypeNameEndsWithImplAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyClassImpl
-End Class",
+"""
+    Public Class MyClassImpl
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberWithAlternateRule,
@@ -491,33 +527,39 @@ End Class",
         public async Task CA1711_Basic_NoDiagnostic_TypeNamingRulesAreCaseSensitiveEvenInVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyClassimpl
-End Class");
+"""
+    Public Class MyClassimpl
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CSharp_No_Diagnostic_MisnamedTypeIsInternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"internal class MyClassImpl {}");
+"internal class MyClassImpl {}");
         }
 
         [TestMethod]
         public async Task Basic_No_Diagnostic_MisnamedTypeIsInternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Friend Class MyClassImpl
-End Class");
+"""
+    Friend Class MyClassImpl
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_Diagnostic_MisnamedTypeIsNestedPublicAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyClass
-{
-    public class MyNestedClassImpl {}
-}",
+"""
+    public class MyClass
+    {
+        public class MyNestedClassImpl {}
+    }
+    """,
                 GetCSharpResultAt(
                     3, 18,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberWithAlternateRule,
@@ -530,10 +572,12 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_MisnamedTypeIsNestedPublicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class [MyClass]
-    Public Class MyNestedClassImpl
+"""
+    Public Class [MyClass]
+        Public Class MyNestedClassImpl
+        End Class
     End Class
-End Class",
+    """,
                 GetBasicResultAt(
                     2, 18,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberWithAlternateRule,
@@ -546,10 +590,12 @@ End Class",
         public async Task CA1711_CSharp_Diagnostic_MisnamedTypeIsNestedProtectedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyClass
-{
-    protected class MyNestedClassImpl {}
-}",
+"""
+    public class MyClass
+    {
+        protected class MyNestedClassImpl {}
+    }
+    """,
                 GetCSharpResultAt(
                     3, 21,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberWithAlternateRule,
@@ -562,10 +608,12 @@ End Class",
         public async Task CA1711_Basic_Diagnostic_MisnamedTypeIsNestedProtectedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class [MyClass]
-    Protected Class MyNestedClassImpl
+"""
+    Public Class [MyClass]
+        Protected Class MyNestedClassImpl
+        End Class
     End Class
-End Class",
+    """,
                 GetBasicResultAt(
                     2, 21,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberWithAlternateRule,
@@ -578,27 +626,31 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_MisnamedTypeIsNestedPrivateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyClass
-{
-    private class MyNestedClassImpl {}
-}");
+"""
+    public class MyClass
+    {
+        private class MyNestedClassImpl {}
+    }
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_MisnamedTypeIsNestedPrivateAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class [MyClass]
-    Private Class MyNestedClassImpl
+"""
+    Public Class [MyClass]
+        Private Class MyNestedClassImpl
+        End Class
     End Class
-End Class");
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_Diagnostic_TypeDoesNotDeriveFromDictionaryAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyBadDictionary {}",
+"public class MyBadDictionary {}",
                 GetCSharpResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -610,8 +662,10 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_TypeDoesNotDeriveFromDictionaryAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBadDictionary
-End Class",
+"""
+    Public Class MyBadDictionary
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -623,475 +677,499 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_TypeImplementsIReadOnlyDictionaryAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Collections;
-using System.Collections.Generic;
+"""
+    using System.Collections;
+    using System.Collections.Generic;
 
-public class MyReadOnlyDictionary : IReadOnlyDictionary<string, int>
-{
-    public int this[string key] => 0;
-    public int Count => 0;
-    public IEnumerable<string> Keys => new string[0];
-    public IEnumerable<int> Values => new int[0];
-
-    public bool ContainsKey(string key) { return false; }
-    public IEnumerator<KeyValuePair<string, int>> GetEnumerator() { return null; }
-    IEnumerator IEnumerable.GetEnumerator() { return null; }
-
-    public bool TryGetValue(string key, out int value)
+    public class MyReadOnlyDictionary : IReadOnlyDictionary<string, int>
     {
-        value = -1;
-        return false;
+        public int this[string key] => 0;
+        public int Count => 0;
+        public IEnumerable<string> Keys => new string[0];
+        public IEnumerable<int> Values => new int[0];
+
+        public bool ContainsKey(string key) { return false; }
+        public IEnumerator<KeyValuePair<string, int>> GetEnumerator() { return null; }
+        IEnumerator IEnumerable.GetEnumerator() { return null; }
+
+        public bool TryGetValue(string key, out int value)
+        {
+            value = -1;
+            return false;
+        }
     }
-}");
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_BasicNoDiagnostic_TypeImplementsIReadOnlyDictionaryAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Collections
-Imports System.Collections.Generic
+"""
+    Imports System.Collections
+    Imports System.Collections.Generic
 
-Public Class MyReadOnlyDictionary
-    Implements IReadOnlyDictionary(Of String, Integer)
+    Public Class MyReadOnlyDictionary
+        Implements IReadOnlyDictionary(Of String, Integer)
 
-    Public ReadOnly Property Count As Integer Implements IReadOnlyCollection(Of KeyValuePair(Of String, Integer)).Count
-        Get
-            Return 0
-        End Get
-    End Property
+        Public ReadOnly Property Count As Integer Implements IReadOnlyCollection(Of KeyValuePair(Of String, Integer)).Count
+            Get
+                Return 0
+            End Get
+        End Property
 
-    Default Public ReadOnly Property Item(key As String) As Integer Implements IReadOnlyDictionary(Of String, Integer).Item
-        Get
-            Return 0
-        End Get
-    End Property
+        Default Public ReadOnly Property Item(key As String) As Integer Implements IReadOnlyDictionary(Of String, Integer).Item
+            Get
+                Return 0
+            End Get
+        End Property
 
-    Public ReadOnly Property Keys As IEnumerable(Of String) Implements IReadOnlyDictionary(Of String, Integer).Keys
-        Get
-            Return New String() { }
-        End Get
-    End Property
+        Public ReadOnly Property Keys As IEnumerable(Of String) Implements IReadOnlyDictionary(Of String, Integer).Keys
+            Get
+                Return New String() { }
+            End Get
+        End Property
 
-    Public ReadOnly Property Values As IEnumerable(Of Integer) Implements IReadOnlyDictionary(Of String, Integer).Values
-        Get
-            Return New Integer() { }
-        End Get
-    End Property
+        Public ReadOnly Property Values As IEnumerable(Of Integer) Implements IReadOnlyDictionary(Of String, Integer).Values
+            Get
+                Return New Integer() { }
+            End Get
+        End Property
 
-    Public Function ContainsKey(key As String) As Boolean Implements IReadOnlyDictionary(Of String, Integer).ContainsKey
-        Return False
-    End Function
+        Public Function ContainsKey(key As String) As Boolean Implements IReadOnlyDictionary(Of String, Integer).ContainsKey
+            Return False
+        End Function
 
-    Public Function GetEnumerator() As IEnumerator(Of KeyValuePair(Of String, Integer)) Implements IEnumerable(Of KeyValuePair(Of String, Integer)).GetEnumerator
-        Return Nothing
-    End Function
+        Public Function GetEnumerator() As IEnumerator(Of KeyValuePair(Of String, Integer)) Implements IEnumerable(Of KeyValuePair(Of String, Integer)).GetEnumerator
+            Return Nothing
+        End Function
 
-    Public Function TryGetValue(key As String, ByRef value As Integer) As Boolean Implements IReadOnlyDictionary(Of String, Integer).TryGetValue
-        value = -1
-        Return False
-    End Function
+        Public Function TryGetValue(key As String, ByRef value As Integer) As Boolean Implements IReadOnlyDictionary(Of String, Integer).TryGetValue
+            value = -1
+            Return False
+        End Function
 
-    Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
-        Return Nothing
-    End Function
-End Class");
+        Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
+            Return Nothing
+        End Function
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_TypeImplementsGenericIDictionaryAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
-using System.Collections;
-using System.Collections.Generic;
+"""
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
 
-public class MyGenericDictionary : IDictionary<string, string>
-{
-    public string this[string key]
+    public class MyGenericDictionary : IDictionary<string, string>
     {
-        get { return null; }
-        set { }
-    }
+        public string this[string key]
+        {
+            get { return null; }
+            set { }
+        }
 
-    public int Count => 0;
-    public bool IsReadOnly => true;
-    public ICollection<string> Keys => null;
-    public ICollection<string> Values => null;
-    public void Add(string key, string value) { }
-    public void Add(KeyValuePair<string, string> item) { }
-    public void Clear() { }
-    public void CopyTo(KeyValuePair<string, string>[] array, int index) { }
+        public int Count => 0;
+        public bool IsReadOnly => true;
+        public ICollection<string> Keys => null;
+        public ICollection<string> Values => null;
+        public void Add(string key, string value) { }
+        public void Add(KeyValuePair<string, string> item) { }
+        public void Clear() { }
+        public void CopyTo(KeyValuePair<string, string>[] array, int index) { }
 
-    public bool Remove(string key) 
-    { 
-        return false;
-    }
+        public bool Remove(string key)
+        {
+            return false;
+        }
 
-    public bool Remove(KeyValuePair<string, string> item) 
-    { 
-        return false;
-    }
+        public bool Remove(KeyValuePair<string, string> item)
+        {
+            return false;
+        }
 
-    public bool TryGetValue(string key, out string value)
-    {
-        value = null;
-        return false;
-    }
+        public bool TryGetValue(string key, out string value)
+        {
+            value = null;
+            return false;
+        }
 
-    public bool Contains(KeyValuePair<string, string> item)
-    {
-        return false;
-    }
+        public bool Contains(KeyValuePair<string, string> item)
+        {
+            return false;
+        }
 
-    public bool ContainsKey(string key)
-    {
-        return false;
-    }
+        public bool ContainsKey(string key)
+        {
+            return false;
+        }
 
-    public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
-    {
-        return null;
-    }
+        public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
+        {
+            return null;
+        }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return null;
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return null;
+        }
     }
-}");
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeImplementsGenericIDictionaryAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Collections
-Imports System.Collections.Generic
+"""
+    Imports System.Collections
+    Imports System.Collections.Generic
 
-Public Class MyGenericDictionary
-    Implements IDictionary(Of String, String)
+    Public Class MyGenericDictionary
+        Implements IDictionary(Of String, String)
 
-    Default Public Property Item(key As String) As String Implements IDictionary(Of String, String).Item
-        Get
+        Default Public Property Item(key As String) As String Implements IDictionary(Of String, String).Item
+            Get
+                Return Nothing
+            End Get
+            Set(value As String)
+            End Set
+        End Property
+
+        Public ReadOnly Property Count As Integer Implements ICollection(Of KeyValuePair(Of String, String)).Count
+            Get
+                Return 0
+            End Get
+        End Property
+
+        Public ReadOnly Property IsReadOnly As Boolean Implements ICollection(Of KeyValuePair(Of String, String)).IsReadOnly
+            Get
+                Return True
+            End Get
+        End Property
+
+        Public ReadOnly Property Keys As ICollection(Of String) Implements IDictionary(Of String, String).Keys
+            Get
+                Return Nothing
+            End Get
+        End Property
+
+        Public ReadOnly Property Values As ICollection(Of String) Implements IDictionary(Of String, String).Values
+            Get
+                Return Nothing
+            End Get
+        End Property
+
+        Public Sub Add(key As String, value As String) Implements IDictionary(Of String, String).Add
+        End Sub
+
+        Public Sub Add(item As KeyValuePair(Of String, String)) Implements ICollection(Of KeyValuePair(Of String, String)).Add
+        End Sub
+
+        Public Sub Clear() Implements ICollection(Of KeyValuePair(Of String, String)).Clear
+        End Sub
+
+        Public Sub CopyTo(array() As KeyValuePair(Of String, String), arrayIndex As Integer) Implements ICollection(Of KeyValuePair(Of String, String)).CopyTo
+        End Sub
+
+        Public Function Remove(key As String) As Boolean Implements IDictionary(Of String, String).Remove
+            Return False
+        End Function
+
+        Public Function Remove(item As KeyValuePair(Of String, String)) As Boolean Implements ICollection(Of KeyValuePair(Of String, String)).Remove
+            Return False
+        End Function
+
+        Public Function TryGetValue(key As String, ByRef value As String) As Boolean Implements IDictionary(Of String, String).TryGetValue
+            Return False
+        End Function
+
+        Public Function Contains(item As KeyValuePair(Of String, String)) As Boolean Implements ICollection(Of KeyValuePair(Of String, String)).Contains
+            Return False
+        End Function
+
+        Public Function ContainsKey(key As String) As Boolean Implements IDictionary(Of String, String).ContainsKey
+            Return False
+        End Function
+
+        Public Function GetEnumerator() As IEnumerator(Of KeyValuePair(Of String, String)) Implements IEnumerable(Of KeyValuePair(Of String, String)).GetEnumerator
             Return Nothing
-        End Get
-        Set(value As String)
-        End Set
-    End Property
+        End Function
 
-    Public ReadOnly Property Count As Integer Implements ICollection(Of KeyValuePair(Of String, String)).Count
-        Get
-            Return 0
-        End Get
-    End Property
-
-    Public ReadOnly Property IsReadOnly As Boolean Implements ICollection(Of KeyValuePair(Of String, String)).IsReadOnly
-        Get
-            Return True
-        End Get
-    End Property
-
-    Public ReadOnly Property Keys As ICollection(Of String) Implements IDictionary(Of String, String).Keys
-        Get
+        Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
             Return Nothing
-        End Get
-    End Property
-
-    Public ReadOnly Property Values As ICollection(Of String) Implements IDictionary(Of String, String).Values
-        Get
-            Return Nothing
-        End Get
-    End Property
-
-    Public Sub Add(key As String, value As String) Implements IDictionary(Of String, String).Add
-    End Sub
-
-    Public Sub Add(item As KeyValuePair(Of String, String)) Implements ICollection(Of KeyValuePair(Of String, String)).Add
-    End Sub
-
-    Public Sub Clear() Implements ICollection(Of KeyValuePair(Of String, String)).Clear
-    End Sub
-
-    Public Sub CopyTo(array() As KeyValuePair(Of String, String), arrayIndex As Integer) Implements ICollection(Of KeyValuePair(Of String, String)).CopyTo
-    End Sub
-
-    Public Function Remove(key As String) As Boolean Implements IDictionary(Of String, String).Remove
-        Return False
-    End Function
-
-    Public Function Remove(item As KeyValuePair(Of String, String)) As Boolean Implements ICollection(Of KeyValuePair(Of String, String)).Remove
-        Return False
-    End Function
-
-    Public Function TryGetValue(key As String, ByRef value As String) As Boolean Implements IDictionary(Of String, String).TryGetValue
-        Return False
-    End Function
-
-    Public Function Contains(item As KeyValuePair(Of String, String)) As Boolean Implements ICollection(Of KeyValuePair(Of String, String)).Contains
-        Return False
-    End Function
-
-    Public Function ContainsKey(key As String) As Boolean Implements IDictionary(Of String, String).ContainsKey
-        Return False
-    End Function
-
-    Public Function GetEnumerator() As IEnumerator(Of KeyValuePair(Of String, String)) Implements IEnumerable(Of KeyValuePair(Of String, String)).GetEnumerator
-        Return Nothing
-    End Function
-
-    Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
-        Return Nothing
-    End Function
-End Class");
+        End Function
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_TypeImplementsNonGenericIDictionaryAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
-using System.Collections;
-using System.Runtime.Serialization;
+"""
+    using System;
+    using System.Collections;
+    using System.Runtime.Serialization;
 
-public class MyNonGenericDictionary : IDictionary
-{
-    protected MyNonGenericDictionary(SerializationInfo info, StreamingContext context) { }
-
-    public object this[object key]
+    public class MyNonGenericDictionary : IDictionary
     {
-        get { return null; }
-        set { }
-    }
+        protected MyNonGenericDictionary(SerializationInfo info, StreamingContext context) { }
 
-    public int Count => 0;
-    public bool IsFixedSize => true;
-    public bool IsReadOnly => true;
-    public bool IsSynchronized => false;
-    public ICollection Keys => null;
-    public object SyncRoot => null;
-    public ICollection Values => null;
-    public void Add(object key, object value) { }
-    public void Clear() { }
-    public void CopyTo(Array array, int index) { }
-    public void Remove(object key) { }
+        public object this[object key]
+        {
+            get { return null; }
+            set { }
+        }
 
-    public bool Contains(object key)
-    {
-        return false;
-    }
+        public int Count => 0;
+        public bool IsFixedSize => true;
+        public bool IsReadOnly => true;
+        public bool IsSynchronized => false;
+        public ICollection Keys => null;
+        public object SyncRoot => null;
+        public ICollection Values => null;
+        public void Add(object key, object value) { }
+        public void Clear() { }
+        public void CopyTo(Array array, int index) { }
+        public void Remove(object key) { }
 
-    public IDictionaryEnumerator GetEnumerator()
-    {
-        return null;
-    }
+        public bool Contains(object key)
+        {
+            return false;
+        }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return null;
+        public IDictionaryEnumerator GetEnumerator()
+        {
+            return null;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return null;
+        }
     }
-}");
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeImplementsNonGenericIDictionaryAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
-Imports System.Collections
-Imports System.Runtime.Serialization
+"""
+    Imports System
+    Imports System.Collections
+    Imports System.Runtime.Serialization
 
-Public Class MyNonGenericDictionary
-    Implements IDictionary
+    Public Class MyNonGenericDictionary
+        Implements IDictionary
 
-    Protected Sub New(info As SerializationInfo, context As StreamingContext)
-    End Sub
+        Protected Sub New(info As SerializationInfo, context As StreamingContext)
+        End Sub
 
-    Public ReadOnly Property Count As Integer Implements ICollection.Count
-        Get
-            Return 0
-        End Get
-    End Property
+        Public ReadOnly Property Count As Integer Implements ICollection.Count
+            Get
+                Return 0
+            End Get
+        End Property
 
-    Public ReadOnly Property IsFixedSize As Boolean Implements IDictionary.IsFixedSize
-        Get
-            Return True
-        End Get
-    End Property
+        Public ReadOnly Property IsFixedSize As Boolean Implements IDictionary.IsFixedSize
+            Get
+                Return True
+            End Get
+        End Property
 
-    Public ReadOnly Property IsReadOnly As Boolean Implements IDictionary.IsReadOnly
-        Get
-            Return True
-        End Get
-    End Property
+        Public ReadOnly Property IsReadOnly As Boolean Implements IDictionary.IsReadOnly
+            Get
+                Return True
+            End Get
+        End Property
 
-    Public ReadOnly Property IsSynchronized As Boolean Implements ICollection.IsSynchronized
-        Get
+        Public ReadOnly Property IsSynchronized As Boolean Implements ICollection.IsSynchronized
+            Get
+                Return False
+            End Get
+        End Property
+
+        Default Public Property Item(key As Object) As Object Implements IDictionary.Item
+            Get
+                Return Nothing
+            End Get
+            Set(value As Object)
+            End Set
+        End Property
+
+        Public ReadOnly Property Keys As ICollection Implements IDictionary.Keys
+            Get
+                Return Nothing
+            End Get
+        End Property
+
+        Public ReadOnly Property SyncRoot As Object Implements ICollection.SyncRoot
+            Get
+                Return Nothing
+            End Get
+        End Property
+
+        Public ReadOnly Property Values As ICollection Implements IDictionary.Values
+            Get
+                Return Nothing
+            End Get
+        End Property
+
+        Public Sub Add(key As Object, value As Object) Implements IDictionary.Add
+        End Sub
+
+        Public Sub Clear() Implements IDictionary.Clear
+        End Sub
+
+        Public Sub CopyTo(array As Array, index As Integer) Implements ICollection.CopyTo
+        End Sub
+
+        Public Sub Remove(key As Object) Implements IDictionary.Remove
+        End Sub
+
+        Public Function Contains(key As Object) As Boolean Implements IDictionary.Contains
             Return False
-        End Get
-    End Property
+        End Function
 
-    Default Public Property Item(key As Object) As Object Implements IDictionary.Item
-        Get
+        Public Function GetEnumerator() As IDictionaryEnumerator Implements IDictionary.GetEnumerator
             Return Nothing
-        End Get
-        Set(value As Object)
-        End Set
-    End Property
+        End Function
 
-    Public ReadOnly Property Keys As ICollection Implements IDictionary.Keys
-        Get
+        Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
             Return Nothing
-        End Get
-    End Property
-
-    Public ReadOnly Property SyncRoot As Object Implements ICollection.SyncRoot
-        Get
-            Return Nothing
-        End Get
-    End Property
-
-    Public ReadOnly Property Values As ICollection Implements IDictionary.Values
-        Get
-            Return Nothing
-        End Get
-    End Property
-
-    Public Sub Add(key As Object, value As Object) Implements IDictionary.Add
-    End Sub
-
-    Public Sub Clear() Implements IDictionary.Clear
-    End Sub
-
-    Public Sub CopyTo(array As Array, index As Integer) Implements ICollection.CopyTo
-    End Sub
-
-    Public Sub Remove(key As Object) Implements IDictionary.Remove
-    End Sub
-
-    Public Function Contains(key As Object) As Boolean Implements IDictionary.Contains
-        Return False
-    End Function
-
-    Public Function GetEnumerator() As IDictionaryEnumerator Implements IDictionary.GetEnumerator
-        Return Nothing
-    End Function
-
-    Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
-        Return Nothing
-    End Function
-End Class");
+        End Function
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromGenericDictionaryAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
+"""
+    using System;
+    using System.Collections.Generic;
+    using System.Runtime.Serialization;
 
-[Serializable]
-public class MyGenericDictionary<K, V> : Dictionary<K, V>
-{
-    protected MyGenericDictionary(SerializationInfo info, StreamingContext context)
-        : base(info, context)
+    [Serializable]
+    public class MyGenericDictionary<K, V> : Dictionary<K, V>
     {
+        protected MyGenericDictionary(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
     }
-}");
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromGenericDictionaryAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
-Imports System.Collections.Generic
-Imports System.Runtime.Serialization
+"""
+    Imports System
+    Imports System.Collections.Generic
+    Imports System.Runtime.Serialization
 
-<Serializable>
-Public Class MyGenericDictionary(Of K, V)
-    Inherits Dictionary(Of K, V)
-    Protected Sub New(info As SerializationInfo, context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
-End Class");
+    <Serializable>
+    Public Class MyGenericDictionary(Of K, V)
+        Inherits Dictionary(Of K, V)
+        Protected Sub New(info As SerializationInfo, context As StreamingContext)
+            MyBase.New(info, context)
+        End Sub
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromPartiallyInstantiatedGenericDictionaryAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
+"""
+    using System;
+    using System.Collections.Generic;
+    using System.Runtime.Serialization;
 
-[Serializable]
-public class MyStringDictionary<V> : Dictionary<string, V>
-{
-    protected MyStringDictionary(SerializationInfo info, StreamingContext context)
-        : base(info, context)
+    [Serializable]
+    public class MyStringDictionary<V> : Dictionary<string, V>
     {
+        protected MyStringDictionary(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
     }
-}");
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromPartiallyInstantiatedGenericDictionaryAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
-Imports System.Collections.Generic
-Imports System.Runtime.Serialization
+"""
+    Imports System
+    Imports System.Collections.Generic
+    Imports System.Runtime.Serialization
 
-<Serializable>
-Public Class MyStringDictionary(Of V)
-    Inherits Dictionary(Of String, V)
-    Protected Sub New(info As SerializationInfo, context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
-End Class");
+    <Serializable>
+    Public Class MyStringDictionary(Of V)
+        Inherits Dictionary(Of String, V)
+        Protected Sub New(info As SerializationInfo, context As StreamingContext)
+            MyBase.New(info, context)
+        End Sub
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromFullyInstantiatedGenericDictionaryAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
+"""
+    using System;
+    using System.Collections.Generic;
+    using System.Runtime.Serialization;
 
-[Serializable]
-public class MyStringToIntDictionary : Dictionary<string, int>
-{
-    protected MyStringToIntDictionary(SerializationInfo info, StreamingContext context)
-        : base(info, context)
+    [Serializable]
+    public class MyStringToIntDictionary : Dictionary<string, int>
     {
+        protected MyStringToIntDictionary(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
     }
-}");
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromFullyInstantiatedGenericDictionaryAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
-Imports System.Collections.Generic
-Imports System.Runtime.Serialization
+"""
+    Imports System
+    Imports System.Collections.Generic
+    Imports System.Runtime.Serialization
 
-<Serializable>
-Public Class MyStringToIntDictionary
-    Inherits Dictionary(Of String, Integer)
-    Protected Sub New(info As SerializationInfo, context As StreamingContext)
-        MyBase.New(info, context)
-    End Sub
-End Class");
+    <Serializable>
+    Public Class MyStringToIntDictionary
+        Inherits Dictionary(Of String, Integer)
+        Protected Sub New(info As SerializationInfo, context As StreamingContext)
+            MyBase.New(info, context)
+        End Sub
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_Diagnostic_TypeDoesNotDeriveFromCollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyBadCollection {}",
+"public class MyBadCollection {}",
                 GetCSharpResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -1103,8 +1181,10 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_TypeDoesNotDeriveFromCollectionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBadCollection
-End Class",
+"""
+    Public Class MyBadCollection
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -1116,242 +1196,265 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_TypeImplementsNonGenericICollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Collections;
+"""
+    using System.Collections;
 
-public class MyNonGenericCollection : ICollection
-{
-    public int Count => 0;
-    public bool IsSynchronized => true;
-    public object SyncRoot => null;
-    public void CopyTo(System.Array array, int index) { }
-
-    public IEnumerator GetEnumerator()
+    public class MyNonGenericCollection : ICollection
     {
-        return null;
+        public int Count => 0;
+        public bool IsSynchronized => true;
+        public object SyncRoot => null;
+        public void CopyTo(System.Array array, int index) { }
+
+        public IEnumerator GetEnumerator()
+        {
+            return null;
+        }
     }
-}");
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeImplementsNonGenericICollectionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Collections
+"""
+    Imports System.Collections
 
-Public Class MyNonGenericCollection
-    Implements ICollection
+    Public Class MyNonGenericCollection
+        Implements ICollection
 
-    Public ReadOnly Property Count As Integer Implements ICollection.Count
-        Get
-            Return 0
-        End Get
-    End Property
+        Public ReadOnly Property Count As Integer Implements ICollection.Count
+            Get
+                Return 0
+            End Get
+        End Property
 
-    Public ReadOnly Property IsSynchronized As Boolean Implements ICollection.IsSynchronized
-        Get
-            Return False
-        End Get
-    End Property
+        Public ReadOnly Property IsSynchronized As Boolean Implements ICollection.IsSynchronized
+            Get
+                Return False
+            End Get
+        End Property
 
-    Public ReadOnly Property SyncRoot As Object Implements ICollection.SyncRoot
-        Get
+        Public ReadOnly Property SyncRoot As Object Implements ICollection.SyncRoot
+            Get
+                Return Nothing
+            End Get
+        End Property
+
+        Public Sub CopyTo(array As System.Array, index As Integer) Implements ICollection.CopyTo
+        End Sub
+
+        Public Function GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
             Return Nothing
-        End Get
-    End Property
-
-    Public Sub CopyTo(array As System.Array, index As Integer) Implements ICollection.CopyTo
-    End Sub
-
-    Public Function GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
-        Return Nothing
-    End Function
-End Class
-");
+        End Function
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_TypeImplementsNonGenericIEnumerableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Collections;
+"""
+    using System.Collections;
 
-public class MyEnumerableCollection : IEnumerable
-{
-    public IEnumerator GetEnumerator()
+    public class MyEnumerableCollection : IEnumerable
     {
-        return null;
+        public IEnumerator GetEnumerator()
+        {
+            return null;
+        }
     }
-}");
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeImplementsNonGenericIEnumerableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Collections
+"""
+    Imports System.Collections
 
-Public Class MyEnumerableCollection
-    Implements IEnumerable
+    Public Class MyEnumerableCollection
+        Implements IEnumerable
 
-    Public Function GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
-        Return Nothing
-    End Function
-End Class");
+        Public Function GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
+            Return Nothing
+        End Function
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_TypeImplementsInstantiatedGenericICollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Collections;
-using System.Collections.Generic;
+"""
+    using System.Collections;
+    using System.Collections.Generic;
 
-public class MyIntCollection : ICollection<int>
-{
-    public int Count => 0;
-    public bool IsReadOnly => true;
-
-    public void Add(int item) { }
-    public void Clear() { }
-
-    public bool Contains(int item)
+    public class MyIntCollection : ICollection<int>
     {
-        return false;
-    }
+        public int Count => 0;
+        public bool IsReadOnly => true;
 
-    public void CopyTo(int[] array, int arrayIndex) { }
+        public void Add(int item) { }
+        public void Clear() { }
 
-    public IEnumerator<int> GetEnumerator()
-    {
-        return null;
-    }
+        public bool Contains(int item)
+        {
+            return false;
+        }
 
-    public bool Remove(int item)
-    {
-        return false;
-    }
+        public void CopyTo(int[] array, int arrayIndex) { }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return null;
+        public IEnumerator<int> GetEnumerator()
+        {
+            return null;
+        }
+
+        public bool Remove(int item)
+        {
+            return false;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return null;
+        }
     }
-}");
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeImplementsInstantiatedGenericICollectionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Collections
-Imports System.Collections.Generic
+"""
+    Imports System.Collections
+    Imports System.Collections.Generic
 
-Public Class MyIntCollection
-    Implements ICollection(Of Integer)
+    Public Class MyIntCollection
+        Implements ICollection(Of Integer)
 
-    Public ReadOnly Property Count As Integer Implements ICollection(Of Integer).Count
-        Get
-            Return 0
-        End Get
-    End Property
+        Public ReadOnly Property Count As Integer Implements ICollection(Of Integer).Count
+            Get
+                Return 0
+            End Get
+        End Property
 
-    Public ReadOnly Property IsReadOnly As Boolean Implements ICollection(Of Integer).IsReadOnly
-        Get
-            Return True
-        End Get
-    End Property
+        Public ReadOnly Property IsReadOnly As Boolean Implements ICollection(Of Integer).IsReadOnly
+            Get
+                Return True
+            End Get
+        End Property
 
-    Public Sub Add(item As Integer) Implements ICollection(Of Integer).Add
-    End Sub
+        Public Sub Add(item As Integer) Implements ICollection(Of Integer).Add
+        End Sub
 
-    Public Sub Clear() Implements ICollection(Of Integer).Clear
-    End Sub
+        Public Sub Clear() Implements ICollection(Of Integer).Clear
+        End Sub
 
-    Public Sub CopyTo(array() As Integer, arrayIndex As Integer) Implements ICollection(Of Integer).CopyTo
-    End Sub
+        Public Sub CopyTo(array() As Integer, arrayIndex As Integer) Implements ICollection(Of Integer).CopyTo
+        End Sub
 
-    Public Function Contains(item As Integer) As Boolean Implements ICollection(Of Integer).Contains
-        Return False
-    End Function
+        Public Function Contains(item As Integer) As Boolean Implements ICollection(Of Integer).Contains
+            Return False
+        End Function
 
-    Public Function GetEnumerator() As IEnumerator(Of Integer) Implements IEnumerable(Of Integer).GetEnumerator
-        Return Nothing
-    End Function
+        Public Function GetEnumerator() As IEnumerator(Of Integer) Implements IEnumerable(Of Integer).GetEnumerator
+            Return Nothing
+        End Function
 
-    Public Function Remove(item As Integer) As Boolean Implements ICollection(Of Integer).Remove
-        Return False
-    End Function
+        Public Function Remove(item As Integer) As Boolean Implements ICollection(Of Integer).Remove
+            Return False
+        End Function
 
-    Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
-        Return Nothing
-    End Function
-End Class");
+        Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
+            Return Nothing
+        End Function
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromNonGenericQueueAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Collections;
+"""
+    using System.Collections;
 
-public class MyNonGenericQueue : Queue { }");
+    public class MyNonGenericQueue : Queue { }
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromNonGenericQueueAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Collections
+"""
+    Imports System.Collections
 
-Public Class MyNonGenericQueue
-    Inherits Queue
-End Class");
+    Public Class MyNonGenericQueue
+        Inherits Queue
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromGenericQueueAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Collections.Generic;
+"""
+    using System.Collections.Generic;
 
-public class MyGenericQueue<T> : Queue<T> { }");
+    public class MyGenericQueue<T> : Queue<T> { }
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromGenericQueueAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Collections.Generic
+"""
+    Imports System.Collections.Generic
 
-Public Class MyGenericQueue(Of T)
-    Inherits Queue(Of T)
-End Class");
+    Public Class MyGenericQueue(Of T)
+        Inherits Queue(Of T)
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromInstantiatedGenericQueueAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Collections.Generic;
+"""
+    using System.Collections.Generic;
 
-public class MyIntQueue : Queue<int> { }");
+    public class MyIntQueue : Queue<int> { }
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromInstantiatedGenericQueueAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Collections.Generic
+"""
+    Imports System.Collections.Generic
 
-Public Class MyIntQueue
-    Inherits Queue(Of Integer)
-End Class");
+    Public Class MyIntQueue
+        Inherits Queue(Of Integer)
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_Diagnostic_TypeDoesNotDeriveFromQueueAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyBadQueue { }",
+"public class MyBadQueue { }",
                 GetCSharpResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -1364,8 +1467,10 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_TypeDoesNotDeriveFromQueueAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBadQueue
-End Class",
+"""
+    Public Class MyBadQueue
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -1378,67 +1483,79 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromNonGenericStackAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Collections;
+"""
+    using System.Collections;
 
-public class MyNonGenericStack : Stack { }");
+    public class MyNonGenericStack : Stack { }
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromNonGenericStackAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Collections
+"""
+    Imports System.Collections
 
-Public Class MyNonGenericStack
-    Inherits Stack
-End Class");
+    Public Class MyNonGenericStack
+        Inherits Stack
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromGenericStackAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Collections.Generic;
+"""
+    using System.Collections.Generic;
 
-public class MyGenericStack<T> : Stack<T> { }");
+    public class MyGenericStack<T> : Stack<T> { }
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromGenericStackAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Collections.Generic
+"""
+    Imports System.Collections.Generic
 
-Public Class MyGenericStack(Of T)
-    Inherits Stack(Of T)
-End Class");
+    Public Class MyGenericStack(Of T)
+        Inherits Stack(Of T)
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_TypeDerivesFromInstantiatedGenericStackAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Collections.Generic;
+"""
+    using System.Collections.Generic;
 
-public class MyIntStack : Stack<int> { }");
+    public class MyIntStack : Stack<int> { }
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeDerivesFromInstantiatedGenericStackAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Collections.Generic
+"""
+    Imports System.Collections.Generic
 
-Public Class MyIntStack
-    Inherits Stack(Of Integer)
-End Class");
+    Public Class MyIntStack
+        Inherits Stack(Of Integer)
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_Diagnostic_TypeDoesNotDeriveFromStackAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyBadStack { }",
+"public class MyBadStack { }",
                 GetCSharpResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -1451,8 +1568,10 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_TypeDoesNotDeriveFromStackAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBadStack
-End Class",
+"""
+    Public Class MyBadStack
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -1467,11 +1586,13 @@ End Class",
         public async Task CA1711_CSharp_Diagnostic_TypeDerivesFromDataSetAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
-using System.Data;
+"""
+    using System;
+    using System.Data;
 
-[Serializable]
-public class MyBadDataSetCollection : DataSet { }",
+    [Serializable]
+    public class MyBadDataSetCollection : DataSet { }
+    """,
                 GetCSharpResultAt(
                     5, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -1483,13 +1604,15 @@ public class MyBadDataSetCollection : DataSet { }",
         public async Task CA1711_Basic_Diagnostic_TypeDerivesFromDataSetAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
-Imports System.Data
+"""
+    Imports System
+    Imports System.Data
 
-<Serializable>
-Public Class MyBadDataSetCollection
-    Inherits DataSet
-End Class",
+    <Serializable>
+    Public Class MyBadDataSetCollection
+        Inherits DataSet
+    End Class
+    """,
                 GetBasicResultAt(
                     5, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -1501,11 +1624,13 @@ End Class",
         public async Task CA1711_CSharp_Diagnostic_TypeDerivesFromDataTableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
-using System.Data;
+"""
+    using System;
+    using System.Data;
 
-[Serializable]
-public class MyBadDataTableCollection : DataTable { }",
+    [Serializable]
+    public class MyBadDataTableCollection : DataTable { }
+    """,
                 GetCSharpResultAt(
                     5, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -1517,13 +1642,15 @@ public class MyBadDataTableCollection : DataTable { }",
         public async Task CA1711_Basic_Diagnostic_TypeDerivesFromDataTableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
-Imports System.Data
+"""
+    Imports System
+    Imports System.Data
 
-<Serializable>
-Public Class MyBadDataTableCollection
-    Inherits DataTable
-End Class",
+    <Serializable>
+    Public Class MyBadDataTableCollection
+        Inherits DataTable
+    End Class
+    """,
                 GetBasicResultAt(
                     5, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule,
@@ -1535,7 +1662,7 @@ End Class",
         public async Task CA1711_CSharp_Diagnostic_TypeNameEndsWithExAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyClassEx { }",
+"public class MyClassEx { }",
                 GetCSharpResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNewerVersionRule,
@@ -1547,8 +1674,10 @@ End Class",
         public async Task CA1711_Basic_Diagnostic_TypeNameEndsWithExAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyClassEx
-End Class",
+"""
+    Public Class MyClassEx
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNewerVersionRule,
@@ -1560,22 +1689,24 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_TypeNameNameIsExAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class Ex { }");
+"public class Ex { }");
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_TypeNameNameIsExAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class Ex
-End Class");
+"""
+    Public Class Ex
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_Diagnostic_TypeNameEndsWithNewAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyClassNew { }",
+"public class MyClassNew { }",
 
                 GetCSharpResultAt(
                     1, 14,
@@ -1588,8 +1719,10 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_TypeNameEndsWithNewAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyClassNew
-End Class",
+"""
+    Public Class MyClassNew
+    End Class
+    """,
                 GetBasicResultAt(
                     1, 14,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNewerVersionRule,
@@ -1601,31 +1734,37 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_MethodNameEndsWithNewAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyClass
-{
-    public void MyMethodNew() { }
-}");
+"""
+    public class MyClass
+    {
+        public void MyMethodNew() { }
+    }
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_MethodNameEndsWithNewAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class [MyClass]
-    Public Sub MyMethodNew()
-    End Sub
-End Class");
+"""
+    Public Class [MyClass]
+        Public Sub MyMethodNew()
+        End Sub
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_Diagnostic_MethodNameEndsWithNewAndMethodNameWithoutNewExistsInSameClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyBaseClass
-{
-    public void MyMethod() { }
-    public void MyMethodNew() { }
-}",
+"""
+    public class MyBaseClass
+    {
+        public void MyMethod() { }
+        public void MyMethodNew() { }
+    }
+    """,
                 GetCSharpResultAt(
                     4, 17,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
@@ -1637,13 +1776,15 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_MethodNameEndsWithNewAndMethodNameWithoutNewExistsInSameClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBaseClass
-    Public Sub MyMethod()
-    End Sub
+"""
+    Public Class MyBaseClass
+        Public Sub MyMethod()
+        End Sub
 
-    Public Sub MyMethodNew()
-    End Sub
-End Class",
+        Public Sub MyMethodNew()
+        End Sub
+    End Class
+    """,
                 GetBasicResultAt(
                     5, 16,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
@@ -1655,19 +1796,21 @@ End Class",
         public async Task CA1711_CSharp_Diagnostic_MethodNameEndsWithNewAndMethodNameWithoutNewExistsInAncestorClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyBaseClass
-{
-    public void MyMethod() { }
-}
+"""
+    public class MyBaseClass
+    {
+        public void MyMethod() { }
+    }
 
-public class MyDerivedClass : MyBaseClass
-{
-}
+    public class MyDerivedClass : MyBaseClass
+    {
+    }
 
-public class MyClass : MyDerivedClass
-{
-    public void MyMethodNew() { }
-}",
+    public class MyClass : MyDerivedClass
+    {
+        public void MyMethodNew() { }
+    }
+    """,
                 GetCSharpResultAt(
                     12, 17,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
@@ -1679,21 +1822,23 @@ public class MyClass : MyDerivedClass
         public async Task CA1711_Basic_Diagnostic_MethodNameEndsWithNewAndMethodNameWithoutNewExistsInAncestorClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBaseClass
-    Public Sub MyMethod()
-    End Sub
-End Class
+"""
+    Public Class MyBaseClass
+        Public Sub MyMethod()
+        End Sub
+    End Class
 
-Public Class MyDerivedClass
-    Inherits MyBaseClass
-End Class
+    Public Class MyDerivedClass
+        Inherits MyBaseClass
+    End Class
 
-Public Class [MyClass]
-    Inherits MyDerivedClass
+    Public Class [MyClass]
+        Inherits MyDerivedClass
 
-    Public Sub MyMethodNew()
-    End Sub
-End Class",
+        Public Sub MyMethodNew()
+        End Sub
+    End Class
+    """,
                 GetBasicResultAt(
                     13, 16,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
@@ -1705,48 +1850,54 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_MethodNameEndingWithNewImplementsInterfaceMethodAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public interface MyBaseInterface
-{
-    void MyMethodNew();
-}
+"""
+    public interface MyBaseInterface
+    {
+        void MyMethodNew();
+    }
 
-public interface MyDerivedInterface : MyBaseInterface
-{
-}
+    public interface MyDerivedInterface : MyBaseInterface
+    {
+    }
 
-public class MyClass : MyDerivedInterface
-{
-    public void MyMethodNew() { }
-}");
+    public class MyClass : MyDerivedInterface
+    {
+        public void MyMethodNew() { }
+    }
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_MethodNameEndsWithNewAndMethodNameWithoutNewExistsInImplementedInterfaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Interface MyBaseInterface
-    Sub MyMethodNew()
-End Interface
+"""
+    Public Interface MyBaseInterface
+        Sub MyMethodNew()
+    End Interface
 
-Public Interface MyDerivedInterface
-    Inherits MyBaseInterface
-End Interface
+    Public Interface MyDerivedInterface
+        Inherits MyBaseInterface
+    End Interface
 
-Public Class [MyClass]
-    Implements MyDerivedInterface
-    Public Sub MyMethodNew() Implements MyBaseInterface.MyMethodNew
-    End Sub
-End Class");
+    Public Class [MyClass]
+        Implements MyDerivedInterface
+        Public Sub MyMethodNew() Implements MyBaseInterface.MyMethodNew
+        End Sub
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_Diagnostic_MethodNameEndsWithExAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyClass
-{
-    public void MyMethodEx() { }
-}",
+"""
+    public class MyClass
+    {
+        public void MyMethodEx() { }
+    }
+    """,
                 GetCSharpResultAt(
                     3, 17,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
@@ -1758,10 +1909,12 @@ End Class");
         public async Task CA1711_Basic_Diagnostic_MethodNameEndsWithExAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class [MyClass]
-    Public Sub MyMethodEx()
-    End Sub
-End Class",
+"""
+    Public Class [MyClass]
+        Public Sub MyMethodEx()
+        End Sub
+    End Class
+    """,
                 GetBasicResultAt(
                     2, 16,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
@@ -1773,35 +1926,41 @@ End Class",
         public async Task CA1711_CSharp_NoDiagnostic_PrivateMethodNameEndsWithExAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyClass
-{
-    private void MyMethodEx() { }
-}");
+"""
+    public class MyClass
+    {
+        private void MyMethodEx() { }
+    }
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_Basic_NoDiagnostic_PrivateMethodNameEndsWithExAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class [MyClass]
-    Private Sub MyMethodEx()
-    End Sub
-End Class");
+"""
+    Public Class [MyClass]
+        Private Sub MyMethodEx()
+        End Sub
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1711_CSharp_NoDiagnostic_OverriddenMethodNameEndsWithExAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyBaseClass
-{
-    public virtual void MyMethodEx() { }
-}
+"""
+    public class MyBaseClass
+    {
+        public virtual void MyMethodEx() { }
+    }
 
-public class MyClass : MyBaseClass
-{
-    public override void MyMethodEx() { }
-}",
+    public class MyClass : MyBaseClass
+    {
+        public override void MyMethodEx() { }
+    }
+    """,
                 // Diagnostic for the base class method, but none for the override.
                 GetCSharpResultAt(
                     3, 25,
@@ -1814,19 +1973,21 @@ public class MyClass : MyBaseClass
         public async Task CA1711_CSharp_Diagnostic_MethodNameEndingWithExImplementsInterfaceMethodAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public interface MyBaseInterface
-{
-    void MyMethodEx();
-}
+"""
+    public interface MyBaseInterface
+    {
+        void MyMethodEx();
+    }
 
-public interface MyDerivedInterface : MyBaseInterface
-{
-}
+    public interface MyDerivedInterface : MyBaseInterface
+    {
+    }
 
-public class MyClass : MyDerivedInterface
-{
-    public void MyMethodEx() { }
-}",
+    public class MyClass : MyDerivedInterface
+    {
+        public void MyMethodEx() { }
+    }
+    """,
                 // Diagnostic for the interface method, but none for the implementation.
                 GetCSharpResultAt(
                     3, 10,
@@ -1839,19 +2000,21 @@ public class MyClass : MyDerivedInterface
         public async Task CA1711_Basic_Diagnostic_MethodNameEndingWithExImplementsInterfaceMethodAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Interface MyBaseInterface
-    Sub MyMethodEx()
-End Interface
+"""
+    Public Interface MyBaseInterface
+        Sub MyMethodEx()
+    End Interface
 
-Public Interface MyDerivedInterface
-    Inherits MyBaseInterface
-End Interface
+    Public Interface MyDerivedInterface
+        Inherits MyBaseInterface
+    End Interface
 
-Public Class [MyClass]
-    Implements MyDerivedInterface
-    Public Sub MyMethodEx() Implements MyBaseInterface.MyMethodEx
-    End Sub
-End Class",
+    Public Class [MyClass]
+        Implements MyDerivedInterface
+        Public Sub MyMethodEx() Implements MyBaseInterface.MyMethodEx
+        End Sub
+    End Class
+    """,
                 // Diagnostic for the interface method, but none for the implementation.
                 GetBasicResultAt(
                     2, 9,
@@ -1864,10 +2027,12 @@ End Class",
         public async Task CA1711_CSharp_Diagnostic_MethodNameEndsWithImplAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyClass
-{
-    public void MyMethodImpl() { }
-}",
+"""
+    public class MyClass
+    {
+        public void MyMethodImpl() { }
+    }
+    """,
                 GetCSharpResultAt(
                     3, 17,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberWithAlternateRule,
@@ -1880,10 +2045,12 @@ End Class",
         public async Task CA1711_Basic_Diagnostic_MethodNameEndsWithImplAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class [MyClass]
-    Public Sub MyMethodImpl()
-    End Sub
-End Class",
+"""
+    Public Class [MyClass]
+        Public Sub MyMethodImpl()
+        End Sub
+    End Class
+    """,
                 GetBasicResultAt(
                     2, 16,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberWithAlternateRule,
@@ -1896,17 +2063,19 @@ End Class",
         public async Task CA1711_Basic_NoDiagnostic_OverriddenMethodNameEndsWithExAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class MyBaseClass
-    Public Overridable Sub MyMethodEx()
-    End Sub
-End Class
+"""
+    Public Class MyBaseClass
+        Public Overridable Sub MyMethodEx()
+        End Sub
+    End Class
 
-Public Class [MyClass]
-    Inherits MyBaseClass
+    Public Class [MyClass]
+        Inherits MyBaseClass
 
-    Public Overrides Sub MyMethodEx()
-    End Sub
-End Class",
+        Public Overrides Sub MyMethodEx()
+        End Sub
+    End Class
+    """,
                 // Diagnostic for the base class method, but none for the override.
                 GetBasicResultAt(
                     2, 28,
@@ -1919,13 +2088,15 @@ End Class",
         public async Task CA1711_CSharp_Diagnostic_EventNameEndsWithExAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
+"""
+    using System;
 
-public class MyClass
-{
-    public delegate void EventCallback(object sender, EventArgs e);
-    public event EventCallback MyEventEx;
-}",
+    public class MyClass
+    {
+        public delegate void EventCallback(object sender, EventArgs e);
+        public event EventCallback MyEventEx;
+    }
+    """,
                 GetCSharpResultAt(
                     6, 32,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
@@ -1937,12 +2108,14 @@ public class MyClass
         public async Task CA1711_Basic_Diagnostic_EventNameEndsWithExAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
+"""
+    Imports System
 
-Public Class [MyClass]
-    Public Delegate Sub EventCallback(sender As Object, e As EventArgs)
-    Public Event MyEventEx As EventCallback
-End Class",
+    Public Class [MyClass]
+        Public Delegate Sub EventCallback(sender As Object, e As EventArgs)
+        Public Event MyEventEx As EventCallback
+    End Class
+    """,
                 GetBasicResultAt(
                     5, 18,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
@@ -1954,10 +2127,12 @@ End Class",
         public async Task CA1711_CSharp_Diagnostic_PropertyNameEndsWithExAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyClass
-{
-    public int MyPropertyEx { get; set; }
-}",
+"""
+    public class MyClass
+    {
+        public int MyPropertyEx { get; set; }
+    }
+    """,
                 GetCSharpResultAt(
                     3, 16,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
@@ -1969,15 +2144,17 @@ End Class",
         public async Task CA1711_Basic_Diagnostic_PropertyNameEndsWithExAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class [MyClass]
-    Public Property MyPropertyEx As Integer
-        Get
-            Return 0
-        End Get
-        Set(value As Integer)
-        End Set
-    End Property
-End Class",
+"""
+    Public Class [MyClass]
+        Public Property MyPropertyEx As Integer
+            Get
+                Return 0
+            End Get
+            Set(value As Integer)
+            End Set
+        End Property
+    End Class
+    """,
                 GetBasicResultAt(
                     2, 21,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
@@ -1989,10 +2166,12 @@ End Class",
         public async Task CA1711_CSharp_Diagnostic_FieldNameEndsWithExAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class MyClass
-{
-    public int MyFieldEx;
-}",
+"""
+    public class MyClass
+    {
+        public int MyFieldEx;
+    }
+    """,
                 GetCSharpResultAt(
                     3, 16,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
@@ -2004,9 +2183,11 @@ End Class",
         public async Task CA1711_Basic_Diagnostic_FieldNameEndsWithExAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class [MyClass]
-    Public MyFieldEx As Integer
-End Class",
+"""
+    Public Class [MyClass]
+        Public MyFieldEx As Integer
+    End Class
+    """,
                 GetBasicResultAt(
                     2, 12,
                     IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.MemberNewerVersionRule,
@@ -2017,34 +2198,42 @@ End Class",
         [TestMethod]
         public async Task CA1711_EnumFlagSuffix_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public enum SomeEnumFlag
-{
-    X,
-}",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public enum SomeEnumFlag
+                {
+                    X,
+                }
+                """,
                 GetCSharpResultAt(2, 13, IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule, "SomeEnumFlag", IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.FlagSuffix));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Enum SomeEnumFlag
-    X
-End Enum",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Public Enum SomeEnumFlag
+                    X
+                End Enum
+                """,
                 GetCSharpResultAt(2, 13, IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule, "SomeEnumFlag", IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.FlagSuffix));
         }
 
         [TestMethod]
         public async Task CA1711_EnumFlagsSuffix_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public enum SomeEnumFlags
-{
-    X,
-}",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public enum SomeEnumFlags
+                {
+                    X,
+                }
+                """,
                 GetCSharpResultAt(2, 13, IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule, "SomeEnumFlags", IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.FlagsSuffix));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Enum SomeEnumFlags
-    X
-End Enum",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Public Enum SomeEnumFlags
+                    X
+                End Enum
+                """,
                 GetCSharpResultAt(2, 13, IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule, "SomeEnumFlags", IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.FlagsSuffix));
         }
 
@@ -2059,16 +2248,18 @@ End Enum",
                 {
                     Sources =
                     {
-                        @"
-public enum MyFlag {}
+                        """
+                            public enum MyFlag {}
 
-public class MyAttribute {}",
+                            public class MyAttribute {}
+                            """,
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-"), },
+                        [*]
+                        {editorConfigText}
+                        """), },
                 },
             }.RunAsync(CancellationToken.None);
 
@@ -2078,19 +2269,21 @@ public class MyAttribute {}",
                 {
                     Sources =
                     {
-                        @"
-Public Enum MyFlag
-    A
-End Enum
+                        """
+                            Public Enum MyFlag
+                                A
+                            End Enum
 
-Public Class MyAttribute
-End Class",
+                            Public Class MyAttribute
+                            End Class
+                            """,
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-"), },
+                        [*]
+                        {editorConfigText}
+                        """), },
                 },
             }.RunAsync(CancellationToken.None);
         }

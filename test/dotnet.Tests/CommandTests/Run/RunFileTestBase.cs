@@ -159,24 +159,6 @@ public abstract class RunFileTestBase : SdkTest
         return $"{path}({line}): {FileBasedProgramsResources.DirectiveError}: {string.Format(messageFormat, args)}";
     }
 
-    internal static void EnableRefDirective(TestDirectory testInstance)
-    {
-        var propsPath = Path.Join(testInstance.Path, "Directory.Build.props");
-        var propsContent = File.Exists(propsPath) ? File.ReadAllText(propsPath) : null;
-        if (propsContent is not null && propsContent.Contains(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective))
-        {
-            return;
-        }
-
-        File.WriteAllText(propsPath, $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
-    }
-
     internal static void VerifyBinLogEvaluationDataCount(string binaryLogPath, int expectedCount)
     {
         var records = BinaryLog.ReadRecords(binaryLogPath).ToList();
@@ -191,7 +173,8 @@ public abstract class RunFileTestBase : SdkTest
         string expectedOutput = "Hello from Program",
         string programFileName = "Program.cs",
         string? workDir = null,
-        Func<TestCommand, TestCommand>? customizeCommand = null)
+        Func<TestCommand, TestCommand>? customizeCommand = null,
+        string? expectedOutputPrefix = null)
     {
         string prefix = expectedLevel switch
         {
@@ -213,7 +196,7 @@ public abstract class RunFileTestBase : SdkTest
 
         command.Execute()
             .Should().Pass()
-            .And.HaveStdOut(prefix + expectedOutput);
+            .And.HaveStdOut((expectedOutputPrefix ?? prefix) + expectedOutput);
 
         var binlogs = new DirectoryInfo(workDir ?? testInstance.Path)
             .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly);

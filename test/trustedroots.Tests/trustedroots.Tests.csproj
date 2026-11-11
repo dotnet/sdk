@@ -4,6 +4,8 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <CanRunTestAsTool>false</CanRunTestAsTool>
     <OutputPath>$(TestHostFolder)</OutputPath>
+    <!-- Tests only read immutable SDK files; shared certificate sets use thread-safe lazy initialization. -->
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
