@@ -137,30 +137,19 @@ internal sealed partial class WindowsPathHelper : IDisposable
     /// Gets the default Program Files dotnet installation path(s) by reading from the registry.
     /// For each architecture subkey under HKLM\SOFTWARE\dotnet\Setup\InstalledVersions\{arch}:
     ///   1. First checks {arch}\sharedhost → Path value in the native registry view (set by the .NET host installer for the native architecture)
-    ///   2. Falls back to {arch} → InstallLocation value in the 32-bit registry view
+    ///   2. Falls back to {arch} → InstallLocation value in the 32-bit registry view when that path is missing or does not exist
     /// If the registry yields no results, falls back to %ProgramFiles%\dotnet if it exists.
     /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md#current-state-on-windows
     /// See https://github.com/dotnet/runtime/issues/109974
     /// </summary>
     public static List<string> GetProgramFilesDotnetPaths()
     {
-        List<string> paths;
-
-        try
-        {
-            // The host installer writes InstallLocation to the 32-bit view and sharedhost\Path only to the native view.
-            // See Win64="no": https://github.com/dotnet/runtime/blob/e33be4d53ab951272c9161c50b549e5e7db60262/src/installer/pkg/sfx/installers/host.wxs#L35-L55
-            var nativeView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
-            using var registry32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-            using var nativeRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, nativeView);
-            using var installedVersions32 = registry32.OpenSubKey(InstalledVersionsKeyPath);
-            using var installedVersionsNative = nativeRegistry.OpenSubKey(InstalledVersionsKeyPath);
-            paths = GetRegisteredDotnetPaths(installedVersions32, installedVersionsNative);
-        }
-        catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException or IOException)
-        {
-            paths = HandleUnreadableSystemInstallRegistry(ex, Console.Error);
-        }
+        // The host installer writes InstallLocation to the 32-bit view and sharedhost\Path only to the native view.
+        // See Win64="no": https://github.com/dotnet/runtime/blob/e33be4d53ab951272c9161c50b549e5e7db60262/src/installer/pkg/sfx/installers/host.wxs#L35-L55
+        var nativeView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
+        using var installedVersions32 = OpenInstalledVersions(RegistryView.Registry32);
+        using var installedVersionsNative = OpenInstalledVersions(nativeView);
+        var paths = GetRegisteredDotnetPaths(installedVersions32, installedVersionsNative, WarnUnreadableSystemInstallRegistry);
 
         // Fallback: if registry yielded nothing, check the default Program Files location.
         if (paths.Count == 0)
@@ -184,62 +173,108 @@ internal sealed partial class WindowsPathHelper : IDisposable
     private static int s_unreadableSystemInstallRegistryWarned;
 
     /// <summary>
-    /// Handles a failure to read <c>InstalledVersions</c> by warning once per process on
-    /// <paramref name="warningWriter"/> and continuing as if nothing were registered.
+    /// Opens <c>InstalledVersions</c> in <paramref name="view"/>, or warns and returns <c>null</c> when it cannot be read.
     /// </summary>
-    internal static List<string> HandleUnreadableSystemInstallRegistry(Exception exception, TextWriter warningWriter)
+    private static RegistryKey? OpenInstalledVersions(RegistryView view)
     {
-        string keyName = $@"{Registry.LocalMachine.Name}\{InstalledVersionsKeyPath}";
-
-        // Init queries this before its form renders and again after it closes; only the first, pre-form call may write.
-        if (Interlocked.Exchange(ref s_unreadableSystemInstallRegistryWarned, 1) == 0)
+        try
         {
+            using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
+            return baseKey.OpenSubKey(InstalledVersionsKeyPath);
+        }
+        catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException or IOException)
+        {
+            WarnUnreadableSystemInstallRegistry(ex);
+            return null;
+        }
+    }
+
+    private static void WarnUnreadableSystemInstallRegistry(Exception exception) =>
+        WarnUnreadableSystemInstallRegistry(exception, Console.Error, ref s_unreadableSystemInstallRegistryWarned);
+
+    /// <summary>
+    /// Writes the unreadable-registry warning to <paramref name="warningWriter"/> unless <paramref name="warned"/> is already set.
+    /// </summary>
+    internal static void WarnUnreadableSystemInstallRegistry(Exception exception, TextWriter warningWriter, ref int warned)
+    {
+        // Init queries this before its form renders and again after it closes; only the first, pre-form call may write.
+        if (Interlocked.Exchange(ref warned, 1) == 0)
+        {
+            string keyName = $@"{Registry.LocalMachine.Name}\{InstalledVersionsKeyPath}";
             warningWriter.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.SystemInstallRegistryUnreadableWarning, keyName, exception.Message));
         }
-
-        return [];
     }
 
     /// <summary>
     /// Returns the existing install directory for each architecture under <c>InstalledVersions</c>:
     /// <c>sharedhost\Path</c> from the native view, or <c>InstallLocation</c> from the 32-bit view as a fallback.
+    /// Each view is read independently, so one that cannot be read does not hide the other's registrations.
     /// </summary>
     /// <param name="installedVersions32">The <c>InstalledVersions</c> key opened in the 32-bit registry view.</param>
     /// <param name="installedVersionsNative">The <c>InstalledVersions</c> key opened in the native registry view.</param>
-    internal static List<string> GetRegisteredDotnetPaths(RegistryKey? installedVersions32, RegistryKey? installedVersionsNative)
+    /// <param name="onUnreadable">Called when a view cannot be read.</param>
+    internal static List<string> GetRegisteredDotnetPaths(RegistryKey? installedVersions32, RegistryKey? installedVersionsNative, Action<Exception> onUnreadable)
     {
+        var sharedHostPaths = ReadArchitectureValues(installedVersionsNative, "sharedhost", "Path", onUnreadable);
+        var installLocations = ReadArchitectureValues(installedVersions32, subKeyName: null, "InstallLocation", onUnreadable);
+
         var paths = new List<string>();
         // Each view may register architectures the other lacks.
-        var architectureNames = (installedVersions32?.GetSubKeyNames() ?? [])
-            .Union(installedVersionsNative?.GetSubKeyNames() ?? [], StringComparer.OrdinalIgnoreCase);
-
-        foreach (var architectureName in architectureNames)
+        foreach (var architectureName in sharedHostPaths.Keys.Union(installLocations.Keys, StringComparer.OrdinalIgnoreCase))
         {
-            // Prefer sharedhost\Path, the canonical location set by the host installer.
-            string? installPath;
-            using (var sharedHost = installedVersionsNative?.OpenSubKey($@"{architectureName}\sharedhost"))
-            {
-                installPath = sharedHost?.GetValue("Path") as string;
-            }
+            // Prefer sharedhost\Path, the canonical location set by the host installer; fall back to InstallLocation when it is missing or stale.
+            string? installPath = GetExistingDirectory(sharedHostPaths.GetValueOrDefault(architectureName))
+                ?? GetExistingDirectory(installLocations.GetValueOrDefault(architectureName));
 
-            // Fall back to InstallLocation on the architecture key.
-            if (string.IsNullOrEmpty(installPath))
+            if (installPath is not null && !paths.Contains(installPath, StringComparer.OrdinalIgnoreCase))
             {
-                using var architectureKey = installedVersions32?.OpenSubKey(architectureName);
-                installPath = architectureKey?.GetValue("InstallLocation") as string;
-            }
-
-            if (!string.IsNullOrEmpty(installPath))
-            {
-                var normalized = installPath.TrimEnd(Path.DirectorySeparatorChar);
-                if (Directory.Exists(normalized) && !paths.Contains(normalized, StringComparer.OrdinalIgnoreCase))
-                {
-                    paths.Add(normalized);
-                }
+                paths.Add(installPath);
             }
         }
 
         return paths;
+    }
+
+    /// <summary>
+    /// Reads <paramref name="valueName"/> from each architecture key under <paramref name="installedVersions"/>, or from its
+    /// <paramref name="subKeyName"/> child when given, keyed by architecture name.
+    /// </summary>
+    private static Dictionary<string, string> ReadArchitectureValues(RegistryKey? installedVersions, string? subKeyName, string valueName, Action<Exception> onUnreadable)
+    {
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (installedVersions is null)
+        {
+            return values;
+        }
+
+        try
+        {
+            foreach (var architectureName in installedVersions.GetSubKeyNames())
+            {
+                using var key = installedVersions.OpenSubKey(subKeyName is null ? architectureName : $@"{architectureName}\{subKeyName}");
+                if (key?.GetValue(valueName) is string { Length: > 0 } value)
+                {
+                    values[architectureName] = value;
+                }
+            }
+        }
+        catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException or IOException)
+        {
+            onUnreadable(ex);
+        }
+
+        return values;
+    }
+
+    private static string? GetExistingDirectory(string? path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return null;
+        }
+
+        var normalized = path.TrimEnd(Path.DirectorySeparatorChar);
+        return Directory.Exists(normalized) ? normalized : null;
     }
 
     /// <summary>
