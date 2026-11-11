@@ -20,7 +20,7 @@ internal static class AkaLinkPlanning
                 "Aka.ms writes are not implemented or enabled.",
                 "Approve aka.ms ownership, authentication, and a separate reviewed enablement change.",
                 "Establish bootstrap and self-update checksum compatibility before changing aliases.",
-                "Use only publicly verified blob URLs; publish and verify every file before changing any link.",
+                "Use only verified CDN URLs; publish and verify every file before changing any link.",
                 "Public redirect observations are snapshots, not authoritative management records. Re-read authenticated link state before any future write; use PUT only on 200 and POST only on 404.",
                 "Link updates are not atomic. Preserve previous targets and record each future operation's outcome for rollback."
             ], changes);

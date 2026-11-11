@@ -15,9 +15,9 @@ parameters:
   type: boolean
   default: true
 - name: blobServiceConnection
-  displayName: Azure service connection for dotnetcli blob publishing
+  displayName: Azure service connection for blob publishing
   type: string
-  default: dotnetup-release
+  default: DotNetUp-PME
 
 variables:
 - template: /eng/common/templates-official/variables/pool-providers.yml
@@ -54,7 +54,7 @@ extends:
       os: windows
     stages:
     - stage: PublishToBlobStorage
-      displayName: Publish dotnetup to dotnetcli blob storage
+      displayName: Publish dotnetup and verify CDN downloads
       jobs:
       - job: Release
         displayName: Validate candidates and optionally publish versioned blobs
@@ -159,7 +159,7 @@ extends:
                 (Join-Path $env:RELEASEMETADATADIRECTORY 'blob-publication.json') `
                 "$(Agent.TempDirectory)/dotnetup-blob-verification"
               exit $LASTEXITCODE
-            displayName: Verify anonymous blob downloads and record disabled aka.ms changes
+            displayName: Verify CDN downloads and record disabled aka.ms changes
             env:
               SYSTEM_DEBUG: $(System.Debug)
 

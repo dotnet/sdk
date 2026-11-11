@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Dotnetup.Release;
 
 internal static class BlobPublishing
 {
-    private const string BlobRoot = "https://dotnetcli.blob.core.windows.net/dotnet/";
+    private const string BlobRoot = "https://dotnetorigin.blob.core.windows.net/dotnetup/";
 
     internal static string GetUrl(ReleaseAsset asset)
     {
@@ -25,7 +25,15 @@ internal static class BlobPublishing
             throw new InvalidDataException($"Invalid versioned blob path: {asset.RelativePath}");
         }
 
-        return BlobRoot + asset.RelativePath;
+        // The staging prefix becomes the container name, not a second dotnetup directory inside that container.
+        return BlobRoot + $"{version}/{name}";
+    }
+
+    internal static string GetCdnUrl(ReleaseAsset asset)
+    {
+        // Reuse storage path validation, but never expose the authenticated origin URL as a public alias target.
+        _ = GetUrl(asset);
+        return "https://builds.dotnet.microsoft.com/" + asset.RelativePath;
     }
 
     internal static async Task<BlobPublication> PublishAsync(

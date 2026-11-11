@@ -64,7 +64,7 @@ try
         ReleaseRecord release = await ReleaseFiles.ReadJsonAsync<ReleaseRecord>(Path.Combine(metadataDirectory, "release.json"));
         BlobPublication details = await ReleaseFiles.ReadJsonAsync<BlobPublication>(detailsPath);
 
-        // A separate unauthenticated client proves the exact blob URLs work for public acquisition.
+        // A separate unauthenticated client proves the exact CDN URLs work for public acquisition.
         using HttpClient client = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(300) };
         CdnRelease cdn = await CdnVerification.VerifyAsync(release, details, downloads, client);
         await ReleaseFiles.WriteJsonAsync(Path.Combine(metadataDirectory, "cdn-release.json"), cdn);
@@ -73,7 +73,7 @@ try
         AkaChangePlan plan = await ReleaseFiles.ReadJsonAsync<AkaChangePlan>(Path.Combine(metadataDirectory, "aka-ms-plan.json"));
         await ReleaseFiles.WriteJsonAsync(Path.Combine(metadataDirectory, "aka-ms-plan.json"), AkaLinkPlanning.WithVerifiedTargets(plan, cdn));
 
-        Console.WriteLine("All public blob downloads verified. Aka.ms proposed targets recorded; no links were changed.");
+        Console.WriteLine("All CDN downloads verified. Aka.ms proposed targets recorded; no links were changed.");
     }
     else
     {
