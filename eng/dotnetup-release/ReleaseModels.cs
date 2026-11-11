@@ -24,7 +24,7 @@ internal sealed record BlobPublishedAsset(string Name, string Sha512, string Dow
 internal sealed record BlobPublication(
     int AzureDevOpsBuildId, string BuildNumber, string Commit, string Variant, string Version,
     DateTimeOffset UpdatedAt, string Status, BlobPublishedAsset[] Files);
-// These records describe direct blob downloads verified against the source hashes.
+// Public CDN downloads are verified against source hashes separately from authenticated origin storage reads.
 internal sealed record CdnAsset(string Name, string Sha512, string DownloadUrl);
 internal sealed record CdnRelease(int AzureDevOpsBuildId, string BuildNumber, string Commit, string Variant, string Version, CdnAsset[] Files);
 // Alias records separate best-effort public observations from verified proposals; neither record authorizes a write.

@@ -68,16 +68,21 @@ Invoke-WebRequest https://aka.ms/dotnet/dotnetup/preview/get-dotnetup.ps1 -OutFi
 
 The manually triggered pipeline defined in
 [`.vsts-dotnetup-release.yml`](../../../.vsts-dotnetup-release.yml)
-publishes an existing signed build directly to:
+publishes an existing signed build to the `dotnetup` container in `dotnetorigin`:
 
 ```text
-https://dotnetcli.blob.core.windows.net/dotnet/dotnetup/<version>/<filename>
+https://dotnetorigin.blob.core.windows.net/dotnetup/<version>/<filename>
 ```
 
-It does not publish to `dotnetorigin` or change aka.ms links. Direct uploads
-to `dotnetcli` do not establish availability at `builds.dotnet.microsoft.com`; the
-[dotnet-release production configuration](https://dev.azure.com/dnceng/internal/_git/dotnet-release?path=/src/release-pipeline/ReleasePipeline.Configs/Configuration.Prod.yaml&version=GBmain)
-distinguishes the direct-access account from the CDN-origin account.
+The configured CDN exposes those blobs at:
+
+```text
+https://builds.dotnet.microsoft.com/dotnetup/<version>/<filename>
+```
+
+Blob names inside the container are `<version>/<filename>`.
+The pipeline verifies every CDN download after authenticated origin verification.
+It does not publish change aka.ms links.
 
 ### One-time pipeline setup
 
@@ -89,14 +94,14 @@ and the internal build pool. No Maestro service connection or BAR lookup is requ
 The pipeline's build identity must be able to read official pipeline 1544's runs and
 build artifacts.
 
-Create or authorize an Azure Resource Manager service connection named `dotnetup-release`,
+Authorize the Azure Resource Manager service connection named `DotNetUp-PME`,
 preferably using workload identity federation. The `blobServiceConnection` pipeline
 parameter defaults to this name and can select another approved connection. Its identity
-needs blob data-plane read/write access to the existing `dotnet` container in `dotnetcli`,
+needs blob data-plane read/write access to the existing `dotnetup` container in `dotnetorigin`,
 for example a container-scoped Storage Blob Data Contributor role. Management-plane
 Contributor access alone is insufficient. The pipeline does not create containers,
-change public-access settings, or delete blobs. Confirm that the published URLs support
-anonymous reads; authenticated upload success alone does not complete a release.
+change public-access settings, or delete blobs. Public reads use the CDN, not the
+authenticated origin endpoint; authenticated upload success alone does not complete a release.
 
 MicroBuild publishing authorization is disabled. `AzureCLI@2` authenticates through the
 selected service connection and acquires an Azure Storage bearer token. The token is
@@ -185,7 +190,8 @@ capped at ten seconds; requests and download-body reads have 300-second timeouts
 
 After authenticated storage verification, the
 [download verifier](../../../eng/dotnetup-release/CdnVerification.cs) requires an exact
-inventory of expected `dotnetcli/dotnet` URLs, downloads all 20 files anonymously without
+inventory of expected `dotnetorigin/dotnetup` URLs in the storage journal, maps them to
+`builds.dotnet.microsoft.com/dotnetup/<version>/<filename>`, and downloads all 20 CDN files anonymously without
 following redirects, and checks their SHA-512 hashes, including checksum sidecars.
 Storage verification does not substitute for public verification.
 
@@ -200,10 +206,10 @@ pipeline-artifact outputs. Inspect:
 - `blob-publication.json`: source identity, URLs, hashes, and incremental per-file
   publication progress; `storage-verified` means every stored blob matched the source.
 - `cdn-release.json`: the retained metadata filename for verified public download URLs
-  and hashes. These are direct blob URLs, not CDN-origin URLs. It is written only
+  and hashes. These are `builds.dotnet.microsoft.com` URLs, not authenticated origin URLs. It is written only
   after every anonymous download passes verification.
 - `aka-ms-plan.json`: source build/commit/variant/version, each shortlink, file path/hash,
-  observed previous redirect when available, proposed verified blob target, and disabled
+  observed previous redirect when available, proposed verified CDN target, and disabled
   operation status.
 
 A failed release can leave some versioned blobs published. Inspect the retained publication
@@ -217,7 +223,7 @@ No automatic rollback deletes published blobs. Neither failure nor success chang
 The [link planner](../../../eng/dotnetup-release/AkaLinkPlanning.cs) records all 20 proposed
 links under `https://aka.ms/dotnet/dotnetup/<variant>/`, including checksum sidecars.
 Before public download verification, every proposed target is explicitly unresolved. Only
-after all anonymous blob downloads pass verification are their actual URLs bound into the
+after all anonymous CDN downloads pass verification are their actual URLs bound into the
 plan. There is no alias-write switch.
 
 The planner makes public HEAD requests without following redirects. A usable redirect
@@ -230,7 +236,7 @@ create only on 404, and fail on other statuses. All uploads and verification mus
 before any alias changes. Link updates are not atomic, so retain previous targets and
 record individual outcomes for rollback.
 
-Do not point the existing download links at the new blob URLs during this initial
+Do not point the existing download links at the new CDN URLs during this initial
 rollout. [Self-update resolution](../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DailyChannelResolver.cs)
 currently extracts the version from the final URL's path, and the
 [downloader](../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetDownloader.cs)

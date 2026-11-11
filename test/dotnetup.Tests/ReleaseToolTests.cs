@@ -211,6 +211,9 @@ public sealed class ReleaseToolTests : SdkTest
     [DataRow("http")]
     [DataRow("query")]
     [DataRow("layout")]
+    [DataRow("container")]
+    [DataRow("double-prefix")]
+    [DataRow("cdn-in-journal")]
     [DataRow("build")]
     [DataRow("commit")]
     [DataRow("variant")]
@@ -228,10 +231,13 @@ public sealed class ReleaseToolTests : SdkTest
             case "failed": details = details with { Status = "in-progress" }; break;
             case "missing": details = details with { Files = files.Skip(1).ToArray() }; break;
             case "duplicate": files[0] = files[1]; break;
-            case "host": url = url.Replace("dotnetcli.blob.core.windows.net", "example.com", StringComparison.Ordinal); break;
+            case "host": url = url.Replace("dotnetorigin.blob.core.windows.net", "example.com", StringComparison.Ordinal); break;
             case "http": url = url.Replace("https://", "http://", StringComparison.Ordinal); break;
             case "query": url += "?unexpected=true"; break;
             case "layout": url = url.Replace(release.Version, "0.4.0", StringComparison.Ordinal); break;
+            case "container": url = url.Replace("/dotnetup/", "/dotnet/", StringComparison.Ordinal); break;
+            case "double-prefix": url = url.Replace("/dotnetup/", "/dotnetup/dotnetup/", StringComparison.Ordinal); break;
+            case "cdn-in-journal": url = BlobPublishing.GetCdnUrl(release.Files[0]); break;
             case "build": details = details with { AzureDevOpsBuildId = 124 }; break;
             case "commit": details = details with { Commit = new string('b', 40) }; break;
             case "variant": details = details with { Variant = "daily" }; break;
@@ -240,7 +246,7 @@ public sealed class ReleaseToolTests : SdkTest
             default: throw new ArgumentOutOfRangeException(nameof(mutation));
         }
 
-        if (mutation is "host" or "http" or "query" or "layout")
+        if (mutation is "host" or "http" or "query" or "layout" or "container" or "double-prefix" or "cdn-in-journal")
         {
             files[0] = files[0] with { DownloadUrl = url };
         }
@@ -380,6 +386,7 @@ public sealed class ReleaseToolTests : SdkTest
             string name = Path.GetFileName(request.RequestUri!.AbsolutePath);
             ReleaseAsset file = release.Files.Single(file => file.Name == name);
             Assert.AreEqual(BlobPublishing.GetUrl(file), request.RequestUri.AbsoluteUri);
+            Assert.AreEqual($"https://dotnetorigin.blob.core.windows.net/dotnetup/{release.Version}/{name}", request.RequestUri.AbsoluteUri);
             Assert.AreEqual("Bearer", request.Headers.Authorization!.Scheme);
             Assert.AreEqual("2023-11-03", request.Headers.GetValues("x-ms-version").Single());
             Assert.IsTrue(request.Headers.Contains("x-ms-date"));
@@ -432,6 +439,8 @@ public sealed class ReleaseToolTests : SdkTest
         foreach (ReleaseAsset file in release.Files)
         {
             Assert.AreEqual(file.Sha512, Convert.ToHexStringLower(SHA512.HashData(blobs[file.Name])));
+            Assert.AreEqual($"https://dotnetorigin.blob.core.windows.net/dotnetup/{release.Version}/{file.Name}",
+                result.Files.Single(asset => asset.Name == file.Name).DownloadUrl);
         }
     }
 
@@ -542,7 +551,7 @@ public sealed class ReleaseToolTests : SdkTest
             return new HttpResponseMessage((HttpStatusCode)status);
         }));
         using HttpResponseMessage response = await BlobPublishing.SendAsync(client,
-            () => new HttpRequestMessage(HttpMethod.Get, "https://dotnetcli.blob.core.windows.net/dotnet/fixture"),
+            () => new HttpRequestMessage(HttpMethod.Get, "https://dotnetorigin.blob.core.windows.net/dotnetup/fixture"),
             delay =>
             {
                 delays.Add(delay);
@@ -625,6 +634,7 @@ public sealed class ReleaseToolTests : SdkTest
         Assert.AreEqual(HttpMethod.Get, request.Method);
         Assert.IsNull(request.Headers.Authorization);
         string name = Path.GetFileName(request.RequestUri!.AbsolutePath);
+        Assert.AreEqual($"https://builds.dotnet.microsoft.com/dotnetup/{release.Version}/{name}", request.RequestUri.AbsoluteUri);
         byte[] content = File.ReadAllBytes(Path.Combine(_root, release.Files.Single(file => file.Name == name).SourceRelativePath));
         return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(corrupt && name.EndsWith(".sha512", StringComparison.Ordinal) ? [1] : content) };
     }));

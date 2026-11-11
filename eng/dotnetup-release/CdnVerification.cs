@@ -18,7 +18,7 @@ internal static class CdnVerification
             throw new InvalidDataException("Blob publishing must be complete and match the selected release.");
         }
 
-        // Require the exact approved inventory and fixed blob URLs before making any public requests.
+        // Validate origin URLs in the storage journal, then map the exact inventory to public CDN URLs.
         Dictionary<string, string> urls = new(StringComparer.Ordinal);
         foreach (BlobPublishedAsset file in details.Files)
         {
@@ -27,7 +27,7 @@ internal static class CdnVerification
                 file.Sha512 != asset.Sha512 ||
                 file.DownloadUrl != BlobPublishing.GetUrl(asset) ||
                 file.Status is not ("verified-existing" or "verified-upload") ||
-                !urls.TryAdd(file.Name, file.DownloadUrl))
+                !urls.TryAdd(file.Name, BlobPublishing.GetCdnUrl(asset)))
             {
                 throw new InvalidDataException($"Unexpected, duplicate, unverified, or incorrectly laid out blob download: {file.DownloadUrl}");
             }
