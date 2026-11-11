@@ -100,3 +100,26 @@ controller-only or mixed partial handshakes, and explicit handshake rejections m
 gain that exemption. Rejection and partial-handshake state must survive later accepted
 handshakes. Keep these boundaries covered by
 [`TestApplicationHandlerTests`](../../test/dotnet.Tests/CommandTests/Test/TestApplicationHandlerTests.cs).
+
+## MTP module identity
+
+Keep the assembly target framework separate from its executing runtime.
+[`TestApplicationHandler`](dotnet/Commands/Test/MTP/TestApplicationHandler.cs) prefers
+the evaluated project's `TargetFramework`, then optional handshake `TargetFramework`
+metadata (field 21). Missing target metadata stays unknown; never infer it from the
+runtime or output directory. Handshake `Framework` (field 2) remains runtime information,
+and `Architecture` identifies the executing process, not the assembly's AnyCPU setting.
+
+The shared
+[`TestFrameworkDisplay`](dotnet/Commands/Test/MTP/Terminal/TestFrameworkDisplay.cs)
+keeps matching runs compact (`net481|x64`) and labels a differing runtime separately
+(`net472|x64, runtime: net481`). Ignore modern .NET servicing patches and target platform
+suffixes only for comparison; preserve the full target in output and distinguish
+`net48` from `net481`. Unknown targets use an explicit runtime annotation, not a
+runtime-derived target. Keep start, results, completion, summaries and progress consistent,
+and omit secondary runtime information before primary identity in narrow cursor frames.
+
+[`ArtifactPostProcessingManager`](dotnet/Commands/Test/MTP/ArtifactPostProcessingManager.cs)
+can learn capabilities from a controller before the target is known. Fill only a missing
+target when later handshake metadata arrives, even if capabilities are not repeated;
+preserve an already known target.

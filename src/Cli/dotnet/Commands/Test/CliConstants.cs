@@ -103,6 +103,9 @@ internal static class HandshakeMessagePropertyNames
     // supported by post-processors registered in the test application.
     internal const byte SupportedPostProcessorKinds = 14;
     internal const byte SupportedPostProcessorExtensionsLegacy = 15;
+
+    // Optional assembly target metadata, independent of the runtime in Framework.
+    internal const byte TargetFramework = 21;
 }
 
 internal static class HandshakeMessageExecutionModes

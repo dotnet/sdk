@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using TestExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
 namespace dotnet.Tests.CommandTests.Test;
 
@@ -24,6 +25,111 @@ public class TestApplicationHandlerTests : IDisposable
         {
             disposable.Dispose();
         }
+    }
+
+    [TestMethod]
+    [DataRow("net472", null, ".NET Framework 4.8.1", "net472|x64, runtime: net481")]
+    [DataRow("net472", "net481", ".NET Framework 4.8.1", "net472|x64, runtime: net481")]
+    [DataRow("net481", null, ".NET Framework 4.8.1", "net481|x64")]
+    [DataRow("net8.0", null, ".NET 8.0.25", "net8.0|x64")]
+    [DataRow("net8.0-windows10.0.19041.0", null, ".NET 8.0.25", "net8.0-windows10.0.19041.0|x64")]
+    [DataRow("net8.0", null, ".NET 9.0.3", "net8.0|x64, runtime: net9.0")]
+    [DataRow(null, "net472", ".NET Framework 4.8.1", "net472|x64, runtime: net481")]
+    [DataRow(null, null, ".NET 8.0.25", "x64, runtime: net8.0")]
+    [DataRow(null, "", ".NET 8.0.25", "x64, runtime: net8.0")]
+    [DataRow(null, " ", ".NET 8.0.25", "x64, runtime: net8.0")]
+    [DataRow("net9.0", null, "Unknown runtime", "net9.0|x64, runtime: Unknown runtime")]
+    public void OnHandshakeReceived_KeepsTargetAndRuntimeSeparateAcrossStartResultsAndCompletion(
+        string? projectFramework, string? handshakeFramework, string runtimeDescription, string expectedIdentity)
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false, isDiscovery: false, showAssembly: true, targetFramework: projectFramework);
+        HandshakeMessage handshake = BuildHandshake(HandshakeMessageExecutionModes.Run);
+        handshake.Properties[HandshakeMessagePropertyNames.Framework] = runtimeDescription;
+        handshake.Properties[HandshakeMessagePropertyNames.Architecture] = "X64";
+        if (handshakeFramework is not null)
+        {
+            handshake.Properties[HandshakeMessagePropertyNames.TargetFramework] = handshakeFramework;
+        }
+
+        handler.OnHandshakeReceived(handshake, gotSupportedVersion: true).Should().BeTrue();
+        handler.OnTestResultsReceived(new TestResultMessages(
+            "exec-1", "inst-1",
+            [new SuccessfulTestResultMessage("passed", "Passed test", TestStates.Passed, null, null, null, null, "session")],
+            [new FailedTestResultMessage("failed", "Failed test", TestStates.Failed,
+                Duration: null, Reason: null, Exceptions: null, StandardOutput: null, ErrorOutput: null,
+                SessionUid: "session", Expected: null, Actual: null)]));
+        handler.OnTestProcessExited(TestExitCode.AtLeastOneTestFailed, string.Empty, string.Empty);
+
+        string output = console.GetOutput();
+        output.Split($"({expectedIdentity})", StringSplitOptions.None).Should().HaveCount(5,
+            "the start, both test results, and completion must use the same target/process identity");
+        reporter.TotalTests.Should().Be(2);
+        reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void OnHandshakeReceived_OptionalTargetDoesNotReplaceRequiredRuntime(string? runtimeDescription)
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(
+            isHelp: false, isDiscovery: false, targetFramework: null);
+        HandshakeMessage handshake = BuildHandshake(HandshakeMessageExecutionModes.Run);
+        handshake.Properties[HandshakeMessagePropertyNames.TargetFramework] = "net472";
+        if (runtimeDescription is null)
+        {
+            handshake.Properties.Remove(HandshakeMessagePropertyNames.Framework);
+        }
+        else
+        {
+            handshake.Properties[HandshakeMessagePropertyNames.Framework] = runtimeDescription;
+        }
+
+        handler.OnHandshakeReceived(handshake, gotSupportedVersion: true).Should().BeFalse();
+
+        reporter.HasHandshakeFailure.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void OnHandshakeReceived_OptionalTargetMayFollowAControllerWithoutMetadata()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false, isDiscovery: false, showAssembly: true, targetFramework: null);
+        HandshakeMessage controller = BuildHandshake(
+            HandshakeMessageExecutionModes.Run, hostType: HandshakeMessageHostTypes.TestHostOrchestrator);
+        controller.Properties[HandshakeMessagePropertyNames.Framework] = ".NET Framework 4.8.1";
+        handler.OnHandshakeReceived(controller, gotSupportedVersion: true).Should().BeTrue();
+        HandshakeMessage host = BuildHandshake(HandshakeMessageExecutionModes.Run);
+        host.Properties[HandshakeMessagePropertyNames.Framework] = ".NET Framework 4.8.1";
+        host.Properties[HandshakeMessagePropertyNames.TargetFramework] = "net472";
+
+        handler.OnHandshakeReceived(host, gotSupportedVersion: true).Should().BeTrue();
+        handler.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+
+        console.GetOutput().Should().Contain("(net472|x64, runtime: net481)");
+        reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void OnHandshakeReceived_LateOptionalTargetKeepsRetryIdentityConsistent()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false, isDiscovery: false, showAssembly: true, targetFramework: null);
+        HandshakeMessage handshake = BuildHandshake(HandshakeMessageExecutionModes.Run);
+        handshake.Properties[HandshakeMessagePropertyNames.Framework] = ".NET 8.0.25";
+        handler.OnHandshakeReceived(handshake, gotSupportedVersion: true).Should().BeTrue();
+        handshake.Properties[HandshakeMessagePropertyNames.InstanceId] = "second";
+        handshake.Properties[HandshakeMessagePropertyNames.TargetFramework] = "net8.0";
+
+        handler.OnHandshakeReceived(handshake, gotSupportedVersion: true).Should().BeTrue();
+        handler.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+
+        string output = console.GetOutput();
+        output.Split("(x64, runtime: net8.0)", StringSplitOptions.None).Should().HaveCount(4);
+        output.Should().NotContain("(net8.0|x64)");
+        reporter.HasHandshakeFailure.Should().BeFalse();
     }
 
     /// <summary>
@@ -72,7 +178,7 @@ public class TestApplicationHandlerTests : IDisposable
         {
             [HandshakeMessagePropertyNames.PID] = "1234",
             [HandshakeMessagePropertyNames.Architecture] = "x64",
-            [HandshakeMessagePropertyNames.Framework] = ".NETCoreApp,Version=v9.0",
+            [HandshakeMessagePropertyNames.Framework] = ".NET 9.0.0",
             [HandshakeMessagePropertyNames.OS] = "Windows",
             [HandshakeMessagePropertyNames.SupportedProtocolVersions] = ProtocolConstants.SupportedVersions,
             [HandshakeMessagePropertyNames.HostType] = "TestHostController",
@@ -228,6 +334,64 @@ public class TestApplicationHandlerTests : IDisposable
         ArtifactPostProcessingApplication application = manager.SnapshotApplications().Should().ContainSingle().Subject;
         application.SupportedKinds.Should().BeEquivalentTo("microsoft.testing.trx", "example.junit");
         application.SupportedExtensions.Should().BeEquivalentTo(".trx", ".xml");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void OnHandshakeReceived_LaterHostTargetEnrichesControllerCapabilities(bool hostAdvertisesCapabilities)
+    {
+        var manager = new ArtifactPostProcessingManager();
+        (TestApplicationHandler handler, _, _) = CreateHandler(
+            isHelp: false, isDiscovery: false, artifactPostProcessingManager: manager, targetFramework: null);
+        HandshakeMessage controller = BuildHandshake(
+            HandshakeMessageExecutionModes.Run,
+            hostType: "TestHostController",
+            includeInstanceId: false,
+            supportedPostProcessorKinds: "microsoft.testing.trx");
+        controller.Properties[HandshakeMessagePropertyNames.Framework] = ".NET Framework 4.8.1";
+        handler.OnHandshakeReceived(controller, gotSupportedVersion: true).Should().BeTrue();
+        manager.SnapshotApplications().Should().ContainSingle().Which.TargetFramework.Should().BeNull();
+
+        HandshakeMessage host = BuildHandshake(
+            HandshakeMessageExecutionModes.Run,
+            supportedPostProcessorKinds: hostAdvertisesCapabilities ? "example.junit" : null);
+        host.Properties[HandshakeMessagePropertyNames.Framework] = ".NET Framework 4.8.1";
+        host.Properties[HandshakeMessagePropertyNames.TargetFramework] = "net472";
+
+        handler.OnHandshakeReceived(host, gotSupportedVersion: true).Should().BeTrue();
+
+        ArtifactPostProcessingApplication application = manager.SnapshotApplications().Should().ContainSingle().Subject;
+        application.TargetFramework.Should().Be("net472");
+        string[] expectedKinds = hostAdvertisesCapabilities ? ["microsoft.testing.trx", "example.junit"] : ["microsoft.testing.trx"];
+        application.SupportedKinds.Should().BeEquivalentTo(expectedKinds);
+    }
+
+    [TestMethod]
+    [DataRow("net472", null, "net472")]
+    [DataRow(null, "net472", "net472")]
+    [DataRow(null, null, null)]
+    public void OnFileArtifactsReceived_UsesOnlyKnownTargetMetadata(
+        string? projectFramework, string? handshakeFramework, string? expectedFramework)
+    {
+        var manager = new ArtifactPostProcessingManager();
+        (TestApplicationHandler handler, _, _) = CreateHandler(
+            isHelp: false, isDiscovery: false, artifactPostProcessingManager: manager, targetFramework: projectFramework);
+        HandshakeMessage handshake = BuildHandshake(
+            HandshakeMessageExecutionModes.Run, supportedPostProcessorKinds: "microsoft.testing.trx");
+        handshake.Properties[HandshakeMessagePropertyNames.Framework] = ".NET Framework 4.8.1";
+        if (handshakeFramework is not null)
+        {
+            handshake.Properties[HandshakeMessagePropertyNames.TargetFramework] = handshakeFramework;
+        }
+
+        handler.OnHandshakeReceived(handshake, gotSupportedVersion: true).Should().BeTrue();
+        handler.OnFileArtifactsReceived(new FileArtifactMessages(
+            "exec-1", "inst-1",
+            [new FileArtifactMessage(Path.GetFullPath("result.trx"), "TRX", null, null, null, null, "microsoft.testing.trx")]));
+
+        manager.SnapshotApplications().Should().ContainSingle().Which.TargetFramework.Should().Be(expectedFramework);
+        manager.SnapshotArtifacts().Should().ContainSingle().Which.TargetFramework.Should().Be(expectedFramework);
     }
 
     [TestMethod]
@@ -806,7 +970,8 @@ public class TestApplicationHandlerTests : IDisposable
         ArtifactPostProcessingManager? artifactPostProcessingManager = null,
         ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
         bool collectTestMap = false,
-        bool affectedTests = false)
+        bool affectedTests = false,
+        string? targetFramework = TargetFramework)
     {
         var capturingConsole = new CapturingConsole();
 
@@ -829,7 +994,7 @@ public class TestApplicationHandlerTests : IDisposable
         var module = new TestModule(
             RunProperties: new RunProperties("dotnet", TargetPath, "/repo"),
             ProjectFullPath: ProjectPath,
-            TargetFramework: TargetFramework,
+            TargetFramework: targetFramework,
             IsTestingPlatformApplication: true,
             LaunchSettings: null,
             TargetPath: TargetPath,
@@ -870,7 +1035,7 @@ public class TestApplicationHandlerTests : IDisposable
         {
             [HandshakeMessagePropertyNames.PID] = "1234",
             [HandshakeMessagePropertyNames.Architecture] = "x64",
-            [HandshakeMessagePropertyNames.Framework] = ".NETCoreApp,Version=v9.0",
+            [HandshakeMessagePropertyNames.Framework] = ".NET 9.0.0",
             [HandshakeMessagePropertyNames.OS] = "Windows",
             [HandshakeMessagePropertyNames.SupportedProtocolVersions] = ProtocolConstants.SupportedVersions,
             [HandshakeMessagePropertyNames.HostType] = hostType,

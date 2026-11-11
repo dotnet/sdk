@@ -3005,6 +3005,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">Путь к файлу &lt;application&gt;.runtimeconfig.json.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RuntimeFramework">
+        <source>runtime: {0}</source>
+        <target state="new">runtime: {0}</target>
+        <note>Additional runtime information after the test assembly's target framework and process architecture. {0} is a compact runtime moniker such as net481 or net9.0.</note>
+      </trans-unit>
       <trans-unit id="RuntimePropertyNotFound">
         <source>Runtime property 'HOSTFXR_PATH' was not set or empty.</source>
         <target state="translated">Свойство "HOSTFXR_PATH" среды выполнения не задано или пусто.</target>

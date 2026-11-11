@@ -21,7 +21,8 @@ internal sealed class TestApplicationHandler
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
-    private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
+    private (string? RuntimeFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
+    private string? _targetFramework;
     private bool _receivedTestHostHandshake;
     private bool _receivedAffectedTestsOrchestratorHandshake;
     private bool _receivedIncompleteHandshake;
@@ -41,6 +42,7 @@ internal sealed class TestApplicationHandler
         _artifactPostProcessingManager = artifactPostProcessingManager;
         _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
         _testRunPolicy = testRunPolicy;
+        _targetFramework = string.IsNullOrWhiteSpace(module.TargetFramework) ? null : module.TargetFramework;
     }
 
     /// <summary>
@@ -77,8 +79,8 @@ internal sealed class TestApplicationHandler
         }
 
         var arch = architecture!.ToLowerInvariant();
-        var tfm = TargetFrameworkParser.GetShortTargetFramework(framework);
-        var currentHandshakeInfo = (tfm, arch, executionId!);
+        var runtimeFramework = TargetFrameworkParser.GetShortTargetFramework(framework);
+        var currentHandshakeInfo = (runtimeFramework, arch, executionId!);
 
         if (_options.IsArtifactPostProcessing
             && hostType != HandshakeMessageHostTypes.ArtifactPostProcessor)
@@ -109,6 +111,14 @@ internal sealed class TestApplicationHandler
             return false;
         }
 
+        // Keep the module identity established by the first test-host handshake stable across retries.
+        if (!_receivedTestHostHandshake && _targetFramework is null &&
+            handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.TargetFramework, out string? targetFramework) &&
+            !string.IsNullOrWhiteSpace(targetFramework))
+        {
+            _targetFramework = targetFramework;
+        }
+
         if (hostType == HandshakeMessageHostTypes.TestHost)
         {
             int? attemptNumber = null;
@@ -125,14 +135,14 @@ internal sealed class TestApplicationHandler
             // Only test hosts represent an assembly attempt. Controllers and orchestrators must not
             // register runs, otherwise retries are counted and start messages are rendered twice.
             var handshakeInfo = _handshakeInfo.Value;
-            if (attemptNumber.HasValue)
-            {
-                _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!, attemptNumber.Value);
-            }
-            else
-            {
-                _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!);
-            }
+            _output.AssemblyRunStarted(
+                _module.TargetPath,
+                _targetFramework,
+                handshakeInfo.Architecture,
+                handshakeInfo.ExecutionId,
+                instanceId!,
+                attemptNumber,
+                handshakeInfo.RuntimeFramework);
         }
 
         // Validate the optional ExecutionMode property last (after AssemblyRunStarted) so that any
@@ -178,7 +188,7 @@ internal sealed class TestApplicationHandler
         {
             _artifactPostProcessingManager?.RecordCapabilities(
                 _module,
-                _module.TargetFramework ?? tfm,
+                _targetFramework,
                 arch,
                 handshakeMessage);
         }
@@ -365,7 +375,7 @@ internal sealed class TestApplicationHandler
 
         foreach (var testResult in testResultMessage.SuccessfulTestMessages)
         {
-            _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+            _output.TestCompleted(_module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
                 instanceId,
                 ValidateRequiredMessageProperty(testResult.Uid, nameof(SuccessfulTestResultMessage.Uid), nameof(SuccessfulTestResultMessage)),
                 ValidateRequiredMessageProperty(testResult.DisplayName, nameof(SuccessfulTestResultMessage.DisplayName), nameof(SuccessfulTestResultMessage)),
@@ -381,7 +391,7 @@ internal sealed class TestApplicationHandler
 
         foreach (var testResult in testResultMessage.FailedTestMessages)
         {
-            _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+            _output.TestCompleted(_module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
                 instanceId,
                 ValidateRequiredMessageProperty(testResult.Uid, nameof(FailedTestResultMessage.Uid), nameof(FailedTestResultMessage)),
                 ValidateRequiredMessageProperty(testResult.DisplayName, nameof(FailedTestResultMessage.DisplayName), nameof(FailedTestResultMessage)),
@@ -423,7 +433,7 @@ internal sealed class TestApplicationHandler
         {
             _output.TestInProgress(
                 _module.TargetPath,
-                handshakeInfo.TargetFramework,
+                _targetFramework,
                 handshakeInfo.Architecture,
                 handshakeInfo.ExecutionId,
                 testInProgressMessages.InstanceId!,
@@ -476,7 +486,7 @@ internal sealed class TestApplicationHandler
             {
                 _artifactPostProcessingInvocation.RecordOutput(
                     _module,
-                    handshakeInfo.TargetFramework,
+                    _targetFramework,
                     handshakeInfo.Architecture,
                     handshakeInfo.ExecutionId,
                     artifact with { FullPath = fullPath });
@@ -485,13 +495,13 @@ internal sealed class TestApplicationHandler
             {
                 _artifactPostProcessingManager?.RecordArtifact(
                     _module,
-                    _module.TargetFramework ?? handshakeInfo.TargetFramework,
+                    _targetFramework,
                     handshakeInfo.Architecture,
                     handshakeInfo.ExecutionId,
                     artifact with { FullPath = fullPath });
                 _output.ArtifactAdded(
                     outOfProcess: false,
-                    _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+                    _module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
                     artifact.TestDisplayName, fullPath);
             }
         }

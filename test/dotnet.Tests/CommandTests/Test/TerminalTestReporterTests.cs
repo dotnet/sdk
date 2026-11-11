@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 using Moq;
 using TestExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
@@ -14,6 +15,110 @@ namespace dotnet.Tests.CommandTests.Test;
 [TestClass]
 public class TerminalTestReporterTests
 {
+    [TestMethod]
+    [DataRow(40, false)]
+    [DataRow(80, true)]
+    [DataRow(120, true)]
+    public void AnsiProgress_PrioritizesTargetAndArchitectureOverRuntime(int width, bool showsRuntime)
+    {
+        var console = new CapturingConsole();
+        var terminal = new AnsiTerminal(console, baseDirectory: null);
+        IStopwatch clock = Mock.Of<IStopwatch>(stopwatch => stopwatch.Elapsed == TimeSpan.FromSeconds(1));
+        var progress = new TestProgressState(
+            1, "Tests.exe", "net472", "x64", clock, false, runtimeFramework: "net481");
+        var frame = new AnsiTerminalTestProgressFrame(width, 30);
+        var line = new AnsiTerminalTestProgressFrame.RenderedProgressItem(1, 0);
+
+        terminal.StartUpdate();
+        frame.AppendTestWorkerProgress(progress, line, terminal);
+        terminal.StopUpdate();
+
+        string output = StripAnsi(console.GetOutput());
+        output.Should().Contain(showsRuntime ? "(net472|x64, runtime: net481)" : "(net472|x64)");
+        output.Length.Should().BeLessThanOrEqualTo(width);
+        if (!showsRuntime)
+        {
+            output.Should().NotContain("runtime:");
+        }
+
+        Console.WriteLine($"Actual ANSI renderer, width={width}, visible length={output.Length}: {output}");
+    }
+
+    [TestMethod]
+    public void AnsiProgress_TruncatesLongAssemblyNameBeforeDroppingPrimaryIdentity()
+    {
+        var console = new CapturingConsole();
+        var terminal = new AnsiTerminal(console, baseDirectory: null);
+        IStopwatch clock = Mock.Of<IStopwatch>(stopwatch => stopwatch.Elapsed == TimeSpan.FromSeconds(1));
+        var progress = new TestProgressState(
+            1, "Very.Long.Test.Assembly.Name.That.Must.Not.Hide.Target.exe", "net472", "x64",
+            clock, false, runtimeFramework: "net481");
+        var frame = new AnsiTerminalTestProgressFrame(40, 30);
+        var line = new AnsiTerminalTestProgressFrame.RenderedProgressItem(1, 0);
+
+        terminal.StartUpdate();
+        frame.AppendTestWorkerProgress(progress, line, terminal);
+        terminal.StopUpdate();
+
+        string output = StripAnsi(console.GetOutput());
+        output.Should().Contain("...").And.Contain("(net472|x64)").And.NotContain("runtime:");
+        output.Length.Should().BeLessThanOrEqualTo(40);
+        Console.WriteLine($"Actual ANSI renderer, width=40, long filename, visible length={output.Length}: {output}");
+    }
+
+    [TestMethod]
+    public void SimpleProgress_PreservesTargetAndSeparateRuntime()
+    {
+        var console = new CapturingConsole();
+        var terminal = new NonAnsiTerminal(console);
+        var progress = new TestProgressState(
+            1, "Tests.exe", "net472", "x64", Mock.Of<IStopwatch>(), false, runtimeFramework: "net481");
+
+        terminal.RenderProgress([progress]);
+
+        console.GetOutput().Should().Contain("Tests.exe (net472|x64, runtime: net481)");
+    }
+
+    [TestMethod]
+    public void CompletionAndSummary_PreserveRuntimeWithoutMixingMultiTargetedIdentities()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ShowAssembly = true,
+            ShowAssemblyStartAndComplete = true,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 2, false, false, false);
+        reporter.AssemblyRunStarted("Tests.exe", "net472", "x64", "net472", "first", attemptNumber: null, runtimeFramework: "net481");
+        reporter.AssemblyRunCompleted("net472", 7, "crash context", null);
+        reporter.AssemblyRunStarted("Tests.exe", "net481", "x86", "net481", "first", attemptNumber: null, runtimeFramework: "net481");
+        reporter.AssemblyRunCompleted("net481", 0, null, null);
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, 7);
+
+        string output = console.GetOutput();
+        output.Split("Tests.exe (net472|x64, runtime: net481)", StringSplitOptions.None).Should().HaveCount(4,
+            "start, completion and the multi-module summary must retain the mismatching identity");
+        output.Split("Tests.exe (net481|x86)", StringSplitOptions.None).Should().HaveCount(4,
+            "start, completion and the multi-module summary must retain the matching identity");
+        output.Should().NotContain("(net481|x86, runtime:");
+        GetAssemblySummaryLine(output, "Tests.exe").Should().Contain("(net472|x64, runtime: net481)");
+    }
+
+    [TestMethod]
+    public void AssemblyRunStarted_PositionalDefaultStillBindsToLegacyAttemptOverload()
+    {
+        using var reporter = new TerminalTestReporter(new CapturingConsole(), new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            () => reporter.AssemblyRunStarted("Legacy.dll", "net9.0", "x64", "execution", "instance", default));
+    }
+
     [TestMethod]
     public void AnsiTerminal_StopUpdate_WritesStringBuilder()
     {

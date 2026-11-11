@@ -26,19 +26,20 @@ internal sealed class ArtifactPostProcessingManager
             .Select(extension => extension.ToLowerInvariant())
             .ToArray();
 
-        if (kinds.Length == 0 && extensions.Length == 0)
-        {
-            return;
-        }
-
         lock (_lock)
         {
             if (!_applications.TryGetValue(module, out ApplicationState? application))
             {
+                if (kinds.Length == 0 && extensions.Length == 0)
+                {
+                    return;
+                }
+
                 application = new ApplicationState(module, targetFramework, architecture);
                 _applications.Add(module, application);
             }
 
+            application.TargetFramework ??= targetFramework;
             application.SupportedKinds.UnionWith(kinds);
             application.SupportedExtensions.UnionWith(extensions);
         }
@@ -385,7 +386,7 @@ internal sealed class ArtifactPostProcessingManager
     private sealed class ApplicationState(TestModule module, string? targetFramework, string? architecture)
     {
         public TestModule Module { get; } = module;
-        public string? TargetFramework { get; } = targetFramework;
+        public string? TargetFramework { get; set; } = targetFramework;
         public string? Architecture { get; } = architecture;
         public HashSet<string> SupportedKinds { get; } = new(StringComparer.Ordinal);
         public HashSet<string> SupportedExtensions { get; } = new(StringComparer.Ordinal);

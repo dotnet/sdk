@@ -6,7 +6,7 @@ using TestNodeInfoEntry = (int Passed, int Skipped, int Failed, int LastAttemptN
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
-internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch, bool isDiscovery)
+internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch, bool isDiscovery, string? runtimeFramework = null)
 {
     private readonly Lock _lock = new();
     private readonly Dictionary<string, TestNodeInfoEntry> _testUidToResults = new();
@@ -58,6 +58,8 @@ internal sealed class TestProgressState(long id, string assembly, string? target
     public string? TargetFramework { get; } = targetFramework;
 
     public string? Architecture { get; } = architecture;
+
+    public string? RuntimeFramework { get; } = runtimeFramework;
 
     public IStopwatch Stopwatch { get; } = stopwatch;
 

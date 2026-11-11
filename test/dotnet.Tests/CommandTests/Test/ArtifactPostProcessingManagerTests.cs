@@ -15,6 +15,25 @@ namespace dotnet.Tests.CommandTests.Test;
 public class ArtifactPostProcessingManagerTests
 {
     [TestMethod]
+    [DataRow(null)]
+    [DataRow("net9.0")]
+    public void RecordCapabilities_LaterHandshakePreservesKnownTarget(string? laterTargetFramework)
+    {
+        var manager = new ArtifactPostProcessingManager();
+        TestModule module = CreateModule();
+        manager.RecordCapabilities(module, "net10.0", "x64", new HandshakeMessage(new Dictionary<byte, string>
+        {
+            [HandshakeMessagePropertyNames.SupportedPostProcessorKinds] = "example.summary",
+        }));
+
+        manager.RecordCapabilities(module, laterTargetFramework, "x64", new HandshakeMessage([]));
+
+        ArtifactPostProcessingApplication application = manager.SnapshotApplications().Should().ContainSingle().Subject;
+        application.TargetFramework.Should().Be("net10.0");
+        application.SupportedKinds.Should().ContainSingle().Which.Should().Be("example.summary");
+    }
+
+    [TestMethod]
     public void ApplyOutputs_MatchingKind_ReplacesOriginalArtifacts()
     {
         var console = new CapturingConsole();

@@ -19,14 +19,14 @@
     {
       "id": "dotnet-test-wire-contract-constants",
       "local_path": "src/Cli/dotnet/Commands/Test/CliConstants.cs",
-      "notes": "Handshake/session/state string constants for the 'dotnet test' named-pipe protocol. Upstream lives in testfx IPC/Constants.cs; the SDK inlines the same constants into CliConstants.cs (TestStates, SessionEventTypes, HandshakeMessagePropertyNames, HandshakeMessageExecutionModes, HandshakeMessageHostTypes, ProtocolConstants). Watch the upstream file for added/changed wire constants. Reconciled at 868da4b6: the SDK mirrors the ArtifactPostProcessor and TestHostOrchestrator host types, the OrchestratorFeature property, and the 'tool' execution mode. The SDK consumes the retry orchestrator feature to enable retry UX before the first TestHost handshake. Intentional divergences: the SDK does not mirror TestStates.InProgress, and ProtocolConstants.SupportedVersions deliberately stops at 1.3.0 because the SDK does not implement the 1.4.0 reverse server-control channel.",
+      "notes": "Handshake/session/state string constants for the 'dotnet test' named-pipe protocol. Upstream lives in testfx IPC/Constants.cs; the SDK inlines the same constants into CliConstants.cs (TestStates, SessionEventTypes, HandshakeMessagePropertyNames, HandshakeMessageExecutionModes, HandshakeMessageHostTypes, ProtocolConstants). Watch the upstream file for added/changed wire constants. Reconciled at 868da4b6: the SDK mirrors the ArtifactPostProcessor and TestHostOrchestrator host types, the OrchestratorFeature property, and the 'tool' execution mode. The SDK consumes the retry orchestrator feature to enable retry UX before the first TestHost handshake. The release/11.0.1xx backport adds optional TargetFramework field 21 independently of runtime Framework field 2; newer upstream fields 16-20 are not consumed by this branch. Intentional divergences: the SDK does not mirror TestStates.InProgress, and ProtocolConstants.SupportedVersions deliberately stops at 1.3.0 because the SDK does not implement the 1.4.0 reverse server-control channel.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs",
-          "baseline_ref_sha": "868da4b6752d5818d8f1c2c54ae27ee5b5f61852",
-          "baseline_blob_sha": "54dff700b3f69da76605d4707b60ba7c67d21d20",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "5106ce03ba89f3a437abb5797b468e47d8ce211e",
           "scope": "wire constants (TestStates, SessionEventTypes, HandshakeMessage*, ProtocolConstants)"
         }
       ]
@@ -34,7 +34,7 @@
     {
       "id": "dotnet-test-terminal-reporter",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.cs",
-      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. testfx has since split TerminalTestReporter into partial files; the SDK keeps a single TerminalTestReporter.cs. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. Upstream includes the whole folder via a glob (TerminalReporterContract.props), so when testfx adds a partial it must be appended here by hand -- see microsoft/testfx#10390. Sources are append-only: the tracking issue marker keys on the source index. Reconciled through 45f54c96: retry/flaky and slowest-test summaries, per-outcome test-result visibility, skipped-count coloring, and descriptive exit-code summaries are ported. INTENTIONALLY NOT PORTED: (1) the coverage summary (TerminalTestReporter.Coverage.cs) -- it renders CoverageScopeSummary/TestCoverageThresholdMessage, which are in-process Microsoft.Testing.Platform message types with no representation in the 'dotnet test' IPC contract, so the orchestrator never receives the data; porting it requires a wire-protocol addition first. (2) In-process retry attribution (RetryAttemptProperty) and TerminalTestReporter.TestCompletedWithoutResult -- the SDK does not yet receive framework-level retry metadata and attributes retries per test-host instance id instead. (3) ShowRunSummary is never set to false by 'dotnet test': the SDK keeps one reporter for the whole execution and aggregates every attempt, so its summary already describes the whole run. This is a hard fork: local content intentionally diverges; the signal is 'upstream changed', not 'files differ'.",
+      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. testfx has since split TerminalTestReporter into partial files; the SDK keeps a single TerminalTestReporter.cs. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. Upstream includes the whole folder via a glob (TerminalReporterContract.props), so when testfx adds a partial it must be appended here by hand -- see microsoft/testfx#10390. Sources are append-only: the tracking issue marker keys on the source index. Reconciled through 45f54c96: retry/flaky and slowest-test summaries, per-outcome test-result visibility, skipped-count coloring, and descriptive exit-code summaries are ported. The release/11.0.1xx module-identity backport uses TestFrameworkDisplay on existing start/result/completion/summary surfaces, preserves the five- and six-argument AssemblyRunStarted entry points, and adds a required seventh runtime argument after nullable attempt. It does not import newer error-recap, heartbeat, per-application settings, retry or reporting features. INTENTIONALLY NOT PORTED: (1) the coverage summary (TerminalTestReporter.Coverage.cs) -- it renders CoverageScopeSummary/TestCoverageThresholdMessage, which are in-process Microsoft.Testing.Platform message types with no representation in the 'dotnet test' IPC contract, so the orchestrator never receives the data; porting it requires a wire-protocol addition first. (2) In-process retry attribution (RetryAttemptProperty) and TerminalTestReporter.TestCompletedWithoutResult -- the SDK does not yet receive framework-level retry metadata and attributes retries per test-host instance id instead. (3) ShowRunSummary is never set to false by 'dotnet test': the SDK keeps one reporter for the whole execution and aggregates every attempt, so its summary already describes the whole run. This is a hard fork: local content intentionally diverges; the signal is 'upstream changed', not 'files differ'.",
       "sources": [
         {
           "repo": "microsoft/testfx",
@@ -64,8 +64,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Formatting.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "e635002a2b75195d01327aad9508a023df0492fd",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "422663f28daf6e53d6d8236c4781897728658e54",
           "scope": "reporter partial"
         },
         {
@@ -80,8 +80,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Lifecycle.cs",
-          "baseline_ref_sha": "45f54c96f143019fd1a71254fa0449888e2f83a5",
-          "baseline_blob_sha": "847577197225ece92f57378af4fe7c6a1066fd5a",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "a580d536a056d4e0046d259568ecf8fb8afbaa7c",
           "scope": "reporter partial"
         },
         {
@@ -190,7 +190,7 @@
     {
       "id": "dotnet-test-terminal-ansiterminaltestprogressframe",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/AnsiTerminalTestProgressFrame.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. Reconciled at f935d2d3 (#55474): the only upstream change since the previous baseline is microsoft/testfx#10093, which split the type into AnsiTerminalTestProgressFrame.{Append,Render,TextLayout}.cs without changing behavior, so nothing was ported and the SDK keeps its single-file fork. The three new partials are tracked below so a future behavioral change in any of them raises drift. The SDK fork also intentionally lacks upstream's frame/RenderedProgressItem pooling (Reset/GetOrAllocateNextSlot/RenderedLinesCount) and the progress-message text-layout helpers, which belong to upstream-only features.",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. Reconciled at f935d2d3 (#55474): the only upstream change since the previous baseline is microsoft/testfx#10093, which split the type into AnsiTerminalTestProgressFrame.{Append,Render,TextLayout}.cs without changing behavior, so nothing was ported and the SDK keeps its single-file fork. The three new partials are tracked below so a future behavioral change in any of them raises drift. The SDK fork also intentionally lacks upstream's frame/RenderedProgressItem pooling (Reset/GetOrAllocateNextSlot/RenderedLinesCount) and the progress-message text-layout helpers, which belong to upstream-only features. The release/11.0.1xx backport adds width-bounded target/process/runtime identity, dropping secondary runtime information before truncating a long assembly name or dropping primary identity.",
       "sources": [
         {
           "repo": "microsoft/testfx",
@@ -204,8 +204,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.Append.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
-          "baseline_blob_sha": "4cbbe919121d1790f3bc3e713e297d3fb0acc960",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "46a0c0ceae74d22e4f11f09c8b862355f242e3a0",
           "scope": "frame partial; split out of AnsiTerminalTestProgressFrame.cs"
         },
         {
@@ -334,14 +334,14 @@
     {
       "id": "dotnet-test-terminal-simpleterminalbase",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/SimpleTerminalBase.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. Module identity uses the shared TestFrameworkDisplay helper, preserving the target/process tuple and labelling differing or otherwise unclassified runtimes separately. The release/11.0.1xx branch retains its existing progress and active-test rendering.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SimpleTerminalBase.cs",
-          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
-          "baseline_blob_sha": "786ff445c6a535e5a7bb69b05f91d0722cc5efa6",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "8a81b8882d4010ad84d6de904ec17a4535bbee74",
           "scope": "entire file"
         }
       ]
@@ -424,14 +424,14 @@
     {
       "id": "dotnet-test-terminal-testprogressstate",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestProgressState.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. Retry/flaky accounting and in-process retry attribution are intentionally deferred with reporter reconciliation issues #55472 and #55473.",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. The release/11.0.1xx branch keeps its single-file state and existing instance-based retry accounting rather than importing newer upstream state/summary settings. RuntimeFramework is immutable execution metadata separate from TargetFramework and Architecture, appended as an optional seventh constructor argument. Framework-level in-process retry attribution remains deferred.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
-          "baseline_blob_sha": "1199c0ba8609a29f615e05d87c6ee91fc958fda0",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "31c3b2bf3de5d8f576838e6d84cfd6c47be18c0a",
           "scope": "entire file"
         }
       ]
@@ -568,6 +568,36 @@
           "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
           "baseline_blob_sha": "7ce0c0b08a798fdb926c45c09c38c30e4a0e1d8c",
           "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-progress-resources",
+      "local_path": "src/Cli/dotnet/Commands/CliCommandStrings.resx",
+      "notes": "RuntimeFramework is adapted into the managed CLI resource owner. The release/11.0.1xx backport does not import newer heartbeat or errored-assembly strings.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalResources.resx",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "9c1a54cce452de8017042f3143aa372902823b2a",
+          "scope": "runtime-annotation string only"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-framework-display",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestFrameworkDisplay.cs",
+      "notes": "Shared module target/process/runtime presentation. Known equal runtimes stay compact; target platform suffixes are ignored only for comparison, and unknown targets/runtimes never imply equality. SDK adaptations are namespace, resource owner, repository header and string.IsNullOrWhiteSpace in place of RoslynString. FrameworkDescription normalization remains caller-owned.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestFrameworkDisplay.cs",
+          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "baseline_blob_sha": "6e2c9842fa96f3662330833fedce45ec5fb6409c",
+          "scope": "entire helper; namespace/resources adapted"
         }
       ]
     }
