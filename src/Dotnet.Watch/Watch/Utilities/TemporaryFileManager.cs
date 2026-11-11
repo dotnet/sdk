@@ -13,6 +13,13 @@ internal sealed class TemporaryFileManager : IDisposable
     {
         public FileStream Stream => stream;
 
+        public FileStream ReopenReadOnly()
+        {
+            var path = stream.Name;
+            stream.Dispose();
+            return File.OpenRead(path);
+        }
+
         public void Dispose()
         {
             try

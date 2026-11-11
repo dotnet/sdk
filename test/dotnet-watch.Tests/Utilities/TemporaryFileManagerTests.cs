@@ -32,12 +32,10 @@ public class TemporaryFileManagerTests
 
                 file1.Stream.Write("<Solution />"u8);
                 file1.Stream.Flush();
-                using var reader = new StreamReader(new FileStream(
-                    path1,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.ReadWrite));
+                using var readLock = file1.ReopenReadOnly();
+                using var reader = new StreamReader(File.OpenRead(path1));
                 Assert.AreEqual("<Solution />", reader.ReadToEnd());
+                Assert.ThrowsExactly<IOException>(() => File.OpenWrite(path1).Dispose());
 
                 if (!OperatingSystem.IsWindows())
                 {

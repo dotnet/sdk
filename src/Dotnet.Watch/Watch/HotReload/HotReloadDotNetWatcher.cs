@@ -1155,8 +1155,10 @@ internal sealed class HotReloadDotNetWatcher
 
                 var doc = new XDocument(solutionElement);
                 doc.Save(solutionFile.Stream);
+                var solutionFilePath = solutionFile.Stream.Name;
+                using var solutionFileLock = solutionFile.ReopenReadOnly();
 
-                if (!await BuildFileOrProjectOrSolutionAsync(solutionFile.Stream.Name, targetFramework, device, action, cancellationToken))
+                if (!await BuildFileOrProjectOrSolutionAsync(solutionFilePath, targetFramework, device, action, cancellationToken))
                 {
                     return false;
                 }
