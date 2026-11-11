@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
-using System.Text.RegularExpressions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
@@ -117,11 +116,6 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
 
     internal const string UninstallRegistryKeyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
 
-    // The first version in a bundle name; runtime bundles show prereleases as "11.0.0 RC 3".
-    private static readonly Regex s_displayNameVersion = new(
-        @"(?<version>\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)(?: (?<label>[A-Za-z]+) (?<number>\d+))?",
-        RegexOptions.CultureInvariant);
-
     /// <summary>
     /// Returns the installed bundles in the same upgrade family as a bundle for <paramref name="requested"/>.
     /// A bundle refuses to downgrade only bundles with its upgrade code, so installs without a bundle registration,
@@ -180,16 +174,27 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     /// <summary>Parses the product version from a bundle display name such as <c>Microsoft .NET SDK 10.0.404 (x64)</c>.</summary>
     internal static ReleaseVersion? TryParseDisplayNameVersion(string displayName)
     {
-        var match = s_displayNameVersion.Match(displayName);
-        if (!match.Success)
+        string[] tokens = displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        for (int i = 0; i < tokens.Length; i++)
         {
-            return null;
+            if (!ReleaseVersion.TryParse(tokens[i], out var version))
+            {
+                continue;
+            }
+
+            // Runtime bundles show prereleases as "11.0.0 RC 3".
+            if (i + 2 < tokens.Length
+                && tokens[i + 1].All(char.IsAsciiLetter)
+                && tokens[i + 2].All(char.IsAsciiDigit)
+                && ReleaseVersion.TryParse($"{tokens[i]}-{tokens[i + 1].ToLowerInvariant()}.{tokens[i + 2]}", out var prerelease))
+            {
+                return prerelease;
+            }
+
+            return version;
         }
 
-        string versionText = match.Groups["label"].Success
-            ? $"{match.Groups["version"].Value}-{match.Groups["label"].Value.ToLowerInvariant()}.{match.Groups["number"].Value}"
-            : match.Groups["version"].Value;
-        return ReleaseVersion.TryParse(versionText, out var version) ? version : null;
+        return null;
     }
 
     /// <summary>
