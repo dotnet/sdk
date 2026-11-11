@@ -62,7 +62,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
         _reporter = reporter ?? Reporter.Output;
         _errorReporter = reporter ?? Reporter.Error;
 
-        _configFilePath = result.GetValue(Definition.ConfigOption);
+        _configFilePath = result.GetValue(Definition.ConfigOption)?.FullName;
         _sources = result.GetValue(Definition.AddSourceOption);
         _verbosity = result.GetValue(Definition.VerbosityOption);
         if (!result.HasOption(Definition.VerbosityOption) && result.GetValue(Definition.RestoreOptions.InteractiveOption))
@@ -73,7 +73,9 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
         _restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(result);
     }
 
-    public override int Execute()
+    public override int Execute() => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+    internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
         FilePath? customManifestFileLocation = GetCustomManifestFileLocation();
 
@@ -109,10 +111,11 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
             _localToolsResolverCache,
             _fileSystem);
 
-        ToolRestoreResult[] toolRestoreResults =
-            [.. packagesFromManifest
-                .AsEnumerable()
-                .Select(package => toolPackageRestorer.InstallPackage(package, configFile))];
+        var toolRestoreResults = new List<ToolRestoreResult>(packagesFromManifest.Count);
+        foreach (ToolManifestPackage package in packagesFromManifest)
+        {
+            toolRestoreResults.Add(await toolPackageRestorer.InstallPackageAsync(package, configFile, cancellationToken));
+        }
 
         Dictionary<RestoredCommandIdentifier, ToolCommand> downloaded =
             toolRestoreResults.Select(result => result.SaveToCache)
@@ -123,7 +126,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
 
         _localToolsResolverCache.Save(downloaded);
 
-        return PrintConclusionAndReturn(toolRestoreResults);
+        return PrintConclusionAndReturn([.. toolRestoreResults]);
     }
 
     private int PrintConclusionAndReturn(ToolRestoreResult[] toolRestoreResults)

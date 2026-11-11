@@ -34,13 +34,18 @@
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'==''">Shipping</FSharpCorePath>
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='prerelease'">PreRelease</FSharpCorePath>
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='release'">Release</FSharpCorePath>
-      <!-- NetTFMUpdate: Restore $(NetCurrent) when the F# compiler package targets net12.0. -->
-      <FSharpTfm>net11.0</FSharpTfm>
     </PropertyGroup>
 
     <ItemGroup>
+      <_FSharpCoreXml Include="$(PkgMicrosoft_FSharp_Compiler)/lib/net*/FSharp.Core.xml" />
+    </ItemGroup>
+
+    <Error Condition="'@(_FSharpCoreXml->Count())' != '1'"
+           Text="Expected exactly one FSharp.Core.xml under '$(PkgMicrosoft_FSharp_Compiler)/lib/net*'; found @(_FSharpCoreXml->Count())." />
+
+    <ItemGroup>
         <ResolvedFileToPublish
-          Include="$(PkgMicrosoft_FSharp_Compiler)/lib/$(FSharpTfm)/FSharp.Core.xml"
+          Include="@(_FSharpCoreXml)"
           CopyToPublishDirectory="PreserveNewest"
           DestinationSubPath="FSharp.Core.xml"
           RelativePath="FSharp.Core.xml"

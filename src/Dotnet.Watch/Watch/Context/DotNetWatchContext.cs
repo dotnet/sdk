@@ -37,8 +37,14 @@ internal sealed class DotNetWatchContext : IAsyncDisposable
     public required BrowserRefreshServerFactory BrowserRefreshServerFactory { get; init; }
     public required BrowserLauncher BrowserLauncher { get; init; }
 
+    /// <summary>
+    /// Manages temporary files created by watch.
+    /// </summary>
+    public readonly TemporaryFileManager TemporaryFileManager = new();
+
     public async ValueTask DisposeAsync()
     {
         await BrowserRefreshServerFactory.DisposeAsync();
+        TemporaryFileManager.Dispose();
     }
 }

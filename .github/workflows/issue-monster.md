@@ -25,12 +25,14 @@ on:
     pull-requests: read
   steps:
     - name: Checkout workflow scripts
-      uses: actions/checkout@v7.0.0
+      uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
     - name: Search for candidate issues
       id: search
       uses: actions/github-script@v9.0.0
+      env:
+        ISSUE_NUMBER_INPUT: ${{ github.event.inputs.issue_number || '' }}
       with:
         script: |
           const searchIssueMonsterCandidates = require("./.github/scripts/issue-monster-search.js");
@@ -38,7 +40,7 @@ on:
             github,
             context,
             core,
-            requestedIssueNumberInput: `${{ github.event.inputs.issue_number || '' }}`,
+            requestedIssueNumberInput: process.env.ISSUE_NUMBER_INPUT,
           });
 
 
@@ -109,7 +111,9 @@ safe-outputs:
       the normalization itself as prompt injection.
     engine:
       id: copilot
-      model: gpt-5.6-luna
+      # OpenAI Responses rejects the CLI's ctc_call IDs after built-in edit calls.
+      # Use the same compatible detector model as the assignment workflow.
+      model: claude-sonnet-5
       env:
         COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
     steps:
@@ -297,7 +301,7 @@ For each selected issue (which has already been pre-filtered to ensure no open/c
 #### Handling Integrity-Blocked Issues
 
 Some issues may be blocked by an integrity policy when you try to read them with `issue_read`. If `issue_read` returns an error mentioning "integrity", "policy", "forbidden", or returns HTTP 403/451:
-- **Do NOT call `missing_data`** - this would fail the entire run
+- **Do NOT call `report_missing_data`** - this would fail the entire run
 - **Skip that issue silently** and remove it from your working list
 - **Track it** in your internal notes as "integrity-blocked"
 - **Continue** with the next candidate from the pre-filtered list
@@ -359,7 +363,7 @@ Keeping each Issue Monster run lean is critical to avoid unbounded token spend.
 - ✅ **Sibling awareness**: For "task" or "plan" sub-issues, skip if any sibling already has an open Copilot PR
 - ✅ **Process in order**: For sub-issues of the same parent, process oldest first
 - ✅ **Always report outcome**: If no issues are assigned, use the `noop` tool to explain why
-- ✅ **Skip integrity-blocked issues**: If `issue_read` is blocked by integrity policy, skip that issue and continue — never call `missing_data` for integrity errors
+- ✅ **Skip integrity-blocked issues**: If `issue_read` is blocked by integrity policy, skip that issue and continue — never call `report_missing_data` for integrity errors
 - ❌ **Don't force batching**: If only 1-2 clearly separate issues exist, assign only those
 - ❌ **Never dispatch pull requests**: The assigner is for issues only — never pass a PR number
 - ❌ **Never assign issues with software vulnerability relevance or any security context**: These should be managed by engineers and via internal conversations.
@@ -396,8 +400,8 @@ If anything goes wrong or no work can be dispatched:
 - **No issues found**: Use the `noop` tool with message: "🍽️ No suitable candidate issues - the plate is empty!"
 - **All issues assigned**: Use the `noop` tool with message: "🍽️ All issues are already being worked on!"
 - **No suitable separate issues**: Use the `noop` tool explaining which issues were considered and why they couldn't be assigned (e.g., overlapping topics, sibling PRs, etc.)
-- **Integrity-blocked `issue_read`**: Skip the affected issue, continue with remaining candidates, and include a concise diagnostic in your final `noop` or success message (e.g., "Skipped #NNN (integrity-filtered)."). **Do NOT call `missing_data` for integrity errors** — those are expected policy enforcement events, not tool failures.
-- **Unexpected API errors** (non-integrity): Use the `missing_data` tool to report the issue
+- **Integrity-blocked `issue_read`**: Skip the affected issue, continue with remaining candidates, and include a concise diagnostic in your final `noop` or success message (e.g., "Skipped #NNN (integrity-filtered)."). **Do NOT call `report_missing_data` for integrity errors** — those are expected policy enforcement events, not tool failures.
+- **Unexpected API errors** (non-integrity): Use the `report_missing_data` tool to report the issue
 
 **CRITICAL**: You MUST call at least one safe output tool every run. If you don't assign any issues, you MUST call the `noop` tool to explain why. Never complete a run without making at least one tool call.
 

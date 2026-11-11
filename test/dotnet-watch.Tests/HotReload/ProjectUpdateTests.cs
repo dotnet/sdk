@@ -177,6 +177,36 @@ public class ProjectUpdateTests : DotNetWatchTestBase
     }
 
     [TestMethod]
+    public async Task RecoverFromFailedReEvaluation()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+            .WithSource()
+            .WithProjectChanges(project =>
+            {
+                project.Root.Add(XElement.Parse("""
+                    <Target Name="FailDesignTimeBuild" BeforeTargets="CoreCompile">
+                      <Error Condition="Exists('$(MSBuildProjectDirectory)/break-evaluation')" Text="break-evaluation exists: failing on purpose." />
+                    </Target>
+                    """));
+            });
+
+        var markerPath = Path.Combine(testAsset.Path, "break-evaluation");
+
+        App.Start(testAsset, []);
+
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+
+        File.WriteAllText(markerPath, "");
+
+        await App.WaitUntilOutputContains(MessageDescriptor.FixBuildError);
+        App.Process.ClearOutput();
+
+        File.Delete(markerPath);
+
+        await App.WaitUntilOutputContains(MessageDescriptor.ReEvaluationCompleted);
+    }
+
+    [TestMethod]
     public async Task DefaultItemExcludes_DefaultItemsEnabled()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")

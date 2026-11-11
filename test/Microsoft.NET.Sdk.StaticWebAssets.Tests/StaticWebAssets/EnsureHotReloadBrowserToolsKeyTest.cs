@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.HotReload;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
@@ -136,6 +137,17 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             Assert.AreEqual(first.PublicKey, second.PublicKey);
             Assert.AreSequenceEqual(publicContent, File.ReadAllBytes(_publicKeyPath));
             Assert.AreSequenceEqual(privateContent, File.ReadAllBytes(_privateKeyPath));
+        }
+
+        [TestMethod]
+        public void SharedKeyPairReportsFileWriteFailure()
+        {
+            var blockedDirectory = Path.Combine(_directory, "not-a-directory");
+            File.WriteAllText(blockedDirectory, "");
+            var publicKeyPath = Path.Combine(blockedDirectory, "key.public.json");
+            var privateKeyPath = Path.Combine(blockedDirectory, "key.private.json");
+
+            Assert.ThrowsExactly<IOException>(() => HotReloadKeyPair.GetOrCreate(publicKeyPath, privateKeyPath, _ => { }));
         }
 
         [TestMethod]

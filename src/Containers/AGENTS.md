@@ -23,6 +23,17 @@ feature (`Microsoft.NET.Build.Containers`).
   also carry a legacy `SDK_CONTAINER_*` alias; newer ones (e.g. the push/pull
   credentials, `DOTNET_CONTAINER_INSECURE_REGISTRIES`) are `DOTNET_CONTAINER_*`-only.
   Check the existing constant before assuming an alias exists.
+- **Bearer-token (realm) requests are untrusted and use a separate transport.** The
+  realm comes from the registry, so `AuthHandshakeMessageHandler` sends token requests
+  through [AuthRealmHandlerFactory.cs](Microsoft.NET.Build.Containers/AuthRealmHandlerFactory.cs)
+  (Microsoft.Security.AntiSSRF, validated at connect time) rather than the registry
+  handler chain. The policy comes only from `DOTNET_CONTAINER_AUTH_REALM_POLICY`
+  (`Public` default, `AllowlistOnly`, `None`) and the semicolon-separated IP/CIDR list
+  `DOTNET_CONTAINER_AUTH_REALM_ALLOWED_ADDRESSES`; there is no runtime address detection.
+  Realm requests may use HTTP only when the realm itself is HTTP and the registry is configured
+  as insecure; an HTTPS realm is never downgraded to HTTP.
+  Don't send realm requests via `base.SendAsync`; unit tests that fake a token server pass
+  `realmHandlerFactory` instead.
 
 ## Tests
 

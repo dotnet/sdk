@@ -258,7 +258,7 @@ public class BrowserToolsForwarderTest
     {
         await using var provider = await StartApplicationAsync(context =>
         {
-            // Mirrors AbstractBrowserRefreshServer.AcceptBrowserConnectionAsync: status only, no upgrade.
+            // Mirrors BrowserRefreshServer.AcceptBrowserConnectionAsync: status only, no upgrade.
             context.Response.StatusCode = providerStatusCode;
             return Task.CompletedTask;
         });
