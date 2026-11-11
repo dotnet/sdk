@@ -17,7 +17,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public static void ClassInitialize(TestContext ctx)
         {
             s_sharedHome = new SharedHomeDirectory(new TestContextOutputHelper(ctx));
-            s_sharedHome.InstallPackage("Microsoft.TemplateEngine.Samples");
+            // Pinned so a newly published package cannot change generated output underneath the checked-in snapshots.
+            s_sharedHome.InstallPackage("Microsoft.TemplateEngine.Samples::10.0.404");
         }
 
         [ClassCleanup]
