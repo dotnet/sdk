@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Analyzer.Utilities;
@@ -98,10 +99,10 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         {
             hashCode.Add(Creation.GetHashCodeOrDefault());
             hashCode.Add(HashUtilities.Combine(CreationCallStack));
-            hashCode.Add(Symbol.GetHashCodeOrDefault());
+            hashCode.Add(Symbol is null ? 0 : SymbolEqualityComparer.Default.GetHashCode(Symbol));
             hashCode.Add(CaptureId.GetHashCodeOrDefault());
             hashCode.Add(AnalysisEntity.GetHashCodeOrDefault());
-            hashCode.Add(LocationType.GetHashCodeOrDefault());
+            hashCode.Add(LocationType is null ? 0 : SymbolEqualityComparer.Default.GetHashCode(LocationType));
             hashCode.Add(_isSpecialSingleton.GetHashCode());
             hashCode.Add(IsNull.GetHashCode());
         }
@@ -109,14 +110,30 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<AbstractLocation> obj)
         {
             var other = (AbstractLocation)obj;
-            return Creation.GetHashCodeOrDefault() == other.Creation.GetHashCodeOrDefault()
-                && HashUtilities.Combine(CreationCallStack) == HashUtilities.Combine(other.CreationCallStack)
-                && Symbol.GetHashCodeOrDefault() == other.Symbol.GetHashCodeOrDefault()
-                && CaptureId.GetHashCodeOrDefault() == other.CaptureId.GetHashCodeOrDefault()
-                && AnalysisEntity.GetHashCodeOrDefault() == other.AnalysisEntity.GetHashCodeOrDefault()
-                && LocationType.GetHashCodeOrDefault() == other.LocationType.GetHashCodeOrDefault()
-                && _isSpecialSingleton.GetHashCode() == other._isSpecialSingleton.GetHashCode()
-                && IsNull.GetHashCode() == other.IsNull.GetHashCode();
+            return ReferenceEquals(Creation, other.Creation)
+                && CreationStacksEqual(CreationCallStack, other.CreationCallStack)
+                && SymbolEqualityComparer.Default.Equals(Symbol, other.Symbol)
+                && Nullable.Equals(CaptureId, other.CaptureId)
+                && Equals(AnalysisEntity, other.AnalysisEntity)
+                && SymbolEqualityComparer.Default.Equals(LocationType, other.LocationType)
+                && _isSpecialSingleton == other._isSpecialSingleton
+                && IsNull == other.IsNull;
+        }
+
+        private static bool CreationStacksEqual(ImmutableStack<IOperation> first, ImmutableStack<IOperation> second)
+        {
+            while (!ReferenceEquals(first, second))
+            {
+                if (first.IsEmpty || second.IsEmpty || !ReferenceEquals(first.Peek(), second.Peek()))
+                {
+                    return false;
+                }
+
+                first = first.Pop();
+                second = second.Pop();
+            }
+
+            return true;
         }
 
         /// <summary>

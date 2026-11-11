@@ -100,6 +100,10 @@ Once you have implemented the above custom analysis pieces, your dataflow analyz
 
 **PERFORMANCE NOTE:** Dataflow analysis is computationally quite expensive, especially for large method bodies with complex control flow and symbols that can lead to large analysis data sets and multiple flow analysis iterations and data set merges to reach fix point. Analyzers should make sure that they have adequate syntactic and/or semantic checks upfront to try and limit the cases where flow analysis is invoked.
 
+Indexer keys in [AnalysisEntityFactory](../src/Utilities/FlowAnalysis/FlowAnalysis/Framework/DataFlow/AnalysisEntityFactory.cs) use bound parameter order, independently of argument visitation order. Reordered C# named arguments must identify the same element. Unbound or duplicate parameter positions in error-recovery operations are not tracked as valid keys, and pooled index builders must be disposed even when argument access fails.
+
+[AnalysisEntity](../src/Utilities/FlowAnalysis/FlowAnalysis/Framework/DataFlow/AnalysisEntity.cs) hashes are lookup filters, not identity. After matching hashes, compare symbols and types with `SymbolEqualityComparer.Default`, and compare actual locations, parents, captures, indices, and call frames. Its dependent location and index types must obey the same contract; a colliding nested component must not conflate otherwise distinct keys.
+
 ## Well-known flow analyses
 
 We have some common analyses that you may likely want to consume for your custom dataflow analysis implementation or use directly in dataflow analyzers:

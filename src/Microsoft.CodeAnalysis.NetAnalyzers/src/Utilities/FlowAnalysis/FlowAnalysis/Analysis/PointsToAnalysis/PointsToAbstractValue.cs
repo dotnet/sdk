@@ -193,10 +193,11 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
         protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<PointsToAbstractValue> obj)
         {
             var other = (PointsToAbstractValue)obj;
-            return HashUtilities.Combine(Locations) == HashUtilities.Combine(other.Locations)
-                && HashUtilities.Combine(LValueCapturedOperations) == HashUtilities.Combine(other.LValueCapturedOperations)
-                && ((int)Kind).GetHashCode() == ((int)other.Kind).GetHashCode()
-                && ((int)NullState).GetHashCode() == ((int)other.NullState).GetHashCode();
+            return Kind == other.Kind
+                && NullState == other.NullState
+                && (ReferenceEquals(Locations, other.Locations) || Locations.SetEquals(other.Locations))
+                && (ReferenceEquals(LValueCapturedOperations, other.LValueCapturedOperations) ||
+                    LValueCapturedOperations.SetEquals(other.LValueCapturedOperations));
         }
     }
 }

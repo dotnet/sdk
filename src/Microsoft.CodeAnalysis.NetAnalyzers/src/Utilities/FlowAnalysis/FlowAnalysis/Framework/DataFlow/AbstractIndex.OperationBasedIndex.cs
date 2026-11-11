@@ -25,7 +25,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<AbstractIndex> obj)
             {
                 var other = (OperationBasedIndex)obj;
-                return Operation.GetHashCode() == other.Operation.GetHashCode();
+                return ReferenceEquals(Operation, other.Operation);
             }
         }
     }
