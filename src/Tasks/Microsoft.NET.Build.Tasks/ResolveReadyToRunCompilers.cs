@@ -222,29 +222,9 @@ namespace Microsoft.NET.Build.Tasks
                     ["linux", "android", "osx", "win", "ios", "iossimulator", "tvos", "tvossimulator", "maccatalyst", "freebsd", "openbsd", "illumos", "solaris", "haiku", "browser", "wasi", "openharmony"],
                     out _);
 
-            targetOS = portablePlatform switch
-            {
-                "linux" => "linux",
-                // The openharmony RID is standalone in the RID graph; map it to the linux token
-                // that crossgen2/ILC accept.
-                "openharmony" => "linux",
-                "android" => "android",
-                "osx" => "osx",
-                "win" => "windows",
-                "ios" => "ios",
-                "iossimulator" => "iossimulator",
-                "tvos" => "tvos",
-                "tvossimulator" => "tvossimulator",
-                "maccatalyst" => "maccatalyst",
-                "freebsd" => "freebsd",
-                "openbsd" => "openbsd",
-                "illumos" => "illumos",
-                "solaris" => "solaris",
-                "haiku" => "haiku",
-                "browser" => "browser",
-                "wasi" => "wasi",
-                _ => null
-            };
+            // Crossgen2 and ILC map platform tokens (including openharmony to linux) in
+            // their shared CommandLineHelpers. Only Windows needs a different metadata token.
+            targetOS = portablePlatform == "win" ? "windows" : portablePlatform;
 
             return targetOS != null;
         }
