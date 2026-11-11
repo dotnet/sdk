@@ -134,21 +134,10 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             return [];
         }
 
-        // Burn registers a bundle in the registry view of its engine, so read both views.
-        // See https://learn.microsoft.com/windows/win32/msi/uninstall-registry-key
-        RegistryView[] views = Environment.Is64BitOperatingSystem ? [RegistryView.Registry32, RegistryView.Registry64] : [RegistryView.Registry32];
-        var bundles = new List<InstalledBundle>();
-        foreach (var view in views)
-        {
-            using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
-            using var uninstallKey = baseKey.OpenSubKey(UninstallRegistryKeyPath);
-            if (uninstallKey is not null)
-            {
-                bundles.AddRange(ReadInstalledBundles(uninstallKey, requested));
-            }
-        }
-
-        return [.. bundles.DistinctBy(b => b.DisplayName)];
+        // .NET bundles use the x86 Burn engine on every architecture, so they register only in the 32-bit view.
+        using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+        using var uninstallKey = baseKey.OpenSubKey(UninstallRegistryKeyPath);
+        return uninstallKey is null ? [] : ReadInstalledBundles(uninstallKey, requested);
     }
 
     /// <summary>
