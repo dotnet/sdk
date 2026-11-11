@@ -284,6 +284,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                                         var sinkSymbolDisplay = sourceSink.Sink.Symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                                         var sinkMethodDisplay = sourceSink.Sink.AccessingMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+
                                         foreach (SymbolAccess sourceOrigin in sourceSink.SourceOrigins)
                                         {
                                             // Something like:

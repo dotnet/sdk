@@ -62,6 +62,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             allTaintedTargets = null;
             ImmutableArray<PointsToAbstractValue> argumentPointsToValues = default;
             ImmutableArray<ValueContentAbstractValue> argumentValueContents = default;
+
             foreach (SourceInfo sourceInfo in sourceSymbolMap.GetInfosForType(method.ContainingType))
             {
                 foreach ((MethodMatcher methodMatcher, ImmutableHashSet<string> taintedTargets) in sourceInfo.TaintedMethods)
@@ -163,6 +164,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             where TBlockResult : AbstractBlockAnalysisResult
         {
             using var values = ArrayBuilder<TValue>.GetInstance();
+
             foreach (var argument in arguments)
             {
                 values.Add(isPrepass ? result[argument.Kind, argument.Syntax] : result[argument]);

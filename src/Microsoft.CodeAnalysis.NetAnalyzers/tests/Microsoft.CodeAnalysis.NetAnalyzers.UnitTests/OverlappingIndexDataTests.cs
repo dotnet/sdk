@@ -83,6 +83,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
         public void IndexFreeComparisonMatchesProjectedEntityEquality()
         {
             var (entities, _) = CreateEntities(aliases: false);
+
             foreach (var first in entities)
             {
                 foreach (var second in entities)
@@ -137,6 +138,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             using var actual = new ValueContentAnalysisData();
             var expected = new Dictionary<AnalysisEntity, ValueContentAbstractValue>();
             var zero = ValueContentAbstractValue.Create(0, type);
+
             foreach (var entity in entities.Take(2))
             {
                 actual.SetAbstractValue(entity, zero);
@@ -160,6 +162,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             using var actual = new ValueContentAnalysisData();
             var expected = new Dictionary<AnalysisEntity, ValueContentAbstractValue>();
             var zero = ValueContentAbstractValue.Create(0, type);
+
             foreach (var entity in entities.Take(2).Concat(indexed))
             {
                 actual.SetAbstractValue(entity, zero);
@@ -174,6 +177,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             expected.Add(entities[6], zero);
             actual.CoreAnalysisData.Add(indexed[1], zero);
             expected.Add(indexed[1], zero);
+
             for (var index = 0; index < indexed.Length; index++)
             {
                 var value = ValueContentAbstractValue.Create(index, type);
@@ -241,6 +245,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             AnalysisEntityBasedPredicateAnalysisData<ValueContentAbstractValue> actual)
         {
             Assert.HasCount(expected.Count, actual.CoreAnalysisData);
+
             foreach (var (entity, value) in expected)
             {
                 Assert.IsTrue(actual.CoreAnalysisData.TryGetValue(entity, out var actualValue));
@@ -259,6 +264,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             }
 
             var updates = new List<(AnalysisEntity, ValueContentAbstractValue)>();
+
             foreach (var entity in data.Keys)
             {
                 if (entity.Indices.Length != key.Indices.Length || entity == key)
@@ -267,6 +273,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
                 }
 
                 var overlaps = true;
+
                 for (var index = 0; index < key.Indices.Length; index++)
                 {
                     if (entity.Indices[index].IsConstant() && key.Indices[index].IsConstant() &&

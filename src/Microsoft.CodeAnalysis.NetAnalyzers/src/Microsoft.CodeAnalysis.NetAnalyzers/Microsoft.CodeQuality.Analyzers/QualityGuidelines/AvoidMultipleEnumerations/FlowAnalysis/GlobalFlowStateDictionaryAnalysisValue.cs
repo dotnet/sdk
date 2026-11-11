@@ -46,6 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ImmutableDictionary<IDeferredTypeEntity, TrackingEnumerationSet> trackedEntities)
         {
             var result = ImmutableStack<TrackingEnumerationSet>.Empty;
+
             foreach (var (_, invocationSet) in trackedEntities)
             {
                 if (invocationSet.IsMultipleEnumeration)
@@ -81,6 +82,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var builder = larger.TrackedEntities.ToBuilder();
             var reportableSets = larger.ReportableEnumerationSets;
             var rebuildReportableSets = false;
+
             foreach (var (key, invocationSet) in smaller.TrackedEntities)
             {
                 TrackingEnumerationSet mergedSet;

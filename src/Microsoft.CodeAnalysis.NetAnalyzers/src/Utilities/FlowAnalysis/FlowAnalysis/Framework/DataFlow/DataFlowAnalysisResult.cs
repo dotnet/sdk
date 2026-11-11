@@ -157,6 +157,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 var examined = 0;
                 var value = _defaultUnknownValue;
                 IOperation? matchedOperation = null;
+
                 foreach (var kvp in _operationStateMap)
                 {
                     examined++;
@@ -189,6 +190,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         private Dictionary<SyntaxNode, IOperation> GetOrCreateOperationBySyntax(OperationKind operationKind)
         {
             var index = new Dictionary<SyntaxNode, IOperation>();
+
             foreach (var operation in _operationStateMap.Keys)
             {
                 if (operation.Kind == operationKind

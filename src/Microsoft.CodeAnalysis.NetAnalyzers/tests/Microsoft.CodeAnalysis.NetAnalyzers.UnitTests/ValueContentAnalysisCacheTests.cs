@@ -113,6 +113,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             var input = CreateCSharpInput();
             var expected = input.Analyze();
             var others = Enumerable.Range(0, 12).Select(_ => CreateCSharpInput()).ToArray();
+
             foreach (var other in others)
             {
                 Assert.AreNotSame(expected, other.Analyze());

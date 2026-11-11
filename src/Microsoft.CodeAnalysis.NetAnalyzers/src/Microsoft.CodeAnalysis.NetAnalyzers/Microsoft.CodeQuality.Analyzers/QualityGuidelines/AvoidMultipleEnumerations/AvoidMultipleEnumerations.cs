@@ -324,6 +324,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 using var reportedContributions = PooledHashSet<ImmutableStack<TrackingEnumerationSet>>.GetInstance(ReferenceEqualityComparer.Instance);
                 using var reportedEnumerationSets = PooledHashSet<TrackingEnumerationSet>.GetInstance(ReferenceEqualityComparer.Instance);
                 using var pendingEnumerationSets = ArrayBuilder<TrackingEnumerationSet>.GetInstance();
+
                 foreach (var operation in potentialDiagnosticOperations)
                 {
                     var result = analysisResult[operation.Kind, operation.Syntax];

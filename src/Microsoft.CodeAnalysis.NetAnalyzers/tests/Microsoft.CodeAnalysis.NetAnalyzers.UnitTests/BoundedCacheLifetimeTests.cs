@@ -64,6 +64,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             var values = keys.Select(key => cache.GetOrCreateValue(key, _ => new object())).ToArray();
             Assert.ThrowsExactly<InvalidOperationException>(() =>
                 cache.GetOrCreateValue(new object(), _ => throw new InvalidOperationException()));
+
             for (var index = 0; index < keys.Length; index++)
             {
                 Assert.AreSame(values[index], cache.GetOrCreateValue(keys[index], _ => throw new InvalidOperationException()));
@@ -84,6 +85,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
                     return new object();
                 }));
             Assert.AreEqual(1, calls);
+
             foreach (var result in results)
             {
                 Assert.AreSame(results[0], result);

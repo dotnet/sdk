@@ -26,6 +26,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             using var enumeratedSymbols = PooledHashSet<ISymbol>.GetInstance(SymbolEqualityComparer.Default);
+
             foreach (var operation in potentialDiagnosticOperations)
             {
                 var symbol = GetReferencedSymbol(operation);
@@ -58,6 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             using var aliases = PooledDictionary<ISymbol, (ISymbol Parent, int Rank, bool MultipleInputs)>.GetInstance(SymbolEqualityComparer.Default);
             var walker = new EnumerationSourceWalker(aliases, wellKnownSymbolsInfo);
+
             foreach (var operationBlock in context.OperationBlocks)
             {
                 walker.Visit(operationBlock);
@@ -72,6 +74,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // deferred expression with multiple inputs can enumerate a shared source
             // twice, so leave those groups to the flow analysis.
             using var enumeratedSources = PooledHashSet<ISymbol>.GetInstance(SymbolEqualityComparer.Default);
+
             foreach (var symbol in enumeratedSymbols)
             {
                 if (walker.HasMultipleInputs(symbol)
@@ -87,6 +90,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static bool IsRepeatedInLoop(IOperation operation)
         {
             var child = operation;
+
             for (var parent = operation.Parent; parent != null; child = parent, parent = parent.Parent)
             {
                 if (parent is ILoopOperation
@@ -197,6 +201,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     var savedCount = _assignmentReferenceCount;
                     _assignmentTarget = null;
                     _assignmentReferenceCount = 0;
+
                     foreach (var declarator in operation.Declarators)
                     {
                         if (CanHoldEnumerable(declarator.Symbol.Type))
@@ -244,6 +249,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     Visit(operation.Collection);
                     _assignmentTarget = savedTarget;
                     _assignmentReferenceCount = savedCount;
+
                     foreach (var child in operation.ChildOperations)
                     {
                         if (child != operation.Collection)

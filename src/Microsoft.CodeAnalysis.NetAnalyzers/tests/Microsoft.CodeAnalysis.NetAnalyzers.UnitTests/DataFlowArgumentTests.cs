@@ -123,6 +123,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
                 .SelectMany(operation => operation.DescendantsAndSelf()).OfType<IInvocationOperation>()
                 .Single(operation => operation.TargetMethod.Name == "Capture");
             Assert.HasCount(expected.Length, invocation.Arguments);
+
             for (var index = 0; index < expected.Length; index++)
             {
                 Assert.IsTrue(result[invocation.Arguments[index]].TryGetSingleNonNullLiteral<string>(out var value));

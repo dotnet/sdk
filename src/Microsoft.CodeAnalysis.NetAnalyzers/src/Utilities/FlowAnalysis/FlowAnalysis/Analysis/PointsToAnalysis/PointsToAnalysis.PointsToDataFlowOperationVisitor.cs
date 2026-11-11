@@ -146,6 +146,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
                 PointsToAbstractValue instanceLocation, Func<AnalysisEntity, bool> predicate)
             {
                 using var builder = PooledHashSet<AnalysisEntity>.GetInstance();
+
                 foreach (var entity in TrackedEntitiesBuilder.EnumerateChildEntities(instanceLocation))
                 {
                     if ((CurrentAnalysisData.HasAbstractValue(entity) || _defaultPointsToValueGenerator.IsTrackedEntity(entity)) &&

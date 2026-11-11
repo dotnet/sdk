@@ -89,6 +89,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.ValueContentAnalysis
         protected override void ComputeHashCodePartsSpecific(ref RoslynHashCode hashCode)
         {
             hashCode.Add(AdditionalSupportedValueTypes.Length);
+
             foreach (var type in AdditionalSupportedValueTypes)
             {
                 hashCode.Add(type, SymbolEqualityComparer.Default);

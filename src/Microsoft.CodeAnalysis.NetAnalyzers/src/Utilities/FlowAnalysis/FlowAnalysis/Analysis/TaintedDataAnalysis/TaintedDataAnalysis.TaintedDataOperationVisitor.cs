@@ -186,6 +186,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
                 TaintedDataAbstractValue? firstTaintedValue = null;
                 TaintedDataAbstractValue? secondTaintedValue = null;
                 List<TaintedDataAbstractValue>? taintedValues = null;
+
                 foreach (IOperation childOperation in operation.ChildOperations)
                 {
                     TaintedDataAbstractValue childValue = Visit(childOperation, argument);

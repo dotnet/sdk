@@ -130,6 +130,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
 
             using var builder = ArrayBuilder<AbstractIndex>.GetInstance(arguments.Length);
             builder.Count = arguments.Length;
+
             foreach (var argument in arguments)
             {
                 if (argument.Parameter is not { Ordinal: var ordinal } ||

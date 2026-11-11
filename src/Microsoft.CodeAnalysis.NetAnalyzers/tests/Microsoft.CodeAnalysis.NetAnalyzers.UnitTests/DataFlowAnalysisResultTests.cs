@@ -76,11 +76,13 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             var values = operations.Select((operation, index) => (operation, index))
                 .ToImmutableDictionary(pair => pair.operation, pair => pair.index);
             var result = CreateResult(cfg, values);
+
             for (var iteration = 0; iteration < 3; iteration++)
             {
                 foreach (var operation in operations)
                 {
                     var expected = Unknown;
+
                     foreach (var pair in values)
                     {
                         if (pair.Key.Kind == operation.Kind && pair.Key.Syntax == operation.Syntax)
@@ -105,6 +107,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             var values = operations.ToImmutableDictionary(operation => operation, _ => 1);
             var result = CreateResult(cfg, values);
             var (_, otherOperations) = CreateOperations(CSharpSyntaxTree.ParseText(Source, cancellationToken: TestContext.CancellationToken));
+
             foreach (var operation in otherOperations)
             {
                 Assert.AreEqual(Unknown, result[operation.Kind, operation.Syntax]);
@@ -130,6 +133,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
         {
             var (cfg, operations) = CreateOperations(CSharpSyntaxTree.ParseText(Source, cancellationToken: TestContext.CancellationToken));
             var result = CreateResult(cfg, ImmutableDictionary<IOperation, int>.Empty);
+
             foreach (var operation in operations)
             {
                 Assert.AreEqual(Unknown, result[operation.Kind, operation.Syntax]);

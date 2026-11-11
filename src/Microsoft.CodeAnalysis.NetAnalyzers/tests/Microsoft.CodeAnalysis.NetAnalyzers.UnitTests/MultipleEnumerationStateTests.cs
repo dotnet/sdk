@@ -112,6 +112,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
         {
             var (entities, operations) = CreateInputs();
             var counts = new[] { EnumerationCount.None, EnumerationCount.Zero, EnumerationCount.One, EnumerationCount.TwoOrMoreTime };
+
             foreach (var firstCount in counts)
             {
                 foreach (var secondCount in counts)

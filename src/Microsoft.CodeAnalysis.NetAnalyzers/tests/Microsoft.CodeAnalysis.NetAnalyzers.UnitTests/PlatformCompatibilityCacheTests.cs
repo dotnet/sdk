@@ -111,6 +111,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             var captures = mappers[0].Target.GetType()
                 .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             Assert.IsNotEmpty(captures);
+
             foreach (var capture in captures)
             {
                 var value = capture.GetValue(mappers[0].Target);

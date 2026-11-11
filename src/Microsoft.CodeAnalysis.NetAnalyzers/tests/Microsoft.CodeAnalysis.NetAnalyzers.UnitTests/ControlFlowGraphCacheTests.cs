@@ -168,12 +168,14 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
         {
             var graph = lookup();
             Assert.IsNotNull(graph);
+
             for (var index = 0; index < 128; index++)
             {
                 _ = lookup();
             }
 
             var before = GC.GetAllocatedBytesForCurrentThread();
+
             for (var index = 0; index < 1000; index++)
             {
                 _ = lookup();

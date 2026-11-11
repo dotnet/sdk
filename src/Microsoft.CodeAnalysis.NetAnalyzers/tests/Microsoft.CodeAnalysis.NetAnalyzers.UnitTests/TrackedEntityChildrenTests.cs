@@ -24,6 +24,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
         {
             var (roots, children) = CreateEntities();
             using var builder = new TrackedEntitiesBuilder(PointsToAnalysisKind.Complete);
+
             foreach (var entity in roots.Concat(children))
             {
                 builder.AddEntityAndPointsToValue(entity, PointsToAbstractValue.Unknown);

@@ -152,6 +152,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             {
                 childrenByLocation ??= allEntities.Where(entity => entity.IsChildOrInstanceMember)
                     .ToLookup(entity => entity.InstanceLocation);
+
                 foreach (var childEntity in GetChildAnalysisEntities(analysisEntity, childrenByLocation[analysisEntity.InstanceLocation]))
                 {
                     StopTrackingEntity(childEntity, analysisData);
@@ -472,6 +473,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             IEnumerable<AnalysisEntity> candidates, Func<AnalysisEntity, bool> predicate)
         {
             using var builder = PooledHashSet<AnalysisEntity>.GetInstance();
+
             foreach (var entity in candidates)
             {
                 if (predicate(entity))
@@ -1095,6 +1097,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 }
 
                 ILookup<PointsToAbstractValue, AnalysisEntity>? childrenByLocation = null;
+
                 foreach (var entity in allAnalysisEntities)
                 {
                     if (ShouldStopTrackingEntityAtExit(entity))

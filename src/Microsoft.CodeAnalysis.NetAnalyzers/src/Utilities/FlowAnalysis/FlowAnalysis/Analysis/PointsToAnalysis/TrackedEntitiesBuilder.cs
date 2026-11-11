@@ -70,6 +70,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
             if (_childEntitiesByInstanceLocation == null)
             {
                 _childEntitiesByInstanceLocation = new Dictionary<PointsToAbstractValue, List<AnalysisEntity>>();
+
                 foreach (var entity in AllEntities)
                 {
                     IndexChildEntity(entity, _childEntitiesByInstanceLocation);

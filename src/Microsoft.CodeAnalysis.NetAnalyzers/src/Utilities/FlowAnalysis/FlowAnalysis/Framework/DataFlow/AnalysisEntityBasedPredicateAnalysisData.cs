@@ -176,6 +176,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             {
                 EnsureEntityIndexTracking();
                 _lazyChildrenByInstanceLocation = new Dictionary<PointsToAbstractValue, HashSet<AnalysisEntity>>();
+
                 foreach (var entity in CoreAnalysisData.Keys)
                 {
                     UpdateChildEntityIndex(entity, added: true);
@@ -258,6 +259,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             if (!_lazyIndexedEntities.TryGetValue(key, out var entities))
             {
                 entities = new List<AnalysisEntity>();
+
                 foreach (var candidate in CoreAnalysisData.Keys)
                 {
                     if (candidate.Indices.Length == key.Rank &&
@@ -283,6 +285,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             // Snapshot updates before calling virtual setters, which may change the candidate index.
             // See https://github.com/dotnet/roslyn-analyzers/issues/6929.
             using var builder = ArrayBuilder<(AnalysisEntity, TValue)>.GetInstance();
+
             foreach (var entity in GetIndexedEntityCandidates(analysisEntity))
             {
                 if (entity == analysisEntity)
