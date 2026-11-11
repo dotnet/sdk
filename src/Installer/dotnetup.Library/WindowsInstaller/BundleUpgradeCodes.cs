@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
 /// </summary>
 internal static class BundleUpgradeCodes
 {
-    // aspnetcore src/Installers/Windows/Wix.props: SharedFrameworkNamespaceGuid ("DO NOT CHANGE").
+    // https://github.com/dotnet/aspnetcore/blob/60ef0101bf97cfccb49ede034b38659c15474d1b/src/Installers/Windows/Wix.props#L24
     private static readonly Guid s_aspNetCoreSharedFrameworkNamespace = new("C43D5520-11B3-4D62-B6FE-5D6840B04101");
 
     /// <summary>Returns the upgrade codes a bundle for <paramref name="component"/> <paramref name="version"/> can have.</summary>
@@ -25,23 +25,24 @@ internal static class BundleUpgradeCodes
         string rid = $"win-{architecture}";
         return component switch
         {
-            // sdk src/Layout/redist/targets/GenerateMSIs.targets: SdkBundleInstallerOutputGuidString.
+            // src/Layout/redist/targets/GenerateMSIs.targets (SdkBundleInstallerOutputGuidString).
             InstallComponent.SDK => [GenerateGuid($"Dotnet SDK Bundle Installer {majorMinor}.{version.Patch / 100} {rid}")],
-            // runtime src/installer/pkg/sfx/bundle/Microsoft.NETCore.App.Bundle.bundleproj seed, with arcade wix5/wix.targets GetBundleUpgradeCode.
+            // https://github.com/dotnet/runtime/blob/4487f7ee4f90a02c8cca7b3614f816e4180167d3/src/installer/pkg/sfx/bundle/Microsoft.NETCore.App.Bundle.bundleproj#L9
+            // https://github.com/dotnet/arcade/blob/6e14e95fb045833c796fb858127da08044014e26/src/Microsoft.DotNet.Build.Tasks.Installers/build/wix5/wix.targets#L93-L108
             InstallComponent.Runtime => [GenerateGuid($".NET Core Shared Framework Bundle Installer {majorMinor} {rid}")],
-            // windowsdesktop src/windowsdesktop/src/bundle/Wix.targets; older builds used the arcade seed format.
+            // https://github.com/dotnet/windowsdesktop/blob/77af2c59998e1d0e14583f1c90bda4f453b1b663/src/windowsdesktop/src/bundle/Wix.targets#L87-L88; older builds used the arcade seed format.
             InstallComponent.WindowsDesktop =>
             [
                 GenerateGuid($"Windows Desktop Shared Framework Bundle Installer {architecture} {majorMinor}"),
                 GenerateGuid($"Windows Desktop Shared Framework Bundle Installer {majorMinor} {rid}"),
             ],
-            // aspnetcore src/Installers/Windows/Wix.targets: _GenerateBundleGuids.
+            // https://github.com/dotnet/aspnetcore/blob/60ef0101bf97cfccb49ede034b38659c15474d1b/src/Installers/Windows/Wix.targets#L63-L75
             InstallComponent.ASPNETCore => [GenerateAspNetCoreGuid($"{majorMinor},{architecture}")],
             _ => [],
         };
     }
 
-    // Mirrors aspnetcore's eng/tools/RepoTasks/Uuid.cs, which hashes with SHA-256 despite setting version 3.
+    // Mirrors https://github.com/dotnet/aspnetcore/blob/60ef0101bf97cfccb49ede034b38659c15474d1b/eng/tools/RepoTasks/Uuid.cs#L23-L78 (SHA-256 despite version 3).
     internal static Guid GenerateAspNetCoreGuid(string name)
     {
         byte[] namespaceBytes = s_aspNetCoreSharedFrameworkNamespace.ToByteArray();
