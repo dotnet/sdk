@@ -81,6 +81,40 @@ public class InstallRootEnumeratorTests
     }
 
     [TestMethod]
+    [DataRow("10.0.100", true)]
+    [DataRow("10.0.100-RC.1", true)]
+    [DataRow("10.0.100-rc.01", true)]
+    [DataRow("10.0.100-rc.1+abc", true)]
+    [DataRow("010.0.100", false)]
+    [DataRow("10.0", false)]
+    [DataRow("10.0.100.0", false)]
+    [DataRow("v10.0.100", false)]
+    [DataRow(" 10.0.100", false)]
+    [DataRow("10.0.100-", false)]
+    [DataRow("not-a-version", false)]
+    public void TryParseLayoutVersion_AcceptsOnlyNamesTheVersionReproducesExactly(string folderName, bool accepted)
+    {
+        InstallRootEnumerator.TryParseLayoutVersion(folderName, out var version).Should().Be(accepted);
+
+        (version?.ToString()).Should().Be(accepted ? folderName : null);
+    }
+
+    [TestMethod]
+    [DataRow("10.0.100-RC.1")]
+    [DataRow("10.0.100-rc.01")]
+    [DataRow("10.0.100-rc.1+abc")]
+    public void GetInstalls_ListedInstallAddressesTheFolderItWasFoundIn(string folderName)
+    {
+        using var testEnv = new TestEnvironment();
+        WriteMarker(testEnv.InstallPath, "sdk", folderName, "dotnet.dll");
+
+        var install = InstallRootEnumerator.GetInstalls(NativeRoot(testEnv.InstallPath)).Should().ContainSingle().Subject;
+
+        install.LayoutVersion.ToString().Should().Be(folderName);
+        install.ComponentDirectory.Should().Be(Path.Combine(testEnv.InstallPath, "sdk", folderName));
+    }
+
+    [TestMethod]
     public void GetExistingSystemInstalls_DeduplicatesByFolderAndKeepsRootPriority()
     {
         using var testEnv = new TestEnvironment();

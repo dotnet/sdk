@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 
@@ -40,8 +41,7 @@ internal static class InstallRootEnumerator
 
         foreach (string versionDirectory in Directory.EnumerateDirectories(componentRoot))
         {
-            // A version that does not round-trip names a different folder, so its marker check fails.
-            if (ReleaseVersion.TryParse(Path.GetFileName(versionDirectory), out ReleaseVersion? layoutVersion))
+            if (TryParseLayoutVersion(Path.GetFileName(versionDirectory), out ReleaseVersion? layoutVersion))
             {
                 var install = new DotnetInstall(installRoot, layoutVersion, component);
                 if (InstallationValidator.PassesValidationSmokeCheck(install))
@@ -50,6 +50,23 @@ internal static class InstallRootEnumerator
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Parses a version folder name, accepting it only if the version formats back to exactly that name.
+    /// Every later step (validation, the manifest, uninstall) rebuilds the folder path from the version,
+    /// so a name the version cannot reproduce would make those steps address a different folder.
+    /// </summary>
+    internal static bool TryParseLayoutVersion(string folderName, [NotNullWhen(true)] out ReleaseVersion? layoutVersion)
+    {
+        if (ReleaseVersion.TryParse(folderName, out layoutVersion)
+            && string.Equals(layoutVersion.ToString(), folderName, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        layoutVersion = null;
+        return false;
     }
 
     private static DotnetInstall WithBuildIdentity(DotnetInstall install)
