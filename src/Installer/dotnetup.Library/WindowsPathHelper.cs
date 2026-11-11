@@ -317,7 +317,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
         DotnetInstallRoot root;
         try
         {
-            root = architecture == InstallArchitecture.x86 ? resolver.Resolve(architecture) : resolver.Resolve(architecture) with { Path = Path.GetDirectoryName(resolver.Resolve(architecture).Path) is { } parent && resolver.Resolve(architecture).Path.EndsWith(@"\x64", StringComparison.Ordinal) ? parent : resolver.Resolve(architecture).Path };
+            root = resolver.Resolve(architecture);
         }
         catch (DotnetInstallException ex) when (ex.ErrorCode == DotnetInstallErrorCode.PlatformNotSupported)
         {
