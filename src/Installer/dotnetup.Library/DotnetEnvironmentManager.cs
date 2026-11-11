@@ -135,6 +135,8 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         }
 
         // .NET bundles use the x86 Burn engine on every architecture, so they register only in the 32-bit view.
+        // See InstallerPlatform=x86 in src/Layout/redist/targets/GenerateMSIs.targets (SDK) and MsiArch in
+        // https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Build.Tasks.Installers/build/wix5/wix.targets (runtimes).
         using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
         using var uninstallKey = baseKey.OpenSubKey(UninstallRegistryKeyPath);
         return uninstallKey is null ? [] : ReadInstalledBundles(uninstallKey, requested);
