@@ -1,0 +1,87 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
+
+namespace Microsoft.DotNet.Cli.Test.Tests;
+
+public class GivenDotnetTestReportsTargetFramework : SdkTest
+{
+    public GivenDotnetTestReportsTargetFramework(ITestOutputHelper log) : base(log)
+    {
+    }
+
+    [Fact]
+    public void MatchingRuntime_KeepsModuleIdentityCompact()
+    {
+        TestAsset asset = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+
+        CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(asset.Path)
+            .Execute("-c", "Debug", "--no-progress");
+
+        result.Should().Pass();
+        AssertModuleIdentity(result.StdOut, ToolsetInfo.CurrentTargetFramework, expectDifferentRuntime: false);
+    }
+
+    [Fact]
+    public void RollForward_PreservesTargetAndReportsExecutingRuntime()
+    {
+        TestAsset asset = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+        asset.WithProjectChanges(project =>
+        {
+            XElement properties = project.Root!.Elements("PropertyGroup").First();
+            properties.SetElementValue("TargetFramework", "net8.0");
+            properties.SetElementValue("RollForward", "LatestMajor");
+        });
+
+        CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(asset.Path)
+            .WithEnvironmentVariable("DOTNET_ROLL_FORWARD_TO_PRERELEASE", "1")
+            .Execute("-c", "Debug", "--no-progress");
+
+        result.Should().Pass();
+        AssertModuleIdentity(result.StdOut, "net8.0", expectDifferentRuntime: true);
+        if (!SdkTestContext.IsLocalized())
+        {
+            result.StdOut.Should().Contain($"runtime: {ToolsetInfo.CurrentTargetFramework}");
+        }
+    }
+
+    [WindowsOnlyFact]
+    public void NetFrameworkAndModernTargets_KeepSeparateModuleIdentities()
+    {
+        TestAsset asset = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+        asset.WithProjectChanges(project =>
+        {
+            XElement properties = project.Root!.Elements("PropertyGroup").First();
+            properties.Element("TargetFramework")!.Remove();
+            properties.SetElementValue("TargetFrameworks", $"net472;{ToolsetInfo.CurrentTargetFramework}");
+            properties.SetElementValue("LangVersion", "preview");
+        });
+
+        CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(asset.Path)
+            .Execute("-c", "Debug", "--no-progress");
+
+        result.Should().Pass();
+        AssertModuleIdentity(result.StdOut, "net472", expectDifferentRuntime: null, expectedOccurrences: 4);
+        AssertModuleIdentity(result.StdOut, ToolsetInfo.CurrentTargetFramework, expectDifferentRuntime: false, expectedOccurrences: 4);
+    }
+
+    private static void AssertModuleIdentity(string? output, string targetFramework, bool? expectDifferentRuntime, int expectedOccurrences = 3)
+    {
+        Assert.NotNull(output);
+        string runtimePattern = expectDifferentRuntime switch
+        {
+            true => @", [^)]+",
+            false => string.Empty,
+            null => @"(?:, [^)]+)?",
+        };
+        string identityPattern = $@"TestProject\.(?:exe|dll) \({Regex.Escape(targetFramework)}\|[a-z0-9]+{runtimePattern}\)";
+        Regex.Matches(output, identityPattern).Should().HaveCount(expectedOccurrences,
+            "start, skipped result, completion and any per-module summary must preserve the target identity");
+    }
+}

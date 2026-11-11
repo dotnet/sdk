@@ -20,6 +20,8 @@ internal sealed class TestProgressState(long id, string assembly, string? target
 
     public string? TargetFramework { get; } = targetFramework;
 
+    public string? RuntimeFramework { get; init; }
+
     public string? Architecture { get; } = architecture;
 
     public IStopwatch Stopwatch { get; } = stopwatch;

@@ -1282,6 +1282,10 @@ and the corresponding package Ids for installed tools using the command
     <value>try {0}</value>
     <comment>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</comment>
   </data>
+  <data name="RuntimeFramework" xml:space="preserve">
+    <value>runtime: {0}</value>
+    <comment>The runtime executing a test module when it differs from its target framework or the target is unknown. {0} is the runtime framework.</comment>
+  </data>
   <data name="UninstallLocalToolSucceeded" xml:space="preserve">
     <value>Tool '{0}' was successfully uninstalled and removed from manifest file {1}.</value>
   </data>

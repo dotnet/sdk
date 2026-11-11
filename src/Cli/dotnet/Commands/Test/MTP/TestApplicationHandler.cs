@@ -14,7 +14,8 @@ internal sealed class TestApplicationHandler
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
-    private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
+    private (string? RuntimeFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
+    private string? _targetFramework;
     private bool _receivedTestHostHandshake;
 
     public TestApplicationHandler(TerminalTestReporter output, TestModule module, TestOptions options)
@@ -22,6 +23,7 @@ internal sealed class TestApplicationHandler
         _output = output;
         _module = module;
         _options = options;
+        _targetFramework = string.IsNullOrWhiteSpace(module.TargetFramework) ? null : module.TargetFramework;
     }
 
     internal void OnHandshakeReceived(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
@@ -47,8 +49,8 @@ internal sealed class TestApplicationHandler
 
         var executionId = handshakeMessage.Properties[HandshakeMessagePropertyNames.ExecutionId];
         var arch = handshakeMessage.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
-        var tfm = TargetFrameworkParser.GetShortTargetFramework(handshakeMessage.Properties[HandshakeMessagePropertyNames.Framework]);
-        var currentHandshakeInfo = (tfm, arch, executionId);
+        var runtimeFramework = TargetFrameworkParser.GetShortTargetFramework(handshakeMessage.Properties[HandshakeMessagePropertyNames.Framework]);
+        var currentHandshakeInfo = (runtimeFramework, arch, executionId);
 
         if (!_handshakeInfo.HasValue)
         {
@@ -57,6 +59,14 @@ internal sealed class TestApplicationHandler
         else if (_handshakeInfo.Value != currentHandshakeInfo)
         {
             throw new InvalidOperationException(string.Format(CliCommandStrings.MismatchingHandshakeInfo, currentHandshakeInfo, _handshakeInfo.Value));
+        }
+
+        // Keep the module identity established by the first test-host handshake stable across retries.
+        if (!_receivedTestHostHandshake && _targetFramework is null &&
+            handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.TargetFramework, out string? targetFramework) &&
+            !string.IsNullOrWhiteSpace(targetFramework))
+        {
+            _targetFramework = targetFramework;
         }
 
         var hostType = handshakeMessage.Properties[HandshakeMessagePropertyNames.HostType];
@@ -69,7 +79,7 @@ internal sealed class TestApplicationHandler
             // Calling it for both test host and test host controllers means we will count retries incorrectly, and will messages twice.
             var instanceId = handshakeMessage.Properties[HandshakeMessagePropertyNames.InstanceId];
             var handshakeInfo = _handshakeInfo.Value;
-            _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId);
+            _output.AssemblyRunStarted(_module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId, handshakeInfo.RuntimeFramework);
         }
     }
 
@@ -79,6 +89,7 @@ internal sealed class TestApplicationHandler
             HandshakeMessagePropertyNames.PID => nameof(HandshakeMessagePropertyNames.PID),
             HandshakeMessagePropertyNames.Architecture => nameof(HandshakeMessagePropertyNames.Architecture),
             HandshakeMessagePropertyNames.Framework => nameof(HandshakeMessagePropertyNames.Framework),
+            HandshakeMessagePropertyNames.TargetFramework => nameof(HandshakeMessagePropertyNames.TargetFramework),
             HandshakeMessagePropertyNames.OS => nameof(HandshakeMessagePropertyNames.OS),
             HandshakeMessagePropertyNames.SupportedProtocolVersions => nameof(HandshakeMessagePropertyNames.SupportedProtocolVersions),
             HandshakeMessagePropertyNames.HostType => nameof(HandshakeMessagePropertyNames.HostType),
@@ -139,7 +150,7 @@ internal sealed class TestApplicationHandler
         var handshakeInfo = _handshakeInfo.Value;
         foreach (var testResult in testResultMessage.SuccessfulTestMessages)
         {
-            _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+            _output.TestCompleted(_module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
                 testResultMessage.InstanceId!,
                 testResult.Uid!,
                 testResult.DisplayName!,
@@ -155,7 +166,7 @@ internal sealed class TestApplicationHandler
 
         foreach (var testResult in testResultMessage.FailedTestMessages)
         {
-            _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, testResultMessage.InstanceId!,
+            _output.TestCompleted(_module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, testResultMessage.InstanceId!,
                 testResult.Uid!,
                 testResult.DisplayName!,
                 testResult.Reason,
@@ -194,7 +205,7 @@ internal sealed class TestApplicationHandler
         {
             _output.ArtifactAdded(
                 outOfProcess: false,
-                _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+                _module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
                 // TODO: Revise null suppression here.
                 artifact.TestDisplayName, artifact.FullPath!);
         }

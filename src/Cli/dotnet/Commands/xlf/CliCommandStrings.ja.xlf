@@ -1548,6 +1548,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">&lt;application&gt;.runtimeconfig.json ファイルへのパス。</target>
         <note />
       </trans-unit>
+      <trans-unit id="RuntimeFramework">
+        <source>runtime: {0}</source>
+        <target state="new">runtime: {0}</target>
+        <note>The runtime executing a test module when it differs from its target framework or the target is unknown. {0} is the runtime framework.</note>
+      </trans-unit>
       <trans-unit id="RuntimePropertyNotFound">
         <source>Runtime property 'HOSTFXR_PATH' was not set or empty.</source>
         <target state="translated">ランタイム プロパティ 'HOSTFXR_PATH' が設定されていないか、空です。</target>

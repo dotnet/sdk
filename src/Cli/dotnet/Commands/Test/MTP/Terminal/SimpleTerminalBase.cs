@@ -114,20 +114,11 @@ internal abstract class SimpleTerminal : ITerminal
             Append(' ');
             Append(p.AssemblyName);
 
-            if (p.TargetFramework != null || p.Architecture != null)
+            string displayName = TestFrameworkDisplay.GetDisplayName(p.TargetFramework, p.Architecture, p.RuntimeFramework);
+            if (displayName.Length > 0)
             {
                 Append(" (");
-                if (p.TargetFramework != null)
-                {
-                    Append(p.TargetFramework);
-                    Append('|');
-                }
-
-                if (p.Architecture != null)
-                {
-                    Append(p.Architecture);
-                }
-
+                Append(displayName);
                 Append(')');
             }
 

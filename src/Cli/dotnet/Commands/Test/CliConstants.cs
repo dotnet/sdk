@@ -55,6 +55,9 @@ internal static class HandshakeMessagePropertyNames
     internal const byte ModulePath = 6;
     internal const byte ExecutionId = 7;
     internal const byte InstanceId = 8;
+
+    // Optional assembly target metadata, independent of the runtime in Framework.
+    internal const byte TargetFramework = 21;
 }
 
 internal static class ProtocolConstants

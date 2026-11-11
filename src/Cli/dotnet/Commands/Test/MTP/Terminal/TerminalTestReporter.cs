@@ -105,8 +105,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
     }
 
     public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId)
+        => AssemblyRunStarted(assembly, targetFramework, architecture, executionId, instanceId, runtimeFramework: null);
+
+    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId, string? runtimeFramework)
     {
-        var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
+        var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId, runtimeFramework);
         assemblyRun.NotifyHandshake(instanceId);
 
         // If we fail to parse out the parameter correctly this will enable retry on re-run of the assembly within the same execution.
@@ -127,18 +130,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
                 terminal.Append(_isDiscovery ? CliCommandStrings.DiscoveringTestsFrom : CliCommandStrings.RunningTestsFrom);
                 terminal.Append(' ');
-                AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly, targetFramework, architecture);
+                AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly, assemblyRun.TargetFramework, assemblyRun.Architecture, assemblyRun.RuntimeFramework);
                 terminal.AppendLine();
             });
         }
     }
 
-    private TestProgressState GetOrAddAssemblyRun(string assembly, string? targetFramework, string? architecture, string executionId)
+    private TestProgressState GetOrAddAssemblyRun(string assembly, string? targetFramework, string? architecture, string executionId, string? runtimeFramework)
     {
         return _assemblies.GetOrAdd(executionId, _ =>
         {
             IStopwatch sw = CreateStopwatch();
-            var assemblyRun = new TestProgressState(Interlocked.Increment(ref _counter), assembly, targetFramework, architecture, sw, _isDiscovery);
+            var assemblyRun = new TestProgressState(Interlocked.Increment(ref _counter), assembly, targetFramework, architecture, sw, _isDiscovery)
+            {
+                RuntimeFramework = runtimeFramework,
+            };
             int slotIndex = _terminalWithProgress.AddWorker(assemblyRun);
             assemblyRun.SlotIndex = slotIndex;
 
@@ -250,7 +256,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.SetColor(TerminalColor.DarkGray);
             terminal.Append(" - ");
             terminal.ResetColor();
-            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, testProgressState.Assembly, testProgressState.TargetFramework, testProgressState.Architecture);
+            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, testProgressState.Assembly, testProgressState.TargetFramework, testProgressState.Architecture, testProgressState.RuntimeFramework);
         }
 
         terminal.AppendLine();
@@ -465,8 +471,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 terminal,
                 assembly,
                 attempt,
-                targetFramework,
-                architecture,
+                asm.TargetFramework ?? targetFramework,
+                asm.Architecture ?? architecture,
                 displayName,
                 informativeMessage,
                 outcome,
@@ -475,7 +481,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 expected,
                 actual,
                 standardOutput,
-                errorOutput));
+                errorOutput,
+                asm.RuntimeFramework));
         }
     }
 
@@ -494,6 +501,26 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? actual,
         string? standardOutput,
         string? errorOutput)
+        => RenderTestCompleted(terminal, assembly, attempt, targetFramework, architecture, displayName,
+            informativeMessage, outcome, duration, flatExceptions, expected, actual, standardOutput, errorOutput,
+            runtimeFramework: null);
+
+    private void RenderTestCompleted(
+        ITerminal terminal,
+        string assembly,
+        int attempt,
+        string? targetFramework,
+        string? architecture,
+        string displayName,
+        string? informativeMessage,
+        TestOutcome outcome,
+        TimeSpan? duration,
+        FlatException[]? flatExceptions,
+        string? expected,
+        string? actual,
+        string? standardOutput,
+        string? errorOutput,
+        string? runtimeFramework)
     {
         if (outcome == TestOutcome.Passed && !_options.ShowPassedTests)
         {
@@ -546,7 +573,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(SingleIndentation);
             terminal.Append(CliCommandStrings.FromFile);
             terminal.Append(' ');
-            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly, targetFramework, architecture);
+            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly, targetFramework, architecture, runtimeFramework);
         }
 
         terminal.AppendLine();
@@ -662,26 +689,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.ResetColor();
     }
 
-    private static void AppendAssemblyLinkTargetFrameworkAndArchitecture(ITerminal terminal, string assembly, string? targetFramework, string? architecture)
+    private static void AppendAssemblyLinkTargetFrameworkAndArchitecture(ITerminal terminal, string assembly, string? targetFramework, string? architecture, string? runtimeFramework = null)
     {
         terminal.AppendLink(assembly, lineNumber: null);
-        if (targetFramework != null || architecture != null)
+        string displayName = TestFrameworkDisplay.GetDisplayName(targetFramework, architecture, runtimeFramework);
+        if (displayName.Length > 0)
         {
             terminal.Append(" (");
-            if (targetFramework != null)
-            {
-                terminal.Append(targetFramework);
-                if (architecture != null)
-                {
-                    terminal.Append('|');
-                }
-            }
-
-            if (architecture != null)
-            {
-                terminal.Append(architecture);
-            }
-
+            terminal.Append(displayName);
             terminal.Append(')');
         }
     }
@@ -843,7 +858,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     {
         terminal.ResetColor();
 
-        AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyRun.Assembly, assemblyRun.TargetFramework, assemblyRun.Architecture);
+        AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyRun.Assembly, assemblyRun.TargetFramework, assemblyRun.Architecture, assemblyRun.RuntimeFramework);
         terminal.Append(' ');
         AppendAssemblyResult(terminal, assemblyRun);
         terminal.Append(' ');
@@ -961,7 +976,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.DiscoveredTestsInAssembly, assembly.DiscoveredTestNames.Count));
             terminal.Append(" - ");
-            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture);
+            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture, assembly.RuntimeFramework);
             terminal.AppendLine();
             foreach ((string? displayName, string? uid) in assembly.DiscoveredTestNames)
             {
