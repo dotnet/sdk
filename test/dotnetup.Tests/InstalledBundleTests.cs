@@ -41,6 +41,7 @@ public class InstalledBundleTests
     [DataRow(InstallComponent.Runtime, "11.0.0-rc.3.26522.148", "9E12DBB0-5E37-4493-E5EB-64689F704C13")]
     [DataRow(InstallComponent.Runtime, "9.0.23", "246F1645-53A5-57B7-A2FD-41078EF81F4D")]
     [DataRow(InstallComponent.Runtime, "6.0.1", "B19A028F-5C89-7AF4-5102-0F8ED67CCACA")]
+    [DataRow(InstallComponent.ASPNETCore, "10.0.0", "F9F0B753-5949-5D1B-1C78-83ACA8AFADC9")]
     [DataRow(InstallComponent.ASPNETCore, "9.0.23", "03B430C9-509A-3BB5-AFCF-AE9D088F61CF")]
     [DataRow(InstallComponent.ASPNETCore, "6.0.3", "B7C4CC53-CE40-39E9-9F43-81CE9F5CD47C")]
     public void BundleUpgradeCodes_MatchShippedBundles(InstallComponent component, string version, string expectedUpgradeCode)

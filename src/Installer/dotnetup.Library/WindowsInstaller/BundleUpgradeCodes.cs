@@ -36,8 +36,13 @@ internal static class BundleUpgradeCodes
                 GenerateGuid($"Windows Desktop Shared Framework Bundle Installer {architecture} {majorMinor}"),
                 GenerateGuid($"Windows Desktop Shared Framework Bundle Installer {majorMinor} {rid}"),
             ],
-            // https://github.com/dotnet/aspnetcore/blob/60ef0101bf97cfccb49ede034b38659c15474d1b/src/Installers/Windows/Wix.targets#L63-L75
-            InstallComponent.ASPNETCore => [GenerateAspNetCoreGuid($"{majorMinor},{architecture}")],
+            // 10.0+: https://github.com/dotnet/aspnetcore/blob/60ef0101bf97cfccb49ede034b38659c15474d1b/src/Framework/App.Runtime/bundle/aspnetcore-runtime-bundle.bundleproj#L11 with the arcade target above.
+            // 9.0 and older: https://github.com/dotnet/aspnetcore/blob/4df25a6a4a344556f34bc7312c541be81bc73fe7/src/Installers/Windows/SharedFrameworkBundle/SharedFrameworkBundle.wixproj#L10 with Wix.targets _GenerateBundleGuids.
+            InstallComponent.ASPNETCore =>
+            [
+                GenerateGuid($"ASP.NET Core Shared Framework Bundle Installer {majorMinor} {rid}"),
+                GenerateAspNetCoreGuid($"{majorMinor},{architecture}"),
+            ],
             _ => [],
         };
     }
