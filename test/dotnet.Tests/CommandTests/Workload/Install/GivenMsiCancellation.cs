@@ -59,6 +59,11 @@ public class GivenMsiCancellation : SdkTest
             install.Should().Throw<OperationCanceledException>().Which.Should().BeSameAs(originalCancellation);
             installer.Actions.Should().Equal(InstallAction.Install, InstallAction.Uninstall);
             installer.Installed.Should().BeFalse();
+            installer.PayloadTokens.Should().HaveCount(2);
+            installer.PayloadTokens[0].Should().Be(cancellation.Token);
+            installer.PayloadTokens[1].CanBeCanceled.Should().BeTrue();
+            installer.PayloadTokens[1].Should().NotBe(cancellation.Token);
+            installer.PayloadTokens[1].IsCancellationRequested.Should().BeFalse();
         }
         finally
         {
@@ -70,6 +75,7 @@ public class GivenMsiCancellation : SdkTest
     {
         private readonly MsiPayload _payload;
         public List<InstallAction> Actions { get; } = [];
+        public List<CancellationToken> PayloadTokens { get; } = [];
         public bool Installed { get; private set; }
 
         public TestInstaller(string directory, ISetupLogger logger, IWorkloadResolver resolver)
@@ -87,6 +93,7 @@ public class GivenMsiCancellation : SdkTest
             string packageId, string packageVersion, CancellationToken cancellationToken, DirectoryPath? offlineCache)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            PayloadTokens.Add(cancellationToken);
             return _payload;
         }
 

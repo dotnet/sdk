@@ -30,15 +30,17 @@ those signals.
 ### Cancellation and cleanup
 
 Forward-operation cancellation must not prevent transaction rollback. MSI manifest and
-pack rollback use a non-cancelled cleanup token; keep the original cancellation exception
-after cleanup. The deterministic installer seams are exercised by
+pack rollback create a distinct cancellation scope inside each rollback callback, never
+linked to the cancelled forward token; keep the original cancellation exception after
+cleanup. The deterministic installer seams are exercised by
 [`GivenMsiCancellation`](../../test/dotnet.Tests/CommandTests/Workload/Install/GivenMsiCancellation.cs).
 
-`Console.In` synchronizes `ReadLineAsync` as well as `ReadLine`. The process-scoped
-[`run-api` command](dotnet/Commands/Run/Api/RunApiCommand.cs) waits cancellably for a
-background read and leaves at most one blocked worker until process exit. Do not dispose
-the synchronized reader on cancellation. Keep its regression out of process with a real
-open stdin pipe; see
+`Console.In` synchronizes `ReadLineAsync` as well as `ReadLine`. The
+[`run-api` command](dotnet/Commands/Run/Api/RunApiCommand.cs) uses
+`Console.OpenStandardInputHandle()` with `FileStream`/`StreamReader` instead. Keep the
+cancellable wait: Unix file I/O cannot interrupt an already blocked read, so at most one
+runtime worker can remain until process exit. Keep its regression out of process with a
+real open stdin pipe; see
 [`RunApiCancellationTests`](../../test/dotnet.Tests/CommandTests/Run/RunApiCancellationTests.cs).
 
 ## Three-project command split

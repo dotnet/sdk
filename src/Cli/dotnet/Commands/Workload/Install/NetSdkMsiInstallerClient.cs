@@ -587,9 +587,11 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 },
                 rollback: () =>
                 {
+                    // Rollback has its own lifetime, independent of the cancelled forward operation.
+                    using CancellationTokenSource rollbackCancellation = new();
                     InstallWorkloadManifestImplementation(
                         manifestUpdate,
-                        CancellationToken.None,
+                        rollbackCancellation.Token,
                         offlineCache: null,
                         action: InstallAction.Uninstall);
                 });
@@ -710,8 +712,9 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             {
                 if (shouldRollBackPack)
                 {
-                    // Cancellation stops forward progress, not cleanup of already installed packages.
-                    RollBackMsiInstall(msiToInstall, CancellationToken.None);
+                    // Rollback has its own lifetime, independent of the cancelled forward operation.
+                    using CancellationTokenSource rollbackCancellation = new();
+                    RollBackMsiInstall(msiToInstall, rollbackCancellation.Token);
                 }
             });
         }

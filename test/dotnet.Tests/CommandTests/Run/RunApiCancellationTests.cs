@@ -15,15 +15,11 @@ public class RunApiCancellationTests : SdkTest
     [TestMethod]
     public async Task CancellationInterruptsAnOpenStandardInputPipe()
     {
-        string markerPath = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "read-started");
-        using Process child = StartChild(markerPath);
+        using Process child = StartChild(cancelPendingRead: true);
         Task<string> standardOutput = child.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
         Task<string> standardError = child.StandardError.ReadToEndAsync(TestContext.CancellationToken);
         try
         {
-            SpinWait.SpinUntil(() => File.Exists(markerPath), s_timeout).Should().BeTrue();
-            // The helper has entered the real Console.In read with a still-open, empty stdin pipe.
-            File.WriteAllText(markerPath + ".cancel", "");
             await child.WaitForExitAsync(TestContext.CancellationToken).WaitAsync(s_timeout, TestContext.CancellationToken);
             child.ExitCode.Should().Be(0);
             (await standardOutput).Should().BeEmpty();
@@ -41,8 +37,7 @@ public class RunApiCancellationTests : SdkTest
     [DataRow("\r")]
     public async Task InputLinesBlankLinesAndEndOfFileRetainTheirResponses(string newline)
     {
-        string markerPath = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "read-started");
-        using Process child = StartChild(markerPath);
+        using Process child = StartChild();
         Task<string> standardOutput = child.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
         Task<string> standardError = child.StandardError.ReadToEndAsync(TestContext.CancellationToken);
         try
@@ -74,8 +69,7 @@ public class RunApiCancellationTests : SdkTest
     [TestMethod]
     public async Task EmptyEndOfFileExitsWithoutAResponse()
     {
-        string markerPath = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "read-started");
-        using Process child = StartChild(markerPath);
+        using Process child = StartChild();
         Task<string> standardOutput = child.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
         Task<string> standardError = child.StandardError.ReadToEndAsync(TestContext.CancellationToken);
         try
@@ -92,7 +86,7 @@ public class RunApiCancellationTests : SdkTest
         }
     }
 
-    private static Process StartChild(string markerPath)
+    private static Process StartChild(bool cancelPendingRead = false)
     {
         string assemblyPath = typeof(RunApiCancellationTests).Assembly.Location;
         ProcessStartInfo startInfo = new(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath)
@@ -103,13 +97,19 @@ public class RunApiCancellationTests : SdkTest
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
-        startInfo.ArgumentList.Add("exec");
-        startInfo.ArgumentList.Add("--runtimeconfig");
-        startInfo.ArgumentList.Add(Path.ChangeExtension(assemblyPath, ".runtimeconfig.json"));
-        startInfo.ArgumentList.Add("--depsfile");
-        startInfo.ArgumentList.Add(Path.ChangeExtension(assemblyPath, ".deps.json"));
-        startInfo.ArgumentList.Add(typeof(RunApiTestApp).Assembly.Location);
-        startInfo.ArgumentList.Add(markerPath);
+        if (cancelPendingRead)
+        {
+            startInfo.ArgumentList.Add("exec");
+            startInfo.ArgumentList.Add("--runtimeconfig");
+            startInfo.ArgumentList.Add(Path.ChangeExtension(assemblyPath, ".runtimeconfig.json"));
+            startInfo.ArgumentList.Add("--depsfile");
+            startInfo.ArgumentList.Add(Path.ChangeExtension(assemblyPath, ".deps.json"));
+            startInfo.ArgumentList.Add(typeof(RunApiTestApp).Assembly.Location);
+        }
+        else
+        {
+            startInfo.ArgumentList.Add("run-api");
+        }
         Process child = new() { StartInfo = startInfo };
         child.Start();
         return child;

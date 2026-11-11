@@ -20,15 +20,19 @@ namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 internal sealed class RunApiCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    public override int Execute(CancellationToken cancellationToken)
+    public override int Execute(CancellationToken cancellationToken) =>
+        ExecuteAsync(cancellationToken).GetAwaiter().GetResult();
+
+    internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
         try
         {
-            // Console.In synchronizes even ReadLineAsync, so invoke the blocking read on a worker.
-            // On cancellation at most one read remains on that background worker until process exit.
-            // Do not dispose Console.In: disposal would wait for the same synchronized read.
-            for (string? line; (line = Task.Run(Console.In.ReadLine, cancellationToken)
-                .WaitAsync(cancellationToken).GetAwaiter().GetResult()) != null;)
+            using var inputHandle = Console.OpenStandardInputHandle();
+            using Stream inputStream = inputHandle.IsInvalid ? Stream.Null : new FileStream(inputHandle, FileAccess.Read);
+            using var inputReader = new StreamReader(inputStream, Console.InputEncoding, detectEncodingFromByteOrderMarks: false);
+            // Unix FileStream cancellation cannot interrupt a read already blocked in the OS.
+            for (string? line; (line = await inputReader.ReadLineAsync(cancellationToken).AsTask()
+                .WaitAsync(cancellationToken).ConfigureAwait(false)) != null;)
             {
                 if (string.IsNullOrWhiteSpace(line))
                 {

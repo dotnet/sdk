@@ -8,45 +8,16 @@ namespace Microsoft.DotNet.Cli.TestApp;
 
 public static class RunApiTestApp
 {
-    public static async Task<int> Main(string[] args)
+    public static async Task<int> Main()
     {
         using CancellationTokenSource cancellation = new();
-        using CancellationTokenSource monitorCancellation = new();
-        string markerPath = args[0];
-        Console.SetIn(new ObservedReader(Console.In, markerPath));
-        Task monitor = Task.Run(async () =>
+        Task<int> execution = new RunApiCommand(Parser.Parse(["run-api"])).ExecuteAsync(cancellation.Token);
+        if (execution.IsCompleted)
         {
-            while (!File.Exists(markerPath + ".cancel"))
-            {
-                await Task.Delay(10, monitorCancellation.Token);
-            }
-
-            cancellation.Cancel();
-        });
-
-        try
-        {
-            return new RunApiCommand(Parser.Parse(["run-api"])).Execute(cancellation.Token);
+            throw new InvalidOperationException("Run API must be waiting for input before cancellation.");
         }
-        finally
-        {
-            monitorCancellation.Cancel();
-            try
-            {
-                await monitor;
-            }
-            catch (OperationCanceledException) when (monitorCancellation.IsCancellationRequested)
-            {
-            }
-        }
-    }
 
-    private sealed class ObservedReader(TextReader input, string markerPath) : TextReader
-    {
-        public override string? ReadLine()
-        {
-            File.WriteAllText(markerPath, "reading");
-            return input.ReadLine();
-        }
+        await cancellation.CancelAsync();
+        return await execution;
     }
 }
