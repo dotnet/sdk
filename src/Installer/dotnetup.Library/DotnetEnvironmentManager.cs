@@ -147,13 +147,16 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         var bundles = new List<InstalledBundle>();
         foreach (string subKeyName in uninstallKey.GetSubKeyNames())
         {
-            string? displayName;
+            string? displayName = null;
+            string? displayVersion = null;
             try
             {
                 using var entry = uninstallKey.OpenSubKey(subKeyName);
-                displayName = entry is not null && GetBundleUpgradeCodes(entry).Any(familyCodes.Contains)
-                    ? entry.GetValue("DisplayName") as string
-                    : null;
+                if (entry is not null && GetBundleUpgradeCodes(entry).Any(familyCodes.Contains))
+                {
+                    displayName = entry.GetValue("DisplayName") as string;
+                    displayVersion = entry.GetValue("DisplayVersion") as string;
+                }
             }
             catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
             {
@@ -164,12 +167,23 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             if (displayName is not null && TryParseDisplayNameVersion(displayName) is { } version)
             {
                 var install = new DotnetInstall(new DotnetInstallRoot(string.Empty, requested.InstallRoot.Architecture), version, requested.Component);
-                bundles.Add(new InstalledBundle(install, displayName));
+                bundles.Add(new InstalledBundle(install, displayName, GetUnlabeledPrereleaseDateStamp(install, displayVersion)));
             }
         }
 
         return bundles;
     }
+
+    // Windows Desktop 10.0+ bundles show prereleases as "11.0.0"; their bundle version ends in the build date stamp, or 50000 once released:
+    // https://github.com/dotnet/windowsdesktop/blob/77af2c59998e1d0e14583f1c90bda4f453b1b663/src/windowsdesktop/src/bundle/Wix.targets#L77-L83
+    private static int? GetUnlabeledPrereleaseDateStamp(DotnetInstall install, string? displayVersion) =>
+        install.Component == InstallComponent.WindowsDesktop
+        && install.Version.Major >= 10
+        && string.IsNullOrEmpty(install.Version.Prerelease)
+        && Version.TryParse(displayVersion, out var bundleVersion)
+        && bundleVersion.Revision is > 0 and < 50000
+            ? bundleVersion.Revision
+            : null;
 
     [SupportedOSPlatform("windows")]
     private static IEnumerable<Guid> GetBundleUpgradeCodes(RegistryKey entry) =>
@@ -489,4 +503,29 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
 }
 
 /// <summary>An installed .NET installer bundle and its name as Installed apps shows it.</summary>
-internal sealed record InstalledBundle(DotnetInstall Install, string DisplayName);
+/// <param name="Install">The installed component and product version.</param>
+/// <param name="DisplayName">The name Installed apps shows.</param>
+/// <param name="PrereleaseDateStamp">The build date stamp of a prerelease whose display name omits its prerelease label.</param>
+internal sealed record InstalledBundle(DotnetInstall Install, string DisplayName, int? PrereleaseDateStamp = null)
+{
+    /// <summary>Whether this bundle is a later build than <paramref name="requested"/>.</summary>
+    public bool IsNewerThan(ReleaseVersion requested)
+    {
+        if (PrereleaseDateStamp is not int dateStamp)
+        {
+            return Install.Version.CompareTo(requested) > 0;
+        }
+
+        var installed = Install.Version;
+        int releaseComparison = new ReleaseVersion(installed.Major, installed.Minor, installed.Patch)
+            .CompareTo(new ReleaseVersion(requested.Major, requested.Minor, requested.Patch));
+        if (releaseComparison != 0)
+        {
+            return releaseComparison > 0;
+        }
+
+        // Official prereleases end in "<date stamp>.<build>", e.g. 11.0.0-rc.3.26522.148; a release is newer than any prerelease.
+        string[] identifiers = (requested.Prerelease ?? string.Empty).Split('.');
+        return identifiers.Length >= 2 && int.TryParse(identifiers[^2], out int requestedDateStamp) && dateStamp > requestedDateStamp;
+    }
+}

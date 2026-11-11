@@ -112,11 +112,45 @@ public class InstalledBundleTests
     [DataRow("Microsoft .NET SDK 10.0.404 (x64)", "10.0.404")]
     [DataRow("Microsoft .NET SDK 11.0.100-rc.3.26522.148 (x64)", "11.0.100-rc.3.26522.148")]
     [DataRow("Microsoft .NET Runtime - 11.0.0 RC 3 (x64)", "11.0.0-rc.3")]
+    [DataRow("Microsoft .NET Runtime - 10.0.0 Preview 7 (x64)", "10.0.0-preview.7")]
+    [DataRow("Microsoft ASP.NET Core Runtime - 11.0.0 RC 3 (x64)", "11.0.0-rc.3")]
     [DataRow("Microsoft ASP.NET Core 10.0.15 - Shared Framework (x64)", "10.0.15")]
     [DataRow("Microsoft Windows Desktop Runtime - 10.0.15 (x64)", "10.0.15")]
+    [DataRow("Microsoft Windows Desktop Runtime 11.0.0 (x64)", "11.0.0")]
     public void TryParseDisplayNameVersion_ReadsTheProductVersion(string displayName, string expectedVersion)
     {
         DotnetEnvironmentManager.TryParseDisplayNameVersion(displayName).Should().Be(new ReleaseVersion(expectedVersion));
+    }
+
+    // Display names and bundle versions written by the official installers.
+    [TestMethod]
+    [DataRow(InstallComponent.SDK, "Microsoft .NET SDK 11.0.100-rc.3.26522.148 (x64)", "11.1.26.52348", "11.0.100-rc.1.26425.128", true)]
+    [DataRow(InstallComponent.Runtime, "Microsoft .NET Runtime - 11.0.0 RC 3 (x64)", "11.0.0.36622", "11.0.0-rc.1.26425.128", true)]
+    [DataRow(InstallComponent.Runtime, "Microsoft .NET Runtime - 11.0.0 RC 3 (x64)", "11.0.0.36622", "11.0.0", false)]
+    [DataRow(InstallComponent.Runtime, "Microsoft .NET Runtime - 10.0.0 Preview 7 (x64)", "10.0.0.35130", "10.0.0-rc.1.25451.107", false)]
+    [DataRow(InstallComponent.ASPNETCore, "Microsoft ASP.NET Core Runtime - 11.0.0 RC 3 (x64)", "11.0.0.36622", "11.0.0-rc.1.26425.128", true)]
+    [DataRow(InstallComponent.WindowsDesktop, "Microsoft Windows Desktop Runtime - 10.0.0 RC 2 (x64)", "10.0.0.35402", "10.0.0-rc.1.25451.107", true)]
+    [DataRow(InstallComponent.WindowsDesktop, "Microsoft Windows Desktop Runtime 11.0.0 (x64)", "11.0.0.26381", "11.0.0-rc.3.26522.148", false)]
+    [DataRow(InstallComponent.WindowsDesktop, "Microsoft Windows Desktop Runtime 11.0.0 (x64)", "11.0.0.26522", "11.0.0-rc.1.26425.128", true)]
+    [DataRow(InstallComponent.WindowsDesktop, "Microsoft Windows Desktop Runtime 11.0.0 (x64)", "11.0.0.26425", "11.0.0", false)]
+    [DataRow(InstallComponent.WindowsDesktop, "Microsoft Windows Desktop Runtime 11.0.0 (x64)", "11.0.0.50000", "11.0.0-rc.3.26522.148", true)]
+    [DataRow(InstallComponent.WindowsDesktop, "Microsoft Windows Desktop Runtime 10.0.1 (x64)", "10.0.1.50000", "10.0.2", false)]
+    public void InstalledPrerelease_BlocksOnlyEarlierBuilds(InstallComponent component, string displayName, string displayVersion, string requestedVersion, bool blocks)
+    {
+        var requested = new DotnetInstall(new DotnetInstallRoot(@"C:\Program Files\dotnet", InstallArchitecture.x64), new ReleaseVersion(requestedVersion), component);
+        Register(displayName, FamilyCode(requested), displayVersion);
+
+        var check = () => InstallerOrchestratorSingleton.ThrowIfNewerVersionInstalled(
+            requested, DotnetEnvironmentManager.ReadInstalledBundles(_uninstallKey, requested));
+
+        if (blocks)
+        {
+            check.Should().Throw<DotnetInstallException>().Which.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
+        }
+        else
+        {
+            check.Should().NotThrow();
+        }
     }
 
     private static DotnetInstall MakeSdk(string version, InstallArchitecture architecture = InstallArchitecture.x64) =>
@@ -127,10 +161,14 @@ public class InstalledBundleTests
 
     private void RegisterBundle(string displayName, Guid upgradeCode) => Register(displayName, upgradeCode);
 
-    private void Register(string displayName, Guid? upgradeCode)
+    private void Register(string displayName, Guid? upgradeCode, string? displayVersion = null)
     {
         using var entry = _uninstallKey.CreateSubKey(Guid.NewGuid().ToString("B"));
         entry.SetValue("DisplayName", displayName);
+        if (displayVersion is not null)
+        {
+            entry.SetValue("DisplayVersion", displayVersion);
+        }
         if (upgradeCode is { } code)
         {
             entry.SetValue("BundleUpgradeCode", new[] { code.ToString("B") }, RegistryValueKind.MultiString);

@@ -361,7 +361,7 @@ internal class InstallerOrchestratorSingleton
         ReleaseVersion version = requested.Version;
 
         InstalledBundle? newer = installedBundles
-            .Where(b => BundleUpgradeCodes.ShareFamily(b.Install, requested) && b.Install.Version.CompareTo(version) > 0)
+            .Where(b => BundleUpgradeCodes.ShareFamily(b.Install, requested) && b.IsNewerThan(version))
             .MaxBy(b => b.Install.Version);
 
         if (newer is not null)
