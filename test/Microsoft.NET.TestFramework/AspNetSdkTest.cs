@@ -35,11 +35,10 @@ namespace Microsoft.NET.TestFramework
             [CallerMemberName] string callerName = "",
             string subdirectory = "",
             string? overrideTfm = null,
-            string? identifier = null,
-            [CallerFilePath] string? callerFilePath = null)
+            string? identifier = null)
         {
             var projectDirectory = TestAssetsManager
-                .CopyTestAsset(testAsset, callingMethod: callerName, callerFilePath: callerFilePath, testAssetSubdirectory: subdirectory, identifier: identifier)
+                .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
@@ -73,11 +72,10 @@ namespace Microsoft.NET.TestFramework
             [CallerMemberName] string callerName = "",
             string subdirectory = "",
             string? overrideTfm = null,
-            string? identifier = null,
-            [CallerFilePath] string? callerFilePath = null)
+            string? identifier = null)
         {
             var projectDirectory = TestAssetsManager
-                .CopyTestAsset(testAsset, callingMethod: callerName, callerFilePath: callerFilePath, testAssetSubdirectory: subdirectory, identifier: identifier)
+                .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {

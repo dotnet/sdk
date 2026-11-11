@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             string[] args = new string[] { optionName, "<project>" };
-            StoreCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM())
+            StoreCommand.FromArgs(args, msbuildPath)
                 .GetArgumentTokensToMSBuild().Should().Contain(ExpectedPrefix);
         }
 
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var msbuildPath = "<msbuildpath>";
                 List<string> expected = [.. ExpectedPrefix, .. expectedarr];
                 expected.Should().BeSubsetOf(
-                    StoreCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM()).GetArgumentTokensToMSBuild()
+                    StoreCommand.FromArgs(args, msbuildPath).GetArgumentTokensToMSBuild()
                 );
             });
         }
@@ -64,8 +64,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var args = ArgsPrefix.Concat(new string[] { optionName, path }).ToArray();
 
             var msbuildPath = "<msbuildpath>";
-            StoreCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM())
+            StoreCommand.FromArgs(args, msbuildPath)
                 .GetArgumentTokensToMSBuild().Should().BeEquivalentTo([..ExpectedPrefix, $"--property:ComposeDir={Path.GetFullPath(path)}{Path.DirectorySeparatorChar}", "--property:_CommandLineDefinedOutputPath=true"]);
         }
     }
 }
+

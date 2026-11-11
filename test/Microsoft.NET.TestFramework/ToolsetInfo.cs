@@ -8,8 +8,6 @@ namespace Microsoft.NET.TestFramework
 {
     public class ToolsetInfo
     {
-        // NetTFMUpdate: SDK assemblies target net12 while generated apps still use the net11 product packs.
-        public const string SdkTargetFramework = "net12.0";
         public const string CurrentTargetFramework = "net11.0";
         /// <remarks>Keep in sync with <see cref="Product.TargetFrameworkVersion"/>.</remarks>
         public const string CurrentTargetFrameworkVersion = "11.0";
@@ -426,7 +424,7 @@ namespace Microsoft.NET.TestFramework
         private static readonly Lazy<string> s_systemDataSqlClientPackageVersion = new(() => GetPackageVersion("System.Data.SqlClient"));
 
         public static string GetNewtonsoftJsonPackageVersion()
-            => s_newtonsoftJsonPackageVersion.Value;
+            =>s_newtonsoftJsonPackageVersion.Value;
 
         public static string GetSystemDataSqlClientPackageVersion()
             => s_systemDataSqlClientPackageVersion.Value;

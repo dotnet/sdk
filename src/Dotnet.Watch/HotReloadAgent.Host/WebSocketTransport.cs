@@ -5,6 +5,8 @@
 
 using System;
 using System.Buffers;
+using System.Buffers.Text;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.WebSockets;
@@ -20,7 +22,7 @@ namespace Microsoft.DotNet.HotReload;
 /// Mobile workloads add this capability since named pipes don't work over the network.
 /// Uses RSA-based shared secret for authentication (same as BrowserRefreshServer).
 /// </summary>
-internal sealed class WebSocketTransport(string serverUrl, string? serverPublicKey, Action<string> log, int connectionTimeoutMS)
+internal sealed class WebSocketTransport(string serverUrl, string serverPublicKey, Action<string> log, int connectionTimeoutMS)
     : Transport(log)
 {
     private readonly ClientWebSocket _webSocket = new();
@@ -51,16 +53,15 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
             try
             {
                 // Add encrypted shared secret as subprotocol for authentication
-                if (serverPublicKey != null)
-                {
-                    var encryptedSecret = EncryptSharedSecret(serverPublicKey);
-                    _webSocket.Options.AddSubProtocol(encryptedSecret);
-                }
+                var encryptedSecret = EncryptSharedSecret(serverPublicKey, out var sharedSecret);
+                _webSocket.Options.AddSubProtocol(encryptedSecret);
 
-                _webSocket.Options.SetRequestHeader("Origin", (serverPublicKey != null ? "wss" : "ws") + "://localhost");
+                var serverUri = new Uri(serverUrl);
+                _webSocket.Options.SetRequestHeader("Origin", serverUri.Scheme + "://localhost");
 
                 Log($"Connecting to {serverUrl}...");
-                await _webSocket.ConnectAsync(new Uri(serverUrl), connectCts.Token).ConfigureAwait(false);
+                await _webSocket.ConnectAsync(serverUri, connectCts.Token).ConfigureAwait(false);
+                await VerifyServerAsync(sharedSecret, connectCts.Token).ConfigureAwait(false);
                 Log("Connected.");
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -86,7 +87,10 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
             cancellationToken).ConfigureAwait(false);
     }
 
-    public override async ValueTask<RequestStream> ReceiveAsync(CancellationToken cancellationToken)
+    public override ValueTask<RequestStream> ReceiveAsync(CancellationToken cancellationToken)
+        => ReceiveAsync(expectedMessageType: null, maxMessageLength: null, cancellationToken);
+
+    private async ValueTask<RequestStream> ReceiveAsync(WebSocketMessageType? expectedMessageType, int? maxMessageLength, CancellationToken cancellationToken)
     {
         if (_webSocket.State != WebSocketState.Open)
         {
@@ -103,12 +107,21 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
             WebSocketReceiveResult result;
             do
             {
-                result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken).ConfigureAwait(false);
+                var receiveCount = maxMessageLength.HasValue
+                    ? (int)Math.Min(buffer.Length, maxMessageLength.Value + 1L - _receiveBuffer.Length)
+                    : buffer.Length;
+                result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer, 0, receiveCount), cancellationToken).ConfigureAwait(false);
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
                     Log("Server closed connection.");
                     return new RequestStream(stream: null, disposeOnCompletion: false);
+                }
+
+                if ((expectedMessageType.HasValue && result.MessageType != expectedMessageType.Value) ||
+                    (maxMessageLength.HasValue && _receiveBuffer.Length + result.Count > maxMessageLength.Value))
+                {
+                    throw new InvalidDataException("The Hot Reload provider returned an invalid authentication response.");
                 }
 
                 _receiveBuffer.Write(buffer, 0, result.Count);
@@ -131,22 +144,36 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
     /// Encrypts a random shared secret using the server's RSA public key.
     /// Uses the same algorithm as BrowserRefreshServer for consistency.
     /// </summary>
-    private static string EncryptSharedSecret(string serverPublicKeyBase64)
+    private static string EncryptSharedSecret(string serverPublicKeyBase64, out byte[] sharedSecret)
     {
         using var rsa = RSA.Create();
         rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(serverPublicKeyBase64), out _);
 
-        // Generate a random 32-byte secret and encrypt with RSA OAEP SHA-256 (same as BrowserRefreshServer)
-        // RSA.Encrypt(ReadOnlySpan<byte>) overload is available in .NET 9+
-#if NET9_0_OR_GREATER
-        Span<byte> secret = stackalloc byte[32];
-#else
-        var secret = new byte[32];
-#endif
-        RandomNumberGenerator.Fill(secret);
-        var encrypted = rsa.Encrypt(secret, RSAEncryptionPadding.OaepSHA256);
+        sharedSecret = RandomNumberGenerator.GetBytes(32);
+        var encrypted = rsa.Encrypt(sharedSecret, RSAEncryptionPadding.OaepSHA256);
 
         // URL-encode standard Base64 for WebSocket subprotocol header (same encoding as BrowserRefreshServer)
         return WebUtility.UrlEncode(Convert.ToBase64String(encrypted));
+    }
+
+    private async Task VerifyServerAsync(byte[] sharedSecret, CancellationToken cancellationToken)
+    {
+        // This size is safe for the stackalloc below.
+        Debug.Assert(sharedSecret.Length == 32);
+
+        var encodedLength = Base64.GetMaxEncodedToUtf8Length(sharedSecret.Length);
+        using var response = await ReceiveAsync(WebSocketMessageType.Text, encodedLength, cancellationToken).ConfigureAwait(false);
+        if (response.Stream == null)
+        {
+            throw new InvalidDataException("The Hot Reload provider closed the connection before authentication.");
+        }
+
+        Span<byte> expectedSecret = stackalloc byte[encodedLength];
+        Base64.EncodeToUtf8(sharedSecret, expectedSecret, out _, out _);
+        Debug.Assert(_receiveBuffer != null);
+        if (!_receiveBuffer.GetBuffer().AsSpan(0, (int)_receiveBuffer.Length).SequenceEqual(expectedSecret))
+        {
+            throw new InvalidDataException("The Hot Reload provider did not return the expected shared secret.");
+        }
     }
 }

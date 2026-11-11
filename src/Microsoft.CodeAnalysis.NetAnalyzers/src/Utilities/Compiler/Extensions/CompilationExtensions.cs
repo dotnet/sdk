@@ -1,10 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if CODEANALYSIS_V3_OR_BETTER
+using System;
+using System.Linq;
+using Microsoft.CodeAnalysis.Diagnostics;
+#endif
+
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Analyzer.Utilities.Extensions
 {
@@ -16,6 +21,7 @@ namespace Analyzer.Utilities.Extensions
         private static readonly byte[] mscorlibPublicKeyToken = new byte[]
             { 0xB7, 0x7A, 0x5C, 0x56, 0x19, 0x34, 0xE0, 0x89 };
 
+#if CODEANALYSIS_V3_OR_BETTER
         private const string WebAppProjectGuidString = "{349C5851-65DF-11DA-9384-00065B846F21}";
         private const string WebSiteProjectGuidString = "{E24C65DC-7377-472B-9ABA-BC803B73C61A}";
 
@@ -42,6 +48,7 @@ namespace Analyzer.Utilities.Extensions
 
             return false;
         }
+#endif
 
         public static ImmutableArray<INamedTypeSymbol> GetTypesByMetadataName(this Compilation compilation, string fullyQualifiedMetadataName)
             => WellKnownTypeProvider.GetOrCreate(compilation).GetTypesByMetadataName(fullyQualifiedMetadataName);

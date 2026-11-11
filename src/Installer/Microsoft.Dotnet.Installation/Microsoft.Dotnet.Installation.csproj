@@ -6,8 +6,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <!-- Strong naming not needed on .NET Core -->
-    <!-- SYSLIB1054: Suppress for DllImport in shared NativeWrapper code we don't own -->
-    <NoWarn>$(NoWarn);CS8002;CS1591;SYSLIB1054</NoWarn>
+    <!-- SYSLIB1054: Suppress for DllImport in shared NativeWrapper code we don't own.
+         CA1032: shared NativeWrapper exception types (HostFxrResolutionException.cs) are kept identical to the SDK. -->
+    <NoWarn>$(NoWarn);CS8002;CS1591;SYSLIB1054;CA1032</NoWarn>
 
     <!-- Disable packaging / publishing of Microsoft.Dotnet.Installation, since it's currently
          only consumed in-repo, and there is an arcade issue causing Maestro promotion to

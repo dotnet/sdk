@@ -21,27 +21,25 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                """
+                @"
+using System;
+using System.Reflection;
+using System.Xml;
 
-                    using System;
-                    using System.Reflection;
-                    using System.Xml;
-
-                    namespace TestNamespace
-                    {
-                        public class TestClass
-                        {
-                            public void TestMethod(string path)
-                            {
-                                XmlReaderSettings settings = new XmlReaderSettings();
-                                XmlReader reader = XmlReader.Create(path, settings);
-                                XmlDocument doc = new XmlDocument();
-                                doc.Load(reader);
-                            }
-                        }
-                    }
-
-                    """,
+namespace TestNamespace
+{
+    public class TestClass
+    {
+        public void TestMethod(string path)
+        {
+            XmlReaderSettings settings = new XmlReaderSettings();
+            XmlReader reader = XmlReader.Create(path, settings);
+            XmlDocument doc = new XmlDocument();
+            doc.Load(reader);
+        }
+    }
+}
+",
             GetCSharpResultAt(14, 31)
             );
 
@@ -52,25 +50,25 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                """
-                    using System;
-                    using System.Reflection;
-                    using System.Xml;
+                @"
+using System;
+using System.Reflection;
+using System.Xml;
 
-                    namespace TestNamespace
-                    {
-                        public class TestClass
-                        {
-                            public void TestMethod(string path)
-                            {
-                                XmlReaderSettings settings = new XmlReaderSettings();
-                                XmlReader reader = XmlReader.Create(path, settings);
-                                XmlDocument doc = new XmlDocument();
-                                doc.Load(reader);
-                            }
-                        }
-                    }
-                    """
+namespace TestNamespace
+{
+    public class TestClass
+    {
+        public void TestMethod(string path)
+        {
+            XmlReaderSettings settings = new XmlReaderSettings();
+            XmlReader reader = XmlReader.Create(path, settings);
+            XmlDocument doc = new XmlDocument();
+            doc.Load(reader);
+        }
+    }
+}
+"
             );
         }
     }

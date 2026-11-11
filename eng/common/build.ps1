@@ -8,7 +8,7 @@ Param(
   [bool] $warnAsError = $true,
   [string] $warnNotAsError = '',
   [bool] $nodeReuse = $true,
-  [bool][Alias('mt')]$msbuildMultiThreaded = $true,
+  [bool][Alias('mt')]$msbuildMultiThreaded = $false,
   [switch] $buildCheck = $false,
   [switch][Alias('r')]$restore,
   [switch] $deployDeps,

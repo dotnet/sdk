@@ -17,7 +17,7 @@
 
   <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
     <ItemGroup>
-      <Content Include="$(ArtifactsNonShippingPackagesDir)$(SdkTemplatesMSIInstallerFileName)" PackagePath="/" />
+      <Content Include="$(ArtifactsNonShippingPackagesDir)dotnet-$(VersionMajor)$(VersionMinor)templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)" PackagePath="/" />
     </ItemGroup>
   </Target>
 

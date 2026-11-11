@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -110,9 +109,7 @@ internal static class ValidationUtility
         solutionFile = solutionFileOrDirectory;
 
         // If it's not a directory, validate as a file path
-        if (!CliConstants.SolutionExtensions.Contains(
-            Path.GetExtension(solutionFileOrDirectory),
-            StringComparer.OrdinalIgnoreCase))
+        if (!CliConstants.SolutionExtensions.Contains(Path.GetExtension(solutionFileOrDirectory)))
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, solutionFileOrDirectory));
             return false;
@@ -130,12 +127,10 @@ internal static class ValidationUtility
         }
 
         var extension = Path.GetExtension(projectOrSolutionFileOrDirectory);
-        isSolution = CliConstants.SolutionExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+        isSolution = CliConstants.SolutionExtensions.Contains(extension);
         projectOrSolutionFile = projectOrSolutionFileOrDirectory;
         // If it's not a directory, validate as a file path
-        if (!isSolution &&
-            !extension.EndsWith("proj", StringComparison.OrdinalIgnoreCase) &&
-            !VirtualProjectBuilder.IsValidEntryPointPath(projectOrSolutionFileOrDirectory, requireFileToExist: false))
+        if (!isSolution && !extension.EndsWith("proj", StringComparison.OrdinalIgnoreCase))
         {
             projectOrSolutionFile = null;
             isSolution = false;

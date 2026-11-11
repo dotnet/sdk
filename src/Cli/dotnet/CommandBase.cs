@@ -12,36 +12,20 @@ public abstract class CommandBase
 {
     protected ParseResult _parseResult;
 
-    protected CommandBase(ParseResult parseResult) : this(parseResult, CommandServices.CreateDefault())
-    {
-    }
-
-    protected CommandBase(ParseResult parseResult, CommandServices services) : this(services)
+    protected CommandBase(ParseResult parseResult)
     {
         _parseResult = parseResult;
         parseResult.ShowHelpOrErrorIfAppropriate();
     }
 
-    protected CommandBase() : this(CommandServices.CreateDefault())
-    {
-    }
+    protected CommandBase() { }
 
-    protected CommandBase(CommandServices services)
-    {
-        Services = services;
-    }
-
-    protected internal CommandServices Services { get; }
 
     public abstract int Execute();
 }
 
-public abstract class CommandBase<TDefinition>(ParseResult parseResult, CommandServices services) : CommandBase(parseResult, services)
+public abstract class CommandBase<TDefinition>(ParseResult parseResult) : CommandBase(parseResult)
     where TDefinition : Command
 {
-    public CommandBase(ParseResult parseResult) : this(parseResult, CommandServices.CreateDefault())
-    {
-    }
-
     protected TDefinition Definition { get; } = (TDefinition)parseResult.CommandResult.Command;
 }

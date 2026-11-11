@@ -20,6 +20,8 @@ namespace Microsoft.DotNet.HotReload;
 /// </summary>
 internal sealed class NamedPipeClientTransport : ClientTransport
 {
+    private const int ERROR_BROKEN_PIPE = unchecked((int)0x8007006D);
+
     private readonly ILogger _logger;
     private readonly string _namedPipeName;
     private readonly NamedPipeServerStream _pipe;
@@ -59,7 +61,7 @@ internal sealed class NamedPipeClientTransport : ClientTransport
     /// </summary>
     public override bool IsExpectedConnectionTermination(Exception e, CancellationToken cancellationToken)
     {
-        return e is ObjectDisposedException or EndOfStreamException or SocketException { ErrorCode: 125 }
+        return e is ObjectDisposedException or EndOfStreamException or SocketException { ErrorCode: 125 } or IOException { HResult: ERROR_BROKEN_PIPE }
             || cancellationToken.IsCancellationRequested;
     }
 

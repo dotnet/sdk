@@ -25,19 +25,8 @@ internal sealed class ArtifactPostProcessingManager
         string[] extensions = ParseCapabilities(handshakeMessage, HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy)
             .Select(extension => extension.ToLowerInvariant())
             .ToArray();
-        string[] truncatedRunKinds = ParseCapabilities(
-            handshakeMessage,
-            HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds);
-        string[] truncatedRunExtensions = ParseCapabilities(
-            handshakeMessage,
-            HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy)
-            .Select(extension => extension.ToLowerInvariant())
-            .ToArray();
 
-        if (kinds.Length == 0
-            && extensions.Length == 0
-            && truncatedRunKinds.Length == 0
-            && truncatedRunExtensions.Length == 0)
+        if (kinds.Length == 0 && extensions.Length == 0)
         {
             return;
         }
@@ -52,8 +41,6 @@ internal sealed class ArtifactPostProcessingManager
 
             application.SupportedKinds.UnionWith(kinds);
             application.SupportedExtensions.UnionWith(extensions);
-            application.SupportedTruncatedRunKinds.UnionWith(truncatedRunKinds);
-            application.SupportedTruncatedRunExtensions.UnionWith(truncatedRunExtensions);
         }
     }
 
@@ -72,20 +59,18 @@ internal sealed class ArtifactPostProcessingManager
                 module.TargetPath,
                 targetFramework,
                 architecture,
-                executionId,
-                artifact.InputArtifactPaths));
+                executionId));
         }
     }
 
     public async Task ExecuteAsync(
         BuildOptions buildOptions,
         TerminalTestReporter output,
-        CtrlCCancellationManager ctrlC,
-        TestRunCancellationReason cancellationReason)
+        CtrlCCancellationManager ctrlC)
     {
         try
         {
-            await ExecuteCoreAsync(buildOptions, output, ctrlC, cancellationReason);
+            await ExecuteCoreAsync(buildOptions, output, ctrlC);
         }
         catch (Exception ex)
         {
@@ -100,13 +85,11 @@ internal sealed class ArtifactPostProcessingManager
     private async Task ExecuteCoreAsync(
         BuildOptions buildOptions,
         TerminalTestReporter output,
-        CtrlCCancellationManager ctrlC,
-        TestRunCancellationReason cancellationReason)
+        CtrlCCancellationManager ctrlC)
     {
         ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
             SnapshotApplications(),
-            SnapshotArtifacts(),
-            cancellationReason);
+            SnapshotArtifacts());
         ArtifactPostProcessingJob[] runnableJobs =
         [
             .. plan.Jobs.Where(job =>
@@ -155,11 +138,7 @@ internal sealed class ArtifactPostProcessingManager
                 string manifestPath = Path.Combine(tempDirectory, "manifest.json");
                 string outputDirectory = GetOutputDirectory(buildOptions, job);
                 Directory.CreateDirectory(outputDirectory);
-                WriteManifest(
-                    manifestPath,
-                    outputDirectory,
-                    job.Groups.SelectMany(group => group.Artifacts),
-                    cancellationReason);
+                WriteManifest(manifestPath, outputDirectory, job.Groups.SelectMany(group => group.Artifacts));
 
                 var invocation = new ArtifactPostProcessingInvocation(manifestPath);
                 var toolOptions = new TestOptions(
@@ -181,12 +160,9 @@ internal sealed class ArtifactPostProcessingManager
                     artifactPostProcessingInvocation: invocation);
 
                 int exitCode = await application.RunAsync(ctrlC);
-                string? failureMessage = invocation.FailureMessage;
-                if (ShouldApplyOutputs(failureMessage, exitCode))
-                {
-                    ApplyOutputs(output, job, invocation.SnapshotOutputs());
-                }
-                else if (failureMessage is not null)
+                ApplyOutputs(output, job, invocation.SnapshotOutputs());
+
+                if (invocation.FailureMessage is { } failureMessage)
                 {
                     failedJobs += ReportFailureUnlessCancelled(output, ctrlC, string.Format(
                         CultureInfo.CurrentCulture,
@@ -259,9 +235,6 @@ internal sealed class ArtifactPostProcessingManager
         return true;
     }
 
-    internal static bool ShouldApplyOutputs(string? failureMessage, int exitCode)
-        => failureMessage is null && exitCode == ExitCode.Success;
-
     internal IReadOnlyList<ArtifactPostProcessingApplication> SnapshotApplications()
     {
         lock (_lock)
@@ -273,9 +246,7 @@ internal sealed class ArtifactPostProcessingManager
                     application.TargetFramework,
                     application.Architecture,
                     new HashSet<string>(application.SupportedKinds, StringComparer.Ordinal),
-                    new HashSet<string>(application.SupportedExtensions, StringComparer.Ordinal),
-                    new HashSet<string>(application.SupportedTruncatedRunKinds, StringComparer.Ordinal),
-                    new HashSet<string>(application.SupportedTruncatedRunExtensions, StringComparer.Ordinal)))
+                    new HashSet<string>(application.SupportedExtensions, StringComparer.Ordinal)))
             ];
         }
     }
@@ -333,11 +304,10 @@ internal sealed class ArtifactPostProcessingManager
         return Path.GetDirectoryName(Path.GetFullPath(preferredInput.Path))!;
     }
 
-    internal static void WriteManifest(
+    private static void WriteManifest(
         string manifestPath,
         string outputDirectory,
-        IEnumerable<ArtifactPostProcessingArtifact> artifacts,
-        TestRunCancellationReason cancellationReason)
+        IEnumerable<ArtifactPostProcessingArtifact> artifacts)
     {
         using FileStream stream = File.Create(manifestPath);
         using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
@@ -345,18 +315,6 @@ internal sealed class ArtifactPostProcessingManager
         writer.WriteStartObject();
         writer.WriteNumber("schemaVersion", 1);
         writer.WriteString("outputDirectory", outputDirectory);
-        if (cancellationReason != TestRunCancellationReason.None)
-        {
-            writer.WriteString(
-                "truncationReason",
-                cancellationReason switch
-                {
-                    TestRunCancellationReason.MaximumFailedTests => "maximumFailedTests",
-                    TestRunCancellationReason.Timeout => "timeout",
-                    _ => throw new ArgumentOutOfRangeException(nameof(cancellationReason)),
-                });
-        }
-
         writer.WriteStartArray("inputs");
         foreach (ArtifactPostProcessingArtifact artifact in artifacts
             .OrderBy(artifact => artifact.Path, FileUtilities.PathComparer))
@@ -392,37 +350,24 @@ internal sealed class ArtifactPostProcessingManager
         ArtifactPostProcessingJob job,
         IReadOnlyList<ArtifactPostProcessingArtifact> processedArtifacts)
     {
-        HashSet<string>? jobInputPaths = null;
         foreach (ArtifactPostProcessingArtifact processedArtifact in processedArtifacts)
         {
-            HashSet<string> consumedPaths;
-            if (processedArtifact.InputArtifactPaths is not null)
-            {
-                jobInputPaths ??= new HashSet<string>(
-                    job.Groups.SelectMany(group => group.Artifacts).Select(artifact => artifact.Path),
-                    FileUtilities.PathComparer);
-                consumedPaths = new HashSet<string>(
-                    processedArtifact.InputArtifactPaths.Where(jobInputPaths.Contains),
-                    FileUtilities.PathComparer);
-            }
-            else
-            {
-                // Older dispatchers do not report input provenance. Preserve their behavior by
-                // inferring consumed groups from the output kind and extension.
-                string outputExtension = Path.GetExtension(processedArtifact.Path).ToLowerInvariant();
-                consumedPaths = new HashSet<string>(
-                    job.Groups
-                        .Where(group =>
-                            group.IsKind
-                                ? string.Equals(group.Key, processedArtifact.Kind, StringComparison.Ordinal)
-                                : string.Equals(group.Key, outputExtension, StringComparison.Ordinal))
-                        .SelectMany(group => group.Artifacts)
-                        .Select(artifact => artifact.Path),
-                    FileUtilities.PathComparer);
-            }
+            string outputExtension = Path.GetExtension(processedArtifact.Path).ToLowerInvariant();
+            // The dispatcher gives one processor both its kind-tagged inputs and matching legacy
+            // extension inputs, so the returned output consumes both groups.
+            ArtifactPostProcessingGroup[] consumedGroups =
+            [
+                .. job.Groups.Where(group =>
+                    group.IsKind
+                        ? string.Equals(group.Key, processedArtifact.Kind, StringComparison.Ordinal)
+                        : string.Equals(group.Key, outputExtension, StringComparison.Ordinal))
+            ];
 
-            if (consumedPaths.Count > 0)
+            if (consumedGroups.Length > 0)
             {
+                var consumedPaths = new HashSet<string>(
+                    consumedGroups.SelectMany(group => group.Artifacts).Select(artifact => artifact.Path),
+                    FileUtilities.PathComparer);
                 output.RemoveArtifacts(consumedPaths);
             }
 
@@ -444,8 +389,6 @@ internal sealed class ArtifactPostProcessingManager
         public string? Architecture { get; } = architecture;
         public HashSet<string> SupportedKinds { get; } = new(StringComparer.Ordinal);
         public HashSet<string> SupportedExtensions { get; } = new(StringComparer.Ordinal);
-        public HashSet<string> SupportedTruncatedRunKinds { get; } = new(StringComparer.Ordinal);
-        public HashSet<string> SupportedTruncatedRunExtensions { get; } = new(StringComparer.Ordinal);
     }
 }
 
@@ -491,8 +434,7 @@ internal sealed class ArtifactPostProcessingInvocation(string manifestPath)
                 module.TargetPath,
                 targetFramework,
                 architecture,
-                executionId,
-                artifact.InputArtifactPaths));
+                executionId));
         }
     }
 

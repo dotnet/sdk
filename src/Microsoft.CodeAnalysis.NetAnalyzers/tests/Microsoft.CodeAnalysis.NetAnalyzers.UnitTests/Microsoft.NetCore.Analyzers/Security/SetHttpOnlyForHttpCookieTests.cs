@@ -14,24 +14,22 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     {
         protected async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
         {
-            string httpCookieCSharpSourceCode = """
+            string httpCookieCSharpSourceCode = @"
+namespace System.Web
+{
+    public sealed class HttpCookie
+    {
+        public HttpCookie (string name)
+        {
+        }
 
-                namespace System.Web
-                {
-                    public sealed class HttpCookie
-                    {
-                        public HttpCookie (string name)
-                        {
-                        }
-
-                        public HttpCookie (string name, string value)
-                        {
-                        }
-                        
-                        public bool HttpOnly { get; set; }
-                    }
-                }
-                """;
+        public HttpCookie (string name, string value)
+        {
+        }
+        
+        public bool HttpOnly { get; set; }
+    }
+}";
             var csharpTest = new VerifyCS.Test
             {
                 TestState =
@@ -48,357 +46,333 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task Test_AssignHttpOnlyWithFalse_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                using System.Web;
-
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var httpCookie = new HttpCookie("cookieName");
-                        httpCookie.HttpOnly = false;
-                    }
-                }
-                """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        var httpCookie = new HttpCookie(""cookieName"");
+        httpCookie.HttpOnly = false;
+    }
+}",
             GetCSharpResultAt(9, 9));
         }
 
         [TestMethod]
         public async Task Test_AssignHttpOnlyWithFalsePossibly_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using System.Web;
 
-                using System;
-                using System.Web;
+class TestClass
+{
+    public void TestMethod()
+    {
+        var httpCookie = new HttpCookie(""cookieName"");
+        Random r = new Random();
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var httpCookie = new HttpCookie("cookieName");
-                        Random r = new Random();
-
-                        if (r.Next(6) == 4)
-                        {
-                            httpCookie.HttpOnly = false;
-                        }
-                    }
-                }
-                """,
+        if (r.Next(6) == 4)
+        {
+            httpCookie.HttpOnly = false;
+        }
+    }
+}",
             GetCSharpResultAt(14, 13));
         }
 
         [TestMethod]
         public async Task Test_ReturnHttpCookieWithFalseHttpOnly_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                using System.Web;
+class TestClass
+{
+    public HttpCookie TestMethod(HttpCookie httpCookie)
+    {
+        httpCookie.HttpOnly = false;
 
-                class TestClass
-                {
-                    public HttpCookie TestMethod(HttpCookie httpCookie)
-                    {
-                        httpCookie.HttpOnly = false;
-
-                        return httpCookie;
-                    }
-                }
-                """,
+        return httpCookie;
+    }
+}",
             GetCSharpResultAt(8, 9));
         }
 
         [TestMethod]
         public async Task Test_ReturnHttpCookie_WithoutSettingHttpOnly_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                using System.Web;
+class TestClass
+{
+    public HttpCookie TestMethod()
+    {
+        var httpCookie = new HttpCookie(""cookieName"");
 
-                class TestClass
-                {
-                    public HttpCookie TestMethod()
-                    {
-                        var httpCookie = new HttpCookie("cookieName");
-
-                        return httpCookie;
-                    }
-                }
-                """,
+        return httpCookie;
+    }
+}",
             GetCSharpResultAt(10, 16));
         }
 
         [TestMethod]
         public async Task Test_PassHttpCookieAsAParamter_WithoutSettingHttpOnly_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                using System.Web;
+class TestClass
+{
+    public void TestMethod()
+    {
+        var httpCookie = new HttpCookie(""cookieName"");
+        TestMethod2(httpCookie);
+    }
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var httpCookie = new HttpCookie("cookieName");
-                        TestMethod2(httpCookie);
-                    }
-
-                    public void TestMethod2(HttpCookie httpCookie)
-                    {
-                    }
-                }
-                """,
+    public void TestMethod2(HttpCookie httpCookie)
+    {
+    }
+}",
             GetCSharpResultAt(9, 21));
         }
 
         [TestMethod]
         public async Task Test_PassHttpCookieAsAParamter_WithSettingHttpOnlyAsFalse_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                using System.Web;
+class TestClass
+{
+    public void TestMethod()
+    {
+        var httpCookie = new HttpCookie(""cookieName"");
+        httpCookie.HttpOnly = false;
+        TestMethod2(httpCookie);
+    }
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var httpCookie = new HttpCookie("cookieName");
-                        httpCookie.HttpOnly = false;
-                        TestMethod2(httpCookie);
-                    }
-
-                    public void TestMethod2(HttpCookie httpCookie)
-                    {
-                    }
-                }
-                """,
+    public void TestMethod2(HttpCookie httpCookie)
+    {
+    }
+}",
             GetCSharpResultAt(9, 9));
         }
 
         [TestMethod]
         public async Task Test_PassHttpCookieAsAParamter_WithSettingHttpOnlyAsFalsePossibly_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using System.Web;
 
-                using System;
-                using System.Web;
+class TestClass
+{
+    public void TestMethod()
+    {
+        var httpCookie = new HttpCookie(""cookieName"");
+        Random r = new Random();
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var httpCookie = new HttpCookie("cookieName");
-                        Random r = new Random();
+        if (r.Next(6) == 4)
+        {
+            httpCookie.HttpOnly = false;
+        }
 
-                        if (r.Next(6) == 4)
-                        {
-                            httpCookie.HttpOnly = false;
-                        }
+        TestMethod2(httpCookie);
+    }
 
-                        TestMethod2(httpCookie);
-                    }
-
-                    public void TestMethod2(HttpCookie httpCookie)
-                    {
-                    }
-                }
-                """,
+    public void TestMethod2(HttpCookie httpCookie)
+    {
+    }
+}",
             GetCSharpResultAt(14, 13));
         }
 
         [TestMethod]
         public async Task Test_CreateHttpCookieWithNullArguments_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var httpCookie = new HttpCookie(null, null);
-                    }
-                }
-                """);
+class TestClass
+{
+    public void TestMethod()
+    {
+        var httpCookie = new HttpCookie(null, null);
+    }
+}");
         }
 
         [TestMethod]
         public async Task Test_AssignHttpOnlyWithTrue_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var httpCookie = new HttpCookie("cookieName");
-                        httpCookie.HttpOnly = true;
-                    }
-                }
-                """);
+class TestClass
+{
+    public void TestMethod()
+    {
+        var httpCookie = new HttpCookie(""cookieName"");
+        httpCookie.HttpOnly = true;
+    }
+}");
         }
 
         [TestMethod]
         public async Task Test_JustObjectCreation_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var httpCookie = new HttpCookie("cookieName");
-                    }
-                }
-                """);
+class TestClass
+{
+    public void TestMethod()
+    {
+        var httpCookie = new HttpCookie(""cookieName"");
+    }
+}");
         }
 
         [TestMethod]
         public async Task Test_AssignHttpOnlyWithTruePossibly_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System;
-                using System.Web;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using System.Web;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var httpCookie = new HttpCookie("cookieName");
-                        Random r = new Random();
+class TestClass
+{
+    public void TestMethod()
+    {
+        var httpCookie = new HttpCookie(""cookieName"");
+        Random r = new Random();
 
-                        if (r.Next(6) == 4)
-                        {
-                            httpCookie.HttpOnly = true;
-                        }
-                    }
-                }
-                """);
+        if (r.Next(6) == 4)
+        {
+            httpCookie.HttpOnly = true;
+        }
+    }
+}");
         }
 
         [TestMethod]
         public async Task Test_ReturnHttpCookieWithUnkownHttpOnly_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                class TestClass
-                {
-                    public HttpCookie TestMethod(HttpCookie httpCookie)
-                    {
-                        return httpCookie;
-                    }
-                }
-                """);
+class TestClass
+{
+    public HttpCookie TestMethod(HttpCookie httpCookie)
+    {
+        return httpCookie;
+    }
+}");
         }
 
         [TestMethod]
         public async Task Test_ReturnHttpCookieWithTrueHttpOnly_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                class TestClass
-                {
-                    public HttpCookie TestMethod(HttpCookie httpCookie)
-                    {
-                        httpCookie.HttpOnly = true;
+class TestClass
+{
+    public HttpCookie TestMethod(HttpCookie httpCookie)
+    {
+        httpCookie.HttpOnly = true;
 
-                        return httpCookie;
-                    }
-                }
-                """);
+        return httpCookie;
+    }
+}");
         }
 
         [TestMethod]
         public async Task Test_PassHttpCookieAsAParamter_WithSettingHttpOnlyAsTrue_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var httpCookie = new HttpCookie("cookieName");
-                        httpCookie.HttpOnly = true;
-                        TestMethod2(httpCookie);
-                    }
+class TestClass
+{
+    public void TestMethod()
+    {
+        var httpCookie = new HttpCookie(""cookieName"");
+        httpCookie.HttpOnly = true;
+        TestMethod2(httpCookie);
+    }
 
-                    public HttpCookie TestMethod2(HttpCookie httpCookie)
-                    {
-                        return httpCookie;
-                    }
-                }
-                """);
+    public HttpCookie TestMethod2(HttpCookie httpCookie)
+    {
+        return httpCookie;
+    }
+}");
         }
 
         [TestMethod]
         public async Task Test_PassHttpCookieAsAParamter_WithSettingHttpOnlyAsTruePossibly_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System;
-                using System.Web;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using System.Web;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        var httpCookie = new HttpCookie("cookieName");
-                        Random r = new Random();
+class TestClass
+{
+    public void TestMethod()
+    {
+        var httpCookie = new HttpCookie(""cookieName"");
+        Random r = new Random();
 
-                        if (r.Next(6) == 4)
-                        {
-                            httpCookie.HttpOnly = true;
-                        }
+        if (r.Next(6) == 4)
+        {
+            httpCookie.HttpOnly = true;
+        }
 
-                        TestMethod2(httpCookie);
-                    }
+        TestMethod2(httpCookie);
+    }
 
-                    public void TestMethod2(HttpCookie httpCookie)
-                    {
-                    }
-                }
-                """);
+    public void TestMethod2(HttpCookie httpCookie)
+    {
+    }
+}");
         }
 
         [TestMethod]
         public async Task Test_PassHttpCookieWithNullValue_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        TestMethod2(null);
-                    }
+class TestClass
+{
+    public void TestMethod()
+    {
+        TestMethod2(null);
+    }
 
-                    public void TestMethod2(HttpCookie httpCookie)
-                    {
-                    }
-                }
-                """);
+    public void TestMethod2(HttpCookie httpCookie)
+    {
+    }
+}");
         }
 
         [TestMethod]
         public async Task Test_ReturnNull_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System.Web;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Web;
 
-                class TestClass
-                {
-                    public HttpCookie TestMethod(HttpCookie httpCookie)
-                    {
-                        return null;
-                    }
-                }
-                """);
+class TestClass
+{
+    public HttpCookie TestMethod(HttpCookie httpCookie)
+    {
+        return null;
+    }
+}");
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

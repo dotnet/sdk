@@ -7,7 +7,6 @@
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
-    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <!-- MSTest experimental APIs (Assert.ThrowsExactly, condition attributes, etc.). -->
     <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
   </PropertyGroup>

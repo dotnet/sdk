@@ -214,7 +214,6 @@ internal abstract partial class TestCommandDefinition
         {
             MinimumExpectedTestsOption.Validators.Add(ValidatePositiveInteger);
             MaximumFailedTestsOption.Validators.Add(ValidatePositiveInteger);
-            MaxParallelTestModulesOption.Validators.Add(ValidatePositiveInteger);
 
             AffectedTestsEnabled = EnvironmentVariableParser.ParseBool(
                 Environment.GetEnvironmentVariable(EnableAffectedTestsEnvironmentVariable),
@@ -293,11 +292,6 @@ internal abstract partial class TestCommandDefinition
                 else if (collectTestMap && commandResult.HasOption(MinimumExpectedTestsOption))
                 {
                     commandResult.AddError(CommandDefinitionStrings.CmdCollectTestMapCannotRequireMinimumTests);
-                }
-                else if (commandResult.HasOption(TestModulesRootDirectoryOption) &&
-                    !commandResult.HasOption(TestModulesFilterOption))
-                {
-                    commandResult.AddError(CommandDefinitionStrings.CmdTestModulesRootDirectoryRequiresTestModules);
                 }
             });
         }
