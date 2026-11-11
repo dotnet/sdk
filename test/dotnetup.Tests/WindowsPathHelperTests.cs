@@ -110,7 +110,7 @@ public class WindowsPathHelperTests
                 ["arm"] = s_otherExistingDirectory,
             });
 
-        WindowsPathHelper.CreateDotnetRoots(locations, programFilesFolder: null).Should().BeEquivalentTo(
+        WindowsPathHelper.CreateDotnetRoots(locations, s_noDefaultRoot, InstallArchitecture.x64).Should().BeEquivalentTo(
         [
             new DotnetInstallRoot(s_existingDirectory, InstallArchitecture.x64),
             new DotnetInstallRoot(s_otherExistingDirectory, InstallArchitecture.x86),
@@ -129,26 +129,66 @@ public class WindowsPathHelperTests
                 ["x64"] = s_existingDirectory,
             });
 
-        WindowsPathHelper.CreateDotnetRoots(locations, programFilesFolder: null)
+        WindowsPathHelper.CreateDotnetRoots(locations, s_noDefaultRoot, InstallArchitecture.x64)
             .Should().Equal(new DotnetInstallRoot(s_existingDirectory, InstallArchitecture.x64));
     }
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void CreateDotnetRoots_FallsBackToProgramFilesOnlyWhenTheRegistryRegistersNoDirectory()
+    [DataRow(Architecture.X64, InstallArchitecture.x64, @"Program Files\dotnet")]
+    [DataRow(Architecture.X64, InstallArchitecture.x86, @"Program Files (x86)\dotnet")]
+    [DataRow(Architecture.Arm64, InstallArchitecture.arm64, @"Program Files\dotnet")]
+    [DataRow(Architecture.Arm64, InstallArchitecture.x64, @"Program Files\dotnet\x64")]
+    [DataRow(Architecture.Arm64, InstallArchitecture.x86, @"Program Files (x86)\dotnet")]
+    [DataRow(Architecture.X86, InstallArchitecture.x86, @"Program Files\dotnet")]
+    public void CreateDotnetRoots_FallsBackToTheDefaultRootForTheProcessArchitecture(
+        Architecture osArchitecture, InstallArchitecture processArchitecture, string expectedRoot)
+    {
+        using var testEnv = new TestEnvironment();
+        var resolver = CreateResolverWithEveryDefaultRoot(testEnv.TempRoot, osArchitecture);
+
+        WindowsPathHelper.CreateDotnetRoots([], resolver, processArchitecture)
+            .Should().Equal(new DotnetInstallRoot(Path.Combine(testEnv.TempRoot, expectedRoot), processArchitecture));
+
+        // A directory under an unknown key still counts as registered, as it does for GetProgramFilesDotnetPaths.
+        WindowsPathHelper.CreateDotnetRoots([new("SDKFeatures", s_existingDirectory)], resolver, processArchitecture).Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void GetDefaultProgramFilesDotnetRoot_ReturnsNullWhenTheDefaultRootIsMissing()
     {
         using var testEnv = new TestEnvironment();
         string programFiles = Directory.CreateDirectory(Path.Combine(testEnv.TempRoot, "Program Files")).FullName;
-        string dotnet = Directory.CreateDirectory(Path.Combine(programFiles, "dotnet")).FullName;
-        InstallArchitecture defaultArchitecture = RuntimeInformation.ProcessArchitecture == Architecture.X86
-            ? InstallArchitecture.x86
-            : InstallerUtilities.GetOsInstallArchitecture();
 
-        WindowsPathHelper.CreateDotnetRoots([], programFiles)
-            .Should().Equal(new DotnetInstallRoot(dotnet, defaultArchitecture));
+        // Only the native folder exists, so x64 on Arm64 Windows must not fall back to it.
+        Directory.CreateDirectory(Path.Combine(programFiles, "dotnet"));
+        var resolver = new AdminInstallRootResolver(Architecture.Arm64, programFiles, Path.Combine(testEnv.TempRoot, "Program Files (x86)"));
 
-        // A directory under an unknown key still counts as registered, as it does for GetProgramFilesDotnetPaths.
-        WindowsPathHelper.CreateDotnetRoots([new("SDKFeatures", s_existingDirectory)], programFiles).Should().BeEmpty();
+        WindowsPathHelper.GetDefaultProgramFilesDotnetRoot(resolver, InstallArchitecture.x64).Should().BeNull();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow(Architecture.X64, InstallArchitecture.arm64, "Program Files", "Program Files (x86)")]
+    [DataRow(Architecture.X64, InstallArchitecture.x64, "", "")]
+    public void GetDefaultProgramFilesDotnetRoot_ReturnsNullForUnsupportedCombinations(
+        Architecture osArchitecture, InstallArchitecture processArchitecture, string programFiles, string programFilesX86)
+    {
+        var resolver = new AdminInstallRootResolver(osArchitecture, programFiles, programFilesX86);
+
+        WindowsPathHelper.GetDefaultProgramFilesDotnetRoot(resolver, processArchitecture).Should().BeNull();
+    }
+
+    private static readonly AdminInstallRootResolver s_noDefaultRoot = new(Architecture.X64, string.Empty, string.Empty);
+
+    private static AdminInstallRootResolver CreateResolverWithEveryDefaultRoot(string tempRoot, Architecture osArchitecture)
+    {
+        string programFiles = Path.Combine(tempRoot, "Program Files");
+        string programFilesX86 = Path.Combine(tempRoot, "Program Files (x86)");
+        Directory.CreateDirectory(Path.Combine(programFiles, "dotnet", "x64"));
+        Directory.CreateDirectory(Path.Combine(programFilesX86, "dotnet"));
+        return new AdminInstallRootResolver(osArchitecture, programFiles, programFilesX86);
     }
 
     [TestMethod]

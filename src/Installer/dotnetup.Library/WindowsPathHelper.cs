@@ -160,10 +160,11 @@ internal sealed partial class WindowsPathHelper : IDisposable
 
     /// <summary>
     /// Gets the same Program Files dotnet roots as <see cref="GetProgramFilesDotnetPaths"/>, each with the architecture of
-    /// the <c>InstalledVersions</c> subkey that registered it.
+    /// the <c>InstalledVersions</c> subkey that registered it. When the registry registers nothing, falls back to the
+    /// default root for this process's architecture rather than to %ProgramFiles%\dotnet.
     /// </summary>
     public static List<DotnetInstallRoot> GetProgramFilesDotnetRoots() =>
-        CreateDotnetRoots(ReadRegisteredDotnetLocations(), ProgramFilesFolder);
+        CreateDotnetRoots(ReadRegisteredDotnetLocations(), new AdminInstallRootResolver(), InstallerUtilities.GetDefaultInstallArchitecture());
 
     private static string ProgramFilesFolder => Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
 
@@ -277,22 +278,16 @@ internal sealed partial class WindowsPathHelper : IDisposable
     /// <summary>
     /// Creates a root for each registered location whose subkey names a supported architecture, keeping the first
     /// architecture that registers a directory. When the registry registers no directory at all (the same condition
-    /// <see cref="GetProgramFilesDotnetPaths"/> uses), falls back to %ProgramFiles%\dotnet, which is OS-native except
-    /// in an x86 process, which sees Program Files (x86).
+    /// <see cref="GetProgramFilesDotnetPaths"/> uses), falls back to <see cref="GetDefaultProgramFilesDotnetRoot"/>.
     /// </summary>
-    internal static List<DotnetInstallRoot> CreateDotnetRoots(IReadOnlyList<KeyValuePair<string, string>> registeredLocations, string? programFilesFolder)
+    internal static List<DotnetInstallRoot> CreateDotnetRoots(
+        IReadOnlyList<KeyValuePair<string, string>> registeredLocations,
+        AdminInstallRootResolver defaultRootResolver,
+        InstallArchitecture processArchitecture)
     {
         if (registeredLocations.Count == 0)
         {
-            if (GetDefaultProgramFilesDotnetPath(programFilesFolder) is not { } defaultPath)
-            {
-                return [];
-            }
-
-            InstallArchitecture defaultArchitecture = RuntimeInformation.ProcessArchitecture == Architecture.X86
-                ? InstallArchitecture.x86
-                : InstallerUtilities.GetOsInstallArchitecture();
-            return [new DotnetInstallRoot(defaultPath, defaultArchitecture)];
+            return GetDefaultProgramFilesDotnetRoot(defaultRootResolver, processArchitecture) is { } defaultRoot ? [defaultRoot] : [];
         }
 
         var roots = new List<DotnetInstallRoot>();
@@ -311,6 +306,26 @@ internal sealed partial class WindowsPathHelper : IDisposable
     /// <summary>Returns %ProgramFiles%\dotnet if it exists, or null when the Program Files folder is unknown.</summary>
     internal static string? GetDefaultProgramFilesDotnetPath(string? programFilesFolder) =>
         string.IsNullOrEmpty(programFilesFolder) ? null : GetExistingDirectory(Path.Combine(programFilesFolder, "dotnet"));
+
+    /// <summary>
+    /// Returns the default install root that the .NET installer uses for <paramref name="architecture"/>, if it exists:
+    /// Program Files\dotnet for the OS architecture, Program Files (x86)\dotnet for x86, and Program Files\dotnet\x64 for
+    /// x64 on Arm64 Windows. Returns null when the combination is unsupported or the Program Files folder is unknown.
+    /// </summary>
+    internal static DotnetInstallRoot? GetDefaultProgramFilesDotnetRoot(AdminInstallRootResolver resolver, InstallArchitecture architecture)
+    {
+        DotnetInstallRoot root;
+        try
+        {
+            root = architecture == InstallArchitecture.x86 ? resolver.Resolve(architecture) : resolver.Resolve(architecture) with { Path = Path.GetDirectoryName(resolver.Resolve(architecture).Path) is { } parent && resolver.Resolve(architecture).Path.EndsWith(@"\x64", StringComparison.Ordinal) ? parent : resolver.Resolve(architecture).Path };
+        }
+        catch (DotnetInstallException ex) when (ex.ErrorCode == DotnetInstallErrorCode.PlatformNotSupported)
+        {
+            return null;
+        }
+
+        return GetExistingDirectory(root.Path) is { } path ? root with { Path = path } : null;
+    }
 
     private static bool TryParseRegistryArchitecture(string name, out InstallArchitecture architecture)
     {
