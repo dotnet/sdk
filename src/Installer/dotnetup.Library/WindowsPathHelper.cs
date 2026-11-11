@@ -134,49 +134,25 @@ internal sealed partial class WindowsPathHelper : IDisposable
     /// <summary>
     /// Gets the default Program Files dotnet installation path(s) by reading from the registry.
     /// For each architecture subkey under HKLM\SOFTWARE\dotnet\Setup\InstalledVersions\{arch}:
-    ///   1. First checks {arch}\sharedhost → Path value (preferred, set by the .NET host installer)
-    ///   2. Falls back to {arch} → InstallLocation value
+    ///   1. First checks {arch}\sharedhost → Path value in the native registry view (set by the .NET host installer for the native architecture)
+    ///   2. Falls back to {arch} → InstallLocation value in the 32-bit registry view
     /// If the registry yields no results, falls back to %ProgramFiles%\dotnet if it exists.
-    /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
+    /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md#current-state-on-windows
     /// See https://github.com/dotnet/runtime/issues/109974
     /// </summary>
     public static List<string> GetProgramFilesDotnetPaths()
     {
-        var paths = new List<string>();
+        List<string> paths;
 
-        // Read from registry to find actual dotnet installations.
-        // Use 32-bit registry hive to ensure we get the correct view on WoW64.
-        using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-        using var key = baseKey.OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions");
-        if (key != null)
+        // The host installer writes InstallLocation to the 32-bit view and sharedhost\Path only to the native view.
+        // See https://github.com/dotnet/runtime/blob/e33be4d53ab951272c9161c50b549e5e7db60262/src/installer/pkg/sfx/installers/host.wxs#L35-L55
+        var nativeView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
+        using (var registry32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+        using (var nativeRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, nativeView))
+        using (var installLocationKey = registry32.OpenSubKey(InstalledVersionsKeyPath))
+        using (var sharedHostKey = nativeRegistry.OpenSubKey(InstalledVersionsKeyPath))
         {
-            foreach (var archName in key.GetSubKeyNames())
-            {
-                using var archKey = key.OpenSubKey(archName);
-                if (archKey == null)
-                {
-                    continue;
-                }
-
-                // Prefer sharedhost\Path — this is the canonical location set by the host installer.
-                string? installPath = null;
-                using (var sharedHostKey = archKey.OpenSubKey("sharedhost"))
-                {
-                    installPath = sharedHostKey?.GetValue("Path") as string;
-                }
-
-                // Fallback to the InstallLocation value on the architecture key.
-                installPath ??= archKey.GetValue("InstallLocation") as string;
-
-                if (!string.IsNullOrEmpty(installPath))
-                {
-                    var normalized = installPath.TrimEnd(Path.DirectorySeparatorChar);
-                    if (Directory.Exists(normalized) && !paths.Contains(normalized, StringComparer.OrdinalIgnoreCase))
-                    {
-                        paths.Add(normalized);
-                    }
-                }
-            }
+            paths = GetRegisteredDotnetPaths(installLocationKey, sharedHostKey);
         }
 
         // Fallback: if registry yielded nothing, check the default Program Files location.
@@ -189,6 +165,46 @@ internal sealed partial class WindowsPathHelper : IDisposable
                 if (Directory.Exists(defaultPath))
                 {
                     paths.Add(defaultPath);
+                }
+            }
+        }
+
+        return paths;
+    }
+
+    private const string InstalledVersionsKeyPath = @"SOFTWARE\dotnet\Setup\InstalledVersions";
+
+    /// <summary>
+    /// Returns the existing install directories registered under <c>InstalledVersions</c>, preferring each architecture's
+    /// <c>sharedhost\Path</c> under <paramref name="sharedHostKey"/> over its <c>InstallLocation</c> under
+    /// <paramref name="installLocationKey"/>. Both keys are the <c>InstalledVersions</c> key opened in their registry views.
+    /// </summary>
+    internal static List<string> GetRegisteredDotnetPaths(RegistryKey? installLocationKey, RegistryKey? sharedHostKey)
+    {
+        var paths = new List<string>();
+        var architectureNames = (installLocationKey?.GetSubKeyNames() ?? [])
+            .Union(sharedHostKey?.GetSubKeyNames() ?? [], StringComparer.OrdinalIgnoreCase);
+
+        foreach (var architectureName in architectureNames)
+        {
+            string? installPath;
+            using (var sharedHost = sharedHostKey?.OpenSubKey($@"{architectureName}\sharedhost"))
+            {
+                installPath = sharedHost?.GetValue("Path") as string;
+            }
+
+            if (string.IsNullOrEmpty(installPath))
+            {
+                using var architectureKey = installLocationKey?.OpenSubKey(architectureName);
+                installPath = architectureKey?.GetValue("InstallLocation") as string;
+            }
+
+            if (!string.IsNullOrEmpty(installPath))
+            {
+                var normalized = installPath.TrimEnd(Path.DirectorySeparatorChar);
+                if (Directory.Exists(normalized) && !paths.Contains(normalized, StringComparer.OrdinalIgnoreCase))
+                {
+                    paths.Add(normalized);
                 }
             }
         }

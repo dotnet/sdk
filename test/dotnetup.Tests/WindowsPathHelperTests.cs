@@ -3,6 +3,7 @@
 
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -22,6 +23,82 @@ public class WindowsPathHelperTests
         paths.Should().NotBeNull();
         paths.Should().NotBeEmpty();
         paths.Should().AllSatisfy(p => p.Should().EndWith("dotnet"));
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void GetRegisteredDotnetPaths_PrefersNativeViewSharedHostPathOverInstallLocation()
+    {
+        using var keys = new RegistryViewKeys();
+        string sharedHostPath = keys.CreateDirectory("sharedhost");
+        string installLocation = keys.CreateDirectory("installlocation");
+        keys.SetValue(keys.InstallLocationKey, "x64", "InstallLocation", installLocation + Path.DirectorySeparatorChar);
+        keys.SetValue(keys.SharedHostKey, @"x64\sharedhost", "Path", sharedHostPath);
+
+        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstallLocationKey, keys.SharedHostKey)
+            .Should().Equal(sharedHostPath);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void GetRegisteredDotnetPaths_IgnoresSharedHostInTheInstallLocationView()
+    {
+        using var keys = new RegistryViewKeys();
+        string sharedHostPath = keys.CreateDirectory("sharedhost");
+        string installLocation = keys.CreateDirectory("installlocation");
+        keys.SetValue(keys.InstallLocationKey, "x86", "InstallLocation", installLocation);
+        keys.SetValue(keys.InstallLocationKey, @"x86\sharedhost", "Path", sharedHostPath);
+
+        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstallLocationKey, keys.SharedHostKey)
+            .Should().Equal(installLocation);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void GetRegisteredDotnetPaths_ReadsEachArchitectureAndSkipsMissingDirectories()
+    {
+        using var keys = new RegistryViewKeys();
+        string x64Path = keys.CreateDirectory("x64");
+        string x86Path = keys.CreateDirectory("x86");
+        keys.SetValue(keys.SharedHostKey, @"x64\sharedhost", "Path", x64Path);
+        keys.SetValue(keys.InstallLocationKey, "x86", "InstallLocation", x86Path);
+        keys.SetValue(keys.InstallLocationKey, "arm64", "InstallLocation", Path.Combine(x64Path, "missing"));
+
+        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstallLocationKey, keys.SharedHostKey)
+            .Should().BeEquivalentTo(x64Path, x86Path);
+    }
+
+    /// <summary>Two temporary <c>InstalledVersions</c> keys under HKCU standing in for the 32-bit and native registry views.</summary>
+    private sealed class RegistryViewKeys : IDisposable
+    {
+        private readonly string _keyPath = $@"Software\dotnetup-tests\{Guid.NewGuid():N}";
+        private readonly string _directory = Directory.CreateTempSubdirectory().FullName;
+
+        public RegistryViewKeys()
+        {
+            InstallLocationKey = Registry.CurrentUser.CreateSubKey($@"{_keyPath}\Registry32");
+            SharedHostKey = Registry.CurrentUser.CreateSubKey($@"{_keyPath}\Native");
+        }
+
+        public RegistryKey InstallLocationKey { get; }
+
+        public RegistryKey SharedHostKey { get; }
+
+        public string CreateDirectory(string name) => Directory.CreateDirectory(Path.Combine(_directory, name)).FullName;
+
+        public void SetValue(RegistryKey root, string subKeyPath, string name, string value)
+        {
+            using var key = root.CreateSubKey(subKeyPath);
+            key.SetValue(name, value);
+        }
+
+        public void Dispose()
+        {
+            InstallLocationKey.Dispose();
+            SharedHostKey.Dispose();
+            Registry.CurrentUser.DeleteSubKeyTree(_keyPath, throwOnMissingSubKey: false);
+            Directory.Delete(_directory, recursive: true);
+        }
     }
 
     [TestMethod]
