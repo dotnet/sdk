@@ -36,17 +36,23 @@ internal static class ToolCommandParser
                 ? throw new CommandNotAvailableInAotException()
                 : new ToolUninstallLocalCommand(parseResult).Execute());
         command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
-        command.SearchCommand.SetAction(parseResult => new ToolSearchCommand(parseResult).Execute());
+        command.SearchCommand.SetAction(
+            (parseResult, cancellationToken) => new ToolSearchCommand(parseResult).ExecuteAsync(cancellationToken));
 #else
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
-        command.InstallCommand.SetAction(parseResult => new ToolInstallCommand(parseResult).Execute());
+        command.InstallCommand.SetAction((parseResult, cancellationToken) =>
+            new ToolInstallCommand(parseResult).ExecuteAsync(cancellationToken));
         command.UninstallCommand.SetAction(parseResult => new ToolUninstallCommand(parseResult).Execute());
-        command.UpdateCommand.SetAction(parseResult => new ToolUpdateCommand(parseResult).Execute());
+        command.UpdateCommand.SetAction((parseResult, cancellationToken) =>
+            new ToolUpdateCommand(parseResult).ExecuteAsync(cancellationToken));
         command.ListCommand.SetAction(parseResult => new ToolListCommand(parseResult).Execute());
         command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
-        command.SearchCommand.SetAction(parseResult => new ToolSearchCommand(parseResult).Execute());
-        command.RestoreCommand.SetAction(parseResult => new ToolRestoreCommand(parseResult).Execute());
-        command.ExecuteCommand.SetAction(parseResult => new ToolExecuteCommand(parseResult).Execute());
+        command.SearchCommand.SetAction(
+            (parseResult, cancellationToken) => new ToolSearchCommand(parseResult).ExecuteAsync(cancellationToken));
+        command.RestoreCommand.SetAction((parseResult, cancellationToken) =>
+            new ToolRestoreCommand(parseResult).ExecuteAsync(cancellationToken));
+        command.ExecuteCommand.SetAction((parseResult, cancellationToken) =>
+            new ToolExecuteCommand(parseResult).ExecuteAsync(cancellationToken));
 #endif
     }
 }

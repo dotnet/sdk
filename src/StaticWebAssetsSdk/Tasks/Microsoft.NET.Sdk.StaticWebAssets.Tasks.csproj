@@ -42,6 +42,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Common\HotReloadKeyPair.cs" LinkBase="Common" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.NET.Sdk.Razor.Tests" />
     <InternalsVisibleTo Include="Microsoft.NET.Sdk.StaticWebAssets.Tests" />
   </ItemGroup>

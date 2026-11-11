@@ -30,7 +30,7 @@ internal sealed class WorkloadUninstallCommand : WorkloadCommandBase<WorkloadUni
         : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
     {
         _workloadIds = parseResult.GetValue(Definition.WorkloadIdArgument)
-            .Select(workloadId => new WorkloadId(workloadId)).ToList().AsReadOnly();
+            .Select(ParseWorkloadId).ToList().AsReadOnly();
 
         _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 

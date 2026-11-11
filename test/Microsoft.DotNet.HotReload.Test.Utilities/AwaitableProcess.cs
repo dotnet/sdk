@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private readonly List<string> _lines = [];
 
         private CancellationTokenSource? _disposalCompletionSource = new();
-        private readonly CancellationTokenSource _outputCompletionSource = new();
+        private int _remainingOutputStreams = 2;
 
         private readonly Channel<string> _outputChannel = Channel.CreateUnbounded<string>(new()
         {
@@ -111,7 +111,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
 
             Logger.Log($"Process {Id} exited");
-            _outputCompletionSource.Cancel();
         }
 
         public async Task<string> GetRequiredOutputLineAsync(Predicate<string> selector)
@@ -136,19 +135,20 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
 
             using var outputReadCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-                _outputCompletionSource.Token,
                 disposalCompletionSource.Token,
                 timeoutCancellation.Token);
 
             try
             {
-                while (!outputReadCancellation.IsCancellationRequested)
+                while (await _outputChannel.Reader.WaitToReadAsync(outputReadCancellation.Token))
                 {
-                    var line = await _outputChannel.Reader.ReadAsync(outputReadCancellation.Token);
-                    _lines.Add(line);
-                    if (selector(line))
+                    while (_outputChannel.Reader.TryRead(out var line))
                     {
-                        return line;
+                        _lines.Add(line);
+                        if (selector(line))
+                        {
+                            return line;
+                        }
                     }
                 }
             }
@@ -165,17 +165,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 }
             }
 
-            // Read the remaining output that may have been written to
-            // the channel but not read yet when the process exited.
-            while (_outputChannel.Reader.TryRead(out var line))
-            {
-                _lines.Add(line);
-                if (selector(line))
-                {
-                    return line;
-                }
-            }
-
             return null;
         }
 
@@ -184,7 +173,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         private void OnData(object sender, DataReceivedEventArgs args)
         {
-            var line = args.Data ?? string.Empty;
+            if (args.Data is null)
+            {
+                if (Interlocked.Decrement(ref _remainingOutputStreams) == 0)
+                {
+                    _outputChannel.Writer.TryComplete();
+                }
+                return;
+            }
+
+            var line = args.Data;
             if (line.StartsWith("\x1b]"))
             {
                 // strip terminal logger progress indicators from line
@@ -251,7 +249,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Process.Dispose();
 
-            _outputCompletionSource.Dispose();
         }
     }
 }

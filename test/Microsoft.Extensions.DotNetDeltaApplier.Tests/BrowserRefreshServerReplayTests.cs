@@ -18,7 +18,7 @@ public class BrowserRefreshServerReplayTests
         => new([new BrowserToolsManagedCodeUpdate(moduleId, [1], [2], [3], [4])]);
 
     private static ValueTask<bool> SendAsync(TestBrowserRefreshServer server, int epoch, BrowserToolsUpdateBatch batch)
-        => server.SendManagedCodeUpdateAsync(epoch, batch, static _ => new byte[] { 1 }.AsMemory(), CancellationToken.None);
+        => server.SendManagedCodeUpdateAsync(epoch, batch, static _ => (ReadOnlyMemory<byte>)new byte[] { 1 }, CancellationToken.None);
 
     /// <summary>
     /// An update produced while no browser is connected is retained and replayed to the next one.
@@ -26,7 +26,7 @@ public class BrowserRefreshServerReplayTests
     [TestMethod]
     public async Task UpdateProducedBeforeConnect_IsReplayedAndNotSentLive()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
         var moduleId = Guid.NewGuid();
 
         await SendAsync(server, epoch: 0, Batch(moduleId));
@@ -47,7 +47,7 @@ public class BrowserRefreshServerReplayTests
     [TestMethod]
     public async Task UpdateProducedAfterConnect_IsSentLiveAndNotReplayed()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
 
         using var socket = new TestWebSocket();
         var connection = server.Connect(socket);
@@ -66,7 +66,7 @@ public class BrowserRefreshServerReplayTests
     [TestMethod]
     public async Task RetainedUpdates_PreserveOrder()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
         var first = Guid.NewGuid();
         var second = Guid.NewGuid();
 
@@ -86,7 +86,7 @@ public class BrowserRefreshServerReplayTests
     [TestMethod]
     public async Task ResetUpdates_ClearsRetainedUpdatesAndClosesConnections()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
 
         using var socket = new TestWebSocket();
         var connection = server.Connect(socket);
@@ -113,7 +113,7 @@ public class BrowserRefreshServerReplayTests
     [TestMethod]
     public async Task StaleEpochUpdate_IsDropped()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
         var epoch = server.ResetUpdates();
 
         Assert.IsTrue(await SendAsync(server, epoch - 1, Batch(Guid.NewGuid())));
@@ -132,7 +132,7 @@ public class BrowserRefreshServerReplayTests
     [TestMethod]
     public async Task ClosedConnection_IsNotSentLiveButUpdateIsStillRetained()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
 
         using var socket = new TestWebSocket();
         server.Connect(socket);
