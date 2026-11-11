@@ -219,29 +219,11 @@ namespace Microsoft.NET.Build.Tasks
             string portablePlatform = NuGetUtils.GetBestMatchingRid(
                     runtimeGraph,
                     _targetRuntimeIdentifier,
-                    ["linux", "android", "osx", "win", "ios", "iossimulator", "tvos", "tvossimulator", "maccatalyst", "freebsd", "openbsd", "illumos", "solaris", "haiku", "browser", "wasi"],
+                    ["linux", "android", "osx", "win", "ios", "iossimulator", "tvos", "tvossimulator", "maccatalyst", "freebsd", "openbsd", "illumos", "solaris", "haiku", "browser", "wasi", "openharmony"],
                     out _);
 
-            targetOS = portablePlatform switch
-            {
-                "linux" => "linux",
-                "android" => "android",
-                "osx" => "osx",
-                "win" => "windows",
-                "ios" => "ios",
-                "iossimulator" => "iossimulator",
-                "tvos" => "tvos",
-                "tvossimulator" => "tvossimulator",
-                "maccatalyst" => "maccatalyst",
-                "freebsd" => "freebsd",
-                "openbsd" => "openbsd",
-                "illumos" => "illumos",
-                "solaris" => "solaris",
-                "haiku" => "haiku",
-                "browser" => "browser",
-                "wasi" => "wasi",
-                _ => null
-            };
+            // Older versions of crossgen2 do not recognize `win` as a valid OS name.
+            targetOS = portablePlatform == "win" ? "windows" : portablePlatform;
 
             return targetOS != null;
         }
