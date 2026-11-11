@@ -145,7 +145,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     return;
                                 }
 
-                                if (invocationOperation.TryGetEnclosingControlFlowGraph(out var cfg))
+                                if (operationAnalysisContext.TryGetEnclosingControlFlowGraph(out var cfg))
                                 {
                                     var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
                                                                         operationAnalysisContext.Options,

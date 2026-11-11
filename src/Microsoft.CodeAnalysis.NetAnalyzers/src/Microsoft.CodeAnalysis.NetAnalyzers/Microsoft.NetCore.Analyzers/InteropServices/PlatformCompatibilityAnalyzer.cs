@@ -196,10 +196,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     m.Parameters[0].Type.SpecialType == SpecialType.System_String);
                 var notSupportedExceptionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNotSupportedException);
                 var crossPlatform = HasCrossPlatformProperty(context.Options, context.Compilation);
+                var osPlatformTypeArray = osPlatformType != null ? ImmutableArray.Create(osPlatformType) : ImmutableArray<INamedTypeSymbol>.Empty;
+                var valueContentMapper = osPlatformType != null
+                    ? CreateValueContentMapper(osPlatformType, osPlatformCreateMethod, stringType)
+                    : null;
 
                 context.RegisterOperationBlockStartAction(
-                    context => AnalyzeOperationBlock(context, guardMethods.ToImmutableArray(), runtimeIsOSPlatformMethod, osPlatformCreateMethod, crossPlatform,
-                                    osPlatformType, stringType, platformSpecificMembers, msBuildPlatforms, notSupportedExceptionType, relatedPlatforms));
+                    context => AnalyzeOperationBlock(context, guardMethods.ToImmutableArray(), runtimeIsOSPlatformMethod, valueContentMapper, crossPlatform,
+                                    osPlatformType, osPlatformTypeArray, platformSpecificMembers, msBuildPlatforms, notSupportedExceptionType, relatedPlatforms));
             });
 
             static List<IMethodSymbol> GetOperatingSystemGuardMethods(IMethodSymbol? runtimeIsOSPlatformMethod,
@@ -303,14 +307,38 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             compilation.SyntaxTrees.FirstOrDefault() is { } tree &&
             options.GetBoolOptionValue(EditorConfigOptionNames.EnablePlatformAnalyzerOnPreNet5Target, SupportedCsAllPlatforms, tree, compilation, false);
 
+        private static Func<IOperation, ValueContentAbstractValue> CreateValueContentMapper(
+            INamedTypeSymbol osPlatformType, IMethodSymbol? osPlatformCreateMethod, INamedTypeSymbol stringType)
+        {
+            // Cached mapping delegates must not share a capture with per-block pooled state.
+            return GetValueContentValue;
+
+            ValueContentAbstractValue GetValueContentValue(IOperation operation)
+            {
+                Debug.Assert(operation.Type!.Equals(osPlatformType));
+                if (operation is IInvocationOperation invocation &&
+                    invocation.TargetMethod.Equals(osPlatformCreateMethod) &&
+                    invocation.Arguments.Length == 1 &&
+                    invocation.Arguments[0].Value is { } argument &&
+                    argument.ConstantValue.HasValue &&
+                    argument.ConstantValue.Value is string platformName &&
+                    platformName.Length > 0)
+                {
+                    return ValueContentAbstractValue.Create(platformName, stringType);
+                }
+
+                return ValueContentAbstractValue.MayBeContainsNonLiteralState;
+            }
+        }
+
         private void AnalyzeOperationBlock(
             OperationBlockStartAnalysisContext context,
             ImmutableArray<IMethodSymbol> guardMethods,
             IMethodSymbol? runtimeIsOSPlatformMethod,
-            IMethodSymbol? osPlatformCreateMethod,
+            Func<IOperation, ValueContentAbstractValue>? valueContentMapper,
             bool crossPlatform,
             INamedTypeSymbol? osPlatformType,
-            INamedTypeSymbol stringType,
+            ImmutableArray<INamedTypeSymbol> osPlatformTypeArray,
             ConcurrentDictionary<ISymbol, PlatformAttributes> platformSpecificMembers,
             ImmutableArray<string> msBuildPlatforms,
             ITypeSymbol? notSupportedExceptionType,
@@ -321,7 +349,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return;
             }
 
-            var osPlatformTypeArray = osPlatformType != null ? ImmutableArray.Create(osPlatformType) : ImmutableArray<INamedTypeSymbol>.Empty;
             var platformSpecificOperations = PooledConcurrentDictionary<KeyValuePair<IOperation, ISymbol>,
                 (SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions>? csAttributes)>.GetInstance();
 
@@ -343,7 +370,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     if (platformSpecificOperations.IsEmpty ||
                         guardMethods.IsEmpty ||
-                        !(context.OperationBlocks.GetControlFlowGraph() is { } cfg))
+                        !(context.GetControlFlowGraph() is { } cfg))
                     {
                         return;
                     }
@@ -355,7 +382,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         context.Options, SupportedCsAllPlatforms, performValueContentAnalysis,
                         pessimisticAnalysis: false,
                         valueContentAnalysisResult: out var valueContentAnalysisResult, additionalSupportedValueTypes: osPlatformTypeArray,
-                        getValueContentValueForAdditionalSupportedValueTypeOperation: osPlatformTypeArray.IsEmpty ? null : GetValueContentValue);
+                        getValueContentValueForAdditionalSupportedValueTypeOperation: valueContentMapper);
 
                     if (analysisResult == null)
                     {
@@ -388,23 +415,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return;
 
                 OperationVisitor CreateOperationVisitor(GlobalFlowStateAnalysisContext context) => new(guardMethods, osPlatformType, relatedPlatforms, context);
-
-                ValueContentAbstractValue GetValueContentValue(IOperation operation)
-                {
-                    Debug.Assert(operation.Type!.Equals(osPlatformType));
-                    if (operation is IInvocationOperation invocation &&
-                        invocation.TargetMethod.Equals(osPlatformCreateMethod) &&
-                        invocation.Arguments.Length == 1 &&
-                        invocation.Arguments[0].Value is { } argument &&
-                        argument.ConstantValue.HasValue &&
-                        argument.ConstantValue.Value is string platformName &&
-                        platformName.Length > 0)
-                    {
-                        return ValueContentAbstractValue.Create(platformName, stringType);
-                    }
-
-                    return ValueContentAbstractValue.MayBeContainsNonLiteralState;
-                }
             });
         }
 

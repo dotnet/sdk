@@ -218,7 +218,7 @@ namespace Microsoft.NetCore.Analyzers.Data
             if (argumentValue.Type.SpecialType != SpecialType.System_String || !argumentValue.ConstantValue.HasValue)
             {
                 // We have a candidate for diagnostic. perform more precise dataflow analysis.
-                if (argumentValue.TryGetEnclosingControlFlowGraph(out var cfg))
+                if (operationContext.TryGetEnclosingControlFlowGraph(out var cfg))
                 {
                     var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationContext.Compilation);
                     var valueContentResult = ValueContentAnalysis.TryGetOrComputeResult(cfg, containingMethod, wellKnownTypeProvider,

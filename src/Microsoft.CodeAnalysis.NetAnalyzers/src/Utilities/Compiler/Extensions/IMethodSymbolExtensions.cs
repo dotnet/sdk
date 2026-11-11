@@ -543,7 +543,7 @@ namespace Analyzer.Utilities.Extensions
         /// PERF: Cache from method symbols to their topmost block operations to enable interprocedural flow analysis
         /// across analyzers and analyzer callbacks to re-use the operations, semanticModel and control flow graph.
         /// </summary>
-        /// <remarks>Also see <see cref="IOperationExtensions.s_operationToCfgCache"/></remarks>
+        /// <remarks>Also see <see cref="IOperationExtensions.s_operationToCfgCachesByCompilation"/></remarks>
         private static readonly BoundedCache<Compilation, ConcurrentDictionary<IMethodSymbol, IBlockOperation?>> s_methodToTopmostOperationBlockCache
             = new();
 
