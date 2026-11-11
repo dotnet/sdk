@@ -605,10 +605,6 @@ Or open a new terminal.</value>
   <data name="AdminModeArgumentDisplayName" xml:space="preserve">
     <value>The argument '&lt;{0}&gt;'</value>
   </data>
-  <data name="AdminModeSystemInstallRegistryUnreadable" xml:space="preserve">
-    <value>Could not read the machine-wide .NET install locations from the registry key '{0}': {1} Admin mode requires read access to this key. Restore it, then run the command again.</value>
-    <comment>{0} is a registry key path. {1} is the operating system error.</comment>
-  </data>
   <data name="SystemInstallRegistryUnreadableWarning" xml:space="preserve">
     <value>Warning: Could not read the machine-wide .NET install locations from the registry key '{0}', so existing system .NET installs may not be detected: {1}</value>
     <comment>{0} is a registry key path. {1} is the operating system error.</comment>

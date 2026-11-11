@@ -3,7 +3,6 @@
 
 using System.Runtime.Versioning;
 using System.Security;
-using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.Win32;
 
@@ -72,26 +71,13 @@ public class WindowsPathHelperTests
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void HandleUnreadableSystemInstallRegistry_FailsWithUserErrorInAdminMode()
-    {
-        var denied = new SecurityException("Requested registry access is not allowed.");
-
-        Action act = () => WindowsPathHelper.HandleUnreadableSystemInstallRegistry(denied, DotnetAccessMode.Admin, TextWriter.Null);
-
-        var exception = act.Should().Throw<DotnetInstallException>().Which;
-        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.SystemInstallRegistryUnreadable);
-        exception.InnerException.Should().BeSameAs(denied);
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    public void HandleUnreadableSystemInstallRegistry_WarnsOnceAndReturnsNothingOutsideAdminMode()
+    public void HandleUnreadableSystemInstallRegistry_WarnsOnceAndReturnsNothing()
     {
         var denied = new SecurityException("Requested registry access is not allowed.");
         using var warnings = new StringWriter();
 
-        WindowsPathHelper.HandleUnreadableSystemInstallRegistry(denied, DotnetAccessMode.Everywhere, warnings).Should().BeEmpty();
-        WindowsPathHelper.HandleUnreadableSystemInstallRegistry(denied, accessMode: null, warnings).Should().BeEmpty();
+        WindowsPathHelper.HandleUnreadableSystemInstallRegistry(denied, warnings).Should().BeEmpty();
+        WindowsPathHelper.HandleUnreadableSystemInstallRegistry(denied, warnings).Should().BeEmpty();
 
         warnings.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
             .Should().ContainSingle().Which.Should().Contain(denied.Message);
