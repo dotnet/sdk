@@ -222,8 +222,7 @@ namespace Microsoft.NET.Build.Tasks
                     ["linux", "android", "osx", "win", "ios", "iossimulator", "tvos", "tvossimulator", "maccatalyst", "freebsd", "openbsd", "illumos", "solaris", "haiku", "browser", "wasi", "openharmony"],
                     out _);
 
-            // Crossgen2 and ILC map platform tokens (including openharmony to linux) in
-            // their shared CommandLineHelpers. Only Windows needs a different metadata token.
+            // Older versions of crossgen2 do not recognize `win` as a valid OS name.
             targetOS = portablePlatform == "win" ? "windows" : portablePlatform;
 
             return targetOS != null;
