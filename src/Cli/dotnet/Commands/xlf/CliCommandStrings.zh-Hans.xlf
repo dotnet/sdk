@@ -3130,6 +3130,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">指向 &lt;application&gt;.runtimeconfig.json 文件的路径。</target>
         <note />
       </trans-unit>
+      <trans-unit id="RuntimeFramework">
+        <source>runtime: {0}</source>
+        <target state="new">runtime: {0}</target>
+        <note>Additional runtime information after the test assembly's target framework and process architecture. {0} is a compact runtime moniker such as net481 or net9.0.</note>
+      </trans-unit>
       <trans-unit id="RuntimePropertyNotFound">
         <source>Runtime property 'HOSTFXR_PATH' was not set or empty.</source>
         <target state="translated">未设置运行时属性“HOSTFXR_PATH”或该属性为空。</target>

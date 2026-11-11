@@ -3130,6 +3130,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">Percorso del file &lt;applicazione&gt;.runtimeconfig.json.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RuntimeFramework">
+        <source>runtime: {0}</source>
+        <target state="new">runtime: {0}</target>
+        <note>Additional runtime information after the test assembly's target framework and process architecture. {0} is a compact runtime moniker such as net481 or net9.0.</note>
+      </trans-unit>
       <trans-unit id="RuntimePropertyNotFound">
         <source>Runtime property 'HOSTFXR_PATH' was not set or empty.</source>
         <target state="translated">La proprietà di runtime ' HOSTFXR_PATH ' non è stata impostata o è vuota.</target>

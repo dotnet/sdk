@@ -7,7 +7,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { validateSnapshotInterpretations } from "./interpretations.mjs";
 
 const readers = new Map();
-const maxSubmissionBytes = 512 * 1024;
+export const maxSubmissionBytes = 512 * 1024;
 
 export function submissionReceipt(payload)
 {
@@ -29,21 +29,80 @@ export function verifySubmission(submission, receipt)
     return submission.payload;
 }
 
-// Expand the receipt in the trusted post-step, before the framework uploads the
-// agent artifact. Threat detection must inspect the full payload, not just its hash.
-export async function completeSubmission(directory, outputFile)
+export async function exportSubmission(directory)
 {
     const submission = await requestSourceTools(directory, "submission");
-    const output = JSON.parse(await readFile(outputFile, "utf8"));
-    const items = Array.isArray(output?.items) ? output.items.filter(item => item?.type === "record_interpretations") : null;
-    if (!Array.isArray(items) || items.length !== 1 ||
-        Object.keys(items[0]).some(key => key !== "type" && key !== "receipt"))
-    {
-        throw new Error("Expected exactly one unexpanded record_interpretations receipt.");
-    }
-    items[0].payload = verifySubmission(submission, items[0].receipt);
+    verifySubmission(submission, submission.receipt);
     await writeFile(path.join(directory, "submission.json"), `${JSON.stringify(submission)}\n`);
-    await writeFile(outputFile, `${JSON.stringify(output)}\n`);
+}
+
+export async function sendRecordingRequest(configFile, request)
+{
+    const config = JSON.parse(await readFile(configFile, "utf8"));
+    const server = config?.mcpServers?.safeoutputs;
+    const authorization = server?.headers?.Authorization;
+    if (server?.type !== "http" || typeof server.url !== "string" ||
+        typeof authorization !== "string" || !authorization)
+    {
+        throw new Error("The native safe-output recording transport is not configured.");
+    }
+    const endpoint = new URL(server.url);
+    if (endpoint.protocol !== "http:" || endpoint.pathname !== "/mcp/safeoutputs" ||
+        endpoint.username || endpoint.password || endpoint.search || endpoint.hash ||
+        !["localhost", "127.0.0.1", "awmg-mcpg", "host.docker.internal"].includes(endpoint.hostname))
+    {
+        throw new Error("Recording requires the local native safe-output gateway.");
+    }
+    endpoint.hostname = "127.0.0.1";
+    const headers = {
+        Authorization: authorization, "Content-Type": "application/json",
+        Accept: "application/json, text/event-stream", "MCP-Protocol-Version": "2025-11-25",
+    };
+    const signal = AbortSignal.timeout(8000);
+    async function rpc(method, params, id)
+    {
+        const response = await fetch(endpoint, {
+            method: "POST", headers: { ...headers, "Mcp-Method": method }, signal, redirect: "error",
+            body: JSON.stringify({ jsonrpc: "2.0", method, params, ...(id === undefined ? {} : { id }) }),
+        });
+        if (!response.ok)
+        {
+            throw new Error(`Native recording transport failed during ${method} (HTTP ${response.status}).`);
+        }
+        if (id === undefined)
+        {
+            return;
+        }
+        const text = await response.text();
+        if (Buffer.byteLength(text, "utf8") > 64 * 1024)
+        {
+            throw new Error("Native recording acknowledgement exceeds its size limit.");
+        }
+        const data = text.split("\n").find(line => line.startsWith("data: "))?.slice(6) ?? text;
+        const reply = JSON.parse(data);
+        if (reply.id !== id || reply.error || !reply.result)
+        {
+            throw new Error(`Native recording transport returned an invalid ${method} response.`);
+        }
+        return { result: reply.result, session: response.headers.get("mcp-session-id") };
+    }
+    const initialized = await rpc("initialize", {
+        protocolVersion: "2025-11-25", capabilities: {},
+        clientInfo: { name: "stale-reference-recording", version: "1" },
+    }, 1);
+    if (!initialized.session || initialized.result.protocolVersion !== "2025-11-25")
+    {
+        throw new Error("Native recording transport did not establish the required MCP session.");
+    }
+    headers["Mcp-Session-Id"] = initialized.session;
+    await rpc("notifications/initialized", {});
+    const recorded = await rpc("tools/call", { name: "record_interpretations", arguments: request }, 2);
+    const text = recorded.result.content?.find(item => item.type === "text")?.text;
+    if (recorded.result.isError || typeof text !== "string" || JSON.parse(text).result !== "success")
+    {
+        throw new Error("The native safe-output server did not acknowledge the recording request.");
+    }
+    return { queued: true };
 }
 
 function declarationHints(candidate, source)
@@ -160,6 +219,8 @@ async function loadSourceTools(directory)
     let preparing = false;
     let submission;
     let acceptedText;
+    let queueAttempted = false;
+    let queued;
     return {
         readBatch({ page = 1 } = {})
         {
@@ -245,7 +306,7 @@ async function loadSourceTools(directory)
             if (attempts >= 3)
             {
                 rejectedSubmissions++;
-                throw new Error("The three-attempt submission budget is exhausted. Report missing_data; do not record.");
+                throw new Error("The three-attempt submission budget is exhausted. Use report_missing_data; do not record.");
             }
             attempts++;
             preparing = true;
@@ -287,6 +348,30 @@ async function loadSourceTools(directory)
                 preparing = false;
             }
         },
+        async queueInterpretations(args, send)
+        {
+            if (!args || typeof args !== "object" || Array.isArray(args) ||
+                Object.keys(args).some(key => key !== "receipt"))
+            {
+                throw new Error("Queueing requires only the validated receipt.");
+            }
+            const payload = verifySubmission(this.submission(), args.receipt);
+            if (queued)
+            {
+                return queued;
+            }
+            if (queueAttempted)
+            {
+                throw new Error("Recording was already attempted; do not retry an unconfirmed queue operation.");
+            }
+            if (typeof send !== "function")
+            {
+                throw new Error("The native recording transport is not configured.");
+            }
+            queueAttempted = true;
+            queued = await send({ receipt: args.receipt, payload: JSON.stringify(payload) });
+            return queued;
+        },
         submission()
         {
             if (!submission)
@@ -311,7 +396,7 @@ export function formatUsage(usage)
 
 // gh-aw launches a fresh process per MCP call. Keep budgets in one private,
 // host-side reader, not in the short-lived tool process or agent-editable files.
-export async function startSourceServer(directory)
+export async function startSourceServer(directory, recordingConfig)
 {
     const tools = await getSourceTools(directory);
     const token = randomBytes(32).toString("hex");
@@ -326,7 +411,7 @@ export async function startSourceServer(directory)
         try
         {
             if (request.method !== "POST" ||
-                !["/read-batch", "/read-context", "/evidence", "/usage", "/prepare-interpretations", "/submission"].includes(request.url))
+                !["/read-batch", "/read-context", "/evidence", "/usage", "/prepare-interpretations", "/submission", "/queue-interpretations"].includes(request.url))
             {
                 throw new Error("Unknown source-reader request.");
             }
@@ -345,6 +430,8 @@ export async function startSourceServer(directory)
             const args = JSON.parse(body || "{}");
             const result = request.url === "/read-batch" ? tools.readBatch(args)
                 : request.url === "/prepare-interpretations" ? await tools.prepareInterpretations(args)
+                : request.url === "/queue-interpretations" ? await tools.queueInterpretations(args,
+                    recordingConfig ? message => sendRecordingRequest(recordingConfig, message) : undefined)
                 : request.url === "/submission" ? tools.submission()
                 : request.url === "/usage" ? tools.usage()
                 : request.url === "/evidence" ? tools.evidence() : tools.readContext(args);
@@ -400,7 +487,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
     }
     if (operation === "serve")
     {
-        await startSourceServer(directory);
+        await startSourceServer(directory, outputFile);
     }
     else if (operation === "wait")
     {
@@ -421,9 +508,9 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
             }
         }
     }
-    else if (operation === "complete" && outputFile)
+    else if (operation === "submission")
     {
-        await completeSubmission(directory, outputFile);
+        await exportSubmission(directory);
     }
     else if (operation === "evidence" && outputFile)
     {
@@ -435,6 +522,6 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
     }
     else
     {
-        throw new Error("Expected serve, wait, evidence, usage, or complete with an output path.");
+        throw new Error("Expected serve, wait, submission, evidence OUTPUT, or usage OUTPUT.");
     }
 }

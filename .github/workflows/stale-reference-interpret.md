@@ -56,7 +56,7 @@ network:
 
 steps:
   - name: Download current-run source context
-    uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+    uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
     with:
       artifact-ids: ${{ inputs.input_artifact_id }}
       merge-multiple: true
@@ -65,7 +65,7 @@ steps:
     env:
       STALE_REFERENCE_PRIVATE: ${{ runner.temp }}/stale-reference-private
     run: |
-      node "$STALE_REFERENCE_PRIVATE/source-tools.mjs" serve "$STALE_REFERENCE_PRIVATE" > "$STALE_REFERENCE_PRIVATE/reader.log" 2>&1 &
+      node "$STALE_REFERENCE_PRIVATE/source-tools.mjs" serve "$STALE_REFERENCE_PRIVATE" "$HOME/.copilot/mcp-config.json" > "$STALE_REFERENCE_PRIVATE/reader.log" 2>&1 &
       if ! node "$STALE_REFERENCE_PRIVATE/source-tools.mjs" wait "$STALE_REFERENCE_PRIVATE"; then
         cat "$STALE_REFERENCE_PRIVATE/reader.log"
         exit 1
@@ -82,8 +82,8 @@ post-steps:
       STALE_REFERENCE_PRIVATE: ${{ runner.temp }}/stale-reference-private
     run: |
       node "$STALE_REFERENCE_PRIVATE/source-tools.mjs" evidence "$STALE_REFERENCE_PRIVATE" "$STALE_REFERENCE_PRIVATE/context-evidence.json"
-      node "$STALE_REFERENCE_PRIVATE/source-tools.mjs" complete "$STALE_REFERENCE_PRIVATE" /tmp/gh-aw/agent_output.json
-  - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      node "$STALE_REFERENCE_PRIVATE/source-tools.mjs" submission "$STALE_REFERENCE_PRIVATE"
+  - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
     with:
       name: stale-reference-context-${{ inputs.input_artifact_id }}
       path: |
@@ -136,7 +136,7 @@ mcp-scripts:
       const { formatContext, requestSourceTools } = await import(pathToFileURL(join(directory, "source-tools.mjs")).href);
       return formatContext(await requestSourceTools(directory, "read-context", { candidateId, startLine, endLine }));
   prepare_interpretations:
-    description: Validate the complete batch now against trusted source. Pass payload as a JSON object, not a string, at most 512 KiB when serialized. Invalid submissions return an error you can correct; at most three attempts. Success freezes the payload and returns its receipt for record_interpretations.
+    description: Validate the complete batch now against trusted source. Pass payload as a JSON object, not a string, at most 512 KiB when serialized. Invalid submissions return an error you can correct; at most three attempts. Success freezes the payload and returns its receipt for queue_interpretations.
     inputs:
       payload:
         type: object
@@ -149,6 +149,20 @@ mcp-scripts:
       const directory = process.env.STALE_REFERENCE_PRIVATE;
       const { requestSourceTools } = await import(pathToFileURL(join(directory, "source-tools.mjs")).href);
       return requestSourceTools(directory, "prepare-interpretations", { payload: JSON.stringify(payload) });
+  queue_interpretations:
+    description: Queue the accepted batch through native safe outputs. Pass only the exact receipt returned by prepare_interpretations. Trusted code supplies the frozen payload; do not serialize it or call record_interpretations directly.
+    inputs:
+      receipt:
+        type: string
+        required: true
+    env:
+      STALE_REFERENCE_PRIVATE: ${{ runner.temp }}/stale-reference-private
+    script: |
+      const { pathToFileURL } = await import("node:url");
+      const { join } = await import("node:path");
+      const directory = process.env.STALE_REFERENCE_PRIVATE;
+      const { requestSourceTools } = await import(pathToFileURL(join(directory, "source-tools.mjs")).href);
+      return requestSourceTools(directory, "queue-interpretations", { receipt });
 
 safe-outputs:
   threat-detection:
@@ -157,9 +171,9 @@ safe-outputs:
       model: detection
   report-failure-as-issue: false
   report-failed-jobs: false
-  missing-tool:
+  report-missing-tool:
     create-issue: false
-  missing-data:
+  report-missing-data:
     create-issue: false
   report-incomplete:
     create-issue: false
@@ -167,7 +181,7 @@ safe-outputs:
     report-as-issue: false
   jobs:
     record-interpretations:
-      description: Queue a validated batch for recording after threat detection. First call prepare_interpretations successfully, then pass its receipt unchanged. This call queues recording; the downstream job revalidates source before recording.
+      description: Internal recording request supplied by queue_interpretations. Do not call this tool directly; the trusted source helper supplies the frozen payload for threat detection and committed-source validation.
       runs-on: ubuntu-latest
       if: needs.detection.result == 'success' && needs.detection.outputs.detection_success == 'true'
       permissions:
@@ -178,20 +192,24 @@ safe-outputs:
           description: The exact 64-character receipt returned by prepare_interpretations. Never invent it or send the JSON payload here.
           required: true
           type: string
+        payload:
+          description: The frozen payload serialized by the trusted source helper. Threat detection inspects this payload, and the recorder verifies it against the receipt and trusted submission.
+          required: true
+          type: string
       steps:
         - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
           with:
             ref: ${{ github.sha }}
             persist-credentials: false
-        - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
           with:
             node-version: '24'
-        - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
           with:
             artifact-ids: ${{ inputs.input_artifact_id }}
             merge-multiple: true
             path: .stale-reference-check/input
-        - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
           with:
             name: stale-reference-context-${{ inputs.input_artifact_id }}
             path: .stale-reference-check/input
@@ -199,7 +217,7 @@ safe-outputs:
           env:
             STALE_REFERENCE_INPUT: .stale-reference-check/input
           run: node .github/stale-reference-check/cli.mjs record
-        - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
           with:
             name: stale-reference-interpretations-${{ inputs.input_artifact_id }}
             path: .stale-reference-check/results
@@ -226,7 +244,7 @@ calculation, duplicate detection, and issue creation after your response.
 Use only the configured MCP source and safe-output tools. Do not use shell
 commands, SQL, temporary files, or local searches. No parsing scripts or file
 writes are needed. If a capability is denied, do not test permissions, retry
-different commands, or investigate the sandbox; use `missing_tool` to report
+different commands, or investigate the sandbox; use `report_missing_tool` to report
 the limitation if it prevents completion.
 
 ## Read only the bounded batch
@@ -373,7 +391,7 @@ irrelevant, record the complete batch rather than returning a bare noop.
 `prepare_interpretations` validates every result against
 trusted source before accepting it. On rejection, correct the reported problem
 and resubmit the complete batch. There are at most three attempts total; do not
-send parallel submissions. If the budget is exhausted, report `missing_data`
+send parallel submissions. If the budget is exhausted, report `report_missing_data`
 and stop without calling `record_interpretations`. No partial batch is accepted.
 
 A rejection naming "Action URL is not present in supplied nearby source
@@ -393,10 +411,13 @@ it by recounting: every candidate ID shown in `read_batch` must appear exactly
 once in `results`, even candidates you judge irrelevant or that share their
 action with another candidate ID.
 
-Success returns a `receipt` and freezes the validated payload. Call
-`record_interpretations` exactly once with `{"receipt":"the returned receipt"}`.
-Do not resend or reconstruct the JSON, replace the accepted payload, or invent
-a receipt. The receipt only queues recording: threat detection and a separate
+Success freezes the validated payload and returns a `receipt`. Call the
+`queue_interpretations` MCP tool exactly once with that receipt unchanged.
+Trusted code supplies the frozen payload to native safe outputs; do not
+serialize or reconstruct it, or call `record_interpretations` directly.
+If queueing fails, report `report_missing_data` and stop; do not retry an
+unconfirmed queue operation.
+The receipt only queues recording: threat detection and a separate
 committed-source validation must still pass before results can be used.
 After queueing the receipt, stop. Do not restate the analysis or calculate
 counts in a final narrative; trusted code publishes counts after validation.

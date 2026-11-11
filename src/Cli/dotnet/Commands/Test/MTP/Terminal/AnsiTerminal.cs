@@ -193,7 +193,7 @@ internal sealed class AnsiTerminal(IConsole console, string? baseDirectory) : IT
         }
 
         // If the output path is under the initial working directory, make the console output relative to that to save space.
-        if (_baseDirectory != null && path.StartsWith(_baseDirectory, FileUtilities.PathComparison))
+        if (_baseDirectory is not null && path.StartsWith(_baseDirectory, FileUtilities.PathComparison))
         {
             if (path.Length > _baseDirectory.Length
                 && (path[_baseDirectory.Length] == Path.DirectorySeparatorChar
@@ -203,7 +203,7 @@ internal sealed class AnsiTerminal(IConsole console, string? baseDirectory) : IT
             }
         }
 
-        if (lineNumber != null)
+        if (lineNumber is not null)
         {
             path += $":{lineNumber}";
         }
