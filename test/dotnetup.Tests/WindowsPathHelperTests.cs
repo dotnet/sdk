@@ -2,8 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
-using Microsoft.Dotnet.Installation;
+using System.Security;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -12,6 +13,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [OSCondition(OperatingSystems.Windows)]
 public class WindowsPathHelperTests
 {
+    private static readonly string s_existingDirectory = Path.TrimEndingDirectorySeparator(Path.GetTempPath());
+    private static readonly string s_otherExistingDirectory = Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory);
+    private static readonly string s_missingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
     public void GetProgramFilesDotnetPaths_ReturnsValidPaths()
@@ -27,32 +32,104 @@ public class WindowsPathHelperTests
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void CreateRegisteredRoots_UsesTheRegistrySubkeyArchitecture()
+    public void ReadArchitectureValues_ReadsTheValueFromEachArchitectureKey()
     {
-        KeyValuePair<string, string>[] locations =
-        [
-            new("SDKFeatures", @"C:\Ignored"),
-            new("x64", @"C:\Program Files\dotnet"),
-            new("X86", @"C:\Program Files (x86)\dotnet"),
-            new("arm64", @"C:\Program Files\dotnet"),
-            new("arm", @"C:\Arm"),
-            new("1", @"C:\Numeric"),
-        ];
+        using var installedVersions = new TemporaryRegistryKey();
+        installedVersions.SetValue("x64", "InstallLocation", @"C:\x64");
+        installedVersions.SetValue("x86", "InstallLocation", @"C:\x86");
+        installedVersions.SetValue(@"arm64\sharedhost", "Path", @"C:\arm64");
 
-        var roots = WindowsPathHelper.CreateRegisteredRoots(locations);
-
-        roots.Should().Equal(
-            new DotnetInstallRoot(@"C:\Program Files\dotnet", InstallArchitecture.x64),
-            new DotnetInstallRoot(@"C:\Program Files (x86)\dotnet", InstallArchitecture.x86));
+        WindowsPathHelper.ReadArchitectureValues(installedVersions.Key, subKeyName: null, valueName: "InstallLocation")
+            .Should().BeEquivalentTo(new Dictionary<string, string> { ["x64"] = @"C:\x64", ["x86"] = @"C:\x86" });
     }
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void GetProgramFilesDotnetRoots_MatchesTheReportedPaths()
+    public void ReadArchitectureValues_ReadsTheValueFromEachArchitectureSubKey()
     {
-        var roots = WindowsPathHelper.GetProgramFilesDotnetRoots();
+        using var installedVersions = new TemporaryRegistryKey();
+        installedVersions.SetValue(@"x64\sharedhost", "Path", @"C:\x64");
+        installedVersions.SetValue("x86", "InstallLocation", @"C:\x86");
 
-        WindowsPathHelper.GetProgramFilesDotnetPaths().Should().Contain(roots.Select(root => root.Path));
+        WindowsPathHelper.ReadArchitectureValues(installedVersions.Key, subKeyName: "sharedhost", valueName: "Path")
+            .Should().BeEquivalentTo(new Dictionary<string, string> { ["x64"] = @"C:\x64" });
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_PrefersSharedHostPathOverInstallLocation()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
+                installLocations: new Dictionary<string, string> { ["x64"] = s_otherExistingDirectory })
+            .Should().Equal(s_existingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_FallsBackToInstallLocationWhenSharedHostPathIsStale()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_missingDirectory },
+                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory + Path.DirectorySeparatorChar })
+            .Should().Equal(s_existingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_UsesInstallLocationsWhenTheNativeViewYieldsNothing()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string>(),
+                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory })
+            .Should().Equal(s_existingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_ReadsEachArchitectureAndSkipsMissingDirectories()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
+                installLocations: new Dictionary<string, string> { ["x86"] = s_otherExistingDirectory, ["arm64"] = s_missingDirectory })
+            .Should().BeEquivalentTo(s_existingDirectory, s_otherExistingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void WarnUnreadableSystemInstallRegistry_WarnsOnce()
+    {
+        var denied = new SecurityException("Requested registry access is not allowed.");
+        using var warnings = new StringWriter();
+        int warned = 0;
+
+        WindowsPathHelper.WarnUnreadableSystemInstallRegistry(denied, warnings, ref warned);
+        WindowsPathHelper.WarnUnreadableSystemInstallRegistry(denied, warnings, ref warned);
+
+        warnings.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+            .Should().ContainSingle().Which.Should().Contain(denied.Message);
+    }
+
+    /// <summary>A temporary key under HKCU, deleted on dispose.</summary>
+    private sealed class TemporaryRegistryKey : IDisposable
+    {
+        private readonly string _keyPath = $@"Software\dotnetup-tests\{Guid.NewGuid():N}";
+
+        public TemporaryRegistryKey() => Key = Registry.CurrentUser.CreateSubKey(_keyPath);
+
+        public RegistryKey Key { get; }
+
+        public void SetValue(string subKeyPath, string name, string value)
+        {
+            using var key = Key.CreateSubKey(subKeyPath);
+            key.SetValue(name, value);
+        }
+
+        public void Dispose()
+        {
+            Key.Dispose();
+            Registry.CurrentUser.DeleteSubKeyTree(_keyPath, throwOnMissingSubKey: false);
+        }
     }
 
     [TestMethod]
