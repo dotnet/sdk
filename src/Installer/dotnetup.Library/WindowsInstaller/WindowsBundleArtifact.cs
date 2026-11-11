@@ -79,7 +79,9 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     public void Prepare()
     {
         var (reporter, downloadTask) = _progress.BeginDownload();
-        string basePath = Path.Combine(ScratchDirectory, $"{BlobFeedUrlBuilder.GetArchivePrefix(_request.Component)}-{Guid.NewGuid():N}");
+        // ScratchDirectory is unique to this artifact, so the official installer name cannot collide.
+        string basePath = Path.Combine(ScratchDirectory, BlobFeedUrlBuilder.GetArchiveFileName(
+            _request.Component, _version, DotnetupUtilities.GetRuntimeIdentifier(_request.InstallRoot.Architecture), extension: string.Empty));
         VerifiedDownload download = Download(basePath, reporter);
         EnsureInstallerExtension(download.Path);
 

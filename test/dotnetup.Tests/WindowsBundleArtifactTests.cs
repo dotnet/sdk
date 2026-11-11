@@ -50,7 +50,7 @@ public class WindowsBundleArtifactTests : IDisposable
         artifact.Prepare();
 
         downloader.DownloadCalls.Should().ContainSingle();
-        artifact.BundlePath.Should().StartWith(artifact.ScratchDirectory).And.EndWith(".exe");
+        artifact.BundlePath.Should().Be(Path.Combine(artifact.ScratchDirectory, "dotnet-sdk-10.0.100-win-x64.exe"));
         File.Exists(artifact.BundlePath).Should().BeTrue();
         artifact.ExtractedSubcomponents.Should().BeEmpty();
     }
