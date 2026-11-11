@@ -965,7 +965,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          a non-empty value and the original behavior will be restored. -->
     <PropertyGroup Condition=" '$(MSBuildDisableGetCopyToPublishDirectoryItemsOptimization)' == '' ">
       <_GCTPDIKeepDuplicates>false</_GCTPDIKeepDuplicates>
-      <_GCTPDIKeepMetadata>CopyToPublishDirectory;ExcludeFromSingleFile;TargetPath</_GCTPDIKeepMetadata>
+      <_GCTPDIKeepMetadata>CopyToPublishDirectory;ExcludeFromSingleFile;TargetPath;$(MSBuildGetCopyToPublishDirectoryAdditionalItemMetadataToCopy)</_GCTPDIKeepMetadata>
     </PropertyGroup>
 
     <!-- Get items from child projects first. -->
