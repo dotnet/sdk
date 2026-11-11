@@ -56,6 +56,10 @@ internal sealed class TerminalTestReporterOptions
     /// </summary>
     public AnsiMode AnsiMode { get; init; }
 
+    public OutputShowMode ShowStdout { get; init; } = OutputShowMode.Failed;
+
+    public OutputShowMode ShowStderr { get; init; } = OutputShowMode.Failed;
+
     /// <summary>
     /// Gets the format used when listing discovered tests ('--list-tests'). Only relevant in discovery mode.
     /// </summary>
@@ -85,6 +89,13 @@ internal sealed class TerminalTestReporterOptions
     /// slowest-tests section and the error recaps — is rendered regardless.
     /// </summary>
     public bool ShowRunSummary { get; init; } = true;
+}
+
+internal enum OutputShowMode
+{
+    All,
+    Failed,
+    None,
 }
 
 [Flags]

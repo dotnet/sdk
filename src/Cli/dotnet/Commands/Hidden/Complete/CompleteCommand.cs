@@ -32,7 +32,9 @@ public class CompleteCommand
 
         try
         {
+#if !CLI_AOT
             result.HandleDebugSwitch();
+#endif
 
             var completions = Completions(result);
 
@@ -41,6 +43,12 @@ public class CompleteCommand
                 reporter.WriteLine(completion.Label);
             }
         }
+#if CLI_AOT
+        catch (CommandNotAvailableInAotException)
+        {
+            throw;
+        }
+#endif
         catch (Exception)
         {
             return 1;
@@ -62,6 +70,15 @@ public class CompleteCommand
         }
 
         var result = Parser.Parse(input);
+
+#if CLI_AOT
+        // Managed parsers supply command-specific providers. Decide before enumerating or
+        // writing completions, using the same normalized parse that produces the candidates.
+        if (!ReferenceEquals(result.CommandResult.Command, Parser.RootCommand))
+        {
+            throw new CommandNotAvailableInAotException();
+        }
+#endif
 
         return [.. result.GetCompletions(position).Distinct()];
     }

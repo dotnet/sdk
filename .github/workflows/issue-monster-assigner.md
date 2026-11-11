@@ -96,14 +96,20 @@ jobs:
             } catch (error) {
               throw new Error(`Assignment credential validation failed (HTTP ${error.status ?? "unknown"}). ${remediation}`);
             }
-  conclusion:
-    pre-steps:
+  verify-assignment:
+    needs: [agent, safe_outputs]
+    if: always() && needs.agent.result == 'success'
+    runs-on: ubuntu-slim
+    permissions: {}
+    steps:
       - name: Verify Copilot assignment
-        if: needs.agent.result == 'success'
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          ASSIGNMENTS: ${{ needs.safe_outputs.outputs.assign_to_agent_assigned }}
         shell: bash
         run: |
-          if ! grep -Fqx "issue:${{ inputs.issue_number }}:copilot" <<< "${{ needs.safe_outputs.outputs.assign_to_agent_assigned }}"; then
-            echo "::error::Copilot assignment was not created for issue ${{ inputs.issue_number }}."
+          if ! grep -Fqx "issue:${ISSUE_NUMBER}:copilot" <<< "$ASSIGNMENTS"; then
+            echo "::error::Copilot assignment was not created for issue ${ISSUE_NUMBER}."
             exit 1
           fi
 

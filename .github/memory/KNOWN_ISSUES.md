@@ -83,6 +83,23 @@ and dependencies are constrained by MSBuild binding redirects.
 and coordinate dependency changes with MSBuild. See
 [`src/Resolvers/AGENTS.md`](../../src/Resolvers/AGENTS.md#conventions--gotchas).
 
+## Resolver Tests Can Inherit the Real SDK Search Paths
+
+**Affected area:** [`Microsoft.DotNet.MSBuildSdkResolver.Tests`](../../test/Microsoft.DotNet.MSBuildSdkResolver.Tests)
+
+**Description:** Ancestor `global.json` files, including the test harness's generated
+`sdk.paths`, can make a mock resolver select the real redist SDK instead of its fake SDKs.
+An empty `global.json` is not a substitute for the no-file scenario:
+[`NETCoreSdkResolver`](../../src/Resolvers/Microsoft.DotNet.SdkResolver/NETCoreSdkResolver.cs)
+uses `GlobalJsonPath == null` to select its MSBuild-compatibility fallback.
+
+**Workaround:** Keep both the process current directory and mock SDK roots outside the
+repository and harness search paths. Use a uniquely identified `TestAssetsManager`
+directory, restore the original current directory before cleanup, and declare matching
+`CurrentDirectory` resource locks on writers and readers. See the lifecycle and mock-layout
+setup in [`GivenAnMSBuildSdkResolver`](../../test/Microsoft.DotNet.MSBuildSdkResolver.Tests/GivenAnMSBuildSdkResolver.cs)
+and the reader lock in [`GivenAnEnvironmentForResolution`](../../test/Microsoft.DotNet.MSBuildSdkResolver.Tests/GivenAnEnvironmentForResolution.cs).
+
 ## Generated Files Are Easy to Edit Accidentally
 
 **Affected area:** `.xlf`, `.github/workflows/*.lock.yml`, generated man pages, Verify snapshots

@@ -72,6 +72,14 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
   </ItemGroup>
 
+  <!-- Standalone AOT tests can use the bootstrap SDK without a repo redist layout. -->
+  <ItemGroup>
+    <Content Include="..\TestAssets\TestProjects\AotManagedFallback\ManagedFallback.proj"
+             Link="TestAssets\AotManagedFallback\ManagedFallback.proj"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <!-- Azure Monitor dependencies aren't part of source build yet - see file://../../../Directory.Build.props#L85 for details -->
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />

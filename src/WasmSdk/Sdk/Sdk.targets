@@ -57,6 +57,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <HotReloadBrowserToolsUseSdkHotReloadAgent Condition="'$(HotReloadBrowserToolsUseSdkHotReloadAgent)' == ''">false</HotReloadBrowserToolsUseSdkHotReloadAgent>
   </PropertyGroup>
 
+  <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets"
+          Project="..\targets\Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets"
+          Condition="'$(StaticWebAssetsEnabled)' == 'true' and
+                     '$(UseStaticWebAssetsV2)' == 'true' and
+                     '$(IsCrossTargetingBuild)' != 'true'" />
+
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
   <Import Project="$(_WebAssemblyTargetsFile)" Condition="'$(_WebAssemblyTargetsFile)' != ''" />
 

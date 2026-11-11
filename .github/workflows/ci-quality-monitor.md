@@ -119,7 +119,7 @@ jobs:
             core.setOutput('run_id', checkpoint?.workflow_run?.id ?? '');
       - name: Restore durable state checkpoint
         if: hashFiles('.ci-quality-monitor/state.json') == '' && steps.find-state-checkpoint.outputs.run_id != ''
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: ci-quality-state
           path: .ci-quality-monitor
@@ -171,7 +171,7 @@ jobs:
           retention-days: 30
       - name: Upload durable state checkpoint
         if: hashFiles('.ci-quality-monitor/state.json') != ''
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: ci-quality-state
           path: .ci-quality-monitor/state.json
@@ -182,25 +182,35 @@ jobs:
         with:
           path: .ci-quality-monitor/state.json
           key: ci-quality-monitor-state-${{ github.run_id }}
-  conclusion:
+  dispatch-issues:
+    needs: [safe_outputs]
+    if: always() && needs.safe_outputs.result != 'skipped'
+    runs-on: ubuntu-latest
+    environment: copilot-pat-pool
     permissions:
       actions: write
-      issues: write
-    pre-steps:
+      contents: read
+      issues: read
+    steps:
       - name: Check out monitor dispatch helper
         uses: actions/checkout@v7.0.1
         with:
           repository: ${{ github.repository }}
           ref: main
           persist-credentials: false
+      - name: Download trusted created-issue map
+        if: needs.safe_outputs.outputs.created_issue_number != ''
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: safe-outputs-items
+          path: .ci-quality-monitor/safe-outputs
       - name: Dispatch Issue Monster for created issues
         uses: actions/github-script@v9.0.0
         env:
-          # gh-aw exports only the first issue directly. v0.89 no longer exports
-          # the temporary ID map, so the helper also finds this run's issues by
-          # gh-aw's provenance marker.
+          # gh-aw exports only the first issue directly. Read the trusted ID-map
+          # artifact; the helper also finds this run's issues by provenance marker.
           CREATED_ISSUE_NUMBER: ${{ needs.safe_outputs.outputs.created_issue_number }}
-          CREATED_ISSUE_MAP: ${{ needs.safe_outputs.outputs.process_safe_outputs_temporary_id_map }}
+          CREATED_ISSUE_MAP_FILE: .ci-quality-monitor/safe-outputs/temporary-id-map.json
           TARGET_REF: ${{ github.ref_name }}
         with:
           # Match Issue Monster's dispatch-workflow Safe Output authentication.
@@ -208,12 +218,16 @@ jobs:
           # carries the Actions write permission needed on dotnet/sdk.
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
+            const fs = require("node:fs");
             const { dispatchCreatedIssues } = require("./.github/ci-quality-monitor/issue-monster-dispatch.js");
+            const temporaryIdMapInput = process.env.CREATED_ISSUE_NUMBER
+              ? fs.readFileSync(process.env.CREATED_ISSUE_MAP_FILE, "utf8")
+              : "";
             await dispatchCreatedIssues({
               github,
               context,
               core,
-              temporaryIdMapInput: process.env.CREATED_ISSUE_MAP,
+              temporaryIdMapInput,
               createdIssueNumberInput: process.env.CREATED_ISSUE_NUMBER,
               ref: process.env.TARGET_REF,
             });
@@ -291,9 +305,9 @@ safe-outputs:
       - name: Force fresh Copilot CLI install
         run: sudo rm -rf -- /opt/hostedtoolcache/copilot-cli
   report-failure-as-issue: false
-  missing-tool:
+  report-missing-tool:
     create-issue: false
-  missing-data:
+  report-missing-data:
     create-issue: false
   report-incomplete:
     create-issue: false

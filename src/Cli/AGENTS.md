@@ -42,6 +42,9 @@ to `dotnet` and `Microsoft.DotNet.Cli.Utils`. Internal parser APIs are accessibl
 signed `dotnet` assembly through MSBuild's `InternalsVisibleTo`; keep those calls
 managed-only rather than introducing MSBuild dependencies into `Definitions`.
 
+When changing AOT-linked commands, resources, dependencies, or first-run behavior,
+follow the [size and trimming contracts](dotnet-aot/DESIGN.md#size-and-trimming-contracts).
+
 ## Where things live
 
 `src/Cli` is a set of projects, not one app. The three above carry commands; the
@@ -145,6 +148,29 @@ including session failures and ignored-exit policies, instead of upstream's in-p
 failure callback. A successful run with zero tests uses neutral "Zero tests ran" wording,
 not a green "Passed!" verdict.
 
+## MTP module identity
+
+Keep the assembly target framework separate from its executing runtime.
+[`TestApplicationHandler`](dotnet/Commands/Test/MTP/TestApplicationHandler.cs) prefers
+the evaluated project's `TargetFramework`, then optional handshake `TargetFramework`
+metadata (field 21). Missing target metadata stays unknown; never infer it from the
+runtime or output directory. Handshake `Framework` (field 2) remains runtime information,
+and `Architecture` identifies the executing process, not the assembly's AnyCPU setting.
+
+The shared
+[`TestFrameworkDisplay`](dotnet/Commands/Test/MTP/Terminal/TestFrameworkDisplay.cs)
+keeps matching runs compact (`net481|x64`) and labels a differing runtime separately
+(`net472|x64, runtime: net481`). Ignore modern .NET servicing patches and target platform
+suffixes only for comparison; preserve the full target in output and distinguish
+`net48` from `net481`. Unknown targets use an explicit runtime annotation, not a
+runtime-derived target. Keep start, results, completion, recaps and progress consistent,
+and omit secondary runtime information before primary identity in narrow cursor frames.
+
+[`ArtifactPostProcessingManager`](dotnet/Commands/Test/MTP/ArtifactPostProcessingManager.cs)
+can learn capabilities from a controller before the target is known. Fill only a missing
+target when later handshake metadata arrives, even if capabilities are not repeated;
+preserve an already known target.
+
 ## MTP coverage summaries
 
 Keep coverage scoped by execution, instance, session, and producer. Never add counts or
@@ -199,6 +225,13 @@ cancellation plumbing.
 
 The vendored non-cursor renderer measures **visible-output silence**, not silence between
 test completions. Its totals include completed modules after their worker slots are freed.
+Captured per-test stdout and stderr default to failed-only output independently of result
+visibility. Resolve explicit stream modes from each module's effective arguments and
+configuration, not just the parent command line; raw test-host process output is unaffected.
+The SDK owns these rendered defaults, so its dynamic platform-option help must describe them
+even when older test applications supply different defaults in their help metadata. See
+[`MicrosoftTestingPlatformTestCommand`](dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.cs)
+and its [help renderer](dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.Help.cs).
 Resolve parent progress from every selected module's effective arguments and working
 directory; any effective opt-out disables the shared heartbeat and slow-test display.
 Collection status must not override discovery formatting. Keep optional timer and warning

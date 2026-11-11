@@ -41,24 +41,14 @@ jobs:
               await github.rest.issues.unlock(params);
             }
 
-post-steps:
-  # missing_data and report_incomplete should make triage visibly fail, but the
-  # safe-output settings below intentionally suppress follow-up issue creation.
-  - name: Fail incomplete triage
-    if: always()
-    env:
-      GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
-    run: |
-      node - "$GH_AW_SAFE_OUTPUTS" <<'NODE'
-      const fs = require("fs");
-      const outputPath = process.argv[2];
-      if (!fs.existsSync(outputPath)) process.exit(0);
-      const incomplete = fs.readFileSync(outputPath, "utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse).some(({ type }) => type === "missing_data" || type === "report_incomplete");
-      if (incomplete) {
-        console.error("::error::Issue triage did not complete because required data or infrastructure was unavailable.");
-        process.exit(1);
+graders:
+  triage-complete:
+    name: Triage completion
+    script: |
+      if (session.some(({ type, data }) => type === "safe_output.request" && (data.type === "report_missing_data" || data.type === "report_incomplete"))) {
+        throw new Error("Issue triage did not complete because required data or infrastructure was unavailable.");
       }
-      NODE
+      return 1;
 
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
@@ -76,6 +66,8 @@ environment: copilot-pat-pool
 
 engine:
   id: copilot
+  # SDK mode supplies a proxy-aware fetch tool; offline CLI mode has no web tools.
+  copilot-sdk: true
   env:
     COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 permissions:
@@ -106,9 +98,9 @@ safe-outputs:
   allowed-domains:
     - "aka.ms"
     - "github.com"
-  missing-tool:
+  report-missing-tool:
     create-issue: false
-  missing-data:
+  report-missing-data:
     create-issue: false
   report-incomplete:
     create-issue: false
@@ -170,7 +162,7 @@ Follow these steps in order.
 
 Read the issue title, body, author, labels, assignees, and comments. Also list the repository's available labels.
 
-- If the read fails, retry once. Use `missing_data` only if both attempts fail to return a title and body.
+- If the read fails, retry once. Use `report_missing_data` only if both attempts fail to return a title and body.
 - If either a title or body is returned, treat the issue as readable; never report it as filtered, blocked, or missing.
 - If the issue already has an `Area-*` label and an assignee, or this workflow already posted a triage comment, call `noop` and stop.
 

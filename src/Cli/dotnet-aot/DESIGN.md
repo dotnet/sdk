@@ -36,6 +36,55 @@ invoking `dotnet`:
 When disabled, every invocation is routed straight to the managed CLI, exactly as it
 behaved before the AOT fast path was enabled by default.
 
+## Size and trimming contracts
+
+The native CLI uses knowledge about its supported command paths to reduce its
+closure. These optimizations must not change the shared command tree, supported
+output, localization, telemetry transports, or managed fallback. Review them when
+adding an AOT command or updating a dependency, not only when working on size.
+
+### Resources
+
+[AotSourceFiles.props](AotSourceFiles.props) embeds the full `CliStrings` and
+`CliCommandStrings` tables, including their supported cultures. Keep these tables
+and command-definition/help resources intact. Do not select resource keys through
+build-time source scans or rewrite compiled resource tables.
+
+Unused MSBuild-task diagnostics are not embedded by the native source list.
+Revisit that exclusion before introducing an in-process consumer of those diagnostics.
+
+Resource substitutions operate on complete manifest resources, not individual
+keys inside a `.resources` table. The
+[ILLink resource format](https://github.com/dotnet/runtime/blob/main/docs/tools/illink/data-formats.md#remove-embedded-resources)
+uses `<resource name="..." action="remove" />`. Native AOT's
+[resource blocking policy](https://github.com/dotnet/runtime/blob/main/src/coreclr/tools/aot/ILCompiler.Compiler/Compiler/ManifestResourceBlockingPolicy.cs)
+matches those names against manifest resources. It does not filter their entries.
+Both CLI string tables contain required messages, so do not remove either table
+or its translated equivalents. Key-level removal through substitution XML requires
+compiler support that is not available in the current format.
+
+### Platform provider registration
+
+[InternalMicrosoftDetector](../Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetector.cs)
+guards production provider construction with direct `OperatingSystem` intrinsics.
+ILC can then discard off-platform implementations.
+Checking support only after constructing all providers does not remove their roots.
+The injected-context factory remains all-platform for tests.
+Do not eagerly initialize it through
+[InternalMicrosoftDetectorOptions](../Microsoft.DotNet.Cli.InternalMicrosoft/Internal/InternalMicrosoftDetectorOptions.cs).
+Linux retains WSL providers, including parsers for Windows account/workplace data.
+Keep provider registration, platform checks, and regression tests synchronized when adding providers.
+
+### Validation
+
+Measure the native library with the same RID, configuration, toolchain, and feature
+settings before and after a change. Record actual file bytes separately from
+`.mstat` accounted contributions. Inspect the generated dependency graph to verify
+the expected roots disappeared. Run clean product/test closure builds, native
+tests, and relevant `dn` managed/AOT parity checks on each affected OS.
+Use the [AOT command skill](../../../.github/skills/add-dotnet-aot-command/SKILL.md)
+for the validation ladder and retain build binlogs.
+
 ## Motivation
 
 The `dotnet` CLI today runs as a managed application hosted by CoreCLR. Every
@@ -121,9 +170,15 @@ the dual-path dispatch logic.
 bridge builds the
 **full** command tree (the same `DotNetCommandDefinition` used by the managed
 CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
-can run entirely in AOT (`--version`, `--info`, the AOT-capable `sln`
-subcommands, the narrow file-based run path, and build-free
+can run entirely in AOT (`--version`, `--info`, root command and option shell
+completion, the AOT-capable `sln` subcommands, the narrow file-based run path, and build-free
 `test --test-modules` invocations described below) execute immediately and return.
+The [shared completion implementation](../dotnet/Commands/Hidden/Complete/CompleteCommand.cs)
+parses the cursor-normalized input once and falls back before enumerating or writing
+candidates once that input selects a command. This lets the managed parser supply
+template, project, package, and other command-specific providers.
+[First-run setup](../dotnet/FirstRunExperience.cs) is skipped for native completion,
+so root completion does not print first-use messages or create first-use sentinels.
 Other built-in command shapes are wired with a fallback action that throws
 `CommandNotAvailableInAotException`;
 the bridge catches it (and any unexpected parse-time failure) and transparently
@@ -268,8 +323,9 @@ In the shared files:
   isolated to small inline `#if CLI_AOT` regions: the managed build wires the
   real command handlers, while the AOT build attaches a managed-fallback handler
   to every command (overriding it with real implementations where AOT can run
-  the command, e.g. `sln` and the narrow cached `run` action). The help writer (`DotnetHelpBuilder`) has no
-  conditional compilation: help for the external-tool commands
+  the command, e.g. root-level `complete`, `sln`, and the narrow cached `run`
+  action). The help writer (`DotnetHelpBuilder`) has no conditional compilation:
+  help for the external-tool commands
   (msbuild/nuget/vstest/format/fsi) renders from AOT because those forwarding
   apps use AOT-friendly out-of-process codepaths under `#if CLI_AOT`.
 - **`ParserOptionActions.cs`** — The shared `--help`/`--version`/`--info` option

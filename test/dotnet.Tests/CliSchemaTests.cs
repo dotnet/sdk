@@ -339,7 +339,7 @@ public class CliSchemaTests : SdkTest
 {
   "name": "reference",
   "version": "{{Product.Version}}",
-  "description": ".NET Remove Command",
+  "description": "Add, remove, or list ProjectReferences for a .NET project.",
   "hidden": false,
   "options": {
     "--project": {

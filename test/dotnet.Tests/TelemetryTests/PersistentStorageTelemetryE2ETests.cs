@@ -63,14 +63,12 @@ public class PersistentStorageTelemetryE2ETests : SdkTest
 
         // A failing command gives the shutdown drain a budget, so the drainer reliably starts draining before exit.
         // The upload fails because of the unreachable proxy, which leaves every blob the drain picked up leased.
-        string drainerSessionId = Guid.NewGuid().ToString();
-        CreateCommand(testDir, storageDir, drainerSessionId, managed: !writerIsManaged, "solution", "list").Execute().Should().ExitWith(1);
+        // Its own telemetry may not be persisted within the bounded shutdown, so only check the writer's blob.
+        CreateCommand(testDir, storageDir, Guid.NewGuid().ToString(), managed: !writerIsManaged, "solution", "list").Execute().Should().ExitWith(1);
 
         string? writerBlob = FindPersistedTelemetry(storageDir, writerSessionId);
-        string? drainerBlob = FindPersistedTelemetry(storageDir, drainerSessionId);
-        drainerBlob.Should().NotBeNull();
-        Path.GetDirectoryName(writerBlob).Should().Be(Path.GetDirectoryName(drainerBlob), "the managed and AOT entry points should share one storage sub directory");
-        writerBlob.Should().EndWith(".lock", "the other entry point should have leased the blob to upload it");
+        writerBlob.Should().NotBeNull("the writer's telemetry should remain persisted after the failed upload")
+            .And.EndWith(".lock", "the other entry point should have leased the blob to upload it");
     }
 
     private TestCommand CreateCommand(string testDir, string storageDir, string sessionId, bool managed, params string[] args)
