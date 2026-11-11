@@ -261,7 +261,7 @@ Only record a match when its classification is strongly supported. This workflow
 
 All complete issues reaching this step have selected one `Area-*` label and proceed through ownership routing. If the issue already has an assignee, do not add or replace assignees; still use the returned teams in the Assignment line.
 
-Call the `select-assignee` MCP script exactly once with the selected `Area-*` label as `area`. The script deterministically:
+Call the `select-assignee` MCP script exactly once with the selected `Area-*` label as `area`. From the shell, run `mcpscripts select_assignee --area '<Area-* label>'`. The script deterministically:
 
 - finds the last `CODEOWNERS` section whose `# Area-*` heading names the label,
 - expands team owners through the reviewed membership snapshot in `.github/scripts/issue-triage-team-snapshot.json`,
