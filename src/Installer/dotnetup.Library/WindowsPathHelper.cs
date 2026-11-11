@@ -147,9 +147,9 @@ internal sealed partial class WindowsPathHelper : IDisposable
         // The host installer writes InstallLocation to the 32-bit view and sharedhost\Path only to the native view.
         // See Win64="no": https://github.com/dotnet/runtime/blob/e33be4d53ab951272c9161c50b549e5e7db60262/src/installer/pkg/sfx/installers/host.wxs#L35-L55
         var nativeView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
-        using var installedVersions32 = OpenInstalledVersions(RegistryView.Registry32);
-        using var installedVersionsNative = OpenInstalledVersions(nativeView);
-        var paths = GetRegisteredDotnetPaths(installedVersions32, installedVersionsNative, WarnUnreadableSystemInstallRegistry);
+        var paths = SelectRegisteredDotnetPaths(
+            sharedHostPaths: ReadInstalledVersions(nativeView, subKeyName: "sharedhost", valueName: "Path"),
+            installLocations: ReadInstalledVersions(RegistryView.Registry32, subKeyName: null, valueName: "InstallLocation"));
 
         // Fallback: if registry yielded nothing, check the default Program Files location.
         if (paths.Count == 0)
@@ -173,24 +173,23 @@ internal sealed partial class WindowsPathHelper : IDisposable
     private static int s_unreadableSystemInstallRegistryWarned;
 
     /// <summary>
-    /// Opens <c>InstalledVersions</c> in <paramref name="view"/>, or warns and returns <c>null</c> when it cannot be read.
+    /// Reads <paramref name="valueName"/> for each architecture under <c>InstalledVersions</c> in <paramref name="view"/>.
+    /// A view that cannot be read warns and yields nothing, so it does not hide the other view's registrations.
     /// </summary>
-    private static RegistryKey? OpenInstalledVersions(RegistryView view)
+    private static Dictionary<string, string> ReadInstalledVersions(RegistryView view, string? subKeyName, string valueName)
     {
         try
         {
             using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
-            return baseKey.OpenSubKey(InstalledVersionsKeyPath);
+            using var installedVersions = baseKey.OpenSubKey(InstalledVersionsKeyPath);
+            return ReadArchitectureValues(installedVersions, subKeyName, valueName);
         }
         catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException or IOException)
         {
-            WarnUnreadableSystemInstallRegistry(ex);
-            return null;
+            WarnUnreadableSystemInstallRegistry(ex, Console.Error, ref s_unreadableSystemInstallRegistryWarned);
+            return [];
         }
     }
-
-    private static void WarnUnreadableSystemInstallRegistry(Exception exception) =>
-        WarnUnreadableSystemInstallRegistry(exception, Console.Error, ref s_unreadableSystemInstallRegistryWarned);
 
     /// <summary>
     /// Writes the unreadable-registry warning to <paramref name="warningWriter"/> unless <paramref name="warned"/> is already set.
@@ -206,25 +205,41 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Returns the existing install directory for each architecture under <c>InstalledVersions</c>:
-    /// <c>sharedhost\Path</c> from the native view, or <c>InstallLocation</c> from the 32-bit view as a fallback.
-    /// Each view is read independently, so one that cannot be read does not hide the other's registrations.
+    /// Reads <paramref name="valueName"/> from each architecture key under <paramref name="installedVersions"/>, or from
+    /// its <paramref name="subKeyName"/> child when given, keyed by architecture.
     /// </summary>
-    /// <param name="installedVersions32">The <c>InstalledVersions</c> key opened in the 32-bit registry view.</param>
-    /// <param name="installedVersionsNative">The <c>InstalledVersions</c> key opened in the native registry view.</param>
-    /// <param name="onUnreadable">Called when a view cannot be read.</param>
-    internal static List<string> GetRegisteredDotnetPaths(RegistryKey? installedVersions32, RegistryKey? installedVersionsNative, Action<Exception> onUnreadable)
+    internal static Dictionary<string, string> ReadArchitectureValues(RegistryKey? installedVersions, string? subKeyName, string valueName)
     {
-        var sharedHostPaths = ReadArchitectureValues(installedVersionsNative, "sharedhost", "Path", onUnreadable);
-        var installLocations = ReadArchitectureValues(installedVersions32, subKeyName: null, "InstallLocation", onUnreadable);
-
-        var paths = new List<string>();
-        // Each view may register architectures the other lacks.
-        foreach (var architectureName in sharedHostPaths.Keys.Union(installLocations.Keys, StringComparer.OrdinalIgnoreCase))
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (installedVersions is null)
         {
-            // Prefer sharedhost\Path, the canonical location set by the host installer; fall back to InstallLocation when it is missing or stale.
-            string? installPath = GetExistingDirectory(sharedHostPaths.GetValueOrDefault(architectureName))
-                ?? GetExistingDirectory(installLocations.GetValueOrDefault(architectureName));
+            return values;
+        }
+
+        foreach (var architecture in installedVersions.GetSubKeyNames())
+        {
+            using var key = installedVersions.OpenSubKey(subKeyName is null ? architecture : $@"{architecture}\{subKeyName}");
+            if (key?.GetValue(valueName) is string { Length: > 0 } value)
+            {
+                values[architecture] = value;
+            }
+        }
+
+        return values;
+    }
+
+    /// <summary>
+    /// Returns the existing install directory for each architecture: its <c>sharedhost\Path</c>, or its
+    /// <c>InstallLocation</c> when that path is missing or does not exist.
+    /// </summary>
+    internal static List<string> SelectRegisteredDotnetPaths(IReadOnlyDictionary<string, string> sharedHostPaths, IReadOnlyDictionary<string, string> installLocations)
+    {
+        var paths = new List<string>();
+        foreach (var architecture in sharedHostPaths.Keys.Union(installLocations.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            // Non-native installs and stale sharedhost entries are only found through InstallLocation.
+            string? installPath = GetExistingDirectory(sharedHostPaths.GetValueOrDefault(architecture))
+                ?? GetExistingDirectory(installLocations.GetValueOrDefault(architecture));
 
             if (installPath is not null && !paths.Contains(installPath, StringComparer.OrdinalIgnoreCase))
             {
@@ -233,37 +248,6 @@ internal sealed partial class WindowsPathHelper : IDisposable
         }
 
         return paths;
-    }
-
-    /// <summary>
-    /// Reads <paramref name="valueName"/> from each architecture key under <paramref name="installedVersions"/>, or from its
-    /// <paramref name="subKeyName"/> child when given, keyed by architecture name.
-    /// </summary>
-    private static Dictionary<string, string> ReadArchitectureValues(RegistryKey? installedVersions, string? subKeyName, string valueName, Action<Exception> onUnreadable)
-    {
-        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        if (installedVersions is null)
-        {
-            return values;
-        }
-
-        try
-        {
-            foreach (var architectureName in installedVersions.GetSubKeyNames())
-            {
-                using var key = installedVersions.OpenSubKey(subKeyName is null ? architectureName : $@"{architectureName}\{subKeyName}");
-                if (key?.GetValue(valueName) is string { Length: > 0 } value)
-                {
-                    values[architectureName] = value;
-                }
-            }
-        }
-        catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException or IOException)
-        {
-            onUnreadable(ex);
-        }
-
-        return values;
     }
 
     private static string? GetExistingDirectory(string? path)

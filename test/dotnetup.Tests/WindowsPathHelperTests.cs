@@ -13,6 +13,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [OSCondition(OperatingSystems.Windows)]
 public class WindowsPathHelperTests
 {
+    private static readonly string s_existingDirectory = Path.TrimEndingDirectorySeparator(Path.GetTempPath());
+    private static readonly string s_otherExistingDirectory = Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory);
+    private static readonly string s_missingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
     public void GetProgramFilesDotnetPaths_ReturnsValidPaths()
@@ -28,74 +32,67 @@ public class WindowsPathHelperTests
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void GetRegisteredDotnetPaths_PrefersNativeViewSharedHostPathOverInstallLocation()
+    public void ReadArchitectureValues_ReadsTheValueFromEachArchitectureKey()
     {
-        using var keys = new RegistryViewKeys();
-        string sharedHostPath = keys.CreateDirectory("sharedhost");
-        string installLocation = keys.CreateDirectory("installlocation");
-        keys.SetValue(keys.InstalledVersions32, "x64", "InstallLocation", installLocation + Path.DirectorySeparatorChar);
-        keys.SetValue(keys.InstalledVersionsNative, @"x64\sharedhost", "Path", sharedHostPath);
+        using var installedVersions = new TemporaryRegistryKey();
+        installedVersions.SetValue("x64", "InstallLocation", @"C:\x64");
+        installedVersions.SetValue("x86", "InstallLocation", @"C:\x86");
+        installedVersions.SetValue(@"arm64\sharedhost", "Path", @"C:\arm64");
 
-        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative, FailOnUnreadable)
-            .Should().Equal(sharedHostPath);
+        WindowsPathHelper.ReadArchitectureValues(installedVersions.Key, subKeyName: null, valueName: "InstallLocation")
+            .Should().BeEquivalentTo(new Dictionary<string, string> { ["x64"] = @"C:\x64", ["x86"] = @"C:\x86" });
     }
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void GetRegisteredDotnetPaths_FallsBackToInstallLocationWhenSharedHostPathIsStale()
+    public void ReadArchitectureValues_ReadsTheValueFromEachArchitectureSubKey()
     {
-        using var keys = new RegistryViewKeys();
-        string installLocation = keys.CreateDirectory("installlocation");
-        keys.SetValue(keys.InstalledVersions32, "x64", "InstallLocation", installLocation);
-        keys.SetValue(keys.InstalledVersionsNative, @"x64\sharedhost", "Path", Path.Combine(installLocation, "missing"));
+        using var installedVersions = new TemporaryRegistryKey();
+        installedVersions.SetValue(@"x64\sharedhost", "Path", @"C:\x64");
+        installedVersions.SetValue("x86", "InstallLocation", @"C:\x86");
 
-        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative, FailOnUnreadable)
-            .Should().Equal(installLocation);
+        WindowsPathHelper.ReadArchitectureValues(installedVersions.Key, subKeyName: "sharedhost", valueName: "Path")
+            .Should().BeEquivalentTo(new Dictionary<string, string> { ["x64"] = @"C:\x64" });
     }
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void GetRegisteredDotnetPaths_UsesTheReadableViewWhenTheOtherViewFails()
+    public void SelectRegisteredDotnetPaths_PrefersSharedHostPathOverInstallLocation()
     {
-        using var keys = new RegistryViewKeys();
-        string installLocation = keys.CreateDirectory("installlocation");
-        keys.SetValue(keys.InstalledVersions32, "x64", "InstallLocation", installLocation);
-        keys.SetValue(keys.InstalledVersionsNative, @"x64\sharedhost", "Path", keys.CreateDirectory("sharedhost"));
-        keys.DeleteInstalledVersionsNative();
-        var failures = new List<Exception>();
-
-        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative, failures.Add)
-            .Should().Equal(installLocation);
-        failures.Should().ContainSingle().Which.Should().BeOfType<IOException>();
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
+                installLocations: new Dictionary<string, string> { ["x64"] = s_otherExistingDirectory })
+            .Should().Equal(s_existingDirectory);
     }
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void GetRegisteredDotnetPaths_IgnoresSharedHostInThe32BitView()
+    public void SelectRegisteredDotnetPaths_FallsBackToInstallLocationWhenSharedHostPathIsStale()
     {
-        using var keys = new RegistryViewKeys();
-        string sharedHostPath = keys.CreateDirectory("sharedhost");
-        string installLocation = keys.CreateDirectory("installlocation");
-        keys.SetValue(keys.InstalledVersions32, "x86", "InstallLocation", installLocation);
-        keys.SetValue(keys.InstalledVersions32, @"x86\sharedhost", "Path", sharedHostPath);
-
-        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative, FailOnUnreadable)
-            .Should().Equal(installLocation);
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_missingDirectory },
+                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory + Path.DirectorySeparatorChar })
+            .Should().Equal(s_existingDirectory);
     }
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void GetRegisteredDotnetPaths_ReadsEachArchitectureAndSkipsMissingDirectories()
+    public void SelectRegisteredDotnetPaths_UsesInstallLocationsWhenTheNativeViewYieldsNothing()
     {
-        using var keys = new RegistryViewKeys();
-        string x64Path = keys.CreateDirectory("x64");
-        string x86Path = keys.CreateDirectory("x86");
-        keys.SetValue(keys.InstalledVersionsNative, @"x64\sharedhost", "Path", x64Path);
-        keys.SetValue(keys.InstalledVersions32, "x86", "InstallLocation", x86Path);
-        keys.SetValue(keys.InstalledVersions32, "arm64", "InstallLocation", Path.Combine(x64Path, "missing"));
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string>(),
+                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory })
+            .Should().Equal(s_existingDirectory);
+    }
 
-        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative, FailOnUnreadable)
-            .Should().BeEquivalentTo(x64Path, x86Path);
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_ReadsEachArchitectureAndSkipsMissingDirectories()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
+                installLocations: new Dictionary<string, string> { ["x86"] = s_otherExistingDirectory, ["arm64"] = s_missingDirectory })
+            .Should().BeEquivalentTo(s_existingDirectory, s_otherExistingDirectory);
     }
 
     [TestMethod]
@@ -113,41 +110,25 @@ public class WindowsPathHelperTests
             .Should().ContainSingle().Which.Should().Contain(denied.Message);
     }
 
-    private static void FailOnUnreadable(Exception exception) => Assert.Fail(exception.ToString());
-
-    /// <summary>Two temporary <c>InstalledVersions</c> keys under HKCU standing in for the 32-bit and native registry views.</summary>
-    private sealed class RegistryViewKeys : IDisposable
+    /// <summary>A temporary key under HKCU, deleted on dispose.</summary>
+    private sealed class TemporaryRegistryKey : IDisposable
     {
         private readonly string _keyPath = $@"Software\dotnetup-tests\{Guid.NewGuid():N}";
-        private readonly string _directory = Directory.CreateTempSubdirectory().FullName;
 
-        public RegistryViewKeys()
+        public TemporaryRegistryKey() => Key = Registry.CurrentUser.CreateSubKey(_keyPath);
+
+        public RegistryKey Key { get; }
+
+        public void SetValue(string subKeyPath, string name, string value)
         {
-            InstalledVersions32 = Registry.CurrentUser.CreateSubKey($@"{_keyPath}\Registry32");
-            InstalledVersionsNative = Registry.CurrentUser.CreateSubKey($@"{_keyPath}\Native");
-        }
-
-        public RegistryKey InstalledVersions32 { get; }
-
-        public RegistryKey InstalledVersionsNative { get; }
-
-        public string CreateDirectory(string name) => Directory.CreateDirectory(Path.Combine(_directory, name)).FullName;
-
-        public void SetValue(RegistryKey root, string subKeyPath, string name, string value)
-        {
-            using var key = root.CreateSubKey(subKeyPath);
+            using var key = Key.CreateSubKey(subKeyPath);
             key.SetValue(name, value);
         }
 
-        // The open InstalledVersionsNative handle now refers to a deleted key, so reading through it fails.
-        public void DeleteInstalledVersionsNative() => Registry.CurrentUser.DeleteSubKeyTree($@"{_keyPath}\Native");
-
         public void Dispose()
         {
-            InstalledVersions32.Dispose();
-            InstalledVersionsNative.Dispose();
+            Key.Dispose();
             Registry.CurrentUser.DeleteSubKeyTree(_keyPath, throwOnMissingSubKey: false);
-            Directory.Delete(_directory, recursive: true);
         }
     }
 
