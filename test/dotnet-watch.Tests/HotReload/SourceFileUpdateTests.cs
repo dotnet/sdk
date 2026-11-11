@@ -75,6 +75,133 @@ public class SourceFileUpdateTests : DotNetWatchTestBase
     }
 
     /// <summary>
+    /// Adding a method, then changing only a referenced project, then deleting the method
+    /// must not crash Hot Reload (<see href="https://github.com/dotnet/roslyn/issues/79898"/>).
+    /// </summary>
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/roslyn/issues/79898")]
+    public async Task DeleteAddedMethodAfterDependencyUpdate()
+    {
+        var testAsset = CopyTestAsset("WatchHotReloadApp");
+        var programPath = Path.Combine(testAsset.Path, "Program.cs");
+        var projectPath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
+        var libDir = Path.Combine(testAsset.Path, "Lib");
+        var libPath = Path.Combine(libDir, "Lib.cs");
+
+        Directory.CreateDirectory(libDir);
+        File.WriteAllText(Path.Combine(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(libPath, """
+            public class Lib
+            {
+                public static string Get() => "lib-v1";
+            }
+            """);
+
+        // Nested Lib/ must not be compiled into the app (SDK includes **/*.cs).
+        // Otherwise a Lib-only edit is also an App source change and cannot fork the App compilation.
+        UpdateSourceFile(projectPath, src => src
+            .Replace("<!-- properties placeholder -->", "<DefaultItemExcludes>$(DefaultItemExcludes);Lib/**</DefaultItemExcludes>")
+            .Replace("<!-- items placeholder -->", """<ProjectReference Include="Lib/Lib.csproj" />"""));
+
+        var appV1 = """
+            using System;
+            using System.Threading.Tasks;
+
+            while (true)
+            {
+                Console.WriteLine("app-v1 " + Lib.Get());
+                await Task.Delay(1000);
+            }
+
+            class C { }
+            """;
+
+        var appV2 = """
+            using System;
+            using System.Threading.Tasks;
+
+            while (true)
+            {
+                Console.WriteLine("app-v2 " + Lib.Get());
+                await Task.Delay(1000);
+            }
+
+            class C { }
+            """;
+
+        var appV2WithAddedMethod = """
+            using System;
+            using System.Threading.Tasks;
+
+            while (true)
+            {
+                Console.WriteLine("app-v2 " + Lib.Get());
+                await Task.Delay(1000);
+            }
+
+            class C
+            {
+                public string Added() => "added";
+            }
+            """;
+
+        File.WriteAllText(programPath, appV1);
+
+        await using var w = CreateInProcWatcher(testAsset, [], testAsset.Path);
+
+        var waitingForChanges = w.Observer.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var applied = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
+
+        Task WaitForOutput(string text)
+        {
+            var tcs = w.CreateCompletionSource();
+            w.Reporter.OnProcessOutput += line =>
+            {
+                if (line.Content.Contains(text))
+                {
+                    tcs.TrySetResult();
+                }
+            };
+            return tcs.Task;
+        }
+
+        var sawAppV1 = WaitForOutput("app-v1 lib-v1");
+        w.Start();
+
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
+        await sawAppV1;
+
+        // 1. App body edit — establish an App emit baseline.
+        var sawAppV2 = WaitForOutput("app-v2 lib-v1");
+        UpdateSourceFile(programPath, appV2);
+        await sawAppV2;
+        await applied.WaitAsync(w.ShutdownSource.Token);
+
+        // 2. Add a method on App.
+        UpdateSourceFile(programPath, appV2WithAddedMethod);
+        await applied.WaitAsync(w.ShutdownSource.Token);
+
+        // 3. Lib-only edit — App compilation forks via the updated project reference
+        // without replacing App's emit baseline.
+        var sawLibV2 = WaitForOutput("app-v2 lib-v2");
+        UpdateSourceFile(libPath, src => src.Replace("lib-v1", "lib-v2"));
+        await sawLibV2;
+        await applied.WaitAsync(w.ShutdownSource.Token);
+
+        // 4. Delete the method added in step 2. This currently throws
+        // NullReferenceException in DefinitionMap.GetPreviousMethodHandle.
+        UpdateSourceFile(programPath, appV2);
+        await applied.WaitAsync(w.ShutdownSource.Token);
+    }
+
+    /// <summary>
     /// Unchanged project doesn't build. Wait for source change and rebuild.
     /// </summary>
     [TestMethod]
