@@ -1665,7 +1665,7 @@ public class NativeLibraryClass
         public void NativeAot_publish_respects_optimized_publish_and_no_build(string useOptimizedPublish, bool noBuild)
         {
             var projectName = "NativeAotCleanOutput";
-            bool optimized = useOptimizedPublish == "true";
+            bool optimized = useOptimizedPublish != "false";
 
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier", "UseOptimizedPublish");
@@ -1716,7 +1716,7 @@ public class NativeLibraryClass
             }
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, ToolsetInfo.CurrentTargetFramework);
-            buildProperties["UseOptimizedPublish"].Should().Be(useOptimizedPublish ?? "false");
+            buildProperties["UseOptimizedPublish"].Should().Be(useOptimizedPublish ?? "true");
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: rid).FullName;
             var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
@@ -1774,7 +1774,6 @@ namespace AotRefLib
                 IsExe = true,
             };
             testProject.AdditionalProperties["PublishAot"] = "true";
-            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
