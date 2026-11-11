@@ -262,6 +262,69 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
+    /// Gets the same Program Files dotnet roots as <see cref="GetProgramFilesDotnetPaths"/>, each with the architecture of
+    /// the <c>InstalledVersions</c> subkey that registered it. Subkeys that do not name a supported architecture are
+    /// skipped. The %ProgramFiles%\dotnet fallback is OS-native, except in an x86 process, which sees Program Files (x86).
+    /// </summary>
+    public static List<DotnetInstallRoot> GetProgramFilesDotnetRoots()
+    {
+        // Same registry views as GetProgramFilesDotnetPaths.
+        var nativeView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
+        var roots = SelectRegisteredDotnetRoots(
+            sharedHostPaths: ReadInstalledVersions(nativeView, subKeyName: "sharedhost", valueName: "Path"),
+            installLocations: ReadInstalledVersions(RegistryView.Registry32, subKeyName: null, valueName: "InstallLocation"));
+
+        if (roots.Count == 0
+            && GetExistingDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet")) is { } defaultPath)
+        {
+            InstallArchitecture architecture = RuntimeInformation.ProcessArchitecture == Architecture.X86
+                ? InstallArchitecture.x86
+                : InstallerUtilities.GetOsInstallArchitecture();
+            roots.Add(new DotnetInstallRoot(defaultPath, architecture));
+        }
+
+        return roots;
+    }
+
+    /// <summary>
+    /// Selects each architecture's install directory with the same rule as <see cref="SelectRegisteredDotnetPaths"/> and
+    /// records that architecture. The first architecture that registers a directory keeps it.
+    /// </summary>
+    internal static List<DotnetInstallRoot> SelectRegisteredDotnetRoots(IReadOnlyDictionary<string, string> sharedHostPaths, IReadOnlyDictionary<string, string> installLocations)
+    {
+        var roots = new List<DotnetInstallRoot>();
+        foreach (var architectureName in sharedHostPaths.Keys.Union(installLocations.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            string? installPath = GetExistingDirectory(sharedHostPaths.GetValueOrDefault(architectureName))
+                ?? GetExistingDirectory(installLocations.GetValueOrDefault(architectureName));
+
+            if (installPath is not null
+                && TryParseRegistryArchitecture(architectureName, out InstallArchitecture architecture)
+                && !roots.Any(root => string.Equals(root.Path, installPath, StringComparison.OrdinalIgnoreCase)))
+            {
+                roots.Add(new DotnetInstallRoot(installPath, architecture));
+            }
+        }
+
+        return roots;
+    }
+
+    private static bool TryParseRegistryArchitecture(string name, out InstallArchitecture architecture)
+    {
+        foreach (InstallArchitecture candidate in Enum.GetValues<InstallArchitecture>())
+        {
+            if (string.Equals(name, candidate.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                architecture = candidate;
+                return true;
+            }
+        }
+
+        architecture = default;
+        return false;
+    }
+
+    /// <summary>
     /// Splits a PATH string into entries: trims quotes, drops empty entries, and expands a
     /// leading <c>~/</c> using <c>HOME</c>, matching the SDK's EnvironmentProvider PATH handling.
     /// </summary>

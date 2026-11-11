@@ -3,6 +3,7 @@
 
 using System.Runtime.Versioning;
 using System.Security;
+using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.Win32;
 
@@ -93,6 +94,45 @@ public class WindowsPathHelperTests
                 sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
                 installLocations: new Dictionary<string, string> { ["x86"] = s_otherExistingDirectory, ["arm64"] = s_missingDirectory })
             .Should().BeEquivalentTo(s_existingDirectory, s_otherExistingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetRoots_RecordsTheRegistryArchitectureOfEachRoot()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetRoots(
+                sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory, ["arm64"] = s_missingDirectory },
+                installLocations: new Dictionary<string, string>
+                {
+                    ["X86"] = s_otherExistingDirectory,
+                    ["SDKFeatures"] = s_existingDirectory,
+                    ["arm"] = s_otherExistingDirectory,
+                })
+            .Should().BeEquivalentTo(
+            [
+                new DotnetInstallRoot(s_existingDirectory, InstallArchitecture.x64),
+                new DotnetInstallRoot(s_otherExistingDirectory, InstallArchitecture.x86),
+            ]);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetRoots_SelectsTheSameDirectoriesAsSelectRegisteredDotnetPaths()
+    {
+        var sharedHostPaths = new Dictionary<string, string> { ["x64"] = s_missingDirectory, ["arm64"] = s_existingDirectory };
+        var installLocations = new Dictionary<string, string> { ["x64"] = s_otherExistingDirectory, ["x86"] = s_missingDirectory };
+
+        WindowsPathHelper.SelectRegisteredDotnetRoots(sharedHostPaths, installLocations).Select(root => root.Path)
+            .Should().BeEquivalentTo(WindowsPathHelper.SelectRegisteredDotnetPaths(sharedHostPaths, installLocations));
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void GetProgramFilesDotnetRoots_MatchesTheReportedPaths()
+    {
+        var roots = WindowsPathHelper.GetProgramFilesDotnetRoots();
+
+        WindowsPathHelper.GetProgramFilesDotnetPaths().Should().Contain(roots.Select(root => root.Path));
     }
 
     [TestMethod]
