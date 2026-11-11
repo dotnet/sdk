@@ -61,9 +61,11 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             bool enableNullable = false,
             byte[] publicKey = null,
             [CallerMemberName] string assemblyName = "",
-            bool allowUnsafe = false)
+            bool allowUnsafe = false,
+            bool updatedMemorySafetyRules = false)
         {
-            CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey, allowUnsafe);
+            CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey, allowUnsafe,
+                updatedMemorySafetyRules: updatedMemorySafetyRules);
 
             Assert.IsEmpty(compilation.GetDiagnostics());
 
@@ -103,7 +105,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
                 : ParseOptions;
             if (updatedMemorySafetyRules)
             {
-                parseOptions = parseOptions.WithFeatures([new KeyValuePair<string, string>("updated-memory-safety-rules", "true")]);
+                // V2 safety checks are configured on the compilation, not through parser feature flags.
+#pragma warning disable RSEXPERIMENTAL006
+                compilation = compilation.WithOptions(compilation.Options.WithMemorySafetyRulesVersion(MemorySafetyRulesVersion.Version2));
+#pragma warning restore RSEXPERIMENTAL006
             }
             return compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(syntax, parseOptions));
         }

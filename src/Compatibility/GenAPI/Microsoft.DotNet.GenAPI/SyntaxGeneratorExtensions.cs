@@ -52,19 +52,14 @@ namespace Microsoft.DotNet.GenAPI
             if (symbol.Kind == SymbolKind.Method)
             {
                 IMethodSymbol method = (IMethodSymbol)symbol;
-                if (usesUpdatedMemorySafetyRules && method.IsExtern)
-                {
-                    // GenAPI supplies a stub body, so the declaration is no longer extern.
-                    SyntaxNode declaration = syntaxGenerator.Declaration(method).AddMissingSpecialConstraints(symbol);
-                    return syntaxGenerator.WithModifiers(declaration, syntaxGenerator.GetModifiers(declaration).WithIsExtern(false));
-                }
+                SyntaxNode? declaration = null;
 
                 if (method.MethodKind == MethodKind.Constructor)
                 {
                     INamedTypeSymbol? baseType = method.ContainingType.BaseType;
                     if (baseType != null)
                     {
-                        IEnumerable<IMethodSymbol> baseConstructors = baseType.Constructors.Where(symbolFilter.Include);
+                        IEnumerable<IMethodSymbol> baseConstructors = method.GetBaseConstructorCandidates(symbolFilter);
                         // If the base type does not have default constructor.
                         if (baseConstructors.Any() && baseConstructors.All(c => !c.Parameters.IsEmpty))
                         {
@@ -76,18 +71,40 @@ namespace Microsoft.DotNet.GenAPI
                             {
                                 IMethodSymbol constructor = baseTypeConstructors.First();
 
-                                ConstructorDeclarationSyntax declaration = (ConstructorDeclarationSyntax)syntaxGenerator.Declaration(method);
+                                ConstructorDeclarationSyntax constructorDeclaration = (ConstructorDeclarationSyntax)syntaxGenerator.Declaration(method);
                                 // Pointer signatures require an unsafe declaration only under the legacy rules.
-                                if (!usesUpdatedMemorySafetyRules && !declaration.Modifiers.Any(m => m.RawKind == (int)SyntaxKind.UnsafeKeyword) &&
+                                if (!usesUpdatedMemorySafetyRules && !constructorDeclaration.Modifiers.Any(m => m.RawKind == (int)SyntaxKind.UnsafeKeyword) &&
                                     // if at least one parameter of a base constructor is raw pointer type
                                     constructor.Parameters.Any(p => p.Type.TypeKind == TypeKind.Pointer))
                                 {
-                                    declaration = declaration.AddModifiers(SyntaxFactory.Token(SyntaxKind.UnsafeKeyword));
+                                    constructorDeclaration = constructorDeclaration.AddModifiers(SyntaxFactory.Token(SyntaxKind.UnsafeKeyword));
                                 }
-                                return declaration.WithInitializer(constructor.GenerateBaseConstructorInitializer());
+                                declaration = constructorDeclaration.WithInitializer(constructor.GenerateBaseConstructorInitializer());
                             }
                         }
                     }
+                }
+
+                if (usesUpdatedMemorySafetyRules && method.MethodKind == MethodKind.Constructor)
+                {
+                    // Under V2, unsafe is part of the constructor's contract, not just required by pointer syntax.
+                    declaration ??= syntaxGenerator.Declaration(method);
+#pragma warning disable RSEXPERIMENTAL006
+                    declaration = syntaxGenerator.WithModifiers(declaration,
+                        syntaxGenerator.GetModifiers(declaration).WithIsUnsafe(method.RequiresUnsafeContext));
+#pragma warning restore RSEXPERIMENTAL006
+                }
+
+                if (usesUpdatedMemorySafetyRules && method.IsExtern)
+                {
+                    // GenAPI supplies a stub body, so remove extern after adding any required base initializer.
+                    declaration ??= syntaxGenerator.Declaration(method).AddMissingSpecialConstraints(symbol);
+                    declaration = syntaxGenerator.WithModifiers(declaration, syntaxGenerator.GetModifiers(declaration).WithIsExtern(false));
+                }
+
+                if (declaration != null)
+                {
+                    return declaration;
                 }
             }
 

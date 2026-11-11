@@ -61,12 +61,12 @@ public sealed class CSharpAssemblyDocumentGenerator
         CSharpCompilationOptions compilationOptions = _compilationOptions;
 #pragma warning disable RSEXPERIMENTAL006
         if (assemblySymbol.Modules.Any(module => module.MemorySafetyRulesVersion == MemorySafetyRulesVersion.Version2))
-#pragma warning restore RSEXPERIMENTAL006
         {
-            parseOptions = parseOptions.WithLanguageVersion(LanguageVersion.Preview)
-                .WithFeatures([new KeyValuePair<string, string>("updated-memory-safety-rules", "true")]);
-            compilationOptions = compilationOptions.WithAllowUnsafe(true);
+            parseOptions = parseOptions.WithLanguageVersion(LanguageVersion.Preview);
+            compilationOptions = compilationOptions.WithAllowUnsafe(true)
+                .WithMemorySafetyRulesVersion(MemorySafetyRulesVersion.Version2);
         }
+#pragma warning restore RSEXPERIMENTAL006
 
         Project project = _adhocWorkspace.AddProject(ProjectInfo.Create(
             ProjectId.CreateNewId(), VersionStamp.Create(), assemblySymbol.Name, assemblySymbol.Name, LanguageNames.CSharp,

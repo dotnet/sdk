@@ -80,10 +80,24 @@ namespace Microsoft.DotNet.GenAPI
             INamedTypeSymbol? baseType = method.ContainingType.BaseType;
             if (baseType != null)
             {
-                return baseType.InstanceConstructors.Any(c => symbolFilter.Include(c) && c.Parameters.IsEmpty);
+                return method.GetBaseConstructorCandidates(symbolFilter).Any(c => c.Parameters.IsEmpty);
             }
 
             return true;
+        }
+
+        public static IEnumerable<IMethodSymbol> GetBaseConstructorCandidates(this IMethodSymbol method, ISymbolFilter symbolFilter)
+        {
+            IEnumerable<IMethodSymbol> constructors = method.ContainingType.BaseType?.InstanceConstructors.Where(symbolFilter.Include) ?? [];
+#pragma warning disable RSEXPERIMENTAL006
+            if (method.ContainingModule.MemorySafetyRulesVersion == MemorySafetyRulesVersion.Version2 && !method.RequiresUnsafeContext)
+            {
+                // Do not make a safe constructor unsafe just to call a shorter base overload.
+                // Use the same candidates for implicit base() calls and explicit initializers.
+                constructors = constructors.Where(c => !c.RequiresUnsafeContext);
+            }
+#pragma warning restore RSEXPERIMENTAL006
+            return constructors;
         }
     }
 }
