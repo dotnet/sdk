@@ -180,13 +180,30 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// <summary>
     /// Run the MSBuild arguments that have been previously specified.
     /// </summary>
-    public int Execute()
+    public int Execute() => Execute(workingDirectory: null);
+
+    /// <inheritdoc cref="Execute()"/>
+    /// <param name="workingDirectory">
+    /// When specified, run out-of-process in this directory without changing the caller's directory.
+    /// </param>
+    public int Execute(string? workingDirectory)
     {
         using var activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
 
+        if (workingDirectory is not null && _forwardingApp is null)
+        {
+            InitializeForOutOfProcForwarding();
+        }
+
         if (_forwardingApp != null)
         {
-            return GetProcessStartInfo().Execute();
+            ProcessStartInfo startInfo = GetProcessStartInfo();
+            if (workingDirectory is not null)
+            {
+                startInfo.WorkingDirectory = workingDirectory;
+            }
+
+            return startInfo.Execute();
         }
         else
         {
@@ -233,6 +250,22 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// </summary>
     internal static IDisposable SetMSBuildRequiredEnvironmentVariables()
         => SetEnvironmentVariables(GetMSBuildRequiredEnvironmentVariables());
+
+    /// <summary>
+    /// Sets the required MSBuild environment variables and additional variables for a direct
+    /// in-process MSBuild operation. Restores their original values when disposed.
+    /// </summary>
+    internal static IDisposable SetMSBuildRequiredEnvironmentVariables(
+        IEnumerable<KeyValuePair<string, string?>> additionalEnvironmentVariables)
+    {
+        Dictionary<string, string?> environmentVariables = GetMSBuildRequiredEnvironmentVariables();
+        foreach (KeyValuePair<string, string?> variable in additionalEnvironmentVariables)
+        {
+            environmentVariables[variable.Key] = variable.Value;
+        }
+
+        return SetEnvironmentVariables(environmentVariables);
+    }
 
     private static IDisposable SetEnvironmentVariables(IEnumerable<KeyValuePair<string, string?>> environmentVariables)
     {

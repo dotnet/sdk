@@ -65,7 +65,7 @@ context; there is no shared-context representation. Each batch contains at most
 
 The reader presents that batch as consecutive, labeled text pages rather than
 one large batch object. Every text response is at most 12 KiB including the
-[pinned MCP adapter's JSON string encoding](https://github.com/github/gh-aw/blob/v0.89.21/actions/setup/js/mcp_handler_process.cjs#L143-L160),
+[pinned MCP adapter's JSON string encoding](https://github.com/github/gh-aw/blob/v1.0.1/actions/setup/js/mcp_handler_process.cjs),
 with an explicit next-page number. The adapter can expose escaped newlines even
 for string results; native calls and bounded pages eliminate the need for shell
 extraction, not the runtime's JSON encoding.
@@ -117,12 +117,20 @@ attempts and a 512 KiB serialized-payload limit, with no partial acceptance.
 The native schema declares an object; the host validator, not that type
 declaration alone, enforces the complete nested result contract.
 
-An accepted payload is frozen in the private host process. The tool returns a
-SHA-256 receipt; repeating the identical accepted submission returns the same
-receipt, while replacing it is rejected. A trusted post-step inserts the full
-validated payload and receipt into `agent_output.json` before the agent artifact
-is uploaded, so threat detection inspects the actual results, not just a hash.
-It also exports `submission.json` with the context evidence. After successful
+An accepted payload is frozen in the private host process. The tool returns only
+a SHA-256 receipt; repeating the identical accepted submission returns the same
+receipt, while replacing it is rejected. The `queue_interpretations` MCP tool
+forwards that receipt to the trusted host, which supplies the complete serialized
+payload through the normal native safe-output API. The agent never has to encode
+or copy the payload into a string-valued safe-job argument.
+
+This also avoids large MCP responses becoming file-backed payloads that the
+file-disabled agent cannot read. The 512 KiB submission limit remains unchanged.
+Queueing verifies the frozen receipt before contacting the local gateway and
+attempts recording once; repeated confirmed calls reuse the acknowledgement,
+while unconfirmed failures cannot issue duplicate requests. A trusted post-step
+exports `submission.json` and context evidence without rewriting safe outputs.
+After successful
 threat detection, a trusted recording job downloads the exact agent artifact
 that detection inspected and verifies its payload and receipt against
 `submission.json` before rerunning validation against committed blobs. Preflight
@@ -134,15 +142,17 @@ safe-output boundary by requiring both successful threat detection and a
 matching trusted payload; the agent cannot invoke the job directly or write
 its result. Because the interpreter workflow does not need a repository-write
 safe output such as `create-issue`, the compiler's internal `safe_outputs` and
-`conclusion` jobs need no elevated permissions and the disabled `conclusion`
-job declares `issues: none`; the interpreter call requires no `issues: write`
-grant from the driver.
+`conclusion` jobs do not need issue-write permissions and the disabled
+`conclusion` job declares `issues: none`. The v1 compiler's consolidated
+`safe_outputs` job declares `pull-requests: read`, so the
+[reusable-workflow caller](../workflows/stale-reference-check.yml) grants that
+read-only scope. It does not grant the agent GitHub tools or repository writes.
 
 Run `gh aw compile` for this workflow on Linux or macOS (for example, WSL);
 compiling on Windows fails because of a compiler path-separator bug. See
 [KNOWN_ISSUES](../memory/KNOWN_ISSUES.md#gh-aw-compile-must-run-on-linux-or-macos-never-windows).
 
-The gh-aw v0.89.21 compiler defaults to MCP gateway v0.4.25, which the protocol
+The gh-aw v1.0.1 compiler defaults to MCP gateway v0.5.0, which the protocol
 smoke test validates for native clients' stateful fallback initialization. Strict
 mode, sandboxing, and permissions remain unchanged. The generated lock pins that
 compiler-selected image to an immutable digest.
@@ -159,10 +169,14 @@ The bounded reader in
 is outside the agent's filesystem mounts. Only selected batch/context results
 cross that boundary. The host enforces the expansion and response-size limits.
 Because the pinned
-[gh-aw runtime](https://github.com/github/gh-aw/blob/v0.89.21/actions/setup/js/mcp_server_core.cjs)
+[gh-aw runtime](https://github.com/github/gh-aw/blob/v1.0.1/actions/setup/js/mcp_server_core.cjs)
 launches a fresh process per MCP script call, a private loopback reader retains the shared
 budget and accepted submission. Source calls only read source; submission calls
 validate and retain one payload without GitHub access or issue/cache writes.
+The queue tool uses the runner-owned native MCP configuration to request only
+`record_interpretations` from the local safe-output gateway; it does not expose
+credentials or the serialized payload in its response. The request still passes
+through native safe-output validation, threat detection, and trusted recording.
 A trusted post-agent step exports the served window receipts. Recording verifies
 them against source, and the cache retains the verified expansion evidence for
 later runners. The private artifact packages both validator and collector modules;
@@ -380,10 +394,10 @@ The fast fixture tests remain independent of Docker. The protocol check does not
 replace an end-to-end hosted preview of the interpreter.
 
 Edit the interpreter Markdown, never its generated lock file. The checked-in
-workflow is compiled with gh-aw v0.89.21 and its matching immutable runtime:
+workflow is compiled with gh-aw v1.0.1 and its matching immutable runtime:
 
 ```powershell
-gh aw compile stale-reference-interpret --action-mode action --action-tag v0.89.21
+gh aw compile stale-reference-interpret --action-mode action --action-tag v1.0.1
 ```
 
 When changing the compiler/runtime together, regenerate only this workflow and

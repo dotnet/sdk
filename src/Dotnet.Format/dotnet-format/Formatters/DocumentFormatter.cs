@@ -3,7 +3,6 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 
@@ -43,51 +42,76 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         }
 
         /// <summary>
-        /// Applies formatting and returns the changed <see cref="SourceText"/> for a <see cref="Document"/>.
+        /// Applies formatting and returns the changed <see cref="SourceText"/> for a <see cref="TextDocument"/>.
         /// </summary>
         internal abstract Task<SourceText> FormatFileAsync(
-            Document document,
+            TextDocument document,
             SourceText sourceText,
-            OptionSet optionSet,
             AnalyzerConfigOptions analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken);
 
         /// <summary>
-        /// Applies formatting and returns the changed <see cref="SourceText"/> for each <see cref="Document"/>.
+        /// Applies formatting and returns the changed <see cref="SourceText"/> for each <see cref="TextDocument"/>.
         /// </summary>
-        private ImmutableArray<(Document, Task<(SourceText originalText, SourceText? formattedText)>)> FormatFiles(
+        private ImmutableArray<(TextDocument, Task<(SourceText originalText, SourceText? formattedText)>)> FormatFiles(
             Solution solution,
             ImmutableArray<DocumentId> formattableDocuments,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var formattedDocuments = ImmutableArray.CreateBuilder<(Document, Task<(SourceText originalText, SourceText? formattedText)>)>(formattableDocuments.Length);
+            var formattedDocuments = ImmutableArray.CreateBuilder<(TextDocument, Task<(SourceText originalText, SourceText? formattedText)>)>(formattableDocuments.Length);
 
             for (var index = 0; index < formattableDocuments.Length; index++)
             {
-                var document = solution.GetDocument(formattableDocuments[index]);
+                TextDocument? document = solution.GetDocument(formattableDocuments[index]);
                 if (document is null)
                 {
-                    continue;
+                    document = solution.GetAdditionalDocument(formattableDocuments[index]);
+                    if (document is null || !FormatterUtilities.IsRazorDocument(document))
+                    {
+                        continue;
+                    }
                 }
 
                 var formatTask = Task.Run(async () =>
                 {
                     var originalSourceText = await document.GetTextAsync(cancellationToken);
 
-                    var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken);
-                    if (syntaxTree is null)
+                    AnalyzerConfigOptions? analyzerConfigOptions;
+                    if (document is Document sourceDocument)
+                    {
+                        var syntaxTree = await sourceDocument.GetSyntaxTreeAsync(cancellationToken);
+                        if (syntaxTree is null)
+                        {
+                            return (originalSourceText, null);
+                        }
+
+                        analyzerConfigOptions = sourceDocument.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
+                    }
+                    else
+                    {
+                        analyzerConfigOptions = FormatterUtilities.GetAnalyzerConfigOptionsForAdditionalDocument(document);
+                    }
+
+                    if (analyzerConfigOptions is null)
                     {
                         return (originalSourceText, null);
                     }
 
-                    var analyzerConfigOptions = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
-                    var optionSet = await document.GetOptionsAsync(cancellationToken);
-
-                    return await GetFormattedSourceTextAsync(document, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
+                    var formattedSourceText = await FormatFileAsync(
+                        document,
+                        originalSourceText,
+                        analyzerConfigOptions,
+                        formatOptions,
+                        logger,
+                        cancellationToken);
+                    return !formattedSourceText.ContentEquals(originalSourceText) ||
+                        !formattedSourceText.Encoding?.Equals(originalSourceText.Encoding) == true
+                            ? (originalSourceText, formattedSourceText)
+                            : (originalSourceText, null);
                 }, cancellationToken);
 
                 formattedDocuments.Add((document, formatTask));
@@ -97,30 +121,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         }
 
         /// <summary>
-        /// Get formatted <see cref="SourceText"/> for a <see cref="Document"/>.
-        /// </summary>
-        private async Task<(SourceText originalText, SourceText? formattedText)> GetFormattedSourceTextAsync(
-            Document document,
-            OptionSet optionSet,
-            AnalyzerConfigOptions analyzerConfigOptions,
-            FormatOptions formatOptions,
-            ILogger logger,
-            CancellationToken cancellationToken)
-        {
-            var originalSourceText = await document.GetTextAsync(cancellationToken);
-            var formattedSourceText = await FormatFileAsync(document, originalSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
-
-            return !formattedSourceText.ContentEquals(originalSourceText) || !formattedSourceText.Encoding?.Equals(originalSourceText.Encoding) == true
-                ? (originalSourceText, formattedSourceText)
-                : (originalSourceText, null);
-        }
-
-        /// <summary>
-        /// Applies the changed <see cref="SourceText"/> to each formatted <see cref="Document"/>.
+        /// Applies the changed <see cref="SourceText"/> to each formatted <see cref="TextDocument"/>.
         /// </summary>
         private async Task<Solution> ApplyFileChangesAsync(
             Solution solution,
-            ImmutableArray<(Document, Task<(SourceText originalText, SourceText? formattedText)>)> formattedDocuments,
+            ImmutableArray<(TextDocument, Task<(SourceText originalText, SourceText? formattedText)>)> formattedDocuments,
             FormatOptions formatOptions,
             ILogger logger,
             List<FormattedFile> formattedFiles,
@@ -147,59 +152,22 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                     continue;
                 }
 
-                var fileChanges = GetFileChanges(formatOptions, document, originalText, formattedText, formatOptions.ChangesAreErrors, logger);
+                var fileChanges = FormatterUtilities.GetFileChanges(
+                    document,
+                    originalText,
+                    formattedText,
+                    Name,
+                    FormatWarningDescription,
+                    formatOptions,
+                    logger);
                 formattedFiles.Add(new FormattedFile(document, fileChanges));
 
-                formattedSolution = formattedSolution.WithDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity);
+                formattedSolution = document is Document
+                    ? formattedSolution.WithDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity)
+                    : formattedSolution.WithAdditionalDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity);
             }
 
             return formattedSolution;
-        }
-
-        private ImmutableArray<FileChange> GetFileChanges(FormatOptions formatOptions, Document document, SourceText originalText, SourceText formattedText, bool changesAreErrors, ILogger logger)
-        {
-            var fileChanges = ImmutableArray.CreateBuilder<FileChange>();
-            var changes = formattedText.GetTextChanges(originalText);
-
-            for (var index = 0; index < changes.Count; index++)
-            {
-                var change = changes[index];
-
-                var changeMessage = changes.Count > 1 || change.NewText?.Length != formattedText.Length
-                    ? BuildChangeMessage(change)
-                    : string.Empty;
-
-                var changePosition = originalText.Lines.GetLinePosition(change.Span.Start);
-
-                var fileChange = new FileChange(changePosition, Name, $"{FormatWarningDescription}{changeMessage}");
-                fileChanges.Add(fileChange);
-
-                if (!formatOptions.SaveFormattedFiles || formatOptions.LogLevel == LogLevel.Debug)
-                {
-                    logger.LogFormattingIssue(document, Name, fileChange, changesAreErrors);
-                }
-            }
-
-            return fileChanges.ToImmutable();
-
-            static string BuildChangeMessage(TextChange change)
-            {
-                var isDelete = string.IsNullOrEmpty(change.NewText);
-                var isAdd = change.Span.Length == 0;
-                if (isDelete && isAdd)
-                {
-                    return string.Empty;
-                }
-
-                // Escape characters in the text changes so that it can be more easily read.
-                var textChange = change.NewText?.Replace(" ", "\\s").Replace("\t", "\\t").Replace("\n", "\\n").Replace("\r", "\\r");
-                var message = isDelete
-                    ? string.Format(Resources.Delete_0_characters, change.Span.Length)
-                    : isAdd
-                        ? string.Format(Resources.Insert_0, textChange)
-                        : string.Format(Resources.Replace_0_characters_with_1, change.Span.Length, textChange);
-                return $" {message}";
-            }
         }
 
         protected static async Task<bool> IsSameDocumentAndVersionAsync(Document a, Document b, CancellationToken cancellationToken)

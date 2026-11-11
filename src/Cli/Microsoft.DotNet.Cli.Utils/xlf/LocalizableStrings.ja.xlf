@@ -7,6 +7,11 @@
         <target state="translated">インストール済みの .NET ワークロード:</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_NU1302_HttpSourceUsed">
+        <source>NuGet source '{0}' uses an insecure HTTP connection. To use an HTTP source, explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
+        <target state="new">NuGet source '{0}' uses an insecure HTTP connection. To use an HTTP source, explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MalformedText">
         <source>Malformed command text '{0}'</source>
         <target state="translated">無効な形式のコマンド テキスト '{0}'</target>

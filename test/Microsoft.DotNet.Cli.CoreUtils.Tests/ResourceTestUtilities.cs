@@ -8,6 +8,8 @@ namespace Microsoft.DotNet.Cli.CoreUtils.Tests;
 
 internal static class ResourceTestUtilities
 {
+    internal const string ProviderSelectionResource = "StringResourceManagerProvider.Selection";
+
     internal static Assembly TestAssembly => typeof(ResourceTestUtilities).Assembly;
 
     internal static string NeutralBaseName

@@ -23,24 +23,32 @@ on:
 env:
   DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
 
-post-steps:
-  # missing_data and report_incomplete should make triage visibly fail, but the
-  # safe-output settings below intentionally suppress follow-up issue creation.
-  - name: Fail incomplete triage
-    if: always()
-    env:
-      GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
-    run: |
-      node - "$GH_AW_SAFE_OUTPUTS" <<'NODE'
-      const fs = require("fs");
-      const outputPath = process.argv[2];
-      if (!fs.existsSync(outputPath)) process.exit(0);
-      const incomplete = fs.readFileSync(outputPath, "utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse).some(({ type }) => type === "missing_data" || type === "report_incomplete");
-      if (incomplete) {
-        console.error("::error::Issue triage did not complete because required data or infrastructure was unavailable.");
-        process.exit(1);
+jobs:
+  unlock:
+    pre-steps:
+      # gh-aw's built-in unlock does not retry transient GitHub API failures.
+      # Unlock first with retries; the built-in step then observes an unlocked issue.
+      - name: Unlock triaged issue with retries
+        if: (github.event_name == 'issues' || github.event_name == 'issue_comment') && needs.activation.outputs.issue_locked == 'true'
+        uses: actions/github-script@v9.0.0
+        with:
+          retries: 3
+          retry-exempt-status-codes: 400,401,403,404,422
+          script: |
+            const params = { ...context.repo, issue_number: context.issue.number };
+            const { data: issue } = await github.rest.issues.get(params);
+            if (issue.locked && !issue.pull_request) {
+              await github.rest.issues.unlock(params);
+            }
+
+graders:
+  triage-complete:
+    name: Triage completion
+    script: |
+      if (session.some(({ type, data }) => type === "safe_output.request" && (data.type === "report_missing_data" || data.type === "report_incomplete"))) {
+        throw new Error("Issue triage did not complete because required data or infrastructure was unavailable.");
       }
-      NODE
+      return 1;
 
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
@@ -58,6 +66,8 @@ environment: copilot-pat-pool
 
 engine:
   id: copilot
+  # SDK mode supplies a proxy-aware fetch tool; offline CLI mode has no web tools.
+  copilot-sdk: true
   env:
     COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 permissions:
@@ -88,9 +98,9 @@ safe-outputs:
   allowed-domains:
     - "aka.ms"
     - "github.com"
-  missing-tool:
+  report-missing-tool:
     create-issue: false
-  missing-data:
+  report-missing-data:
     create-issue: false
   report-incomplete:
     create-issue: false
@@ -98,21 +108,26 @@ safe-outputs:
     allowed-collaborators: true
     allow-context: true
     max: 50
-    allowed-teams: # Requires org level read scope on the PAT, otherwise a noop
-      - area-infrastructure-libraries
-      - aspnet-blazor-eng
-      - dotnet-analyzers
-      - dotnet-cli
-      - dotnet-testing-admin
-      - dotnetup
-      - fsharp
-      - illink
-      - net-sdk-workload-contributors
-      - nuget-team
-      - razor-tooling
-      - roslyn-ide
-      - sdk-container-builds-maintainers
-      - templating-engine-maintainers
+    # Allow CODEOWNERS team handles explicitly. allowed-teams only allows their
+    # individual members and requires read:org, which GITHUB_TOKEN does not have.
+    allowed:
+      - dotnet/area-infrastructure-libraries
+      - dotnet/aspnet-blazor-eng
+      - dotnet/dotnet-analyzers
+      - dotnet/dotnet-cli
+      - dotnet/dotnet-testing
+      - dotnet/dotnetup
+      - dotnet/fsharp
+      - dotnet/hot-reload
+      - dotnet/illink
+      - dotnet/msbuild-clickonce
+      - dotnet/net-sdk-workload-contributors
+      - dotnet/nuget-team
+      - dotnet/razor-tooling
+      - dotnet/roslyn-ide
+      - dotnet/run-file
+      - dotnet/sdk-container-builds-maintainers
+      - dotnet/templating-engine-maintainers
   add-labels:
     max: 6
     target: "${{ github.event.issue.number || github.event.inputs.issue_number }}"
@@ -147,7 +162,7 @@ Follow these steps in order.
 
 Read the issue title, body, author, labels, assignees, and comments. Also list the repository's available labels.
 
-- If the read fails, retry once. Use `missing_data` only if both attempts fail to return a title and body.
+- If the read fails, retry once. Use `report_missing_data` only if both attempts fail to return a title and body.
 - If either a title or body is returned, treat the issue as readable; never report it as filtered, blocked, or missing.
 - If the issue already has an `Area-*` label and an assignee, or this workflow already posted a triage comment, call `noop` and stop.
 
@@ -254,7 +269,9 @@ Owners come in two forms:
 
 #### Expanded team membership snapshot
 
-The following snapshot was retrieved from the `dotnet` GitHub organization on 2026-07-14. It includes members inherited through child teams. Use these usernames only to expand a team handle found in a matched CODEOWNERS section into individual assignment candidates. Retain the original team handle for the assignment output.
+The following snapshot was retrieved from the `dotnet` GitHub organization on 2026-07-14, except the `@dotnet/dotnet-testing` row, which was refreshed on 2026-11-05. It includes members inherited through child teams. Use these usernames only to expand a team handle found in a matched CODEOWNERS section into individual assignment candidates. Retain the original team handle for the assignment output.
+
+Use the exact CODEOWNERS team slug in this table and `safe-outputs.mentions.allowed`; do not substitute a parent, child, or admin team. Keep the explicit mention allowlist aligned with CODEOWNERS even when a team has no membership snapshot, so unassigned issues still notify their owning team.
 
 CODEOWNERS team | Expanded individual members, including child teams
 ---|---
@@ -264,7 +281,7 @@ CODEOWNERS team | Expanded individual members, including child teams
 `@dotnet/razor-tooling` | `@DustinCampbell`, `@davidwengier`, `@chsienki`, `@webreidi`
 `@dotnet/nuget-team` | `@nkolev92`, `@zivkan`, `@jebriede`, `@dtivel`, `@jeffkl`, `@martinrrm`, `@donnie-msft`, `@kartheekp-ms`, `@aortiz-msft`, `@Nigusu-Allehu`
 `@dotnet/fsharp` | `@0101`, `@brettfo`, `@vzarytovskii`, `@dsyme`, `@abonie`, `@T-Gro`
-`@dotnet/dotnet-testing-admin` | `@JanKrivanek`, `@nohwnd`, `@cathysull`, `@Evangelink`, `@azat-msft`
+`@dotnet/dotnet-testing` | `@0101`, `@drognanar`, `@JanKrivanek`, `@nohwnd`, `@Evangelink`, `@YuliiaKovalova`, `@azat-msft`
 `@dotnet/net-sdk-workload-contributors` | `@lewing`, `@dsplaisted`, `@rolfbjarne`, `@Redth`, `@steveisok`, `@baronfel`, `@jonathanpeppers`, `@joeloff`, `@marcpopMSFT`, `@MiYanni`, `@nagilson`
 `@dotnet/templating-engine-maintainers` | `@joeloff`, `@marcpopMSFT`, `@MiYanni`
 `@dotnet/illink` | `@marek-safar`, `@agocke`, `@sbomer`, `@vitek-karas`, `@jtschuster`
@@ -336,7 +353,7 @@ ELSE (no Area-* section matches any selected label, or the matched sections have
 
 Resolve at most three selected areas. If the issue already has an assignee, do not add or replace assignees.
 
-Fold owner routing into the single triage comment in step 7; do not post a separate routing comment. In **Assignment**, show the selected individual and the matched team handle(s) as `<@selected | @team handles>`. The selected individual is notified by the assignment itself. Do not mention any other individual. Write team handles as raw @dotnet/team mentions.
+Fold owner routing into the single triage comment in step 7; do not post a separate routing comment. In **Assignment**, show the selected individual and the matched team handle(s) as `<@selected | @team handles>`. The selected individual is notified by the assignment itself. Do not mention any other individual. Write team handles as raw @dotnet/team mentions without backticks or escaping, including when no individual can be assigned.
 
 ### 6. Handle `untriaged`
 
@@ -355,6 +372,7 @@ Before calling safe outputs, verify:
 - a mechanism search that returned only the current issue or no useful candidates was followed, while search budget remained, by a shorter one-phrase-only mechanism query
 - every assignment candidate is either a direct individual owner from a matched CODEOWNERS section or a snapshot member of a team from that matched section
 - every expanded member came from the snapshot row for the specific matched team; membership in an unrelated team is not sufficient
+- every team handle in the Assignment line is from the matched CODEOWNERS sections (or the default routing team), is explicitly listed in `safe-outputs.mentions.allowed`, and is a raw mention rather than code-formatted text
 - every safe-output call includes the target issue number in the correct field
 - incomplete reports received no area guess or assignee
 - normal triage comments classify confidence as `high`, `medium`, or `low`
@@ -394,6 +412,6 @@ Put all labels on one line separated by one space, rendering each as a bare `htt
 
 Assignment includes the nested **Load balancing** details subsection only for a successful lower-load override; otherwise omit the entire subsection. Do not mention unassigned individuals outside that code-formatted subsection.
 
-Write team handles as raw mentions; safe outputs decides whether they can remain live.
+Write team handles as raw mentions so the explicitly allowed CODEOWNERS teams remain live.
 
 Call `noop` only when step 1 finds prior triage or the issue cannot be analyzed from its available content. Do not call `noop` after any other safe output.

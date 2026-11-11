@@ -89,7 +89,4 @@ Esse produto coleta dados de uso
   
   <String Id="VisualStudioWarning" Value="Se você pretende usar .NET [VERSIONMAJOR].[VERSIONMINOR] com o Visual Studio, é necessário o Visual Studio 2026 [MINIMUMVSVERSION] ou mais recente. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Saiba mais&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Ao clicar em Instalar, você concorda com os termos a seguir:"/>
-  <String Id="InstallPathx64x86" Value="O caminho da instalação para instalações do SDK x64: &quot;[DOTNETHOME_X64]&quot; não pode ser o mesmo que para instalações do SDK x86: &quot;[DOTNETHOME_X86]&quot;"/>
-  <String Id="InstallPathARM64x86" Value="O caminho da instalação para instalações do SDK ARM64: &quot;[DOTNETHOME_ARM64]&quot; não pode ser o mesmo que para instalações do SDK x86: &quot;[DOTNETHOME_X86]&quot;"/>
-  <String Id="InstallPathARM64x64" Value="O caminho da instalação para instalações do SDK ARM64: &quot;[DOTNETHOME_ARM64]&quot; não pode ser o mesmo que para instalações do SDK x64: &quot;[DOTNETHOME_X64]&quot;"/>
 </WixLocalization>

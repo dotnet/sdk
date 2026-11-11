@@ -12,6 +12,14 @@
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+    <!-- Tasks use the host's MSBuild assemblies; tests need their own runtime copies. -->
+    <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build.Framework" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases"
+                      VersionOverride="$(MicrosoftDeploymentDotNetReleasesBootstrapPackageVersion)"
+                      Condition="'$(DotNetBuildFromVMR)' == 'true'" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.WixToolset.Dtf.WindowsInstaller" />
   </ItemGroup>

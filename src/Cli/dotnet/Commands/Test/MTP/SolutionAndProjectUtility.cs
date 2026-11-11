@@ -681,7 +681,9 @@ internal static class SolutionAndProjectUtility
                 out var restoreWasPerformed))
             {
                 throw new GracefulException(
-                    string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+                    string.IsNullOrEmpty(tfm)
+                        ? string.Format(CliCommandStrings.TestCommandDeviceSelectionFailed, projectFilePath)
+                        : string.Format(CliCommandStrings.TestCommandDeviceSelectionFailedForTargetFramework, projectFilePath, tfm));
             }
 
             return (selectedDevice, runtimeIdentifier, restoreWasPerformed);

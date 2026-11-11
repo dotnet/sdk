@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void DotnetExeIsExecuted()
         {
             var msbuildPath = "<msbuildpath>";
-            new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
+            new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
                 .GetProcessStartInfo().FileName.Should().EndWith("dotnet.exe");
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void DotnetIsExecuted()
         {
             var msbuildPath = "<msbuildpath>";
-            new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
+            new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
                 .GetProcessStartInfo().FileName.Should().EndWith("dotnet");
         }
 
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void ItSetsEnvironmentalVariables(string envVarName)
         {
             var msbuildPath = "<msbuildpath>";
-            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath).GetProcessStartInfo();
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM()).GetProcessStartInfo();
             startInfo.Environment.ContainsKey(envVarName).Should().BeTrue();
         }
 
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .Start();
             activity.TraceStateString = "vendor=value";
 
-            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), "<msbuildpath>").GetProcessStartInfo();
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), "<msbuildpath>", TestCommandServices.CreateNonLLM()).GetProcessStartInfo();
 
             startInfo.Environment[Activities.TRACEPARENT]
                 .Should().Be($"00-{activity.TraceId}-{activity.SpanId}-{(byte)activity.Context.TraceFlags:x2}");
@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             var envVar = "MSBuildExtensionsPath";
-            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
+            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
                                 .GetProcessStartInfo()
                                 .Environment[envVar])
                 .Should()
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             var envVar = "MSBuildSDKsPath";
-            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
+            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
                                 .GetProcessStartInfo()
                                 .Environment[envVar])
                 .Should()
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             var envVar = "DOTNET_CLI_TELEMETRY_SESSIONID";
-            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
                 .GetProcessStartInfo();
 
             string sessionId = startInfo.Environment[envVar];
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
                 _ = new TelemetryClient(sessionId: null, environmentProvider: environmentProvider.Object);
 
-                var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
+                var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
                     .GetProcessStartInfo();
 
                 startInfo.Environment["DOTNET_CLI_TELEMETRY_SESSIONID"].Should().Be(sessionId);
@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void ItDoesNotSetCurrentWorkingDirectory()
         {
             var msbuildPath = "<msbuildpath>";
-            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath, TestCommandServices.CreateNonLLM())
                 .GetProcessStartInfo().WorkingDirectory.Should().Be("");
         }
 
@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
 
             var msbuildPath = "<msbuildpath>";
-            var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath).GetProcessStartInfo();
+            var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath, TestCommandServices.CreateNonLLM()).GetProcessStartInfo();
             startInfo.Environment["MSBUILDUSESERVER"].Should().Be("1");
         }
 
@@ -183,7 +183,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 Environment.SetEnvironmentVariable("MSBUILDUSESERVER", msbuildUseServer);
 
                 var msbuildPath = "<msbuildpath>";
-                var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath).GetProcessStartInfo();
+                var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath, TestCommandServices.CreateNonLLM()).GetProcessStartInfo();
                 startInfo.Environment["MSBUILDUSESERVER"].Should().Be(expected);
             }
             finally

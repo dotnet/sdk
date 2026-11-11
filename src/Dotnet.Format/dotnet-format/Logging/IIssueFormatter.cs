@@ -5,6 +5,6 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
 {
     public interface IIssueFormatter
     {
-        string FormatIssue(Document document, string severity, string issueId, int lineNumber, int charNumber, string message);
+        string FormatIssue(TextDocument document, string severity, string issueId, int lineNumber, int charNumber, string message);
     }
 }
