@@ -153,8 +153,8 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     /// the .NET it holds. Roots for other architectures are included; callers filter as needed.
     /// Windows: reads registry (sharedhost\Path, then InstallLocation) per architecture subkey,
     ///          falls back to %ProgramFiles%\dotnet.
-    /// macOS: checks /etc/dotnet/install_location_{arch}, /etc/dotnet/install_location,
-    ///        defaults to /usr/local/share/dotnet (plus /usr/local/share/dotnet/x64 under Rosetta).
+    /// macOS: the registered install_location for the process architecture (as the host reads it),
+    ///        then /usr/local/share/dotnet (plus /usr/local/share/dotnet/x64 under Rosetta).
     /// Linux: checks /usr/lib/dotnet, /usr/share/dotnet, /usr/lib64/dotnet.
     ///
     /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
@@ -183,22 +183,16 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
 
     /// <summary>
     /// Adds macOS system dotnet roots in priority order:
-    /// 1. Per-architecture install_location file: /etc/dotnet/install_location_{arch} (that architecture)
-    /// 2. Default install_location file: /etc/dotnet/install_location (OS-native)
-    /// 3. Default system location: /usr/local/share/dotnet (OS-native)
-    /// 4. x64 emulation sublocation: /usr/local/share/dotnet/x64 (x64, when running x64 on arm64 via Rosetta)
+    /// 1. The registered install location, read the way the host reads it (see <see cref="AddRegisteredMacOSRoot"/>).
+    /// 2. Default system location: /usr/local/share/dotnet (OS-native)
+    /// 3. x64 emulation sublocation: /usr/local/share/dotnet/x64 (x64, when running x64 on arm64 via Rosetta)
     /// </summary>
     private static void AddMacOSRoots(List<DotnetInstallRoot> roots)
     {
         var processArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var osArch = InstallerUtilities.GetOsInstallArchitecture();
 
-        // Per-architecture install_location file takes highest priority.
-        // See: https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
-        TryReadInstallLocationFile(roots, $"/etc/dotnet/install_location_{processArch}", processArch);
-
-        // Fall back to the non-architecture-specific file, which names the native root.
-        TryReadInstallLocationFile(roots, "/etc/dotnet/install_location", osArch);
+        AddRegisteredMacOSRoot(roots, "/etc/dotnet", processArch);
 
         // Default macOS system location (the .NET macOS installer places files here).
         TryAddRoot(roots, "/usr/local/share/dotnet", osArch);
@@ -208,6 +202,22 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         if (processArch == InstallArchitecture.x64 && osArch == InstallArchitecture.arm64)
         {
             TryAddRoot(roots, "/usr/local/share/dotnet/x64", InstallArchitecture.x64);
+        }
+    }
+
+    /// <summary>
+    /// Adds the install location registered for <paramref name="processArch"/>, using the host's lookup: the
+    /// <c>install_location_{arch}</c> file when it exists, otherwise the arch-less <c>install_location</c> file.
+    /// The arch-less file is not read when the architecture-specific file exists. On an arm64 Mac with both
+    /// architectures installed, it points at the x64 install for downlevel apphosts.
+    /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md#support-for-downlevel-apphost
+    /// and get_dotnet_self_registered_dir_for_arch in https://github.com/dotnet/runtime/blob/main/src/native/corehost/hostmisc/pal.unix.cpp
+    /// </summary>
+    internal static void AddRegisteredMacOSRoot(List<DotnetInstallRoot> roots, string configDirectory, InstallArchitecture processArch)
+    {
+        if (!TryReadInstallLocationFile(roots, Path.Combine(configDirectory, $"install_location_{processArch}"), processArch))
+        {
+            TryReadInstallLocationFile(roots, Path.Combine(configDirectory, "install_location"), processArch);
         }
     }
 
@@ -232,17 +242,18 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     /// <summary>
     /// Reads a dotnet install_location file and adds the root it contains if valid.
     /// These files are written by the .NET installer on macOS and contain a single
-    /// line with the dotnet root directory.
+    /// line with the dotnet root directory. Returns true if the file exists, even when it
+    /// cannot be read or names no usable root, because the host does not fall back in that case.
     /// </summary>
-    private static void TryReadInstallLocationFile(List<DotnetInstallRoot> roots, string filePath, InstallArchitecture architecture)
+    private static bool TryReadInstallLocationFile(List<DotnetInstallRoot> roots, string filePath, InstallArchitecture architecture)
     {
+        if (!File.Exists(filePath))
+        {
+            return false;
+        }
+
         try
         {
-            if (!File.Exists(filePath))
-            {
-                return;
-            }
-
             string? location = File.ReadAllText(filePath).Trim();
             if (!string.IsNullOrEmpty(location))
             {
@@ -253,6 +264,8 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         {
             // Best-effort; file may be unreadable due to permissions
         }
+
+        return true;
     }
 
     private static void TryAddRoot(List<DotnetInstallRoot> roots, string path, InstallArchitecture architecture)
