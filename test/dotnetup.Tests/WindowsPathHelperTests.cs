@@ -36,8 +36,37 @@ public class WindowsPathHelperTests
         keys.SetValue(keys.InstalledVersions32, "x64", "InstallLocation", installLocation + Path.DirectorySeparatorChar);
         keys.SetValue(keys.InstalledVersionsNative, @"x64\sharedhost", "Path", sharedHostPath);
 
-        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative)
+        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative, FailOnUnreadable)
             .Should().Equal(sharedHostPath);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void GetRegisteredDotnetPaths_FallsBackToInstallLocationWhenSharedHostPathIsStale()
+    {
+        using var keys = new RegistryViewKeys();
+        string installLocation = keys.CreateDirectory("installlocation");
+        keys.SetValue(keys.InstalledVersions32, "x64", "InstallLocation", installLocation);
+        keys.SetValue(keys.InstalledVersionsNative, @"x64\sharedhost", "Path", Path.Combine(installLocation, "missing"));
+
+        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative, FailOnUnreadable)
+            .Should().Equal(installLocation);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void GetRegisteredDotnetPaths_UsesTheReadableViewWhenTheOtherViewFails()
+    {
+        using var keys = new RegistryViewKeys();
+        string installLocation = keys.CreateDirectory("installlocation");
+        keys.SetValue(keys.InstalledVersions32, "x64", "InstallLocation", installLocation);
+        keys.SetValue(keys.InstalledVersionsNative, @"x64\sharedhost", "Path", keys.CreateDirectory("sharedhost"));
+        keys.DeleteInstalledVersionsNative();
+        var failures = new List<Exception>();
+
+        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative, failures.Add)
+            .Should().Equal(installLocation);
+        failures.Should().ContainSingle().Which.Should().BeOfType<IOException>();
     }
 
     [TestMethod]
@@ -50,7 +79,7 @@ public class WindowsPathHelperTests
         keys.SetValue(keys.InstalledVersions32, "x86", "InstallLocation", installLocation);
         keys.SetValue(keys.InstalledVersions32, @"x86\sharedhost", "Path", sharedHostPath);
 
-        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative)
+        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative, FailOnUnreadable)
             .Should().Equal(installLocation);
     }
 
@@ -65,23 +94,26 @@ public class WindowsPathHelperTests
         keys.SetValue(keys.InstalledVersions32, "x86", "InstallLocation", x86Path);
         keys.SetValue(keys.InstalledVersions32, "arm64", "InstallLocation", Path.Combine(x64Path, "missing"));
 
-        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative)
+        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative, FailOnUnreadable)
             .Should().BeEquivalentTo(x64Path, x86Path);
     }
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void HandleUnreadableSystemInstallRegistry_WarnsOnceAndReturnsNothing()
+    public void WarnUnreadableSystemInstallRegistry_WarnsOnce()
     {
         var denied = new SecurityException("Requested registry access is not allowed.");
         using var warnings = new StringWriter();
+        int warned = 0;
 
-        WindowsPathHelper.HandleUnreadableSystemInstallRegistry(denied, warnings).Should().BeEmpty();
-        WindowsPathHelper.HandleUnreadableSystemInstallRegistry(denied, warnings).Should().BeEmpty();
+        WindowsPathHelper.WarnUnreadableSystemInstallRegistry(denied, warnings, ref warned);
+        WindowsPathHelper.WarnUnreadableSystemInstallRegistry(denied, warnings, ref warned);
 
         warnings.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
             .Should().ContainSingle().Which.Should().Contain(denied.Message);
     }
+
+    private static void FailOnUnreadable(Exception exception) => Assert.Fail(exception.ToString());
 
     /// <summary>Two temporary <c>InstalledVersions</c> keys under HKCU standing in for the 32-bit and native registry views.</summary>
     private sealed class RegistryViewKeys : IDisposable
@@ -106,6 +138,9 @@ public class WindowsPathHelperTests
             using var key = root.CreateSubKey(subKeyPath);
             key.SetValue(name, value);
         }
+
+        // The open InstalledVersionsNative handle now refers to a deleted key, so reading through it fails.
+        public void DeleteInstalledVersionsNative() => Registry.CurrentUser.DeleteSubKeyTree($@"{_keyPath}\Native");
 
         public void Dispose()
         {
