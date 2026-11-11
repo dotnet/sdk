@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
+using System.Text.RegularExpressions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.Win32;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
 using Spectre.Console;
 using CliEnvironmentProvider = Microsoft.DotNet.Cli.Utils.EnvironmentProvider;
 
@@ -113,72 +115,90 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         return FilterToNativeArchAndSort(installs);
     }
 
-    internal const string InstalledVersionsRegistryKeyPath = @"SOFTWARE\dotnet\Setup\InstalledVersions";
+    internal const string UninstallRegistryKeyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+
+    // The first version in a bundle name; runtime bundles show prereleases as "11.0.0 RC 3".
+    private static readonly Regex s_displayNameVersion = new(
+        @"(?<version>\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)(?: (?<label>[A-Za-z]+) (?<number>\d+))?",
+        RegexOptions.CultureInvariant);
 
     /// <summary>
-    /// Returns the SDKs and runtimes that Windows installers registered under
-    /// <c>HKEY_LOCAL_MACHINE\SOFTWARE\dotnet\Setup\InstalledVersions\{architecture}</c>.
-    /// A registration outlives deleted payload files, so this reports installs no longer on disk.
+    /// Returns the installed bundles in the same upgrade family as a bundle for <paramref name="requested"/>.
+    /// A bundle refuses to downgrade only bundles with its upgrade code, so installs without a bundle registration,
+    /// such as the SDK that Visual Studio installs or the runtimes an SDK bundle installs, are not returned.
     /// </summary>
-    public static List<DotnetInstall> GetSystemRegistryInstallState(InstallArchitecture architecture)
+    public static List<InstalledBundle> GetInstalledBundles(DotnetInstall requested)
     {
         if (!OperatingSystem.IsWindows())
         {
             return [];
         }
 
-        // Install Path Keys on 64 bit machines are available via the WOW node. They won't be on such a node on a 32 bit machine.
-        // See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md#current-state-on-windows
-        using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-        using var installedVersionsKey = baseKey.OpenSubKey(InstalledVersionsRegistryKeyPath);
-        return installedVersionsKey is null ? [] : ReadRegistryInstallState(installedVersionsKey, architecture);
+        // Burn registers a bundle in the registry view of its engine, so read both views.
+        // See https://learn.microsoft.com/windows/win32/msi/uninstall-registry-key
+        RegistryView[] views = Environment.Is64BitOperatingSystem ? [RegistryView.Registry32, RegistryView.Registry64] : [RegistryView.Registry32];
+        var bundles = new List<InstalledBundle>();
+        foreach (var view in views)
+        {
+            using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
+            using var uninstallKey = baseKey.OpenSubKey(UninstallRegistryKeyPath);
+            if (uninstallKey is not null)
+            {
+                bundles.AddRange(ReadInstalledBundles(uninstallKey, requested));
+            }
+        }
+
+        return [.. bundles.DistinctBy(b => b.DisplayName)];
     }
 
     /// <summary>
-    /// Reads the <c>sdk</c> and <c>sharedfx\{framework}</c> version value names under the architecture subkey of
-    /// <paramref name="installedVersionsKey"/>. Value names that are not versions are skipped.
+    /// Reads the bundle registrations under an <c>Uninstall</c> key whose <c>BundleUpgradeCode</c> matches the upgrade
+    /// family of <paramref name="requested"/>. Registrations whose display name has no version are skipped.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    internal static List<DotnetInstall> ReadRegistryInstallState(RegistryKey installedVersionsKey, InstallArchitecture architecture)
+    internal static List<InstalledBundle> ReadInstalledBundles(RegistryKey uninstallKey, DotnetInstall requested)
     {
-        using var architectureKey = installedVersionsKey.OpenSubKey(architecture.ToString());
-        if (architectureKey is null)
+        var familyCodes = BundleUpgradeCodes.For(requested.Component, requested.Version, requested.InstallRoot.Architecture);
+        var bundles = new List<InstalledBundle>();
+        foreach (string subKeyName in uninstallKey.GetSubKeyNames())
         {
-            return [];
+            using var entry = uninstallKey.OpenSubKey(subKeyName);
+            if (entry is not null
+                && GetBundleUpgradeCodes(entry).Any(familyCodes.Contains)
+                && entry.GetValue("DisplayName") is string displayName
+                && TryParseDisplayNameVersion(displayName) is { } version)
+            {
+                var install = new DotnetInstall(new DotnetInstallRoot(string.Empty, requested.InstallRoot.Architecture), version, requested.Component);
+                bundles.Add(new InstalledBundle(install, displayName));
+            }
         }
 
-        string installLocation = (architectureKey.GetValue("InstallLocation") as string)?.TrimEnd(Path.DirectorySeparatorChar) ?? string.Empty;
-        var installRoot = new DotnetInstallRoot(installLocation, architecture);
-        var installs = new List<DotnetInstall>();
-        foreach (var component in Enum.GetValues<InstallComponent>())
-        {
-            AddRegisteredVersions(installs, architectureKey, GetRegistryVersionsSubKey(component), component, installRoot);
-        }
-
-        return installs;
-    }
-
-    private static string GetRegistryVersionsSubKey(InstallComponent component) =>
-        component == InstallComponent.SDK ? "sdk" : $@"sharedfx\{component.GetFrameworkName()}";
-
-    /// <summary>The registry key, as Registry Editor shows it, whose value names are the registered versions of a component.</summary>
-    internal static string GetRegistryVersionsKeyName(InstallComponent component, InstallArchitecture architecture)
-    {
-        string wowNode = Environment.Is64BitOperatingSystem ? @"WOW6432Node\" : string.Empty;
-        return $@"HKEY_LOCAL_MACHINE\SOFTWARE\{wowNode}dotnet\Setup\InstalledVersions\{architecture}\{GetRegistryVersionsSubKey(component)}";
+        return bundles;
     }
 
     [SupportedOSPlatform("windows")]
-    private static void AddRegisteredVersions(List<DotnetInstall> installs, RegistryKey architectureKey, string subKeyPath, InstallComponent component, DotnetInstallRoot installRoot)
-    {
-        using var versionsKey = architectureKey.OpenSubKey(subKeyPath);
-        foreach (string valueName in versionsKey?.GetValueNames() ?? [])
+    private static IEnumerable<Guid> GetBundleUpgradeCodes(RegistryKey entry) =>
+        (entry.GetValue("BundleUpgradeCode") switch
         {
-            if (ReleaseVersion.TryParse(valueName, out var version))
-            {
-                installs.Add(new DotnetInstall(installRoot, version, component));
-            }
+            string[] values => values,
+            string value => [value],
+            _ => [],
+        })
+        .Select(value => Guid.TryParse(value, out var code) ? code : Guid.Empty);
+
+    /// <summary>Parses the product version from a bundle display name such as <c>Microsoft .NET SDK 10.0.404 (x64)</c>.</summary>
+    internal static ReleaseVersion? TryParseDisplayNameVersion(string displayName)
+    {
+        var match = s_displayNameVersion.Match(displayName);
+        if (!match.Success)
+        {
+            return null;
         }
+
+        string versionText = match.Groups["label"].Success
+            ? $"{match.Groups["version"].Value}-{match.Groups["label"].Value.ToLowerInvariant()}.{match.Groups["number"].Value}"
+            : match.Groups["version"].Value;
+        return ReleaseVersion.TryParse(versionText, out var version) ? version : null;
     }
 
     /// <summary>
@@ -461,3 +481,6 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             .Install.LayoutVersion.ToString()
         ?? request.ResolvedVersion.ToString();
 }
+
+/// <summary>An installed .NET installer bundle and its name as Installed apps shows it.</summary>
+internal sealed record InstalledBundle(DotnetInstall Install, string DisplayName);

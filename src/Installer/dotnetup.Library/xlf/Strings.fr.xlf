@@ -937,9 +937,9 @@ Or open a new terminal.</target>
         <note>{0} is the component display name and version.</note>
       </trans-unit>
       <trans-unit id="WindowsInstallerNewerVersionInstalled">
-        <source>{0} {1} is already installed, and the Windows installer will not install the older {0} {2} alongside it. Uninstall {0} {1} first (with Visual Studio Installer if Visual Studio installed it), or use {1} or later. If {0} {1} is not actually installed, delete the stale value '{1}' from the registry key '{3}'.</source>
-        <target state="new">{0} {1} is already installed, and the Windows installer will not install the older {0} {2} alongside it. Uninstall {0} {1} first (with Visual Studio Installer if Visual Studio installed it), or use {1} or later. If {0} {1} is not actually installed, delete the stale value '{1}' from the registry key '{3}'.</target>
-        <note>{0} is the component display name, such as .NET SDK. {1} is the installed newer version. {2} is the requested older version. {3} is a Windows registry key path.</note>
+        <source>{0} {1} is already installed, and its Windows installer will not install the older {0} {2}. Uninstall '{3}' from Installed apps first, or use {1} or later.</source>
+        <target state="new">{0} {1} is already installed, and its Windows installer will not install the older {0} {2}. Uninstall '{3}' from Installed apps first, or use {1} or later.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the installed newer version. {2} is the requested older version. {3} is the name of the installed product as Windows Installed apps shows it.</note>
       </trans-unit>
       <trans-unit id="WindowsInstallerNewerVersionInstalledExitCode">
         <source>The installer for {0} did not install it because a newer version of the same product is already installed (installer exit code {1}). Uninstall the newer version first, or use it instead.</source>
@@ -982,8 +982,8 @@ Or open a new terminal.</target>
         <note>{Locked="Authenticode"} {0} is the component display name and version. {1} is the signature verification error.</note>
       </trans-unit>
       <trans-unit id="WindowsInstallerSupersededInBatch">
-        <source>Skipped {0} {1} because this request also installs {0} {2}, and the Windows installer would replace {1} with {2}.</source>
-        <target state="new">Skipped {0} {1} because this request also installs {0} {2}, and the Windows installer would replace {1} with {2}.</target>
+        <source>Skipped {0} {1} because this request also installs {0} {2}, and the Windows installer would not install {1} once {2} is installed.</source>
+        <target state="new">Skipped {0} {1} because this request also installs {0} {2}, and the Windows installer would not install {1} once {2} is installed.</target>
         <note>{0} is the component display name, such as .NET SDK. {1} is the skipped older version. {2} is the newer version requested in the same command.</note>
       </trans-unit>
       <trans-unit id="WindowsInstallerWrongFileExtension">

@@ -113,7 +113,8 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
 
     public void CompleteCommitProgress()
     {
-        if (_installTask is { } installTask) // the task is null when it was not successful - when we run repair() the task can later exist and properly update the 'installing' to 'installed' text
+        // Set only after a successful Commit; validation and repair run before the row shows as installed.
+        if (_installTask is { } installTask)
         {
             _progress.CompleteExtraction(installTask);
         }

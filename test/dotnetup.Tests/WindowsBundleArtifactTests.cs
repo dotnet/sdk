@@ -28,11 +28,11 @@ public class WindowsBundleArtifactTests : IDisposable
     private readonly FakeDotnetupPolicyStore _policyStore = new();
 
     [TestInitialize]
-    public void IgnoreMachineRegistrations() => InstallerOrchestratorSingleton.SetRegisteredSystemInstallsOverride(_ => []);
+    public void IgnoreMachineRegistrations() => InstallerOrchestratorSingleton.SetInstalledBundlesOverride(_ => []);
 
     public void Dispose()
     {
-        InstallerOrchestratorSingleton.SetRegisteredSystemInstallsOverride(null);
+        InstallerOrchestratorSingleton.SetInstalledBundlesOverride(null);
         foreach (var artifact in _artifacts)
         {
             artifact.Dispose();

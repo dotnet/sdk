@@ -21,10 +21,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class InstallerOrchestratorTests
 {
     [TestInitialize]
-    public void IgnoreMachineRegistrations() => InstallerOrchestratorSingleton.SetRegisteredSystemInstallsOverride(_ => []);
+    public void IgnoreMachineRegistrations() => InstallerOrchestratorSingleton.SetInstalledBundlesOverride(_ => []);
 
     [TestCleanup]
-    public void ClearRegistrationsOverride() => InstallerOrchestratorSingleton.SetRegisteredSystemInstallsOverride(null);
+    public void ClearRegistrationsOverride() => InstallerOrchestratorSingleton.SetInstalledBundlesOverride(null);
 
     #region InstallAlreadyExists
 
@@ -562,9 +562,11 @@ public class InstallerOrchestratorTests
         File.WriteAllText(Path.Combine(install.ComponentDirectory, "dotnet.dll"), string.Empty);
     }
 
+    private static InstalledBundle MakeBundle(InstallComponent component, string version, InstallArchitecture architecture = InstallArchitecture.x64) =>
+        new(new DotnetInstall(new DotnetInstallRoot(string.Empty, architecture), new ReleaseVersion(version), component), $"Bundle {component} {version} ({architecture})");
+
     private static void RegisterSystemSdk(string version) =>
-        InstallerOrchestratorSingleton.SetRegisteredSystemInstallsOverride(arch =>
-            [new DotnetInstall(new DotnetInstallRoot(@"C:\Program Files\dotnet", arch), new ReleaseVersion(version), InstallComponent.SDK)]);
+        InstallerOrchestratorSingleton.SetInstalledBundlesOverride(requested => [MakeBundle(InstallComponent.SDK, version, requested.InstallRoot.Architecture)]);
 
     [TestMethod]
     public void PrepareInstall_BundleWithNewerSdkInSameFeatureBand_ThrowsBeforeDownloading()
@@ -599,18 +601,16 @@ public class InstallerOrchestratorTests
     public void ThrowIfNewerVersionInstalled_RejectsDowngradesWithinTheInstallerFamily(
         InstallComponent requestedComponent, string requestedVersion, InstallComponent installedComponent, string installedVersion, bool expectThrow)
     {
-        var root = new DotnetInstallRoot(@"C:\Program Files\dotnet", InstallArchitecture.x64);
-        var requested = new DotnetInstall(root, new ReleaseVersion(requestedVersion), requestedComponent);
-        DotnetInstall[] installed = [new DotnetInstall(root, new ReleaseVersion(installedVersion), installedComponent)];
+        var requested = new DotnetInstall(new DotnetInstallRoot(@"C:\Program Files\dotnet", InstallArchitecture.x64), new ReleaseVersion(requestedVersion), requestedComponent);
+        var installed = MakeBundle(installedComponent, installedVersion);
 
-        var check = () => InstallerOrchestratorSingleton.ThrowIfNewerVersionInstalled(requested, installed);
+        var check = () => InstallerOrchestratorSingleton.ThrowIfNewerVersionInstalled(requested, [installed]);
 
         if (expectThrow)
         {
             var ex = check.Should().Throw<DotnetInstallException>().Which;
             ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
-            ex.Message.Should().Contain(installedVersion).And.Contain(requestedVersion)
-                .And.Contain(DotnetEnvironmentManager.GetRegistryVersionsKeyName(requestedComponent, InstallArchitecture.x64));
+            ex.Message.Should().Contain(installedVersion).And.Contain(requestedVersion).And.Contain(installed.DisplayName);
         }
         else
         {
@@ -622,9 +622,8 @@ public class InstallerOrchestratorTests
     public void ThrowIfNewerVersionInstalled_IgnoresOtherArchitectures()
     {
         var requested = new DotnetInstall(new DotnetInstallRoot(@"C:\Program Files\dotnet", InstallArchitecture.x64), new ReleaseVersion("10.0.100"), InstallComponent.SDK);
-        DotnetInstall[] installed = [new DotnetInstall(new DotnetInstallRoot(@"C:\Program Files\dotnet\x64", InstallArchitecture.arm64), new ReleaseVersion("10.0.114"), InstallComponent.SDK)];
 
-        var check = () => InstallerOrchestratorSingleton.ThrowIfNewerVersionInstalled(requested, installed);
+        var check = () => InstallerOrchestratorSingleton.ThrowIfNewerVersionInstalled(requested, [MakeBundle(InstallComponent.SDK, "10.0.114", InstallArchitecture.arm64)]);
 
         check.Should().NotThrow();
     }

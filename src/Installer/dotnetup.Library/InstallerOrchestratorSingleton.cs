@@ -19,14 +19,14 @@ internal class InstallerOrchestratorSingleton
     private static ScopedMutex ModifyInstallStateMutex() => new(Constants.MutexNames.ModifyInstallationStates);
 
     [ThreadStatic]
-    private static Func<InstallArchitecture, IEnumerable<DotnetInstall>>? t_registeredSystemInstallsOverride;
+    private static Func<DotnetInstall, IEnumerable<InstalledBundle>>? s_installedBundlesOverride;
 
     /// <summary>
-    /// Sets a thread-local replacement for the Windows Installer registrations read by <see cref="DotnetEnvironmentManager.GetSystemRegistryInstallState"/>, for testing.
+    /// Sets a thread-local replacement for the bundle registrations read by <see cref="DotnetEnvironmentManager.GetInstalledBundles"/>, for testing.
     /// Pass null to clear it.
     /// </summary>
-    internal static void SetRegisteredSystemInstallsOverride(Func<InstallArchitecture, IEnumerable<DotnetInstall>>? getRegisteredSystemInstalls) =>
-        t_registeredSystemInstallsOverride = getRegisteredSystemInstalls;
+    internal static void SetInstalledBundlesOverride(Func<DotnetInstall, IEnumerable<InstalledBundle>>? getInstalledBundles) =>
+        s_installedBundlesOverride = getInstalledBundles;
 
     /// <summary>
     /// Downloads the archive for an already-resolved install request into the download cache
@@ -356,33 +356,31 @@ internal class InstallerOrchestratorSingleton
     /// Windows installer bundles report success without installing anything when a newer build of the same
     /// SDK feature band, or of the same runtime major.minor, is installed. Refuse such a downgrade up front.
     /// </summary>
-    internal static void ThrowIfNewerVersionInstalled(DotnetInstall requested, IEnumerable<DotnetInstall> systemInstalls)
+    internal static void ThrowIfNewerVersionInstalled(DotnetInstall requested, IEnumerable<InstalledBundle> installedBundles)
     {
         ReleaseVersion version = requested.Version;
 
-        // Conservative: runtime folders that an SDK bundle laid down also count, even if the runtime bundle might install alongside them.
-        DotnetInstall? newer = systemInstalls
-            .Where(i => IsSameInstallerFamily(i, requested) && i.Version.CompareTo(version) > 0)
-            .MaxBy(i => i.Version);
+        InstalledBundle? newer = installedBundles
+            .Where(b => IsSameInstallerFamily(b.Install, requested) && b.Install.Version.CompareTo(version) > 0)
+            .MaxBy(b => b.Install.Version);
 
         if (newer is not null)
         {
             string displayName = requested.Component.GetDisplayName();
-            string registryKey = DotnetEnvironmentManager.GetRegistryVersionsKeyName(requested.Component, requested.InstallRoot.Architecture);
             throw CreateInstallException(
                 DotnetInstallErrorCode.NewerVersionInstalled,
                 requested,
-                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerNewerVersionInstalled, displayName, newer.Version, version, registryKey));
+                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerNewerVersionInstalled, displayName, newer.Install.Version, version, newer.DisplayName));
         }
     }
 
-    // Installs outside dotnetup (MSI, Visual Studio, other bundles) don't take our mutex, so recheck the registry before each bundle run.
+    // Installs outside dotnetup (other bundles, winget, Windows Update) don't take our mutex, so recheck before each bundle run.
     private static void ThrowIfNewerVersionRegistered(DotnetInstallRequest request, DotnetInstall install)
     {
         if (request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle)
         {
-            var getRegisteredSystemInstalls = t_registeredSystemInstallsOverride ?? DotnetEnvironmentManager.GetSystemRegistryInstallState;
-            ThrowIfNewerVersionInstalled(install, getRegisteredSystemInstalls(install.InstallRoot.Architecture));
+            var getInstalledBundles = s_installedBundlesOverride ?? DotnetEnvironmentManager.GetInstalledBundles;
+            ThrowIfNewerVersionInstalled(install, getInstalledBundles(install));
         }
     }
 
