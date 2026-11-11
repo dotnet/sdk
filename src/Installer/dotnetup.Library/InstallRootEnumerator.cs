@@ -54,6 +54,7 @@ internal static class InstallRootEnumerator
 
     private static DotnetInstall WithBuildIdentity(DotnetInstall install)
     {
+        // Runtime .version files do not contain the build version, so only SDK folders are read.
         if (install.Component != InstallComponent.SDK
             || LayoutVersionFile.ReadFromDirectory(install.ComponentDirectory)?.GetBuildVersionFor(install.LayoutVersion) is not { } buildVersion)
         {
