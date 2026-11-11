@@ -42,6 +42,11 @@
         <target state="new">{0} is not available for '{1}' in admin mode.</target>
         <note>{0} describes an option or argument; {1} is the command name.</note>
       </trans-unit>
+      <trans-unit id="AdminModeSystemInstallRegistryUnreadable">
+        <source>Could not read the machine-wide .NET install locations from the registry key '{0}': {1} Admin mode requires read access to this key. Restore it, then run the command again.</source>
+        <target state="new">Could not read the machine-wide .NET install locations from the registry key '{0}': {1} Admin mode requires read access to this key. Restore it, then run the command again.</target>
+        <note>{0} is a registry key path. {1} is the operating system error.</note>
+      </trans-unit>
       <trans-unit id="CommandDone">
         <source>Done.</source>
         <target state="new">Done.</target>
@@ -830,6 +835,11 @@ Or open a new terminal.</target>
         <source>Waiting for another dotnetup self-update to finish...</source>
         <target state="new">Waiting for another dotnetup self-update to finish...</target>
         <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SystemInstallRegistryUnreadableWarning">
+        <source>Warning: Could not read the machine-wide .NET install locations from the registry key '{0}', so existing system .NET installs may not be detected: {1}</source>
+        <target state="new">Warning: Could not read the machine-wide .NET install locations from the registry key '{0}', so existing system .NET installs may not be detected: {1}</target>
+        <note>{0} is a registry key path. {1} is the operating system error.</note>
       </trans-unit>
       <trans-unit id="TelemetryNotice">
         <source>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</source>

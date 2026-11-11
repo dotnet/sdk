@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.Versioning;
+using System.Security;
 using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -144,15 +146,22 @@ internal sealed partial class WindowsPathHelper : IDisposable
     {
         List<string> paths;
 
-        // The host installer writes InstallLocation to the 32-bit view and sharedhost\Path only to the native view.
-        // See https://github.com/dotnet/runtime/blob/e33be4d53ab951272c9161c50b549e5e7db60262/src/installer/pkg/sfx/installers/host.wxs#L35-L55
-        var nativeView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
-        using (var registry32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
-        using (var nativeRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, nativeView))
-        using (var installLocationKey = registry32.OpenSubKey(InstalledVersionsKeyPath))
-        using (var sharedHostKey = nativeRegistry.OpenSubKey(InstalledVersionsKeyPath))
+        try
         {
-            paths = GetRegisteredDotnetPaths(installLocationKey, sharedHostKey);
+            // The host installer writes InstallLocation to the 32-bit view and sharedhost\Path only to the native view.
+            // See https://github.com/dotnet/runtime/blob/e33be4d53ab951272c9161c50b549e5e7db60262/src/installer/pkg/sfx/installers/host.wxs#L35-L55
+            var nativeView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
+            using (var registry32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+            using (var nativeRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, nativeView))
+            using (var installLocationKey = registry32.OpenSubKey(InstalledVersionsKeyPath))
+            using (var sharedHostKey = nativeRegistry.OpenSubKey(InstalledVersionsKeyPath))
+            {
+                paths = GetRegisteredDotnetPaths(installLocationKey, sharedHostKey);
+            }
+        }
+        catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException or IOException)
+        {
+            paths = HandleUnreadableSystemInstallRegistry(ex, DotnetupConfig.ReadEffectiveAccessMode(), Console.Error);
         }
 
         // Fallback: if registry yielded nothing, check the default Program Files location.
@@ -173,6 +182,32 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     private const string InstalledVersionsKeyPath = @"SOFTWARE\dotnet\Setup\InstalledVersions";
+
+    private static int s_unreadableSystemInstallRegistryWarned;
+
+    /// <summary>
+    /// Handles a failure to read <c>InstalledVersions</c>. Admin mode fails with a user error; other modes
+    /// warn once per process on <paramref name="warningWriter"/> and continue as if nothing were registered.
+    /// </summary>
+    internal static List<string> HandleUnreadableSystemInstallRegistry(Exception exception, DotnetAccessMode? accessMode, TextWriter warningWriter)
+    {
+        string keyName = $@"HKEY_LOCAL_MACHINE\{InstalledVersionsKeyPath}";
+        if (accessMode == DotnetAccessMode.Admin)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.SystemInstallRegistryUnreadable,
+                string.Format(CultureInfo.CurrentCulture, Strings.AdminModeSystemInstallRegistryUnreadable, keyName, exception.Message),
+                exception);
+        }
+
+        // Init queries this before its form renders and again after it closes; only the first, pre-form call may write.
+        if (Interlocked.Exchange(ref s_unreadableSystemInstallRegistryWarned, 1) == 0)
+        {
+            warningWriter.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.SystemInstallRegistryUnreadableWarning, keyName, exception.Message));
+        }
+
+        return [];
+    }
 
     /// <summary>
     /// Returns the existing install directories registered under <c>InstalledVersions</c>, preferring each architecture's

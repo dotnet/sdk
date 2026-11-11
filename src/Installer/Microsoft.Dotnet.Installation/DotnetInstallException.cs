@@ -193,6 +193,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>The install would overwrite a different build of the same component that uses the same on-disk version folder.</summary>
     InstallLayoutConflict,
+
+    /// <summary>The registry key that records machine-wide .NET install locations could not be read.</summary>
+    SystemInstallRegistryUnreadable,
 }
 
 /// <summary>
