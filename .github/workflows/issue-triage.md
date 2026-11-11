@@ -1,7 +1,7 @@
 ---
 emoji: 🏷️
 name: Issue Triage
-description: Triages opened dotnet/sdk issues by applying existing labels, requesting missing diagnostic information, and routing complete reports through CODEOWNERS with sampled load balancing.
+description: Triages opened dotnet/sdk issues by applying existing labels, requesting missing diagnostic information, and routing complete reports through CODEOWNERS with deterministic load balancing.
 on:
   issues:
     # vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS (default: 5000 AIC) helps limit triage of too many issues
@@ -66,8 +66,6 @@ environment: copilot-pat-pool
 
 engine:
   id: copilot
-  # SDK mode supplies a proxy-aware fetch tool; offline CLI mode has no web tools.
-  copilot-sdk: true
   env:
     COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 permissions:
@@ -84,15 +82,30 @@ tools:
   # generated CLI proxy instead of the native HTTP MCP endpoint on the internal awmg-mcpg
   # gateway, avoiding the firewall TCP_DENIED/403 on that single-label host.
   # See github/gh-aw#45915.
-  bash: ["gh:*", "safeoutputs:*"]
+  bash: ["gh:*", "safeoutputs:*", "mcpscripts:*"]
   cli-proxy: true
-  web-fetch:
   github:
     mode: gh-proxy
     toolsets: [context, issues, labels, repos, search]
     allowed-repos:
       - "${{ github.repository }}"
     min-integrity: none
+mcp-scripts:
+  # Read-only. Code, not the model, chooses the assignee so the choice is load-balanced and unbiased.
+  select-assignee:
+    description: "Select the assignee and owning teams for one Area-* label from CODEOWNERS. Prefers the candidate with the fewest open issues created in the past week assigned to them and breaks ties randomly."
+    inputs:
+      area:
+        type: string
+        required: true
+        description: "The single Area-* label selected for the issue, such as Area-NuGet."
+    run: |
+      node "$GITHUB_WORKSPACE/.github/scripts/issue-triage-assignee.js"
+    env:
+      GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      GITHUB_API_URL: "${{ github.api_url }}"
+      GITHUB_REPOSITORY: "${{ github.repository }}"
+    timeout: 60
 safe-outputs:
   report-failure-as-issue: false
   allowed-domains:
@@ -110,6 +123,7 @@ safe-outputs:
     max: 50
     # Allow CODEOWNERS team handles explicitly. allowed-teams only allows their
     # individual members and requires read:org, which GITHUB_TOKEN does not have.
+    # issue-triage-assignee.test.js checks this list against CODEOWNERS and the team snapshot.
     allowed:
       - dotnet/area-infrastructure-libraries
       - dotnet/aspnet-blazor-eng
@@ -243,117 +257,30 @@ Classify a candidate as `potentially related` when it has a meaningful shared me
 
 Only record a match when its classification is strongly supported. This workflow reports candidates for maintainers to assess; it does not close the current issue or mark it as a confirmed duplicate.
 
-### 5. Resolve owners and route from CODEOWNERS
+### 5. Route ownership
 
-All complete issues reaching this step have selected one `Area-*` label and proceed through ownership routing.
+All complete issues reaching this step have selected one `Area-*` label and proceed through ownership routing. If the issue already has an assignee, do not add or replace assignees; still use the returned teams in the Assignment line.
 
-Read the repository's root `CODEOWNERS` file to look up owners for the selected `Area-*` label.
+Call the `select-assignee` MCP script exactly once with the selected `Area-*` label as `area`. The script deterministically:
 
-#### CODEOWNERS matching rules
+- finds the last `CODEOWNERS` section whose `# Area-*` heading names the label,
+- expands team owners through the reviewed membership snapshot in `.github/scripts/issue-triage-team-snapshot.json`,
+- counts each candidate's open issues created in the past week that are assigned to them, and
+- selects the least-loaded candidate, breaking ties with a cryptographically random shuffle.
 
-The root `CODEOWNERS` file contains `# Area-*` section headings that associate one or more area labels with the owners on the path lines that follow:
+Use the returned JSON exactly:
 
-```
-# Area-WebSDK
-/src/WebSdk/ @vijayrkn
-/test/Microsoft.NET.Sdk.Publish.Tasks.Tests/ @vijayrkn
-
-# Area-ILLink Area-ReadyToRun
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ILLink.targets @dotnet/illink
-```
-
-Owners come in two forms:
-
-- Individual owners use `@login` and can be assigned to an issue.
-- Team owners use `@dotnet/team` and cannot be issue assignees.
-
-#### Expanded team membership snapshot
-
-The following snapshot was retrieved from the `dotnet` GitHub organization on 2026-07-14, except the `@dotnet/dotnet-testing` row, which was refreshed on 2026-11-05. It includes members inherited through child teams. Use these usernames only to expand a team handle found in a matched CODEOWNERS section into individual assignment candidates. Retain the original team handle for the assignment output.
-
-Use the exact CODEOWNERS team slug in this table and `safe-outputs.mentions.allowed`; do not substitute a parent, child, or admin team. Keep the explicit mention allowlist aligned with CODEOWNERS even when a team has no membership snapshot, so unassigned issues still notify their owning team.
-
-CODEOWNERS team | Expanded individual members, including child teams
+Field | Use
 ---|---
-`@dotnet/dotnet-cli` | `@dsplaisted`, `@baronfel`, `@richlander`, `@joeloff`, `@MichaelSimons`, `@marcpopMSFT`, `@wtgodbe`, `@mthalman`, `@MiYanni`, `@nagilson`, `@lbussell`, `@vlada-shubina`
-`@dotnet/dotnetup` | `@dsplaisted`, `@marcpopMSFT`, `@nagilson`
-`@dotnet/aspnet-blazor-eng` | `@lewing`, `@halter73`, `@pavelsavara`, `@akoeplinger`, `@radekdoulik`, `@javiercn`, `@maraf`, `@MackinnonBuck`, `@ilonatommy`, `@oroztocil`, `@dariatiurina`
-`@dotnet/razor-tooling` | `@DustinCampbell`, `@davidwengier`, `@chsienki`, `@webreidi`
-`@dotnet/nuget-team` | `@nkolev92`, `@zivkan`, `@jebriede`, `@dtivel`, `@jeffkl`, `@martinrrm`, `@donnie-msft`, `@kartheekp-ms`, `@aortiz-msft`, `@Nigusu-Allehu`
-`@dotnet/fsharp` | `@0101`, `@brettfo`, `@vzarytovskii`, `@dsyme`, `@abonie`, `@T-Gro`
-`@dotnet/dotnet-testing` | `@0101`, `@drognanar`, `@JanKrivanek`, `@nohwnd`, `@Evangelink`, `@YuliiaKovalova`, `@azat-msft`
-`@dotnet/net-sdk-workload-contributors` | `@lewing`, `@dsplaisted`, `@rolfbjarne`, `@Redth`, `@steveisok`, `@baronfel`, `@jonathanpeppers`, `@joeloff`, `@marcpopMSFT`, `@MiYanni`, `@nagilson`
-`@dotnet/templating-engine-maintainers` | `@joeloff`, `@marcpopMSFT`, `@MiYanni`
-`@dotnet/illink` | `@marek-safar`, `@agocke`, `@sbomer`, `@vitek-karas`, `@jtschuster`
-`@dotnet/roslyn-ide` | `@peterwald`, `@jaredpar`, `@jasonmalinowski`, `@JoeRobich`, `@dibarbet`, `@AbhitejJohn`, `@akhera99`, `@webreidi`, `@mwiemer-microsoft`
-`@dotnet/area-infrastructure-libraries` | `@jeffhandley`
-`@dotnet/sdk-container-builds-maintainers` | `@baronfel`, `@mthalman`, `@MiYanni`, `@rbhanda`, `@lbussell`
-`@dotnet/dotnet-analyzers` | `@jaredpar`, `@krwq`, `@genlu`, `@jeffhandley`, `@tannergooding`, `@bartonjs`, `@Evangelink`, `@jozkee`
+`assignee` | When non-null, call `assign_to_user` with exactly this login. Never substitute, re-rank, or re-randomize candidates, and never choose an assignee yourself.
+`teams` | The team handles for the Assignment line.
+`needsTeamTriage` | When `true`, add `needs team triage` and leave the issue unassigned.
+`lowerLoadOverride` | When non-null, render the **Load balancing** details subsection under **Assignment** from its `initial`, `initialCount`, and `selectedCount` values and the returned `assignee`.
+`load`, `loadError` | Diagnostics only. Do not mention them in the comment.
 
-**Matching uses bottom-to-top scanning with first-match-wins semantics:**
+If the call fails or returns `error`, do not retry it with a different label. Leave the issue unassigned, add `needs team triage`, and record `@dotnet/dotnet-cli` in the Assignment line.
 
-1. Resolve each selected `Area-*` label independently.
-2. Start from the END of `CODEOWNERS` and scan each line upward.
-3. For each heading containing one or more complete `Area-*` names, compare each name case-insensitively with the selected area label. A combined heading such as `# Area-ILLink Area-ReadyToRun` matches either named label.
-4. STOP at the first heading containing the selected area label. This is the matching section.
-5. From that heading, read downward through blank lines and path lines. Collect every owner on those path lines, but STOP at the first subsequent comment line, whether or not that comment contains `Area-*`. This prevents unrelated sections such as `# AI` or compatibility ownership from being merged into the preceding area. De-duplicate the owners, then separate individual owners from team owners.
-
-**Why this matters:** A label may appear in more than one section.
-
-**Example 1 — Selected label: `Area-Format`**
-
-The scan finds the later `# Area-Format` section first and stops. The matching section owns `/src/BuiltInTools/dotnet-format` and lists `@dotnet/roslyn-ide`. Expand that team through the snapshot and use its members as assignment candidates. Do not continue to the earlier `# Area-Format` section.
-
-**Example 2 — Selected label: `Area-ILLink`**
-
-The combined `# Area-ILLink Area-ReadyToRun` heading matches `Area-ILLink`. Its path lines list `@dotnet/illink` and `@dotnet/dotnet-cli`. Expand both teams through the snapshot, de-duplicate their members, and use the result as assignment candidates.
-
-If no section matches a selected area, use the repository's default team `@dotnet/dotnet-cli` for routing. Teams cannot be issue assignees.
-
-#### Sampled load balancing
-
-Build one de-duplicated individual candidate set from:
-
-- individual owners listed directly in all matched CODEOWNERS sections
-- individual members from the snapshot for every team owner in those matched sections
-
-Keep the original team handles separate from individual candidates.
-
-If there is more than one individual candidate:
-
-1. Randomize the de-duplicated candidate list.
-2. For each assignable candidate, use the `web-fetch` tool once on the public GitHub issue-search URL below, replacing `<username>` with the candidate username without `@`:
-
-   `https://github.com/dotnet/sdk/issues?q=is%3Aissue%20state%3Aopen%20assignee%3A<username>%20created%3A%3E%40today-1w%20label%3Auntriaged`
-3. Read the open-issue count from the fetched page. The results header states the number of matching open issues (for example, `3 Open`); use that integer. A count of zero is a successful result. Treat a failed fetch, or a page from which no open-issue count can be read, as a failed search.
-4. Treat the first assignable candidate with a successful load search as the initial candidate. Select the candidate with the lowest successful count; break a tie randomly.
-5. If the selected candidate differs from the initial candidate because their count is lower, record both candidates and counts in a separate **Load balancing** details subsection under **Assignment**. If some load searches fail, compare only candidates with successful searches. If all load searches fail, choose one assignable candidate randomly and omit the **Load balancing** subsection. If no candidate is assignable, leave the issue unassigned and add `needs team triage`.
-
-Run at most three load searches and assign exactly one person total, even when the issue has multiple `Area-*` labels.
-
-#### Owner routing flow
-
-```
-IF one or more individual candidates are found directly or through the snapshot:
-  - Apply the assignability preflight and sampled load-balancing rules.
-  - If an assignable candidate is selected, assign exactly that individual using the `assign_to_user` tool.
-  - Otherwise, add the `needs team triage` label and leave the issue unassigned.
-  - Record only the team owners from the matched sections in the Assignment output. Do not mention unassigned individual candidates.
-
-ELSE IF team owners are listed but none can be expanded through the snapshot:
-  - Add the `needs team triage` label.
-  - Leave the issue unassigned.
-  - Record all team owners from the matched sections in the Assignment output.
-
-ELSE (no Area-* section matches any selected label, or the matched sections have no owners):
-  - Add the `needs team triage` label.
-  - Leave the issue unassigned.
-  - Record the default `@dotnet/dotnet-cli` team in the Assignment output.
-```
-
-Resolve at most three selected areas. If the issue already has an assignee, do not add or replace assignees.
-
-Fold owner routing into the single triage comment in step 7; do not post a separate routing comment. In **Assignment**, show the selected individual and the matched team handle(s) as `<@selected | @team handles>`. The selected individual is notified by the assignment itself. Do not mention any other individual. Write team handles as raw @dotnet/team mentions without backticks or escaping, including when no individual can be assigned.
+Fold owner routing into the single triage comment in step 7; do not post a separate routing comment. In **Assignment**, show the selected individual and the returned team handle(s) as `<@selected | @team handles>`. The selected individual is notified by the assignment itself. Do not mention any other individual. Write team handles as raw @dotnet/team mentions without backticks or escaping, including when no individual can be assigned.
 
 ### 6. Handle `untriaged`
 
@@ -370,9 +297,8 @@ Before calling safe outputs, verify:
 - step 4 attempted at least two distinct issue searches, including a cross-surface mechanism query whenever the report identifies a plausible mechanism
 - every mechanism query contained exactly one quoted subject or mechanism phrase and no other terms, excluding the repository qualifier
 - a mechanism search that returned only the current issue or no useful candidates was followed, while search budget remained, by a shorter one-phrase-only mechanism query
-- every assignment candidate is either a direct individual owner from a matched CODEOWNERS section or a snapshot member of a team from that matched section
-- every expanded member came from the snapshot row for the specific matched team; membership in an unrelated team is not sufficient
-- every team handle in the Assignment line is from the matched CODEOWNERS sections (or the default routing team), is explicitly listed in `safe-outputs.mentions.allowed`, and is a raw mention rather than code-formatted text
+- `select-assignee` was called at most once, and any assignee is exactly its returned `assignee`
+- every team handle in the Assignment line came from the `teams` returned by `select-assignee` (or `@dotnet/dotnet-cli` when it failed), is explicitly listed in `safe-outputs.mentions.allowed`, and is a raw mention rather than code-formatted text
 - every safe-output call includes the target issue number in the correct field
 - incomplete reports received no area guess or assignee
 - normal triage comments classify confidence as `high`, `medium`, or `low`
@@ -397,7 +323,7 @@ Classify confidence in the selected labels and routing as:
 - **🏷️ Labels:** Applied, modified, and already-present relevant labels, or `none`. Put all label URLs on this line, separated by one space. Render each label as a bare GitHub label URL in the form https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>. Percent-encode the label name as a URL path segment, including spaces as `%20`. Do not wrap label URLs in backticks or Markdown link syntax.
 > Only when `needs-info` was added: briefly state which required information is missing and why the report is not yet actionable. Omit only this explanatory paragraph otherwise.
 - **💻 Assignment:** <@individual selected for assignment, or `none`> | <@team handles, or `none`>
-> Only when load balancing selected someone other than the initial candidate because their count was lower: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format both handles to avoid additional mentions. Omit this entire nested details subsection otherwise.
+> Only when `select-assignee` returned a non-null `lowerLoadOverride`: `@initial` had <initialCount> open issues created in the past week assigned to them; `@selected` had <selectedCount>, so `@selected` was selected. Code-format both handles to avoid additional mentions. Omit this entire nested details subsection otherwise.
 - **<🟩, 🟨, or 🟥> Confidence:** <`high`, `medium`, or `low` (embed with `tick markers`)> - <One sentence reason for the confidence classification of up to 20 words.>
 
 > Include only when step 4 found one or two strongly supported matches. **Similar issues:** https://github.com/${{ github.repository }}/issues/<issue_number> (`duplicate`) https://github.com/${{ github.repository }}/issues/<issue_number> (`potentially related`)
@@ -410,7 +336,7 @@ Preserve the heading, blank lines, markup, bold field names, and field order. Re
 
 Put all labels on one line separated by one space, rendering each as a bare `https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>` URL without backticks or Markdown link syntax so GitHub can render its native label reference. Labels includes an additional explanation only when `needs-info` was added.
 
-Assignment includes the nested **Load balancing** details subsection only for a successful lower-load override; otherwise omit the entire subsection. Do not mention unassigned individuals outside that code-formatted subsection.
+Assignment includes the nested **Load balancing** details subsection only when `lowerLoadOverride` is non-null; otherwise omit the entire subsection. Do not mention unassigned individuals outside that code-formatted subsection.
 
 Write team handles as raw mentions so the explicitly allowed CODEOWNERS teams remain live.
 
