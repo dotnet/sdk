@@ -149,13 +149,13 @@ internal sealed partial class WindowsPathHelper : IDisposable
         try
         {
             // The host installer writes InstallLocation to the 32-bit view and sharedhost\Path only to the native view.
-            // See https://github.com/dotnet/runtime/blob/e33be4d53ab951272c9161c50b549e5e7db60262/src/installer/pkg/sfx/installers/host.wxs#L35-L55
+            // See Win64="no": https://github.com/dotnet/runtime/blob/e33be4d53ab951272c9161c50b549e5e7db60262/src/installer/pkg/sfx/installers/host.wxs#L35-L55
             var nativeView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
             using var registry32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
             using var nativeRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, nativeView);
-            using var installLocationKey = registry32.OpenSubKey(InstalledVersionsKeyPath);
-            using var sharedHostKey = nativeRegistry.OpenSubKey(InstalledVersionsKeyPath);
-            paths = GetRegisteredDotnetPaths(installLocationKey, sharedHostKey);
+            using var installedVersions32 = registry32.OpenSubKey(InstalledVersionsKeyPath);
+            using var installedVersionsNative = nativeRegistry.OpenSubKey(InstalledVersionsKeyPath);
+            paths = GetRegisteredDotnetPaths(installedVersions32, installedVersionsNative);
         }
         catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException or IOException)
         {
@@ -189,7 +189,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
     /// </summary>
     internal static List<string> HandleUnreadableSystemInstallRegistry(Exception exception, TextWriter warningWriter)
     {
-        string keyName = $@"HKEY_LOCAL_MACHINE\{InstalledVersionsKeyPath}";
+        string keyName = $@"{Registry.LocalMachine.Name}\{InstalledVersionsKeyPath}";
 
         // Init queries this before its form renders and again after it closes; only the first, pre-form call may write.
         if (Interlocked.Exchange(ref s_unreadableSystemInstallRegistryWarned, 1) == 0)
@@ -201,27 +201,31 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Returns the existing install directories registered under <c>InstalledVersions</c>, preferring each architecture's
-    /// <c>sharedhost\Path</c> under <paramref name="sharedHostKey"/> over its <c>InstallLocation</c> under
-    /// <paramref name="installLocationKey"/>. Both keys are the <c>InstalledVersions</c> key opened in their registry views.
+    /// Returns the existing install directory for each architecture under <c>InstalledVersions</c>:
+    /// <c>sharedhost\Path</c> from the native view, or <c>InstallLocation</c> from the 32-bit view as a fallback.
     /// </summary>
-    internal static List<string> GetRegisteredDotnetPaths(RegistryKey? installLocationKey, RegistryKey? sharedHostKey)
+    /// <param name="installedVersions32">The <c>InstalledVersions</c> key opened in the 32-bit registry view.</param>
+    /// <param name="installedVersionsNative">The <c>InstalledVersions</c> key opened in the native registry view.</param>
+    internal static List<string> GetRegisteredDotnetPaths(RegistryKey? installedVersions32, RegistryKey? installedVersionsNative)
     {
         var paths = new List<string>();
-        var architectureNames = (installLocationKey?.GetSubKeyNames() ?? [])
-            .Union(sharedHostKey?.GetSubKeyNames() ?? [], StringComparer.OrdinalIgnoreCase);
+        // Each view may register architectures the other lacks.
+        var architectureNames = (installedVersions32?.GetSubKeyNames() ?? [])
+            .Union(installedVersionsNative?.GetSubKeyNames() ?? [], StringComparer.OrdinalIgnoreCase);
 
         foreach (var architectureName in architectureNames)
         {
+            // Prefer sharedhost\Path, the canonical location set by the host installer.
             string? installPath;
-            using (var sharedHost = sharedHostKey?.OpenSubKey($@"{architectureName}\sharedhost"))
+            using (var sharedHost = installedVersionsNative?.OpenSubKey($@"{architectureName}\sharedhost"))
             {
                 installPath = sharedHost?.GetValue("Path") as string;
             }
 
+            // Fall back to InstallLocation on the architecture key.
             if (string.IsNullOrEmpty(installPath))
             {
-                using var architectureKey = installLocationKey?.OpenSubKey(architectureName);
+                using var architectureKey = installedVersions32?.OpenSubKey(architectureName);
                 installPath = architectureKey?.GetValue("InstallLocation") as string;
             }
 

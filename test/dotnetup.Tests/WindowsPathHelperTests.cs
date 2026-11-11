@@ -33,24 +33,24 @@ public class WindowsPathHelperTests
         using var keys = new RegistryViewKeys();
         string sharedHostPath = keys.CreateDirectory("sharedhost");
         string installLocation = keys.CreateDirectory("installlocation");
-        keys.SetValue(keys.InstallLocationKey, "x64", "InstallLocation", installLocation + Path.DirectorySeparatorChar);
-        keys.SetValue(keys.SharedHostKey, @"x64\sharedhost", "Path", sharedHostPath);
+        keys.SetValue(keys.InstalledVersions32, "x64", "InstallLocation", installLocation + Path.DirectorySeparatorChar);
+        keys.SetValue(keys.InstalledVersionsNative, @"x64\sharedhost", "Path", sharedHostPath);
 
-        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstallLocationKey, keys.SharedHostKey)
+        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative)
             .Should().Equal(sharedHostPath);
     }
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void GetRegisteredDotnetPaths_IgnoresSharedHostInTheInstallLocationView()
+    public void GetRegisteredDotnetPaths_IgnoresSharedHostInThe32BitView()
     {
         using var keys = new RegistryViewKeys();
         string sharedHostPath = keys.CreateDirectory("sharedhost");
         string installLocation = keys.CreateDirectory("installlocation");
-        keys.SetValue(keys.InstallLocationKey, "x86", "InstallLocation", installLocation);
-        keys.SetValue(keys.InstallLocationKey, @"x86\sharedhost", "Path", sharedHostPath);
+        keys.SetValue(keys.InstalledVersions32, "x86", "InstallLocation", installLocation);
+        keys.SetValue(keys.InstalledVersions32, @"x86\sharedhost", "Path", sharedHostPath);
 
-        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstallLocationKey, keys.SharedHostKey)
+        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative)
             .Should().Equal(installLocation);
     }
 
@@ -61,11 +61,11 @@ public class WindowsPathHelperTests
         using var keys = new RegistryViewKeys();
         string x64Path = keys.CreateDirectory("x64");
         string x86Path = keys.CreateDirectory("x86");
-        keys.SetValue(keys.SharedHostKey, @"x64\sharedhost", "Path", x64Path);
-        keys.SetValue(keys.InstallLocationKey, "x86", "InstallLocation", x86Path);
-        keys.SetValue(keys.InstallLocationKey, "arm64", "InstallLocation", Path.Combine(x64Path, "missing"));
+        keys.SetValue(keys.InstalledVersionsNative, @"x64\sharedhost", "Path", x64Path);
+        keys.SetValue(keys.InstalledVersions32, "x86", "InstallLocation", x86Path);
+        keys.SetValue(keys.InstalledVersions32, "arm64", "InstallLocation", Path.Combine(x64Path, "missing"));
 
-        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstallLocationKey, keys.SharedHostKey)
+        WindowsPathHelper.GetRegisteredDotnetPaths(keys.InstalledVersions32, keys.InstalledVersionsNative)
             .Should().BeEquivalentTo(x64Path, x86Path);
     }
 
@@ -91,13 +91,13 @@ public class WindowsPathHelperTests
 
         public RegistryViewKeys()
         {
-            InstallLocationKey = Registry.CurrentUser.CreateSubKey($@"{_keyPath}\Registry32");
-            SharedHostKey = Registry.CurrentUser.CreateSubKey($@"{_keyPath}\Native");
+            InstalledVersions32 = Registry.CurrentUser.CreateSubKey($@"{_keyPath}\Registry32");
+            InstalledVersionsNative = Registry.CurrentUser.CreateSubKey($@"{_keyPath}\Native");
         }
 
-        public RegistryKey InstallLocationKey { get; }
+        public RegistryKey InstalledVersions32 { get; }
 
-        public RegistryKey SharedHostKey { get; }
+        public RegistryKey InstalledVersionsNative { get; }
 
         public string CreateDirectory(string name) => Directory.CreateDirectory(Path.Combine(_directory, name)).FullName;
 
@@ -109,8 +109,8 @@ public class WindowsPathHelperTests
 
         public void Dispose()
         {
-            InstallLocationKey.Dispose();
-            SharedHostKey.Dispose();
+            InstalledVersions32.Dispose();
+            InstalledVersionsNative.Dispose();
             Registry.CurrentUser.DeleteSubKeyTree(_keyPath, throwOnMissingSubKey: false);
             Directory.Delete(_directory, recursive: true);
         }
