@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -87,13 +88,29 @@ public static class GlobalJsonModifier
             return;
         }
 
-        ReadGlobalJson(globalJsonPath);
-        var (fileText, encoding) = GlobalJsonFileHelper.ReadFileWithEncodingDetection(globalJsonPath);
+        var (_, fileText, encoding) = ReadGlobalJsonForUpdate(globalJsonPath);
+        WriteGlobalJsonSdkVersion(globalJsonPath, sdkVersion, fileText, encoding);
+    }
+
+    private static bool WriteGlobalJsonSdkVersion(string globalJsonPath, string sdkVersion, string fileText, Encoding encoding)
+    {
         var updatedText = ReplaceGlobalJsonSdkVersion(fileText, sdkVersion);
-        if (updatedText is not null)
+        if (updatedText is null)
         {
-            File.WriteAllText(globalJsonPath, updatedText, encoding);
+            return false;
         }
+        File.WriteAllText(globalJsonPath, updatedText, encoding);
+        return true;
+    }
+
+    private static (GlobalJsonContents Contents, string Text, Encoding Encoding) ReadGlobalJsonForUpdate(string globalJsonPath)
+    {
+        var bytes = File.ReadAllBytes(globalJsonPath);
+        bool hasBom = bytes.AsSpan().StartsWith(Encoding.UTF8.Preamble);
+        var jsonBytes = bytes.AsSpan(hasBom ? Encoding.UTF8.Preamble.Length : 0);
+        var contents = JsonSerializer.Deserialize(jsonBytes, GlobalJsonContentsJsonContext.Default.GlobalJsonContents)
+            ?? throw new JsonException(Strings.GlobalJsonInvalidContents);
+        return (contents, Encoding.UTF8.GetString(jsonBytes), new UTF8Encoding(encoderShouldEmitUTF8Identifier: hasBom));
     }
 
     /// <summary>
@@ -105,7 +122,8 @@ public static class GlobalJsonModifier
     /// <exception cref="JsonException">The file contains malformed JSON; it is left unchanged.</exception>
     public static bool UpdateGlobalJsonIfNewer(string globalJsonPath, ReleaseVersion latestVersion)
     {
-        string? currentVersionString = ReadGlobalJson(globalJsonPath).Sdk?.Version;
+        var (contents, fileText, encoding) = ReadGlobalJsonForUpdate(globalJsonPath);
+        string? currentVersionString = contents.Sdk?.Version;
 
         if (currentVersionString is not null
             && ReleaseVersion.TryParse(currentVersionString, out var currentVersion)
@@ -114,8 +132,7 @@ public static class GlobalJsonModifier
             return false;
         }
 
-        UpdateGlobalJson(globalJsonPath, latestVersion.ToString());
-        return true;
+        return WriteGlobalJsonSdkVersion(globalJsonPath, latestVersion.ToString(), fileText, encoding);
     }
 
     /// <summary>

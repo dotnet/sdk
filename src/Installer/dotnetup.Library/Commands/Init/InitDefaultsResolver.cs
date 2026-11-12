@@ -196,7 +196,7 @@ internal static class InitDefaultsResolver
                 Component = InstallComponent.SDK,
                 InstallSource = InstallSource.GlobalJson,
                 GlobalJsonPath = globalJson.GlobalJsonPath
-            });
+            }, globalJson.GlobalJsonContents);
             if (evaluation.Error is not null)
             {
                 throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error);

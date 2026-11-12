@@ -369,15 +369,34 @@ public class GlobalJsonUpdateTests : IDisposable
     }
 
     [TestMethod]
-    public void UpdateGlobalJsonIfNewer_ReportsMalformedContentsWithoutChangingFile()
+    [DataRow("""{"sdk":{"version":"10.0.103"},"broken":}""")]
+    [DataRow("null")]
+    [DataRow("""{"sdk":[]}""")]
+    [DataRow("""{"sdk":{"version":103}}""")]
+    [DataRow("""{"sdk":{"version":"10.0.103","allowPrerelease":"false"}}""")]
+    public void GlobalJsonUpdates_ReportMalformedContentsWithoutChangingFile(string contents)
     {
         var path = Path.Combine(_testDir, "global.json");
-        var contents = """{"sdk":{"version":"10.0.103"},"broken":}""";
         File.WriteAllText(path, contents);
 
         var update = () => GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
+        var unconditionalUpdate = () => GlobalJsonModifier.UpdateGlobalJson(path, "10.0.105");
 
         update.Should().Throw<JsonException>();
+        unconditionalUpdate.Should().Throw<JsonException>();
+        File.ReadAllText(path).Should().Be(contents);
+    }
+
+    [TestMethod]
+    [DataRow("{}")]
+    [DataRow("""{"sdk":{"rollForward":"latestFeature"}}""")]
+    public void UpdateGlobalJsonIfNewer_ReturnsFalseWhenNoVersionCanBeReplaced(string contents)
+    {
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, contents);
+
+        GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105")).Should().BeFalse();
+
         File.ReadAllText(path).Should().Be(contents);
     }
 

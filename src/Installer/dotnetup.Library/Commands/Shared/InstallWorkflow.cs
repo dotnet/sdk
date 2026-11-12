@@ -324,7 +324,7 @@ internal class InstallWorkflow
             var evaluation = InstallSpecResolver.Evaluate(new InstallSpec
             {
                 Component = component, InstallSource = InstallSource.GlobalJson, GlobalJsonPath = globalJson.GlobalJsonPath
-            });
+            }, globalJson.GlobalJsonContents);
             if (evaluation.Error is not null)
             {
                 throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error);

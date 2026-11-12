@@ -63,16 +63,46 @@ public class InstallWorkflowTests : IDisposable
     }
 
     [TestMethod]
-    public void ResolveChannel_MalformedGlobalJsonReportsContextResolutionFailure()
+    [DataRow(null)]
+    [DataRow("""{"sdk":{"version":"11.0.100","rollForward":"disable"}}""")]
+    [DataRow("{broken")]
+    public void ResolveChannel_ReusesParsedGlobalJsonAfterFileChanges(string? replacement)
     {
         var path = Path.Combine(_tempDir, "global.json");
-        File.WriteAllText(path, "{broken");
+        File.WriteAllText(path, """{"sdk":{"version":"10.0.103","allowPrerelease":false}}""");
+        var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(_tempDir);
+        if (replacement is null)
+        {
+            File.Delete(path);
+        }
+        else
+        {
+            File.WriteAllText(path, replacement);
+        }
+
+        var (channel, fromFile) = InstallWorkflow.ResolveChannel(InstallComponent.SDK, null, globalJson);
+
+        fromFile.Should().BeTrue();
+        channel.Name.Should().Be("10.0.1xx");
+        channel.MinimumVersion!.ToString().Should().Be("10.0.103");
+        channel.AllowPrerelease.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow("{broken")]
+    [DataRow("""{"sdk":{"version":"invalid"}}""")]
+    [DataRow("""{"sdk":{"version":"10.0.103","rollForward":"invalid"}}""")]
+    public void ResolveChannel_MalformedGlobalJsonReportsContextResolutionFailure(string contents)
+    {
+        var path = Path.Combine(_tempDir, "global.json");
+        File.WriteAllText(path, contents);
 
         var resolve = () => InstallWorkflow.ResolveChannel(
             InstallComponent.SDK, null, GlobalJsonModifier.GetGlobalJsonInfo(_tempDir));
 
-        resolve.Should().Throw<DotnetInstallException>()
-            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        var error = resolve.Should().Throw<DotnetInstallException>().Which;
+        error.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        error.Message.Should().Contain(path);
     }
 
     [TestMethod]

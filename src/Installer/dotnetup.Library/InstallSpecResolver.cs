@@ -40,7 +40,10 @@ internal static class InstallSpecResolver
             .Select(i => i.Installation)
             .FirstOrDefault();
 
-    public static InstallSpecResolution Evaluate(InstallSpec spec)
+    /// <summary>
+    /// Evaluates a requirement using the supplied parsed contents, or the current file when none are supplied.
+    /// </summary>
+    public static InstallSpecResolution Evaluate(InstallSpec spec, GlobalJsonContents? globalJsonContents = null)
     {
         if (spec.InstallSource != InstallSource.GlobalJson)
         {
@@ -54,7 +57,9 @@ internal static class InstallSpecResolver
                 throw new JsonException(string.Format(CultureInfo.InvariantCulture,
                     Strings.GlobalJsonMissingPath, spec.Component.GetDisplayName(), spec.VersionOrChannel));
             }
-            var sdk = GlobalJsonChannelResolver.ReadSdkSection(spec.GlobalJsonPath);
+            var sdk = globalJsonContents is not null
+                ? GlobalJsonChannelResolver.GetSdkSection(globalJsonContents)
+                : GlobalJsonChannelResolver.ReadSdkSection(spec.GlobalJsonPath);
             return new InstallSpecResolution
             {
                 IsActive = sdk is not null,
