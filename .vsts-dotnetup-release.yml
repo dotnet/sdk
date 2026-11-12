@@ -21,8 +21,11 @@ parameters:
 
 variables:
 - template: /eng/common/templates-official/variables/pool-providers.yml
+- group: AzureDevOps-Artifact-Feeds-Pats
 - name: DOTNET_CLI_TELEMETRY_SESSIONID
   value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
+- name: DOTNET_ADD_GLOBAL_TOOLS_TO_PATH
+  value: 0
 - name: ReleaseMetadataDirectory
   value: $(Build.ArtifactStagingDirectory)/release-metadata
 - name: ReleaseStagingDirectory
@@ -56,7 +59,35 @@ extends:
     - stage: PublishToBlobStorage
       displayName: Publish dotnetup and verify CDN downloads
       jobs:
+      - job: BuildReleaseTools
+        displayName: Build self-contained release tooling
+        timeoutInMinutes: 30
+        templateContext:
+          mb:
+            publish:
+              enabled: false
+          outputs:
+          - output: pipelineArtifact
+            targetPath: $(Build.SourcesDirectory)/artifacts/dotnetup-release-tools
+            artifactName: DotnetupReleaseTools
+        steps:
+        - checkout: self
+        - template: /eng/common/templates-official/steps/enable-internal-sources.yml@self
+          parameters:
+            legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+        - template: /eng/common/templates-official/steps/enable-internal-runtimes.yml@self
+        - powershell: eng/common/dotnet.ps1 --version
+          displayName: Bootstrap repository SDK
+        - pwsh: |
+            & .\.dotnet\dotnet.exe publish eng\dotnetup-release\dotnetup-release.csproj `
+              --configuration Release --runtime win-x64 --self-contained true `
+              /p:OfficialBuildId=$(Build.BuildNumber) `
+              --output artifacts\dotnetup-release-tools
+            exit $LASTEXITCODE
+          displayName: Publish release app and its runtime
+
       - job: Release
+        dependsOn: BuildReleaseTools
         displayName: Validate candidates and optionally publish versioned blobs
         timeoutInMinutes: 180
         templateContext:
@@ -64,7 +95,6 @@ extends:
           isProduction: ${{ eq(parameters.dryRun, false) }}
           inputs:
           - input: pipelineArtifact
-            pipeline: dotnetup
             artifactName: DotnetupReleaseTools
             targetPath: $(ReleaseToolsDirectory)
           - input: pipelineArtifact

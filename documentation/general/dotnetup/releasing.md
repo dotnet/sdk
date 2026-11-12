@@ -90,7 +90,8 @@ Reuse [dotnetup-release, definition 1710](https://dev.azure.com/dnceng/internal/
 in `dnceng/internal`, which already uses this YAML filename. Select the branch containing
 this implementation when queuing it; renaming the file does not change the pipeline's
 configured default branch. Authorize the `dotnetup` pipeline resource, the `MicroBuildTemplates` repository,
-and the internal build pool. No Maestro service connection or BAR lookup is required.
+and the internal build pool. Authorize the `AzureDevOps-Artifact-Feeds-Pats` variable
+group for the tooling build's internal package feeds. No Maestro service connection or BAR lookup is required.
 The pipeline's build identity must be able to read official pipeline 1544's runs and
 build artifacts.
 
@@ -116,13 +117,17 @@ selection, the resource defaults to the latest successful run on that branch wit
 `PME Signed` tag. The release pipeline remains manually triggered; completing an official
 build does not start a CDN release.
 
-The source build must contain `DotnetupReleaseTools` as well as all eight candidate
-artifacts introduced by [#56864](https://github.com/dotnet/sdk/pull/56864).
-The `build_release_tools` stage in [`.vsts-dnup-ci.yml`](../../../.vsts-dnup-ci.yml)
-publishes the [dotnet-release project](../../../eng/dotnetup-release/dotnetup-release.csproj)
+The selected official build must contain all eight candidate artifacts introduced by
+[#56864](https://github.com/dotnet/sdk/pull/56864); it does not need a `DotnetupReleaseTools` artifact.
+The release pipeline's prerequisite `BuildReleaseTools` job checks out the queued release
+pipeline revision, bootstraps the repository SDK, and publishes the
+[release-tool project](../../../eng/dotnetup-release/dotnetup-release.csproj)
 and its Windows x64 runtime as an unsigned, self-contained bundle. Native AOT is
 explicitly disabled. The tool is separate from signed product candidates and BAR assets.
-Older builds, including layout example 3126346, do not contain this tooling artifact.
+It publishes `DotnetupReleaseTools` in the current release-pipeline run; the formal
+`Release` job depends on this build job and consumes that artifact rather than downloading
+tooling from the official product build. This also runs in dry-run mode. Use a trusted,
+reviewed release pipeline revision because its source supplies the executable tooling.
 The project is included in [sdk.slnx](../../../sdk.slnx); its
 [entry point](../../../eng/dotnetup-release/Program.cs) dispatches the `prepare`, `publish`,
 and `verify` phases. The executable remains named `dotnetup-release`.
@@ -167,7 +172,7 @@ files into `dotnetup/<version>/<filename>` under the local staging root:
 all SHA-512 sidecars share the same version directory. Only the 20 expected release files
 are staged, not candidate manifests, other variants, or artifact signing metadata.
 
-One formal 1ES release job prepares the files and, unless dry-running, publishes them
+After the tooling build job succeeds, one formal 1ES release job prepares the files and, unless dry-running, publishes them
 with the downloaded executable using the Azure Blob REST API. The upload implementation
 uses the BCL rather than introducing Azure NuGet dependencies; Azure CLI handles service-
 connection authentication only. The job does not check out source, bootstrap an SDK,
