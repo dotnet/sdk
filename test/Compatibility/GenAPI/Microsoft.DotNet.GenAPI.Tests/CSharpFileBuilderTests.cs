@@ -3816,8 +3816,6 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [TestMethod]
-
-        [TestMethod]
         public void TestMemorySafetyRulesVersion2ExplicitInterfaceEventGeneration()
         {
             RunTest(original: """
