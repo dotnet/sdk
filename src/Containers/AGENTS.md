@@ -32,12 +32,22 @@ feature (`Microsoft.NET.Build.Containers`).
   `DOTNET_CONTAINER_AUTH_REALM_ALLOWED_ADDRESSES`; there is no runtime address detection.
   Realm requests may use HTTP only when the realm itself is HTTP and the registry is configured
   as insecure; an HTTPS realm is never downgraded to HTTP.
+  Authentication requests must not follow redirects because registry credentials can be carried
+  in either the `Authorization` header or an OAuth form body.
   Don't send realm requests via `base.SendAsync`; unit tests that fake a token server pass
   `realmHandlerFactory` instead.
+- **Registry credentials are origin-bound.** Attach cached credentials and process
+  authentication challenges only for the configured registry origin. After normal registry
+  redirects, validate the final response origin before acting on a challenge.
+  [AuthHandshakeMessageHandler.cs](Microsoft.NET.Build.Containers/AuthHandshakeMessageHandler.cs)
+  allows one completed authentication acquisition per request; transport failures before
+  acquisition remain retryable within the existing retry budget.
 
 ## Tests
 
 - Unit: `test/Microsoft.NET.Build.Containers.UnitTests` (MSTest) — run everywhere.
+  Credential-redirect regression tests must exercise the real realm transport with explicitly
+  allowed local endpoints; a fake handler that never follows redirects cannot prove this protection.
 - Integration: `test/Microsoft.NET.Build.Containers.IntegrationTests` — a mix. Tests
   that need a runtime opt into `DockerUnavailableCondition` and skip when Docker/Podman
   is absent (don't rely on those in every CI leg); others run in-process without a

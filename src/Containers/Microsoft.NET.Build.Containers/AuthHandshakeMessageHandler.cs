@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -44,7 +43,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     private readonly ILogger _logger;
     private readonly RegistryMode _registryMode;
     private readonly Func<Uri, HttpMessageHandler> _createRealmHandler;
-    private static ConcurrentDictionary<string, AuthenticationHeaderValue?> _authenticationHeaders = new();
+    private readonly Func<TimeSpan, CancellationToken, Task> _delay;
+    private AuthenticationHeaderValue? _authentication;
 
     public AuthHandshakeMessageHandler(
         string registryName,
@@ -53,7 +53,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         HttpMessageHandler innerHandler,
         ILogger logger,
         RegistryMode mode,
-        Func<Uri, HttpMessageHandler>? realmHandlerFactory = null) : base(innerHandler)
+        Func<Uri, HttpMessageHandler>? realmHandlerFactory = null,
+        Func<TimeSpan, CancellationToken, Task>? delay = null) : base(innerHandler)
     {
         _registryName = registryName;
         _registryUri = registryUri;
@@ -62,7 +63,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         _logger = logger;
         _registryMode = mode;
         _createRealmHandler = realmHandlerFactory
-            ?? new AuthRealmHandlerFactory(registryName, registryUri, isInsecureRegistry, logger).Create;
+            ?? new AuthRealmHandlerFactory(registryName, registryUri, isInsecureRegistry).Create;
+        _delay = delay ?? Task.Delay;
     }
 
     /// <summary>
@@ -414,7 +416,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         if (bearerAuthInfo.Scope is not null)
         {
             parameters["scope"] = bearerAuthInfo.Scope;
-        };
+        }
         HttpRequestMessage postMessage = new(HttpMethod.Post, realmUri)
         {
             Content = new FormUrlEncodedContent(parameters)
@@ -511,46 +513,81 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             throw new ArgumentException(Resource.GetString(nameof(Strings.NoRequestUriSpecified)), nameof(request));
         }
 
-        if (IsRegistryOrigin(request.RequestUri)
-            && _authenticationHeaders.TryGetValue(_registryName, out AuthenticationHeaderValue? header))
+        bool isRegistryOrigin = IsRegistryOrigin(request.RequestUri);
+        AuthenticationHeaderValue? attemptedAuthentication = isRegistryOrigin ? Volatile.Read(ref _authentication) : null;
+        if (attemptedAuthentication is not null)
         {
-            request.Headers.Authorization = header;
+            request.Headers.Authorization = attemptedAuthentication;
         }
 
         int retryCount = 0;
         List<Exception>? requestExceptions = null;
+        AuthenticationHeaderValue? authenticationToCache = null;
 
         while (retryCount < MaxRequestRetries)
         {
             try
             {
+                // Redirects mutate the request URI and clear Authorization, including for same-origin redirects.
+                // Restore only the existing credential, and only while retrying the registry itself.
+                if (retryCount > 0 && IsRegistryOrigin(request.RequestUri)
+                    && (authenticationToCache ?? attemptedAuthentication) is { } retryAuthentication)
+                {
+                    request.Headers.Authorization = retryAuthentication;
+                }
+
                 var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 ValidateAuthenticationOrigin(response, request.RequestUri);
-                if (response is { StatusCode: HttpStatusCode.OK })
+                if (authenticationToCache is not null && response.StatusCode != HttpStatusCode.Unauthorized)
+                {
+                    Interlocked.Exchange(ref _authentication, authenticationToCache);
+                }
+
+                if (response.StatusCode != HttpStatusCode.Unauthorized
+                    || !isRegistryOrigin
+                    || authenticationToCache is not null)
                 {
                     return response;
                 }
-                else if (response is { StatusCode: HttpStatusCode.Unauthorized } && TryParseAuthenticationInfo(response, out string? scheme, out AuthInfo? authInfo))
+
+                string? scheme;
+                AuthInfo? authInfo;
+                bool challengeParsed;
+                try
+                {
+                    challengeParsed = TryParseAuthenticationInfo(response, out scheme, out authInfo);
+                }
+                catch
+                {
+                    response.Dispose();
+                    throw;
+                }
+
+                if (!challengeParsed)
+                {
+                    return response;
+                }
+
+                using (response)
                 {
                     // Load the reply so the HTTP connection becomes available to send the authentication request.
                     // Ideally we'd call LoadIntoBufferAsync, but it has no overload that accepts a CancellationToken so we call ReadAsByteArrayAsync instead.
                     _ = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+                }
 
-                    if (await GetAuthenticationAsync(_registryName, scheme!, authInfo, cancellationToken).ConfigureAwait(false) is (AuthenticationHeaderValue authHeader, DateTimeOffset expirationTime))
-                    {
-                        _authenticationHeaders[_registryName] = authHeader;
-                        request.Headers.Authorization = authHeader;
-                        HttpResponseMessage authenticatedResponse = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                        ValidateAuthenticationOrigin(authenticatedResponse, request.RequestUri);
-                        return authenticatedResponse;
-                    }
+                if (attemptedAuthentication is not null)
+                {
+                    Interlocked.CompareExchange(ref _authentication, null, attemptedAuthentication);
+                }
 
+                if (await GetAuthenticationAsync(_registryName, scheme!, authInfo, cancellationToken).ConfigureAwait(false) is not (AuthenticationHeaderValue authHeader, _))
+                {
                     throw new UnableToAccessRepositoryException(_registryName);
                 }
-                else
-                {
-                    return response;
-                }
+
+                authenticationToCache = authHeader;
+                request.Headers.Authorization = authHeader;
+                continue;
             }
             catch (HttpRequestException e) when (e.InnerException is IOException ioe && ioe.InnerException is SocketException se)
             {
@@ -560,7 +597,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                 retryCount += 1;
                 _logger.LogInformation("Encountered a HttpRequestException {error} with message \"{message}\". Pausing before retry.", e.HttpRequestError, se.Message);
                 _logger.LogTrace("Exception details: {ex}", se);
-                await Task.Delay(TimeSpan.FromSeconds(1.0 * Math.Pow(2, retryCount)), cancellationToken).ConfigureAwait(false);
+                await _delay(TimeSpan.FromSeconds(1.0 * Math.Pow(2, retryCount)), cancellationToken).ConfigureAwait(false);
 
                 // retry
                 continue;

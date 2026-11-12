@@ -4,7 +4,6 @@
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Security.AntiSSRF;
 using Moq;
 
@@ -161,14 +160,14 @@ public class AuthRealmHandlerFactoryTests
     }
 
     /// <summary>
-    /// Verifies that the policy applies to each connection, not only the initial realm: a redirect
-    /// from an allowed realm to a blocked address is refused before connecting.
+    /// Verifies that the production realm transport returns redirects without opening a connection
+    /// to the untrusted target, even when the initial realm is explicitly allowed.
     /// </summary>
     [TestMethod]
     [DataRow("http://169.254.169.254/latest/meta-data/")]
     [DataRow("http://[fe80::1]/token")]
     [DataRow("http://10.0.0.7/token")]
-    public async Task Create_BlocksRedirectToDisallowedAddress(string redirectTarget)
+    public async Task Create_DoesNotFollowRedirect(string redirectTarget)
     {
         using TcpListener listener = new(IPAddress.Loopback, 0);
         listener.Start();
@@ -181,9 +180,15 @@ public class AuthRealmHandlerFactoryTests
             TestContext.CancellationToken);
         using var client = new HttpMessageInvoker(factory.Create(realmUri));
 
-        await Assert.ThrowsExactlyAsync<InvalidAuthResponseException>(
-            () => client.SendAsync(new HttpRequestMessage(HttpMethod.Get, realmUri), TestContext.CancellationToken));
+        // Send one authentication request through the real AntiSSRF-protected handler.
+        using HttpResponseMessage response = await client.SendAsync(
+            new HttpRequestMessage(HttpMethod.Get, realmUri),
+            TestContext.CancellationToken);
         await serve;
+
+        // The redirect belongs to the authentication caller; the transport must not follow it.
+        Assert.AreEqual(HttpStatusCode.TemporaryRedirect, response.StatusCode);
+        Assert.AreEqual(redirectTarget, response.Headers.Location?.AbsoluteUri);
     }
 
     /// <summary>
@@ -243,67 +248,6 @@ public class AuthRealmHandlerFactoryTests
         }
     }
 
-    /// <summary>
-    /// Verifies that https token requests are never redirected to http, which would send the request
-    /// and any credentials in its body in clear text; the redirect response is returned instead.
-    /// </summary>
-    [TestMethod]
-    [DataRow(HttpStatusCode.TemporaryRedirect, "http://evil.test/token")]
-    [DataRow(HttpStatusCode.PermanentRedirect, "http://auth.test/token")]
-    [DataRow(HttpStatusCode.Found, "http://evil.test/token")]
-    public async Task RedirectHandler_DoesNotFollowHttpsToHttpRedirect(HttpStatusCode statusCode, string location)
-    {
-        var requests = new List<RecordedRequest>();
-        using var client = CreateRedirectClient(requests, _ => Redirect(statusCode, location));
-
-        using HttpResponseMessage response = await client.SendAsync(TokenPost("https://auth.test/token"), TestContext.CancellationToken);
-
-        Assert.AreEqual(statusCode, response.StatusCode);
-        Assert.HasCount(1, requests);
-    }
-
-    /// <summary>
-    /// Verifies that other redirects are followed like <see cref="SocketsHttpHandler"/> follows them:
-    /// relative locations are resolved, authorization is dropped, 307/308 keep the method and body,
-    /// and 301/302/303 change a POST to a GET without a body.
-    /// </summary>
-    [TestMethod]
-    [DataRow("https://auth.test/token", HttpStatusCode.TemporaryRedirect, "https://other.test/token", "https://other.test/token", "POST", true)]
-    [DataRow("https://auth.test/token", HttpStatusCode.PermanentRedirect, "/v2/token", "https://auth.test/v2/token", "POST", true)]
-    [DataRow("https://auth.test/token", HttpStatusCode.Found, "https://other.test/token", "https://other.test/token", "GET", false)]
-    [DataRow("https://auth.test/token", HttpStatusCode.MovedPermanently, "https://other.test/token", "https://other.test/token", "GET", false)]
-    [DataRow("https://auth.test/token", HttpStatusCode.SeeOther, "https://other.test/token", "https://other.test/token", "GET", false)]
-    [DataRow("http://auth.test/token", HttpStatusCode.TemporaryRedirect, "http://other.test/token", "http://other.test/token", "POST", true)]
-    [DataRow("http://auth.test/token", HttpStatusCode.TemporaryRedirect, "https://auth.test/token", "https://auth.test/token", "POST", true)]
-    public async Task RedirectHandler_FollowsRedirect(
-        string realm, HttpStatusCode statusCode, string location, string expectedUri, string expectedMethod, bool expectBody)
-    {
-        var requests = new List<RecordedRequest>();
-        using var client = CreateRedirectClient(requests, count => count == 1 ? Redirect(statusCode, location) : new HttpResponseMessage(HttpStatusCode.OK));
-
-        using HttpResponseMessage response = await client.SendAsync(TokenPost(realm), TestContext.CancellationToken);
-
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        Assert.HasCount(2, requests);
-        Assert.AreEqual("Basic", requests[0].AuthorizationScheme);
-        Assert.AreEqual(expectedUri, requests[1].Uri.AbsoluteUri);
-        Assert.AreEqual(expectedMethod, requests[1].Method);
-        Assert.IsNull(requests[1].AuthorizationScheme);
-        Assert.AreEqual(expectBody ? "grant_type=password" : null, requests[1].Content);
-    }
-
-    [TestMethod]
-    public async Task RedirectHandler_StopsAfterMaximumRedirects()
-    {
-        var requests = new List<RecordedRequest>();
-        using var client = CreateRedirectClient(requests, count => Redirect(HttpStatusCode.Found, $"https://auth.test/token{count}"));
-
-        using HttpResponseMessage response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://auth.test/token"), TestContext.CancellationToken);
-
-        Assert.AreEqual(HttpStatusCode.Found, response.StatusCode);
-        Assert.HasCount(51, requests);
-    }
-
     [TestMethod]
     [DataRow(HttpRequestError.ResponseEnded)]
     [DataRow(HttpRequestError.InvalidResponse)]
@@ -324,26 +268,6 @@ public class AuthRealmHandlerFactoryTests
         Assert.AreEqual(error, actual.HttpRequestError);
         Assert.AreSame(expected, actual.InnerException);
         Assert.AreEqual(expected.Message, actual.Message);
-    }
-
-    private static HttpMessageInvoker CreateRedirectClient(List<RecordedRequest> requests, Func<int, HttpResponseMessage> respond) =>
-        new(new AuthRealmHandlerFactory.RedirectHandler(new RecordingHandler(requests, respond), NullLogger.Instance));
-
-    private static HttpRequestMessage TokenPost(string realm)
-    {
-        var request = new HttpRequestMessage(HttpMethod.Post, realm)
-        {
-            Content = new FormUrlEncodedContent(new Dictionary<string, string> { ["grant_type"] = "password" }),
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", "dXNlcjpwYXNz");
-        return request;
-    }
-
-    private static HttpResponseMessage Redirect(HttpStatusCode statusCode, string location)
-    {
-        var response = new HttpResponseMessage(statusCode);
-        response.Headers.Location = new Uri(location, UriKind.RelativeOrAbsolute);
-        return response;
     }
 
     private sealed record RecordedRequest(Uri Uri, string Method, string? AuthorizationScheme, string? Content);
@@ -369,7 +293,6 @@ public class AuthRealmHandlerFactoryTests
             "registry.test",
             new Uri("https://registry.test"),
             isInsecureRegistry,
-            NullLogger.Instance,
             environment.Object);
     }
 
