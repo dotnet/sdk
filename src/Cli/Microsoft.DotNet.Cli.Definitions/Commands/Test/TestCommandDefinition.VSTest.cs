@@ -15,7 +15,7 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CommandDefinitionStrings.CmdSettingsDescription,
             HelpName = CommandDefinitionStrings.CmdSettingsFile
-        }.ForwardAsSingle(o => $"-property:VSTestSetting={MSBuildPropertyParser.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        }.ForwardAsPathProperty("VSTestSetting", surroundWithDoubleQuotes: true);
 
         public readonly Option<bool> ListTestsOption = new Option<bool>("--list-tests", "-t")
         {
@@ -53,7 +53,8 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CommandDefinitionStrings.CmdOutputDescription,
             HelpName = CommandDefinitionStrings.TestCmdOutputDir
-        };
+        }
+        .ForwardAsOutputPath("OutputPath", surroundWithDoubleQuotes: true);
 
         public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
 
@@ -62,7 +63,7 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CmdPathTologFileDescription,
             HelpName = CommandDefinitionStrings.CmdPathToLogFile
         }
-        .ForwardAsSingle(o => $"-property:VSTestDiag={MSBuildPropertyParser.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        .ForwardAsPathProperty("VSTestDiag", surroundWithDoubleQuotes: true);
 
         public readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
         {
@@ -80,7 +81,7 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CommandDefinitionStrings.CmdResultsDirectoryDescription,
             HelpName = CommandDefinitionStrings.CmdPathToResultsDirectory
-        }.ForwardAsSingle(o => $"-property:VSTestResultsDirectory={MSBuildPropertyParser.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        }.ForwardAsPathProperty("VSTestResultsDirectory", surroundWithDoubleQuotes: true);
 
         public readonly Option<IEnumerable<string>> CollectOption = new Option<IEnumerable<string>>("--collect")
         {

@@ -32,7 +32,7 @@ public class MSBuildOptionExtensionsTests : SdkTest
         string basePath = TestPathUtilities.FormatAbsolutePath("base");
         CommandDirectoryContext.PerformActionWithBasePath(basePath, () =>
         {
-            var outputOption = new Option<string>("--output").ForwardAsOutputPath("OutputPath");
+            var outputOption = new Option<string>("--output").ForwardAsLiteralOutputPath("OutputPath");
             var command = new Command("build") { outputOption };
             command.Parse(["--output", directoryName]).OptionValuesToBeForwarded()
                 .Should().BeEquivalentTo([
@@ -45,7 +45,7 @@ public class MSBuildOptionExtensionsTests : SdkTest
     [TestMethod]
     public void AbsentOutputPathDoesNotForwardProperties()
     {
-        var outputOption = new Option<string>("--output").ForwardAsOutputPath("OutputPath");
+        var outputOption = new Option<string>("--output").ForwardAsLiteralOutputPath("OutputPath");
         var command = new Command("build") { outputOption };
         command.Parse([]).OptionValuesToBeForwarded().Should().BeEmpty();
     }
@@ -58,13 +58,34 @@ public class MSBuildOptionExtensionsTests : SdkTest
         string basePath = TestPathUtilities.FormatAbsolutePath("base");
         CommandDirectoryContext.PerformActionWithBasePath(basePath, () =>
         {
-            var outputOption = new Option<string>("--output").ForwardAsOutputPath("OutputPath", surroundWithDoubleQuotes: true);
+            var outputOption = new Option<string>("--output").ForwardAsLiteralOutputPath("OutputPath", surroundWithDoubleQuotes: true);
             var command = new Command("test") { outputOption };
             string directoryName = "out;put" + (trailingSeparator ? Path.DirectorySeparatorChar : "");
             string expectedPath = Path.Combine(basePath, "out%3bput") + Path.DirectorySeparatorChar;
 
             command.Parse(["--output", directoryName]).OptionValuesToBeForwarded()
                 .Should().Contain($"--property:OutputPath={MSBuildPropertyParser.SurroundWithDoubleQuotes(expectedPath)}");
+        });
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void PathPropertyEscapesLiteralValueBeforeQuoting(bool surroundWithDoubleQuotes)
+    {
+        string basePath = TestPathUtilities.FormatAbsolutePath("base");
+        CommandDirectoryContext.PerformActionWithBasePath(basePath, () =>
+        {
+            var pathOption = new Option<string>("--settings").ForwardAsLiteralPathProperty("VSTestSetting", surroundWithDoubleQuotes);
+            var command = new Command("test") { pathOption };
+            string expectedValue = Path.Combine(basePath, "run%3bsettings%2520%24%28x%29");
+            if (surroundWithDoubleQuotes)
+            {
+                expectedValue = MSBuildPropertyParser.SurroundWithDoubleQuotes(expectedValue);
+            }
+
+            command.Parse(["--settings", "run;settings%20$(x)"]).OptionValuesToBeForwarded()
+                .Should().BeEquivalentTo([$"--property:VSTestSetting={expectedValue}"]);
         });
     }
 

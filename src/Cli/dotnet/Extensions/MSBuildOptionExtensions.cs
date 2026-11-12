@@ -2,39 +2,26 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli;
 
+/// <summary>
+/// Replaces the definitions' default path forwarding with forwarding that escapes CLI-owned literal paths
+/// using MSBuild's API, so characters such as <c>;</c>, <c>%</c>, and <c>$</c> are not reinterpreted by MSBuild.
+/// </summary>
 internal static class MSBuildOptionExtensions
 {
-    public static Option<string> ForwardAsOutputPath(this Option<string> option, string outputPropertyName, bool surroundWithDoubleQuotes = false)
+    public static Option<string> ForwardAsLiteralOutputPath(this Option<string> option, string outputPropertyName, bool surroundWithDoubleQuotes = false)
+        => option.ForwardAsOutputPath(outputPropertyName, surroundWithDoubleQuotes, MSBuildPropertyEscaping.Escape);
+
+    public static Option<string> ForwardAsLiteralPathProperty(this Option<string> option, string propertyName, bool surroundWithDoubleQuotes = false)
+        => option.ForwardAsPathProperty(propertyName, surroundWithDoubleQuotes, MSBuildPropertyEscaping.Escape);
+
+    public static void ForwardPathsAsLiterals(this ImplicitRestoreOptions options)
     {
-        return option.SetForwardingFunction((string? outputPath) =>
-        {
-            if (outputPath is null)
-            {
-                return [];
-            }
-
-            string fullPath = CommandDirectoryContext.GetFullPath(outputPath);
-            if (!Path.EndsInDirectorySeparator(fullPath))
-            {
-                fullPath += Path.DirectorySeparatorChar;
-            }
-
-            // Escape the literal path before adding any MSBuild command-line quoting.
-            string propertyValue = MSBuildPropertyEscaping.Escape(fullPath);
-            if (surroundWithDoubleQuotes)
-            {
-                propertyValue = MSBuildPropertyParser.SurroundWithDoubleQuotes(propertyValue);
-            }
-
-            return [
-                $"--property:{outputPropertyName}={propertyValue}",
-                "--property:_CommandLineDefinedOutputPath=true"
-            ];
-        });
+        options.PackagesOption.ForwardAsLiteralPathProperty("RestorePackagesPath");
+        options.ConfigFileOption.ForwardAsLiteralPathProperty("RestoreConfigFile");
     }
 }
