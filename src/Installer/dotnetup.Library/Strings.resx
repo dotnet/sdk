@@ -388,6 +388,10 @@
   <data name="GlobalJsonInvalidSdkVersion" xml:space="preserve">
     <value>Invalid SDK version: '{0}'.</value>
   </data>
+  <data name="GlobalJsonDuplicateSdkVersion" xml:space="preserve">
+    <value>Cannot update global.json because it contains more than one sdk.version property.</value>
+    <comment>{Locked="global.json"} {Locked="sdk.version"}</comment>
+  </data>
   <data name="GlobalJsonInvalidRollForward" xml:space="preserve">
     <value>Invalid rollForward policy: '{0}'.</value>
     <comment>{Locked="rollForward"}</comment>

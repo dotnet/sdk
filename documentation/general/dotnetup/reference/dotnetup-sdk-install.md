@@ -35,6 +35,8 @@ allowed, but trailing commas and UTF-16/UTF-32 encodings are not, matching the
 `dotnet` host's parsing rules for those features. Dotnetup reports malformed files
 as errors rather than ignoring their SDK settings. Updating `sdk.version` preserves
 the file's formatting, comments, and presence or absence of a UTF-8 BOM.
+If the file contains multiple `sdk.version` properties, dotnetup refuses to
+rewrite it and reports an error without changing the file.
 
 ## Options
 

@@ -9,6 +9,7 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
+using Strings = Microsoft.DotNet.Tools.Bootstrapper.Strings;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -385,6 +386,27 @@ public class GlobalJsonUpdateTests : IDisposable
         update.Should().Throw<JsonException>();
         unconditionalUpdate.Should().Throw<JsonException>();
         File.ReadAllText(path).Should().Be(contents);
+    }
+
+    [TestMethod]
+    [DataRow("""{"sdk":{"version":"10.0.100","version":"10.0.103"}}""")]
+    [DataRow("""{"sdk":{"version":"10.0.103","version":"10.0.103"}}""")]
+    [DataRow("""{"sdk":{"version":"10.0.100","\u0076ersion":"10.0.103"}}""")]
+    [DataRow("""{"sdk":{"version":"10.0.100"},"sdk":{"version":"10.0.103"}}""")]
+    public void GlobalJsonUpdates_RejectDuplicateSdkVersionsWithoutChangingFile(string contents)
+    {
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, contents);
+        var originalBytes = File.ReadAllBytes(path);
+
+        var update = () => GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
+        var updateIfNewer = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
+        var replace = () => GlobalJsonHelper.ReplaceGlobalJsonSdkVersion(contents, "10.0.105");
+
+        update.Should().Throw<JsonException>().WithMessage(Strings.GlobalJsonDuplicateSdkVersion);
+        updateIfNewer.Should().Throw<JsonException>().WithMessage(Strings.GlobalJsonDuplicateSdkVersion);
+        replace.Should().Throw<JsonException>().WithMessage(Strings.GlobalJsonDuplicateSdkVersion);
+        File.ReadAllBytes(path).Should().Equal(originalBytes);
     }
 
     [TestMethod]

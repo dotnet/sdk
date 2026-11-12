@@ -386,6 +386,11 @@ Or open a new terminal.</target>
         <target state="new">Warning: Skipping garbage collection for {0} because a repository requirement could not be read and has no saved requirement.</target>
         <note>0: dotnet installation root.</note>
       </trans-unit>
+      <trans-unit id="GlobalJsonDuplicateSdkVersion">
+        <source>Cannot update global.json because it contains more than one sdk.version property.</source>
+        <target state="new">Cannot update global.json because it contains more than one sdk.version property.</target>
+        <note>{Locked="global.json"} {Locked="sdk.version"}</note>
+      </trans-unit>
       <trans-unit id="GlobalJsonInvalidContents">
         <source>Expected a JSON object.</source>
         <target state="new">Expected a JSON object.</target>

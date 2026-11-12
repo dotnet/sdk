@@ -73,7 +73,7 @@ public static class GlobalJsonHelper
     /// <paramref name="sdkVersion"/> is null or the file does not exist.
     /// The file must be UTF-8 JSON with optional comments and no trailing commas.
     /// </summary>
-    /// <exception cref="JsonException">The file cannot be parsed; it is left unchanged.</exception>
+    /// <exception cref="JsonException">The file cannot be parsed or contains duplicate SDK versions; it is left unchanged.</exception>
     public static void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null)
     {
         if (sdkVersion is null)
@@ -127,7 +127,7 @@ public static class GlobalJsonHelper
     /// recorded in the file (or when the current version cannot be parsed).
     /// </summary>
     /// <returns><see langword="true"/> if the file was updated; otherwise <see langword="false"/>.</returns>
-    /// <exception cref="JsonException">The file contains malformed JSON; it is left unchanged.</exception>
+    /// <exception cref="JsonException">The file contains malformed JSON or duplicate SDK versions; it is left unchanged.</exception>
     public static bool UpdateGlobalJsonIfNewer(string globalJsonPath, ReleaseVersion latestVersion)
     {
         var (contents, fileText, encoding) = ReadGlobalJsonFile(globalJsonPath);
@@ -155,7 +155,8 @@ public static class GlobalJsonHelper
 
         int depth = 0;
         bool inSdkObject = false;
-        bool foundVersionProperty = false;
+        bool expectingVersionValue = false;
+        bool seenVersionProperty = false;
         bool nextValueIsSdk = false;
         string? updatedText = null;
 
@@ -165,33 +166,41 @@ public static class GlobalJsonHelper
             {
                 case JsonTokenType.StartObject:
                     if (nextValueIsSdk) { inSdkObject = true; nextValueIsSdk = false; }
-                    foundVersionProperty = false;
+                    expectingVersionValue = false;
                     depth++;
                     break;
 
                 case JsonTokenType.EndObject:
                     if (inSdkObject && depth == 2) { inSdkObject = false; }
-                    foundVersionProperty = false;
+                    expectingVersionValue = false;
                     depth--;
                     break;
 
                 case JsonTokenType.PropertyName:
                     if (depth == 1 && reader.ValueTextEquals("sdk"u8)) { nextValueIsSdk = true; }
-                    else if (inSdkObject && depth == 2 && reader.ValueTextEquals("version"u8)) { foundVersionProperty = true; }
+                    else if (inSdkObject && depth == 2 && reader.ValueTextEquals("version"u8))
+                    {
+                        if (seenVersionProperty)
+                        {
+                            throw new JsonException(Strings.GlobalJsonDuplicateSdkVersion);
+                        }
+                        seenVersionProperty = true;
+                        expectingVersionValue = true;
+                    }
                     break;
 
                 case JsonTokenType.String:
                     nextValueIsSdk = false;
-                    if (foundVersionProperty)
+                    if (expectingVersionValue)
                     {
                         updatedText ??= SpliceUtf8Token(bytes, (int)reader.TokenStartIndex, (int)reader.BytesConsumed, newVersion);
-                        foundVersionProperty = false;
+                        expectingVersionValue = false;
                     }
                     break;
 
                 default:
                     nextValueIsSdk = false;
-                    foundVersionProperty = false;
+                    expectingVersionValue = false;
                     break;
             }
         }
