@@ -96,7 +96,7 @@ public class CompilationHandlerTests : DotNetWatchTestBase
         var handler = new RunningProjectsManager(new ProcessRunner(processCleanupTimeout: TimeSpan.Zero), NullLogger.Instance);
         using var workspace = new ManagedCodeWorkspace(NullLogger.Instance, handler);
 
-        var solution = await workspace.UpdateProjectGraphAsync(projectGraph.Graph, CancellationToken.None);
+        var solution = await workspace.UpdateProjectGraphAsync(evaluation, CancellationToken.None);
 
         // all projects are present
         AssertEx.SequenceEqual(["Host", "Lib2", "Lib", "A", "B"], solution.Projects.Select(p => p.Name));
