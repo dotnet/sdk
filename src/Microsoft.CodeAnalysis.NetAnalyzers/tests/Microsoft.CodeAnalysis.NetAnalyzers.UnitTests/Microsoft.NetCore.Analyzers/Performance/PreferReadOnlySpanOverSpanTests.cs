@@ -897,6 +897,59 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task SpanParameter_ValueTypeMemberWrittenViaIndexer_NoDiagnostic()
+        {
+            await VerifyAnalyzerAsync("""
+                using System;
+                using System.Numerics;
+
+                class C
+                {
+                    private void M(Span<Vector2> data)
+                    {
+                        data[0].X = 1;
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task SpanParameter_ReferenceTypeMemberWrittenViaIndexer_ProducesDiagnostic()
+        {
+            await VerifyFixerAsync("""
+                using System;
+
+                class Item
+                {
+                    public int Value;
+                }
+
+                class C
+                {
+                    private void M(Span<Item> [|data|])
+                    {
+                        data[0].Value = 1;
+                    }
+                }
+                """, """
+                using System;
+
+                class Item
+                {
+                    public int Value;
+                }
+
+                class C
+                {
+                    private void M(ReadOnlySpan<Item> data)
+                    {
+                        data[0].Value = 1;
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
         public async Task SpanParameter_WrittenViaTupleAssignment_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""

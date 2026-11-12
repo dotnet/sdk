@@ -322,6 +322,22 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return false;
             }
 
+            if (propRef.Type?.IsValueType == true)
+            {
+                IOperation memberAccess = propRef;
+                while (memberAccess.Parent is IMemberReferenceOperation memberReference &&
+                    memberReference.Instance == memberAccess)
+                {
+                    memberAccess = memberReference;
+                }
+
+                if (memberAccess != propRef &&
+                    memberAccess.GetValueUsageInfo(containingMethod).IsWrittenTo())
+                {
+                    return false;
+                }
+            }
+
             // GetValueUsageInfo covers writable ref locals only through an initializer.
             if (propRef.Parent is IVariableDeclaratorOperation { Symbol.RefKind: RefKind.Ref })
             {
