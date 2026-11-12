@@ -4028,6 +4028,26 @@
             ]
           }
         },
+        "CA2030": {
+          "id": "CA2030",
+          "shortDescription": "Do not use ReferenceEquals with unrelated reference types",
+          "fullDescription": "Two references can only point to the same object when one type derives from or implements the other. When neither type has a reference conversion to the other, 'ReferenceEquals' always returns 'false'.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2030",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseReferenceEqualsWithUnrelatedTypesAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2100": {
           "id": "CA2100",
           "shortDescription": "Review SQL queries for security vulnerabilities",
