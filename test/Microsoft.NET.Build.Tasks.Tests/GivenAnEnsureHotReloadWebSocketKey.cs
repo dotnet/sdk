@@ -12,17 +12,24 @@ namespace Microsoft.NET.Build.Tasks.UnitTests;
 public sealed class GivenAnEnsureHotReloadWebSocketKey : SdkTest
 {
     [TestMethod]
-    [DataRow(false, false)]
-    [DataRow(true, false)]
-    [DataRow(false, true)]
-    public void KeyFilesAreIsolatedByProjectAndReused(bool absolutePaths, bool bareFileNames)
+    [DataRow(false, false, false)]
+    [DataRow(true, false, false)]
+    [DataRow(false, true, false)]
+    [DataRow(false, true, true, DisplayName = "Non-ASCII whitespace file names")]
+    [DataRow(false, false, true, DisplayName = "Non-ASCII whitespace parent directory")]
+    public void KeyFilesAreIsolatedByProjectAndReused(bool absolutePaths, bool bareFileNames, bool nonAsciiWhitespace)
     {
         string[] projectDirectories =
         [
-            TestAssetsManager.CreateTestDirectory(identifier: $"{absolutePaths}_{bareFileNames}_first").Path,
-            TestAssetsManager.CreateTestDirectory(identifier: $"{absolutePaths}_{bareFileNames}_second").Path,
+            TestAssetsManager.CreateTestDirectory(identifier: $"{absolutePaths}_{bareFileNames}_{nonAsciiWhitespace}_first").Path,
+            TestAssetsManager.CreateTestDirectory(identifier: $"{absolutePaths}_{bareFileNames}_{nonAsciiWhitespace}_second").Path,
         ];
-        string decoyDirectory = TestAssetsManager.CreateTestDirectory(identifier: $"{absolutePaths}_{bareFileNames}_decoy").Path;
+        string decoyDirectory = TestAssetsManager.CreateTestDirectory(identifier: $"{absolutePaths}_{bareFileNames}_{nonAsciiWhitespace}_decoy").Path;
+        string keyDirectoryName = nonAsciiWhitespace ? "\u00A0" : "keys";
+        string publicFileName = nonAsciiWhitespace && bareFileNames ? "\u00A0" : "public.json";
+        string privateFileName = nonAsciiWhitespace && bareFileNames ? "\u00A0\u00A0" : "private.json";
+        string relativeDirectory = bareFileNames ? "" :
+            nonAsciiWhitespace ? keyDirectoryName : Path.Combine("obj", "..", keyDirectoryName);
         string originalDirectory = Directory.GetCurrentDirectory();
 
         try
@@ -33,11 +40,11 @@ public sealed class GivenAnEnsureHotReloadWebSocketKey : SdkTest
                 BuildEngine = new MockBuildEngine(),
                 TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(directory),
                 PublicKeyPath = absolutePaths
-                    ? Path.Combine(directory, "keys", "public.json")
-                    : bareFileNames ? "public.json" : Path.Combine("obj", "..", "keys", "public.json"),
+                    ? Path.Combine(directory, keyDirectoryName, publicFileName)
+                    : Path.Combine(relativeDirectory, publicFileName),
                 PrivateKeyPath = absolutePaths
-                    ? Path.Combine(directory, "keys", "private.json")
-                    : bareFileNames ? "private.json" : Path.Combine("obj", "..", "keys", "private.json"),
+                    ? Path.Combine(directory, keyDirectoryName, privateFileName)
+                    : Path.Combine(relativeDirectory, privateFileName),
             }).ToArray();
 
             Parallel.ForEach(tasks, task => Assert.IsTrue(task.Execute()));
@@ -45,9 +52,9 @@ public sealed class GivenAnEnsureHotReloadWebSocketKey : SdkTest
 
             for (int i = 0; i < tasks.Length; i++)
             {
-                string keyDirectory = bareFileNames ? projectDirectories[i] : Path.Combine(projectDirectories[i], "keys");
-                string publicFile = Path.Combine(keyDirectory, "public.json");
-                string privateFile = Path.Combine(keyDirectory, "private.json");
+                string keyDirectory = bareFileNames ? projectDirectories[i] : Path.Combine(projectDirectories[i], keyDirectoryName);
+                string publicFile = Path.Combine(keyDirectory, publicFileName);
+                string privateFile = Path.Combine(keyDirectory, privateFileName);
                 using var publicDocument = JsonDocument.Parse(File.ReadAllBytes(publicFile));
                 using var privateDocument = JsonDocument.Parse(File.ReadAllBytes(privateFile));
                 Assert.AreEqual(tasks[i].PublicKey, publicDocument.RootElement.GetProperty("publicKey").GetString());

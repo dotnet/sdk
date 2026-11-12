@@ -16,12 +16,17 @@ public sealed class GenerateJSModuleManifestMultiThreadingTest : SdkTest
     [TestMethod]
     // Other tests can resolve relative paths without acquiring a CurrentDirectory resource lock.
     [DoNotParallelize]
-    public void RelativeOutputsAreIsolatedByProjectAndUnchangedManifestsAreNotRewritten()
+    [DataRow(false)]
+    [DataRow(true, DisplayName = "Non-ASCII whitespace parent directory")]
+    public void RelativeOutputsAreIsolatedByProjectAndUnchangedManifestsAreNotRewritten(bool nonAsciiWhitespace)
     {
-        string firstDirectory = TestAssetsManager.CreateTestDirectory(identifier: "first").Path;
-        string secondDirectory = TestAssetsManager.CreateTestDirectory(identifier: "second").Path;
-        string decoyDirectory = TestAssetsManager.CreateTestDirectory(identifier: "decoy").Path;
-        string outputFile = Path.Combine("obj", "..", "generated", "modules.json");
+        string firstDirectory = TestAssetsManager.CreateTestDirectory(identifier: $"{nonAsciiWhitespace}_first").Path;
+        string secondDirectory = TestAssetsManager.CreateTestDirectory(identifier: $"{nonAsciiWhitespace}_second").Path;
+        string decoyDirectory = TestAssetsManager.CreateTestDirectory(identifier: $"{nonAsciiWhitespace}_decoy").Path;
+        string outputDirectory = nonAsciiWhitespace ? "\u00A0" : "generated";
+        string outputFile = nonAsciiWhitespace
+            ? Path.Combine(outputDirectory, "modules.json")
+            : Path.Combine("obj", "..", outputDirectory, "modules.json");
         string originalDirectory = Directory.GetCurrentDirectory();
         var firstEngine = new Mock<IBuildEngine>();
 
@@ -47,8 +52,8 @@ public sealed class GenerateJSModuleManifestMultiThreadingTest : SdkTest
                 () => Assert.IsTrue(first.Execute()),
                 () => Assert.IsTrue(second.Execute()));
 
-            string firstFile = Path.Combine(firstDirectory, "generated", "modules.json");
-            string secondFile = Path.Combine(secondDirectory, "generated", "modules.json");
+            string firstFile = Path.Combine(firstDirectory, outputDirectory, "modules.json");
+            string secondFile = Path.Combine(secondDirectory, outputDirectory, "modules.json");
             Assert.AreSequenceEqual(
                 new[] { "a.module.js", "z.module.js" },
                 JsonSerializer.Deserialize<string[]>(File.ReadAllBytes(firstFile)));
@@ -64,6 +69,13 @@ public sealed class GenerateJSModuleManifestMultiThreadingTest : SdkTest
 
             Assert.AreSequenceEqual(content, File.ReadAllBytes(firstFile));
             Assert.AreEqual(timestamp, File.GetLastWriteTimeUtc(firstFile));
+
+            first.JsModules = [new TaskItem("changed.module.js")];
+            Assert.IsTrue(first.Execute());
+
+            Assert.AreSequenceEqual(
+                new[] { "changed.module.js" },
+                JsonSerializer.Deserialize<string[]>(File.ReadAllBytes(firstFile)));
             Assert.AreEqual(outputFile, first.OutputFile);
             Assert.AreEqual(outputFile, second.OutputFile);
             Assert.IsEmpty(Directory.GetFileSystemEntries(decoyDirectory));
@@ -133,9 +145,11 @@ public sealed class GenerateJSModuleManifestMultiThreadingTest : SdkTest
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void FrameworkTaskUsesTheActualMSBuildRuntimeForPathValidation()
+    [DataRow(" ", false)]
+    [DataRow("\u00A0", true)]
+    public void FrameworkTaskUsesTheActualMSBuildRuntimeForPathValidation(string outputDirectory, bool validPath)
     {
-        string directory = TestAssetsManager.CreateTestDirectory().Path;
+        string directory = TestAssetsManager.CreateTestDirectory(identifier: validPath.ToString()).Path;
         var toolset = SdkTestContext.Current.ToolsetUnderTest;
         string taskAssembly = Path.Combine(toolset.SdksPath,
             "Microsoft.NET.Sdk.StaticWebAssets", "tasks", "net472", "Microsoft.NET.Sdk.StaticWebAssets.Tasks.dll");
@@ -147,16 +161,26 @@ public sealed class GenerateJSModuleManifestMultiThreadingTest : SdkTest
                     new XAttribute("AssemblyFile", taskAssembly)),
                 new XElement("Target", new XAttribute("Name", "Validate"),
                     new XElement("GenerateJSModuleManifest",
-                        new XAttribute("OutputFile", Path.Combine(" ", "modules.json")),
+                        new XAttribute("OutputFile", Path.Combine(outputDirectory, "modules.json")),
                         new XAttribute("JsModules", "")))))
             .Save(projectFile);
 
-        new DotnetCommand(Log, "exec", Path.Combine(toolset.SdkFolderUnderTest, "MSBuild.dll"),
+        var result = new DotnetCommand(Log, "exec", Path.Combine(toolset.SdkFolderUnderTest, "MSBuild.dll"),
             projectFile, "-t:Validate", "-mt", "-nr:false", BinLogArgument(["FrameworkTaskOnCoreRuntime"]))
             .WithWorkingDirectory(directory)
-            .Execute()
-            .Should().Fail()
-            .And.HaveStdOutContaining("System.ArgumentException")
-            .And.NotHaveStdOutContaining("System.IO.DirectoryNotFoundException");
+            .Execute();
+
+        if (validPath)
+        {
+            result.Should().Pass();
+            Assert.IsEmpty(JsonSerializer.Deserialize<string[]>(
+                File.ReadAllBytes(Path.Combine(directory, outputDirectory, "modules.json")))!);
+        }
+        else
+        {
+            result.Should().Fail()
+                .And.HaveStdOutContaining("System.ArgumentException")
+                .And.NotHaveStdOutContaining("System.IO.DirectoryNotFoundException");
+        }
     }
 }

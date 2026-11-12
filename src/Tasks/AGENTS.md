@@ -40,6 +40,9 @@ retains BCL argument validation, including Framework hosts' legacy-path switch, 
 letting accepted whitespace operands resolve against a shared process CWD.
 Choose the actual host runtime, not the task's target TFM, when applying that policy:
 a Framework task assembly can also execute in .NET MSBuild.
+On Windows .NET hosts, only ASCII spaces trigger empty-path rejection; valid
+Unicode-whitespace file names and parent directories (such as U+00A0) still need
+project-relative resolution.
 
 For expensive shared initialization, use
 [`TaskObjectCache`](Microsoft.NET.Build.Tasks/TaskObjectCache.cs), as

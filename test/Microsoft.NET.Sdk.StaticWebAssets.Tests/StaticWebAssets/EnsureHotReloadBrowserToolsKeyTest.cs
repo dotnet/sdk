@@ -318,18 +318,25 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         [TestMethod]
         // Other tests can resolve relative paths without acquiring a CurrentDirectory resource lock.
         [DoNotParallelize]
-        [DataRow(false)]
-        [DataRow(true)]
-        public void RelativeKeyPathsAreIsolatedByProjectAndRemainIncremental(bool bareFileNames)
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(true, true, DisplayName = "Non-ASCII whitespace file names")]
+        [DataRow(false, true, DisplayName = "Non-ASCII whitespace parent directory")]
+        public void RelativeKeyPathsAreIsolatedByProjectAndRemainIncremental(bool bareFileNames, bool nonAsciiWhitespace)
         {
             string[] projectDirectories =
             [
-                TestAssetsManager.CreateTestDirectory(identifier: $"{bareFileNames}_first").Path,
-                TestAssetsManager.CreateTestDirectory(identifier: $"{bareFileNames}_second").Path,
+                TestAssetsManager.CreateTestDirectory(identifier: $"{bareFileNames}_{nonAsciiWhitespace}_first").Path,
+                TestAssetsManager.CreateTestDirectory(identifier: $"{bareFileNames}_{nonAsciiWhitespace}_second").Path,
             ];
-            string decoyDirectory = TestAssetsManager.CreateTestDirectory(identifier: $"{bareFileNames}_decoy").Path;
-            string publicKeyPath = bareFileNames ? "public.json" : Path.Combine("obj", "..", "keys", "public.json");
-            string privateKeyPath = bareFileNames ? "private.json" : Path.Combine("obj", "..", "keys", "private.json");
+            string decoyDirectory = TestAssetsManager.CreateTestDirectory(identifier: $"{bareFileNames}_{nonAsciiWhitespace}_decoy").Path;
+            string keyDirectoryName = nonAsciiWhitespace ? "\u00A0" : "keys";
+            string publicFileName = nonAsciiWhitespace && bareFileNames ? "\u00A0" : "public.json";
+            string privateFileName = nonAsciiWhitespace && bareFileNames ? "\u00A0\u00A0" : "private.json";
+            string relativeDirectory = bareFileNames ? "" :
+                nonAsciiWhitespace ? keyDirectoryName : Path.Combine("obj", "..", keyDirectoryName);
+            string publicKeyPath = Path.Combine(relativeDirectory, publicFileName);
+            string privateKeyPath = Path.Combine(relativeDirectory, privateFileName);
             string originalDirectory = Directory.GetCurrentDirectory();
 
             try
@@ -349,9 +356,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 var timestamp = new DateTime(2001, 2, 3, 0, 0, 0, DateTimeKind.Utc);
                 for (int i = 0; i < tasks.Length; i++)
                 {
-                    string keyDirectory = bareFileNames ? projectDirectories[i] : Path.Combine(projectDirectories[i], "keys");
-                    string publicFile = Path.Combine(keyDirectory, "public.json");
-                    string privateFile = Path.Combine(keyDirectory, "private.json");
+                    string keyDirectory = bareFileNames ? projectDirectories[i] : Path.Combine(projectDirectories[i], keyDirectoryName);
+                    string publicFile = Path.Combine(keyDirectory, publicFileName);
+                    string privateFile = Path.Combine(keyDirectory, privateFileName);
                     byte[] publicContent = File.ReadAllBytes(publicFile);
                     byte[] privateContent = File.ReadAllBytes(privateFile);
                     File.SetLastWriteTimeUtc(publicFile, timestamp);
