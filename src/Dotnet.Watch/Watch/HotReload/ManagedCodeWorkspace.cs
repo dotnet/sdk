@@ -93,6 +93,8 @@ internal sealed class ManagedCodeWorkspace : IDisposable
 
     private static ImmutableDictionary<string, ImmutableArray<ProjectInstance>> CreateProjectInstanceMap(ProjectGraph graph)
         => graph.ProjectNodes
+            // Only design-time built instances have the compiler inputs needed by Roslyn.
+            .Where(static node => node.ProjectInstance.GetItems("CscCommandLineArgs").Any())
             .GroupBy(static node => node.ProjectInstance.FullPath)
             .ToImmutableDictionary(
                 keySelector: static group => group.Key,
