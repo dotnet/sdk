@@ -90,6 +90,15 @@ tools:
     allowed-repos:
       - "${{ github.repository }}"
     min-integrity: none
+# The agent can write the workspace, so the selector runs from a copy staged before the agent starts.
+steps:
+  - name: Stage trusted assignee selector
+    env:
+      ISSUE_TRIAGE_PRIVATE: ${{ runner.temp }}/issue-triage-private
+    run: |
+      mkdir -p "$ISSUE_TRIAGE_PRIVATE/.github/scripts"
+      cp "$GITHUB_WORKSPACE/CODEOWNERS" "$ISSUE_TRIAGE_PRIVATE/"
+      cp "$GITHUB_WORKSPACE/.github/scripts/issue-triage-assignee.js" "$GITHUB_WORKSPACE/.github/scripts/issue-triage-team-snapshot.json" "$ISSUE_TRIAGE_PRIVATE/.github/scripts/"
 mcp-scripts:
   # Read-only. Code, not the model, chooses the assignee so the choice is load-balanced and unbiased.
   select-assignee:
@@ -99,12 +108,19 @@ mcp-scripts:
         type: string
         required: true
         description: "The single Area-* label selected for the issue, such as Area-NuGet."
-    run: |
-      node "$GITHUB_WORKSPACE/.github/scripts/issue-triage-assignee.js"
+    script: |
+      const { join } = require("node:path");
+      try {
+        const { runSelectAssignee } = require(join(process.env.ISSUE_TRIAGE_PRIVATE, ".github", "scripts", "issue-triage-assignee.js"));
+        return await runSelectAssignee({ area, env: process.env });
+      } catch (error) {
+        return { error: error.message };
+      }
     env:
       GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       GITHUB_API_URL: "${{ github.api_url }}"
       GITHUB_REPOSITORY: "${{ github.repository }}"
+      ISSUE_TRIAGE_PRIVATE: "${{ runner.temp }}/issue-triage-private"
     timeout: 60
 safe-outputs:
   report-failure-as-issue: false

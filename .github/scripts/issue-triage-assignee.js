@@ -296,11 +296,3 @@ module.exports = {
     runSelectAssignee,
     selectAssignee,
 };
-
-if (require.main === module)
-{
-    // Always emit JSON so the agent can follow the documented failure path.
-    runSelectAssignee({area: process.env.INPUT_AREA})
-        .catch((error) => ({error: error.message}))
-        .then((result) => process.stdout.write(`${JSON.stringify(result)}\n`));
-}

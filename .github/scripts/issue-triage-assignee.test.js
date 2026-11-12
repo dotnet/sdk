@@ -1,5 +1,6 @@
 const assert = require("node:assert/strict");
-const {readFileSync} = require("node:fs");
+const {cpSync, mkdtempSync, readFileSync, rmSync} = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const {test} = require("node:test");
 
@@ -16,9 +17,19 @@ const {
 
 const repositoryRoot = path.join(__dirname, "..", "..");
 const codeowners = readFileSync(path.join(repositoryRoot, "CODEOWNERS"), "utf8");
+const workflow = readFileSync(path.join(repositoryRoot, ".github", "workflows", "issue-triage.md"), "utf8");
 const snapshot = require("./issue-triage-team-snapshot.json");
 const now = new Date("2026-11-11T12:00:00Z");
 const nugetTeam = snapshot["@dotnet/nuget-team"];
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+const stagedFiles = ["CODEOWNERS", ".github/scripts/issue-triage-assignee.js", ".github/scripts/issue-triage-team-snapshot.json"];
+
+function getYamlBlock(source, header, indent)
+{
+    const match = source.match(new RegExp(`${header}\\r?\\n(?<body>(?: {${indent}}[^\\r\\n]*\\r?\\n)+)`));
+    assert.ok(match, `Missing block: ${header}`);
+    return match.groups.body;
+}
 
 function createClient(pages = [[]])
 {
@@ -76,7 +87,6 @@ test("team owners expand through the snapshot without duplicate individuals", ()
 
 test("every snapshot and CODEOWNERS team can be mentioned by the triage comment", () =>
 {
-    const workflow = readFileSync(path.join(repositoryRoot, ".github", "workflows", "issue-triage.md"), "utf8");
     const allowed = new Set([...workflow.matchAll(/^ +- (dotnet\/[\w.-]+)\r?$/gm)].map((match) => `@${match[1]}`));
     const codeownersTeams = codeowners.match(/@dotnet\/[\w.-]+/g);
     for (const team of [...Object.keys(snapshot), ...codeownersTeams])
@@ -194,4 +204,48 @@ test("the entry point reads repository inputs from the checkout", async () =>
     assert.ok(snapshot["@dotnet/dotnetup"].includes(result.assignee));
     assert.deepEqual(result.teams, ["@dotnet/dotnetup"]);
     await assert.rejects(runSelectAssignee({area: "Area-dotnetup", env: {GITHUB_REPOSITORY: "../sdk", GH_TOKEN: "token"}, fetchImpl}), /owner\/name/);
+});
+
+test("the token-holding MCP script never loads code or data from the agent-writable workspace", () =>
+{
+    const stage = getYamlBlock(workflow, "  - name: Stage trusted assignee selector", 4);
+    for (const file of stagedFiles)
+    {
+        assert.ok(stage.includes(`$GITHUB_WORKSPACE/${file}`), `${file} must be staged before the agent starts`);
+    }
+
+    const tool = getYamlBlock(workflow, "  select-assignee:", 4);
+    assert.match(tool, /GH_TOKEN: "\$\{\{ secrets\.GITHUB_TOKEN \}\}"/);
+    assert.match(tool, /ISSUE_TRIAGE_PRIVATE: "\$\{\{ runner\.temp \}\}\/issue-triage-private"/);
+    assert.doesNotMatch(tool, /GITHUB_WORKSPACE|^ {4}run:/m, "A run: handler would resolve binaries from the agent-writable PATH.");
+
+    const compiled = readFileSync(path.join(repositoryRoot, ".github", "workflows", "issue-triage.lock.yml"), "utf8");
+    const checkout = compiled.indexOf("- name: Checkout repository (gh-aw default)");
+    const staging = compiled.indexOf("name: Stage trusted assignee selector");
+    const agent = compiled.indexOf("- name: Execute GitHub Copilot CLI");
+    assert.ok(checkout >= 0 && checkout < staging && staging < agent, "Staging must run after checkout and before the agent.");
+});
+
+test("the MCP script body runs the staged selector and reports failures as data", async () =>
+{
+    const staged = mkdtempSync(path.join(os.tmpdir(), "issue-triage-private-"));
+    try
+    {
+        for (const file of stagedFiles)
+        {
+            cpSync(path.join(repositoryRoot, file), path.join(staged, file));
+        }
+
+        const body = getYamlBlock(getYamlBlock(workflow, "  select-assignee:", 4), " {4}script: \\|", 6);
+        const execute = new AsyncFunction("area", "require", "process", body.split(/\r?\n/).map((line) => line.slice(6)).join("\n"));
+        const env = {ISSUE_TRIAGE_PRIVATE: staged, GITHUB_REPOSITORY: "dotnet/sdk", GH_TOKEN: "token", GITHUB_API_URL: "http://127.0.0.1:9"};
+        const result = await execute("Area-NuGet", require, {env});
+        assert.ok(nugetTeam.includes(result.assignee));
+        assert.ok(result.loadError);
+        assert.deepEqual(await execute("NuGet", require, {env}), {error: "area must be one Area-* label."});
+    }
+    finally
+    {
+        rmSync(staged, {recursive: true, force: true});
+    }
 });
