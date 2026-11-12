@@ -3,13 +3,15 @@
 
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
-using Newtonsoft.Json.Linq;
+using Microsoft.TemplateEngine.Cli.NuGet;
+using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     public partial class DotnetNewDetailsTest : BaseIntegrationTest
     {
         private const string _nuGetPackageId = "Uno.ProjectTemplates.Dotnet";
+        private const string _dotnetPublicFeed = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json";
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
         [Fact(Skip = "https://github.com/dotnet/templating/issues/6811")]
@@ -79,7 +81,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string packageName = "Microsoft.Azure.WebJobs.ItemTemplates";
             string latestVersion = await GetLatestVersion(packageName);
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName)
+            CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName, "--nuget-source", _dotnetPublicFeed)
             .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
@@ -152,7 +154,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string latestVersion = await GetLatestVersion(packageName);
 
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", packageName)
+            new DotnetNewCommand(_log, "install", packageName, "--nuget-source", _dotnetPublicFeed)
                 .WithoutBuiltInTemplates().WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -160,7 +162,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName)
+            CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName, "--nuget-source", _dotnetPublicFeed)
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
@@ -201,19 +203,15 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private async Task<string> GetLatestVersion(string packageName)
         {
-            using (HttpClient client = new HttpClient())
+            var metadata = await new NugetApiManager().GetPackageMetadataAsync(
+                packageName,
+                sourceFeed: new PackageSource(_dotnetPublicFeed));
+            if (metadata == null)
             {
-                string json = await client.GetStringAsync($"https://api.nuget.org/v3-flatcontainer/{packageName.ToLowerInvariant()}/index.json");
-                JObject obj = JObject.Parse(json);
-
-                var versions = obj["versions"]?.ToObject<List<string>>();
-                if (versions == null || versions.Count == 0)
-                {
-                    throw new Exception("No versions found.");
-                }
-
-                return versions.Last();
+                throw new Exception($"Package '{packageName}' not found.");
             }
+
+            return metadata.PackageVersion.ToNormalizedString();
         }
 
         private string ExtractVersion(string? stdOut)
