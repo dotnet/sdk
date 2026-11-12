@@ -96,9 +96,7 @@ The .NET SDK install may include the .NET Runtime.
 2. Explicit user actions (install commands) are tracked in the manifest
 3. Uninstall operations should not break other installed components
 
-What we will do is check `shared/{runtime-type}/{runtime-version}` and `host/fxr/{runtime-version}` in the hive location. We could also query the muxer itself (via [`HostFxrWrapper`](https://github.com/dotnet/sdk/blob/release/dnup/src/Installer/Microsoft.Dotnet.Installation/Internal/HostFxrWrapper.cs)) for a more concrete answer as to if the install exists on disk.
-
-Consider performance (folder check vs muxer invocation) vs accuracy (folder faking via rename) in this decision.
+We will verify `dotnet.dll` exists in the /sdk/ folder and `<framework>.deps.json` in the runtime version folders, similar to `hostfxr` install checks. This is not a complete validity check but more of a 'spot check.'
 
 ## Optional Defaults
 
