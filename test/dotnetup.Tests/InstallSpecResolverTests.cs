@@ -43,7 +43,7 @@ public class InstallSpecResolverTests
             new() { Component = InstallComponent.SDK, Version = "10.0.200" }
         ]);
 
-        result.UsesFallbackRequirement.Should().BeTrue();
+        result.UsesLastKnownRequirement.Should().BeTrue();
         result.Error.Should().Contain(path);
         result.Spec!.MinimumVersion!.ToString().Should().Be("10.0.103");
         result.Spec.AllowPrerelease.Should().BeFalse();
@@ -73,7 +73,7 @@ public class InstallSpecResolverTests
         var result = InstallSpecResolver.Evaluate(spec);
 
         result.Error.Should().BeNull();
-        result.UsesFallbackRequirement.Should().BeFalse();
+        result.UsesLastKnownRequirement.Should().BeFalse();
         result.IsActive.Should().Be(contents?.Contains("11.0.100") == true);
         result.Spec?.Name.Should().Be(result.IsActive ? "11.0.100" : null);
     }
@@ -142,7 +142,7 @@ public class InstallSpecResolverTests
         var result = InstallSpecResolver.Resolve(spec, [daily]);
 
         result.Installation.Should().BeSameAs(daily);
-        result.UsesFallbackRequirement.Should().Be(useSavedRequirement);
+        result.UsesLastKnownRequirement.Should().Be(useSavedRequirement);
     }
 
     [TestMethod]

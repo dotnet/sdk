@@ -106,7 +106,7 @@ internal class GarbageCollector
             {
                 Console.Error.WriteLine(resolution.Error);
                 skipCollection |= resolution.Spec is null;
-                if (resolution.UsesFallbackRequirement)
+                if (resolution.UsesLastKnownRequirement)
                 {
                     Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture,
                         Strings.RepositoryUsingLastKnownRequirement, spec.GlobalJsonPath));
@@ -115,7 +115,7 @@ internal class GarbageCollector
             if (spec.InstallSource == InstallSource.GlobalJson && resolution.Spec is { } requirement)
             {
                 spec.VersionOrChannel = requirement.Name;
-                if (!resolution.UsesFallbackRequirement)
+                if (!resolution.UsesLastKnownRequirement)
                 {
                     // Refresh saved constraints only after successfully reading global.json.
                     spec.MinimumVersion = requirement.MinimumVersion?.ToString();
