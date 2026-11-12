@@ -34,6 +34,9 @@ pack rollback create a distinct cancellation scope inside each rollback callback
 linked to the cancelled forward token; keep the original cancellation exception after
 cleanup. The deterministic installer seams are exercised by
 [`GivenMsiCancellation`](../../test/dotnet.Tests/CommandTests/Workload/Install/GivenMsiCancellation.cs).
+Only roll back MSIs whose installation this transaction actually attempted; mark the
+attempt before native execution so partial installs still roll back, but cancellation
+before installation and already-installed no-ops cannot remove existing manifests.
 
 `Console.In` synchronizes `ReadLineAsync` as well as `ReadLine`. The
 [`run-api` command](dotnet/Commands/Run/Api/RunApiCommand.cs) uses
@@ -42,6 +45,9 @@ cancellable wait: Unix file I/O cannot interrupt an already blocked read, so at 
 runtime worker can remain until process exit. Keep its regression out of process with a
 real open stdin pipe; see
 [`RunApiCancellationTests`](../../test/dotnet.Tests/CommandTests/Run/RunApiCancellationTests.cs).
+On Linux, its helper waits for `/proc/self/task/*/syscall` to report a blocked
+`read(0, ...)` before cancelling; an incomplete task alone does not establish that the
+runtime worker has started the read.
 
 ## Three-project command split
 

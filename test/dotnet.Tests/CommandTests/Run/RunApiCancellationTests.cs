@@ -13,7 +13,16 @@ public class RunApiCancellationTests : SdkTest
     private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(30);
 
     [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)]
     public async Task CancellationInterruptsAnOpenStandardInputPipe()
+        => await VerifyStandardInputCancellation();
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Linux)]
+    public async Task CancellationInterruptsABlockedLinuxStandardInputRead()
+        => await VerifyStandardInputCancellation();
+
+    private async Task VerifyStandardInputCancellation()
     {
         using Process child = StartChild(cancelPendingRead: true);
         Task<string> standardOutput = child.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);

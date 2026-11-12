@@ -578,15 +578,22 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         CancellationToken cancellationToken,
         DirectoryPath? offlineCache = null)
     {
+        bool shouldRollBackManifest = false;
         try
         {
             transactionContext.Run(
                 action: () =>
                 {
-                    InstallWorkloadManifestImplementation(manifestUpdate, cancellationToken, offlineCache);
+                    InstallWorkloadManifestImplementation(manifestUpdate, cancellationToken, offlineCache,
+                        onInstallAttempt: () => shouldRollBackManifest = true);
                 },
                 rollback: () =>
                 {
+                    if (!shouldRollBackManifest)
+                    {
+                        return;
+                    }
+
                     // Rollback has its own lifetime, independent of the cancelled forward operation.
                     using CancellationTokenSource rollbackCancellation = new();
                     InstallWorkloadManifestImplementation(
@@ -607,7 +614,8 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         ManifestVersionUpdate manifestUpdate,
         CancellationToken cancellationToken,
         DirectoryPath? offlineCache = null,
-        InstallAction action = InstallAction.Install)
+        InstallAction action = InstallAction.Install,
+        Action onInstallAttempt = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ReportPendingReboot();
@@ -628,6 +636,11 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         ValidateMsiDatabase(msi);
         DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
         InstallAction plannedAction = PlanPackage(msi, state, action, installedVersion);
+
+        if (plannedAction == InstallAction.Install)
+        {
+            onInstallAttempt?.Invoke();
+        }
 
         ExecutePackage(msi, plannedAction, msiPackageId);
 

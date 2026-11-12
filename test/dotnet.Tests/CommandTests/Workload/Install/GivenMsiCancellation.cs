@@ -19,9 +19,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests;
 public class GivenMsiCancellation : SdkTest
 {
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void CancellationAfterInstallationStillRollsBack(bool manifest)
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public void CancellationAfterInstallationStartsStillRollsBack(bool manifest, bool cancelDuringInstallation)
     {
         string directory = TestAssetsManager.CreateTestDirectory().Path;
         using CancellationTokenSource cancellation = new();
@@ -35,6 +37,14 @@ public class GivenMsiCancellation : SdkTest
             packId, "1.0.0", WorkloadPackKind.Sdk, directory, "test-pack"));
         var installer = new TestInstaller(directory, logger, resolver.Object);
         var originalCancellation = new OperationCanceledException(cancellation.Token);
+        if (cancelDuringInstallation)
+        {
+            installer.OnInstall = () =>
+            {
+                cancellation.Cancel();
+                throw originalCancellation;
+            };
+        }
 
         try
         {
@@ -71,17 +81,68 @@ public class GivenMsiCancellation : SdkTest
         }
     }
 
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void CancellationWithoutAManifestInstallationPreservesTheExistingManifest(bool precancelled)
+    {
+        string directory = TestAssetsManager.CreateTestDirectory().Path;
+        using CancellationTokenSource cancellation = new();
+        using TimestampedFileLogger logger = new(Path.Combine(directory, "install.log"));
+        var installer = new TestInstaller(directory, logger, new Mock<IWorkloadResolver>().Object, installed: true);
+        var originalCancellation = new OperationCanceledException(cancellation.Token);
+        if (precancelled)
+        {
+            cancellation.Cancel();
+        }
+
+        try
+        {
+            Action install = () => CliTransaction.RunNew(context =>
+            {
+                installer.InstallWorkloadManifest(
+                    new ManifestVersionUpdate(new ManifestId("test-manifest"), new ManifestVersion("1.0.0"), "6.0.100"),
+                    context, cancellation.Token);
+                installer.Actions.Should().Equal(InstallAction.None);
+                cancellation.Cancel();
+                throw originalCancellation;
+            });
+
+            var exception = install.Should().Throw<OperationCanceledException>().Which;
+            exception.CancellationToken.Should().Be(cancellation.Token);
+            if (precancelled)
+            {
+                installer.Actions.Should().BeEmpty();
+                installer.PayloadTokens.Should().BeEmpty();
+            }
+            else
+            {
+                exception.Should().BeSameAs(originalCancellation);
+                installer.Actions.Should().Equal(InstallAction.None);
+                installer.PayloadTokens.Should().ContainSingle();
+            }
+
+            installer.Installed.Should().BeTrue();
+        }
+        finally
+        {
+            installer.Shutdown();
+        }
+    }
+
     private sealed class TestInstaller : NetSdkMsiInstallerClient
     {
         private readonly MsiPayload _payload;
         public List<InstallAction> Actions { get; } = [];
         public List<CancellationToken> PayloadTokens { get; } = [];
         public bool Installed { get; private set; }
+        public Action? OnInstall { get; set; }
 
-        public TestInstaller(string directory, ISetupLogger logger, IWorkloadResolver resolver)
+        public TestInstaller(string directory, ISetupLogger logger, IWorkloadResolver resolver, bool installed = false)
             : base(new TestElevationContext(), logger, verifyMsiSignature: false, resolver, new SdkFeatureBand("6.0.100"),
                 new MockNuGetPackageDownloader(), reporter: NullReporter.Instance)
         {
+            Installed = installed;
             string manifestPath = Path.Combine(directory, "msi.json");
             File.WriteAllText(manifestPath, $$"""
                 {"Payload":"test.msi","ProductCode":"{{Guid.NewGuid():B}}","ProductVersion":"1.0.0","ProviderKeyName":"{{Guid.NewGuid():B}}"}
@@ -108,7 +169,15 @@ public class GivenMsiCancellation : SdkTest
         protected override void ExecutePackage(MsiPayload msi, InstallAction action, string? displayName = null)
         {
             Actions.Add(action);
-            Installed = action == InstallAction.Install;
+            if (action == InstallAction.Install)
+            {
+                Installed = true;
+                OnInstall?.Invoke();
+            }
+            else if (action == InstallAction.Uninstall)
+            {
+                Installed = false;
+            }
         }
 
         protected override void UpdateDependent(InstallRequestType requestType, string providerKeyName, string dependent) { }
