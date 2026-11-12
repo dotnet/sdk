@@ -55,7 +55,9 @@ DOTNET_ROOT={repo}\artifacts\bin\redist\{Configuration}\dotnet
 PATH={repo}\artifacts\bin\redist\{Configuration}\dotnet;{rest-of-PATH}
 ```
 
-After patching the files there (see Section 2), any `dotnet build` / `dotnet publish` in that shell will use your changes.
+After patching the files there (see Section 2), run `dotnet build` / `dotnet publish`
+from an isolated sample with SDK selection pinned as described in Section 4.
+Setting `DOTNET_ROOT` and `PATH` alone does not guarantee which SDK is selected.
 
 ### Option B: Download an SDK (Required for Blazor WASM)
 
@@ -106,6 +108,29 @@ MSBuild walks up the directory tree looking for this file. Placing it here stops
 ```
 
 Same traversal-stopping purpose for `.targets`. The repo root's version adds signing, analyzers, and other infrastructure.
+
+### `global.json` (required for the repo redist)
+
+Invoking the redist `dotnet` executable does not by itself select the redist SDK.
+The repository's `global.json` can redirect SDK resolution to the bootstrap `.dotnet`
+installation, even when the host executable came from the redist.
+
+Run the redist host with `--list-sdks` to find its built SDK version. Add a
+`global.json` in the sample directory that explicitly selects that version and installation:
+
+```json
+{
+  "sdk": {
+    "version": "<built-sdk-version>",
+    "paths": ["<absolute-redist-dotnet-root>"],
+    "rollForward": "disable",
+    "allowPrerelease": true
+  }
+}
+```
+
+Replace both placeholders. From the sample directory, verify `dotnet --version` and
+inspect a build binlog's SDK/task assembly paths before trusting the result.
 
 ### `NuGet.config` (required)
 

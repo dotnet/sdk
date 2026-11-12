@@ -33,20 +33,13 @@ namespace Microsoft.NET.Build.Tasks
 
             string lockFileKey = GetTaskObjectKey(path);
 
-            LockFile result;
-            object existingLockFileTaskObject = _buildEngine?.GetRegisteredTaskObject(lockFileKey, RegisteredTaskObjectLifetime.Build);
-            if (existingLockFileTaskObject == null)
-            {
-                result = LoadLockFile(path);
-
-                _buildEngine?.RegisterTaskObject(lockFileKey, result, RegisteredTaskObjectLifetime.Build, true);
-            }
-            else
-            {
-                result = (LockFile)existingLockFileTaskObject;
-            }
-
-            return result;
+            return _buildEngine is null
+                ? LoadLockFile(path)
+                : TaskObjectCache.GetOrCreate(
+                    _buildEngine,
+                    lockFileKey,
+                    RegisteredTaskObjectLifetime.Build,
+                    () => LoadLockFile(path));
         }
 
         private static string GetTaskObjectKey(string lockFilePath)

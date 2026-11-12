@@ -9,8 +9,11 @@ using Task = Microsoft.Build.Utilities.Task;
 
 namespace Microsoft.NET.Build.Tasks;
 
-public sealed class EnsureHotReloadWebSocketKey : Task
+[MSBuildMultiThreadableTask]
+public sealed class EnsureHotReloadWebSocketKey : Task, IMultiThreadableTask
 {
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required]
     public string PublicKeyPath { get; set; }
 
@@ -25,7 +28,8 @@ public sealed class EnsureHotReloadWebSocketKey : Task
         try
         {
             (PublicKey, _) = HotReloadKeyPair.GetOrCreate(PublicKeyPath, PrivateKeyPath,
-                message => Log.LogMessage(MessageImportance.Low, message));
+                message => Log.LogMessage(MessageImportance.Low, message),
+                TaskEnvironment.GetAbsolutePathPreservingInvalidArguments);
             return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

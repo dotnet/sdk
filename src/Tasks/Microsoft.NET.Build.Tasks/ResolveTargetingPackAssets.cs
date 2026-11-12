@@ -65,24 +65,12 @@ namespace Microsoft.NET.Build.Tasks
 
             if (allowCacheLookup && BuildEngine4 is IBuildEngine4 buildEngine4)
             {
-                if (buildEngine4.GetRegisteredTaskObject(
-                        cacheKey,
-                        RegisteredTaskObjectLifetime.AppDomain /* really "until process exit" */)
-                    is ResolvedAssetsCacheEntry cacheEntry)
-                {
-                    // NOTE: It's conceivably possible that the user modified the targeting
-                    //       packs between builds. Since that is extremely rare and the standard
-                    //       user scenario reads the targeting pack contents over and over without
-                    //       modification, we're electing not to check for file modification and
-                    //       returning any cached results that we have.
-
-                    results = cacheEntry;
-                }
-                else
-                {
-                    results = Resolve(inputs, buildEngine4, allowCacheLookup);
-                    buildEngine4.RegisterTaskObject(cacheKey, results, RegisteredTaskObjectLifetime.AppDomain, allowEarlyCollection: true);
-                }
+                // Targeting packs are assumed immutable, so cached results do not check timestamps.
+                results = TaskObjectCache.GetOrCreate(
+                    buildEngine4,
+                    cacheKey,
+                    RegisteredTaskObjectLifetime.AppDomain,
+                    () => Resolve(inputs, buildEngine4, allowCacheLookup));
             }
             else
             {
@@ -331,34 +319,16 @@ namespace Microsoft.NET.Build.Tasks
         {
             string frameworkListKey = definition.CacheKey();
 
-            if (allowCacheLookup && buildEngine4 is not null)
-            {
-                if (buildEngine4.GetRegisteredTaskObject(
-                        frameworkListKey,
-                        RegisteredTaskObjectLifetime.AppDomain)
-                    is FrameworkList cacheEntry)
-                {
-                    // As above, we are not even checking timestamps here
-                    // and instead assuming that the targeting pack folder
-                    // is fully immutable.
+            FrameworkList list = allowCacheLookup && buildEngine4 is not null
+                ? TaskObjectCache.GetOrCreate(
+                    buildEngine4,
+                    frameworkListKey,
+                    RegisteredTaskObjectLifetime.AppDomain,
+                    () => ReadFrameworkList(definition))
+                : ReadFrameworkList(definition);
 
-                    analyzerItems.AddRange(cacheEntry.Analyzers);
-                    referenceItems.AddRange(cacheEntry.References);
-                    return;
-                }
-
-                FrameworkList list = ReadFrameworkList(definition);
-                buildEngine4.RegisterTaskObject(frameworkListKey, list, RegisteredTaskObjectLifetime.AppDomain, allowEarlyCollection: true);
-
-                analyzerItems.AddRange(list.Analyzers);
-                referenceItems.AddRange(list.References);
-                return;
-            }
-
-            FrameworkList uncachedList = ReadFrameworkList(definition);
-
-            analyzerItems.AddRange(uncachedList.Analyzers);
-            referenceItems.AddRange(uncachedList.References);
+            analyzerItems.AddRange(list.Analyzers);
+            referenceItems.AddRange(list.References);
         }
 
         private static FrameworkList ReadFrameworkList(FrameworkListDefinition definition)

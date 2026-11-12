@@ -27,6 +27,31 @@ current-.NET-only:
   via the `<Sdk>` attribute.
 - `FrameworkPackages/` — per-TFM runtime framework version data.
 
+## Multithreaded tasks and caches
+
+Apply `[MSBuildMultiThreadableTask]` to each migrated concrete task. Tasks that resolve
+paths or access the environment also implement `IMultiThreadableTask`, defaulting to
+`TaskEnvironment.Fallback`. Resolve filesystem operands using the injected context
+without changing output paths, diagnostics, or invalid-input behavior. Keep original
+inputs through shared helpers when they govern validation or control flow; audit every
+filesystem use in those helpers.
+[`GetAbsolutePathPreservingInvalidArguments`](Common/TaskEnvironmentExtensions.cs)
+retains BCL argument validation, including Framework hosts' legacy-path switch, without
+letting accepted whitespace operands resolve against a shared process CWD.
+Choose the actual host runtime, not the task's target TFM, when applying that policy:
+a Framework task assembly can also execute in .NET MSBuild.
+
+For expensive shared initialization, use
+[`TaskObjectCache`](Microsoft.NET.Build.Tasks/TaskObjectCache.cs), as
+[`LockFileCache`](Microsoft.NET.Build.Tasks/LockFileCache.cs) and
+[`ResolveTargetingPackAssets`](Microsoft.NET.Build.Tasks/ResolveTargetingPackAssets.cs)
+do. Keep cache keys complete and preserve the intended registered-object lifetime.
+The helper scopes entries by their owning generic type to avoid collisions between SDK
+assemblies, coordinates initialization per retained engine-owned entry, retries thrown
+initialization failures, and does not retain task factories. Cached values must support
+concurrent consumers and must not require engine-managed disposal. Do not introduce a
+process-wide dictionary of per-project locks.
+
 ## Build diagnostics (NETSDK errors / warnings / info)
 
 These are conventions that aren't visible from the code alone — getting them wrong
