@@ -3,6 +3,7 @@
 
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -13,7 +14,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// passes <see cref="InstallationValidator.PassesValidationSmokeCheck"/>.
 /// An SDK's <see cref="DotnetInstall.Version"/> is its build identity from <c>.version</c> when the file describes
 /// the folder, with the folder version as <see cref="DotnetInstall.ProductVersion"/>. Shared frameworks record no build
-/// identity, so runtimes and SDKs without a matching <c>.version</c> use the folder version.
+/// identity, so runtimes and SDKs without a matching <c>.version</c> use the folder version. An unreadable
+/// <c>.version</c> file also falls back to the folder version for that install only.
 /// </summary>
 internal static class InstallRootEnumerator
 {
@@ -71,12 +73,28 @@ internal static class InstallRootEnumerator
     private static DotnetInstall WithBuildIdentity(DotnetInstall install)
     {
         // Runtime .version files do not contain the build version, so only SDK folders are read.
-        if (install.Component != InstallComponent.SDK
-            || LayoutVersionFile.ReadFromDirectory(install.ComponentDirectory)?.GetBuildVersionFor(install.LayoutVersion) is not { } buildVersion)
+        if (install.Component != InstallComponent.SDK || ReadBuildVersion(install) is not { } buildVersion)
         {
             return install;
         }
 
         return new DotnetInstall(install.InstallRoot, buildVersion, install.Component).WithProductVersion(install.LayoutVersion);
+    }
+
+    /// <summary>
+    /// Reads the build version from the install's <c>.version</c> file. The file is optional here: when it cannot be
+    /// read, the install keeps its folder version instead of failing discovery of the whole root.
+    /// </summary>
+    private static ReleaseVersion? ReadBuildVersion(DotnetInstall install)
+    {
+        try
+        {
+            return LayoutVersionFile.ReadFromDirectory(install.ComponentDirectory)?.GetBuildVersionFor(install.LayoutVersion);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Metrics.Tag(TelemetryTagNames.LayoutVersionFileReadError, ex.GetType().Name);
+            return null;
+        }
     }
 }

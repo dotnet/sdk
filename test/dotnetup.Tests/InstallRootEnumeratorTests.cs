@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.Versioning;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
@@ -170,6 +171,71 @@ public class InstallRootEnumeratorTests
 
         install.Version.ToString().Should().Be("10.0.12");
         install.ProductVersion.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetInstalls_KeepsEveryInstallWhenAnSdkVersionFileCannotBeRead()
+    {
+        using var testEnv = new TestEnvironment();
+        string framework = Path.Combine("shared", "Microsoft.NETCore.App");
+        WriteMarker(testEnv.InstallPath, "sdk", "10.0.403", "dotnet.dll");
+        WriteVersionFile(testEnv.InstallPath, "sdk", "10.0.403", "commit\n10.0.403\nrid\n10.0.403-servicing.26523.112\n10.0.400");
+        WriteMarker(testEnv.InstallPath, "sdk", "10.0.114", "dotnet.dll");
+        WriteVersionFile(testEnv.InstallPath, "sdk", "10.0.114", "commit\n10.0.114\nrid\n10.0.114-servicing.26522.126\n10.0.100");
+        WriteMarker(testEnv.InstallPath, framework, "10.0.12", "Microsoft.NETCore.App.deps.json");
+
+        List<DotnetInstall> installs;
+        using (MakeUnreadable(Path.Combine(testEnv.InstallPath, "sdk", "10.0.403", ".version")))
+        {
+            installs = InstallRootEnumerator.GetInstalls(NativeRoot(testEnv.InstallPath));
+        }
+
+        installs.Select(i => (i.Component, Version: i.Version.ToString(), Layout: i.LayoutVersion.ToString()))
+            .Should().BeEquivalentTo(
+            [
+                (InstallComponent.SDK, "10.0.403", "10.0.403"),
+                (InstallComponent.SDK, "10.0.114-servicing.26522.126", "10.0.114"),
+                (InstallComponent.Runtime, "10.0.12", "10.0.12"),
+            ]);
+    }
+
+    /// <summary>
+    /// Makes a file unreadable until disposed: an exclusive open on Windows (file locks are advisory on Unix), and
+    /// removing every permission elsewhere. Asserts that reading actually fails, so the test cannot pass vacuously.
+    /// </summary>
+    private static IDisposable MakeUnreadable(string path)
+    {
+        IDisposable restore = OperatingSystem.IsWindows()
+            ? new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None)
+            : RemoveUnixPermissions(path);
+
+        try
+        {
+            using (File.OpenRead(path))
+            {
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return restore;
+        }
+
+        restore.Dispose();
+        Assert.Inconclusive("The test environment can read files without permission (for example, when running as root).");
+        return restore;
+    }
+
+    [UnsupportedOSPlatform("windows")]
+    private static IDisposable RemoveUnixPermissions(string path)
+    {
+        UnixFileMode original = File.GetUnixFileMode(path);
+        File.SetUnixFileMode(path, UnixFileMode.None);
+        return new CallbackDisposable(() => File.SetUnixFileMode(path, original));
+    }
+
+    private sealed class CallbackDisposable(Action onDispose) : IDisposable
+    {
+        public void Dispose() => onDispose();
     }
 
     [TestMethod]
