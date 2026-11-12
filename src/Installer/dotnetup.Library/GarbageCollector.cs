@@ -43,7 +43,7 @@ internal class GarbageCollector
             return new GarbageCollectionPlan(manifest, null, [], [], []);
         }
 
-        var installSpecsByInstallation = ResolveInstallSpecsByInstallation(root, out bool skipCollection);
+        var installSpecsByInstallation = RefreshAndResolveInstallSpecsByInstallation(root, out bool skipCollection);
         if (skipCollection)
         {
             Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture,
@@ -90,7 +90,7 @@ internal class GarbageCollector
         return DeleteOrphanedSubcomponents(plan.Root.Path, plan.PathsToDelete);
     }
 
-    private static Dictionary<Installation, List<InstallSpec>> ResolveInstallSpecsByInstallation(DotnetRootEntry root, out bool skipCollection)
+    private static Dictionary<Installation, List<InstallSpec>> RefreshAndResolveInstallSpecsByInstallation(DotnetRootEntry root, out bool skipCollection)
     {
         skipCollection = false;
         var installSpecsByInstallation = new Dictionary<Installation, List<InstallSpec>>();
