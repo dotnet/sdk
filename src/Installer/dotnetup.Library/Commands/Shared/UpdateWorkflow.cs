@@ -161,8 +161,12 @@ internal class UpdateWorkflow
             new DotnetupSharedManifest(manifestPath).RemoveInstallSpec(installRoot, spec);
             return true;
         }
+        bool globalJsonRequirementChanged = false;
         if (spec.InstallSource == InstallSource.GlobalJson && !usesLastKnownRequirement)
         {
+            globalJsonRequirementChanged = spec.VersionOrChannel != channel.Name
+                || spec.MinimumVersion != channel.MinimumVersion?.ToString()
+                || spec.AllowPrerelease != channel.AllowPrerelease;
             spec.VersionOrChannel = channel.Name;
             spec.MinimumVersion = channel.MinimumVersion?.ToString();
             spec.AllowPrerelease = channel.AllowPrerelease;
@@ -215,11 +219,11 @@ internal class UpdateWorkflow
             && spec.GlobalJsonPath is not null
             && spec.Component == InstallComponent.SDK)
         {
-            UpdateGlobalJsonFile(spec.GlobalJsonPath, latestVersion);
+            globalJsonRequirementChanged |= UpdateGlobalJsonFile(spec.GlobalJsonPath, latestVersion);
         }
 
         // A repository edit can release an older SDK even when the selected SDK is already installed.
-        return updated || spec.InstallSource == InstallSource.GlobalJson;
+        return updated || globalJsonRequirementChanged;
     }
 
     internal static UpdateChannel? GetChannelToUpdate(InstallSpec spec) => GetChannelToUpdate(spec, out _);
@@ -244,12 +248,14 @@ internal class UpdateWorkflow
     /// <summary>
     /// Updates a global.json file to the latest version if it's newer than the current one.
     /// </summary>
-    private static void UpdateGlobalJsonFile(string globalJsonPath, ReleaseVersion latestVersion)
+    private static bool UpdateGlobalJsonFile(string globalJsonPath, ReleaseVersion latestVersion)
     {
         if (GlobalJsonModifier.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
         {
             AnsiConsole.MarkupLine($"  Updated {DotnetupTheme.Dim(globalJsonPath.EscapeMarkup())} to {latestVersion}.");
+            return true;
         }
+        return false;
     }
 
     /// <summary>

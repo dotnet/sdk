@@ -144,6 +144,52 @@ public class UpdateWorkflowTests
         File.ReadAllText(path).Should().Be("{broken");
     }
 
+    [TestMethod]
+    [DataRow("10.0.1xx", "10.0.103", false, false, false)]
+    [DataRow("10.0", "10.0.103", false, false, true)]
+    [DataRow("10.0.1xx", "10.0.102", false, false, true)]
+    [DataRow("10.0.1xx", "10.0.103", true, false, true)]
+    [DataRow("10.0.1xx", "10.0.103", false, true, true)]
+    public void UpdateAlreadyInstalledSdk_CollectsOnlyWhenRepositoryRequirementChanges(
+        string savedChannel, string savedMinimumVersion, bool savedAllowPrerelease,
+        bool updateGlobalJson, bool collects)
+    {
+        using var env = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(env.ManifestPath);
+        var root = new DotnetInstallRoot(env.InstallPath, InstallArchitecture.x64);
+        var path = Path.Combine(env.TempRoot, "global.json");
+        File.WriteAllText(path, """{"sdk":{"version":"10.0.103","allowPrerelease":false}}""");
+        var spec = RepositorySpec(path);
+        spec.VersionOrChannel = savedChannel;
+        spec.MinimumVersion = savedMinimumVersion;
+        spec.AllowPrerelease = savedAllowPrerelease;
+        manifest.AddInstallSpec(root, spec);
+        foreach (var version in new[] { "10.0.103", "10.0.105" })
+        {
+            env.StubComponentDirectories(null, (InstallComponent.SDK, version));
+            File.WriteAllText(Path.Combine(root.Path, "sdk", version, "dotnet.dll"), "");
+            manifest.AddInstallation(root, new Installation
+            {
+                Component = InstallComponent.SDK, Version = version, Subcomponents = [$"sdk/{version}"]
+            });
+        }
+        File.WriteAllText(Path.Combine(root.Path, DotnetupUtilities.GetDotnetExeName()), "");
+        var releases = new OfflineReleaseManifest();
+
+        new UpdateWorkflow(new ChannelVersionResolver(releases, new DailyChannelResolver(releases)))
+            .Execute(env.ManifestPath, root.Path, InstallComponent.SDK,
+                noProgress: true, updateGlobalJson: updateGlobalJson);
+
+        manifest.GetInstallations(root).Should().HaveCount(collects ? 1 : 2)
+            .And.Contain(i => i.Version == "10.0.105");
+        Directory.Exists(Path.Combine(root.Path, "sdk", "10.0.103")).Should().Be(!collects);
+        var saved = manifest.GetInstallSpecs(root).Should().ContainSingle().Subject;
+        saved.VersionOrChannel.Should().Be("10.0.1xx");
+        saved.MinimumVersion.Should().Be(updateGlobalJson ? "10.0.105" : "10.0.103");
+        saved.AllowPrerelease.Should().BeFalse();
+    }
+
     private sealed class OfflineReleaseManifest : ReleaseManifest
     {
         private readonly ReleaseIndexFixture _fixture = ReleaseIndexFixture.Create();
