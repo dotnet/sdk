@@ -25,7 +25,7 @@ internal static partial class ReleasePreparation
         HashSet<string> rids = new(StringComparer.Ordinal);
         string? version = null;
         // Read only the selected variant from RID candidate artifacts; never relabel another variant's binaries.
-        foreach (string artifact in Directory.EnumerateDirectories(source, "Build_Dotnetup_*").Order(StringComparer.Ordinal))
+        foreach (string artifact in Directory.EnumerateDirectories(source, "Build_*_Dotnetup*").Order(StringComparer.Ordinal))
         {
             string variantDirectory = Path.Combine(artifact, variant);
             if (!Directory.Exists(variantDirectory))
