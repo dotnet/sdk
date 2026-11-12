@@ -11,7 +11,7 @@ internal sealed class TemporaryFileManager : IDisposable
 {
     internal readonly struct TemporaryFile(FileStream stream) : IDisposable
     {
-        public string Path => stream.Name;
+        public string FilePath => stream.Name;
 
         public void Dispose()
         {
@@ -60,7 +60,8 @@ internal sealed class TemporaryFileManager : IDisposable
     /// <summary>
     /// Creates a new temporary file with content produced by <paramref name="writeContent"/>.
     /// The returned file keeps a read-only handle open until disposed, so other processes can read the file
-    /// (e.g. using <see cref="File.OpenRead(string)"/>) but cannot modify or delete it.
+    /// (e.g. using <see cref="File.OpenRead(string)"/>). On Windows, the handle also prevents the file from being
+    /// modified or deleted. On Unix, file sharing is only advisory, so the owner-only directory protects the file instead.
     /// </summary>
     public TemporaryFile Create(string extension, Action<Stream> writeContent)
     {
@@ -85,7 +86,7 @@ internal sealed class TemporaryFileManager : IDisposable
             }
             catch
             {
-                // Ignore exceptions.
+                // Best effort cleanup.
             }
 
             throw;

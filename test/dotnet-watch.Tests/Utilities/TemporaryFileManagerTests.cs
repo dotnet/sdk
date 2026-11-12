@@ -19,8 +19,8 @@ public class TemporaryFileManagerTests
             using (var file1 = manager.Create(".slnx", stream => stream.Write("<Solution />"u8)))
             using (var file2 = manager.Create(".tmp", _ => { }))
             {
-                path1 = file1.Path;
-                path2 = file2.Path;
+                path1 = file1.FilePath;
+                path2 = file2.FilePath;
 
                 directory = Path.GetDirectoryName(path1)!;
                 Assert.AreEqual(directory, Path.GetDirectoryName(path2));
@@ -36,6 +36,9 @@ public class TemporaryFileManagerTests
                     Assert.AreEqual("<Solution />", reader.ReadToEnd());
                 }
 
+                // Only Windows enforces FileShare. On Unix, .NET emulates it with advisory flock() locks:
+                // the retained read handle and this write open both take shared locks, so the open succeeds.
+                // There, the owner-only directory is what keeps other users from writing to the file.
                 if (OperatingSystem.IsWindows())
                 {
                     Assert.ThrowsExactly<IOException>(() => new FileStream(path1, FileMode.Open, FileAccess.Write, FileShare.ReadWrite).Dispose());

@@ -1156,7 +1156,7 @@ internal sealed class HotReloadDotNetWatcher
                 // The file is kept open during the build: other processes can read it but not modify it.
                 using var solutionFile = _context.TemporaryFileManager.Create(".slnx", doc.Save);
 
-                if (!await BuildFileOrProjectOrSolutionAsync(solutionFile.Path, targetFramework, device, action, cancellationToken))
+                if (!await BuildFileOrProjectOrSolutionAsync(solutionFile.FilePath, targetFramework, device, action, cancellationToken))
                 {
                     return false;
                 }
