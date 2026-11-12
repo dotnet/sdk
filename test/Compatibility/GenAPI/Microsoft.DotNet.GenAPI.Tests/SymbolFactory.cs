@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             [CallerMemberName] string assemblyName = "",
             bool allowUnsafe = false,
             bool usePreviewLanguageVersion = false,
-            bool updatedMemorySafetyRules = false)
+            bool useMemorySafetyRulesVersion2 = false)
         {
             CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(
                 syntax,
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
                 allowUnsafe,
                 diagnosticOptions,
                 usePreviewLanguageVersion,
-                updatedMemorySafetyRules);
+                useMemorySafetyRulesVersion2);
 
             Assert.IsEmpty(compilation.GetDiagnostics());
 
@@ -62,10 +62,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             byte[] publicKey = null,
             [CallerMemberName] string assemblyName = "",
             bool allowUnsafe = false,
-            bool updatedMemorySafetyRules = false)
+            bool useMemorySafetyRulesVersion2 = false)
         {
             CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey, allowUnsafe,
-                updatedMemorySafetyRules: updatedMemorySafetyRules);
+                useMemorySafetyRulesVersion2: useMemorySafetyRulesVersion2);
 
             Assert.IsEmpty(compilation.GetDiagnostics());
 
@@ -97,15 +97,15 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             bool allowUnsafe,
             IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions = null,
             bool usePreviewLanguageVersion = false,
-            bool updatedMemorySafetyRules = false)
+            bool useMemorySafetyRulesVersion2 = false)
         {
             CSharpCompilation compilation = CreateCSharpCompilation(name, enableNullable, publicKey, allowUnsafe, diagnosticOptions);
-            CSharpParseOptions parseOptions = usePreviewLanguageVersion || updatedMemorySafetyRules
+            CSharpParseOptions parseOptions = usePreviewLanguageVersion || useMemorySafetyRulesVersion2
                 ? ParseOptions.WithLanguageVersion(LanguageVersion.Preview)
                 : ParseOptions;
-            if (updatedMemorySafetyRules)
+            if (useMemorySafetyRulesVersion2)
             {
-                // V2 safety checks are configured on the compilation, not through parser feature flags.
+                // Version2 safety checks are configured on the compilation, not through parser feature flags.
 #pragma warning disable RSEXPERIMENTAL006
                 compilation = compilation.WithOptions(compilation.Options.WithMemorySafetyRulesVersion(MemorySafetyRulesVersion.Version2));
 #pragma warning restore RSEXPERIMENTAL006

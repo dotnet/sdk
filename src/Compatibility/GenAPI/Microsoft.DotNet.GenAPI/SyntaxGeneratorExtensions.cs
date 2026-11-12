@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.GenAPI
         public static SyntaxNode DeclarationExt(this SyntaxGenerator syntaxGenerator, ISymbol symbol, ISymbolFilter symbolFilter)
         {
 #pragma warning disable RSEXPERIMENTAL006
-            bool usesUpdatedMemorySafetyRules = symbol.ContainingModule?.MemorySafetyRulesVersion == MemorySafetyRulesVersion.Version2;
+            bool usesMemorySafetyRulesVersion2 = symbol.ContainingModule?.MemorySafetyRulesVersion == MemorySafetyRulesVersion.Version2;
 #pragma warning restore RSEXPERIMENTAL006
 
             if (symbol.Kind == SymbolKind.NamedType)
@@ -72,8 +72,8 @@ namespace Microsoft.DotNet.GenAPI
                                 IMethodSymbol constructor = baseTypeConstructors.First();
 
                                 ConstructorDeclarationSyntax constructorDeclaration = (ConstructorDeclarationSyntax)syntaxGenerator.Declaration(method);
-                                // Pointer signatures require an unsafe declaration only under the legacy rules.
-                                if (!usesUpdatedMemorySafetyRules && !constructorDeclaration.Modifiers.Any(m => m.RawKind == (int)SyntaxKind.UnsafeKeyword) &&
+                                // Pointer signatures require an unsafe declaration only under the Version1 rules.
+                                if (!usesMemorySafetyRulesVersion2 && !constructorDeclaration.Modifiers.Any(m => m.RawKind == (int)SyntaxKind.UnsafeKeyword) &&
                                     // if at least one parameter of a base constructor is raw pointer type
                                     constructor.Parameters.Any(p => p.Type.TypeKind == TypeKind.Pointer))
                                 {
@@ -85,9 +85,9 @@ namespace Microsoft.DotNet.GenAPI
                     }
                 }
 
-                if (usesUpdatedMemorySafetyRules && method.MethodKind == MethodKind.Constructor)
+                if (usesMemorySafetyRulesVersion2 && method.MethodKind == MethodKind.Constructor)
                 {
-                    // Under V2, unsafe is part of the constructor's contract, not just required by pointer syntax.
+                    // Under Version2, unsafe is part of the constructor's contract, not just required by pointer syntax.
                     declaration ??= syntaxGenerator.Declaration(method);
 #pragma warning disable RSEXPERIMENTAL006
                     declaration = syntaxGenerator.WithModifiers(declaration,
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.GenAPI
 #pragma warning restore RSEXPERIMENTAL006
                 }
 
-                if (usesUpdatedMemorySafetyRules && method.IsExtern)
+                if (usesMemorySafetyRulesVersion2 && method.IsExtern)
                 {
                     // GenAPI supplies a stub body, so remove extern after adding any required base initializer.
                     declaration ??= syntaxGenerator.Declaration(method).AddMissingSpecialConstraints(symbol);
@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.GenAPI
                 if (!eventSymbol.ExplicitInterfaceImplementations.IsEmpty)
                 {
                     SyntaxNode declaration = CreateExplicitInterfaceEventDeclaration(syntaxGenerator, eventSymbol);
-                    return usesUpdatedMemorySafetyRules
+                    return usesMemorySafetyRulesVersion2
                         ? syntaxGenerator.WithModifiers(declaration, DeclarationModifiers.From(eventSymbol))
                         : declaration;
                 }
@@ -138,9 +138,9 @@ namespace Microsoft.DotNet.GenAPI
                     return syntaxGenerator.IndexerDeclaration(propertySymbol);
                 }
 
-                if (usesUpdatedMemorySafetyRules && !propertySymbol.IsAbstract && !propertySymbol.IsIndexer)
+                if (usesMemorySafetyRulesVersion2 && !propertySymbol.IsAbstract && !propertySymbol.IsIndexer)
                 {
-                    // V2 safety inference must see the stub's actual storage shape. Adding bodies later
+                    // Version2 safety inference must see the stub's actual storage shape. Adding bodies later
                     // can leave a packed property marked safe alongside an unsafe accessor (CS9396).
                     return syntaxGenerator.PropertyDeclaration(propertySymbol,
                         getAccessorStatements: [SyntaxFactory.ThrowStatement(SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression))],

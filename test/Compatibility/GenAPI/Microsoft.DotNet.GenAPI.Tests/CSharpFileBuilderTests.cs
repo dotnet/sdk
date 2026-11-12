@@ -38,11 +38,11 @@ namespace Microsoft.DotNet.GenAPI.Tests
             [CallerMemberName] string assemblyName = "",
             // Empty string is considered a valid header, null causes to use the default CSharpFileBuilder header
             string header = "",
-            bool updatedMemorySafetyRules = false)
+            bool useMemorySafetyRulesVersion2 = false)
         {
             string resultedString = GenerateOutput(original, includeInternalSymbols, includeEffectivelyPrivateSymbols,
                 includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, additionalApiInclusionFilter, assemblyName, header,
-                updatedMemorySafetyRules);
+                useMemorySafetyRulesVersion2);
 
             SyntaxTree resultedSyntaxTree = GetSyntaxTree(resultedString);
             SyntaxTree expectedSyntaxTree = GetSyntaxTree(expected);
@@ -51,13 +51,13 @@ namespace Microsoft.DotNet.GenAPI.Tests
             Assert.IsTrue(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
                 $"Expected:\n{expected}\nResulted:\n{resultedString}");
 
-            if (updatedMemorySafetyRules)
+            if (useMemorySafetyRulesVersion2)
             {
                 // Syntax comparisons alone do not catch invalid combinations of safety modifiers.
                 using Stream assembly = SymbolFactory.EmitAssemblyStreamFromSyntax(resultedString,
                     allowUnsafe: allowUnsafe,
                     assemblyName: assemblyName + "_Generated",
-                    updatedMemorySafetyRules: true);
+                    useMemorySafetyRulesVersion2: true);
             }
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             ISymbolFilter additionalApiInclusionFilter,
             string assemblyName,
             string header,
-            bool updatedMemorySafetyRules = false)
+            bool useMemorySafetyRulesVersion2 = false)
         {
             using StringWriter stringWriter = new();
 
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
             (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = TestAssemblyLoaderFactory
                 .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe: allowUnsafe,
-                    updatedMemorySafetyRules: updatedMemorySafetyRules);
+                    useMemorySafetyRulesVersion2: useMemorySafetyRulesVersion2);
 
             ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromList([], null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, additionalApiInclusionFilter: additionalApiInclusionFilter);
             ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromList(excludedAttributeList, null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, additionalApiInclusionFilter: additionalApiInclusionFilter);
@@ -3703,7 +3703,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [TestMethod]
-        public void TestUpdatedMemorySafetyMemberGeneration()
+        public void TestMemorySafetyRulesVersion2MemberGeneration()
         {
             RunTest(original: """
                 public class SafetyContracts
@@ -3730,11 +3730,11 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false,
                 includeEffectivelyPrivateSymbols: false,
                 allowUnsafe: true,
-                updatedMemorySafetyRules: true);
+                useMemorySafetyRulesVersion2: true);
         }
 
         [TestMethod]
-        public void TestUpdatedMemorySafetyPackedPropertyGeneration()
+        public void TestMemorySafetyRulesVersion2PackedPropertyGeneration()
         {
             RunTest(original: """
                 [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, Pack = 1)]
@@ -3752,11 +3752,11 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false,
                 includeEffectivelyPrivateSymbols: false,
                 allowUnsafe: true,
-                updatedMemorySafetyRules: true);
+                useMemorySafetyRulesVersion2: true);
         }
 
         [TestMethod]
-        public void TestUpdatedMemorySafetyUnsafeDefaultConstructorIsNotRemoved()
+        public void TestMemorySafetyRulesVersion2UnsafeDefaultConstructorIsNotRemoved()
         {
             RunTest(original: """
                 public class Contracts
@@ -3773,11 +3773,11 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false,
                 includeEffectivelyPrivateSymbols: false,
                 allowUnsafe: true,
-                updatedMemorySafetyRules: true);
+                useMemorySafetyRulesVersion2: true);
         }
 
         [TestMethod]
-        public void TestUpdatedMemorySafetyPointerBaseConstructorGeneration()
+        public void TestMemorySafetyRulesVersion2PointerBaseConstructorGeneration()
         {
             RunTest(original: """
                 public class Base
@@ -3802,11 +3802,11 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false,
                 includeEffectivelyPrivateSymbols: false,
                 allowUnsafe: true,
-                updatedMemorySafetyRules: true);
+                useMemorySafetyRulesVersion2: true);
         }
 
         [TestMethod]
-        public void TestUpdatedMemorySafetyExternGeneration()
+        public void TestMemorySafetyRulesVersion2ExternGeneration()
         {
             RunTest(original: """
                 public class Native
@@ -3827,11 +3827,13 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false,
                 includeEffectivelyPrivateSymbols: false,
                 allowUnsafe: true,
-                updatedMemorySafetyRules: true);
+                useMemorySafetyRulesVersion2: true);
         }
 
         [TestMethod]
-        public void TestUpdatedMemorySafetyExplicitInterfaceEventGeneration()
+
+        [TestMethod]
+        public void TestMemorySafetyRulesVersion2ExplicitInterfaceEventGeneration()
         {
             RunTest(original: """
                 public interface IContracts
@@ -3856,7 +3858,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false,
                 includeEffectivelyPrivateSymbols: false,
                 allowUnsafe: true,
-                updatedMemorySafetyRules: true);
+                useMemorySafetyRulesVersion2: true);
         }
     }
 }

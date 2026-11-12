@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             [CallerMemberName] string assemblyName = "",
             bool allowUnsafe = false,
             bool usePreviewLanguageVersion = false,
-            bool updatedMemorySafetyRules = false)
+            bool useMemorySafetyRulesVersion2 = false)
         {
             CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(
                 syntax,
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
                 allowUnsafe,
                 diagnosticOptions,
                 usePreviewLanguageVersion,
-                updatedMemorySafetyRules);
+                useMemorySafetyRulesVersion2);
 
             AssertNoDiagnostics(compilation);
 
@@ -105,13 +105,13 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             bool allowUnsafe,
             IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions = null,
             bool usePreviewLanguageVersion = false,
-            bool updatedMemorySafetyRules = false)
+            bool useMemorySafetyRulesVersion2 = false)
         {
             CSharpCompilation compilation = CreateCSharpCompilation(name, enableNullable, publicKey, allowUnsafe, diagnosticOptions);
-            CSharpParseOptions parseOptions = usePreviewLanguageVersion || updatedMemorySafetyRules
+            CSharpParseOptions parseOptions = usePreviewLanguageVersion || useMemorySafetyRulesVersion2
                 ? ParseOptions.WithLanguageVersion(LanguageVersion.Preview)
                 : ParseOptions;
-            if (updatedMemorySafetyRules)
+            if (useMemorySafetyRulesVersion2)
             {
                 parseOptions = parseOptions.WithFeatures([new KeyValuePair<string, string>("updated-memory-safety-rules", "true")]);
             }

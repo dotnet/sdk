@@ -18,7 +18,7 @@ public class TestAssemblyLoaderFactory
         bool allowUnsafe = false,
         IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null,
         bool usePreviewLanguageVersion = false,
-        bool updatedMemorySafetyRules = false)
+        bool useMemorySafetyRulesVersion2 = false)
     {
         if (assemblyTexts.Length == 0)
         {
@@ -41,7 +41,7 @@ public class TestAssemblyLoaderFactory
                 allowUnsafe: allowUnsafe,
                 assemblyName: assemblyName,
                 usePreviewLanguageVersion: usePreviewLanguageVersion,
-                updatedMemorySafetyRules: updatedMemorySafetyRules);
+                useMemorySafetyRulesVersion2: useMemorySafetyRulesVersion2);
             if (loader.LoadAssembly(actualAssemblyName, assemblyStream) is IAssemblySymbol assemblySymbol)
             {
                 assemblySymbols.Add(actualAssemblyName, assemblySymbol);
