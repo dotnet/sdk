@@ -16,11 +16,11 @@ public class TemporaryFileManagerTests
         string directory;
         using (var manager = new TemporaryFileManager())
         {
-            using (var file1 = manager.Create(".slnx", FileShare.Read))
-            using (var file2 = manager.Create(".tmp", FileShare.Read))
+            using (var file1 = manager.Create(".slnx", stream => stream.Write("<Solution />"u8)))
+            using (var file2 = manager.Create(".tmp", _ => { }))
             {
-                path1 = file1.Stream.Name;
-                path2 = file2.Stream.Name;
+                path1 = file1.Path;
+                path2 = file2.Path;
 
                 directory = Path.GetDirectoryName(path1)!;
                 Assert.AreEqual(directory, Path.GetDirectoryName(path2));
@@ -30,16 +30,17 @@ public class TemporaryFileManagerTests
                 Assert.IsTrue(File.Exists(path2));
                 Assert.IsTrue(Path.GetFullPath(path1).StartsWith(Path.GetFullPath(Path.GetTempPath()), PathComparison));
 
-                file1.Stream.Write("<Solution />"u8);
-                file1.Stream.Flush();
-                using var reader = new StreamReader(new FileStream(
-                    path1,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.ReadWrite));
-                Assert.AreEqual("<Solution />", reader.ReadToEnd());
+                // MSBuild reads solution files using File.OpenRead, which requests FileShare.Read.
+                using (var reader = new StreamReader(File.OpenRead(path1)))
+                {
+                    Assert.AreEqual("<Solution />", reader.ReadToEnd());
+                }
 
-                if (!OperatingSystem.IsWindows())
+                if (OperatingSystem.IsWindows())
+                {
+                    Assert.ThrowsExactly<IOException>(() => new FileStream(path1, FileMode.Open, FileAccess.Write, FileShare.ReadWrite).Dispose());
+                }
+                else
                 {
                     AssertUnixOwnerOnly(directory);
                 }
