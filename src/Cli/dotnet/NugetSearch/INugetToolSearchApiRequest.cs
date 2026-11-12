@@ -11,5 +11,6 @@ internal interface INugetToolSearchApiRequest
     Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
         NugetSearchApiParameter nugetSearchApiParameter,
         PackageSource source,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        PackageSourceMapping? sourceMapping = null);
 }

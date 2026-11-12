@@ -48,6 +48,21 @@ internal sealed class ToolSearchCommand
             basePath: _currentWorkingDirectory,
             invalidSource: _searchResultPrinter.PrintInvalidSource);
 
+        PackageSourceMapping? sourceMapping = null;
+        if (_parseResult.GetValue(_definition.SourceOption)?.Any() != true)
+        {
+            PackageSourceMapping configuredMapping = PackageSourceMapping.GetPackageSourceMapping(sourceConfiguration.Settings);
+            if (configuredMapping.IsEnabled)
+            {
+                if (_parseResult.GetValue(_definition.AddSourceOption)?.Any() == true)
+                {
+                    throw new GracefulException(CliStrings.CannotUseAddSourceWithSourceMapping);
+                }
+
+                sourceMapping = configuredMapping;
+            }
+        }
+
         if (sourceConfiguration.PackageSources.Count == 0)
         {
             _searchResultPrinter.PrintNoSourcesConfigured();
@@ -60,7 +75,7 @@ internal sealed class ToolSearchCommand
         using var concurrencyLimiter = new SemaphoreSlim(MaxConcurrentSourceRequests);
         SourceSearchResult[] results = await Task.WhenAll(
             sourceConfiguration.PackageSources.Select(
-                source => SearchSourceAsync(source, nugetSearchApiParameter, concurrencyLimiter, cancellationToken)))
+                source => SearchSourceAsync(source, nugetSearchApiParameter, sourceMapping, concurrencyLimiter, cancellationToken)))
             .ConfigureAwait(false);
 
         int successCount = 0;
@@ -92,6 +107,7 @@ internal sealed class ToolSearchCommand
     private async Task<SourceSearchResult> SearchSourceAsync(
         PackageSource source,
         NugetSearchApiParameter searchParameters,
+        PackageSourceMapping? sourceMapping,
         SemaphoreSlim concurrencyLimiter,
         CancellationToken cancellationToken)
     {
@@ -99,7 +115,7 @@ internal sealed class ToolSearchCommand
         try
         {
             IReadOnlyCollection<SearchResultPackage> packages =
-                await _nugetToolSearchApiRequest.GetResult(searchParameters, source, cancellationToken).ConfigureAwait(false);
+                await _nugetToolSearchApiRequest.GetResult(searchParameters, source, cancellationToken, sourceMapping).ConfigureAwait(false);
             return new SourceSearchResult(source, packages, ErrorMessage: null);
         }
         catch (NugetSearchApiRequestException e)

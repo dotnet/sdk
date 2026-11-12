@@ -60,6 +60,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     private readonly bool _verifySignatures;
     private readonly VerbosityOptions _verbosityOptions;
     private readonly string _currentWorkingDirectory;
+    private readonly Func<PackageSource, CancellationToken, Task<AutoCompleteResource>> _getAutocompleteResource;
 
     public NuGetPackageDownloader(
         DirectoryPath packageInstallDir,
@@ -72,7 +73,8 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         bool verifySignatures = false,
         bool shouldUsePackageSourceMapping = true,
         VerbosityOptions verbosityOptions = VerbosityOptions.normal,
-        string currentWorkingDirectory = null)
+        string currentWorkingDirectory = null,
+        Func<PackageSource, CancellationToken, Task<AutoCompleteResource>> getAutocompleteResource = null)
     {
         _currentWorkingDirectory = currentWorkingDirectory;
         _packageInstallDir = packageInstallDir;
@@ -84,6 +86,8 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         _restoreActionConfig = restoreActionConfig ?? new RestoreActionConfig();
         _retryTimer = timer;
         _sourceRepositories = new();
+        _getAutocompleteResource = getAutocompleteResource ??
+            ((source, token) => GetSourceRepository(source).GetResourceAsync<AutoCompleteResource>(token));
 
         // Platform gate: when the caller requests verification (verifySignatures == true),
         // this additional gate may disable it based on OS support:
@@ -967,77 +971,78 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     public async Task<IEnumerable<string>> GetPackageIdsAsync(string idStem, bool allowPrerelease, PackageSourceLocation packageSourceLocation = null, CancellationToken cancellationToken = default)
     {
-        // grab allowed sources for the package in question
-        PackageId packageId = new(idStem);
-        IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
-        var autoCompletes = await Task.WhenAll(packagesSources.Select(async (source) => await GetAutocompleteAsync(source, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
-        // filter down to autocomplete endpoints (not all sources support this)
-        var validAutoCompletes = autoCompletes.SelectMany(x => x);
-        // get versions valid for this source
-        var packageIdTasks = validAutoCompletes.Select(autocomplete => GetPackageIdsForSource(autocomplete, packageId, allowPrerelease, cancellationToken)).ToArray();
-        var packageIdLists = await Task.WhenAll(packageIdTasks).ConfigureAwait(false);
-        // sources may have the same versions, so we have to dedupe.
-        return packageIdLists.SelectMany(v => v).Distinct().OrderDescending();
+        var (sources, sourceMapping) = LoadCompletionSources(packageSourceLocation);
+        var packageIdLists = await Task.WhenAll(sources.Select(source => GetCompletionsForSource<string>(
+            source,
+            async (autocomplete, token) =>
+            {
+                IEnumerable<string> ids = await autocomplete.IdStartsWith(
+                    idStem, includePrerelease: allowPrerelease, log: NullLogger.Instance, token: token).ConfigureAwait(false);
+                return ids.Where(id => sourceMapping is null ||
+                    sourceMapping.GetConfiguredPackageSources(id).Contains(source.Name, StringComparer.OrdinalIgnoreCase)).ToArray();
+            },
+            cancellationToken))).ConfigureAwait(false);
+        return packageIdLists.SelectMany(ids => ids).Distinct(StringComparer.OrdinalIgnoreCase).OrderDescending();
     }
 
     public async Task<IEnumerable<NuGetVersion>> GetPackageVersionsAsync(PackageId packageId, string versionPrefix = null, bool allowPrerelease = false, PackageSourceLocation packageSourceLocation = null, CancellationToken cancellationToken = default)
     {
-        // grab allowed sources for the package in question
-        IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
-        var autoCompletes = await Task.WhenAll(packagesSources.Select(async (source) => await GetAutocompleteAsync(source, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
-        // filter down to autocomplete endpoints (not all sources support this)
-        var validAutoCompletes = autoCompletes.SelectMany(x => x);
-        // get versions valid for this source
-        var versionTasks = validAutoCompletes.Select(autocomplete => GetPackageVersionsForSource(autocomplete, packageId, versionPrefix, allowPrerelease, cancellationToken)).ToArray();
-        var versions = await Task.WhenAll(versionTasks).ConfigureAwait(false);
-        // sources may have the same versions, so we have to dedupe.
+        var (sources, sourceMapping) = LoadCompletionSources(packageSourceLocation);
+        IReadOnlyList<string> allowedSources = sourceMapping?.GetConfiguredPackageSources(packageId.ToString());
+        var versions = await Task.WhenAll(sources
+            .Where(source => allowedSources is null || allowedSources.Contains(source.Name, StringComparer.OrdinalIgnoreCase))
+            .Select(source => GetCompletionsForSource(
+                source,
+                (autocomplete, token) => autocomplete.VersionStartsWith(
+                    packageId.ToString(), versionPrefix: versionPrefix ?? "", includePrerelease: allowPrerelease,
+                    sourceCacheContext: _cacheSettings, log: NullLogger.Instance, token: token),
+                cancellationToken))).ConfigureAwait(false);
         return versions.SelectMany(v => v).Distinct().OrderDescending();
     }
 
-    private async Task<IEnumerable<AutoCompleteResource>> GetAutocompleteAsync(PackageSource source, CancellationToken cancellationToken)
+    private (IEnumerable<PackageSource> Sources, PackageSourceMapping Mapping) LoadCompletionSources(PackageSourceLocation location)
     {
-        SourceRepository repository = GetSourceRepository(source);
-        if (await repository.GetResourceAsync<AutoCompleteResource>(cancellationToken).ConfigureAwait(false) is var resource)
+        if (location?.PackageSourceOverrides?.Any() == true)
         {
-            return [resource];
+            return (location.PackageSourceOverrides, null);
         }
-        else return [];
+
+        // Validate selected feeds inside the per-source completion failure boundary.
+        NuGetSourceConfiguration configuration = NuGetSourceConfiguration.Load(
+            nugetConfig: location?.NugetConfig?.Value,
+            rootConfigDirectory: location?.RootConfigDirectory?.Value,
+            sourceFeedOverrides: location?.SourceFeedOverrides,
+            additionalSourceFeeds: location?.AdditionalSourceFeed,
+            basePath: _currentWorkingDirectory,
+            validateSources: false);
+        PackageSourceMapping mapping = PackageSourceMapping.GetPackageSourceMapping(configuration.Settings);
+        if (!_shouldUsePackageSourceMapping || location?.SourceFeedOverrides.Any() == true || !mapping.IsEnabled)
+        {
+            return (configuration.PackageSources, null);
+        }
+
+        ValidateSourceMappingCompatibility(location, mapping);
+        HashSet<string> mappedSources = new(
+            new PackageSourceMappingProvider(configuration.Settings).GetPackageSourceMappingItems().Select(item => item.Key),
+            StringComparer.OrdinalIgnoreCase);
+        return (configuration.PackageSources.Where(source => mappedSources.Contains(source.Name)), mapping);
     }
 
     // only exposed for testing
     internal static TimeSpan CliCompletionsTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
 
-    private async Task<IEnumerable<NuGetVersion>> GetPackageVersionsForSource(AutoCompleteResource autocomplete, PackageId packageId, string versionPrefix, bool allowPrerelease, CancellationToken cancellationToken)
+    private async Task<IEnumerable<T>> GetCompletionsForSource<T>(
+        PackageSource source,
+        Func<AutoCompleteResource, CancellationToken, Task<IEnumerable<T>>> query,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var timeoutCts = new CancellationTokenSource(CliCompletionsTimeout);
-            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
-            // we use the NullLogger because we don't want to log to stdout for completions - they interfere with the completions mechanism of the shell program.
-            return await autocomplete.VersionStartsWith(packageId.ToString(), versionPrefix: versionPrefix ?? "", includePrerelease: allowPrerelease, sourceCacheContext: _cacheSettings, log: NullLogger.Instance, token: linkedCts.Token);
-        }
-        catch (FatalProtocolException)  // this most often means that the source didn't actually have a SearchAutocompleteService
-        {
-            return [];
-        }
-        catch (Exception) // any errors (i.e. auth) should just be ignored for completions
-        {
-            return [];
-        }
-    }
-
-    private static async Task<IEnumerable<string>> GetPackageIdsForSource(AutoCompleteResource autocomplete, PackageId packageId, bool allowPrerelease, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var timeoutCts = new CancellationTokenSource(CliCompletionsTimeout);
-            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
-            // we use the NullLogger because we don't want to log to stdout for completions - they interfere with the completions mechanism of the shell program.
-            return await autocomplete.IdStartsWith(packageId.ToString(), includePrerelease: allowPrerelease, log: NullLogger.Instance, token: linkedCts.Token);
-        }
-        catch (FatalProtocolException)  // this most often means that the source didn't actually have a SearchAutocompleteService
-        {
-            return [];
+            CheckHttpSources([source]);
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(CliCompletionsTimeout);
+            AutoCompleteResource resource = await _getAutocompleteResource(source, timeoutCts.Token).ConfigureAwait(false);
+            return resource is null ? [] : await query(resource, timeoutCts.Token).ConfigureAwait(false);
         }
         catch (Exception) // any errors (i.e. auth) should just be ignored for completions
         {
