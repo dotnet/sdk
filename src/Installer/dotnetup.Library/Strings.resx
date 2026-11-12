@@ -393,8 +393,8 @@
     <comment>{Locked="rollForward"}</comment>
   </data>
   <data name="GlobalJsonMissingPath" xml:space="preserve">
-    <value>The registration does not contain a global.json path.</value>
-    <comment>{Locked="global.json"}</comment>
+    <value>The {0} install spec '{1}' does not contain a global.json path.</value>
+    <comment>{Locked="global.json"} {0}: component display name. {1}: saved version or channel.</comment>
   </data>
   <data name="RootCommandDescription" xml:space="preserve">
     <value>.NET toolchain manager for user level installs.</value>

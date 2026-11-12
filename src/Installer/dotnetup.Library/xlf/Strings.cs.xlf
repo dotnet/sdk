@@ -402,9 +402,9 @@ Or open a new terminal.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalJsonMissingPath">
-        <source>The registration does not contain a global.json path.</source>
-        <target state="new">The registration does not contain a global.json path.</target>
-        <note>{Locked="global.json"}</note>
+        <source>The {0} install spec '{1}' does not contain a global.json path.</source>
+        <target state="new">The {0} install spec '{1}' does not contain a global.json path.</target>
+        <note>{Locked="global.json"} {0}: component display name. {1}: saved version or channel.</note>
       </trans-unit>
       <trans-unit id="HelpConfigCommandsTitle">
         <source>Configuration Commands:</source>

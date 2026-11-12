@@ -162,6 +162,7 @@ public class InstallSpecResolverTests
         result.Installation.Should().BeNull();
         result.GlobalJsonSdk.Should().BeNull();
         result.Spec.Should().BeNull();
-        result.Error.Should().Contain("global.json path");
+        result.Error.Should().Contain(".NET SDK install spec '10.0.1xx'")
+            .And.Contain("does not contain a global.json path");
     }
 }

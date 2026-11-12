@@ -51,7 +51,8 @@ internal static class InstallSpecResolver
         {
             if (string.IsNullOrEmpty(spec.GlobalJsonPath))
             {
-                throw new JsonException(Strings.GlobalJsonMissingPath);
+                throw new JsonException(string.Format(CultureInfo.InvariantCulture,
+                    Strings.GlobalJsonMissingPath, spec.Component.GetDisplayName(), spec.VersionOrChannel));
             }
             var sdk = GlobalJsonChannelResolver.ReadSdkSection(spec.GlobalJsonPath);
             return new InstallSpecResolution
