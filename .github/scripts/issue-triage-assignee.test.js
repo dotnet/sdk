@@ -54,17 +54,17 @@ test("headings yield every complete Area-* name, including names with spaces", (
 
 test("CODEOWNERS sections include in-section notes but stop at the next section", () =>
 {
-    assert.deepEqual(findAreaOwners(codeowners, "Area-NuGet").owners, ["@dotnet/nuget-team"]);
-    assert.deepEqual(findAreaOwners(codeowners, "area-readytorun").owners, ["@dotnet/illink", "@dotnet/dotnet-cli"]);
-    assert.deepEqual(findAreaOwners(codeowners, "Area-Infrastructure").owners, ["@MiYanni"]);
-    assert.deepEqual(findAreaOwners(codeowners, "Area-Watch").owners, ["@dotnet/hot-reload", "@dotnet/aspnet-blazor-eng"]);
-    assert.deepEqual(findAreaOwners(codeowners, "Area-dotnet test (MTP)"), {matched: false, owners: []});
+    assert.deepEqual(findAreaOwners(codeowners, "Area-NuGet"), ["@dotnet/nuget-team"]);
+    assert.deepEqual(findAreaOwners(codeowners, "area-readytorun"), ["@dotnet/illink", "@dotnet/dotnet-cli"]);
+    assert.deepEqual(findAreaOwners(codeowners, "Area-Infrastructure"), ["@MiYanni"]);
+    assert.deepEqual(findAreaOwners(codeowners, "Area-Watch"), ["@dotnet/hot-reload", "@dotnet/aspnet-blazor-eng"]);
+    assert.deepEqual(findAreaOwners(codeowners, "Area-dotnet test (MTP)"), []);
 });
 
 test("the last matching CODEOWNERS section wins", () =>
 {
     const duplicated = "# Area-Format\n/old @old-owner\n\n# AI\n.github/ @ai-owner\n\n# Area-Format\n/new @dotnet/roslyn-ide\n";
-    assert.deepEqual(findAreaOwners(duplicated, "Area-Format").owners, ["@dotnet/roslyn-ide"]);
+    assert.deepEqual(findAreaOwners(duplicated, "Area-Format"), ["@dotnet/roslyn-ide"]);
 });
 
 test("team owners expand through the snapshot without duplicate individuals", () =>
