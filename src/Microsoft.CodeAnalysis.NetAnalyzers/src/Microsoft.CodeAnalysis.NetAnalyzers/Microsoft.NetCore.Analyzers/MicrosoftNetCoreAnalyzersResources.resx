@@ -848,6 +848,15 @@
   <data name="DoNotUseObsoleteKDFAlgorithmMessage" xml:space="preserve">
     <value>Call to obsolete key derivation function {0}.{1}</value>
   </data>
+  <data name="DoNotUseReferenceEqualsWithUnrelatedTypesDescription" xml:space="preserve">
+    <value>Two references can only point to the same object when one type derives from or implements the other. When neither type has a reference conversion to the other, 'ReferenceEquals' always returns 'false'.</value>
+  </data>
+  <data name="DoNotUseReferenceEqualsWithUnrelatedTypesMessage" xml:space="preserve">
+    <value>'ReferenceEquals' always returns 'false' here because '{0}' and '{1}' are unrelated types</value>
+  </data>
+  <data name="DoNotUseReferenceEqualsWithUnrelatedTypesTitle" xml:space="preserve">
+    <value>Do not use ReferenceEquals with unrelated reference types</value>
+  </data>
   <data name="DoNotUseReferenceEqualsWithValueTypesDescription" xml:space="preserve">
     <value>Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</value>
   </data>
