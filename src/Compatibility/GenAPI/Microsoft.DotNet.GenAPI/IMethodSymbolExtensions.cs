@@ -52,11 +52,19 @@ namespace Microsoft.DotNet.GenAPI
             return true;
         }
 
-        // Examines the a method to determine if it could be an implicit default constructor that can be removed from source and implicitly provided by the compiler.
-        public static bool IsImplicitDefaultConstructor(this IMethodSymbol method, ISymbolFilter symbolFilter)
+        // Determines whether the declaration can be omitted in favor of a compiler-provided default constructor.
+        public static bool CanBeReplacedByImplicitDefaultConstructor(this IMethodSymbol method, ISymbolFilter symbolFilter)
         {
             // ensure this is a parameterless constructor
             if (method.MethodKind != MethodKind.Constructor || !method.Parameters.IsEmpty)
+            {
+                return false;
+            }
+
+            // An implicit replacement would lose the Version2 unsafe calling requirement.
+#pragma warning disable RSEXPERIMENTAL006
+            if (method.RequiresUnsafeContext)
+#pragma warning restore RSEXPERIMENTAL006
             {
                 return false;
             }

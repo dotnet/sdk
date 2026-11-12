@@ -235,10 +235,7 @@ public sealed class CSharpAssemblyDocumentGenerator
                 }
 
                 // Filter out default constructors since these will be added automatically
-#pragma warning disable RSEXPERIMENTAL006
-                if (_options.HideImplicitDefaultConstructors && method.IsImplicitDefaultConstructor(_options.SymbolFilter) &&
-                    !method.RequiresUnsafeContext)
-#pragma warning restore RSEXPERIMENTAL006
+                if (_options.HideImplicitDefaultConstructors && method.CanBeReplacedByImplicitDefaultConstructor(_options.SymbolFilter))
                 {
                     continue;
                 }
