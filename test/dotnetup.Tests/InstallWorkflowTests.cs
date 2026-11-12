@@ -54,7 +54,7 @@ public class InstallWorkflowTests : IDisposable
         File.WriteAllText(path, $$$"""{"sdk":{"version":"10.0.103","allowPrerelease":false{{{policyProperty}}}}}""");
 
         var (channel, fromFile) = InstallWorkflow.ResolveChannel(
-            InstallComponent.SDK, null, GlobalJsonModifier.GetGlobalJsonInfo(_tempDir));
+            InstallComponent.SDK, null, GlobalJsonHelper.GetGlobalJsonInfo(_tempDir));
 
         fromFile.Should().BeTrue();
         channel.Name.Should().Be(expectedChannel);
@@ -70,7 +70,7 @@ public class InstallWorkflowTests : IDisposable
     {
         var path = Path.Combine(_tempDir, "global.json");
         File.WriteAllText(path, """{"sdk":{"version":"10.0.103","allowPrerelease":false}}""");
-        var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(_tempDir);
+        var globalJson = GlobalJsonHelper.GetGlobalJsonInfo(_tempDir);
         if (replacement is null)
         {
             File.Delete(path);
@@ -98,7 +98,7 @@ public class InstallWorkflowTests : IDisposable
         File.WriteAllText(path, contents);
 
         var resolve = () => InstallWorkflow.ResolveChannel(
-            InstallComponent.SDK, null, GlobalJsonModifier.GetGlobalJsonInfo(_tempDir));
+            InstallComponent.SDK, null, GlobalJsonHelper.GetGlobalJsonInfo(_tempDir));
 
         var error = resolve.Should().Throw<DotnetInstallException>().Which;
         error.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);

@@ -46,7 +46,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonHelper.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().NotBeNull();
         result.Should().Contain("\"10.0.100\"");
@@ -59,7 +59,7 @@ public class GlobalJsonUpdateTests : IDisposable
         // Intentionally irregular whitespace
         var json = "{\n  \"sdk\" :  { \"version\" : \"8.0.100\" ,  \"rollForward\": \"latestFeature\" }\n}";
 
-        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonHelper.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().NotBeNull();
         // Everything except the version value should remain unchanged
@@ -83,7 +83,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonHelper.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().NotBeNull();
         result.Should().Contain("\"10.0.100\"");
@@ -104,7 +104,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonHelper.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().BeNull();
     }
@@ -120,7 +120,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonHelper.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().BeNull();
     }
@@ -138,7 +138,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonHelper.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().BeNull();
     }
@@ -154,7 +154,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100-preview.1");
+        var result = GlobalJsonHelper.ReplaceGlobalJsonSdkVersion(json, "10.0.100-preview.1");
 
         result.Should().NotBeNull();
         result.Should().Contain("\"10.0.100-preview.1\"");
@@ -171,7 +171,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """;
 
-        var result = GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
+        var result = GlobalJsonHelper.ReplaceGlobalJsonSdkVersion(json, "10.0.100");
 
         result.Should().NotBeNull();
         result.Should().Contain("\"10.0.100\"");
@@ -189,7 +189,7 @@ public class GlobalJsonUpdateTests : IDisposable
         var original = """{ "sdk": { "version": "8.0.100" } }""";
         File.WriteAllText(path, original);
 
-        GlobalJsonModifier.UpdateGlobalJson(path, sdkVersion: null);
+        GlobalJsonHelper.UpdateGlobalJson(path, sdkVersion: null);
 
         File.ReadAllText(path).Should().Be(original);
     }
@@ -200,7 +200,7 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "nonexistent", "global.json");
 
         // Should not throw
-        var ex = Record.Exception(() => GlobalJsonModifier.UpdateGlobalJson(path, sdkVersion: "10.0.100"));
+        var ex = Record.Exception(() => GlobalJsonHelper.UpdateGlobalJson(path, sdkVersion: "10.0.100"));
         ex.Should().BeNull();
     }
 
@@ -210,7 +210,7 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, """{ "sdk": { "version": "8.0.100" } }""");
 
-        GlobalJsonModifier.UpdateGlobalJson(path, sdkVersion: "10.0.100");
+        GlobalJsonHelper.UpdateGlobalJson(path, sdkVersion: "10.0.100");
 
         var updated = File.ReadAllText(path);
         updated.Should().Contain("\"10.0.100\"");
@@ -228,7 +228,7 @@ public class GlobalJsonUpdateTests : IDisposable
         // Small delay so any write would be detectable
         Thread.Sleep(50);
 
-        GlobalJsonModifier.UpdateGlobalJson(path, sdkVersion: "10.0.100");
+        GlobalJsonHelper.UpdateGlobalJson(path, sdkVersion: "10.0.100");
 
         File.ReadAllText(path).Should().Be(original);
         File.GetLastWriteTimeUtc(path).Should().Be(lastWrite);
@@ -306,7 +306,7 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, json, encoding);
 
-        var info = GlobalJsonModifier.GetGlobalJsonInfo(_testDir);
+        var info = GlobalJsonHelper.GetGlobalJsonInfo(_testDir);
 
         info.GlobalJsonContents.Should().NotBeNull();
         info.GlobalJsonContents!.Sdk.Should().NotBeNull();
@@ -333,7 +333,7 @@ public class GlobalJsonUpdateTests : IDisposable
         File.WriteAllText(path, json, new UTF8Encoding(encoderShouldEmitUTF8Identifier: emitBom));
         var childDirectory = Directory.CreateDirectory(Path.Combine(_testDir, "child"));
 
-        var info = GlobalJsonModifier.GetGlobalJsonInfo(childDirectory.FullName);
+        var info = GlobalJsonHelper.GetGlobalJsonInfo(childDirectory.FullName);
         var sdk = GlobalJsonChannelResolver.ReadSdkSection(path);
 
         info.GlobalJsonPath.Should().Be(path);
@@ -343,9 +343,9 @@ public class GlobalJsonUpdateTests : IDisposable
         info.AllowPrerelease.Should().BeFalse();
         info.SdkPath.Should().Be(Path.Combine(_testDir, ".dotnet"));
 
-        GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.102")).Should().BeFalse();
+        GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.102")).Should().BeFalse();
         File.ReadAllText(path).Should().Be(json);
-        GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105")).Should().BeTrue();
+        GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105")).Should().BeTrue();
         File.ReadAllText(path).Should().Be(json.Replace("10.0.103", "10.0.105", StringComparison.Ordinal));
         File.ReadAllBytes(path).AsSpan().StartsWith(Encoding.UTF8.GetPreamble()).Should().Be(emitBom);
     }
@@ -360,7 +360,7 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, contents);
 
-        var read = () => GlobalJsonModifier.GetGlobalJsonInfo(_testDir);
+        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir);
 
         var error = read.Should().Throw<DotnetInstallException>().Which;
         error.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
@@ -379,8 +379,8 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, contents);
 
-        var update = () => GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
-        var unconditionalUpdate = () => GlobalJsonModifier.UpdateGlobalJson(path, "10.0.105");
+        var update = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
+        var unconditionalUpdate = () => GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
 
         update.Should().Throw<JsonException>();
         unconditionalUpdate.Should().Throw<JsonException>();
@@ -395,7 +395,7 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, contents);
 
-        GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105")).Should().BeFalse();
+        GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105")).Should().BeFalse();
 
         File.ReadAllText(path).Should().Be(contents);
     }
@@ -416,7 +416,7 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, json, encoding);
 
-        GlobalJsonModifier.UpdateGlobalJson(path, sdkVersion: "10.0.100");
+        GlobalJsonHelper.UpdateGlobalJson(path, sdkVersion: "10.0.100");
 
         var content = File.ReadAllText(path);
         content.Should().Contain("\"10.0.100\"");
@@ -440,10 +440,10 @@ public class GlobalJsonUpdateTests : IDisposable
         byte[] contents = [..(emitBom ? encoding.GetPreamble() : []), ..encoding.GetBytes("""{"sdk":{"version":"10.0.103"}}""")];
         File.WriteAllBytes(path, contents);
 
-        var read = () => GlobalJsonModifier.GetGlobalJsonInfo(_testDir);
+        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir);
         var readSdk = () => GlobalJsonChannelResolver.ReadSdkSection(path);
-        var update = () => GlobalJsonModifier.UpdateGlobalJson(path, "10.0.105");
-        var updateIfNewer = () => GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
+        var update = () => GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
+        var updateIfNewer = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
 
         read.Should().Throw<DotnetInstallException>()
             .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
@@ -463,11 +463,11 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, contents);
 
-        var read = () => GlobalJsonModifier.GetGlobalJsonInfo(_testDir);
+        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir);
         var readSdk = () => GlobalJsonChannelResolver.ReadSdkSection(path);
-        var update = () => GlobalJsonModifier.UpdateGlobalJson(path, "10.0.105");
-        var updateIfNewer = () => GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
-        var replace = () => GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(contents, "10.0.105");
+        var update = () => GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
+        var updateIfNewer = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
+        var replace = () => GlobalJsonHelper.ReplaceGlobalJsonSdkVersion(contents, "10.0.105");
 
         read.Should().Throw<DotnetInstallException>()
             .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
@@ -479,18 +479,45 @@ public class GlobalJsonUpdateTests : IDisposable
     }
 
     [TestMethod]
-    [DataRow("utf-16")]
-    [DataRow("utf-16BE")]
-    public void GlobalJsonFileHelper_OpenAsUtf8Stream_TranscodesUtf16(string encodingName)
+    [DataRow(false)]
+    [DataRow(true)]
+    public void GlobalJson_ReadAndUpdate_PreservesNonAsciiTextAndBom(bool emitBom)
     {
-        var encoding = Encoding.GetEncoding(encodingName);
-        var json = """{ "sdk": { "version": "8.0.100" } }""";
+        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: emitBom);
+        var json = "{\"sdk\":{\"version\":\"10.0.103\"},\"label\":\"\u00e9\"}";
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, json, encoding);
 
-        using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(path);
-        using var reader = new StreamReader(stream, Encoding.UTF8);
-        var content = reader.ReadToEnd();
-        content.Should().Contain("\"8.0.100\"");
+        GlobalJsonHelper.ReadGlobalJson(path).Sdk!.Version.Should().Be("10.0.103");
+        GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
+
+        File.ReadAllBytes(path).Should().Equal(
+            [..encoding.GetPreamble(), ..encoding.GetBytes(json.Replace("10.0.103", "10.0.105"))]);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void GlobalJson_RejectsInvalidUtf8WithoutChangingFile(bool emitBom)
+    {
+        var path = Path.Combine(_testDir, "global.json");
+        byte[] contents = [..(emitBom ? Encoding.UTF8.GetPreamble() : []),
+            ..Encoding.UTF8.GetBytes("{\"sdk\":{\"version\":\"10.0.103\"},\"label\":\""),
+            0xff, ..Encoding.UTF8.GetBytes("\"}")];
+        File.WriteAllBytes(path, contents);
+
+        var readFile = () => GlobalJsonHelper.ReadGlobalJson(path);
+        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir);
+        var readSdk = () => GlobalJsonChannelResolver.ReadSdkSection(path);
+        var update = () => GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
+        var updateIfNewer = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
+
+        readFile.Should().Throw<JsonException>().Which.InnerException.Should().BeOfType<DecoderFallbackException>();
+        read.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        readSdk.Should().Throw<JsonException>();
+        update.Should().Throw<JsonException>();
+        updateIfNewer.Should().Throw<JsonException>();
+        File.ReadAllBytes(path).Should().Equal(contents);
     }
 }

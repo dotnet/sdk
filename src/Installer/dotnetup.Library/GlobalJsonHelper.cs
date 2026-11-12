@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// including walking the directory tree, parsing SDK version info, and
 /// updating the version string while preserving formatting and encoding.
 /// </summary>
-public static class GlobalJsonModifier
+public static class GlobalJsonHelper
 {
     /// <summary>
     /// Reads UTF-8 global.json files, allowing comments but not trailing commas, like the muxer.
@@ -21,9 +21,7 @@ public static class GlobalJsonModifier
     /// </summary>
     internal static GlobalJsonContents ReadGlobalJson(string globalJsonPath)
     {
-        using var stream = File.OpenRead(globalJsonPath);
-        return JsonSerializer.Deserialize(stream, GlobalJsonContentsJsonContext.Default.GlobalJsonContents)
-            ?? throw new JsonException(Strings.GlobalJsonInvalidContents);
+        return ReadGlobalJsonFile(globalJsonPath).Contents;
     }
 
     /// <summary>
@@ -88,7 +86,7 @@ public static class GlobalJsonModifier
             return;
         }
 
-        var (_, fileText, encoding) = ReadGlobalJsonForUpdate(globalJsonPath);
+        var (_, fileText, encoding) = ReadGlobalJsonFile(globalJsonPath);
         WriteGlobalJsonSdkVersion(globalJsonPath, sdkVersion, fileText, encoding);
     }
 
@@ -103,14 +101,24 @@ public static class GlobalJsonModifier
         return true;
     }
 
-    private static (GlobalJsonContents Contents, string Text, Encoding Encoding) ReadGlobalJsonForUpdate(string globalJsonPath)
+    private static (GlobalJsonContents Contents, string Text, Encoding Encoding) ReadGlobalJsonFile(string globalJsonPath)
     {
         var bytes = File.ReadAllBytes(globalJsonPath);
         bool hasBom = bytes.AsSpan().StartsWith(Encoding.UTF8.Preamble);
-        var jsonBytes = bytes.AsSpan(hasBom ? Encoding.UTF8.Preamble.Length : 0);
-        var contents = JsonSerializer.Deserialize(jsonBytes, GlobalJsonContentsJsonContext.Default.GlobalJsonContents)
+        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: hasBom, throwOnInvalidBytes: true);
+        string text;
+        try
+        {
+            text = encoding.GetString(bytes.AsSpan(hasBom ? Encoding.UTF8.Preamble.Length : 0));
+        }
+        catch (DecoderFallbackException ex)
+        {
+            throw new JsonException(ex.Message, ex);
+        }
+
+        var contents = JsonSerializer.Deserialize(text, GlobalJsonContentsJsonContext.Default.GlobalJsonContents)
             ?? throw new JsonException(Strings.GlobalJsonInvalidContents);
-        return (contents, Encoding.UTF8.GetString(jsonBytes), new UTF8Encoding(encoderShouldEmitUTF8Identifier: hasBom));
+        return (contents, text, encoding);
     }
 
     /// <summary>
@@ -122,7 +130,7 @@ public static class GlobalJsonModifier
     /// <exception cref="JsonException">The file contains malformed JSON; it is left unchanged.</exception>
     public static bool UpdateGlobalJsonIfNewer(string globalJsonPath, ReleaseVersion latestVersion)
     {
-        var (contents, fileText, encoding) = ReadGlobalJsonForUpdate(globalJsonPath);
+        var (contents, fileText, encoding) = ReadGlobalJsonFile(globalJsonPath);
         string? currentVersionString = contents.Sdk?.Version;
 
         if (currentVersionString is not null

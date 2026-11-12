@@ -20,7 +20,7 @@ internal static class GlobalJsonChannelResolver
     /// Missing SDK versions produce no requirement; malformed settings throw.
     /// </summary>
     public static GlobalJsonContents.SdkSection? ReadSdkSection(string globalJsonPath)
-        => GetSdkSection(GlobalJsonModifier.ReadGlobalJson(globalJsonPath));
+        => GetSdkSection(GlobalJsonHelper.ReadGlobalJson(globalJsonPath));
 
     /// <summary>
     /// Validates SDK settings from already-parsed contents without reading the file again.

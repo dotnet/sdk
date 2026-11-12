@@ -90,7 +90,7 @@ internal static class DotnetupConfig
 {
     /// <summary>
     /// Reads the setup config if the file records an access mode, otherwise returns null.
-    /// Uses GlobalJsonFileHelper for encoding-aware reading (handles BOM variants).
+    /// Reads UTF-8 by default, detecting other Unicode encodings from their byte-order mark.
     /// A config written by an earlier internal build (legacy <c>pathPreference</c> property or
     /// pre-rename enum spellings) no longer maps: without an <c>accessMode</c> the config is treated
     /// as not yet set up, and an unrecognized <c>accessMode</c> value is treated as corrupt, so the
@@ -232,13 +232,7 @@ internal static class DotnetupConfig
 
         try
         {
-            string text;
-            using (var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(path))
-            using (var streamReader = new StreamReader(stream))
-            {
-                text = streamReader.ReadToEnd();
-            }
-
+            var text = File.ReadAllText(path);
             config = JsonSerializer.Deserialize(text, DotnetupConfigJsonContext.Default.DotnetupConfigData)
                 ?? throw new JsonException("The config file is empty.");
 

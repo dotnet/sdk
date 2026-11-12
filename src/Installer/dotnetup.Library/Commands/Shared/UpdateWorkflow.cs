@@ -250,7 +250,7 @@ internal class UpdateWorkflow
     /// </summary>
     private static bool UpdateGlobalJsonFile(string globalJsonPath, ReleaseVersion latestVersion)
     {
-        if (GlobalJsonModifier.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
+        if (GlobalJsonHelper.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
         {
             AnsiConsole.MarkupLine($"  Updated {DotnetupTheme.Dim(globalJsonPath.EscapeMarkup())} to {latestVersion}.");
             return true;

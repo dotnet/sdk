@@ -554,7 +554,7 @@ internal class InitWorkflows
     /// the environment owner for the directory, so first-run onboarding is skipped.
     /// </summary>
     internal static bool HasLocalSdkPathGlobalJson()
-        => GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory).SdkPath is not null;
+        => GlobalJsonHelper.GetGlobalJsonInfo(Environment.CurrentDirectory).SdkPath is not null;
 
     private static void ShowBanner()
     {

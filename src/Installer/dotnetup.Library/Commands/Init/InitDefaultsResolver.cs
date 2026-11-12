@@ -34,7 +34,7 @@ internal static class InitDefaultsResolver
         // could pin a local install path or channel) is ignored.
         var globalJson = ignoreGlobalJson
             ? new GlobalJsonInfo()
-            : GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
+            : GlobalJsonHelper.GetGlobalJsonInfo(Environment.CurrentDirectory);
         var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(command.InstallPath, globalJson);
 
         if (preResolvedRequests is { Count: > 0 })

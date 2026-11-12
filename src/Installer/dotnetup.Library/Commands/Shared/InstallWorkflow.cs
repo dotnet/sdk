@@ -152,7 +152,7 @@ internal class InstallWorkflow
         MinimalInstallSpec[] componentSpecs,
         DotnetAccessMode? selectedAccessMode = null)
     {
-        var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        var globalJson = GlobalJsonHelper.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
         DotnetAccessMode? accessMode = selectedAccessMode ?? DotnetupConfig.ReadEffectiveAccessMode();
         var target = accessMode == DotnetAccessMode.Admin
