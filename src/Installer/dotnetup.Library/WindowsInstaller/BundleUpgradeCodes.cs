@@ -20,7 +20,7 @@ internal static class BundleUpgradeCodes
     private static readonly Guid s_aspNetCoreSharedFrameworkNamespace = new("C43D5520-11B3-4D62-B6FE-5D6840B04101");
 
     /// <summary>Whether the installers for <paramref name="a"/> and <paramref name="b"/> share an upgrade code, so only the newer can stay installed.</summary>
-    public static bool ShareFamily(DotnetInstall a, DotnetInstall b) =>
+    public static bool UpgradeRelated(DotnetInstall a, DotnetInstall b) =>
         For(a.Component, a.Version, a.InstallRoot.Architecture).Intersect(For(b.Component, b.Version, b.InstallRoot.Architecture)).Any();
 
     /// <summary>Returns the upgrade codes a bundle for <paramref name="component"/> <paramref name="version"/> can have.</summary>
