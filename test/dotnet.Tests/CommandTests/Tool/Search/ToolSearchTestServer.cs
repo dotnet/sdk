@@ -12,6 +12,7 @@ internal sealed class ToolSearchTestServer : IAsyncDisposable
 {
     private readonly HttpListener _listener = new();
     private readonly Task _serverTask;
+    private volatile bool _stopping;
 
     public ToolSearchTestServer()
     {
@@ -50,6 +51,7 @@ internal sealed class ToolSearchTestServer : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        _stopping = true;
         _listener.Stop();
         _listener.Close();
         await _serverTask.ConfigureAwait(false);
@@ -89,10 +91,10 @@ internal sealed class ToolSearchTestServer : IAsyncDisposable
                 context.Response.Close();
             }
         }
-        catch (HttpListenerException) when (!_listener.IsListening)
+        catch (HttpListenerException) when (_stopping)
         {
         }
-        catch (ObjectDisposedException)
+        catch (ObjectDisposedException) when (_stopping)
         {
         }
     }

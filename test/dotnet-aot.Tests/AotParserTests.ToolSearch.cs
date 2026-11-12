@@ -8,6 +8,15 @@ namespace Microsoft.DotNet.Cli.Tests;
 public partial class AotParserTests
 {
     [TestMethod]
+    public async Task ToolSearchServerShutsDownWhileWaitingForRequests()
+    {
+        for (int attempt = 0; attempt < 100; attempt++)
+        {
+            await using var server = new ToolSearchTestServer();
+        }
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task InvokeAotToolSearchCommand_FiltersMappedOriginsOverV3(bool detail)
