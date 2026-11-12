@@ -70,10 +70,9 @@ internal class InitWorkflows
 
         DotnetupConfigData? previousConfig = DotnetupConfig.Read();
 
-        // Resolve the recommended setup. This is side-effect-free: it performs no version
-        // resolution, writes no output, and does not throw on an unresolvable channel, so simply
-        // viewing the form or choosing to exit never triggers an install or a download. Dry-run
-        // ignores global.json so the preview reflects a normal directory.
+        // Resolve the recommended setup without resolving a concrete SDK version or downloading
+        // or installing anything. Invalid repository requirements are reported before showing
+        // the form. Dry-run ignores global.json so the preview reflects a normal directory.
         InitFormDefaults defaults = InitDefaultsResolver.ResolveFormDefaults(
             command,
             requests,
