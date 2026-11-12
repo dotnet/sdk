@@ -7,6 +7,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.Deployment.DotNet.Releases;
+using System.Text.Json;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -190,12 +191,70 @@ public class UpdateWorkflowTests
         saved.AllowPrerelease.Should().BeFalse();
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void RepositoryChangedDuringUpdateReportsFailureAfterOtherSpecsAreProcessed(bool deleteFile)
+    {
+        using var env = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(env.ManifestPath);
+        var root = new DotnetInstallRoot(env.InstallPath, InstallArchitecture.x64);
+        var path = Path.Combine(env.TempRoot, "global.json");
+        var missingPath = Path.Combine(env.TempRoot, "missing.json");
+        File.WriteAllText(path, """{"sdk":{"version":"10.0.103","allowPrerelease":false}}""");
+        manifest.AddInstallSpec(root, RepositorySpec(path));
+        manifest.AddInstallSpec(root, RepositorySpec(missingPath));
+        env.StubComponentDirectories(null, (InstallComponent.SDK, "10.0.105"));
+        File.WriteAllText(Path.Combine(root.Path, "sdk", "10.0.105", "dotnet.dll"), "");
+        File.WriteAllText(Path.Combine(root.Path, DotnetupUtilities.GetDotnetExeName()), "");
+        manifest.AddInstallation(root, new Installation
+        {
+            Component = InstallComponent.SDK, Version = "10.0.105", Subcomponents = ["sdk/10.0.105"]
+        });
+        var releases = new OfflineReleaseManifest
+        {
+            BeforeGetReleases = () =>
+            {
+                if (deleteFile)
+                {
+                    File.Delete(path);
+                }
+                else
+                {
+                    File.WriteAllText(path, "{broken");
+                }
+            }
+        };
+
+        var update = () => new UpdateWorkflow(new ChannelVersionResolver(releases, new DailyChannelResolver(releases)))
+            .Execute(env.ManifestPath, root.Path, InstallComponent.SDK, noProgress: true, updateGlobalJson: true);
+
+        var failure = update.Should().Throw<DotnetInstallException>().Which;
+        failure.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        failure.Message.Should().Contain(path);
+        if (deleteFile)
+        {
+            failure.InnerException.Should().BeOfType<FileNotFoundException>();
+            File.Exists(path).Should().BeFalse();
+        }
+        else
+        {
+            failure.InnerException.Should().BeOfType<JsonException>();
+            File.ReadAllText(path).Should().Be("{broken");
+        }
+        manifest.GetInstallSpecs(root).Should().NotContain(s => s.GlobalJsonPath == missingPath);
+    }
+
     private sealed class OfflineReleaseManifest : ReleaseManifest
     {
         private readonly ReleaseIndexFixture _fixture = ReleaseIndexFixture.Create();
 
+        public Action? BeforeGetReleases { get; init; }
+
         public override System.Collections.ObjectModel.ReadOnlyCollection<ProductRelease>? GetReleases(int major, int minor)
         {
+            BeforeGetReleases?.Invoke();
             var product = _fixture.Index.Single(p => p.ProductVersion == $"{major}.{minor}");
             return new(_fixture.GetReleases(product).ToList());
         }
