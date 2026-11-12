@@ -22,7 +22,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="content\**" PackagePath="content" />
+    <!-- Copied to the output of referencing projects (dotnet-new.IntegrationTests) so tests can install the samples from a folder. -->
+    <Content Include="content\**"
+             PackagePath="content"
+             Link="TemplateEngineSamples\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

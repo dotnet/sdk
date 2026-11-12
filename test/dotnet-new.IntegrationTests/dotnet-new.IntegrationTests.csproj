@@ -73,7 +73,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
           return files[0]%3B
       }
 
-      public static string MicrosoftTemplateEngineSamplesPath => FindNupkg("microsoft.templateengine.samples.")%3B
       public static string MicrosoftDotNetCommonProjectTemplates60Path => FindNupkg("microsoft.dotnet.common.projecttemplates.6.0.")%3B
       public static string MicrosoftDotNetCommonProjectTemplates70Path => FindNupkg("microsoft.dotnet.common.projecttemplates.7.0.")%3B
       public static string MicrosoftDotNetCommonProjectTemplates80Path => FindNupkg("microsoft.dotnet.common.projecttemplates.8.0.")%3B
@@ -127,31 +126,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     <WriteLinesToFile Lines="$(ResolvedGeneratedText)" File="$(GeneratedFilePath)" WriteOnlyWhenDifferent="true" Overwrite="true" />
   </Target>
 
-  <!-- The samples tests install the Microsoft.TemplateEngine.Samples package produced from this repo,
-       so the snapshots always match the template content they are verified against. -->
+  <!-- Building the samples project copies its template content into this project's output under
+       TemplateEngineSamples/, which TemplateEngineSamplesTest installs. -->
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)documentation\TemplateEngine\Samples\Microsoft.TemplateEngine.Samples.csproj"
-                      ReferenceOutputAssembly="false"
-                      SkipGetTargetFrameworkProperties="true"
-                      Private="false" />
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
-
-  <Target Name="PackTemplateEngineSamples" AfterTargets="Build">
-    <PropertyGroup>
-      <TemplateSamplesPackDir>$(IntermediateOutputPath)samples-pack/</TemplateSamplesPackDir>
-    </PropertyGroup>
-    <ItemGroup>
-      <StaleTemplateSamplesPackage Include="$(TemplateSamplesPackDir)*.nupkg" />
-    </ItemGroup>
-    <Delete Files="@(StaleTemplateSamplesPackage)" />
-    <MSBuild Projects="$(RepoRoot)documentation\TemplateEngine\Samples\Microsoft.TemplateEngine.Samples.csproj"
-             Targets="Pack"
-             Properties="PackageOutputPath=$(TemplateSamplesPackDir);NoBuild=false" />
-    <ItemGroup>
-      <TemplateSamplesPackage Include="$(TemplateSamplesPackDir)Microsoft.TemplateEngine.Samples.*.nupkg" Exclude="$(TemplateSamplesPackDir)*.symbols.nupkg" />
-    </ItemGroup>
-    <Copy SourceFiles="@(TemplateSamplesPackage)" DestinationFolder="$(OutDir)" />
-  </Target>
 
   <Target Name="CopyDBFilesToTestLayoutDir" AfterTargets="Build">
     <Copy SourceFiles="TestDirectoryBuildFiles/Directory.Build.props" DestinationFolder="$(TestLayoutDir)" />
