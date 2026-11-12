@@ -33,7 +33,11 @@ namespace Microsoft.NET.ToolPack.Tests
             {
                 var anyTfm = nupkgReader.GetSupportedFrameworks().First().GetShortFolderName();
                 var tmpfilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-                string copiedFile = nupkgReader.ExtractFile($"tools/{anyTfm}/any/DotnetToolSettings.xml", tmpfilePath, null);
+                string copiedFile = nupkgReader.ExtractFile(
+                    $"tools/{anyTfm}/any/DotnetToolSettings.xml",
+                    Path.GetTempPath(),
+                    Path.GetFileName(tmpfilePath),
+                    null);
 
                 XDocument.Load(copiedFile)
                         .Element("DotNetCliTool")
@@ -68,7 +72,11 @@ namespace Microsoft.NET.ToolPack.Tests
             {
                 var anyTfm = nupkgReader.GetSupportedFrameworks().First().GetShortFolderName();
                 var tmpfilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-                string copiedFile = nupkgReader.ExtractFile($"tools/{anyTfm}/any/DotnetToolSettings.xml", tmpfilePath, null);
+                string copiedFile = nupkgReader.ExtractFile(
+                    $"tools/{anyTfm}/any/DotnetToolSettings.xml",
+                    Path.GetTempPath(),
+                    Path.GetFileName(tmpfilePath),
+                    null);
 
                 XDocument.Load(copiedFile)
                         .Element("DotNetCliTool")

@@ -331,9 +331,19 @@
         Condition="'$(BundleRuntimePacks)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
-      <Net120AppHostRids Include="@(Net110AppHostRids);openharmony-arm64;openharmony-x64" />
+      <Net120AppHostRids Include="
+        @(Net110AppHostRids);
+        openharmony-arm64;
+        openharmony-x64;
+        " />
 
-      <Net120RuntimePackRids Include="@(Net110RuntimePackRids);openharmony-arm64;openharmony-x64" />
+      <Net120RuntimePackRids Include="
+        @(Net110RuntimePackRids);
+        openharmony-arm64;
+        openharmony-x64;
+        " />
+
+      <Net120RuntimePackRids Remove="iossimulator-x64;tvossimulator-x64" />
 
       <NetCoreAppHostRids Include="@(Net120AppHostRids)" />
 
@@ -409,6 +419,7 @@
       <Net110MonoRuntimePackRids Include="@(Net100MonoRuntimePackRids)" />
 
       <Net120MonoRuntimePackRids Include="@(Net110MonoRuntimePackRids)" />
+      <Net120MonoRuntimePackRids Remove="iossimulator-x64;tvossimulator-x64" />
 
       <MonoRuntimePackRids Include="@(Net120MonoRuntimePackRids)" />
 
@@ -608,7 +619,13 @@
         openbsd-arm64;
         " />
 
-      <Net120NativeAOTRuntimePackRids Include="@(Net110NativeAOTRuntimePackRids);openharmony-arm64;openharmony-x64" />
+      <Net120NativeAOTRuntimePackRids Include="
+        @(Net110NativeAOTRuntimePackRids);
+        openharmony-arm64;
+        openharmony-x64;
+        " />
+
+      <Net120NativeAOTRuntimePackRids Remove="iossimulator-x64;tvossimulator-x64" />
 
       <NativeAOTRuntimePackRids Include="
         @(Net120NativeAOTRuntimePackRids);

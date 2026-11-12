@@ -9,26 +9,7 @@
 
   <ItemGroup Condition="'$(IncludeAspNetCoreRuntime)' != 'false'">
     <BundledDotnetTool Include="aspnetcoretools"
-                       Condition="'$(DotNetBuildUseMonoRuntime)' != 'true'"
                        Version="$(MicrosoftAspNetCoreAppRefInternalPackageVersion)"
-                       ObsoletesCliTool="Microsoft.Extensions.SecretManager.Tools"
-                       RidSpecificPackageRids="$(AspNetCoreRidSpecificToolPackageRids)"
-                       RidSpecificPackageVersion="$(MicrosoftAspNetCoreAppRefInternalPackageVersion)" />
-    <!-- Native AOT requires the CoreCLR runtime; the Mono runtime build cannot publish the Native AOT aggregate executable, so bundle the individual tools instead. -->
-    <!-- RID-specific tool packages are produced by aspnetcore and use its internal package version. -->
-    <BundledDotnetTool Include="dotnet-dev-certs"
-                       Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'"
-                       Version="$(DotnetDevCertsPackageVersion)"
-                       RidSpecificPackageRids="$(AspNetCoreRidSpecificToolPackageRids)"
-                       RidSpecificPackageVersion="$(MicrosoftAspNetCoreAppRefInternalPackageVersion)" />
-    <BundledDotnetTool Include="dotnet-user-jwts"
-                       Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'"
-                       Version="$(DotnetUserJwtsPackageVersion)"
-                       RidSpecificPackageRids="$(AspNetCoreRidSpecificToolPackageRids)"
-                       RidSpecificPackageVersion="$(MicrosoftAspNetCoreAppRefInternalPackageVersion)" />
-    <BundledDotnetTool Include="dotnet-user-secrets"
-                       Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'"
-                       Version="$(DotnetUserSecretsPackageVersion)"
                        ObsoletesCliTool="Microsoft.Extensions.SecretManager.Tools"
                        RidSpecificPackageRids="$(AspNetCoreRidSpecificToolPackageRids)"
                        RidSpecificPackageVersion="$(MicrosoftAspNetCoreAppRefInternalPackageVersion)" />
@@ -52,7 +33,7 @@
           Condition="'@(BundledDotnetTool)' != ''">
     <ItemGroup>
       <_RidSpecificBundledDotnetTool Include="@(BundledDotnetTool)"
-                                      Condition="'$(DotNetBuildUseMonoRuntime)' != 'true' and '%(BundledDotnetTool.RidSpecificPackageRids)' != ''">
+                                      Condition="'%(BundledDotnetTool.RidSpecificPackageRids)' != ''">
         <ToolId>%(BundledDotnetTool.Identity)</ToolId>
         <ToolVersion>%(BundledDotnetTool.RidSpecificPackageVersion)</ToolVersion>
         <ToolVersion Condition="'%(BundledDotnetTool.RidSpecificPackageVersion)' == ''">%(BundledDotnetTool.Version)</ToolVersion>
@@ -120,7 +101,7 @@
           DestinationFiles="@(BundledToolFiles->'$(OutputPath)DotnetTools\%(PackageToRestore)\%(PackageVersionToRestore)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
 
-    <ItemGroup Condition="'$(OSName)' == 'osx' and '$(DotNetBuildUseMonoRuntime)' != 'true'">
+    <ItemGroup Condition="'$(OSName)' == 'osx'">
       <_BundledMacToolPackage Include="@(_SelectedBundledDotnetToolPackage)"
                               Condition="'%(_SelectedBundledDotnetToolPackage.ToolId)' == 'aspnetcoretools'" />
     </ItemGroup>
