@@ -69,4 +69,19 @@ internal record class InProcTestWatcher(
         ShutdownSource.Token.Register(() => source.TrySetCanceled(ShutdownSource.Token));
         return source;
     }
+
+    public Task WaitForOutputAsync(string text)
+    {
+        var completionSource = CreateCompletionSource();
+
+        Reporter.OnProcessOutput += line =>
+        {
+            if (line.Content.Contains(text))
+            {
+                completionSource.TrySetResult();
+            }
+        };
+
+        return completionSource.Task;
+    }
 }

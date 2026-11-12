@@ -79,7 +79,6 @@ public class SourceFileUpdateTests : DotNetWatchTestBase
     /// must not crash Hot Reload (<see href="https://github.com/dotnet/roslyn/issues/79898"/>).
     /// </summary>
     [TestMethod]
-    [Ignore("https://github.com/dotnet/roslyn/issues/79898")]
     public async Task DeleteAddedMethodAfterDependencyUpdate()
     {
         var testAsset = CopyTestAsset("WatchHotReloadApp");
@@ -158,20 +157,7 @@ public class SourceFileUpdateTests : DotNetWatchTestBase
         var waitingForChanges = w.Observer.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
         var applied = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
 
-        Task WaitForOutput(string text)
-        {
-            var tcs = w.CreateCompletionSource();
-            w.Reporter.OnProcessOutput += line =>
-            {
-                if (line.Content.Contains(text))
-                {
-                    tcs.TrySetResult();
-                }
-            };
-            return tcs.Task;
-        }
-
-        var sawAppV1 = WaitForOutput("app-v1 lib-v1");
+        var sawAppV1 = w.WaitForOutputAsync("app-v1 lib-v1");
         w.Start();
 
         Log("Waiting for changes...");
@@ -179,7 +165,7 @@ public class SourceFileUpdateTests : DotNetWatchTestBase
         await sawAppV1;
 
         // 1. App body edit — establish an App emit baseline.
-        var sawAppV2 = WaitForOutput("app-v2 lib-v1");
+        var sawAppV2 = w.WaitForOutputAsync("app-v2 lib-v1");
         UpdateSourceFile(programPath, appV2);
         await sawAppV2;
         await applied.WaitAsync(w.ShutdownSource.Token);
@@ -190,7 +176,7 @@ public class SourceFileUpdateTests : DotNetWatchTestBase
 
         // 3. Lib-only edit — App compilation forks via the updated project reference
         // without replacing App's emit baseline.
-        var sawLibV2 = WaitForOutput("app-v2 lib-v2");
+        var sawLibV2 = w.WaitForOutputAsync("app-v2 lib-v2");
         UpdateSourceFile(libPath, src => src.Replace("lib-v1", "lib-v2"));
         await sawLibV2;
         await applied.WaitAsync(w.ShutdownSource.Token);
