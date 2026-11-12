@@ -100,8 +100,7 @@ namespace Microsoft.DotNet.GenAPI
 #pragma warning disable RSEXPERIMENTAL006
             if (method.ContainingModule.MemorySafetyRulesVersion == MemorySafetyRulesVersion.Version2 && !method.RequiresUnsafeContext)
             {
-                // Do not make a safe constructor unsafe just to call a shorter base overload.
-                // Use the same candidates for implicit base() calls and explicit initializers.
+                // Filter out constructors that require an unsafe context if the current method does not require one.
                 constructors = constructors.Where(c => !c.RequiresUnsafeContext);
             }
 #pragma warning restore RSEXPERIMENTAL006

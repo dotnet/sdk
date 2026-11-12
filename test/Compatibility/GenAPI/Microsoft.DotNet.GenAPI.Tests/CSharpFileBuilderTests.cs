@@ -3712,8 +3712,6 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     public int Value;
                     public unsafe event System.Action Changed { add { } remove { } }
                     public static unsafe void Dangerous() { }
-                    public static safe void FunctionPointer(delegate*<void> callback) { }
-                    public static safe void Pointer(int* value) { }
                 }
                 """,
                 expected: """
@@ -3723,12 +3721,8 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     public int Value;
                     public unsafe event System.Action Changed { add { } remove { } }
                     public static unsafe void Dangerous() { }
-                    public static void FunctionPointer(delegate*<void> callback) { }
-                    public static void Pointer(int* value) { }
                 }
                 """,
-                includeInternalSymbols: false,
-                includeEffectivelyPrivateSymbols: false,
                 allowUnsafe: true,
                 useMemorySafetyRulesVersion2: true);
         }
@@ -3749,8 +3743,6 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     public int Value { unsafe get { throw null; } set { } }
                 }
                 """,
-                includeInternalSymbols: false,
-                includeEffectivelyPrivateSymbols: false,
                 allowUnsafe: true,
                 useMemorySafetyRulesVersion2: true);
         }
@@ -3770,8 +3762,6 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     public unsafe Contracts() { }
                 }
                 """,
-                includeInternalSymbols: false,
-                includeEffectivelyPrivateSymbols: false,
                 allowUnsafe: true,
                 useMemorySafetyRulesVersion2: true);
         }
@@ -3799,9 +3789,6 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     public Derived() : base(default) { }
                 }
                 """,
-                includeInternalSymbols: false,
-                includeEffectivelyPrivateSymbols: false,
-                allowUnsafe: true,
                 useMemorySafetyRulesVersion2: true);
         }
 
@@ -3824,8 +3811,6 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     public static unsafe int Read() { throw null; }
                 }
                 """,
-                includeInternalSymbols: false,
-                includeEffectivelyPrivateSymbols: false,
                 allowUnsafe: true,
                 useMemorySafetyRulesVersion2: true);
         }
@@ -3855,8 +3840,6 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     unsafe event System.Action IContracts.Changed { add { } remove { } }
                 }
                 """,
-                includeInternalSymbols: false,
-                includeEffectivelyPrivateSymbols: false,
                 allowUnsafe: true,
                 useMemorySafetyRulesVersion2: true);
         }

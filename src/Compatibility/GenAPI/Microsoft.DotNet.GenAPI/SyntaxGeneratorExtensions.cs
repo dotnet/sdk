@@ -140,8 +140,8 @@ namespace Microsoft.DotNet.GenAPI
 
                 if (usesMemorySafetyRulesVersion2 && !propertySymbol.IsAbstract && !propertySymbol.IsIndexer)
                 {
-                    // Version2 safety inference must see the stub's actual storage shape. Adding bodies later
-                    // can leave a packed property marked safe alongside an unsafe accessor (CS9396).
+                    // Add the accessor bodies now so Roslyn knows this is not an auto-property when choosing safety modifiers.
+                    // These bodies would normally be added later, but the modifiers would not be recalculated.
                     return syntaxGenerator.PropertyDeclaration(propertySymbol,
                         getAccessorStatements: [SyntaxFactory.ThrowStatement(SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression))],
                         setAccessorStatements: []);

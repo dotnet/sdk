@@ -108,12 +108,18 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             bool useMemorySafetyRulesVersion2 = false)
         {
             CSharpCompilation compilation = CreateCSharpCompilation(name, enableNullable, publicKey, allowUnsafe, diagnosticOptions);
-            CSharpParseOptions parseOptions = usePreviewLanguageVersion || useMemorySafetyRulesVersion2
+            CSharpParseOptions parseOptions = usePreviewLanguageVersion
                 ? ParseOptions.WithLanguageVersion(LanguageVersion.Preview)
                 : ParseOptions;
             if (useMemorySafetyRulesVersion2)
             {
-                parseOptions = parseOptions.WithFeatures([new KeyValuePair<string, string>("updated-memory-safety-rules", "true")]);
+#pragma warning disable RSEXPERIMENTAL006
+                // Version2 currently requires Preview. Remove this override once the feature
+                // is available in a released language version.
+                parseOptions = parseOptions.WithLanguageVersion(LanguageVersion.Preview);
+                // Configure Version2 on the compilation rather than through a parser feature flag.
+                compilation = compilation.WithOptions(compilation.Options.WithMemorySafetyRulesVersion(MemorySafetyRulesVersion.Version2));
+#pragma warning restore RSEXPERIMENTAL006
             }
             return compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(syntax, parseOptions));
         }
