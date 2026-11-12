@@ -227,7 +227,10 @@ internal sealed class InitFormModel
         AdminInstallRootResolver? adminInstallRootResolver = null)
     {
         (FormField accessModeField, IReadOnlyList<DotnetAccessMode> accessModes) =
-            BuildAccessModeField(defaults.AccessMode);
+            BuildAccessModeField(
+                defaults.AccessMode,
+                defaults.RecommendedAccessMode,
+                defaults.ConfiguredAccessMode);
 
         (FormField channelField, IReadOnlyList<string?> channelTokens, int globalJsonChannelIndex) =
             BuildChannelField(defaults.ChannelDisplay);
@@ -322,32 +325,51 @@ internal sealed class InitFormModel
         }
     }
 
-    private static (FormField Field, IReadOnlyList<DotnetAccessMode> Modes) BuildAccessModeField(DotnetAccessMode recommended)
+    private static (FormField Field, IReadOnlyList<DotnetAccessMode> Modes) BuildAccessModeField(
+        DotnetAccessMode selected,
+        DotnetAccessMode recommended,
+        DotnetAccessMode? configured)
     {
         bool isWindows = OperatingSystem.IsWindows();
 
         var modes = new List<DotnetAccessMode> { DotnetAccessMode.None, DotnetAccessMode.Shell };
-        var choices = new List<FieldChoice>
-        {
-            new(AccessModeTitle(DotnetAccessMode.None), AccessModeDescription(DotnetAccessMode.None)),
-            new(AccessModeTitle(DotnetAccessMode.Shell), AccessModeDescription(DotnetAccessMode.Shell)),
-        };
 
         if (isWindows)
         {
             modes.Add(DotnetAccessMode.Everywhere);
-            choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Everywhere), AccessModeDescription(DotnetAccessMode.Everywhere)));
             modes.Add(DotnetAccessMode.Admin);
-            choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Admin), AccessModeDescription(DotnetAccessMode.Admin)));
         }
 
-        int defaultIndex = Math.Max(0, modes.IndexOf(recommended));
+        var choices = modes.Select(mode => new FieldChoice(
+            AccessModeTitle(mode),
+            AccessModeDescription(mode),
+            Suffix: AccessModeSuffix(mode, configured, recommended))).ToList();
+
+        int defaultIndex = Math.Max(0, modes.IndexOf(selected));
         var field = new FormField(
             "Access mode",
             choices,
             defaultIndex,
             description: "Controls where the dotnet you install is available. Change it later with 'dotnetup env set'.");
         return (field, modes);
+    }
+
+    private static string AccessModeSuffix(
+        DotnetAccessMode mode,
+        DotnetAccessMode? configured,
+        DotnetAccessMode recommended)
+    {
+        if (mode == configured && mode == recommended)
+        {
+            return "  (current, recommended)";
+        }
+
+        if (mode == configured)
+        {
+            return "  (current)";
+        }
+
+        return mode == recommended ? "  (recommended)" : string.Empty;
     }
 
     // The access-mode value shown to the user, capitalized (None / Shell / Everywhere), matching the
