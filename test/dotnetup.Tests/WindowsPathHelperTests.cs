@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security;
-using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -62,9 +59,9 @@ public class WindowsPathHelperTests
     [OSCondition(OperatingSystems.Windows)]
     public void SelectRegisteredDotnetPaths_PrefersSharedHostPathOverInstallLocation()
     {
-        WindowsPathHelper.SelectRegisteredDotnetLocations(
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
                 sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
-                installLocations: new Dictionary<string, string> { ["x64"] = s_otherExistingDirectory }).Select(location => location.Value)
+                installLocations: new Dictionary<string, string> { ["x64"] = s_otherExistingDirectory })
             .Should().Equal(s_existingDirectory);
     }
 
@@ -72,9 +69,9 @@ public class WindowsPathHelperTests
     [OSCondition(OperatingSystems.Windows)]
     public void SelectRegisteredDotnetPaths_FallsBackToInstallLocationWhenSharedHostPathIsStale()
     {
-        WindowsPathHelper.SelectRegisteredDotnetLocations(
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
                 sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_missingDirectory },
-                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory + Path.DirectorySeparatorChar }).Select(location => location.Value)
+                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory + Path.DirectorySeparatorChar })
             .Should().Equal(s_existingDirectory);
     }
 
@@ -82,9 +79,9 @@ public class WindowsPathHelperTests
     [OSCondition(OperatingSystems.Windows)]
     public void SelectRegisteredDotnetPaths_UsesInstallLocationsWhenTheNativeViewYieldsNothing()
     {
-        WindowsPathHelper.SelectRegisteredDotnetLocations(
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
                 sharedHostPaths: new Dictionary<string, string>(),
-                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory }).Select(location => location.Value)
+                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory })
             .Should().Equal(s_existingDirectory);
     }
 
@@ -92,141 +89,10 @@ public class WindowsPathHelperTests
     [OSCondition(OperatingSystems.Windows)]
     public void SelectRegisteredDotnetPaths_ReadsEachArchitectureAndSkipsMissingDirectories()
     {
-        WindowsPathHelper.SelectRegisteredDotnetLocations(
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
                 sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
-                installLocations: new Dictionary<string, string> { ["x86"] = s_otherExistingDirectory, ["arm64"] = s_missingDirectory }).Select(location => location.Value)
+                installLocations: new Dictionary<string, string> { ["x86"] = s_otherExistingDirectory, ["arm64"] = s_missingDirectory })
             .Should().BeEquivalentTo(s_existingDirectory, s_otherExistingDirectory);
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    public void ToDotnetInstallRoots_RecordsTheRegistryArchitectureOfEachRoot()
-    {
-        var locations = WindowsPathHelper.SelectRegisteredDotnetLocations(
-            sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory, ["arm64"] = s_missingDirectory },
-            installLocations: new Dictionary<string, string>
-            {
-                ["X86"] = s_otherExistingDirectory,
-                ["arm"] = s_otherExistingDirectory,
-            });
-
-        WindowsPathHelper.ToDotnetInstallRoots(locations).Should().BeEquivalentTo(
-        [
-            new DotnetInstallRoot(s_existingDirectory, InstallArchitecture.x64),
-            new DotnetInstallRoot(s_otherExistingDirectory, InstallArchitecture.x86),
-        ]);
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    public void ToDotnetInstallRoots_KeepsAKnownArchitectureWhenAnUnknownKeyRegistersTheSameDirectoryFirst()
-    {
-        var locations = WindowsPathHelper.SelectRegisteredDotnetLocations(
-            sharedHostPaths: new Dictionary<string, string>(),
-            installLocations: new Dictionary<string, string>
-            {
-                ["SDKFeatures"] = s_existingDirectory,
-                ["x64"] = s_existingDirectory,
-            });
-
-        WindowsPathHelper.ToDotnetInstallRoots(locations)
-            .Should().Equal(new DotnetInstallRoot(s_existingDirectory, InstallArchitecture.x64));
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    [DataRow(Architecture.X64, InstallArchitecture.x64, @"Program Files\dotnet")]
-    [DataRow(Architecture.X64, InstallArchitecture.x86, @"Program Files (x86)\dotnet")]
-    [DataRow(Architecture.Arm64, InstallArchitecture.arm64, @"Program Files\dotnet")]
-    [DataRow(Architecture.Arm64, InstallArchitecture.x64, @"Program Files\dotnet\x64")]
-    [DataRow(Architecture.Arm64, InstallArchitecture.x86, @"Program Files (x86)\dotnet")]
-    [DataRow(Architecture.X86, InstallArchitecture.x86, @"Program Files\dotnet")]
-    public void GetProgramFilesDotnetRoots_UsesTheFallbackRootOnlyWhenTheRegistryRegistersNothing(
-        Architecture osArchitecture, InstallArchitecture processArchitecture, string expectedRoot)
-    {
-        using var testEnv = new TestEnvironment();
-        var resolver = CreateResolverWithEveryFallbackRoot(testEnv.TempRoot, osArchitecture);
-
-        WindowsPathHelper.GetProgramFilesDotnetRoots([], resolver, processArchitecture)
-            .Should().Equal(new DotnetInstallRoot(Path.Combine(testEnv.TempRoot, expectedRoot), processArchitecture));
-
-        // A directory under an unknown key still counts as registered, as it does for GetProgramFilesDotnetPaths.
-        WindowsPathHelper.GetProgramFilesDotnetRoots([new("SDKFeatures", s_existingDirectory)], resolver, processArchitecture).Should().BeEmpty();
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    public void GetFallbackProgramFilesDotnetRoot_ReturnsNullWhenTheFolderIsMissing()
-    {
-        using var testEnv = new TestEnvironment();
-        string programFiles = Directory.CreateDirectory(Path.Combine(testEnv.TempRoot, "Program Files")).FullName;
-
-        // Only the native folder exists, so x64 on Arm64 Windows must not fall back to it.
-        Directory.CreateDirectory(Path.Combine(programFiles, "dotnet"));
-        var resolver = new AdminInstallRootResolver(Architecture.Arm64, programFiles, Path.Combine(testEnv.TempRoot, "Program Files (x86)"));
-
-        WindowsPathHelper.GetFallbackProgramFilesDotnetRoot(resolver, InstallArchitecture.x64).Should().BeNull();
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    [DataRow(Architecture.X64, InstallArchitecture.arm64, "Program Files", "Program Files (x86)")]
-    [DataRow(Architecture.X64, InstallArchitecture.x64, "", "")]
-    public void GetFallbackProgramFilesDotnetRoot_ReturnsNullForUnsupportedCombinations(
-        Architecture osArchitecture, InstallArchitecture processArchitecture, string programFiles, string programFilesX86)
-    {
-        var resolver = new AdminInstallRootResolver(osArchitecture, programFiles, programFilesX86);
-
-        WindowsPathHelper.GetFallbackProgramFilesDotnetRoot(resolver, processArchitecture).Should().BeNull();
-    }
-
-    private static AdminInstallRootResolver CreateResolverWithEveryFallbackRoot(string tempRoot, Architecture osArchitecture)
-    {
-        string programFiles = Path.Combine(tempRoot, "Program Files");
-        string programFilesX86 = Path.Combine(tempRoot, "Program Files (x86)");
-        Directory.CreateDirectory(Path.Combine(programFiles, "dotnet", "x64"));
-        Directory.CreateDirectory(Path.Combine(programFilesX86, "dotnet"));
-        return new AdminInstallRootResolver(osArchitecture, programFiles, programFilesX86);
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    [ResourceLock(WellKnownResources.CurrentDirectory)]
-    [DataRow(null)]
-    [DataRow("")]
-    public void GetFallbackProgramFilesDotnetPath_ReturnsNullWhenProgramFilesIsUnknown(string? programFiles)
-    {
-        // An unknown Program Files folder must not resolve a relative "dotnet" folder in the current directory.
-        using var testEnv = new TestEnvironment();
-        Directory.CreateDirectory(Path.Combine(testEnv.TempRoot, "dotnet"));
-        string originalDirectory = Environment.CurrentDirectory;
-        Environment.CurrentDirectory = testEnv.TempRoot;
-        try
-        {
-            WindowsPathHelper.GetFallbackProgramFilesDotnetPath(programFiles).Should().BeNull();
-        }
-        finally
-        {
-            Environment.CurrentDirectory = originalDirectory;
-        }
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    public void GetFallbackProgramFilesDotnetPath_ReturnsNullWhenDotnetIsMissing()
-    {
-        using var testEnv = new TestEnvironment();
-
-        WindowsPathHelper.GetFallbackProgramFilesDotnetPath(Path.Combine(testEnv.TempRoot, "missing")).Should().BeNull();
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    public void GetProgramFilesDotnetRoots_MatchesTheReportedPaths()
-    {
-        var roots = WindowsPathHelper.GetProgramFilesDotnetRoots();
-
-        WindowsPathHelper.GetProgramFilesDotnetPaths().Should().Contain(roots.Select(root => root.Path));
     }
 
     [TestMethod]

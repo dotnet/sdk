@@ -150,9 +150,9 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
 
     /// <summary>
     /// Returns the system-level .NET install roots for the current platform, each with the architecture of
-    /// the .NET it holds. Roots for other architectures are included; callers filter as needed.
-    /// Windows: reads registry (sharedhost\Path, then InstallLocation) per architecture subkey,
-    ///          falls back to %ProgramFiles%\dotnet.
+    /// the .NET it holds. Callers still filter by architecture because macOS can return roots of two architectures.
+    /// Windows: the single root for the process architecture, found the way the host finds it
+    ///          (see <see cref="WindowsPathHelper.GetProgramFilesDotnetRoot(InstallArchitecture)"/>).
     /// macOS: the registered install_location for the process architecture (as the host reads it),
     ///        then /usr/local/share/dotnet (plus /usr/local/share/dotnet/x64 under Rosetta).
     /// Linux: checks /usr/lib/dotnet, /usr/share/dotnet, /usr/lib64/dotnet.
@@ -164,7 +164,9 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     {
         if (OperatingSystem.IsWindows())
         {
-            return WindowsPathHelper.GetProgramFilesDotnetRoots();
+            return WindowsPathHelper.GetProgramFilesDotnetRoot(InstallerUtilities.GetDefaultInstallArchitecture()) is { } root
+                ? [root]
+                : [];
         }
 
         var roots = new List<DotnetInstallRoot>();
