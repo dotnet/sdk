@@ -28,6 +28,9 @@ internal interface IInstallArtifact : IDisposable
     /// <summary>The subcomponents laid down by the last <see cref="Commit"/> call, for manifest tracking.</summary>
     IReadOnlyList<string> ExtractedSubcomponents { get; }
 
+    /// <summary>Size of the downloaded file once <see cref="Prepare"/> has completed, if known.</summary>
+    long? DownloadedBytes => null;
+
     /// <summary>
     /// Throws when an existing folder the artifact would install into holds a different build, since installing keeps existing folders.
     /// </summary>

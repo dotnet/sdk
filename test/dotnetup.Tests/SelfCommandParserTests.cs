@@ -197,7 +197,7 @@ public class SelfCommandParserTests
         try
         {
             var called = false;
-            SelfUpdateDownloadProgress.Run(noProgress, progress =>
+            SelfUpdateDownloadProgress.Run(noProgress ? ProgressMode.None : ProgressMode.Bars, progress =>
             {
                 called = true;
                 progress.Report(new DownloadProgress(512, hasLength ? 1024 : null));
@@ -207,8 +207,7 @@ public class SelfCommandParserTests
             called.Should().BeTrue();
             if (noProgress)
             {
-                output.ToString().Should().Contain(BootstrapperStrings.SelfUpdateDownloading)
-                    .And.Contain("Completed:").And.NotContain("\u001b");
+                output.ToString().Should().BeEmpty();
             }
         }
         finally
@@ -226,7 +225,7 @@ public class SelfCommandParserTests
         try
         {
             var failure = new DotnetInstallException(DotnetInstallErrorCode.DownloadFailed, "Download failed.");
-            Action download = () => SelfUpdateDownloadProgress.Run(true, progress =>
+            Action download = () => SelfUpdateDownloadProgress.Run(ProgressMode.None, progress =>
             {
                 progress.Report(new DownloadProgress(512, null));
                 throw failure;

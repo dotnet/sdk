@@ -9,9 +9,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
 /// <summary>Reports a self-update download using the shared installation progress targets.</summary>
 internal static class SelfUpdateDownloadProgress
 {
-    public static void Run(bool noProgress, Action<IProgress<DownloadProgress>> download)
+    public static void Run(ProgressMode progress, Action<IProgress<DownloadProgress>> download)
     {
-        IProgressTarget target = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+        IProgressTarget target = ProgressTargets.Create(progress);
         using var reporter = new LazyProgressReporter(target);
         var description = Strings.SelfUpdateDownloading.EscapeMarkup();
         var task = reporter.AddTask(description, 100);

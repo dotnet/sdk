@@ -627,30 +627,19 @@ public class MultiChannelSdkInstallTests
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"Multi-channel SDK install failed. Output:\n{output}");
 
-        // The completion message should appear exactly once (not duplicated per channel)
-        int installedCount = CountOccurrences(output, "Installed");
-        int alreadyInstalledCount = CountOccurrences(output, "lready installed");
-        (installedCount + alreadyInstalledCount).Should().BeLessThanOrEqualTo(2,
-            "There should be at most one 'Installed' line and one 'already installed' line, not one per channel. Output:\n" + output);
+        // --no-progress prints one summary line per channel and a single completion line.
+        string[] lines = output.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
+        lines.Count(line => line.StartsWith("Installed at ", StringComparison.Ordinal)).Should().Be(1,
+            "The completion message should appear exactly once. Output:\n" + output);
+        lines.Count(line => line.Contains("  installed", StringComparison.Ordinal) || line.Contains("already present, skipped", StringComparison.Ordinal))
+            .Should().Be(2, "There should be one result line per channel. Output:\n" + output);
+        output.Should().NotContain("Downloading", "--no-progress should not print per-step progress");
 
         // Output should not contain garbled/interleaved progress bar artifacts.
         // Progress bars use CR (\r) to overwrite lines. In captured output (redirected stdout),
         // these should not appear because --no-progress is set.
         output.Should().NotContain("\r\n\r\n\r\n",
             "Output should not contain excessive blank lines from corrupted progress bars");
-    }
-
-    private static int CountOccurrences(string text, string pattern)
-    {
-        int count = 0;
-        int index = 0;
-        while ((index = text.IndexOf(pattern, index, StringComparison.OrdinalIgnoreCase)) != -1)
-        {
-            count++;
-            index += pattern.Length;
-        }
-
-        return count;
     }
 }
 

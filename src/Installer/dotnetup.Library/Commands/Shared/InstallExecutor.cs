@@ -21,11 +21,11 @@ internal class InstallExecutor
     /// then displays a unified result summary including any per-request failures.
     /// </summary>
     /// <param name="requests">The resolved install requests to execute.</param>
-    /// <param name="noProgress">Whether to suppress progress display.</param>
+    /// <param name="progress">How to display progress.</param>
     /// <returns>The batch result containing successes and failures.</returns>
     public static InstallBatchResult ExecuteInstalls(
         List<ResolvedInstallRequest> requests,
-        bool noProgress)
+        ProgressMode progress)
     {
         if (requests.Count == 0)
         {
@@ -34,12 +34,20 @@ internal class InstallExecutor
 
         DotnetInstallRoot installRoot = requests[0].Request.InstallRoot;
         string escapedPath = installRoot.Path.EscapeMarkup();
+        bool summaryOnly = progress == ProgressMode.None;
 
-        // Print "Installing X, Y, Z to <path>..."
-        var descriptions = requests.Select(r =>
-            $"{r.Request.Component.GetDisplayName()} {DotnetupTheme.Accent($"{r.ResolvedVersion}")}").ToList();
-        SpectreAnsiConsole.MarkupLine(
-            $"Installing {string.Join(", ", descriptions)} to {DotnetupTheme.Accent(escapedPath)}...");
+        if (summaryOnly)
+        {
+            SpectreAnsiConsole.WriteLine($"Installing {FormatGroupedRequests(requests)} to {installRoot.Path}...");
+        }
+        else
+        {
+            // Print "Installing X, Y, Z to <path>..."
+            var descriptions = requests.Select(r =>
+                $"{r.Request.Component.GetDisplayName()} {DotnetupTheme.Accent($"{r.ResolvedVersion}")}").ToList();
+            SpectreAnsiConsole.MarkupLine(
+                $"Installing {string.Join(", ", descriptions)} to {DotnetupTheme.Accent(escapedPath)}...");
+        }
 
         if (requests.Any(r => UnsignedSourcePolicy.MayDownloadUnsigned(r.Request)))
         {
@@ -48,13 +56,118 @@ internal class InstallExecutor
 
         InstallBatchResult batchResult;
         {
-            IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+            IProgressTarget progressTarget = ProgressTargets.Create(progress);
             using var sharedReporter = new LazyProgressReporter(progressTarget);
             batchResult = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
         }
 
-        DisplayBatchResults(batchResult);
+        if (summaryOnly)
+        {
+            DisplaySummaryInRequestOrder(requests, batchResult, installRoot.Path);
+        }
+        else
+        {
+            DisplayBatchResults(batchResult);
+        }
+
         return batchResult;
+    }
+
+    /// <summary>Formats requests as "dotnet (runtime) 8.0.27, 9.0.16, .NET SDK 10.0.100", grouping versions by component.</summary>
+    internal static string FormatGroupedRequests(IReadOnlyList<ResolvedInstallRequest> requests) =>
+        string.Join(", ", requests
+            .GroupBy(r => r.Request.Component)
+            .Select(group => $"{group.Key.GetDisplayName()} {string.Join(", ", group.Select(r => r.ResolvedVersion.ToString()))}"));
+
+    /// <summary>
+    /// Writes one plain, aligned line per request in request order, so concurrent downloads cannot change the
+    /// output; used for <c>--no-progress</c>.
+    /// </summary>
+    internal static void DisplaySummaryInRequestOrder(IReadOnlyList<ResolvedInstallRequest> requests, InstallBatchResult batchResult, string installRootPath)
+    {
+        var labels = requests.Select(r => $"{r.Request.Component.GetDisplayName()} {r.ResolvedVersion}").ToList();
+        int labelWidth = labels.Max(label => label.Length);
+        var results = MatchResultsToRequests(requests, batchResult);
+
+        for (int i = 0; i < requests.Count; i++)
+        {
+            SpectreAnsiConsole.WriteLine($"  {labels[i].PadRight(labelWidth)}  {DescribeOutcome(requests[i], results[i], batchResult)}");
+        }
+
+        if (batchResult.Successes.Count > 0)
+        {
+            SpectreAnsiConsole.WriteLine($"Installed at {installRootPath}.");
+        }
+    }
+
+    /// <summary>
+    /// Pairs each request with its success, preferring an exact version match. A request satisfied by an existing
+    /// build of another version (for example a daily build for a global.json pin) takes a remaining result of its component.
+    /// </summary>
+    private static InstallResult?[] MatchResultsToRequests(IReadOnlyList<ResolvedInstallRequest> requests, InstallBatchResult batchResult)
+    {
+        var unclaimed = batchResult.Successes.ToList();
+        var matches = new InstallResult?[requests.Count];
+        InstallResult? Claim(Func<InstallResult, bool> predicate)
+        {
+            InstallResult? match = unclaimed.FirstOrDefault(predicate);
+            if (match is not null)
+            {
+                unclaimed.Remove(match);
+            }
+
+            return match;
+        }
+
+        for (int i = 0; i < requests.Count; i++)
+        {
+            var request = requests[i];
+            matches[i] = Claim(r => r.Install.Component == request.Request.Component && r.Install.Version.Equals(request.ResolvedVersion));
+        }
+
+        for (int i = 0; i < requests.Count; i++)
+        {
+            var request = requests[i];
+            if (matches[i] is null && !batchResult.Failures.Any(f => ReferenceEquals(f.Request, request)))
+            {
+                matches[i] = Claim(r => r.Install.Component == request.Request.Component);
+            }
+        }
+
+        return matches;
+    }
+
+    private static string DescribeOutcome(ResolvedInstallRequest request, InstallResult? result, InstallBatchResult batchResult)
+    {
+        if (batchResult.Failures.FirstOrDefault(f => ReferenceEquals(f.Request, request)) is { } failure)
+        {
+            return $"failed: {failure.Exception.Message}";
+        }
+
+        if (result is null)
+        {
+            return "not installed";
+        }
+
+        if (result.WasAlreadyInstalled)
+        {
+            return result.Install.Version.Equals(request.ResolvedVersion)
+                ? "already present, skipped"
+                : $"already present as {result.Install.Version}, skipped";
+        }
+
+        var details = new List<string>();
+        if (result.DownloadedBytes is long bytes)
+        {
+            details.Add(ProgressFormatting.FormatMB(bytes).Trim());
+        }
+
+        if (result.Repaired)
+        {
+            details.Add("repaired");
+        }
+
+        return details.Count > 0 ? $"installed ({string.Join(", ", details)})" : "installed";
     }
 
     /// <summary>
@@ -65,10 +178,10 @@ internal class InstallExecutor
     /// </summary>
     public static void ExecuteInstallsAndThrowOnFailure(
         List<ResolvedInstallRequest> requests,
-        bool noProgress,
+        ProgressMode progress,
         InstallCommand command)
     {
-        var batchResult = ExecuteInstalls(requests, noProgress);
+        var batchResult = ExecuteInstalls(requests, progress);
         command.CompletedInstalls.AddRange(batchResult.Successes);
 
         int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);

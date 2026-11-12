@@ -349,7 +349,7 @@ internal class InitWorkflows
             return RunInstallsWithMigration(command, requests, migrations, installRoot, manifestPath, predownloadTask);
         }
 
-        RunInstallRequests(requests, predownloadTask, command.NoProgress, command);
+        RunInstallRequests(requests, predownloadTask, command.Progress, command);
         return requests;
     }
 
@@ -392,14 +392,14 @@ internal class InitWorkflows
                 // so the cache is populated and we avoid redundant downloads. Only meaningful for Phase 1.
                 predownloadTask?.GetAwaiter().GetResult();
                 predownloadTask = null;
-                InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, command.NoProgress, command);
+                InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, command.Progress, command);
             });
     }
 
     private static void RunInstallRequests(
         List<ResolvedInstallRequest> requests,
         Task? predownloadTask,
-        bool noProgress,
+        ProgressMode progress,
         InstallCommand command)
     {
         if (requests.Count > 0)
@@ -411,7 +411,7 @@ internal class InitWorkflows
         // so the cache is populated and we avoid redundant downloads.
         predownloadTask?.GetAwaiter().GetResult();
 
-        InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, noProgress, command);
+        InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, progress, command);
     }
 
     internal static void DisplayEnvironmentSetupProgress(IAnsiConsole console)

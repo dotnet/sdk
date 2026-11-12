@@ -5,61 +5,30 @@ using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-public class NonUpdatingProgressTarget : IProgressTarget
+/// <summary>
+/// Writes plain progress lines for redirected or non-interactive output: one when a task starts, one when it
+/// finishes, and, when <c>progressStepPercent</c> is positive, one each time a task crosses another step.
+/// </summary>
+public class NonUpdatingProgressTarget(int progressStepPercent = 0) : AppendOnlyProgressTarget(progressStepPercent)
 {
-    public IProgressReporter CreateProgressReporter() => new Reporter();
+    protected override void WriteStarted(int taskId, string description) =>
+        AnsiConsole.WriteLine(description + "...");
 
-    private sealed class Reporter : IProgressReporter
+    protected override void WriteStep(int taskId, string startDescription, string currentDescription, int percent)
     {
-        private readonly object _consoleLock = new();
-
-        public IProgressTask AddTask(string description, double maxValue)
-        {
-            var task = new ProgressTaskImpl(description, _consoleLock) { MaxValue = maxValue };
-            lock (_consoleLock)
-            {
-                AnsiConsole.WriteLine(description + "...");
-            }
-            return task;
-        }
-
-        public void Dispose()
-        {
-        }
+        string detail = currentDescription.StartsWith(startDescription, StringComparison.Ordinal) ? currentDescription[startDescription.Length..] : string.Empty;
+        AnsiConsole.WriteLine(FormattableString.Invariant($"{startDescription}: {percent}%{detail}"));
     }
 
-    private sealed class ProgressTaskImpl : IProgressTask
+    protected override void WriteFinished(int taskId, string description, bool hasFinishedDescription)
     {
-#pragma warning disable IDE0032 // Setter has side-effect logic; not convertible to auto-property
-        private double _value;
-#pragma warning restore IDE0032
-        private int _completed;
-        private readonly object _consoleLock;
-
-        public ProgressTaskImpl(string description, object consoleLock)
+        if (hasFinishedDescription)
         {
-            Description = description;
-            _consoleLock = consoleLock;
+            AnsiConsole.WriteLine(description);
         }
-
-        public double Value
+        else
         {
-            get => _value;
-            set
-            {
-                _value = value;
-                if (_value >= MaxValue && Interlocked.CompareExchange(ref _completed, 1, 0) == 0)
-                {
-                    lock (_consoleLock)
-                    {
-                        AnsiConsole.MarkupLine($"{DotnetupTheme.Brand("Completed:")} {Description}");
-                    }
-                }
-            }
+            AnsiConsole.MarkupLine($"{DotnetupTheme.Brand("Completed:")} {description}");
         }
-
-        public string Description { get; set; }
-        public double MaxValue { get; set; }
-        public bool RequiresKnownMaximum => false;
     }
 }

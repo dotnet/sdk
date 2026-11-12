@@ -32,7 +32,8 @@ component fails.
 | --- | --- |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--install-path <INSTALL_PATH>` | Update only the matching installation root. |
-| `--no-progress [<true\|false>]` | Disable progress display. |
+| `--no-progress [<true\|false>]` | Disable progress display. Same as `--progress none`. |
+| `--progress <auto\|bars\|lines\|none\|json>` | Choose the progress display. The default, `auto`, uses live bars on a terminal and plain lines when output is redirected or in CI. `json` writes [progress events](../usecases/automation.md#progress-events) to stdout and other output to stderr. |
 | `-v`, `--verbosity <normal\|detailed>` | Set output verbosity. The default is `normal`. |
 | `-?`, `-h`, `--help` | Show command help. |
 

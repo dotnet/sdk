@@ -50,6 +50,9 @@ public abstract class CommandBase
     public int Execute()
     {
         _exitCode = 1;
+        using IDisposable? jsonProgressOutput = CommonOptions.ResolveProgressMode(ParseResult) == ProgressMode.Json
+            ? JsonProgressOutput.Begin()
+            : null;
 
         try
         {

@@ -344,7 +344,7 @@ internal class InstallWorkflow
     /// </summary>
     private void ExecuteInstallRequests(List<ResolvedInstallRequest> requests)
     {
-        InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, _command.NoProgress, _command);
+        InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, _command.Progress, _command);
     }
 
     private void ValidateInstallPath(string installPath, PathSource pathSource, string? manifestPath)
