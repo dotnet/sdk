@@ -149,9 +149,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public Task CanDisplayDetails_InstalledPackage_NuGetFeed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+            WriteNuGetConfig(workingDirectory, _dotnetPublicFeed);
+
             new DotnetNewCommand(_log, "install", _nuGetPackageId, "--nuget-source", _dotnetPublicFeed)
                 .WithoutBuiltInTemplates().WithCustomHive(home)
-                .WithWorkingDirectory(CreateTemporaryFolder())
+                .WithWorkingDirectory(workingDirectory)
                 .Execute()
                 .Should()
                 .ExitWith(0)
@@ -159,7 +162,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             CommandResult commandResult = new DotnetNewCommand(_log, "details", _nuGetPackageId)
                 .WithCustomHive(home).WithoutBuiltInTemplates()
-                .WithWorkingDirectory(CreateTemporaryFolder())
+                .WithWorkingDirectory(workingDirectory)
                 .Execute();
 
             commandResult
