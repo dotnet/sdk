@@ -214,6 +214,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         IDisposable? environmentScope = null;
+        Activity? activity = null;
         bool buildStarted = false;
         try
         {
@@ -246,7 +247,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 MultiThreaded = multiThreaded,
             };
 
-            using var activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
+            activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
             buildStarted = true;
             using CancellationTokenRegistration cancellationRegistration = cancellationToken.Register(
@@ -355,6 +356,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 consoleLogger = null; // avoid double disposal which would throw
             }
 
+            activity?.Dispose();
             environmentScope?.Dispose();
             if (binaryLogger?.IsValueCreated == true) binaryLogger.Value.ReallyShutdown();
             consoleLogger?.Shutdown();
