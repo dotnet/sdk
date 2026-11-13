@@ -14,6 +14,59 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         [TestMethod]
         [CoreMSBuildOnly]
+        [DataRow("false", null, true)]
+        [DataRow("false", "true", true)]
+        [DataRow("false", "false", false)]
+        [DataRow("true", null, false)]
+        [DataRow("true", "false", false)]
+        public void Restore_DownloadsCrossgen2ForCoreClrBrowserDefault(string useMonoRuntime, string readyToRun, bool expectCrossgen2)
+        {
+            var testInstance = CreateAspNetSdkTestAsset("VanillaWasm", identifier: $"{useMonoRuntime}_{readyToRun ?? "default"}")
+                .WithProjectChanges((project, doc) =>
+                {
+                    var properties = new XElement("PropertyGroup",
+                        new XElement("UseMonoRuntime", useMonoRuntime),
+                        new XElement("PrunePackageTargetingPackRoots", "$(NetCoreTargetingPackRoot)"),
+                        new XElement("NetCoreTargetingPackRoot", "$(MSBuildProjectDirectory)/empty-packs"));
+                    if (readyToRun is not null)
+                        properties.Add(new XElement("PublishReadyToRun", readyToRun));
+                    doc.Root.Add(properties);
+                });
+
+            var restore = CreateRestoreCommand(testInstance);
+            restore.WithEnvironmentVariable("DOTNETSDK_WORKLOAD_PACK_ROOTS", string.Empty);
+            ExecuteCommand(restore).Should().Pass();
+
+            using var assets = JsonDocument.Parse(File.ReadAllText(Path.Combine(testInstance.Path, "obj", "project.assets.json")));
+            var downloadsCrossgen2 = assets.RootElement.GetProperty("project").GetProperty("frameworks").EnumerateObject()
+                .Where(framework => framework.Value.TryGetProperty("downloadDependencies", out _))
+                .SelectMany(framework => framework.Value.GetProperty("downloadDependencies").EnumerateArray())
+                .Any(dependency => dependency.GetProperty("name").GetString().StartsWith("Microsoft.NETCore.App.Crossgen2.", StringComparison.Ordinal));
+            downloadsCrossgen2.Should().Be(expectCrossgen2);
+        }
+
+        [TestMethod]
+        [CoreMSBuildOnly]
+        [DataRow("wasi-wasm", ToolsetInfo.CurrentTargetFramework)]
+        [DataRow("browser-wasm", "net11.0")]
+        public void Crossgen2PackDefault_DoesNotApplyToOtherTargets(string runtimeIdentifier, string targetFramework)
+        {
+            var testInstance = CreateAspNetSdkTestAsset("VanillaWasm", identifier: $"{runtimeIdentifier}_{targetFramework}")
+                .WithProjectChanges((project, doc) => doc.Root.Add(
+                    new XElement("PropertyGroup",
+                        new XElement("UseMonoRuntime", "false"),
+                        new XElement("RuntimeIdentifier", runtimeIdentifier),
+                        new XElement("TargetFramework", targetFramework))));
+
+            var command = new MSBuildCommand(testInstance, string.Empty);
+            command.WithWorkingDirectory(testInstance.TestRoot);
+            var result = ExecuteCommandWithoutRestore(command, "-getProperty:RequiresCrossgen2Pack");
+            result.Should().Pass();
+            result.StdOut.Trim().Should().BeEmpty();
+        }
+
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void Build_Works()
         {
             var testAsset = "VanillaWasm";
