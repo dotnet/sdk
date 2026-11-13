@@ -97,23 +97,15 @@ from the repository directory to apply the new requirement. For a registered
 repository, `dotnetup sdk update` also reads the current file before resolving
 its SDK requirement.
 
-## Remove matching repository requirements
+## Remove a repository requirement
 
 Update `sdk.version` to change a repository's SDK requirement. To remove the
 requirement, remove `sdk.version` or delete `global.json` if the file is no longer
 needed. Dotnetup picks up these changes during garbage collection and removes
 unused installations.
 
-To remove specifications by channel, select the `globaljson` source. This
-command removes every matching specification in the selected installation
-root, not only one repository:
-
-```dotnetcli
-dotnetup sdk uninstall 10.0.1xx --source globaljson
-```
-
-Use `dotnetup list` to find the stored channel, source path, and installation
-root. Add `--install-path` to select a custom root.
+`dotnetup sdk uninstall` removes command-line and migration requirements, not
+repository requirements. Use `dotnetup list` to find the `global.json` path.
 
 If `global.json` cannot be read or contains an invalid SDK requirement, dotnetup
 reports a warning and uses the last successfully resolved requirement for update
