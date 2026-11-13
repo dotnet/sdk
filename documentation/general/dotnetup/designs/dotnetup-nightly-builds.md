@@ -232,7 +232,7 @@ public static string StripDailySuffix(string scopedDailyChannelName)
     => scopedDailyChannelName.Substring(0, scopedDailyChannelName.Length - "-daily".Length);
 ```
 
-The `Matches()` method for daily channels matches any version that would match the base channel.
+The `IsSatisfiedBy()` method for daily channels matches any version that would match the base channel.
 For example, `10.0-daily` matches any `10.0.x` version, just like `10.0` does today. The
 difference is only in how versions are **resolved** (blob feed vs release manifest) and
 **tracked** (daily install specs vs release install specs).

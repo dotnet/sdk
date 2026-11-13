@@ -240,12 +240,12 @@ internal class ChannelVersionResolver
                 channel,
                 architecture ?? InstallerUtilities.GetDefaultInstallArchitecture(),
                 component);
-            return dailyVersion is not null && channel.Matches(dailyVersion) ? dailyVersion : null;
+            return dailyVersion is not null && channel.IsSatisfiedBy(dailyVersion) ? dailyVersion : null;
         }
 
         if (ReleaseVersion.TryParse(channel.Name, out var exact))
         {
-            return channel.Matches(exact) ? exact : null;
+            return channel.IsSatisfiedBy(exact) ? exact : null;
         }
 
         if (!IsValidChannelFormat(channel.Name)
@@ -338,6 +338,6 @@ internal class ChannelVersionResolver
             ? releases.SelectMany(r => r.Sdks).Select(s => s.Version)
             : releases.SelectMany(r => r.Runtimes)
                 .Where(r => ReleaseManifest.IsMatchingRuntimeComponent(r.Name, component)).Select(r => r.Version);
-        return versions.Where(channel.Matches).OrderByDescending(v => v).FirstOrDefault();
+        return versions.Where(channel.IsSatisfiedBy).OrderByDescending(v => v).FirstOrDefault();
     }
 }

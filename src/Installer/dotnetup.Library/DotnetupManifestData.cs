@@ -82,7 +82,7 @@ internal class Installation
     }
 
     private static bool IsSatisfiedBy(UpdateChannel channel, string version) =>
-        ReleaseVersion.TryParse(version, out var parsed) && channel.Matches(parsed);
+        ReleaseVersion.TryParse(version, out var parsed) && channel.IsSatisfiedBy(parsed);
 
     public DotnetInstall ToDotnetInstall(DotnetInstallRoot installRoot) =>
         new(installRoot, new ReleaseVersion(Version), Component,

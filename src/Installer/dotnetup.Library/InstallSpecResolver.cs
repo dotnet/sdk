@@ -34,8 +34,8 @@ internal static class InstallSpecResolver
         where T : class =>
         installations.Where(i => getComponent(i) == component)
             .Select(i => (Installation: i, Version: getVersion(i)))
-            .Where(i => i.Version is { } version && (requirement.Matches(version) ||
-                (getProductVersion?.Invoke(i.Installation) is { } productVersion && requirement.Matches(productVersion))))
+            .Where(i => i.Version is { } version && (requirement.IsSatisfiedBy(version) ||
+                (getProductVersion?.Invoke(i.Installation) is { } productVersion && requirement.IsSatisfiedBy(productVersion))))
             .OrderByDescending(i => i.Version)
             .Select(i => i.Installation)
             .FirstOrDefault();

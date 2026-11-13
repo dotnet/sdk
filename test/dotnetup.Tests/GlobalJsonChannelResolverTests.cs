@@ -116,7 +116,7 @@ public class GlobalJsonChannelResolverTests
         versions.Select(v => new Installation { Component = InstallComponent.SDK, Version = v }).ToList();
 
     private static Installation? Resolve(UpdateChannel channel, IEnumerable<Installation> installations) =>
-        installations.Where(i => channel.Matches(new ReleaseVersion(i.Version)))
+        installations.Where(i => channel.IsSatisfiedBy(new ReleaseVersion(i.Version)))
             .OrderByDescending(i => new ReleaseVersion(i.Version)).FirstOrDefault();
 
     private static UpdateChannel ReadChannel(string contents, Encoding? encoding = null)

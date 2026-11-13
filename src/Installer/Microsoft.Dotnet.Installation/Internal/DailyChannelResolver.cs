@@ -250,7 +250,7 @@ internal sealed class DailyChannelResolver : IDisposable
                 $"Could not extract a version from daily channel redirect target '{finalUri}'.");
         }
 
-        // UpdateChannel.Matches restricts daily channels to prerelease versions,
+        // UpdateChannel.IsSatisfiedBy restricts daily channels to prerelease versions,
         // so returning a stable version here would create an installation that
         // the channel's own matcher disagrees with. Treat a stable redirect
         // target as "no daily build available for this scope" so the bare 'daily'

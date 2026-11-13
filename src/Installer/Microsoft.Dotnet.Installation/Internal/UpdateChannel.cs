@@ -198,7 +198,7 @@ internal class UpdateChannel
     /// This checks eligibility, not whether the version is the latest match or
     /// whether its product is still in support.
     /// </summary>
-    public bool Matches(ReleaseVersion version)
+    public bool IsSatisfiedBy(ReleaseVersion version)
     {
         return (MinimumVersion is null || version.CompareTo(MinimumVersion) >= 0)
             && (AllowPrerelease != false || IsStableRelease(version))
@@ -209,7 +209,7 @@ internal class UpdateChannel
     /// Checks the channel-name rules: exact versions, named channels, major,
     /// major.minor, feature bands, and scoped daily channels.
     /// Does not enforce <see cref="MinimumVersion"/> or the blanket prerelease
-    /// exclusion from <see cref="Matches"/>. Named channels apply their own
+    /// exclusion from <see cref="IsSatisfiedBy"/>. Named channels apply their own
     /// prerelease rules, including the <see cref="AllowPrerelease"/> override for
     /// <c>latest</c>; daily channels require prereleases.
     /// </summary>
@@ -258,7 +258,7 @@ internal class UpdateChannel
             // base scope matching.
             if (TrySplitPartialVersionAndPrereleaseLabel(scope, out string partialVersion, out string prereleaseLabel))
             {
-                if (!new UpdateChannel(partialVersion).Matches(version))
+                if (!new UpdateChannel(partialVersion).IsSatisfiedBy(version))
                 {
                     return false;
                 }
@@ -267,7 +267,7 @@ internal class UpdateChannel
                     || version.Prerelease.StartsWith(prereleaseLabel + ".", StringComparison.OrdinalIgnoreCase);
             }
 
-            return new UpdateChannel(scope).Matches(version);
+            return new UpdateChannel(scope).IsSatisfiedBy(version);
         }
 
         return MatchesMajorMinorOrFeatureBand(version);
