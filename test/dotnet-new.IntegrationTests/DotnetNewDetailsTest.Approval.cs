@@ -80,10 +80,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string packageName = "Microsoft.Azure.WebJobs.ItemTemplates";
             string latestVersion = await GetLatestVersion(packageName);
+            string workingDirectory = CreateTemporaryFolder();
+            WriteNuGetConfig(workingDirectory, _dotnetPublicFeed);
 
             CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName, "--nuget-source", _dotnetPublicFeed)
-            .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
-                .WithWorkingDirectory(CreateTemporaryFolder())
+                .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
+                .WithWorkingDirectory(workingDirectory)
                 .Execute();
 
             commandResult
@@ -154,9 +156,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string latestVersion = await GetLatestVersion(packageName);
 
             string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+            WriteNuGetConfig(workingDirectory, _dotnetPublicFeed);
+
             new DotnetNewCommand(_log, "install", packageName, "--nuget-source", _dotnetPublicFeed)
                 .WithoutBuiltInTemplates().WithCustomHive(home)
-                .WithWorkingDirectory(CreateTemporaryFolder())
+                .WithWorkingDirectory(workingDirectory)
                 .Execute()
                 .Should()
                 .ExitWith(0)
@@ -164,7 +169,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName, "--nuget-source", _dotnetPublicFeed)
                 .WithCustomHive(home).WithoutBuiltInTemplates()
-                .WithWorkingDirectory(CreateTemporaryFolder())
+                .WithWorkingDirectory(workingDirectory)
                 .Execute();
 
             commandResult
@@ -212,6 +217,18 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
 
             return metadata.PackageVersion.ToNormalizedString();
+        }
+
+        private static void WriteNuGetConfig(string directory, string source)
+        {
+            File.WriteAllText(Path.Combine(directory, "NuGet.Config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key=""TestSource"" value=""{source}"" />
+  </packageSources>
+</configuration>
+");
         }
 
         private string ExtractVersion(string? stdOut)
