@@ -4,8 +4,13 @@
 using FluentAssertions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Installers.NuGet;
+using Microsoft.TemplateEngine.Edge.UnitTests.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
+using NuGetSettings = NuGet.Configuration.Settings;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
@@ -25,6 +30,49 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         [ClassCleanup]
         public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        [TestMethod]
+        [DataRow("1.0.0")]
+        [DataRow(null)]
+        [DataRow("*")]
+        [DataRow("1.*")]
+        [DataRow("*-*")]
+        public async Task DownloadPackage_MismatchedMetadataId_ThrowsPackageNotFound(string? version)
+        {
+            const string identifier = "Requested.Package";
+            using var feed = new MockNuGetFeed("Other.Package");
+            string source = feed.BaseAddress + "index.json";
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            var settings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            var manager = new NuGetApiPackageManager(settings);
+
+            var exception = await Assert.ThrowsExactlyAsync<PackageNotFoundException>(() => manager.DownloadPackageAsync(
+                installPath, identifier, version, additionalSources: new[] { source }, force: true, cancellationToken: TestContext.CancellationToken));
+
+            exception.PackageIdentifier.Should().Be(identifier);
+            NuGetVersion.TryParse(version, out NuGetVersion? expectedVersion);
+            Assert.AreEqual(expectedVersion, exception.PackageVersion);
+            exception.SourcesList.Should().Equal(source);
+            Directory.GetFiles(installPath).Should().BeEmpty();
+            feed.Requests.Should().NotContain(path => path.StartsWith("/flatcontainer/", StringComparison.Ordinal));
+        }
+
+        [TestMethod]
+        public async Task GetLatestVersion_MismatchedMetadataId_ThrowsPackageNotFound()
+        {
+            const string identifier = "Requested.Package";
+            using var feed = new MockNuGetFeed("Other.Package");
+            string source = feed.BaseAddress + "index.json";
+            var settings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            var manager = new NuGetApiPackageManager(settings);
+
+            var exception = await Assert.ThrowsExactlyAsync<PackageNotFoundException>(() => manager.GetLatestVersionAsync(
+                identifier, additionalSource: source, cancellationToken: TestContext.CancellationToken));
+
+            exception.PackageIdentifier.Should().Be(identifier);
+            exception.PackageVersion.Should().BeNull();
+            exception.SourcesList.Should().Equal(source);
+        }
 
         [TestMethod]
         public async Task DownloadPackage_Latest()
@@ -48,6 +96,30 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             result.Reserved.Should().BeFalse();
             result.PackageVersion.Should().NotBeNullOrEmpty();
             result.NuGetSource.Should().NotBeNullOrEmpty();
+            Directory.EnumerateFiles(installPath, "*.tmp").Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public async Task DownloadPackage_PackageValidationFailure_RemovesTemporaryPackage()
+        {
+            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(
+                engineEnvironmentSettings,
+                new FailingNuGetPackageVerifier());
+
+            var exception = await Assert.ThrowsExactlyAsync<DownloadException>(() => packageManager.DownloadPackageAsync(
+                installPath,
+                "Microsoft.DotNet.Common.ProjectTemplates.5.0",
+                "5.0.0",
+                additionalSources: _additionalSources,
+                cancellationToken: TestContext.CancellationToken));
+
+            Assert.IsInstanceOfType<InvalidDataException>(exception.InnerException);
+            exception.InnerException.Message.Should().Be("Package validation failed.");
+
+            Directory.EnumerateFiles(installPath).Should().BeEmpty();
         }
 
         [TestMethod]
@@ -456,7 +528,17 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 {packageSourceMapping}
                 </configuration>
                 """);
-            return global::NuGet.Configuration.Settings.LoadSpecificSettings(settingsDirectory, "NuGet.config");
+            return NuGetSettings.LoadSpecificSettings(settingsDirectory, "NuGet.config");
+        }
+
+        private sealed class FailingNuGetPackageVerifier : INuGetPackageVerifier
+        {
+            public bool IsEnabled => true;
+
+            public Task VerifyAsync(string packagePath, SourceRepository repository, ISettings settings, ILogger logger, CancellationToken cancellationToken)
+            {
+                throw new InvalidDataException("Package validation failed.");
+            }
         }
     }
 }
