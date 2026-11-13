@@ -7,6 +7,7 @@
   - [How to Control Telemetry](#how-to-control-telemetry)
   - [CLI Activity Duration Metrics](#cli-activity-duration-metrics)
   - [Common Properties Collected](#common-properties-collected)
+    - [Copilot session correlation](#copilot-session-correlation)
   - [Telemetry Events](#telemetry-events)
     - [Core CLI Events](#core-cli-events)
     - [Test Events](#test-events)
@@ -197,6 +198,23 @@ Every telemetry event automatically includes these common properties:
 | **Libc Release** | Libc release information | Libc release version |
 | **Libc Version** | Libc version information | Libc version number |
 | **SessionId** | Unique session identifier | GUID or CI-specific correlation identifier |
+| **CopilotAgentSessionId** | Executing Copilot session ID, normalized to match Copilot telemetry, or `not_present` when unavailable | UUID, 64-character lowercase SHA-256 digest, or `not_present` |
+
+### Copilot session correlation
+
+When telemetry is enabled, `CopilotAgentSessionId` records the nonempty
+`COPILOT_AGENT_SESSION_ID` using
+[Copilot's normalization](https://github.com/github/copilot-agent-runtime/blob/1fc45d2c2a0a978ebbd068e0eec79715cf5dd417/src/native/primitives/crypto_helpers.rs#L23-L62):
+recognized UUIDs are preserved exactly; other values become lowercase SHA-256 hex
+of the original UTF-8 bytes, without trimming or case normalization.
+
+The value is captured before each event is queued, so reused MSBuild hosts pick up
+the current request's ID. Missing/empty environment values produce `not_present`
+rather than null, which exporters can drop. A missing telemetry field means collection
+support is unknown (for example, an older SDK); `not_present` means no Copilot context
+was observed, not proof of a human invocation. A literal `not_present` environment
+value is hashed like any other custom ID. Existing telemetry opt-out settings and
+.NET's own `SessionId` remain unchanged.
 
 ### Microsoft-internal user classification
 

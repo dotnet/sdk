@@ -3,9 +3,11 @@
 
 using System.Collections.Frozen;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.InternalMicrosoft;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.Utilities;
 
 #if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
 using Azure.Monitor.OpenTelemetry.Exporter;
@@ -18,9 +20,11 @@ using OpenTelemetry.Trace;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-public class TelemetryClient : ITelemetryClient
+public partial class TelemetryClient : ITelemetryClient
 {
+    private const string CopilotAgentSessionIdPropertyName = "CopilotAgentSessionId";
     private static FrozenDictionary<string, string?> s_commonProperties = [];
+    private readonly IEnvironmentProvider _environmentProvider;
     private Task? _trackEventTask;
 
     private static readonly MeterProviderBuilder s_metricsProviderBuilder;
@@ -162,6 +166,8 @@ public class TelemetryClient : ITelemetryClient
 
     public TelemetryClient(string? sessionId, IEnvironmentProvider? environmentProvider = null)
     {
+        _environmentProvider = environmentProvider ?? new EnvironmentProvider();
+
         // This is some kind of special condition for MSBuild-related tests.
         if (DisabledForTests)
         {
@@ -171,8 +177,7 @@ public class TelemetryClient : ITelemetryClient
         Instance = this;
         IsInitialized = true;
 
-        environmentProvider ??= new EnvironmentProvider();
-        Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT,
+        Enabled = !_environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT,
             // When building in the official CI pipeline, this makes the complier enable telemetry by default. Otherwise, it is disabled.
             // It is the reason tests don't send telemetry, because we don't run tests in the official CI pipeline.
             defaultValue: CompileOptions.TelemetryOptOutDefault);
@@ -198,7 +203,7 @@ public class TelemetryClient : ITelemetryClient
 
         var initialSessionId = !string.IsNullOrEmpty(sessionId)
             ? sessionId
-            : environmentProvider.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
+            : _environmentProvider.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
 
         CurrentSessionId ??= !string.IsNullOrEmpty(initialSessionId) ? initialSessionId : Guid.NewGuid().ToString();
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
@@ -350,10 +355,13 @@ public class TelemetryClient : ITelemetryClient
             return;
         }
 
+        // Capture before queueing: a reused MSBuild host can change its environment for the next request.
+        string copilotAgentSessionId = GetCopilotAgentSessionId();
+
         // Continue the task in different threads.
         _trackEventTask = _trackEventTask == null
-            ? Task.Run(() => TrackEventTask(eventName, properties))
-            : _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, properties));
+            ? Task.Run(() => TrackEventTask(eventName, properties, copilotAgentSessionId))
+            : _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, properties, copilotAgentSessionId));
     }
 
     public void ThreadBlockingTrackEvent(string eventName, IDictionary<string, string?>? properties)
@@ -363,7 +371,7 @@ public class TelemetryClient : ITelemetryClient
             return;
         }
 
-        TrackEventTask(eventName, properties);
+        TrackEventTask(eventName, properties, GetCopilotAgentSessionId());
     }
 
     internal void WaitForPendingEvents()
@@ -374,13 +382,29 @@ public class TelemetryClient : ITelemetryClient
     internal static void WaitForInternalMicrosoftDetection() =>
         s_internalMicrosoftTelemetry.WaitForCompletion();
 
-    private static void TrackEventTask(string eventName, IDictionary<string, string?>? properties)
+    private string GetCopilotAgentSessionId()
+    {
+        string? sessionId = _environmentProvider.GetEnvironmentVariable(EnvironmentVariableNames.COPILOT_AGENT_SESSION_ID);
+        if (string.IsNullOrEmpty(sessionId))
+        {
+            return "not_present";
+        }
+
+        return CopilotSessionUuidPattern().IsMatch(sessionId) ? sessionId : Sha256Hasher.Hash(sessionId);
+    }
+
+    // Match Copilot's hash_string_if_not_uuid: canonical UUID versions 1-8 with RFC variant, or nil.
+    [GeneratedRegex(@"\A(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)\z",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex CopilotSessionUuidPattern();
+
+    private static void TrackEventTask(string eventName, IDictionary<string, string?>? properties, string copilotAgentSessionId)
     {
         try
         {
             properties ??= new Dictionary<string, string?>();
             properties.Add("event id", Guid.NewGuid().ToString());
-            var @event = new ActivityEvent($"dotnet/cli/{eventName}", tags: MakeTags(properties));
+            var @event = new ActivityEvent($"dotnet/cli/{eventName}", tags: MakeTags(properties, copilotAgentSessionId));
             Activity.Current?.AddEvent(@event);
         }
         catch (Exception e)
@@ -389,14 +413,17 @@ public class TelemetryClient : ITelemetryClient
         }
     }
 
-    private static ActivityTagsCollection MakeTags(IDictionary<string, string?> eventProperties)
+    private static ActivityTagsCollection MakeTags(IDictionary<string, string?> eventProperties, string copilotAgentSessionId)
     {
         var common = s_commonProperties
             .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value));
         var properties = eventProperties
-            .Where(p => p.Value is not null)
+            .Where(p => p.Value is not null && p.Key != CopilotAgentSessionIdPropertyName)
             .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value))
             .OrderBy(p => p.Key);
-        return [.. common, .. properties];
+        ActivityTagsCollection tags = [.. common, .. properties];
+        tags.Add(CopilotAgentSessionIdPropertyName, copilotAgentSessionId);
+
+        return tags;
     }
 }
