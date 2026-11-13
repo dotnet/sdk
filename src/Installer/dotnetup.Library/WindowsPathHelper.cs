@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.Versioning;
+using System.Security;
 using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -134,66 +136,122 @@ internal sealed partial class WindowsPathHelper : IDisposable
     /// <summary>
     /// Gets the default Program Files dotnet installation path(s) by reading from the registry.
     /// For each architecture subkey under HKLM\SOFTWARE\dotnet\Setup\InstalledVersions\{arch}:
-    ///   1. First checks {arch}\sharedhost → Path value (preferred, set by the .NET host installer)
-    ///   2. Falls back to {arch} → InstallLocation value
-    /// If the registry yields no results, falls back to %ProgramFiles%\dotnet if it exists.
-    /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
+    ///   1. First checks {arch}\sharedhost → Path value in the native registry view (set by the .NET host installer for the native architecture)
+    ///   2. Falls back to {arch} → InstallLocation value in the 32-bit registry view when that path is missing or does not exist
+    ///   3. Falls back to the installer's default root for that architecture (for example Program Files\dotnet\x64 for x64 on Arm64)
+    /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md#current-state-on-windows
     /// See https://github.com/dotnet/runtime/issues/109974
     /// </summary>
     public static List<string> GetProgramFilesDotnetPaths()
     {
-        var paths = new List<string>();
+        // The host installer writes InstallLocation to the 32-bit view and sharedhost\Path only to the native view.
+        // See Win64="no": https://github.com/dotnet/runtime/blob/e33be4d53ab951272c9161c50b549e5e7db60262/src/installer/pkg/sfx/installers/host.wxs#L35-L55
+        var nativeView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
+        return SelectRegisteredDotnetPaths(
+            sharedHostPaths: ReadInstalledVersions(nativeView, subKeyName: "sharedhost", valueName: "Path"),
+            installLocations: ReadInstalledVersions(RegistryView.Registry32, subKeyName: null, valueName: "InstallLocation"),
+            defaultPaths: new AdminInstallRootResolver().ResolveSupported());
+    }
 
-        // Read from registry to find actual dotnet installations.
-        // Use 32-bit registry hive to ensure we get the correct view on WoW64.
-        using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-        using var key = baseKey.OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions");
-        if (key != null)
+    private const string InstalledVersionsKeyPath = @"SOFTWARE\dotnet\Setup\InstalledVersions";
+
+    private static int s_unreadableSystemInstallRegistryWarned;
+
+    /// <summary>
+    /// Reads <paramref name="valueName"/> for each architecture under <c>InstalledVersions</c> in <paramref name="view"/>.
+    /// A view that cannot be read warns and yields nothing, so it does not hide the other view's registrations.
+    /// </summary>
+    private static Dictionary<string, string> ReadInstalledVersions(RegistryView view, string? subKeyName, string valueName)
+    {
+        try
         {
-            foreach (var archName in key.GetSubKeyNames())
+            using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
+            using var installedVersions = baseKey.OpenSubKey(InstalledVersionsKeyPath);
+            return ReadArchitectureValues(installedVersions, subKeyName, valueName);
+        }
+        catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException or IOException)
+        {
+            WarnUnreadableSystemInstallRegistry(ex, Console.Error, ref s_unreadableSystemInstallRegistryWarned);
+            return [];
+        }
+    }
+
+    /// <summary>
+    /// Writes the unreadable-registry warning to <paramref name="warningWriter"/> unless <paramref name="warned"/> is already set.
+    /// </summary>
+    internal static void WarnUnreadableSystemInstallRegistry(Exception exception, TextWriter warningWriter, ref int warned)
+    {
+        // Init queries this before its form renders and again after it closes; only the first, pre-form call may write.
+        if (Interlocked.Exchange(ref warned, 1) == 0)
+        {
+            string keyName = $@"{Registry.LocalMachine.Name}\{InstalledVersionsKeyPath}";
+            warningWriter.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.SystemInstallRegistryUnreadableWarning, keyName, exception.Message));
+        }
+    }
+
+    /// <summary>
+    /// Reads <paramref name="valueName"/> from each architecture key under <paramref name="installedVersions"/>, or from
+    /// its <paramref name="subKeyName"/> child when given, keyed by architecture.
+    /// </summary>
+    internal static Dictionary<string, string> ReadArchitectureValues(RegistryKey? installedVersions, string? subKeyName, string valueName)
+    {
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (installedVersions is null)
+        {
+            return values;
+        }
+
+        foreach (var architecture in installedVersions.GetSubKeyNames())
+        {
+            using var key = installedVersions.OpenSubKey(subKeyName is null ? architecture : $@"{architecture}\{subKeyName}");
+            if (key?.GetValue(valueName) is string { Length: > 0 } value)
             {
-                using var archKey = key.OpenSubKey(archName);
-                if (archKey == null)
-                {
-                    continue;
-                }
-
-                // Prefer sharedhost\Path — this is the canonical location set by the host installer.
-                string? installPath = null;
-                using (var sharedHostKey = archKey.OpenSubKey("sharedhost"))
-                {
-                    installPath = sharedHostKey?.GetValue("Path") as string;
-                }
-
-                // Fallback to the InstallLocation value on the architecture key.
-                installPath ??= archKey.GetValue("InstallLocation") as string;
-
-                if (!string.IsNullOrEmpty(installPath))
-                {
-                    var normalized = installPath.TrimEnd(Path.DirectorySeparatorChar);
-                    if (Directory.Exists(normalized) && !paths.Contains(normalized, StringComparer.OrdinalIgnoreCase))
-                    {
-                        paths.Add(normalized);
-                    }
-                }
+                values[architecture] = value;
             }
         }
 
-        // Fallback: if registry yielded nothing, check the default Program Files location.
-        if (paths.Count == 0)
+        return values;
+    }
+
+    /// <summary>
+    /// Returns the existing install directory for each architecture: its <c>sharedhost\Path</c>, then its
+    /// <c>InstallLocation</c>, then its default install root, skipping any that are missing or do not exist.
+    /// </summary>
+    internal static List<string> SelectRegisteredDotnetPaths(
+        IReadOnlyDictionary<string, string> sharedHostPaths,
+        IReadOnlyDictionary<string, string> installLocations,
+        IEnumerable<DotnetInstallRoot> defaultPaths)
+    {
+        var defaultPathsByArchitecture = defaultPaths.ToDictionary(r => r.Architecture.ToString(), r => r.Path, StringComparer.OrdinalIgnoreCase);
+        var paths = new List<string>();
+        foreach (var architecture in sharedHostPaths.Keys
+            .Union(installLocations.Keys, StringComparer.OrdinalIgnoreCase)
+            .Union(defaultPathsByArchitecture.Keys, StringComparer.OrdinalIgnoreCase))
         {
-            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            if (!string.IsNullOrEmpty(programFiles))
+            // Non-native installs and stale sharedhost entries are only found through InstallLocation;
+            // installs without registry entries are only found at their default root.
+            string? installPath = GetExistingDirectory(sharedHostPaths.GetValueOrDefault(architecture))
+                ?? GetExistingDirectory(installLocations.GetValueOrDefault(architecture))
+                ?? GetExistingDirectory(defaultPathsByArchitecture.GetValueOrDefault(architecture));
+
+            if (installPath is not null && !paths.Contains(installPath, StringComparer.OrdinalIgnoreCase))
             {
-                var defaultPath = Path.Combine(programFiles, "dotnet");
-                if (Directory.Exists(defaultPath))
-                {
-                    paths.Add(defaultPath);
-                }
+                paths.Add(installPath);
             }
         }
 
         return paths;
+    }
+
+    private static string? GetExistingDirectory(string? path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return null;
+        }
+
+        var normalized = path.TrimEnd(Path.DirectorySeparatorChar);
+        return Directory.Exists(normalized) ? normalized : null;
     }
 
     /// <summary>

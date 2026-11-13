@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
+using System.Security;
+using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -11,6 +14,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [OSCondition(OperatingSystems.Windows)]
 public class WindowsPathHelperTests
 {
+    private static readonly string s_existingDirectory = Path.TrimEndingDirectorySeparator(Path.GetTempPath());
+    private static readonly string s_otherExistingDirectory = Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory);
+    private static readonly string s_missingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
     public void GetProgramFilesDotnetPaths_ReturnsValidPaths()
@@ -22,6 +29,146 @@ public class WindowsPathHelperTests
         paths.Should().NotBeNull();
         paths.Should().NotBeEmpty();
         paths.Should().AllSatisfy(p => p.Should().EndWith("dotnet"));
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void ReadArchitectureValues_ReadsTheValueFromEachArchitectureKey()
+    {
+        using var installedVersions = new TemporaryRegistryKey();
+        installedVersions.SetValue("x64", "InstallLocation", @"C:\x64");
+        installedVersions.SetValue("x86", "InstallLocation", @"C:\x86");
+        installedVersions.SetValue(@"arm64\sharedhost", "Path", @"C:\arm64");
+
+        WindowsPathHelper.ReadArchitectureValues(installedVersions.Key, subKeyName: null, valueName: "InstallLocation")
+            .Should().BeEquivalentTo(new Dictionary<string, string> { ["x64"] = @"C:\x64", ["x86"] = @"C:\x86" });
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void ReadArchitectureValues_ReadsTheValueFromEachArchitectureSubKey()
+    {
+        using var installedVersions = new TemporaryRegistryKey();
+        installedVersions.SetValue(@"x64\sharedhost", "Path", @"C:\x64");
+        installedVersions.SetValue("x86", "InstallLocation", @"C:\x86");
+
+        WindowsPathHelper.ReadArchitectureValues(installedVersions.Key, subKeyName: "sharedhost", valueName: "Path")
+            .Should().BeEquivalentTo(new Dictionary<string, string> { ["x64"] = @"C:\x64" });
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_PrefersSharedHostPathOverInstallLocation()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
+                installLocations: new Dictionary<string, string> { ["x64"] = s_otherExistingDirectory },
+                defaultPaths: [])
+            .Should().Equal(s_existingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_FallsBackToInstallLocationWhenSharedHostPathIsStale()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_missingDirectory },
+                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory + Path.DirectorySeparatorChar },
+                defaultPaths: [])
+            .Should().Equal(s_existingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_UsesInstallLocationsWhenTheNativeViewYieldsNothing()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string>(),
+                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
+                defaultPaths: [])
+            .Should().Equal(s_existingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_ReadsEachArchitectureAndSkipsMissingDirectories()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
+                installLocations: new Dictionary<string, string> { ["x86"] = s_otherExistingDirectory, ["arm64"] = s_missingDirectory },
+                defaultPaths: [])
+            .Should().BeEquivalentTo(s_existingDirectory, s_otherExistingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_FallsBackToTheDefaultRootOfUnregisteredArchitectures()
+    {
+        // x64 on Arm64 has no sharedhost\Path, and an unregistered install has no InstallLocation either.
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["arm64"] = s_existingDirectory },
+                installLocations: new Dictionary<string, string>(),
+                defaultPaths: [new(s_otherExistingDirectory, InstallArchitecture.x64), new(s_missingDirectory, InstallArchitecture.x86)])
+            .Should().Equal(s_existingDirectory, s_otherExistingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_PrefersRegistryPathsOverTheDefaultRoot()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string>(),
+                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
+                defaultPaths: [new(s_otherExistingDirectory, InstallArchitecture.x64)])
+            .Should().Equal(s_existingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_DoesNotDuplicateADirectorySharedByArchitectures()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["arm64"] = s_existingDirectory },
+                installLocations: new Dictionary<string, string>(),
+                defaultPaths: [new(s_existingDirectory, InstallArchitecture.arm64), new(s_existingDirectory, InstallArchitecture.x86)])
+            .Should().Equal(s_existingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void WarnUnreadableSystemInstallRegistry_WarnsOnce()
+    {
+        var denied = new SecurityException("Requested registry access is not allowed.");
+        using var warnings = new StringWriter();
+        int warned = 0;
+
+        WindowsPathHelper.WarnUnreadableSystemInstallRegistry(denied, warnings, ref warned);
+        WindowsPathHelper.WarnUnreadableSystemInstallRegistry(denied, warnings, ref warned);
+
+        warnings.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+            .Should().ContainSingle().Which.Should().Contain(denied.Message);
+    }
+
+    /// <summary>A temporary key under HKCU, deleted on dispose.</summary>
+    private sealed class TemporaryRegistryKey : IDisposable
+    {
+        private readonly string _keyPath = $@"Software\dotnetup-tests\{Guid.NewGuid():N}";
+
+        public TemporaryRegistryKey() => Key = Registry.CurrentUser.CreateSubKey(_keyPath);
+
+        public RegistryKey Key { get; }
+
+        public void SetValue(string subKeyPath, string name, string value)
+        {
+            using var key = Key.CreateSubKey(subKeyPath);
+            key.SetValue(name, value);
+        }
+
+        public void Dispose()
+        {
+            Key.Dispose();
+            Registry.CurrentUser.DeleteSubKeyTree(_keyPath, throwOnMissingSubKey: false);
+        }
     }
 
     [TestMethod]
