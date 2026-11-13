@@ -407,6 +407,37 @@ public partial class NativeEntryPointTests
         });
     }
 
+    [TestMethod]
+    [DataRow("--help")]
+    [DataRow("-?")]
+    public void ExecuteCore_AotEnabled_PackageHelp_FallsBackToManaged(string helpOption)
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+            TextWriter originalError = Console.Error;
+            using StringWriter error = new();
+            Console.SetError(error);
+
+            try
+            {
+                int exitCode = NativeEntryPoint.ExecuteCore(
+                    hostPath: "test-host",
+                    dotnetRoot: "test-root",
+                    sdkDir: "nonexistent-sdk-dir",
+                    hostfxrPath: "",
+                    args: ["package", helpOption]);
+
+                Assert.AreEqual(1, exitCode);
+                error.ToString().Should().Contain("dotnet.dll");
+            }
+            finally
+            {
+                Console.SetError(originalError);
+            }
+        });
+    }
+
     /// <summary>Verifies that a build-enabled shorthand file invocation falls back to the managed CLI.</summary>
     [TestMethod]
     public void ExecuteCore_AotEnabled_BuildEnabledFileBasedApp_FallsBackToManaged()
@@ -624,6 +655,52 @@ public partial class NativeEntryPointTests
     }
 
     [TestMethod]
+    public void ExecuteCore_AotEnabled_MixedCaseBuiltInTakesPrecedenceOverExternalCommand()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+            string toolDirectory = Path.Combine(Path.GetTempPath(), $"aot-builtin-collision-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(toolDirectory);
+            string originalPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+
+            try
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    File.WriteAllText(
+                        Path.Combine(toolDirectory, "dotnet-Build.cmd"),
+                        $"@echo off{Environment.NewLine}exit /b 42{Environment.NewLine}");
+                }
+                else
+                {
+                    string toolPath = Path.Combine(toolDirectory, "dotnet-Build");
+                    File.WriteAllText(toolPath, $"#!/bin/sh{Environment.NewLine}exit 42{Environment.NewLine}");
+                    File.SetUnixFileMode(toolPath,
+                        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                        UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                        UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+                }
+
+                Environment.SetEnvironmentVariable("PATH", toolDirectory + Path.PathSeparator + originalPath);
+                int exitCode = NativeEntryPoint.ExecuteCore(
+                    hostPath: "test-host",
+                    dotnetRoot: "test-root",
+                    sdkDir: "nonexistent-sdk-dir",
+                    hostfxrPath: "",
+                    args: ["Build", "--help"]);
+
+                Assert.AreEqual(0, exitCode);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("PATH", originalPath);
+                Directory.Delete(toolDirectory, recursive: true);
+            }
+        });
+    }
+
+    [TestMethod]
     [DataRow("de-DE", "Willkommen bei .NET")]
     [DataRow("zh-Hans", "欢迎使用 .NET")]
     public void ExecuteCore_AotEnabled_LocalizedFirstRun_StaysOnAotPath(string uiLanguage, string expectedWelcome)
@@ -760,6 +837,24 @@ public partial class NativeEntryPointTests
 
             Assert.DoesNotContain("toplevelparser/command", events);
             Assert.DoesNotContain("commandresolution/commandresolved", events);
+        });
+    }
+
+    [TestMethod]
+    [DataRow("new --help", false)]
+    [DataRow("new -h", false)]
+    [DataRow("new create --help", false)]
+    [DataRow("new create -h", false)]
+    [DataRow("new console --help", true)]
+    [DataRow("new install --help", true)]
+    [DataRow("build --help", true)]
+    public void ShouldAttemptAotExecution_SkipsOnlyGenericNewHelp(string commandLine, bool expected)
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+
+            Assert.AreEqual(expected, NativeEntryPoint.ShouldAttemptAotExecution(commandLine.Split(' ')));
         });
     }
 

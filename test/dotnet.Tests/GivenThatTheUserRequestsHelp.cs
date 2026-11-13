@@ -49,5 +49,45 @@ namespace dotnet.Tests
 
             result.ExitCode.Should().Be(1);
         }
+
+        [TestMethod]
+        [DataRow("Build")]
+        [DataRow("MSBUILD")]
+        public void MixedCaseBuiltInHelpShowsRootHelp(string command)
+        {
+            var rootHelp = new DotnetCommand(Log)
+                .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "0")
+                .Execute("--help");
+            var mixedCaseHelp = new DotnetCommand(Log)
+                .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "0")
+                .Execute(command, "--help");
+
+            mixedCaseHelp.ExitCode.Should().Be(rootHelp.ExitCode);
+            mixedCaseHelp.StdOut.Should().Be(rootHelp.StdOut);
+            mixedCaseHelp.StdErr.Should().Be(rootHelp.StdErr);
+        }
+
+        [TestMethod]
+        public void ReferenceHelpIncludesProjectReferences()
+        {
+            var testAsset = TestAssetsManager.CopyTestAsset("SlnFileWithReferencedProjects").WithSource();
+            string projectDirectory = Path.Combine(testAsset.Path, "A");
+
+            var optimizedHelp = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "0")
+                .Execute("reference", "--help");
+            var fullParserHelp = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "0")
+                .Execute("reference", "--help", "--");
+
+            optimizedHelp.Should().Pass();
+            fullParserHelp.Should().Pass();
+            fullParserHelp.StdOut.Should().Contain("B.csproj");
+            optimizedHelp.StdOut.Should().Contain("B.csproj");
+            optimizedHelp.StdOut.Should().Be(fullParserHelp.StdOut);
+            optimizedHelp.StdErr.Should().Be(fullParserHelp.StdErr);
+        }
     }
 }
