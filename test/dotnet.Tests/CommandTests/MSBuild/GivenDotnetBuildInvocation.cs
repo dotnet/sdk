@@ -127,8 +127,15 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
+                var savedEnvVars = TelemetryCommonPropertiesTests._allLLMEnvVars
+                    .ToDictionary(v => v, Environment.GetEnvironmentVariable);
                 try
                 {
+                    foreach (var name in TelemetryCommonPropertiesTests._allLLMEnvVars)
+                    {
+                        Environment.SetEnvironmentVariable(name, null);
+                    }
+
                     // Set environment variables to simulate LLM environment
                     if (llmEnvVarsToSet is not null)
                     {
@@ -151,13 +158,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 }
                 finally
                 {
-                    // Clear the environment variables after the test
-                    if (llmEnvVarsToSet is not null)
+                    foreach (var (key, value) in savedEnvVars)
                     {
-                        foreach (var (key, value) in llmEnvVarsToSet)
-                        {
-                            Environment.SetEnvironmentVariable(key, null);
-                        }
+                        Environment.SetEnvironmentVariable(key, value);
                     }
                 }
             });
