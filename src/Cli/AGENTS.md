@@ -96,6 +96,16 @@ through the real factory; see
 Test the detector's environment-variable mapping separately with an `IEnvironmentProvider`.
 For subprocess tests, set environment variables on the child process instead.
 
+## Help rendering
+
+Help must not mutate shared command, option, argument, or completion metadata.
+Use initialization-time [`CustomizeSymbol`](Microsoft.DotNet.Cli.Definitions/Help/HelpBuilder.cs)
+registrations and render-only labels or visibility instead. Template help combines choices
+on render-local options, not the options retained by a parsed template command. Keep repeated
+and mixed-order help, parsing, and completion behavior covered in the
+[shared managed/AOT tests](../../test/dotnet.Tests/CommandTests/Help/HelpRenderingTests.cs)
+and [template help tests](../../test/Microsoft.TemplateEngine.Cli.UnitTests/ParserTests/HelpTests.cs).
+
 ## Verify (approval) snapshot tests
 
 Many CLI tests use Verify (`[UsesVerify]` / VerifyMSTest):

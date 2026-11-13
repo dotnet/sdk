@@ -125,7 +125,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SdkVulnerability\SdkReleaseMetadataCache.cs" Link="SdkReleaseMetadataCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SdkVulnerability\SdkVulnerabilityChecker.cs" Link="SdkVulnerabilityChecker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SdkVulnerability\SdkVulnerabilityInfo.cs" Link="SdkVulnerabilityInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\Microsoft.TemplateEngine.Cli\SymbolExtensions.cs" Link="SymbolExtensions.cs" />
     <Using Include="System.Collections.Generic.Dictionary%3CMicrosoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition%3E" Alias="WorkloadCollection" />
   </ItemGroup>
 
