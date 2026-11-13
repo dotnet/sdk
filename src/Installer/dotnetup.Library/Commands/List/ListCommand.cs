@@ -89,12 +89,7 @@ internal static class InstallationLister
 
         var specs = root.InstallSpecs.Select(spec => new InstallSpecInfo
         {
-            Component = spec.Component,
-            VersionOrChannel = spec.VersionOrChannel,
-            Source = spec.InstallSource,
-            GlobalJsonPath = spec.GlobalJsonPath,
-            MinimumVersion = spec.MinimumVersion,
-            AllowPrerelease = spec.AllowPrerelease,
+            ManifestSpec = spec,
             InstallRoot = root.Path,
             Architecture = root.Architecture
         }).ToList();
@@ -143,14 +138,12 @@ internal static class InstallationLister
 /// </summary>
 internal class InstallSpecInfo
 {
-    public InstallComponent Component { get; set; }
-    public string VersionOrChannel { get; set; } = string.Empty;
-    public InstallSource Source { get; set; }
-    public string? GlobalJsonPath { get; set; }
     [JsonIgnore]
-    public string? MinimumVersion { get; set; }
-    [JsonIgnore]
-    public bool? AllowPrerelease { get; set; }
+    public InstallSpec ManifestSpec { get; init; } = new();
+    public InstallComponent Component { get => ManifestSpec.Component; set => ManifestSpec.Component = value; }
+    public string VersionOrChannel { get => ManifestSpec.VersionOrChannel; set => ManifestSpec.VersionOrChannel = value; }
+    public InstallSource Source { get => ManifestSpec.InstallSource; set => ManifestSpec.InstallSource = value; }
+    public string? GlobalJsonPath { get => ManifestSpec.GlobalJsonPath; set => ManifestSpec.GlobalJsonPath = value; }
     public string InstallRoot { get; set; } = string.Empty;
     public InstallArchitecture Architecture { get; set; }
 }

@@ -23,15 +23,7 @@ internal static class InstallationListRenderer
         var rows = new List<InstallationListRow>();
         foreach (var spec in specs)
         {
-            var resolution = InstallSpecResolver.Evaluate(new InstallSpec
-            {
-                Component = spec.Component,
-                VersionOrChannel = spec.VersionOrChannel,
-                InstallSource = spec.Source,
-                GlobalJsonPath = spec.GlobalJsonPath,
-                MinimumVersion = spec.MinimumVersion,
-                AllowPrerelease = spec.AllowPrerelease
-            });
+            var resolution = InstallSpecResolver.Evaluate(spec.ManifestSpec);
             var selected = resolution.Spec is { } requirement
                 ? InstallSpecResolver.SelectInstallation(spec.Component, requirement, installations,
                     i => i.Component, i => versions[i.Version],
@@ -175,7 +167,7 @@ internal static class InstallationListRenderer
         foreach (var row in rows)
         {
             var version = row.Installation?.Version ?? (row.Error is null
-                || row.Spec is { MinimumVersion: not null, AllowPrerelease: not null }
+                || row.Spec?.ManifestSpec is { MinimumVersion: not null, AllowPrerelease: not null }
                 ? Strings.ListNotInstalled : Strings.ListUnknown);
             if (row.Installation?.IsValid == false)
             {

@@ -443,9 +443,19 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     [TestMethod]
     public void InstallationLister_WriteJson_PreservesSpecAndInstallationContracts()
     {
-        var spec = Spec("10.0.1xx");
-        spec.Source = InstallSource.GlobalJson;
-        spec.GlobalJsonPath = "missing-global.json";
+        var spec = new InstallSpecInfo
+        {
+            ManifestSpec = new InstallSpec
+            {
+                Component = InstallComponent.SDK,
+                VersionOrChannel = "10.0.1xx",
+                InstallSource = InstallSource.GlobalJson,
+                GlobalJsonPath = "missing-global.json",
+                MinimumVersion = "10.0.103",
+                AllowPrerelease = false
+            },
+            InstallRoot = _tempDir.FullName
+        };
         var installation = Installation("10.0.105");
         var data = new ListData { InstallSpecs = [spec], Installations = [installation] };
         InstallationLister.WriteJson(Output, data);
