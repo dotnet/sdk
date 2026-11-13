@@ -100,7 +100,7 @@ internal class UninstallWorkflow
         var otherSourceSpecs = allMatchingSpecs.Except(matchingSpecs).ToList();
         if (otherSourceSpecs.Count > 0)
         {
-            if (sourceFilter is not null && sourceFilter != InstallSource.All)
+            if (sourceFilter is not null and not InstallSource.All)
             {
                 AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
                     Strings.UninstallSourceNotFound, sourceFilter.ToString().EscapeMarkup(),

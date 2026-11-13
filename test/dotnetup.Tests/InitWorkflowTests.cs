@@ -351,12 +351,13 @@ public class InitWorkflowTests : IDisposable
         };
         var command = new InitCommand(Parser.Parse(["init"]));
 
-        var defaults = RunFromTempDirectory(() => InitDefaultsResolver.ResolveFormDefaults(command, null, mock));
+        var (defaults, currentDirectory) = RunFromTempDirectory(() =>
+            (InitDefaultsResolver.ResolveFormDefaults(command, null, mock), Environment.CurrentDirectory));
 
         mock.GetExistingSystemInstallsCallCount.Should().Be(1);
-        defaults.InstallRoot.Path.Should().Be(Path.Combine(_tempDir, ".dotnet"));
+        defaults.InstallRoot.Path.Should().Be(Path.Combine(currentDirectory, ".dotnet"));
         defaults.ChannelDisplay.ChannelLabel.Should().Be("10.0.1xx");
-        defaults.ChannelDisplay.GlobalJsonPath.Should().Be(path);
+        defaults.ChannelDisplay.GlobalJsonPath.Should().Be(Path.Combine(currentDirectory, "global.json"));
     }
 
     [TestMethod]
