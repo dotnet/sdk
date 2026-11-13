@@ -254,30 +254,44 @@ internal class ChannelVersionResolver
             return null;
         }
 
-        if (channel.MinimumVersion is null && channel.AllowPrerelease is null
-            && (int.TryParse(channel.Name, out _)
-                || KnownChannelKeywords.Any(name => string.Equals(name, channel.Name, StringComparison.OrdinalIgnoreCase))))
+        var productMajorMinor = ParseProductMajorMinor(channel.Name);
+        if (CanResolveFromReleaseIndex(channel, productMajorMinor))
         {
-            return GetLatestIndexChannelVersion(channel.Name, component);
+            return GetLatestIndexChannelVersion(channel.Name, productMajorMinor.Major, component);
         }
 
-        var parts = channel.Name.Split('.');
-        if (parts.Length >= 2 && int.TryParse(parts[0], out var major) && int.TryParse(parts[1], out var minor))
+        if (productMajorMinor is { Major: int major, Minor: int minor })
         {
             return GetLatestMatchingVersion(channel, component, _releaseManifest.GetReleases(major, minor) ?? []);
         }
 
-        return GetLatestMatchingVersion(channel, component, _releaseManifest.GetReleasesIndex(), _releaseManifest.GetReleases);
+        return GetLatestMatchingVersion(channel, component, productMajorMinor, _releaseManifest.GetReleasesIndex(), _releaseManifest.GetReleases);
     }
 
-    private ReleaseVersion? GetLatestIndexChannelVersion(string name, InstallComponent component)
+    private static (int? Major, int? Minor) ParseProductMajorMinor(string name)
+    {
+        var parts = name.Split('.');
+        int? major = int.TryParse(parts[0], out var parsedMajor) ? parsedMajor : null;
+        int? minor = parts.Length >= 2 && int.TryParse(parts[1], out var parsedMinor) ? parsedMinor : null;
+        return (major, minor);
+    }
+
+    private static bool CanResolveFromReleaseIndex(UpdateChannel channel, (int? Major, int? Minor) productMajorMinor)
+    {
+        bool isMajorOnlyChannel = productMajorMinor.Major.HasValue && !channel.Name.Contains('.');
+        bool isNamedChannel = KnownChannelKeywords.Contains(channel.Name, StringComparer.OrdinalIgnoreCase);
+        return channel.MinimumVersion is null && channel.AllowPrerelease is null
+            && (isMajorOnlyChannel || isNamedChannel);
+    }
+
+    private ReleaseVersion? GetLatestIndexChannelVersion(string name, int? major, InstallComponent component)
     {
         IEnumerable<Product> products = _releaseManifest.GetReleasesIndex();
-        if (int.TryParse(name, out var major))
+        if (major.HasValue)
         {
             var product = products.FirstOrDefault(product =>
                 product.ProductVersion.StartsWith($"{major}.", StringComparison.Ordinal));
-            return component == InstallComponent.SDK ? product?.LatestSdkVersion : product?.LatestRuntimeVersion;
+            return GetLatestComponentVersion(product, component);
         }
 
         if (name.Equals(LtsChannel, StringComparison.OrdinalIgnoreCase))
@@ -291,8 +305,11 @@ internal class ChannelVersionResolver
             selected = products.FirstOrDefault(product => product.SupportPhase is SupportPhase.Preview or SupportPhase.GoLive);
         }
         selected ??= products.FirstOrDefault(product => product.SupportPhase == SupportPhase.Active);
-        return component == InstallComponent.SDK ? selected?.LatestSdkVersion : selected?.LatestRuntimeVersion;
+        return GetLatestComponentVersion(selected, component);
     }
+
+    private static ReleaseVersion? GetLatestComponentVersion(Product? product, InstallComponent component)
+        => component == InstallComponent.SDK ? product?.LatestSdkVersion : product?.LatestRuntimeVersion;
 
     /// <summary>
     /// Selects the latest matching component version from eligible release products.
@@ -303,15 +320,16 @@ internal class ChannelVersionResolver
         InstallComponent component,
         IEnumerable<Product> index,
         Func<Product, IEnumerable<ProductRelease>> getReleases)
+        => GetLatestMatchingVersion(channel, component, ParseProductMajorMinor(channel.Name), index, getReleases);
+
+    private static ReleaseVersion? GetLatestMatchingVersion(
+        UpdateChannel channel,
+        InstallComponent component,
+        (int? Major, int? Minor) productMajorMinor,
+        IEnumerable<Product> index,
+        Func<Product, IEnumerable<ProductRelease>> getReleases)
     {
-        var parts = channel.Name.Split('.');
-        var products = index.Where(product =>
-        {
-            var productVersion = new Version(product.ProductVersion);
-            return (channel.MinimumVersion is null || productVersion.Major >= channel.MinimumVersion.Major)
-                && (!int.TryParse(parts[0], out var major) || productVersion.Major == major)
-                && (parts.Length < 2 || !int.TryParse(parts[1], out var minor) || productVersion.Minor == minor);
-        });
+        var products = index.Where(product => IsProductInChannelScope(new Version(product.ProductVersion), channel, productMajorMinor));
         if (channel.Name.Equals(LtsChannel, StringComparison.OrdinalIgnoreCase))
         {
             products = products.Where(p => p.ReleaseType == ReleaseType.LTS);
@@ -329,6 +347,13 @@ internal class ChannelVersionResolver
         }
 
         return null;
+    }
+
+    private static bool IsProductInChannelScope(Version productVersion, UpdateChannel channel, (int? Major, int? Minor) productMajorMinor)
+    {
+        return (channel.MinimumVersion is null || productVersion.Major >= channel.MinimumVersion.Major)
+            && (productMajorMinor.Major is null || productVersion.Major == productMajorMinor.Major)
+            && (productMajorMinor.Minor is null || productVersion.Minor == productMajorMinor.Minor);
     }
 
     private static ReleaseVersion? GetLatestMatchingVersion(

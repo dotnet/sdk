@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 
         [TestMethod]
         [DataRow("10", null, null, "10.0.202")]
+        [DataRow("10", "10.0.103", false, "10.0.202")]
         [DataRow("10.0", null, null, "10.0.202")]
         [DataRow("10.0.1xx", null, null, "10.0.106-preview.1")]
         [DataRow("10.0.1xx", "10.0.103", false, "10.0.105")]
@@ -164,13 +165,16 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         }
 
         [TestMethod]
-        public void MatchingResolutionLoadsOnlyProductsInChannelScope()
+        [DataRow("10")]
+        [DataRow("10.0")]
+        [DataRow("10.0.1xx")]
+        public void MatchingResolutionLoadsOnlyProductsInChannelScope(string name)
         {
             var fixture = ReleaseIndexFixture.Create();
             var loaded = new List<string>();
 
             var selected = ChannelVersionResolver.GetLatestMatchingVersion(
-                new UpdateChannel("10.0.1xx"), InstallComponent.SDK, fixture.Index, product =>
+                new UpdateChannel(name), InstallComponent.SDK, fixture.Index, product =>
                 {
                     loaded.Add(product.ProductVersion);
                     return fixture.GetReleases(product);
