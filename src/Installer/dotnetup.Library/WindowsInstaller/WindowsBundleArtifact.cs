@@ -31,6 +31,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     private readonly InstallBatchContext _batchContext;
     private readonly TextWriter _notices;
     private VerifiedDownload? _download;
+    private IProgressTask? _installTask;
 
     // Denies write and delete access from the moment the bundle is verified until this artifact is
     // disposed, so the file that was verified is the file that runs.
@@ -78,7 +79,9 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     public void Prepare()
     {
         var (reporter, downloadTask) = _progress.BeginDownload();
-        string basePath = Path.Combine(ScratchDirectory, $"{BlobFeedUrlBuilder.GetArchivePrefix(_request.Component)}-{Guid.NewGuid():N}");
+        // ScratchDirectory is unique to this artifact, so the official installer name cannot collide.
+        string basePath = Path.Combine(ScratchDirectory, BlobFeedUrlBuilder.GetArchiveFileName(
+            _request.Component, _version, DotnetupUtilities.GetRuntimeIdentifier(_request.InstallRoot.Architecture), extension: string.Empty));
         VerifiedDownload download = Download(basePath, reporter);
         EnsureInstallerExtension(download.Path);
 
@@ -107,7 +110,16 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         HandleExitCode(RunInstaller(download.Path, InstallArguments));
 
         installTask.Value = installTask.MaxValue;
-        _progress.CompleteExtraction(installTask);
+        _installTask = installTask;
+    }
+
+    public void CompleteCommitProgress()
+    {
+        // Set only after a successful Commit; validation and repair run before the row shows as installed.
+        if (_installTask is { } installTask)
+        {
+            _progress.CompleteExtraction(installTask);
+        }
     }
 
     /// <summary>
@@ -272,6 +284,9 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         BundleExitOutcome.ElevationRequired => CreateException(
             DotnetInstallErrorCode.InstallerFailed,
             Format(Strings.WindowsInstallerElevationRequired, Describe(), exitCode)),
+        BundleExitOutcome.NewerVersionInstalled => CreateException(
+            DotnetInstallErrorCode.NewerVersionInstalled,
+            Format(Strings.WindowsInstallerNewerVersionInstalledExitCode, Describe(), exitCode)),
         _ => CreateException(
             DotnetInstallErrorCode.InstallerFailed,
             Format(Strings.WindowsInstallerFailed, Describe(), exitCode, exitCode)),

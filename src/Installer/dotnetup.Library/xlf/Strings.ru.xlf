@@ -936,6 +936,16 @@ Or open a new terminal.</target>
         <target state="new">The downloaded installer for {0} does not match its expected hash; it may have been modified after it was downloaded. Run the command again.</target>
         <note>{0} is the component display name and version.</note>
       </trans-unit>
+      <trans-unit id="WindowsInstallerNewerVersionInstalled">
+        <source>{0} {1} is already installed, and the installer cannot install the older {0} {2}. Uninstall '{3}' from Installed apps first, or use {1} or later.</source>
+        <target state="new">{0} {1} is already installed, and the installer cannot install the older {0} {2}. Uninstall '{3}' from Installed apps first, or use {1} or later.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the installed newer version. {2} is the requested older version. {3} is the name of the installed product as Windows Installed apps shows it.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerNewerVersionInstalledExitCode">
+        <source>The installer for {0} did not install it because a newer version of the same product is already installed (installer exit code {1}). Uninstall the newer version first, or use it instead.</source>
+        <target state="new">The installer for {0} did not install it because a newer version of the same product is already installed (installer exit code {1}). Uninstall the newer version first, or use it instead.</target>
+        <note>{0} is the component display name and version. {1} is the numeric installer exit code.</note>
+      </trans-unit>
       <trans-unit id="WindowsInstallerOpenFailed">
         <source>Could not open the downloaded installer for {0}: {1}</source>
         <target state="new">Could not open the downloaded installer for {0}: {1}</target>
@@ -952,8 +962,8 @@ Or open a new terminal.</target>
         <note>{0} is the component display name and version. {1} is the operating system error.</note>
       </trans-unit>
       <trans-unit id="WindowsInstallerRepairingMissingFiles">
-        <source>{0} is registered with Windows, but its files are missing. Repairing it with the Windows installer. Approve the administrator prompt if asked.</source>
-        <target state="new">{0} is registered with Windows, but its files are missing. Repairing it with the Windows installer. Approve the administrator prompt if asked.</target>
+        <source>The installer finished, but the files for {0} are missing. Running a repair with the installer. Approve the administrator prompt if asked.</source>
+        <target state="new">The installer finished, but the files for {0} are missing. Running a repair with the installer. Approve the administrator prompt if asked.</target>
         <note>{0} is the component display name and version.</note>
       </trans-unit>
       <trans-unit id="WindowsInstallerRestartInitiated">
@@ -970,6 +980,11 @@ Or open a new terminal.</target>
         <source>The installer for {0} failed Authenticode signature verification: {1}</source>
         <target state="new">The installer for {0} failed Authenticode signature verification: {1}</target>
         <note>{Locked="Authenticode"} {0} is the component display name and version. {1} is the signature verification error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerSupersededInBatch">
+        <source>Skipped {0} {1} because this request also installs {0} {2}, and the installer cannot install {1} once {2} is installed.</source>
+        <target state="new">Skipped {0} {1} because this request also installs {0} {2}, and the installer cannot install {1} once {2} is installed.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the skipped older version. {2} is the newer version requested in the same command.</note>
       </trans-unit>
       <trans-unit id="WindowsInstallerWrongFileExtension">
         <source>Expected a Windows installer (.exe) for {0}, but the download resolved to '{1}'.</source>

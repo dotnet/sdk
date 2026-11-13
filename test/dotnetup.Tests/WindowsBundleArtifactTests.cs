@@ -27,8 +27,12 @@ public class WindowsBundleArtifactTests : IDisposable
     private readonly List<WindowsBundleArtifact> _artifacts = [];
     private readonly FakeDotnetupPolicyStore _policyStore = new();
 
+    [TestInitialize]
+    public void IgnoreMachineRegistrations() => InstallerOrchestratorSingleton.SetInstalledBundlesOverride(_ => []);
+
     public void Dispose()
     {
+        InstallerOrchestratorSingleton.SetInstalledBundlesOverride(null);
         foreach (var artifact in _artifacts)
         {
             artifact.Dispose();
@@ -46,7 +50,7 @@ public class WindowsBundleArtifactTests : IDisposable
         artifact.Prepare();
 
         downloader.DownloadCalls.Should().ContainSingle();
-        artifact.BundlePath.Should().StartWith(artifact.ScratchDirectory).And.EndWith(".exe");
+        artifact.BundlePath.Should().Be(Path.Combine(artifact.ScratchDirectory, $"dotnet-sdk-10.0.100-{DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64)}.exe"));
         File.Exists(artifact.BundlePath).Should().BeTrue();
         artifact.ExtractedSubcomponents.Should().BeEmpty();
     }
@@ -104,7 +108,8 @@ public class WindowsBundleArtifactTests : IDisposable
         runner.Calls.Should().HaveCount(2);
         runner.Calls[1].Path.Should().Be(artifact.BundlePath);
         runner.Calls[1].Arguments.Should().Equal("/repair", "/passive", "/norestart");
-        notices.ToString().Should().Contain(".NET SDK 10.0.100 is registered with Windows, but its files are missing");
+        notices.ToString().Should().Contain("The installer finished, but the files for .NET SDK 10.0.100 are missing")
+            .And.NotContain("registered with Windows");
     }
 
     [TestMethod]
@@ -129,6 +134,60 @@ public class WindowsBundleArtifactTests : IDisposable
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerFailed);
         runner.Calls.Should().ContainSingle().Which.Arguments.Should().Equal("/repair", "/passive", "/norestart");
+    }
+
+    [TestMethod]
+    public void TryRepair_NewerVersionInstalledExitCode_ThrowsNewerVersionInstalled()
+    {
+        var artifact = CreateArtifact(StableChannel, runner: new FakeRunner(exitCode: 1638));
+        artifact.Prepare();
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => artifact.TryRepair());
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
+        ex.Message.Should().Contain("newer version").And.Contain("1638");
+    }
+
+    [TestMethod]
+    public void Commit_DoesNotReportInstalledUntilCommitProgressIsCompleted()
+    {
+        var reporter = new RecordingReporter();
+        using var batchReporter = new LazyProgressReporter(new RecordingTarget(reporter));
+        var artifact = CreateArtifact(StableChannel, batchContext: new InstallBatchContext(batchReporter, 8));
+        artifact.Prepare();
+
+        artifact.Commit();
+        IProgressTask installTask = reporter.Tasks.Last();
+        installTask.Description.Should().NotContain(ProgressFormatting.ActionInstalled);
+
+        artifact.CompleteCommitProgress();
+        installTask.Description.Should().Contain(ProgressFormatting.ActionInstalled);
+    }
+
+    private sealed class RecordingTarget(RecordingReporter reporter) : IProgressTarget
+    {
+        public IProgressReporter CreateProgressReporter() => reporter;
+    }
+
+    private sealed class RecordingReporter : IProgressReporter
+    {
+        public List<IProgressTask> Tasks { get; } = [];
+
+        public IProgressTask AddTask(string description, double maxValue)
+        {
+            var task = new RecordedTask { Description = description, MaxValue = maxValue };
+            Tasks.Add(task);
+            return task;
+        }
+
+        public void Dispose() { }
+    }
+
+    private sealed class RecordedTask : IProgressTask
+    {
+        public string Description { get; set; } = string.Empty;
+        public double Value { get; set; }
+        public double MaxValue { get; set; }
     }
 
     [TestMethod]
@@ -381,6 +440,7 @@ public class WindowsBundleArtifactTests : IDisposable
     [DataRow(1602, DotnetInstallErrorCode.OperationCancelled)]
     [DataRow(1223, DotnetInstallErrorCode.OperationCancelled)]
     [DataRow(1618, DotnetInstallErrorCode.InstallerBusy)]
+    [DataRow(1638, DotnetInstallErrorCode.NewerVersionInstalled)]
     [DataRow(740, DotnetInstallErrorCode.InstallerFailed)]
     [DataRow(1603, DotnetInstallErrorCode.InstallerFailed)]
     [DataRow(-2147023293, DotnetInstallErrorCode.InstallerFailed)]
@@ -479,6 +539,7 @@ public class WindowsBundleArtifactTests : IDisposable
     [DataRow(1602, BundleExitOutcome.Cancelled)]
     [DataRow(1223, BundleExitOutcome.Cancelled)]
     [DataRow(1618, BundleExitOutcome.Busy)]
+    [DataRow(1638, BundleExitOutcome.NewerVersionInstalled)]
     [DataRow(740, BundleExitOutcome.ElevationRequired)]
     [DataRow(1, BundleExitOutcome.Failed)]
     internal void BundleExitCodes_Classify(int exitCode, BundleExitOutcome expected)

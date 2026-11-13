@@ -50,6 +50,7 @@
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\IEnvironmentProvider.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\AutomaticEncodingRestorer.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\UILanguageOverride.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Tasks\sdk-tasks\GenerateGuidFromName.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

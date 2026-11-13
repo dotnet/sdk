@@ -272,11 +272,18 @@ https://github.com/dotnet/vscode-dotnet-runtime/blob/f54c68789e1bdfca13e8262045c
 | `1641` | Success. A restart has already been initiated; `dotnetup` reports this and skips post-install hostfxr validation. |
 | `1602`, `1223` (UAC declined) | Cancelled (`OperationCancelled`). |
 | `1618` | Another installation is in progress (`InstallerBusy`). No automatic retry. |
+| `1638` | A newer version of the product is already installed (`NewerVersionInstalled`). No repair or retry. |
 | `740` | The installer requires elevation (`InstallerFailed`). |
 | Any other nonzero code, including `1603` | `InstallerFailed`, reporting the exit code. No retry. |
 | Installer did not start | `ProcessStartFailed`. |
 
 After exit code `0`, `dotnetup` confirms that the requested version is installed and otherwise fails with `InstallerPostInstallVerificationFailed`. Exit codes `3010` and `1641` skip this validation because pending file replacements may not be completed until the restart.
+
+The installers report success without installing anything when asked to downgrade. If repairing, they instead report `1638`. This happens for SDKs within the same feature band and Runtimes within the same `major.minor`.
+
+In this case, `dotnetup` fails with `NewerVersionInstalled`. It checks when preparing the install and again right before running the installer.
+
+It only considers installed bundles whose `BundleUpgradeCode` (under the `Uninstall` registry key) matches the requested bundle's upgrade family, because a bundle only refuses to downgrade bundles with its own upgrade code. The product builds derive that code from a fixed name per SDK feature band or runtime `major.minor` and architecture, so `dotnetup` computes it the same way. SDKs installed by Visual Studio and runtimes installed by an SDK bundle are Windows Installer packages without a bundle registration, so they don't block a standalone bundle.
 
 Future work: a bounded wait for an interrupted parent that confirms the original installation has ended, re-queries the installation state, and retries at most once only if installation is still needed. If the original operation's status cannot be established, report an actionable failure without launching another installer.
 

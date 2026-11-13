@@ -1,9 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.Versioning;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using Microsoft.Win32;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
 using Spectre.Console;
 using CliEnvironmentProvider = Microsoft.DotNet.Cli.Utils.EnvironmentProvider;
 
@@ -108,6 +112,113 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         }
 
         return FilterToNativeArchAndSort(installs);
+    }
+
+    internal const string UninstallRegistryKeyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+
+    /// <summary>
+    /// Returns the installed bundles in the same upgrade family as a bundle for <paramref name="requested"/>.
+    /// A bundle refuses to downgrade only bundles with its upgrade code, so installs without a bundle registration,
+    /// such as the SDK that Visual Studio installs or the runtimes an SDK bundle installs, are not returned.
+    /// </summary>
+    public static List<InstalledBundle> GetInstalledBundles(DotnetInstall requested)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return [];
+        }
+
+        // .NET bundles use the x86 Burn engine on every architecture, so they register only in the 32-bit view.
+        // See InstallerPlatform=x86 in src/Layout/redist/targets/GenerateMSIs.targets (SDK) and MsiArch in
+        // https://github.com/dotnet/arcade/blob/6e14e95fb045833c796fb858127da08044014e26/src/Microsoft.DotNet.Build.Tasks.Installers/build/wix5/wix.targets#L26 (runtimes).
+        using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+        using var uninstallKey = baseKey.OpenSubKey(UninstallRegistryKeyPath);
+        return uninstallKey is null ? [] : ReadInstalledBundles(uninstallKey, requested);
+    }
+
+    /// <summary>
+    /// Reads the bundle registrations under an <c>Uninstall</c> key whose <c>BundleUpgradeCode</c> matches the upgrade
+    /// family of <paramref name="requested"/>. Registrations whose display name has no version are skipped.
+    /// </summary>
+    [SupportedOSPlatform("windows")]
+    internal static List<InstalledBundle> ReadInstalledBundles(RegistryKey uninstallKey, DotnetInstall requested)
+    {
+        var familyCodes = BundleUpgradeCodes.For(requested.Component, requested.Version, requested.InstallRoot.Architecture);
+        var bundles = new List<InstalledBundle>();
+        foreach (string subKeyName in uninstallKey.GetSubKeyNames())
+        {
+            string? displayName = null;
+            string? displayVersion = null;
+            try
+            {
+                using var entry = uninstallKey.OpenSubKey(subKeyName);
+                if (entry is not null && GetBundleUpgradeCodes(entry).Any(familyCodes.Contains))
+                {
+                    displayName = entry.GetValue("DisplayName") as string;
+                    displayVersion = entry.GetValue("DisplayVersion") as string;
+                }
+            }
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+            {
+                // Other products' entries can deny read access; the installer's exit code still catches a missed downgrade.
+                continue;
+            }
+
+            if (displayName is not null && TryParseDisplayNameVersion(displayName) is { } version)
+            {
+                var install = new DotnetInstall(new DotnetInstallRoot(string.Empty, requested.InstallRoot.Architecture), version, requested.Component);
+                bundles.Add(new InstalledBundle(install, displayName, GetUnlabeledPrereleaseDateStamp(install, displayVersion)));
+            }
+        }
+
+        return bundles;
+    }
+
+    // Windows Desktop 10.0+ bundles show prereleases as "11.0.0"; their bundle version ends in the build date stamp, or 50000 once released:
+    // https://github.com/dotnet/windowsdesktop/blob/77af2c59998e1d0e14583f1c90bda4f453b1b663/src/windowsdesktop/src/bundle/Wix.targets#L77-L83
+    private static int? GetUnlabeledPrereleaseDateStamp(DotnetInstall install, string? displayVersion) =>
+        install.Component == InstallComponent.WindowsDesktop
+        && install.Version.Major >= 10
+        && string.IsNullOrEmpty(install.Version.Prerelease)
+        && Version.TryParse(displayVersion, out var bundleVersion)
+        && bundleVersion.Revision is > 0 and < 50000
+            ? bundleVersion.Revision
+            : null;
+
+    [SupportedOSPlatform("windows")]
+    private static IEnumerable<Guid> GetBundleUpgradeCodes(RegistryKey entry) =>
+        (entry.GetValue("BundleUpgradeCode") switch
+        {
+            string[] values => values,
+            string value => [value],
+            _ => [],
+        })
+        .Select(value => Guid.TryParse(value, out var code) ? code : Guid.Empty);
+
+    /// <summary>Parses the product version from a bundle display name such as <c>Microsoft .NET SDK 10.0.404 (x64)</c>.</summary>
+    internal static ReleaseVersion? TryParseDisplayNameVersion(string displayName)
+    {
+        string[] tokens = displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        for (int i = 0; i < tokens.Length; i++)
+        {
+            if (!ReleaseVersion.TryParse(tokens[i], out var version))
+            {
+                continue;
+            }
+
+            // Runtime bundles show prereleases as "11.0.0 RC 3".
+            if (i + 2 < tokens.Length
+                && tokens[i + 1].All(char.IsAsciiLetter)
+                && tokens[i + 2].All(char.IsAsciiDigit)
+                && ReleaseVersion.TryParse($"{tokens[i]}-{tokens[i + 1].ToLowerInvariant()}.{tokens[i + 2]}", out var prerelease))
+            {
+                return prerelease;
+            }
+
+            return version;
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -389,4 +500,32 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             && DotnetupUtilities.PathsEqual(result.Install.InstallRoot.Path, request.Request.InstallRoot.Path))?
             .Install.LayoutVersion.ToString()
         ?? request.ResolvedVersion.ToString();
+}
+
+/// <summary>An installed .NET installer bundle and its name as Installed apps shows it.</summary>
+/// <param name="Install">The installed component and product version.</param>
+/// <param name="DisplayName">The name Installed apps shows.</param>
+/// <param name="PrereleaseDateStamp">The build date stamp of a prerelease whose display name omits its prerelease label.</param>
+internal sealed record InstalledBundle(DotnetInstall Install, string DisplayName, int? PrereleaseDateStamp = null)
+{
+    /// <summary>Whether this bundle is a later build than <paramref name="requested"/>.</summary>
+    public bool IsNewerThan(ReleaseVersion requested)
+    {
+        if (PrereleaseDateStamp is not int dateStamp)
+        {
+            return Install.Version.CompareTo(requested) > 0;
+        }
+
+        var installed = Install.Version;
+        int releaseComparison = new ReleaseVersion(installed.Major, installed.Minor, installed.Patch)
+            .CompareTo(new ReleaseVersion(requested.Major, requested.Minor, requested.Patch));
+        if (releaseComparison != 0)
+        {
+            return releaseComparison > 0;
+        }
+
+        // Official prereleases end in "<date stamp>.<build>", e.g. 11.0.0-rc.3.26522.148; a release is newer than any prerelease.
+        string[] identifiers = (requested.Prerelease ?? string.Empty).Split('.');
+        return identifiers.Length >= 2 && int.TryParse(identifiers[^2], out int requestedDateStamp) && dateStamp > requestedDateStamp;
+    }
 }
