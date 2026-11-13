@@ -32,6 +32,7 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
     public bool? LastIncludeDotnetupForTerminalProfileModifications { get; private set; }
     public bool? LastDotnetupOnUserPathEnabled { get; private set; }
     public Action? BeforeEnvironmentChange { get; set; }
+    public Action? BeforeGetExistingSystemInstalls { get; set; }
     public int ApplyGlobalJsonModificationsCallCount { get; private set; }
 
     public MockDotnetInstallManager(
@@ -52,6 +53,7 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
 
     public List<DotnetInstall> GetExistingSystemInstalls()
     {
+        BeforeGetExistingSystemInstalls?.Invoke();
         GetExistingSystemInstallsCallCount++;
         if (_existingSystemInstalls is null)
         {

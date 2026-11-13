@@ -33,9 +33,14 @@ internal class DotnetRootEntry
 internal class InstallSpec
 {
     public InstallComponent Component { get; set; }
+    // Repository entries use the saved channel and constraints only when GlobalJsonPath cannot be read.
     public string VersionOrChannel { get; set; } = string.Empty;
     public InstallSource InstallSource { get; set; }
     public string? GlobalJsonPath { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MinimumVersion { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? AllowPrerelease { get; set; }
 }
 
 /// <summary>
@@ -77,7 +82,7 @@ internal class Installation
     }
 
     private static bool IsSatisfiedBy(UpdateChannel channel, string version) =>
-        ReleaseVersion.TryParse(version, out var parsed) && channel.Matches(parsed);
+        ReleaseVersion.TryParse(version, out var parsed) && channel.IsSatisfiedBy(parsed);
 
     public DotnetInstall ToDotnetInstall(DotnetInstallRoot installRoot) =>
         new(installRoot, new ReleaseVersion(Version), Component,
@@ -90,14 +95,4 @@ internal class Installation
         ProductVersion = install.ProductVersion?.ToString(),
         Subcomponents = [.. subcomponents],
     };
-}
-
-/// <summary>
-/// The source of an install spec.
-/// </summary>
-internal enum InstallSource
-{
-    Explicit,
-    GlobalJson,
-    All,
 }

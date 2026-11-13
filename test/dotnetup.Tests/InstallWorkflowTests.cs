@@ -17,7 +17,7 @@ using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
-/// Tests for install path validation logic in <see cref="InstallWorkflow"/>.
+/// Tests for install path validation, repository channel resolution, and onboarding in <see cref="InstallWorkflow"/>.
 /// Regression coverage: the --untracked flag must bypass the "untracked artifacts" check
 /// so that users can install to paths with existing .NET artifacts not in the manifest.
 /// </summary>
@@ -38,6 +38,108 @@ public class InstallWorkflowTests : IDisposable
     {
         DotnetupPaths.ClearTestDataDirectoryOverride();
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* cleanup best-effort */ }
+    }
+
+    [TestMethod]
+    [DataRow(null, "10.0.1xx")]
+    [DataRow("patch", "10.0.1xx")]
+    [DataRow("feature", "10.0")]
+    [DataRow("minor", "10")]
+    [DataRow("major", "latest")]
+    [DataRow("disable", "10.0.103")]
+    public void ResolveChannel_UsesGlobalJsonConstraints(string? policy, string expectedChannel)
+    {
+        var path = Path.Combine(_tempDir, "global.json");
+        var policyProperty = policy is null ? "" : $""","rollForward":"{policy}" """;
+        File.WriteAllText(path, $$$"""{"sdk":{"version":"10.0.103","allowPrerelease":false{{{policyProperty}}}}}""");
+
+        var (channel, fromFile) = InstallWorkflow.ResolveChannel(
+            InstallComponent.SDK, null, GlobalJsonHelper.GetGlobalJsonInfo(_tempDir));
+
+        fromFile.Should().BeTrue();
+        channel.Name.Should().Be(expectedChannel);
+        channel.MinimumVersion!.ToString().Should().Be("10.0.103");
+        channel.AllowPrerelease.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("""{"sdk":{"version":"11.0.100","rollForward":"disable"}}""")]
+    [DataRow("{broken")]
+    public void ResolveChannel_ReusesParsedGlobalJsonAfterFileChanges(string? replacement)
+    {
+        var path = Path.Combine(_tempDir, "global.json");
+        File.WriteAllText(path, """{"sdk":{"version":"10.0.103","allowPrerelease":false}}""");
+        var globalJson = GlobalJsonHelper.GetGlobalJsonInfo(_tempDir);
+        if (replacement is null)
+        {
+            File.Delete(path);
+        }
+        else
+        {
+            File.WriteAllText(path, replacement);
+        }
+
+        var (channel, fromFile) = InstallWorkflow.ResolveChannel(InstallComponent.SDK, null, globalJson);
+
+        fromFile.Should().BeTrue();
+        channel.Name.Should().Be("10.0.1xx");
+        channel.MinimumVersion!.ToString().Should().Be("10.0.103");
+        channel.AllowPrerelease.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow("{broken")]
+    [DataRow("""{"sdk":{"version":"invalid"}}""")]
+    [DataRow("""{"sdk":{"version":"10.0.103","rollForward":"invalid"}}""")]
+    public void ResolveChannel_MalformedGlobalJsonReportsContextResolutionFailure(string contents)
+    {
+        var path = Path.Combine(_tempDir, "global.json");
+        File.WriteAllText(path, contents);
+
+        var resolve = () => InstallWorkflow.ResolveChannel(
+            InstallComponent.SDK, null, GlobalJsonHelper.GetGlobalJsonInfo(_tempDir));
+
+        var error = resolve.Should().Throw<DotnetInstallException>().Which;
+        error.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        error.Message.Should().Contain(path);
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AcceptsComments()
+    {
+        var path = Path.Combine(_tempDir, "global.json");
+        File.WriteAllText(path, """
+            {
+              // Pin an exact version to avoid network resolution.
+              "sdk": {
+                "version": "10.0.103",
+                "rollForward": "disable",
+                "allowPrerelease": false
+              }
+            }
+            """);
+        using var testEnv = new TestEnvironment();
+        var command = new SdkInstallCommand(Parser.Parse(
+            ["sdk", "install", "--install-path", testEnv.InstallPath, "--manifest-path", testEnv.ManifestPath]));
+        string originalDirectory = Environment.CurrentDirectory;
+        try
+        {
+            Environment.CurrentDirectory = _tempDir;
+            string expectedGlobalJsonPath = Path.Combine(Environment.CurrentDirectory, "global.json");
+
+            var requests = new InstallWorkflow(command).GenerateInstallRequests([new(InstallComponent.SDK, null)]);
+
+            requests.Should().ContainSingle();
+            requests[0].ResolvedVersion.ToString().Should().Be("10.0.103");
+            requests[0].Request.Options.GlobalJsonPath.Should().Be(expectedGlobalJsonPath);
+            requests[0].Request.Options.InstallSource.Should().Be(InstallSource.GlobalJson);
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDirectory;
+        }
     }
 
     #region ValidateNoUntrackedArtifacts
@@ -227,7 +329,9 @@ public class InstallWorkflowTests : IDisposable
         var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install"]);
 
         resolved.ResolvedVersion.ToString().Should().Be("9.0.100");
-        resolved.Request.Options.InstallSource.Should().Be(InstallRequestSource.GlobalJson);
+        resolved.Request.Options.InstallSource.Should().Be(InstallSource.GlobalJson);
+        resolved.Request.Channel.MinimumVersion!.ToString().Should().Be("9.0.100");
+        resolved.Request.Channel.AllowPrerelease.Should().BeFalse();
         resolved.Request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
         resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
         resolved.Request.Options.Untracked.Should().BeFalse();
@@ -302,7 +406,9 @@ public class InstallWorkflowTests : IDisposable
         var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install", "--untracked"]);
 
         resolved.ResolvedVersion.ToString().Should().Be("9.0.100");
-        resolved.Request.Options.InstallSource.Should().Be(InstallRequestSource.GlobalJson);
+        resolved.Request.Options.InstallSource.Should().Be(InstallSource.GlobalJson);
+        resolved.Request.Channel.MinimumVersion!.ToString().Should().Be("9.0.100");
+        resolved.Request.Channel.AllowPrerelease.Should().BeFalse();
         resolved.Request.InstallRoot.Should().Be(new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture()));
         resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
     }
@@ -380,6 +486,7 @@ public class InstallWorkflowTests : IDisposable
             {
               "sdk": {
                 "version": "9.0.100",
+                "allowPrerelease": false,
                 "rollForward": "disable"{{pathsProperty}}
               }
             }
