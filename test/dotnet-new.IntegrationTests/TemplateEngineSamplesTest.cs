@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public static void ClassInitialize(TestContext ctx)
         {
             s_sharedHome = new SharedHomeDirectory(new TestContextOutputHelper(ctx));
-            s_sharedHome.InstallPackage("Microsoft.TemplateEngine.Samples");
+            s_sharedHome.InstallPackage(Path.Join(AppContext.BaseDirectory, "TemplateEngineSamples"));
         }
 
         [ClassCleanup]

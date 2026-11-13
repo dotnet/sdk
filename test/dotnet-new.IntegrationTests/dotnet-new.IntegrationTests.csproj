@@ -126,6 +126,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     <WriteLinesToFile Lines="$(ResolvedGeneratedText)" File="$(GeneratedFilePath)" WriteOnlyWhenDifferent="true" Overwrite="true" />
   </Target>
 
+  <!-- Building the samples project copies its template content into this project's output under
+       TemplateEngineSamples/, which TemplateEngineSamplesTest installs. -->
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)documentation\TemplateEngine\Samples\Microsoft.TemplateEngine.Samples.csproj"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
   <Target Name="CopyDBFilesToTestLayoutDir" AfterTargets="Build">
     <Copy SourceFiles="TestDirectoryBuildFiles/Directory.Build.props" DestinationFolder="$(TestLayoutDir)" />
     <Copy SourceFiles="TestDirectoryBuildFiles/Directory.Build.targets" DestinationFolder="$(TestLayoutDir)" />
