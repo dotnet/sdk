@@ -34,7 +34,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
 
     public IManifestOperations Manifest { get; }
 
-    private static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isInsecureRegistry, RegistryMode mode)
+    internal static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isInsecureRegistry, RegistryMode mode)
     {
         HttpMessageHandler innerHandler = CreateHttpHandler(registryName, baseUri, isInsecureRegistry, logger);
 
