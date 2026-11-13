@@ -3,7 +3,6 @@
 
 using System.Collections.Immutable;
 using Microsoft.Build.Execution;
-using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.ExternalAccess.HotReload.Api;
 using Microsoft.Extensions.Logging;
@@ -73,30 +72,30 @@ internal sealed class ManagedCodeWorkspace : IDisposable
         }
     }
 
-    public async ValueTask StartSessionAsync(ProjectGraph graph, CancellationToken cancellationToken)
+    public async ValueTask StartSessionAsync(EvaluationResult evaluationResult, CancellationToken cancellationToken)
     {
-        var solution = await UpdateProjectGraphAsync(graph, cancellationToken);
+        var solution = await UpdateProjectGraphAsync(evaluationResult, cancellationToken);
 
         await HotReloadService.StartSessionAsync(solution, cancellationToken);
 
         _logger.Log(MessageDescriptor.HotReloadSessionStarted);
     }
 
-    public async Task<Solution> UpdateProjectGraphAsync(ProjectGraph projectGraph, CancellationToken cancellationToken)
+    public async Task<Solution> UpdateProjectGraphAsync(EvaluationResult evaluationResult, CancellationToken cancellationToken)
     {
-        _projectInstances = CreateProjectInstanceMap(projectGraph);
+        _projectInstances = CreateProjectInstanceMap(evaluationResult.DesignTimeBuiltProjects);
 
-        var solution = await _workspace.UpdateProjectGraphAsync([.. projectGraph.EntryPointNodes.Select(n => n.ProjectInstance.FullPath)], cancellationToken);
+        var solution = await _workspace.UpdateProjectGraphAsync([.. evaluationResult.ProjectGraph.Graph.EntryPointNodes.Select(n => n.ProjectInstance.FullPath)], cancellationToken);
         await SolutionUpdatedAsync(solution, "project update", cancellationToken);
         return solution;
     }
 
-    private static ImmutableDictionary<string, ImmutableArray<ProjectInstance>> CreateProjectInstanceMap(ProjectGraph graph)
-        => graph.ProjectNodes
-            .GroupBy(static node => node.ProjectInstance.FullPath)
+    private static ImmutableDictionary<string, ImmutableArray<ProjectInstance>> CreateProjectInstanceMap(ImmutableArray<ProjectInstance> projects)
+        => projects
+            .GroupBy(static project => project.FullPath)
             .ToImmutableDictionary(
                 keySelector: static group => group.Key,
-                elementSelector: static group => group.Select(static node => node.ProjectInstance).ToImmutableArray());
+                elementSelector: static group => group.ToImmutableArray());
 
     public async Task UpdateFileContentAsync(IReadOnlyList<ChangedFile> changedFiles, CancellationToken cancellationToken)
     {

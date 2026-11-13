@@ -142,7 +142,7 @@ internal sealed class HotReloadDotNetWatcher
                 // Starting the session hydrates the contents of solution documents from disk.
                 // Session must be started before we start accepting file changes to avoid race condition
                 // when the EnC session hydrates solution documents with their file content after the changes have already been observed.
-                await workspace.StartSessionAsync(evaluationResult.ProjectGraph.Graph, iterationCancellationToken);
+                await workspace.StartSessionAsync(evaluationResult, iterationCancellationToken);
 
                 var projectLauncher = new ProjectLauncher(_context, projectGraph, runningProjectsManager, iteration);
 
@@ -405,7 +405,7 @@ internal sealed class HotReloadDotNetWatcher
                             // additional files/directories may have been added:
                             evaluationResult.WatchFileItems(fileWatcher);
 
-                            await workspace.UpdateProjectGraphAsync(evaluationResult.ProjectGraph.Graph, iterationCancellationToken);
+                            await workspace.UpdateProjectGraphAsync(evaluationResult, iterationCancellationToken);
 
                             if (shutdownCancellationToken.IsCancellationRequested)
                             {
