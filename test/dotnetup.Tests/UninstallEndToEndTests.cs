@@ -55,6 +55,47 @@ public class UninstallEndToEndTests : IDisposable
     }
 
     [TestMethod]
+    [DataRow("sdk", null)]
+    [DataRow("sdk", "explicit")]
+    [DataRow("sdk", "migration")]
+    [DataRow("runtime", null)]
+    [DataRow("runtime", "explicit")]
+    [DataRow("runtime", "migration")]
+    [DataRow("alias", null)]
+    [DataRow("alias", "explicit")]
+    [DataRow("alias", "migration")]
+    public void SourceFilter_DefaultRemovesExplicitAndMigratedSpecs_ExplicitFilterRemainsExact(string noun, string? source)
+    {
+        var component = noun == "runtime" ? InstallComponent.Runtime : InstallComponent.SDK;
+        var version = noun == "runtime" ? "11.0.0" : "11.0.100";
+        _fixture.AddInstallation(component, version);
+        _fixture.AddSpecs(component, "11.0");
+        _fixture.AlterManifest(root => root.InstallSpecs.Add(new InstallSpec
+        {
+            Component = component, VersionOrChannel = "11.0", InstallSource = InstallSource.Migration
+        }));
+        string[] command = noun == "alias" ? ["uninstall", "11.0"] : [noun, "uninstall", "11.0"];
+        string[] options = source is null ? [] : ["--source", source];
+
+        var output = Run(command, out var exitCode, "y\n", options);
+
+        exitCode.Should().Be(0, output);
+        var root = _fixture.ReadRoot();
+        if (source is null)
+        {
+            root.InstallSpecs.Should().BeEmpty();
+            root.Installations.Should().BeEmpty();
+            AssertFilesRemoved(component, version);
+        }
+        else
+        {
+            var retainedSource = source == "explicit" ? InstallSource.Migration : InstallSource.Explicit;
+            root.InstallSpecs.Should().ContainSingle().Which.InstallSource.Should().Be(retainedSource);
+            root.Installations.Should().ContainSingle();
+        }
+    }
+
+    [TestMethod]
     public void OtherTrackedMajors_DoNotWarnAndRemainInstalled()
     {
         foreach (var major in new[] { 8, 9, 11 })

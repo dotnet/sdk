@@ -337,13 +337,13 @@ internal static class MigrationWorkflow
 
     /// <summary>
     /// Builds the <see cref="InstallRequestOptions"/> used for migration install requests.
-    /// Migrations only need the command-wide flags (untracked/verbosity/manifest/muxer) — they do not carry
-    /// global.json or InstallSource information because migrations originate from disk discovery, not from
-    /// user-supplied specs or global.json.
+    /// Migrations carry their own source and the command-wide flags (untracked/verbosity/manifest/muxer),
+    /// not the primary request's global.json or command-line origin.
     /// </summary>
     private static InstallRequestOptions BuildMigrationInstallOptions(InstallCommand? command, string? manifestPath) =>
         new()
         {
+            InstallSource = InstallSource.Migration,
             ManifestPath = manifestPath,
             Untracked = command?.Untracked ?? false,
             Verbosity = command?.Verbosity ?? Verbosity.Normal,

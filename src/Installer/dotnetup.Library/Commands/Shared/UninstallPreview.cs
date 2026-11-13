@@ -53,7 +53,7 @@ internal static class UninstallPreview
         var removesRequestedFiles = targets.Any(t => plan.GetPrimaryPath(t) is { } path && deletedPaths.Contains(path))
             || plan.PathsToDelete.Any(path =>
                 path.StartsWith(requestedPathPrefix, StringComparison.OrdinalIgnoreCase) &&
-                ReleaseVersion.TryParse(path[requestedPathPrefix.Length..], out var version) && channel.Matches(version));
+                ReleaseVersion.TryParse(path[requestedPathPrefix.Length..], out var version) && channel.IsSatisfiedBy(version));
         var removalMessage = removesRequestedFiles
             ? Strings.UninstallUnexpectedAdditionalRemoval
             : Strings.UninstallUnexpectedRemoval;
@@ -75,7 +75,7 @@ internal static class UninstallPreview
 
     private static bool MatchesRequest(Installation installation, InstallComponent component, UpdateChannel channel) =>
         installation.Component == component &&
-        ReleaseVersion.TryParse(installation.Version, out var version) && channel.Matches(version);
+        ReleaseVersion.TryParse(installation.Version, out var version) && channel.IsSatisfiedBy(version);
 
     private static void DisplayRemovalSummary(IReadOnlyList<InstallSpec> specsToRemove)
     {

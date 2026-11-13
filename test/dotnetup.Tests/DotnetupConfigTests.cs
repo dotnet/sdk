@@ -51,6 +51,36 @@ public class DotnetupConfigTests : IDisposable
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Read_AcceptsUtf8WithOrWithoutBom(bool emitBom)
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, """{"schemaVersion":"1","accessMode":"shell"}""",
+            new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: emitBom));
+
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Shell);
+    }
+
+    [TestMethod]
+    [DataRow("utf-16")]
+    [DataRow("utf-16BE")]
+    [DataRow("utf-32")]
+    public void Read_AcceptsBomEncodedConfigAndPreservesSettingsOnUpdate(string encodingName)
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, """{"schemaVersion":"1","accessMode":"shell"}""",
+            System.Text.Encoding.GetEncoding(encodingName));
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Shell);
+
+        DotnetupConfig.SetUpdateNotifications(false);
+
+        var updated = DotnetupConfig.Read();
+        updated!.AccessMode.Should().Be(DotnetAccessMode.Shell);
+        updated.UpdateNotifications.Should().BeFalse();
+    }
+
+    [TestMethod]
     public void Write_SerializesAccessModeAsLowercaseString()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Everywhere });

@@ -386,7 +386,7 @@ public class DotnetArchiveExtractorTests
             new InstallRequestOptions
             {
                 ManifestPath = testEnv.ManifestPath, Untracked = untracked,
-                GlobalJsonPath = globalJson, InstallSource = InstallRequestSource.GlobalJson,
+                GlobalJsonPath = globalJson, InstallSource = InstallSource.GlobalJson,
             });
         using var reporter = new LazyProgressReporter(new NullProgressTarget());
 
@@ -411,7 +411,7 @@ public class DotnetArchiveExtractorTests
                 ManifestPath = testEnv.ManifestPath,
                 Untracked = untracked,
                 GlobalJsonPath = globalJsonPath,
-                InstallSource = globalJsonPath is null ? InstallRequestSource.Explicit : InstallRequestSource.GlobalJson,
+                InstallSource = globalJsonPath is null ? InstallSource.Explicit : InstallSource.GlobalJson,
             });
         var downloader = new MockArchiveDownloader
         {

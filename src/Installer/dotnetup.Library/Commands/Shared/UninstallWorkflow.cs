@@ -19,13 +19,13 @@ internal class UninstallWorkflow
     /// <param name="manifestPath">Custom manifest path, or null for default.</param>
     /// <param name="installPath">Specific install path, or null for default.</param>
     /// <param name="versionOrChannel">The channel/version to uninstall.</param>
-    /// <param name="sourceFilter">Which install source to filter by.</param>
+    /// <param name="sourceFilter">Which install source to filter by, or null for explicit and migrated specs.</param>
     /// <param name="componentFilter">Which component to target.</param>
     /// <param name="interactive">Whether to confirm unexpected outcomes before changing state.</param>
     /// <param name="confirm">Optional confirmation callback for testing.</param>
     public static void Execute(
         string? manifestPath, string? installPath, string versionOrChannel,
-        InstallSource sourceFilter, InstallComponent componentFilter, bool interactive = false,
+        InstallSource? sourceFilter, InstallComponent componentFilter, bool interactive = false,
         Func<ConfirmResult>? confirm = null)
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
@@ -61,7 +61,7 @@ internal class UninstallWorkflow
     }
 
     private static List<InstallSpec> FindMatchingSpecs(
-        DotnetRootEntry root, string versionOrChannel, InstallSource sourceFilter, InstallComponent componentFilter)
+        DotnetRootEntry root, string versionOrChannel, InstallSource? sourceFilter, InstallComponent componentFilter)
     {
         var allMatchingSpecs = root.InstallSpecs
             .Where(s => s.Component == componentFilter &&
@@ -70,7 +70,9 @@ internal class UninstallWorkflow
 
         // Filter by source
         var matchingSpecs = allMatchingSpecs
-            .Where(s => sourceFilter == InstallSource.All || s.InstallSource == sourceFilter)
+            .Where(s => sourceFilter is null
+                ? s.InstallSource is InstallSource.Explicit or InstallSource.Migration
+                : sourceFilter == InstallSource.All || s.InstallSource == sourceFilter)
             .ToList();
 
         if (matchingSpecs.Count == 0)
@@ -79,7 +81,8 @@ internal class UninstallWorkflow
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.UninstallTargetNotFound,
                 string.Format(CultureInfo.InvariantCulture, Strings.UninstallNoMatchingInstallations,
-                    componentFilter, versionOrChannel, sourceFilter, root.Path));
+                    componentFilter, versionOrChannel,
+                    sourceFilter?.ToString() ?? $"{InstallSource.Explicit}, {InstallSource.Migration}", root.Path));
         }
 
         return matchingSpecs;
@@ -88,7 +91,7 @@ internal class UninstallWorkflow
     private static void ReportNoMatchingSpecs(
         List<InstallSpec> allMatchingSpecs,
         List<InstallSpec> matchingSpecs,
-        InstallSource sourceFilter,
+        InstallSource? sourceFilter,
         InstallComponent componentFilter,
         string versionOrChannel,
         string resolvedInstallPath)
@@ -97,7 +100,7 @@ internal class UninstallWorkflow
         var otherSourceSpecs = allMatchingSpecs.Except(matchingSpecs).ToList();
         if (otherSourceSpecs.Count > 0)
         {
-            if (sourceFilter != InstallSource.All)
+            if (sourceFilter is not null and not InstallSource.All)
             {
                 AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
                     Strings.UninstallSourceNotFound, sourceFilter.ToString().EscapeMarkup(),

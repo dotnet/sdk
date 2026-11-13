@@ -257,6 +257,11 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         daily.ProductVersion = "11.0.100";
         var spec = Spec("11.0.100");
         spec.Source = fromGlobalJson ? InstallSource.GlobalJson : InstallSource.Explicit;
+        if (fromGlobalJson)
+        {
+            spec.GlobalJsonPath = Path.Combine(_tempDir.FullName, "global.json");
+            File.WriteAllText(spec.GlobalJsonPath, """{"sdk":{"version":"11.0.100","rollForward":"disable"}}""");
+        }
 
         var rows = InstallationListRenderer.CreateRowsForRoot([spec], [daily]);
 
@@ -264,26 +269,25 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     }
 
     [TestMethod]
-    public void RelationshipTable_ShowsRepositoryAndCommandSources()
+    public void RelationshipTable_DistinguishesMigrationAndCommandSources()
     {
-        var repository = Spec("10.0.1xx");
-        repository.Source = InstallSource.GlobalJson;
-        repository.GlobalJsonPath = Path.Combine(_tempDir.FullName, "global.json");
+        var migrated = Spec("10.0.1xx");
+        migrated.Source = InstallSource.Migration;
         var data = new ListData
         {
-            InstallSpecs = [repository, Spec("10.0.1xx")],
+            InstallSpecs = [migrated, Spec("10.0.1xx")],
             Installations = [Installation("10.0.105")]
         };
 
         var rows = InstallationListRenderer.CreateRowsForRoot(data.InstallSpecs, data.Installations);
-        rows.Select(r => r.SourceDisplay).Should().Contain("Command").And.Contain(repository.GlobalJsonPath);
+        rows.Select(r => r.SourceDisplay).Should().Equal("Command", "Migration");
         rows.Should().OnlyContain(r => r.Installation == data.Installations[0]);
         InstallationListRenderer.Write(Output, data, width: 160);
-        Output.ToString().Should().Contain("Command").And.NotContain("Command line")
+        Output.ToString().Should().Contain("Migration").And.Contain("Command").And.NotContain("Command line")
             .And.Contain("2 install specs; 1 installation (1 SDK, 0 runtimes)");
 
         var json = JsonSerializer.Serialize(data, InstallationListJsonContext.Default.ListData);
-        json.Should().Contain("\"GlobalJson\"").And.Contain("\"Explicit\"");
+        json.Should().Contain("\"Migration\"").And.Contain("\"Explicit\"");
     }
 
     [TestMethod]
@@ -371,7 +375,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     }
 
     [TestMethod]
-    public void RelationshipRows_UseRecordedRepositoryChannelWithoutReadingFile()
+    public void RelationshipRows_ReadCurrentGlobalJsonAndReportMalformedFiles()
     {
         var path = Path.Combine(_tempDir.FullName, "global.json");
         var spec = Spec("9.0.1xx");
@@ -382,28 +386,28 @@ public class ListCommandTests(TestContext testContext) : IDisposable
 
         var rows = InstallationListRenderer.CreateRowsForRoot([spec], installations);
         var row = rows.Single(r => r.Spec == spec);
-        row.SpecDisplay.Should().Be("9.0.1xx");
+        row.SpecDisplay.Should().Be("10.0.103 (rollForward: disable, allowPrerelease: false)");
         row.SourceDisplay.Should().Be(path);
-        row.Installation.Should().BeNull();
+        row.Installation.Should().BeSameAs(installations[0]);
         spec.VersionOrChannel.Should().Be("9.0.1xx", "rendering must not change the manifest snapshot");
 
         File.WriteAllText(path, "{broken");
         rows = InstallationListRenderer.CreateRowsForRoot([spec], installations);
         row = rows.Single(r => r.Spec == spec);
         row.Spec.Should().BeSameAs(spec);
-        row.SpecDisplay.Should().Be("9.0.1xx");
+        row.SpecDisplay.Should().Be("Unavailable");
         row.Installation.Should().BeNull();
-        row.Error.Should().BeNull();
+        row.Error.Should().Contain(path);
         rows.Count(r => r.Spec is null).Should().Be(2);
 
         InstallationListRenderer.Write(Output, new ListData { InstallSpecs = [spec], Installations = installations }, width: 200);
-        Output.ToString().Should().Contain("Not installed").And.NotContain("Warning: Cannot read");
+        Output.ToString().Should().Contain("Unknown").And.Contain("Warning: Cannot read");
     }
 
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public void RelationshipRows_ShowRecordedRepositorySpecsWhenFilesAreMissingOrVersionless(bool exists)
+    public void RelationshipRows_OmitDeletedOrVersionlessGlobalJson(bool exists)
     {
         var spec = Spec("10.0.1xx");
         spec.Source = InstallSource.GlobalJson;
@@ -414,9 +418,9 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         }
 
         var row = InstallationListRenderer.CreateRowsForRoot([spec], [Installation("10.0.105")]).Single();
-        row.Spec.Should().BeSameAs(spec);
-        row.SpecDisplay.Should().Be("10.0.1xx");
-        row.SourceDisplay.Should().Be(spec.GlobalJsonPath);
+        row.Spec.Should().BeNull();
+        row.SpecDisplay.Should().Be("-");
+        row.SourceDisplay.Should().Be("-");
         row.Installation.Should().NotBeNull();
     }
 
@@ -439,9 +443,19 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     [TestMethod]
     public void InstallationLister_WriteJson_PreservesSpecAndInstallationContracts()
     {
-        var spec = Spec("10.0.1xx");
-        spec.Source = InstallSource.GlobalJson;
-        spec.GlobalJsonPath = "missing-global.json";
+        var spec = new InstallSpecInfo
+        {
+            ManifestSpec = new InstallSpec
+            {
+                Component = InstallComponent.SDK,
+                VersionOrChannel = "10.0.1xx",
+                InstallSource = InstallSource.GlobalJson,
+                GlobalJsonPath = "missing-global.json",
+                MinimumVersion = "10.0.103",
+                AllowPrerelease = false
+            },
+            InstallRoot = _tempDir.FullName
+        };
         var installation = Installation("10.0.105");
         var data = new ListData { InstallSpecs = [spec], Installations = [installation] };
         InstallationLister.WriteJson(Output, data);
@@ -458,7 +472,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     }
 
     [TestMethod]
-    public void RelationshipRows_UnreadableGlobalJsonUsesRecordedChannel()
+    public void RelationshipRows_UnreadableGlobalJsonDoesNotUseCachedChannel()
     {
         var spec = Spec("10.0.1xx");
         spec.Source = InstallSource.GlobalJson;
@@ -468,10 +482,44 @@ public class ListCommandTests(TestContext testContext) : IDisposable
 
         var rows = InstallationListRenderer.CreateRowsForRoot([spec], [Installation("10.0.105")]);
 
+        rows.Single(r => r.Spec is null).Installation!.Version.Should().Be("10.0.105");
         var repositoryRow = rows.Single(r => r.Spec is not null);
-        repositoryRow.SpecDisplay.Should().Be("10.0.1xx");
-        repositoryRow.Installation!.Version.Should().Be("10.0.105");
-        repositoryRow.Error.Should().BeNull();
+        repositoryRow.SpecDisplay.Should().Be("Unavailable");
+        repositoryRow.Installation.Should().BeNull();
+        repositoryRow.Error.Should().Contain(spec.GlobalJsonPath);
+    }
+
+    [TestMethod]
+    public void RelationshipRows_ShowLastKnownRequirementWithoutChangingJsonContractOrManifest()
+    {
+        var path = Path.Combine(_tempDir.FullName, "global.json");
+        File.WriteAllText(path, "{broken");
+        var root = new DotnetInstallRoot(_tempDir.FullName, InstallArchitecture.x64);
+        var manifestPath = Path.Combine(_tempDir.FullName, "manifest.json");
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(manifestPath);
+        manifest.AddInstallSpec(root, new InstallSpec
+        {
+            Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson,
+            VersionOrChannel = "10.0.1xx", GlobalJsonPath = path,
+            MinimumVersion = "10.0.103", AllowPrerelease = false
+        });
+        Directory.CreateDirectory(Path.Combine(root.Path, "sdk", "10.0.105"));
+        manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.105" });
+        var before = File.ReadAllText(manifestPath);
+
+        var data = InstallationLister.GetListData(manifestPath: manifestPath);
+        var row = InstallationListRenderer.CreateRowsForRoot(data.InstallSpecs, data.Installations).Single();
+        row.SpecDisplay.Should().Be("10.0.1xx (last known; minimum: 10.0.103, allowPrerelease: false)");
+        row.Installation!.Version.Should().Be("10.0.105");
+        row.Error.Should().Contain(path);
+        InstallationListRenderer.Write(Output, data, width: 250);
+        Output.ToString().Should().Contain("last known").And.Contain("Warning: Cannot read");
+        File.ReadAllText(manifestPath).Should().Be(before);
+
+        using var jsonOutput = new StringWriter();
+        InstallationLister.WriteJson(jsonOutput, data);
+        jsonOutput.ToString().Should().NotContain("minimumVersion").And.NotContain("allowPrerelease");
     }
 
     [TestMethod]

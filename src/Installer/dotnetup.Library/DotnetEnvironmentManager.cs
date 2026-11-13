@@ -377,7 +377,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             string? globalJsonPath = request.Request.Options.GlobalJsonPath;
             if (globalJsonPath is not null && request.Request.Component == InstallComponent.SDK)
             {
-                GlobalJsonModifier.UpdateGlobalJson(globalJsonPath, GetInstalledSdkVersion(request, installs));
+                GlobalJsonHelper.UpdateGlobalJson(globalJsonPath, GetInstalledSdkVersion(request, installs));
             }
         }
     }

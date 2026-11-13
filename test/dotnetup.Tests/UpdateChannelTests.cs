@@ -54,12 +54,12 @@ public class UpdateChannelTests
     [DataRow("11.0-preview.5-daily", "11.0.100-preview.5.26302.115", true)] // SDK in same band
     [DataRow("11.0-preview.5-daily", "11.0.0-preview.6.26302.118", false)]  // wrong label
     [DataRow("11.0-preview.5-daily", "11.0.0", false)]                       // stable
-    public void Matches_ReturnsExpectedResult(string channel, string versionString, bool expected)
+    public void IsSatisfiedBy_ReturnsExpectedResult(string channel, string versionString, bool expected)
     {
         var updateChannel = new UpdateChannel(channel);
         var version = new ReleaseVersion(versionString);
 
-        updateChannel.Matches(version).Should().Be(expected);
+        updateChannel.IsSatisfiedBy(version).Should().Be(expected);
     }
 
     [TestMethod]

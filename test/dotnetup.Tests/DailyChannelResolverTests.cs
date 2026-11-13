@@ -160,7 +160,7 @@ public class DailyChannelResolverTests
     {
         // If aka.ms is ever misconfigured to redirect a daily link to a stable
         // release archive, the resolver should treat that as "no daily build
-        // available" rather than returning a stable version that UpdateChannel.Matches
+        // available" rather than returning a stable version that UpdateChannel.IsSatisfiedBy
         // would refuse to satisfy.
         using var handler = new RedirectHandler(new Dictionary<string, string>
         {
