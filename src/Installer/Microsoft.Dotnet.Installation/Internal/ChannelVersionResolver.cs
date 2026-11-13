@@ -338,6 +338,6 @@ internal class ChannelVersionResolver
             ? releases.SelectMany(r => r.Sdks).Select(s => s.Version)
             : releases.SelectMany(r => r.Runtimes)
                 .Where(r => ReleaseManifest.IsMatchingRuntimeComponent(r.Name, component)).Select(r => r.Version);
-        return versions.Where(channel.IsSatisfiedBy).OrderByDescending(v => v).FirstOrDefault();
+        return versions.Where(channel.IsSatisfiedBy).Max();
     }
 }
