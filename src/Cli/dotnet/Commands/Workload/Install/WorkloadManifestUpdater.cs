@@ -29,13 +29,13 @@ internal partial class WorkloadManifestUpdater
     ///  <see cref="FileBasedInstaller"/>/<see cref="NetSdkMsiInstallerClient"/> installer or, on Windows,
     ///  any elevated MSI IPC).
     /// </summary>
-    private static WorkloadAdvertisingManifestUpdater GetAdvertisingUpdaterInstance(string userProfileDir)
+    private static WorkloadAdvertisingManifestUpdater GetAdvertisingUpdaterInstance(string userProfileDir, string workingDirectory)
     {
         var reporter = new NullReporter();
         var dotnetPath = Path.GetDirectoryName(Environment.ProcessPath);
         var sdkVersion = Product.Version;
         var sdkFeatureBand = new SdkFeatureBand(sdkVersion);
-        var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, sdkVersion, userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
+        var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, sdkVersion, userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(workingDirectory));
         var workloadResolver = WorkloadResolver.Create(workloadManifestProvider, dotnetPath, sdkVersion, userProfileDir);
         var tempPackagesDir = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
         // NuGet verification uses ShouldVerifySignatures() (respects registry policy and host
@@ -46,7 +46,8 @@ internal partial class WorkloadManifestUpdater
         var nugetPackageDownloader = NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
             tempPackagesDir,
             verifySignatures,
-            reporter: reporter);
+            reporter: reporter,
+            currentWorkingDirectory: workingDirectory);
 
         IWorkloadManifestInstaller manifestInstaller;
         IWorkloadInstallationRecordRepository workloadRecordRepo;
@@ -73,11 +74,11 @@ internal partial class WorkloadManifestUpdater
         return new WorkloadAdvertisingManifestUpdater(reporter, workloadResolver, nugetPackageDownloader, userProfileDir, workloadRecordRepo, manifestInstaller, sdkFeatureBand: sdkFeatureBand);
     }
 
-    public static async Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir)
+    public static async Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir, string workingDirectory = null)
     {
         try
         {
-            var advertisingUpdater = GetAdvertisingUpdaterInstance(userProfileDir);
+            var advertisingUpdater = GetAdvertisingUpdaterInstance(userProfileDir, workingDirectory ?? Directory.GetCurrentDirectory());
             await advertisingUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
         }
         catch (Exception)
