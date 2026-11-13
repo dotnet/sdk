@@ -6,6 +6,8 @@
 using System.CommandLine;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
@@ -94,12 +96,15 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
         {
             if (formatOption == ReportOutputFormat.json)
             {
+                var message = JsonEncodedText.Encode(
+                    String.Format(CultureInfo.CurrentCulture, CliCommandStrings.Error_restore),
+                    JavaScriptEncoder.UnsafeRelaxedJsonEscaping);
                 string jsonError = $$"""
 {
    "version": 1,
    "problems": [
       {
-         "text": "{{String.Format(CultureInfo.CurrentCulture, CliCommandStrings.Error_restore)}}",
+         "text": "{{message}}",
          "level": "error"
       }
    ]
