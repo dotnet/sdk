@@ -164,7 +164,7 @@ extends:
             name: $(DncEngInternalBuildPool)
             image: build.azurelinux.3.amd64
             os: linux
-          helixTargetQueue: ubuntu.2204.amd64
+          helixTargetQueue: AzureLinux.4.Amd64
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.

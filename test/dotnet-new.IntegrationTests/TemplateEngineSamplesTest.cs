@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             _log = new TestLoggerFactory(log).CreateLogger(nameof(CommonTemplatesTests));
             _sharedHome = sharedHome;
-            _sharedHome.InstallPackage("Microsoft.TemplateEngine.Samples");
+            _sharedHome.InstallPackage("Microsoft.TemplateEngine.Samples::10.0.115");
         }
 
         [Theory]
