@@ -7,6 +7,7 @@ trigger:
     - dnup
     - release/dnup
     - release/dotnetup
+    - dev/jrobich/dnup-release-publishing
 
 pr:
   branches:
@@ -14,6 +15,7 @@ pr:
     - dnup
     - release/dnup
     - release/dotnetup
+    - dev/jrobich/dnup-release-publishing
 
 parameters:
 # When true, runs the pipeline in the same way as the PR pipeline.

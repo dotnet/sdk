@@ -35,7 +35,7 @@ resources:
   - pipeline: dotnetup
     project: internal
     source: \dotnet\sdk\dotnet-dnup-official-ci
-    branch: refs/heads/release/dnup
+    branch: refs/heads/dev/jrobich/dnup-release-publishing
     tags:
     - PME Signed
     trigger: none
