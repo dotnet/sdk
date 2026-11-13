@@ -57,6 +57,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 var iAsyncEnumerable = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIAsyncEnumerable1);
                 var configuredAsyncEnumerable = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesConfiguredCancelableAsyncEnumerable);
+                var taskAsyncEnumerableExtensions = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTaskAsyncEnumerableExtensions);
 
                 context.RegisterOperationBlockStartAction(context =>
                 {
@@ -85,19 +86,34 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                         if (iAsyncEnumerable is not null && configuredAsyncEnumerable is not null)
                         {
-                            context.RegisterOperationAction(ctx => AnalyzeAwaitForEachLoopOperation(ctx, iAsyncEnumerable, configuredAsyncEnumerable), OperationKind.Loop);
+                            context.RegisterOperationAction(ctx => AnalyzeAwaitForEachLoopOperation(ctx, iAsyncEnumerable, configuredAsyncEnumerable, taskAsyncEnumerableExtensions), OperationKind.Loop);
                         }
                     }
                 });
             });
         }
 
-        private static void AnalyzeAwaitForEachLoopOperation(OperationAnalysisContext context, INamedTypeSymbol iAsyncEnumerable, INamedTypeSymbol configuredAsyncEnumerable)
+        private static void AnalyzeAwaitForEachLoopOperation(
+            OperationAnalysisContext context,
+            INamedTypeSymbol iAsyncEnumerable,
+            INamedTypeSymbol configuredAsyncEnumerable,
+            INamedTypeSymbol? taskAsyncEnumerableExtensions)
         {
             if (context.Operation is IForEachLoopOperation { IsAsynchronous: true, Collection.Type: { } collectionType } forEachOperation &&
-                !collectionType.IsRefLikeType &&
-                !collectionType.OriginalDefinition.Equals(configuredAsyncEnumerable, SymbolEqualityComparer.Default))
+                !collectionType.IsRefLikeType)
             {
+                if (collectionType.OriginalDefinition.Equals(configuredAsyncEnumerable, SymbolEqualityComparer.Default))
+                {
+                    if (forEachOperation.Collection.WalkDownConversion() is IInvocationOperation invocation &&
+                        invocation.TargetMethod.Name == "WithCancellation" &&
+                        SymbolEqualityComparer.Default.Equals((invocation.TargetMethod.ReducedFrom ?? invocation.TargetMethod).ContainingType, taskAsyncEnumerableExtensions))
+                    {
+                        context.ReportDiagnostic(forEachOperation.Collection.CreateDiagnostic(Rule));
+                    }
+
+                    return;
+                }
+
                 // Type is:
                 // - Itself IAsyncEnumerable<T>
                 // - Implements/extends IAsyncEnumerable<T>
