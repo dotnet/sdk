@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// | x64   | x86   | Program Files (x86)\dotnet |
 /// | Arm64 | Arm64 | Program Files\dotnet |
 /// | Arm64 | x64   | Program Files\dotnet\x64 |
+/// | Arm64 | x86   | Program Files (x86)\dotnet |
 /// </remarks>
 internal sealed class AdminInstallRootResolver
 {
@@ -45,48 +46,80 @@ internal sealed class AdminInstallRootResolver
     /// Revisit this, and any code that assumes the root is the one on PATH, when <c>--arch</c> support is added.
     /// </remarks>
     /// <exception cref="DotnetInstallException">The OS and payload architecture combination is not supported.</exception>
-    public DotnetInstallRoot Resolve(InstallArchitecture architecture) => new(ResolvePath(architecture), architecture);
+    public DotnetInstallRoot Resolve(InstallArchitecture architecture) =>
+        new(ResolvePath(architecture, out string error) ?? throw Unsupported(error), architecture);
 
-    private string ResolvePath(InstallArchitecture architecture)
+    /// <summary>
+    /// Returns the install root of every architecture this operating system supports, native architecture first.
+    /// </summary>
+    public IEnumerable<DotnetInstallRoot> ResolveSupported()
     {
-        InstallArchitecture osArchitecture = GetOsInstallArchitecture();
-
-        if (architecture == osArchitecture)
+        if (!TryGetOsInstallArchitecture(out InstallArchitecture osArchitecture))
         {
-            return Path.Combine(RequireFolder(_programFiles), "dotnet");
+            yield break;
         }
 
-        if (architecture == InstallArchitecture.x86)
+        foreach (var architecture in Enum.GetValues<InstallArchitecture>().OrderBy(a => a != osArchitecture))
         {
-            return Path.Combine(RequireFolder(_programFilesX86), "dotnet");
+            if (ResolvePath(architecture, out _) is string path)
+            {
+                yield return new(path, architecture);
+            }
         }
-
-        if (osArchitecture == InstallArchitecture.arm64 && architecture == InstallArchitecture.x64)
-        {
-            return Path.Combine(RequireFolder(_programFiles), "dotnet", "x64");
-        }
-
-        throw Unsupported($"Admin mode cannot install {architecture} .NET on a {_osArchitecture} operating system.");
     }
 
-    private InstallArchitecture GetOsInstallArchitecture()
+    private string? ResolvePath(InstallArchitecture architecture, out string error)
+    {
+        error = string.Empty;
+        if (!TryGetOsInstallArchitecture(out InstallArchitecture osArchitecture))
+        {
+            error = $"Admin mode does not support the {_osArchitecture} operating system architecture.";
+            return null;
+        }
+
+        string? path = null;
+        if (architecture == osArchitecture)
+        {
+            path = CombineWithFolder(_programFiles, "dotnet");
+        }
+        else if (architecture == InstallArchitecture.x86)
+        {
+            path = CombineWithFolder(_programFilesX86, "dotnet");
+        }
+        else if (osArchitecture == InstallArchitecture.arm64 && architecture == InstallArchitecture.x64)
+        {
+            path = CombineWithFolder(_programFiles, "dotnet", "x64");
+        }
+        else
+        {
+            error = $"Admin mode cannot install {architecture} .NET on a {_osArchitecture} operating system.";
+            return null;
+        }
+
+        if (path is null)
+        {
+            error = "Admin mode requires the Windows Program Files folder, which could not be determined.";
+        }
+
+        return path;
+    }
+
+    private bool TryGetOsInstallArchitecture(out InstallArchitecture osArchitecture)
     {
         try
         {
-            return InstallerUtilities.GetInstallArchitecture(_osArchitecture);
+            osArchitecture = InstallerUtilities.GetInstallArchitecture(_osArchitecture);
+            return true;
         }
         catch (NotSupportedException)
         {
-            throw Unsupported($"Admin mode does not support the {_osArchitecture} operating system architecture.");
+            osArchitecture = default;
+            return false;
         }
     }
 
-    private static string RequireFolder(string folder)
-    {
-        return string.IsNullOrEmpty(folder)
-            ? throw Unsupported("Admin mode requires the Windows Program Files folder, which could not be determined.")
-            : folder;
-    }
+    private static string? CombineWithFolder(string folder, params string[] relativePath) =>
+        string.IsNullOrEmpty(folder) ? null : Path.Combine([folder, .. relativePath]);
 
     private static DotnetInstallException Unsupported(string message) =>
         new(DotnetInstallErrorCode.PlatformNotSupported, message);

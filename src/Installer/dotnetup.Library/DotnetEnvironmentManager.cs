@@ -130,7 +130,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     /// <summary>
     /// Returns the system-level .NET install directories for the current platform.
     /// Windows: reads registry (sharedhost\Path, then InstallLocation) per architecture,
-    ///          falls back to %ProgramFiles%\dotnet.
+    ///          falls back to each architecture's default Program Files root.
     /// macOS: checks /etc/dotnet/install_location_{arch}, /etc/dotnet/install_location,
     ///        defaults to /usr/local/share/dotnet (plus /usr/local/share/dotnet/x64 under Rosetta).
     /// Linux: checks /usr/lib/dotnet, /usr/share/dotnet, /usr/lib64/dotnet.
