@@ -255,11 +255,6 @@ internal class ChannelVersionResolver
         }
 
         var productMajorMinor = ParseProductMajorMinor(channel.Name);
-        if (CanResolveFromReleaseIndex(channel, productMajorMinor))
-        {
-            return GetLatestIndexChannelVersion(channel.Name, productMajorMinor.Major, component);
-        }
-
         if (productMajorMinor is { Major: int major, Minor: int minor })
         {
             return GetLatestMatchingVersion(channel, component, _releaseManifest.GetReleases(major, minor) ?? []);
@@ -275,41 +270,6 @@ internal class ChannelVersionResolver
         int? minor = parts.Length >= 2 && int.TryParse(parts[1], out var parsedMinor) ? parsedMinor : null;
         return (major, minor);
     }
-
-    private static bool CanResolveFromReleaseIndex(UpdateChannel channel, (int? Major, int? Minor) productMajorMinor)
-    {
-        bool isMajorOnlyChannel = productMajorMinor.Major.HasValue && !channel.Name.Contains('.');
-        bool isNamedChannel = KnownChannelKeywords.Contains(channel.Name, StringComparer.OrdinalIgnoreCase);
-        return channel.MinimumVersion is null && channel.AllowPrerelease is null
-            && (isMajorOnlyChannel || isNamedChannel);
-    }
-
-    private ReleaseVersion? GetLatestIndexChannelVersion(string name, int? major, InstallComponent component)
-    {
-        IEnumerable<Product> products = _releaseManifest.GetReleasesIndex();
-        if (major.HasValue)
-        {
-            var product = products.FirstOrDefault(product =>
-                product.ProductVersion.StartsWith($"{major}.", StringComparison.Ordinal));
-            return GetLatestComponentVersion(product, component);
-        }
-
-        if (name.Equals(LtsChannel, StringComparison.OrdinalIgnoreCase))
-        {
-            products = products.Where(product => product.ReleaseType == ReleaseType.LTS);
-        }
-
-        Product? selected = null;
-        if (name.Equals(PreviewChannel, StringComparison.OrdinalIgnoreCase))
-        {
-            selected = products.FirstOrDefault(product => product.SupportPhase is SupportPhase.Preview or SupportPhase.GoLive);
-        }
-        selected ??= products.FirstOrDefault(product => product.SupportPhase == SupportPhase.Active);
-        return GetLatestComponentVersion(selected, component);
-    }
-
-    private static ReleaseVersion? GetLatestComponentVersion(Product? product, InstallComponent component)
-        => component == InstallComponent.SDK ? product?.LatestSdkVersion : product?.LatestRuntimeVersion;
 
     /// <summary>
     /// Selects the latest matching component version from eligible release products.
