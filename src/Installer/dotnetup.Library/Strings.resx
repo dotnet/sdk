@@ -650,7 +650,7 @@ Or open a new terminal.</value>
     <comment>{0} is the component display name and version. {1} is the operating system error.</comment>
   </data>
   <data name="WindowsInstallerRepairingMissingFiles" xml:space="preserve">
-    <value>The Windows installer finished, but the files for {0} are missing. Running a repair with the Windows installer. Approve the administrator prompt if asked.</value>
+    <value>The installer finished, but the files for {0} are missing. Running a repair with the installer. Approve the administrator prompt if asked.</value>
     <comment>{0} is the component display name and version.</comment>
   </data>
   <data name="WindowsInstallerRestartRequired" xml:space="preserve">
@@ -678,7 +678,7 @@ Or open a new terminal.</value>
     <comment>{Locked="UAC"} {0} is the component display name and version. {1} is the numeric installer exit code.</comment>
   </data>
   <data name="WindowsInstallerNewerVersionInstalled" xml:space="preserve">
-    <value>{0} {1} is already installed, and its Windows installer will not install the older {0} {2}. Uninstall '{3}' from Installed apps first, or use {1} or later.</value>
+    <value>{0} {1} is already installed, and the installer cannot install the older {0} {2}. Uninstall '{3}' from Installed apps first, or use {1} or later.</value>
     <comment>{0} is the component display name, such as .NET SDK. {1} is the installed newer version. {2} is the requested older version. {3} is the name of the installed product as Windows Installed apps shows it.</comment>
   </data>
   <data name="WindowsInstallerNewerVersionInstalledExitCode" xml:space="preserve">
@@ -686,7 +686,7 @@ Or open a new terminal.</value>
     <comment>{0} is the component display name and version. {1} is the numeric installer exit code.</comment>
   </data>
   <data name="WindowsInstallerSupersededInBatch" xml:space="preserve">
-    <value>Skipped {0} {1} because this request also installs {0} {2}, and the Windows installer would not install {1} once {2} is installed.</value>
+    <value>Skipped {0} {1} because this request also installs {0} {2}, and the installer cannot install {1} once {2} is installed.</value>
     <comment>{0} is the component display name, such as .NET SDK. {1} is the skipped older version. {2} is the newer version requested in the same command.</comment>
   </data>
   <data name="WindowsInstallerFailed" xml:space="preserve">

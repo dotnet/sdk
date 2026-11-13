@@ -108,7 +108,7 @@ public class WindowsBundleArtifactTests : IDisposable
         runner.Calls.Should().HaveCount(2);
         runner.Calls[1].Path.Should().Be(artifact.BundlePath);
         runner.Calls[1].Arguments.Should().Equal("/repair", "/passive", "/norestart");
-        notices.ToString().Should().Contain("The Windows installer finished, but the files for .NET SDK 10.0.100 are missing")
+        notices.ToString().Should().Contain("The installer finished, but the files for .NET SDK 10.0.100 are missing")
             .And.NotContain("registered with Windows");
     }
 
