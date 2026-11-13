@@ -61,7 +61,7 @@ Every telemetry event automatically includes these common properties:
 | **Telemetry Profile** | Custom telemetry profile (if set via env var) | Custom value or null |
 | **Docker Container** | Whether running in Docker container | `True` or `False` |
 | **CI** | Whether running in CI environment | `True` or `False` |
-| **LLM** | Detected LLM/assistant environment identifiers (comma-separated) | `claude`, `cursor`, `gemini`, `copilot`, `codex`, `aider`, `amp`, `qwen`, `droid`, `opencode`, `zed`, `kimi`, `openhands`, `goose`, `cline`, `roo`, `windsurf`, `generic_agent` |
+| **LLM** | Detected LLM/assistant environment identifiers (comma-separated) | `claude`, `cursor`, `gemini`, `copilot-cli`, `copilot-vscode`, `copilot-app`, `codex`, `aider`, `amp`, `qwen`, `droid`, `opencode`, `zed`, `kimi`, `openhands`, `goose`, `cline`, `roo`, `windsurf`, `generic_agent` |
 | **Current Path Hash** | SHA256 hash of current directory path | Hashed value |
 | **Machine ID** | SHA256 hash of machine MAC address (or GUID if unavailable) | Hashed value |
 | **Machine ID Old** | Legacy machine ID for compatibility | Hashed value |
@@ -72,6 +72,20 @@ Every telemetry event automatically includes these common properties:
 | **Libc Release** | Libc release information | Libc release version |
 | **Libc Version** | Libc version information | Libc version number |
 | **SessionId** | Unique session identifier | GUID |
+
+### Copilot environment detection
+
+The .NET 10 servicing backport distinguishes these Copilot clients:
+
+- `copilot-cli`: any non-empty `GITHUB_COPILOT_CLI_MODE`, `GH_COPILOT_WORKING_DIRECTORY`, `COPILOT_CLI`, `COPILOT_MODEL`, `COPILOT_ALLOW_ALL`, or `COPILOT_GITHUB_TOKEN`.
+- `copilot-vscode`: non-empty `COPILOT_AGENT`, or `AI_AGENT=github_copilot_vscode_agent`.
+- `copilot-app`: `AI_AGENT=github_copilot_app_agent` (unchanged).
+
+`AI_AGENT` values are matched case-insensitively. Presence-based signals match even values such as `0` or `false`. Only client labels are reported, not environment variable values. All matching clients are reported once, so overlapping signals can produce multiple labels.
+
+This improves future reporting only. Consumers must continue accepting the legacy `copilot` label: some older SDK implementations used it for both CLI and VS Code, so historical data cannot universally distinguish those clients.
+
+Detection also affects CLI output independently of telemetry opt-out. Newly recognized environments receive the existing agent-friendly behavior: MSBuild's Terminal Logger live node display is disabled (`-tlp:DISABLENODEDISPLAY`), and `dotnet test` in Microsoft.Testing.Platform mode disables ANSI output and progress display. Environments without a matching agent retain their existing output behavior.
 
 ## Telemetry Events
 
