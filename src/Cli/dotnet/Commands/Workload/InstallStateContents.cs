@@ -4,8 +4,10 @@
 #nullable disable
 
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.Installer.Windows;
 
 #pragma warning disable CS8632
 
@@ -37,7 +39,29 @@ internal class InstallStateContents
 
     public static InstallStateContents FromPath(string path)
     {
-        return File.Exists(path) ? FromString(File.ReadAllText(path)) : new InstallStateContents();
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return FromPath(path, TrustedMachinePath.ProgramDataDotnetRoot);
+        }
+
+        return FromPath(path, programDataDotnetRoot: null);
+    }
+
+    internal static InstallStateContents FromPath(string path, string programDataDotnetRoot)
+    {
+        if (!File.Exists(path))
+        {
+            return new InstallStateContents();
+        }
+
+        if (programDataDotnetRoot is not null &&
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+            TrustedMachinePath.IsUnderRoot(path, programDataDotnetRoot))
+        {
+            TrustedMachinePath.ValidateDirectory(programDataDotnetRoot);
+        }
+
+        return FromString(File.ReadAllText(path));
     }
 
     public override string ToString()
