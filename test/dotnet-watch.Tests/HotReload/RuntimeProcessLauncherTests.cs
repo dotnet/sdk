@@ -755,10 +755,13 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         AssertEx.ContainsSubstring("Resolving 'Dependency, Version=1.0.0.0'", w.Reporter.ProcessOutput);
 
+        // Application output can arrive before the watcher reports update completion.
+        using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await hotReloadSucceeded.WaitAsync(waitCts.Token);
+
         Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
         Assert.Equal(1, projectsRebuilt.CurrentCount);
         Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
-        Assert.Equal(1, hotReloadSucceeded.CurrentCount);
     }
 
     [Fact]
@@ -812,9 +815,12 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         AssertEx.ContainsSubstring("Resolving 'Newtonsoft.Json, Version=13.0.0.0'", w.Reporter.ProcessOutput);
 
+        // Application output can arrive before the watcher reports update completion.
+        using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await hotReloadSucceeded.WaitAsync(waitCts.Token);
+
         Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
         Assert.Equal(0, projectsRebuilt.CurrentCount);
         Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
-        Assert.Equal(1, hotReloadSucceeded.CurrentCount);
     }
 }
