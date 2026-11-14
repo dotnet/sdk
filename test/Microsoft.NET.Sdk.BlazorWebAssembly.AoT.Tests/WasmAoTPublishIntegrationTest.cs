@@ -134,16 +134,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
                             propertyGroup.Add(new XElement("PublishReadyToRun", "true"));
                             propertyGroup.Add(new XElement("WasmBuildNative", "true"));
                             document.Root.Add(propertyGroup);
-
-                            // Remove once the fix for https://github.com/dotnet/runtime/issues/136499 flows into the runtime packs.
-                            document.Root.Add(new XElement("Target",
-                                new XAttribute("Name", "PruneRuntimePackReadyToRunImagesForTest"),
-                                new XAttribute("BeforeTargets", "_HandleFileConflictsForPublish"),
-                                new XElement("ItemGroup",
-                                    new XElement("_RuntimePackReadyToRunImages",
-                                        new XAttribute("Include", "@(ResolvedRuntimePack->'%(PackageDirectory)/runtimes/browser-wasm/native/r2r/*.wasm')")),
-                                    new XElement("ResolvedFileToPublish",
-                                        new XAttribute("Remove", "@(_RuntimePackReadyToRunImages)")))));
                         }
                     });
         }
