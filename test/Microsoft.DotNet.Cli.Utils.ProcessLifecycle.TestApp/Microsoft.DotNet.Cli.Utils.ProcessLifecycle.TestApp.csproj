@@ -6,6 +6,7 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <IsTestProject>false</IsTestProject>
     <IsUnitTestProject>false</IsUnitTestProject>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

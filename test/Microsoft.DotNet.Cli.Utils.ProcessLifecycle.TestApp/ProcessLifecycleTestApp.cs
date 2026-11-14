@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Utils.TestApp;
 
-public static class ProcessLifecycleTestApp
+public static partial class ProcessLifecycleTestApp
 {
     public static int Main(string[] args)
     {
@@ -31,12 +33,58 @@ public static class ProcessLifecycleTestApp
             return 0;
         }
 
+        if (OperatingSystem.IsWindows())
+        {
+            // A private console prevents test signals from reaching MTP or other processes.
+            if (!FreeConsole() || !AllocConsole())
+            {
+                throw new Win32Exception(Marshal.GetLastPInvokeError());
+            }
+
+            new Thread(() =>
+            {
+                for (int signal = 1; ; signal++)
+                {
+                    WaitForFile(markerPath + $".signal-{signal}");
+                    if (!GenerateConsoleCtrlEvent(0, 0))
+                    {
+                        throw new Win32Exception(Marshal.GetLastPInvokeError());
+                    }
+                }
+            }) { IsBackground = true }.Start();
+        }
+
         CancellationToken cancellationToken = ProcessLifecycle.CancellationToken;
+        using IDisposable? suppression = childMode == "suppressed"
+            ? ProcessLifecycle.SuppressTerminationCancellation()
+            : null;
+        using CancellationTokenRegistration registration = childMode is "uncooperative" or "repeated"
+            ? cancellationToken.Register(() => File.WriteAllText(markerPath, "signal-cancelled"))
+            : default;
+        if (childMode == "suppressed")
+        {
+            Console.CancelKeyPress += (_, _) => File.WriteAllText(markerPath, "signal-suppressed");
+        }
+        if (childMode == "repeated")
+        {
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => File.WriteAllText(markerPath + ".managed-exit", "");
+        }
+
         File.WriteAllText(markerPath, "ready");
 
-        if (childMode == "uncooperative")
+        if (childMode is "uncooperative" or "repeated")
         {
             Thread.Sleep(Timeout.Infinite);
+        }
+
+        if (childMode == "suppressed")
+        {
+            WaitForFile(markerPath + ".release");
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new InvalidOperationException("The suppression lease must preserve child signal ownership.");
+            }
+            return 0;
         }
 
         cancellationToken.WaitHandle.WaitOne();
@@ -112,10 +160,41 @@ public static class ProcessLifecycleTestApp
     private static void WaitForMarker(string markerPath, string expectedValue)
     {
         if (!SpinWait.SpinUntil(
-                () => File.Exists(markerPath) && File.ReadAllText(markerPath) == expectedValue,
+                () => ReadMarker(markerPath) == expectedValue,
                 TimeSpan.FromSeconds(30)))
         {
             throw new TimeoutException($"Timed out waiting for marker '{expectedValue}'.");
         }
     }
+
+    private static string? ReadMarker(string path)
+    {
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        using StreamReader reader = new(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+        return reader.ReadToEnd();
+    }
+
+    private static void WaitForFile(string path)
+    {
+        if (!SpinWait.SpinUntil(() => File.Exists(path), TimeSpan.FromSeconds(30)))
+        {
+            throw new TimeoutException($"Timed out waiting for '{path}'.");
+        }
+    }
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool AllocConsole();
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool FreeConsole();
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GenerateConsoleCtrlEvent(uint ctrlEvent, uint processGroupId);
 }

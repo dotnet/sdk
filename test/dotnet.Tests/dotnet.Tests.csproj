@@ -30,6 +30,7 @@
   <ItemGroup Condition="'$(TargetOS)' != 'windows'">
     <Compile Remove="WindowsInstallerTests.cs" />
     <Compile Remove="CommandTests\Workload\Install\GivenAWindowsMsiManifestInstaller.cs" />
+    <Compile Remove="CommandTests\Workload\Install\GivenMsiCancellation.cs" />
     <Compile Remove="CommandTests\Workload\List\GivenAnMsiInstallation.cs" />
     <Compile Remove="CommandTests\Workload\List\GivenDotnetWorkloadList.cs" />
     <Compile Remove="CommandTests\Workload\List\VisualStudioWorkloadsTests.cs" />
@@ -78,6 +79,7 @@
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
     <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
     <ProjectReference Include="..\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj" />
+    <ProjectReference Include="..\dotnet.Tests.TestApp\dotnet.Tests.TestApp.csproj" />
   </ItemGroup>
 
   <ItemGroup>

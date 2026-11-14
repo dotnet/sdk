@@ -578,18 +578,27 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         CancellationToken cancellationToken,
         DirectoryPath? offlineCache = null)
     {
+        bool shouldRollBackManifest = false;
         try
         {
             transactionContext.Run(
                 action: () =>
                 {
-                    InstallWorkloadManifestImplementation(manifestUpdate, cancellationToken, offlineCache);
+                    InstallWorkloadManifestImplementation(manifestUpdate, cancellationToken, offlineCache,
+                        onInstallAttempt: () => shouldRollBackManifest = true);
                 },
                 rollback: () =>
                 {
+                    if (!shouldRollBackManifest)
+                    {
+                        return;
+                    }
+
+                    // Rollback has its own lifetime, independent of the cancelled forward operation.
+                    using CancellationTokenSource rollbackCancellation = new();
                     InstallWorkloadManifestImplementation(
                         manifestUpdate,
-                        cancellationToken,
+                        rollbackCancellation.Token,
                         offlineCache: null,
                         action: InstallAction.Uninstall);
                 });
@@ -605,7 +614,8 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         ManifestVersionUpdate manifestUpdate,
         CancellationToken cancellationToken,
         DirectoryPath? offlineCache = null,
-        InstallAction action = InstallAction.Install)
+        InstallAction action = InstallAction.Install,
+        Action onInstallAttempt = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ReportPendingReboot();
@@ -626,6 +636,11 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         ValidateMsiDatabase(msi);
         DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
         InstallAction plannedAction = PlanPackage(msi, state, action, installedVersion);
+
+        if (plannedAction == InstallAction.Install)
+        {
+            onInstallAttempt?.Invoke();
+        }
 
         ExecutePackage(msi, plannedAction, msiPackageId);
 
@@ -710,7 +725,9 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             {
                 if (shouldRollBackPack)
                 {
-                    RollBackMsiInstall(msiToInstall, cancellationToken);
+                    // Rollback has its own lifetime, independent of the cancelled forward operation.
+                    using CancellationTokenSource rollbackCancellation = new();
+                    RollBackMsiInstall(msiToInstall, rollbackCancellation.Token);
                 }
             });
         }
@@ -815,7 +832,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <param name="productCode">The product code of the MSI to detect.</param>
     /// <param name="installedVersion">If detected, contains the version of the installed MSI.</param>
     /// <returns>The detect state of the specified MSI.</returns>
-    private DetectState DetectPackage(string productCode, out Version installedVersion)
+    protected virtual DetectState DetectPackage(string productCode, out Version installedVersion)
     {
         installedVersion = default;
         uint error = WindowsInstaller.GetProductInfo(productCode, InstallProperty.VERSIONSTRING, out string versionValue);
@@ -987,7 +1004,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <param name="offlineCache">The path to the offline cache. When <see langword="null"/>, packages are downloaded using the
     /// existing package feeds.</param>
     /// <returns>The MSI payload or <see langword="null"/> if unsuccessful.</returns>
-    private MsiPayload GetCachedMsiPayload(
+    protected virtual MsiPayload GetCachedMsiPayload(
         string packageId,
         string packageVersion,
         CancellationToken cancellationToken,
@@ -1019,7 +1036,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <param name="action">The action to perform.</param>
     /// <param name="displayName">A friendly name to display to the user when reporting progress. If no value is provided, the MSI
     /// filename will be used.</param>
-    private void ExecutePackage(MsiPayload msi, InstallAction action, string displayName = null)
+    protected virtual void ExecutePackage(MsiPayload msi, InstallAction action, string displayName = null)
     {
         uint error = Error.SUCCESS;
         string logFile = GetMsiLogName(msi, action);
@@ -1099,7 +1116,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// when retrieving payloads from the cache.
     /// </remarks>
     /// <param name="msiPayload">The payload to validate.</param>
-    private void ValidateMsiDatabase(MsiPayload msiPayload)
+    protected virtual void ValidateMsiDatabase(MsiPayload msiPayload)
     {
         uint error = WindowsInstaller.VerifyPackage(msiPayload.MsiPath);
         ExitOnError(error, $"Failed to verify package: {msiPayload.MsiPath}.");

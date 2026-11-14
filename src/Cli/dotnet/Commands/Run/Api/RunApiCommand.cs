@@ -20,11 +20,19 @@ namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 internal sealed class RunApiCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    public override int Execute(CancellationToken cancellationToken)
+    public override int Execute(CancellationToken cancellationToken) =>
+        ExecuteAsync(cancellationToken).GetAwaiter().GetResult();
+
+    internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
         try
         {
-            for (string? line; (line = Console.In.ReadLineAsync(cancellationToken).AsTask().GetAwaiter().GetResult()) != null;)
+            using var inputHandle = Console.OpenStandardInputHandle();
+            using Stream inputStream = inputHandle.IsInvalid ? Stream.Null : new FileStream(inputHandle, FileAccess.Read);
+            using var inputReader = new StreamReader(inputStream, Console.InputEncoding, detectEncodingFromByteOrderMarks: false);
+            // Unix FileStream cancellation cannot interrupt a read already blocked in the OS.
+            for (string? line; (line = await inputReader.ReadLineAsync(cancellationToken).AsTask()
+                .WaitAsync(cancellationToken).ConfigureAwait(false)) != null;)
             {
                 if (string.IsNullOrWhiteSpace(line))
                 {
