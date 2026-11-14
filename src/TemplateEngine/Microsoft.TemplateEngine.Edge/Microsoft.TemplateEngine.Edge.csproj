@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(TemplateEngSrcDir)Tools\Shared\Microsoft.TemplateEngine.CommandUtils\ArgumentEscaper.cs" Link="CommandUtils\ArgumentEscaper.cs" />
   </ItemGroup>
 
   <ItemGroup>
