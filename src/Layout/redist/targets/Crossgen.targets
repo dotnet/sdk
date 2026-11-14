@@ -43,8 +43,6 @@
       <BlazorWasmTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
       <RazorSourceGenerators>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\source-generators\</RazorSourceGenerators>
       <RazorTasks>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\$(DefaultToolTfm)\</RazorTasks>
-      <!-- TODO: Remove the versioned WindowsDesktopTools fallback once all consumed WPF SDK packages use tools/net. -->
-      <WindowsDesktopTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\$(DefaultToolTfm)\</WindowsDesktopTools>
       <WindowsDesktopTools Condition="Exists('$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\net\')">$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\net\</WindowsDesktopTools>
       <PublishTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\$(DefaultToolTfm)\</PublishTools>
       <WebTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\$(DefaultToolTfm)\</WebTools>
