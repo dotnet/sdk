@@ -72,6 +72,16 @@
         <target state="translated">Directorio de salida en el que se ubicarán los artefactos compilados.</target>
         <note />
       </trans-unit>
+      <trans-unit id="BuildPropertyArgumentName">
+        <source>NAME=VALUE</source>
+        <target state="new">NAME=VALUE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildPropertyOptionDescription">
+        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
+        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="BuildRuntimeOptionDescription">
         <source>The target runtime to build for.</source>
         <target state="translated">El entorno de tiempo de ejecución para el que se compila.</target>

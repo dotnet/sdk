@@ -303,6 +303,12 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   <data name="BuildOutputOptionDescription" xml:space="preserve">
     <value>The output directory to place built artifacts in.</value>
   </data>
+  <data name="BuildPropertyArgumentName" xml:space="preserve">
+    <value>NAME=VALUE</value>
+  </data>
+  <data name="BuildPropertyOptionDescription" xml:space="preserve">
+    <value>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</value>
+  </data>
   <data name="BuildRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to build for.</value>
   </data>

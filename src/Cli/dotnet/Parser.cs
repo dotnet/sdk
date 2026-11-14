@@ -228,6 +228,11 @@ public static class Parser
             }
             else if (option is HelpOption helpOption)
             {
+                HelpBuilder helpBuilder = DotnetHelpBuilder.Instance.Value;
+                var propertyOption = rootCommand.BuildCommand.ImplicitRestoreOptions.PropertiesOption;
+                helpBuilder.CustomizeSymbol(propertyOption,
+                    firstColumnText: $"-p, --property <{propertyOption.HelpName}>");
+
 #if CLI_AOT
                 // On the AOT path some commands keep their static definition, but the managed CLI produces
                 // their help dynamically with content that has no static equivalent:
@@ -243,12 +248,12 @@ public static class Parser
                 // subtrees to the managed CLI to keep the output in parity.
                 helpOption.Action = new AotPrintHelpAction(
                     helpOption,
-                    DotnetHelpBuilder.Instance.Value,
+                    helpBuilder,
                     rootCommand.NewCommand,
                     rootCommand.TestCommand,
                     rootCommand.PackageCommand);
 #else
-                helpOption.Action = new PrintHelpAction(helpOption, DotnetHelpBuilder.Instance.Value);
+                helpOption.Action = new PrintHelpAction(helpOption, helpBuilder);
 #endif
                 helpOption.Description = CliStrings.ShowHelpDescription;
             }

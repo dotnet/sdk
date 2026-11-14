@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Extensions;
@@ -322,6 +324,43 @@ public partial class AotParserTests
         var exception = RecordException(() => Parser.Invoke(result));
 
         Assert.IsNull(exception);
+    }
+
+    [TestMethod]
+    public void InvokeBuildHelp_ShowsPropertyOptionWithoutFallback()
+    {
+        var (exitCode, stdout, stderr) = InvokeWithCapture(["build", "--help"]);
+
+        Assert.AreEqual(0, exitCode);
+        Assert.IsEmpty(stderr);
+        stdout.Should().Contain($"-p, --property <{CommandDefinitionStrings.BuildPropertyArgumentName}>");
+        Regex.Replace(stdout, @"\s+", " ").Should().Contain(CommandDefinitionStrings.BuildPropertyOptionDescription);
+        stdout.Should().NotContain("--restoreProperty");
+        stdout.Should().NotContain("--getProperty");
+        stdout.Should().NotContain("--source");
+    }
+
+    [TestMethod]
+    [DataRow("--property")]
+    [DataRow("-property")]
+    [DataRow("/property")]
+    [DataRow("/p")]
+    [DataRow("-p")]
+    [DataRow("--p")]
+    public void ParseBuildPropertyAliases_PreservesMultipleProperties(string alias)
+    {
+        var result = Parser.Parse(
+            ["build", alias, "First=original;Second=two", $"{alias}:First=updated", "project.csproj"]);
+
+        Assert.IsEmpty(result.Errors);
+        var definition = (BuildCommandDefinition)result.CommandResult.Command;
+        var properties = result.GetValue(definition.ImplicitRestoreOptions.PropertiesOption);
+        Assert.IsNotNull(properties);
+        Assert.HasCount(2, properties);
+        Assert.AreEqual("updated", properties["First"]);
+        Assert.AreEqual("two", properties["Second"]);
+        Assert.AreSequenceEqual(["project.csproj"], result.GetValue(definition.SlnOrProjectOrFileArgument));
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
     }
 
     [TestMethod]

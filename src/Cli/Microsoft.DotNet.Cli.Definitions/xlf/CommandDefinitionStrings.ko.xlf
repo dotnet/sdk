@@ -72,6 +72,16 @@
         <target state="translated">빌드된 아티팩트를 배치할 출력 디렉터리입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="BuildPropertyArgumentName">
+        <source>NAME=VALUE</source>
+        <target state="new">NAME=VALUE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildPropertyOptionDescription">
+        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
+        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="BuildRuntimeOptionDescription">
         <source>The target runtime to build for.</source>
         <target state="translated">빌드할 대상 런타임입니다.</target>
