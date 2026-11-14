@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.NativeWrapper;
 ///  </para>
 /// </remarks>
 [CustomMarshaller(typeof(string), MarshalMode.Default, typeof(PlatformStringMarshaller))]
-public static unsafe class PlatformStringMarshaller
+static unsafe partial class PlatformStringMarshaller
 {
     /// <summary>
     ///  Converts a managed string to an unmanaged pointer using platform-appropriate encoding.

@@ -8,7 +8,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// <summary>
     /// An SDK workload manifest
     /// </summary>
-    public class WorkloadManifest
+    partial class WorkloadManifest
     {
         internal WorkloadManifest(string id, FXVersion version, string? description, string manifestPath, Dictionary<WorkloadId, BaseWorkloadDefinition> workloads, Dictionary<WorkloadPackId, WorkloadPack> packs, Dictionary<string, FXVersion>? dependsOnManifests)
         {
