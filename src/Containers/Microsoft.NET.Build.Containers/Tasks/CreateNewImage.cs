@@ -25,26 +25,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     internal static bool TryParseSourceDateEpoch(string? value, out DateTime? timestamp)
     {
-        timestamp = null;
-        if (string.IsNullOrEmpty(value))
-        {
-            return true;
-        }
-
-        if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out long seconds) || seconds < 0)
-        {
-            return false;
-        }
-
-        try
-        {
-            timestamp = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
-            return true;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            return false;
-        }
+        timestamp = SourceDateEpochParser.Parse(value);
+        return string.IsNullOrEmpty(value) || timestamp.HasValue;
     }
 
     public override bool Execute()
@@ -169,6 +151,11 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
+        if (!ContainerAnnotationScopes.TryFilter(Annotations, ContainerAnnotationScope.Manifest, Log, out ITaskItem[] manifestAnnotations))
+        {
+            return false;
+        }
+
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
         {
@@ -246,6 +233,13 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             requestedImageFormat,
             destinationImageReference);
         DateTime createdAt = sourceDateEpoch ?? DateTime.UtcNow;
+
+        if (manifestAnnotations.Length > 0 && imageBuilder.ManifestMediaType == SchemaTypes.DockerManifestV2)
+        {
+            Log.LogError(Resource.GetString("ManifestAnnotationsRequireOci"));
+            return false;
+        }
+
         var userId = imageBuilder.IsWindows ? null : ContainerHelpers.TryParseUserId(ContainerUser);
         Layer newLayer = Layer.FromDirectory(
             PublishDirectory,
@@ -286,6 +280,19 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             if (GenerateDigestLabel)
             {
                 Log.LogMessageFromResources(nameof(Strings.GenerateDigestLabelWithoutGenerateLabels));
+            }
+        }
+
+        foreach (ITaskItem annotation in manifestAnnotations)
+        {
+            string value = ContainerAnnotationScopes.GetValue(annotation, createdAt);
+            if (annotation.ItemSpec == ImageBuilder.BaseImageDigestName && string.IsNullOrEmpty(value))
+            {
+                imageBuilder.AddBaseImageDigestAnnotation();
+            }
+            else
+            {
+                imageBuilder.AddAnnotation(annotation.ItemSpec, value);
             }
         }
 
