@@ -122,6 +122,11 @@ and it is not a DLL path, built-in command, or a NuGet tool (e.g., `dotnet watch
 even if a valid `watch` file-based app exists in the current directory;
 one can use `dotnet ./watch` to run the file-based app).
 
+### Multi-threaded MSBuild execution
+
+For file-based builds that use MSBuild, `-mt` / `-multiThreaded` enables multi-threaded execution.
+Use `-mt:false` to disable it.
+
 ### Other commands
 
 Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE support and hence work for file-based programs.

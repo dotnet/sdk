@@ -87,6 +87,28 @@ public sealed class MSBuildArgs
     /// </summary>
     public List<string> OtherMSBuildArgs { get; }
 
+    internal bool? MultiThreaded
+    {
+        get
+        {
+            bool? enabled = null;
+            foreach (string argument in OtherMSBuildArgs)
+            {
+                if (MSBuildArgumentParser.TryGetMultiThreadedSwitch(argument, out bool? value))
+                {
+                    // Empty parameters enable MT only when no earlier value was supplied.
+                    enabled = value ?? enabled ?? true;
+                }
+            }
+
+            return enabled;
+        }
+    }
+
+    internal bool IsMultiThreadedEnabled =>
+        Env.GetEnvironmentVariable("MSBUILDFORCEMULTITHREADED") == "1" ||
+        (MultiThreaded ?? Env.GetEnvironmentVariable("MSBUILDENABLEMULTITHREADED") == "1");
+
     /// <summary>
     /// Ensures that when we do our MSBuild-property re-parses we parse in the same way as the dotnet CLI's parser.
     /// </summary>
