@@ -561,6 +561,42 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
+        public void GivenARidSpecificLocalToolInstalledBeforeANormalOneTheNormalOneInstallsSucceeds()
+        {
+            var ridSpecificTool = new TestToolBuilder.TestToolSettings()
+            {
+                ToolPackageId = "RidSpecificFirstTool",
+                ToolCommandName = "ridspecificfirst",
+                RidSpecific = true,
+                IncludeAnyRid = true
+            };
+            var normalTool = new TestToolBuilder.TestToolSettings()
+            {
+                ToolPackageId = "NormalSecondTool",
+                ToolCommandName = "normalsecond"
+            };
+            string ridSpecificFeed = ToolBuilder.CreateTestTool(Log, ridSpecificTool);
+            string normalFeed = ToolBuilder.CreateTestTool(Log, normalTool);
+
+            var (_, _, downloader, _, _, _, _) = Setup(useMock: false, includeLocalFeedInNugetConfig: false);
+
+            IToolPackage Install(TestToolBuilder.TestToolSettings settings) =>
+                downloader.InstallPackage(
+                    new PackageLocation(additionalFeeds: [ridSpecificFeed, normalFeed]),
+                    packageId: new PackageId(settings.ToolPackageId),
+                    verbosity: TestVerbosity,
+                    versionRange: VersionRange.Parse(settings.ToolPackageVersion),
+                    targetFramework: _testTargetframework,
+                    verifySignatures: false);
+
+            Install(ridSpecificTool);
+            var normalPackage = Install(normalTool);
+
+            normalPackage.Id.Should().Be(new PackageId(normalTool.ToolPackageId));
+            normalPackage.Command.Name.Value.Should().Be(normalTool.ToolCommandName);
+        }
+
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void GivenSecondInstallWithoutATransactionTheFirstShouldNotRollback(bool testMockBehaviorIsInSync)
