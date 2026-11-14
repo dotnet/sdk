@@ -723,16 +723,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">診断出力を有効にします。</target>
         <note />
       </trans-unit>
-      <trans-unit id="SdkDirectoryCouldNotBeDetermined">
-        <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
-        <target state="translated">警告: SDK ディレクトリを特定できませんでした。sdk_dir が指定されておらず、dotnet-aot はその独自のモジュールを見つけることができませんでした。SDK 相対解決が正しくない可能性があります。</target>
-        <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
-      </trans-unit>
-      <trans-unit id="SdkRootDirectoryDoesNotExist">
-        <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="translated">'{1}' 設定で指定された SDK ルート ディレクトリ '{0}' 存在しません。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="translated">'--self-contained' と '--no-self-contained' オプションは同時に使用できません。</target>

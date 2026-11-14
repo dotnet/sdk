@@ -83,9 +83,8 @@ So deriving an SDK-relative path (`MSBuild.dll`, `Sdks/`, `DotnetTools/`, target
 - **In-repo:** read `SdkPaths.SdkDirectory` (in `Microsoft.DotNet.Cli.CoreUtils`), which resolves the
   `Microsoft.DotNet.Sdk.Root` AppContext value -> SDK assembly directory -> `AppContext.BaseDirectory`
   (once, cached).
-- `NativeEntryPoint.ExecuteCore` resolves the SDK directory once (host `sdk_dir`, else self-locating the
-  `dotnet-aot` module via `SdkRootLocator`) and **publishes it as the `Microsoft.DotNet.Sdk.Root`
-  AppContext value** for the compiled-in assemblies.
+- `NativeEntryPoint.ExecuteCore` takes the SDK directory from the required host `sdk_dir` and
+  **publishes it as the `Microsoft.DotNet.Sdk.Root` AppContext value** for the compiled-in assemblies.
 - **Out-of-repo code** (MSBuild tasks, NuGet, runtime - no `Cli.Utils` reference) replicates the contract
   inline: read the `Microsoft.DotNet.Sdk.Root` AppContext value first, else the existing BCL logic.
 
@@ -211,8 +210,7 @@ and binary-size delta.
   issue for temporary dependency warnings. Ask the user before creating a new issue.
 - **A shared Native AOT library is not a standalone AOT app.** On each affected OS, check interaction
   with native libraries and process-global state already loaded by the host.
-- **Flat layouts can hide SDK-root defects.** Use `-Layout Separated`; add `-SelfLocate` to exercise the
-  native-module fallback.
+- **Flat layouts can hide SDK-root defects.** Use `-Layout Separated`.
 
 ## Reviewer workflow
 
@@ -353,11 +351,10 @@ assembled harness.
 
 ```powershell
 .\src\Cli\dn\run-dn.ps1 -Command "<invocation>" -Mode Compare -Layout Separated
-.\src\Cli\dn\run-dn.ps1 -Command "<invocation>" -Mode Compare -Layout Separated -SelfLocate
 ```
 
-The first exercises the host-provided versioned SDK directory. The second makes `dn` pass an empty
-`sdk_dir` so `dotnet-aot` must self-locate its native module. Use this for every new SDK-relative path.
+This exercises the host-provided versioned SDK directory with `dotnet-aot` outside `dn`'s own
+directory. Use this for every new SDK-relative path.
 
 ### 7. Size and platform evidence
 

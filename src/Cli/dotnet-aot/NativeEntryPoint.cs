@@ -85,27 +85,8 @@ static unsafe partial class NativeEntryPoint
         // is the install root, not the versioned SDK directory. Unlike an environment variable an
         // AppContext value is process-local and is not inherited by child processes. See
         // src/Cli/dotnet-aot/SdkRootResolution.md.
-        //
-        // Honor a value a caller already provided (e.g. a runtimeconfig configProperties entry): it is
-        // authoritative, but it must point to a real directory - fail fast rather than handing the
-        // compiled-in assemblies a bogus SDK root. Otherwise use the host-provided sdk_dir (the muxer
-        // already resolved it to locate dotnet-aot).
-        string? sdkDirectory = AppContext.GetData(SdkPaths.DataName) as string;
-        if (!string.IsNullOrEmpty(sdkDirectory))
-        {
-            if (!Directory.Exists(sdkDirectory))
-            {
-                Console.Error.WriteLine(string.Format(CliStrings.SdkRootDirectoryDoesNotExist, sdkDirectory, SdkPaths.DataName));
-                return 1;
-            }
-        }
-        else
-        {
-            sdkDirectory = sdkDir;
-            AppContext.SetData(SdkPaths.DataName, sdkDirectory);
-        }
-
-        SdkDirectory = sdkDirectory;
+        AppContext.SetData(SdkPaths.DataName, sdkDir);
+        SdkDirectory = sdkDir;
 
         // Telemetry is best-effort and must never prevent the CLI from running. Initializing
         // it can fail on some layouts (e.g. the NativeAOT muxer cannot resolve the crypto
@@ -242,7 +223,7 @@ static unsafe partial class NativeEntryPoint
                     // or local tool, a command on the PATH, ...) or an implicit file-based app (`dotnet app.cs`).
                     // Resolve and invoke external commands in AOT when possible; defer file-based apps, legacy
                     // project tools, and anything that does not resolve to the managed CLI.
-                    else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDirectory, mainActivity, globalJsonState, out exitCode, out success))
+                    else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, mainActivity, globalJsonState, out exitCode, out success))
                     {
                         aotHandledInProcess = true;
                         return exitCode;
@@ -260,8 +241,8 @@ static unsafe partial class NativeEntryPoint
                 mainActivity.SetTag("command.name", fallbackName);
             }
 
-            string dotnetDll = Path.Join(sdkDirectory, "dotnet.dll");
-            string runtimeConfig = Path.Join(sdkDirectory, "dotnet.runtimeconfig.json");
+            string dotnetDll = Path.Join(sdkDir, "dotnet.dll");
+            string runtimeConfig = Path.Join(sdkDir, "dotnet.runtimeconfig.json");
 
             if (File.Exists(dotnetDll) && File.Exists(runtimeConfig))
             {

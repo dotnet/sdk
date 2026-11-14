@@ -723,16 +723,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">啟用診斷輸出。</target>
         <note />
       </trans-unit>
-      <trans-unit id="SdkDirectoryCouldNotBeDetermined">
-        <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
-        <target state="translated">警告: 無法判定 SDK 目錄 - 未提供 sdk_dir，且 dotnet-aot 無法找到自己的模組；以 SDK 為基準的解析可能不正確。</target>
-        <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
-      </trans-unit>
-      <trans-unit id="SdkRootDirectoryDoesNotExist">
-        <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="translated">透過 '{1}' 設定提供的 SDK 根目錄 '{0}' 不存在。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="translated">不能同時使用 '--self-contained' 和 '--no-self-contained' 選項。</target>
