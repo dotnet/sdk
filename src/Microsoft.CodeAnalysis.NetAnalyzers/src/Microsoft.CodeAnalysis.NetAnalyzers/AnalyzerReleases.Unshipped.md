@@ -8,6 +8,7 @@ CA1517 | Maintainability | Info | PreferReadOnlySpanOverSpanAnalyzer, [Documenta
 CA1876 | Performance | Info | DoNotUseAsParallelInForEachLoopAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1876)
 CA1877 | Performance | Info | CollapseMultiplePathOperationsAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1877)
 CA1878 | Performance | Info | PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1878)
+CA1881 | Performance | Info | PreferValueTupleOverTupleAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1881)
 CA2026 | Reliability | Info | PreferJsonElementParse, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2026)
 CA2027 | Reliability | Info | DoNotUseNonCancelableTaskDelayWithWhenAny, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2027)
 CA2028 | Reliability | Info | AvoidRedundantRegexIsMatchBeforeMatch, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2028)

@@ -3625,6 +3625,26 @@
             ]
           }
         },
+        "CA1881": {
+          "id": "CA1881",
+          "shortDescription": "Prefer 'ValueTuple' over 'Tuple'",
+          "fullDescription": "'ValueTuple' is a struct, so it avoids the heap allocation of each 'Tuple'. A tuple is only reported when every use of it, and of everything it is stored in, passed to or returned from, works the same with a value tuple.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1881",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "PreferValueTupleOverTupleAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",

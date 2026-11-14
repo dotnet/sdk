@@ -2533,6 +2533,26 @@ Rozšíření a uživatelem definované převody se u obecných typů nepodporuj
         <target state="translated">Upřednostňovat pro StringBuilder přetížení metod Append a Insert silného typu</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferValueTupleOverTupleCodeFixTitle">
+        <source>Use a tuple literal</source>
+        <target state="new">Use a tuple literal</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferValueTupleOverTupleDescription">
+        <source>'ValueTuple' is a struct, so it avoids the heap allocation of each 'Tuple'. A tuple is only reported when every use of it, and of everything it is stored in, passed to or returned from, works the same with a value tuple.</source>
+        <target state="new">'ValueTuple' is a struct, so it avoids the heap allocation of each 'Tuple'. A tuple is only reported when every use of it, and of everything it is stored in, passed to or returned from, works the same with a value tuple.</target>
+        <note>{Locked="ValueTuple"}{Locked="Tuple"}</note>
+      </trans-unit>
+      <trans-unit id="PreferValueTupleOverTupleMessage">
+        <source>Use a value tuple instead of '{0}'</source>
+        <target state="new">Use a value tuple instead of '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferValueTupleOverTupleTitle">
+        <source>Prefer 'ValueTuple' over 'Tuple'</source>
+        <target state="new">Prefer 'ValueTuple' over 'Tuple'</target>
+        <note>{Locked="ValueTuple"}{Locked="Tuple"}</note>
+      </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionNotThrowMessage">
         <source>Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</source>
         <target state="translated">Počínaje rozhraním .NET 7 se explicitní převod {0} při přetečení v nezaškrtnutém kontextu nevyvolá. Pokud chcete obnovit chování rozhraní .NET 6, zabalte výraz příkazem checked.</target>
