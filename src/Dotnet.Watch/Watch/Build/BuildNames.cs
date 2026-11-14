@@ -5,6 +5,9 @@ namespace Microsoft.DotNet.Watch;
 
 internal static class PropertyNames
 {
+    public const string Device = nameof(Device);
+    public const string RuntimeIdentifier = nameof(RuntimeIdentifier);
+    public const string IsRunnableApplication = "_IsRunnableApplication";
     public const string TargetFramework = nameof(TargetFramework);
     public const string NetCoreSdkVersion = nameof(NetCoreSdkVersion);
     public const string TargetFrameworkIdentifier = nameof(TargetFrameworkIdentifier);

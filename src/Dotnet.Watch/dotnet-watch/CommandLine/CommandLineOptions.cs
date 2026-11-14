@@ -405,7 +405,7 @@ internal sealed class CommandLineOptions
             Representation = project,
             WorkingDirectory = workingDirectory,
             TargetFramework = TargetFramework,
-            Device = Device,
+            Device = Device != null ? new DeviceId(Device, runtimeIdentifier: null) : null,
             Command = Command.Name,
             CommandArguments = CommandArguments,
             LaunchEnvironmentVariables = [],
