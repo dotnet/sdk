@@ -278,6 +278,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.AreEqual(expectedErrorCode, installResult.Error);
             installResult.ErrorMessage.Should().NotBeNullOrEmpty();
             installResult.TemplatePackage.Should().BeNull();
+            if (expectedErrorCode == InstallerErrorCode.PackageNotFound)
+            {
+                Assert.AreEqual(
+                    string.Format(LocalizableStrings.NuGetInstaller_InstallResult_Error_PackageNotFound, request.PackageIdentifier, MockPackageManager.DefaultFeed),
+                    installResult.ErrorMessage);
+            }
         }
 
         [TestMethod]
@@ -439,6 +445,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.AreEqual(source, result.TemplatePackage);
             Assert.AreEqual(expectedErrorCode, result.Error);
             result.ErrorMessage.Should().NotBeNullOrEmpty();
+            if (expectedErrorCode == InstallerErrorCode.PackageNotFound)
+            {
+                Assert.AreEqual(
+                    string.Format(LocalizableStrings.NuGetInstaller_InstallResult_Error_PackageNotFound, source.Identifier, MockPackageManager.DefaultFeed),
+                    result.ErrorMessage);
+            }
         }
 
         [TestMethod]
