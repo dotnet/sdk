@@ -4,8 +4,7 @@
     <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR. -->
     <IsCrossgenSupported Condition="'$(SkipUsingCrossgen)' != 'true' and
                                     '$(TargetArchitecture)' != 's390x' and
-                                    '$(TargetArchitecture)' != 'ppc64le' and
-                                    '$(DotNetBuildUseMonoRuntime)' != 'true'">true</IsCrossgenSupported>
+                                    '$(TargetArchitecture)' != 'ppc64le'">true</IsCrossgenSupported>
 
     <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(NETCoreSdkRuntimeIdentifier)</RuntimeNETCrossgenPackageName>
   </PropertyGroup>
@@ -44,8 +43,9 @@
       <BlazorWasmTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
       <RazorSourceGenerators>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\source-generators\</RazorSourceGenerators>
       <RazorTasks>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\$(DefaultToolTfm)\</RazorTasks>
-      <!-- NetTFMUpdate: Restore $(DefaultToolTfm) when the WindowsDesktop SDK package targets net12.0. -->
-      <WindowsDesktopTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\net11.0\</WindowsDesktopTools>
+      <!-- TODO: Remove the versioned WindowsDesktopTools fallback once all consumed WPF SDK packages use tools/net. -->
+      <WindowsDesktopTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\$(DefaultToolTfm)\</WindowsDesktopTools>
+      <WindowsDesktopTools Condition="Exists('$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\net\')">$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\net\</WindowsDesktopTools>
       <PublishTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\$(DefaultToolTfm)\</PublishTools>
       <WebTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\$(DefaultToolTfm)\</WebTools>
       <ProjectSystemTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\$(DefaultToolTfm)\</ProjectSystemTools>

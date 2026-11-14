@@ -332,8 +332,10 @@
         Include="$(ProductMonikerRid)" />
 
       <Net120AppHostRids Include="@(Net110AppHostRids);openharmony-arm64;openharmony-x64" />
+      <Net120AppHostRids Remove="android-x86;linux-bionic-x86" />
 
       <Net120RuntimePackRids Include="@(Net110RuntimePackRids);openharmony-arm64;openharmony-x64" />
+      <Net120RuntimePackRids Remove="iossimulator-x64;tvossimulator-x64;android-x86;linux-bionic-x86" />
 
       <NetCoreAppHostRids Include="@(Net120AppHostRids)" />
 
@@ -407,10 +409,6 @@
         " />
 
       <Net110MonoRuntimePackRids Include="@(Net100MonoRuntimePackRids)" />
-
-      <Net120MonoRuntimePackRids Include="@(Net110MonoRuntimePackRids)" />
-
-      <MonoRuntimePackRids Include="@(Net120MonoRuntimePackRids)" />
 
       <AspNetCore30RuntimePackRids Include="
         win-x64;
@@ -609,6 +607,7 @@
         " />
 
       <Net120NativeAOTRuntimePackRids Include="@(Net110NativeAOTRuntimePackRids);openharmony-arm64;openharmony-x64" />
+      <Net120NativeAOTRuntimePackRids Remove="iossimulator-x64;tvossimulator-x64;android-x86;linux-bionic-x86" />
 
       <NativeAOTRuntimePackRids Include="
         @(Net120NativeAOTRuntimePackRids);
@@ -791,14 +790,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                          TargetFramework="net12.0"
                          AspNetCorePackVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
 
-    <KnownRuntimePack Include="Microsoft.NETCore.App"
-                      TargetFramework="net12.0"
-                      RuntimeFrameworkName="Microsoft.NETCore.App"
-                      LatestRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
-                      RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.Mono.**RID**"
-                      RuntimePackRuntimeIdentifiers="@(MonoRuntimePackRids, '%3B')"
-                      RuntimePackLabels="Mono"
-                      />
+    <!-- Mono runtime packs are not produced after .NET 11. -->
 
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="net12.0"

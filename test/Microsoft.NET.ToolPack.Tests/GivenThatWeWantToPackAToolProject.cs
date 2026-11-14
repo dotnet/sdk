@@ -107,7 +107,11 @@ namespace Microsoft.NET.ToolPack.Tests
             {
                 var anyTfm = nupkgReader.GetSupportedFrameworks().First().GetShortFolderName();
                 var tmpfilePath = Path.Combine(_testRoot, "temp", Path.GetRandomFileName());
-                string copiedFile = nupkgReader.ExtractFile($"tools/{anyTfm}/any/DotnetToolSettings.xml", tmpfilePath, null);
+                string copiedFile = nupkgReader.ExtractFile(
+                    $"tools/{anyTfm}/any/DotnetToolSettings.xml",
+                    Path.Combine(_testRoot, "temp"),
+                    Path.GetFileName(tmpfilePath),
+                    null);
 
                 var allItems = nupkgReader.GetToolItems().SelectMany(i => i.Items).ToList();
                 allItems.Should().Contain($"tools/{anyTfm}/any/consoledemo.runtimeconfig.json");
