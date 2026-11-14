@@ -1293,6 +1293,21 @@ Enumerable.OfType&lt;T&gt; 使用的一般型別檢查 (C# 'is' operator/IL 'isi
         <target state="translated">請勿在 P/Invoke 的字串參數上使用 'OutAttribute'</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithUnrelatedTypesDescription">
+        <source>Two references can only point to the same object when one type derives from or implements the other. When neither type has a reference conversion to the other, 'ReferenceEquals' always returns 'false'.</source>
+        <target state="new">Two references can only point to the same object when one type derives from or implements the other. When neither type has a reference conversion to the other, 'ReferenceEquals' always returns 'false'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithUnrelatedTypesMessage">
+        <source>'ReferenceEquals' always returns 'false' here because '{0}' and '{1}' are unrelated types</source>
+        <target state="new">'ReferenceEquals' always returns 'false' here because '{0}' and '{1}' are unrelated types</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithUnrelatedTypesTitle">
+        <source>Do not use ReferenceEquals with unrelated reference types</source>
+        <target state="new">Do not use ReferenceEquals with unrelated reference types</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</source>
         <target state="translated">請勿將數值型別為 '{0}' 的引數傳遞至 'ReferenceEqualityComparer' 上的 'Equals' 方法。由於值 Boxing，這個對 'Equals' 的呼叫可能會返回未預期的結果。如果您想要使用 'ReferenceEqualityComparer'，請考慮改為使用 'EqualityComparer'，或傳遞參考型別引數。</target>

@@ -2238,6 +2238,18 @@ When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is call
 |CodeFix|True|
 ---
 
+## [CA2030](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2030): Do not use ReferenceEquals with unrelated reference types
+
+Two references can only point to the same object when one type derives from or implements the other. When neither type has a reference conversion to the other, 'ReferenceEquals' always returns 'false'.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA2100](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.

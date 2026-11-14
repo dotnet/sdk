@@ -1293,6 +1293,21 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">P/Invoke の文字列パラメーターに 'OutAttribute' を使用しない</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithUnrelatedTypesDescription">
+        <source>Two references can only point to the same object when one type derives from or implements the other. When neither type has a reference conversion to the other, 'ReferenceEquals' always returns 'false'.</source>
+        <target state="new">Two references can only point to the same object when one type derives from or implements the other. When neither type has a reference conversion to the other, 'ReferenceEquals' always returns 'false'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithUnrelatedTypesMessage">
+        <source>'ReferenceEquals' always returns 'false' here because '{0}' and '{1}' are unrelated types</source>
+        <target state="new">'ReferenceEquals' always returns 'false' here because '{0}' and '{1}' are unrelated types</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithUnrelatedTypesTitle">
+        <source>Do not use ReferenceEquals with unrelated reference types</source>
+        <target state="new">Do not use ReferenceEquals with unrelated reference types</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</source>
         <target state="translated">値型 '{0}' の引数を 'ReferenceEqualityComparer' の 'Equals' メソッドに渡さないでください。値のボックス化が原因で、'Equals' へのこの呼び出しによって予期しない結果が返される可能性があります。代わりに 'EqualityComparer' を使用するか、'ReferenceEqualityComparer' を使用する場合は参照型引数を渡すことを検討してください。</target>

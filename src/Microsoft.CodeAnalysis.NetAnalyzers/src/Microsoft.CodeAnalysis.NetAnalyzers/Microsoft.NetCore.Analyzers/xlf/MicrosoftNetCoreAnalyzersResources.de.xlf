@@ -1293,6 +1293,21 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
         <target state="translated">"OutAttribute" nicht für Zeichenfolgenparameter für P/Invokes verwenden</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithUnrelatedTypesDescription">
+        <source>Two references can only point to the same object when one type derives from or implements the other. When neither type has a reference conversion to the other, 'ReferenceEquals' always returns 'false'.</source>
+        <target state="new">Two references can only point to the same object when one type derives from or implements the other. When neither type has a reference conversion to the other, 'ReferenceEquals' always returns 'false'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithUnrelatedTypesMessage">
+        <source>'ReferenceEquals' always returns 'false' here because '{0}' and '{1}' are unrelated types</source>
+        <target state="new">'ReferenceEquals' always returns 'false' here because '{0}' and '{1}' are unrelated types</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithUnrelatedTypesTitle">
+        <source>Do not use ReferenceEquals with unrelated reference types</source>
+        <target state="new">Do not use ReferenceEquals with unrelated reference types</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</source>
         <target state="translated">Übergeben Sie kein Argument mit dem Werttyp „{0}“ an die „Equals“-Methode für „ReferenceEqualityComparer“. Aufgrund des Boxings der Werte kann dieser Aufruf von „Equals“ ein unerwartetes Ergebnis zurückgeben. Verwenden Sie stattdessen „EqualityComparer“, oder übergeben Sie Argumente mit einem Verweistyp, wenn Sie „ReferenceEqualityComparer“ verwenden möchten.</target>
