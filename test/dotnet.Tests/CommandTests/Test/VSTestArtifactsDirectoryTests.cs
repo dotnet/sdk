@@ -110,15 +110,41 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             try
             {
+                Environment.SetEnvironmentVariable(VSTestArtifactsDirectory.BaseDirectoryEnvironmentVariableName, null);
+                var unsetResult = ReadBaseDirectory();
+
                 Environment.SetEnvironmentVariable(VSTestArtifactsDirectory.BaseDirectoryEnvironmentVariableName, "   ");
 
                 // A whitespace-only override must not be treated as a real relative directory - that would
                 // silently create the artifacts directory under the current working directory.
-                VSTestArtifactsDirectory.GetBaseDirectory().Should().NotBe("   ");
+                ReadBaseDirectory().Should().Be(unsetResult, "whitespace must behave like an unset override, including when the default base is unavailable");
+                if (unsetResult.ErrorType is not null)
+                {
+                    unsetResult.ErrorMessage.Should().Contain(VSTestArtifactsDirectory.BaseDirectoryEnvironmentVariableName);
+                }
+                else
+                {
+                    unsetResult.BaseDirectory.Should().NotBeNullOrWhiteSpace();
+                }
             }
             finally
             {
                 Environment.SetEnvironmentVariable(VSTestArtifactsDirectory.BaseDirectoryEnvironmentVariableName, previousOverride);
+            }
+
+            // The platform default may be unavailable: /run/user/<uid> on Linux CI or Local AppData on Windows.
+            // Capture that expected failure to compare its type and message for unset and whitespace overrides,
+            // rather than requiring the default base to exist.
+            static (string? BaseDirectory, Type? ErrorType, string? ErrorMessage) ReadBaseDirectory()
+            {
+                try
+                {
+                    return (VSTestArtifactsDirectory.GetBaseDirectory(), null, null);
+                }
+                catch (Exception ex) when (ex is IOException or Microsoft.DotNet.Cli.Utils.GracefulException)
+                {
+                    return (null, ex.GetType(), ex.Message);
+                }
             }
         }
 
