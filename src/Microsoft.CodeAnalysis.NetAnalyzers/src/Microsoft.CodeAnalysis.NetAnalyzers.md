@@ -1593,7 +1593,7 @@ For improved performance, use the LoggerMessage delegates.
 |Category|Performance|
 |Enabled|True|
 |Severity|Hidden|
-|CodeFix|False|
+|CodeFix|True|
 ---
 
 ## [CA1849](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1849): Call async methods when in an async method
