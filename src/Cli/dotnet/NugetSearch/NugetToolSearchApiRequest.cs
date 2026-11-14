@@ -31,7 +31,8 @@ internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
     public async Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
         NugetSearchApiParameter nugetSearchApiParameter,
         PackageSource source,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        PackageSourceMapping? sourceMapping = null)
     {
         ArgumentNullException.ThrowIfNull(nugetSearchApiParameter);
         ArgumentNullException.ThrowIfNull(source);
@@ -70,6 +71,12 @@ internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
             var results = new List<SearchResultPackage>();
             foreach (IPackageSearchMetadata packageMetadata in metadata)
             {
+                if (sourceMapping?.IsEnabled == true &&
+                    !sourceMapping.GetConfiguredPackageSources(packageMetadata.Identity.Id).Contains(source.Name, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 IEnumerable<VersionInfo> versions = nugetSearchApiParameter.IncludeVersions
                     ? await packageMetadata.GetVersionsAsync().ConfigureAwait(false)
                     : [];

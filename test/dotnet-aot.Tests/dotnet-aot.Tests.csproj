@@ -42,6 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\dotnet.Tests\CommandTests\Tool\Search\ToolSearchTestServer.cs" Link="ToolSearchTestServer.cs" />
     <Compile Include="..\dotnet.Tests\CommandTests\Test\CapturingConsole.cs" Link="Test\CapturingConsole.cs" />
     <Compile Include="..\dotnet.Tests\CommandTests\Test\CoverageSummaryTests.cs" Link="Test\CoverageSummaryTests.cs" />
     <Compile Include="..\dotnet.Tests\CommandTests\Test\CoverageSummaryMessagesSerializerTests.cs" Link="Test\CoverageSummaryMessagesSerializerTests.cs" />

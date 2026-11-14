@@ -15,6 +15,95 @@ namespace dotnet.Tests.ToolSearchTests;
 public class ToolSearchCommandTests : SdkTest
 {
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task ExecuteOnlyPrintsPackagesFromMappedOrigins(bool detail)
+    {
+        await using var server = new ToolSearchTestServer();
+        string configPath = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "NuGet.config");
+        server.WriteConfig(configPath);
+
+        (int exitCode, BufferedReporter output, BufferedReporter error) = await RunToolSearchAsync(
+            ["dotnet", "tool", "search", "arbitrary text", "--configfile", configPath, .. detail ? new[] { "--detail" } : []],
+            new NugetToolSearchApiRequest(), cancellationToken: TestContext.CancellationToken);
+
+        exitCode.Should().Be(0);
+        string text = string.Join(Environment.NewLine, output.Lines);
+        text.Should().Contain("other.tool").And.Contain("contoso.tool")
+            .And.NotContain("contoso.private.tool").And.NotContain("contoso.disabled.tool").And.NotContain("9.0.0");
+        error.Lines.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public async Task ExecutePropagatesMappingUnlessSourcesAreOverridden(bool explicitSource, bool additionalSource)
+    {
+        const string source = "https://source.example.test/v3/index.json";
+        string configPath = WriteMappingConfig(source);
+        var fake = new FakeNugetToolSearchApiRequest(
+            successResponses: new Dictionary<string, IReadOnlyCollection<SearchResultPackage>> { [source] = [] });
+        List<string> args = ["dotnet", "tool", "search", "unmapped-search-term", "--configfile", configPath];
+        if (explicitSource)
+        {
+            args.AddRange(["--source", source]);
+        }
+        if (additionalSource)
+        {
+            args.AddRange(["--add-source", source]);
+        }
+
+        (int exitCode, _, _) = await RunToolSearchAsync(args.ToArray(), fake, cancellationToken: TestContext.CancellationToken);
+
+        exitCode.Should().Be(0);
+        PackageSourceMapping? mapping = fake.RequestedMappings.Should().ContainSingle().Subject;
+        if (explicitSource)
+        {
+            mapping.Should().BeNull();
+        }
+        else
+        {
+            mapping.Should().NotBeNull();
+            mapping!.GetConfiguredPackageSources("Contoso.Tool").Should().Equal("corp");
+        }
+    }
+
+    [TestMethod]
+    public async Task ExecuteRejectsAdditiveOnlySourceWithMappingBeforeQuerying()
+    {
+        const string source = "https://source.example.test/v3/index.json";
+        string configPath = WriteMappingConfig(source);
+        var fake = new FakeNugetToolSearchApiRequest();
+
+        Func<Task> execute = () => RunToolSearchAsync(
+            ["dotnet", "tool", "search", "tool", "--configfile", configPath, "--add-source", source],
+            fake, cancellationToken: TestContext.CancellationToken);
+
+        await execute.Should().ThrowAsync<GracefulException>()
+            .WithMessage(Microsoft.DotNet.Cli.CliStrings.CannotUseAddSourceWithSourceMapping);
+        fake.RequestedSourceUrls.Should().BeEmpty();
+    }
+
+    private string WriteMappingConfig(string source)
+    {
+        string path = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "NuGet.config");
+        File.WriteAllText(path, $$"""
+            <configuration>
+              <packageSources>
+                <clear />
+                <add key="corp" value="{{source}}" />
+              </packageSources>
+              <packageSourceMapping>
+                <clear />
+                <packageSource key="corp"><package pattern="Contoso.*" /></packageSource>
+              </packageSourceMapping>
+            </configuration>
+            """);
+        return path;
+    }
+
+    [TestMethod]
     public async Task ExecuteReturnsOneWhenNoSourcesAreConfiguredOrEnabled()
     {
         string configPath = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "NuGet.config");
@@ -305,16 +394,20 @@ public class ToolSearchCommandTests : SdkTest
 
         public List<CancellationToken> RequestedCancellationTokens { get; } = [];
 
+        public List<PackageSourceMapping?> RequestedMappings { get; } = [];
+
         public Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
             NugetSearchApiParameter nugetSearchApiParameter,
             PackageSource source,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            PackageSourceMapping? sourceMapping = null)
         {
             beforeRequest?.Invoke();
             string sourceUrl = source.Source;
             RequestedSourceUrls.Add(sourceUrl);
             RequestedParameters.Add(nugetSearchApiParameter);
             RequestedCancellationTokens.Add(cancellationToken);
+            RequestedMappings.Add(sourceMapping);
 
             if (_failureMessages.TryGetValue(sourceUrl, out string? failureMessage))
             {
@@ -347,7 +440,8 @@ public class ToolSearchCommandTests : SdkTest
         public async Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
             NugetSearchApiParameter nugetSearchApiParameter,
             PackageSource source,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            PackageSourceMapping? sourceMapping = null)
         {
             int activeRequests = Interlocked.Increment(ref _activeRequests);
             int observedMaximum = Volatile.Read(ref _maximumConcurrentRequests);
