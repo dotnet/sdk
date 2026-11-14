@@ -179,11 +179,27 @@ public partial class NativeEntryPointTests
             int exitCode = NativeEntryPoint.ExecuteCore(
                 hostPath: "test-host",
                 dotnetRoot: "test-root",
-                sdkDir: "",
+                sdkDir: "nonexistent-sdk-dir",
                 hostfxrPath: "",
                 args: ["--version"]);
 
             Assert.AreNotEqual(0, exitCode);
+        });
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    public void ExecuteCore_MissingSdkDir_Throws(string? sdkDir)
+    {
+        WithEnvRestore(() =>
+        {
+            Assert.Throws<ArgumentException>(() => NativeEntryPoint.ExecuteCore(
+                hostPath: "test-host",
+                dotnetRoot: "test-root",
+                sdkDir: sdkDir!,
+                hostfxrPath: "",
+                args: ["--version"]));
         });
     }
 
@@ -460,7 +476,7 @@ public partial class NativeEntryPointTests
                 int exitCode = NativeEntryPoint.ExecuteCore(
                     hostPath: "test-host",
                     dotnetRoot: "test-root",
-                    sdkDir: "",
+                    sdkDir: "nonexistent-sdk-dir",
                     hostfxrPath: "",
                     args: [csFile]);
 
@@ -512,7 +528,7 @@ public partial class NativeEntryPointTests
                 int exitCode = NativeEntryPoint.ExecuteCore(
                     hostPath: "test-host",
                     dotnetRoot: "test-root",
-                    sdkDir: "",
+                    sdkDir: "nonexistent-sdk-dir",
                     hostfxrPath: "",
                     args: [commandToken, "--no-build", "--no-launch-profile"]);
 
@@ -554,7 +570,7 @@ public partial class NativeEntryPointTests
                 int exitCode = NativeEntryPoint.ExecuteCore(
                     hostPath: "test-host",
                     dotnetRoot: "test-root",
-                    sdkDir: "",
+                    sdkDir: "nonexistent-sdk-dir",
                     hostfxrPath: "",
                     args: [sourcePath, "--no-build", "--launch-profile", "MissingExecutable"]);
 
@@ -743,12 +759,10 @@ public partial class NativeEntryPointTests
                 }
 
                 Environment.SetEnvironmentVariable("PATH", toolDirectory + Path.PathSeparator + originalPath);
-                string sdkDirectory = SdkRootLocator.TrySelfLocateSdkDirectory() ?? AppContext.BaseDirectory;
-
                 int exitCode = NativeEntryPoint.ExecuteCore(
                     hostPath: "test-host",
                     dotnetRoot: "test-root",
-                    sdkDir: sdkDirectory,
+                    sdkDir: AppContext.BaseDirectory,
                     hostfxrPath: "",
                     args: ["aotlocalized"]);
 

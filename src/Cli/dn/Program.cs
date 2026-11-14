@@ -36,11 +36,6 @@ partial class Program
                         : nint.Zero);
         }
 
-        // Test hook: pass an empty sdk_dir to exercise dotnet-aot's self-locate fallback while still
-        // loading the library from the resolved directory above.
-        string sdkDirArg = string.Equals(Environment.GetEnvironmentVariable("DOTNET_AOT_BLANK_SDKDIR"), "1", StringComparison.Ordinal)
-            ? string.Empty
-            : sdkDir;
         string hostfxrPath = ResolveHostfxrPath(dotnetRoot);
 
         // Marshal argv to native platform strings (UTF-16 on Windows, UTF-8 on Unix)
@@ -56,7 +51,7 @@ partial class Program
 
             nint hpNative = MarshalStringToNative(hostPath);
             nint drNative = MarshalStringToNative(dotnetRoot);
-            nint sdNative = MarshalStringToNative(sdkDirArg);
+            nint sdNative = MarshalStringToNative(sdkDir);
             nint hfNative = MarshalStringToNative(hostfxrPath);
 
             try
