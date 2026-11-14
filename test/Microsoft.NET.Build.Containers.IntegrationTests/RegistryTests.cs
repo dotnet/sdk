@@ -37,13 +37,15 @@ public class RegistryTests : SdkTest, IDisposable
         Registry registry = new(containerRegistry, logger, RegistryMode.Pull);
 
         var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
+        using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+        timeout.CancelAfter(TimeSpan.FromMinutes(2));
 
         ImageBuilder? downloadedImage = await registry.GetImageManifestAsync(
             containerName,
             containerTag,
             "linux-x64",
             ToolsetUtils.RidGraphManifestPicker,
-            cancellationToken: TestContext.CancellationToken);
+            cancellationToken: timeout.Token);
 
         Assert.IsNotNull(downloadedImage);
     }
