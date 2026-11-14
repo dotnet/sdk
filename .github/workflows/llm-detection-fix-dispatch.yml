@@ -1,0 +1,52 @@
+name: CLI agent detection fix dispatcher
+
+on:
+  workflow_run:
+    workflows: [CLI agent detection audit]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+concurrency:
+  group: llm-detection-fix-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: >-
+      github.repository == 'dotnet/sdk' &&
+      github.ref == 'refs/heads/main' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: write
+      issues: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # workflow_run uses the default branch SHA, never the upstream run's checkout.
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Exercise trusted dispatcher guards
+        run: node --test .github/llm-detection/dispatch.test.mjs
+      - name: Validate the report and dispatch at most one fixer
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { readFileSync } = await import("node:fs");
+            const { dispatchFix } = await import(`${process.env.GITHUB_WORKSPACE}/.github/llm-detection/dispatch.mjs`);
+            const { detectorPath, testsPath } = await import(`${process.env.GITHUB_WORKSPACE}/.github/llm-detection/fix.mjs`);
+            const result = await dispatchFix(github, context,
+              readFileSync(detectorPath, "utf8"), readFileSync(testsPath, "utf8"));
+            core.info(result.reason);
+            await core.summary.addHeading("Automatic detection fix").addRaw(result.reason).write();
