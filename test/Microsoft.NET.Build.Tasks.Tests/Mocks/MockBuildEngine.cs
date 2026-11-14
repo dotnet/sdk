@@ -4,6 +4,8 @@
 #nullable disable
 
 using System.Collections;
+using System.Collections.Concurrent;
+using System.Threading;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -49,18 +51,19 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         public virtual object GetRegisteredTaskObject(object key, RegisteredTaskObjectLifetime lifetime)
         {
-            RegisteredTaskObjectsQueries++;
+            Interlocked.Increment(ref RegisteredTaskObjectsQueries);
 
-            RegisteredTaskObjects.TryGetValue(key, out object ret);
+            RegisteredTaskObjects.TryGetValue((key, lifetime), out object ret);
             return ret;
         }
 
         public void RegisterTaskObject(object key, object obj, RegisteredTaskObjectLifetime lifetime, bool allowEarlyCollection)
         {
-            RegisteredTaskObjects.Add(key, obj);
+            RegisteredTaskObjects.TryAdd((key, lifetime), obj);
         }
 
-        public object UnregisterTaskObject(object key, RegisteredTaskObjectLifetime lifetime) => null;
+        public object UnregisterTaskObject(object key, RegisteredTaskObjectLifetime lifetime) =>
+            RegisteredTaskObjects.TryRemove((key, lifetime), out object value) ? value : null;
         public BuildEngineResult BuildProjectFilesInParallel(string[] projectFileNames, string[] targetNames, IDictionary[] globalProperties, IList<string>[] removeGlobalProperties, string[] toolsVersion, bool returnTargetOutputs) => new();
         public void Yield()
         {
@@ -75,7 +78,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public IList<BuildErrorEventArgs> Errors { get; } = new List<BuildErrorEventArgs>();
         public IList<BuildMessageEventArgs> Messages { get; } = new List<BuildMessageEventArgs>();
         public IList<BuildWarningEventArgs> Warnings { get; } = new List<BuildWarningEventArgs>();
-        public Dictionary<object, object> RegisteredTaskObjects { get; } = new Dictionary<object, object>();
+        public ConcurrentDictionary<(object, RegisteredTaskObjectLifetime), object> RegisteredTaskObjects { get; } = new();
         public int RegisteredTaskObjectsQueries = 0;
 
         public bool IsRunningMultipleNodes => throw new NotImplementedException();

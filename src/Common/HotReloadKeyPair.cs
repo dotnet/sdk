@@ -24,8 +24,17 @@ namespace Microsoft.DotNet.HotReload;
 internal static class HotReloadKeyPair
 {
     public static (string publicKey, bool isNewKey) GetOrCreate(string publicKeyPath, string privateKeyPath, Action<string> log)
+        => GetOrCreate(publicKeyPath, privateKeyPath, log, static path => path);
+
+    public static (string publicKey, bool isNewKey) GetOrCreate(
+        string publicKeyPath,
+        string privateKeyPath,
+        Action<string> log,
+        Func<string, string> resolvePath)
     {
-        if (TryReuseExistingKeyPair(publicKeyPath, privateKeyPath, log, out var existingPublicKey))
+        string resolvedPublicKeyPath = resolvePath(publicKeyPath);
+        string resolvedPrivateKeyPath = resolvePath(privateKeyPath);
+        if (TryReuseExistingKeyPair(resolvedPublicKeyPath, resolvedPrivateKeyPath, log, out var existingPublicKey))
         {
             log("Reusing the existing Hot Reload key pair.");
             return (existingPublicKey, false);
@@ -33,22 +42,23 @@ internal static class HotReloadKeyPair
 
         var (publicKey, parameters) = Create();
 
+        // Derive directories from the original inputs to preserve validation and creation order.
         var directory = Path.GetDirectoryName(privateKeyPath);
         if (!string.IsNullOrEmpty(directory))
         {
-            Directory.CreateDirectory(directory);
+            Directory.CreateDirectory(resolvePath(directory));
         }
 
         directory = Path.GetDirectoryName(publicKeyPath);
         if (!string.IsNullOrEmpty(directory))
         {
-            Directory.CreateDirectory(directory);
+            Directory.CreateDirectory(resolvePath(directory));
         }
 
         // Write the private half first so an interrupted write cannot leave a usable public
         // document without a matching private key.
-        File.WriteAllBytes(privateKeyPath, CreatePrivateKeyDocument(publicKey, parameters));
-        File.WriteAllBytes(publicKeyPath, CreatePublicKeyDocument(publicKey));
+        File.WriteAllBytes(resolvedPrivateKeyPath, CreatePrivateKeyDocument(publicKey, parameters));
+        File.WriteAllBytes(resolvedPublicKeyPath, CreatePublicKeyDocument(publicKey));
 
         log("Generated a new Hot Reload key pair.");
         return (publicKey, true);

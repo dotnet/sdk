@@ -11,7 +11,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     {
         public override object GetRegisteredTaskObject(object key, RegisteredTaskObjectLifetime lifetime)
         {
-            RegisteredTaskObjects.TryGetValue(key, out object obj);
+            RegisteredTaskObjects.TryGetValue((key, lifetime), out object obj);
             return obj;
         }
     }
