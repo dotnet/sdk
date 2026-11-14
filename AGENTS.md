@@ -169,7 +169,10 @@ Never hardcode the current TFM in a project. See
 ## Investigating PR validation failures
 
 1. Read the PR and its comments/reviews. Check for references to other PRs or issues where the problem might have already been solved.
-2. Use the `ci-analysis` skill (if available) to diagnose build failures.
+2. Use the [`ci-failure-attribution` skill](.github/skills/ci-failure-attribution/SKILL.md)
+   to check if a failure came from the PR, existed before the PR, or came from
+   CI infrastructure.
+3. Use the `ci-analysis` skill (if available) for deeper build and test debugging.
 
 ## Keeping AI context and docs in sync
 
