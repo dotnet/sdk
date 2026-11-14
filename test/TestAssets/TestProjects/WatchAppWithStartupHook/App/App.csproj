@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Builds the startup hook and copies it to the output directory of the app. -->
+    <ProjectReference Include="..\Hook\Hook.csproj" />
+  </ItemGroup>
+
+</Project>

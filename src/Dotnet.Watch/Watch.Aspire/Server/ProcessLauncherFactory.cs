@@ -30,7 +30,8 @@ internal sealed class ProcessLauncherFactory(
         return new Launcher(serverPipeName, controlReader, projectLauncher, statusWriter, launchProfile, shutdownCancellationToken);
     }
 
-    private sealed class Launcher : IRuntimeProcessLauncher
+    // internal for testing
+    internal sealed class Launcher : IRuntimeProcessLauncher
     {
         private const byte Version = 1;
 
@@ -308,9 +309,16 @@ internal sealed class ProcessLauncherFactory(
                 Command = "run",
                 CommandArguments = GetRunCommandArguments(request, _launchProfileName.Value),
                 LaunchEnvironmentVariables = request.EnvironmentVariables?.Select(e => (e.Key, e.Value))?.ToArray() ?? [],
-                LaunchProfileName = request.LaunchProfileName,
+                LaunchProfileName = GetLaunchProfileName(request, _launchProfileName.Value),
             };
         }
+
+        /// <summary>
+        /// The launch profile `dotnet run` uses given the arguments returned by <see cref="GetRunCommandArguments"/>.
+        /// </summary>
+        // internal for testing
+        internal static Optional<string?> GetLaunchProfileName(LaunchResourceRequest request, string? hostLaunchProfile)
+            => request.LaunchProfileName is { HasValue: true, Value: null or "" } ? hostLaunchProfile : request.LaunchProfileName;
 
         // internal for testing
         internal static IReadOnlyList<string> GetRunCommandArguments(LaunchResourceRequest request, string? hostLaunchProfile)

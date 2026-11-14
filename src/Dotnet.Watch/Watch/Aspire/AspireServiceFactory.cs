@@ -245,8 +245,17 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
                 Command = "run",
                 CommandArguments = GetRunCommandArguments(projectLaunchInfo, _hostProjectOptions.LaunchProfileName.Value),
                 LaunchEnvironmentVariables = projectLaunchInfo.Environment?.Select(e => (e.Key, e.Value))?.ToArray() ?? [],
-                LaunchProfileName = projectLaunchInfo.DisableLaunchProfile ? default : projectLaunchInfo.LaunchProfile,
+                LaunchProfileName = GetLaunchProfileName(projectLaunchInfo, _hostProjectOptions.LaunchProfileName.Value),
             };
+
+        /// <summary>
+        /// The launch profile `dotnet run` uses given the arguments returned by <see cref="GetRunCommandArguments"/>.
+        /// </summary>
+        // internal for testing
+        internal static Optional<string?> GetLaunchProfileName(ProjectLaunchRequest projectLaunchInfo, string? hostLaunchProfile)
+            => projectLaunchInfo.DisableLaunchProfile
+                ? Optional<string?>.NoValue
+                : !string.IsNullOrEmpty(projectLaunchInfo.LaunchProfile) ? projectLaunchInfo.LaunchProfile : hostLaunchProfile;
 
         // internal for testing
         internal static IReadOnlyList<string> GetRunCommandArguments(ProjectLaunchRequest projectLaunchInfo, string? hostLaunchProfile)
