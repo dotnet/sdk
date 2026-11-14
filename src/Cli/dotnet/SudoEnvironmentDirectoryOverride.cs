@@ -9,8 +9,8 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.InternalAbstractions;
-using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Protocol.Plugins;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -38,13 +38,36 @@ public static class SudoEnvironmentDirectoryOverride
         if (!OperatingSystem.IsWindows() && IsRunningUnderSudo() && IsRunningWorkloadCommand(parseResult))
         {
             string sudoHome = TemporaryDirectory.CreateSubdirectory();
-            var homeBeforeOverride = Environment.GetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName);
+            var homeBeforeOverride = CliFolderPathCalculator.DotnetHomePath;
+            PreserveUserNuGetPlugins(homeBeforeOverride);
             Environment.SetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, sudoHome);
+            Environment.SetEnvironmentVariable("HOME", sudoHome);
 
-            if (homeBeforeOverride is not null)
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("XDG_DATA_HOME")))
             {
-                CopyUserNuGetConfigToOverriddenHome(homeBeforeOverride);
+                Environment.SetEnvironmentVariable("XDG_DATA_HOME", Path.Combine(sudoHome, ".local", "share"));
             }
+
+            CopyUserNuGetConfigToOverriddenHome(homeBeforeOverride, sudoHome);
+        }
+    }
+
+    private static void PreserveUserNuGetPlugins(string homeBeforeOverride)
+    {
+        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_NETCORE_PLUGIN_PATHS")) ||
+            !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_PLUGIN_PATHS")))
+        {
+            return;
+        }
+
+        var pluginDirectory = Path.Combine(homeBeforeOverride, ".nuget", "plugins", "netcore");
+        var plugins = PluginDiscoveryUtility.GetConventionBasedPlugins([pluginDirectory]).ToArray();
+        if (plugins.Length > 0)
+        {
+            // NuGet also searches PATH for tool-based plugins; include those directories
+            // when overriding its conventional home-based plugin discovery.
+            var paths = (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator);
+            Environment.SetEnvironmentVariable("NUGET_PLUGIN_PATHS", string.Join(Path.PathSeparator, plugins.Concat(paths)));
         }
     }
 
@@ -54,7 +77,7 @@ public static class SudoEnvironmentDirectoryOverride
     /// Try to delete the existing NuGet config file in "/tmp/dotnet_sudo_home/"
     /// to avoid different user's NuGet config getting mixed.
     /// </summary>
-    private static void CopyUserNuGetConfigToOverriddenHome(string homeBeforeOverride)
+    private static void CopyUserNuGetConfigToOverriddenHome(string homeBeforeOverride, string sudoHome)
     {
         // https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Common/PathUtil/NuGetEnvironment.cs#L139
         // home is cache in NuGet we cannot directly use the call
@@ -64,7 +87,7 @@ public static class SudoEnvironmentDirectoryOverride
             .Select(fileName => Path.Combine(userSettingsDir, fileName))
             .FirstOrDefault(f => File.Exists(f));
 
-        var overriddenSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+        var overriddenSettingsDir = Path.Combine(sudoHome, ".nuget", "NuGet");
         var overriddenNugetConfig = Path.Combine(overriddenSettingsDir, Settings.DefaultSettingsFileName);
 
         if (File.Exists(overriddenNugetConfig))
@@ -84,6 +107,7 @@ public static class SudoEnvironmentDirectoryOverride
         {
             try
             {
+                Directory.CreateDirectory(overriddenSettingsDir);
                 FileAccessRetrier.RetryOnIOException(
                     () => File.Copy(userNuGetConfig, overriddenNugetConfig, overwrite: true));
             }
