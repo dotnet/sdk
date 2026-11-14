@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json.Nodes;
 using System.Diagnostics;
+using System.Text.Json.Nodes;
 using System.Reflection;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
@@ -11,6 +11,8 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Moq;
 using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 namespace Microsoft.DotNet.Tests.TelemetryTests;
@@ -18,6 +20,37 @@ namespace Microsoft.DotNet.Tests.TelemetryTests;
 [TestClass]
 public class TelemetryClientTests : SdkTest
 {
+    [TestMethod]
+    public void ProcessResourceAttributesAreAvailableBeforeTheRootSpanEnds()
+    {
+        List<Activity> exportedActivities = [];
+        using var source = new ActivitySource(nameof(ProcessResourceAttributesAreAvailableBeforeTheRootSpanEnds));
+        using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .ConfigureResource(TelemetryClient.ConfigureResource)
+            .AddSource(source.Name)
+            .AddInMemoryExporter(exportedActivities)
+            .Build();
+        using var meterProvider = Sdk.CreateMeterProviderBuilder()
+            .ConfigureResource(TelemetryClient.ConfigureResource)
+            .Build();
+        using var root = source.StartActivity("root");
+        using (source.StartActivity("child"))
+        {
+        }
+
+        exportedActivities.Should().ContainSingle().Which.DisplayName.Should().Be("child");
+        root.Should().NotBeNull();
+        root.Duration.Should().Be(TimeSpan.Zero);
+
+        foreach (var resource in new[] { tracerProvider.GetResource(), meterProvider.GetResource() })
+        {
+            var attributes = resource.Attributes.ToDictionary(attribute => attribute.Key, attribute => attribute.Value);
+            attributes["process.pid"].Should().Be(Environment.ProcessId);
+            attributes["process.executable.name"].Should().Be("dotnet");
+            attributes["service.name"].Should().Be("dotnet-cli");
+        }
+    }
+
 #if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
     [TestMethod]
     [DataRow(0, false)]
