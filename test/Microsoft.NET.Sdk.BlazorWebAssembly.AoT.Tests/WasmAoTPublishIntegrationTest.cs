@@ -4,7 +4,6 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using Microsoft.NET.Sdk.BlazorWebAssembly.Tests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
@@ -34,14 +33,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
 
             // ReadyToRun is a publish-time operation; publish the client first so this test verifies the CoreCLR compiler output.
             var blazorPublishCommand = CreatePublishCommand(testInstance, "blazorwasm");
-            ExecuteCommand(blazorPublishCommand, "/p:UsingBrowserRuntimeWorkload=false", "/p:Configuration=Release").Should().Pass();
+            ExecuteCommand(blazorPublishCommand, "/p:Configuration=Release").Should().Pass();
 
             var clientPublishDirectory = blazorPublishCommand.GetOutputDirectory(DefaultTfm, "Release");
             AssertReadyToRunAndNativeRelink(testInstance, clientPublishDirectory);
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
             var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
-            ExecuteCommand(buildCommand, "/p:UsingBrowserRuntimeWorkload=false", "/p:BuildInsideVisualStudio=true", "/p:Configuration=Release").Should().Pass();
+            ExecuteCommand(buildCommand, "/p:BuildInsideVisualStudio=true", "/p:Configuration=Release").Should().Pass();
 
             // Publish
             var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
@@ -135,6 +134,16 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
                             propertyGroup.Add(new XElement("PublishReadyToRun", "true"));
                             propertyGroup.Add(new XElement("WasmBuildNative", "true"));
                             document.Root.Add(propertyGroup);
+
+                            // Remove once the fix for https://github.com/dotnet/runtime/issues/136499 flows into the runtime packs.
+                            document.Root.Add(new XElement("Target",
+                                new XAttribute("Name", "PruneRuntimePackReadyToRunImagesForTest"),
+                                new XAttribute("BeforeTargets", "_HandleFileConflictsForPublish"),
+                                new XElement("ItemGroup",
+                                    new XElement("_RuntimePackReadyToRunImages",
+                                        new XAttribute("Include", "@(ResolvedRuntimePack->'%(PackageDirectory)/runtimes/browser-wasm/native/r2r/*.wasm')")),
+                                    new XElement("ResolvedFileToPublish",
+                                        new XAttribute("Remove", "@(_RuntimePackReadyToRunImages)")))));
                         }
                     });
         }
@@ -156,29 +165,25 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
             File.ReadAllBytes(publishedNative).SequenceEqual(File.ReadAllBytes(runtimePackNative)).Should().BeFalse("the publish output should not copy the runtime-pack native bundle");
         }
 
-        private static string GetRuntimePackNativeFile(string projectDirectory)
+        private string GetRuntimePackNativeFile(string projectDirectory)
         {
-            var assetsFile = Path.Combine(projectDirectory, "obj", "project.assets.json");
-            using var assets = JsonDocument.Parse(File.ReadAllText(assetsFile));
-
-            var runtimePackPath = assets.RootElement.GetProperty("libraries")
-                .EnumerateObject()
-                .Where(library => library.Name.StartsWith("Microsoft.NETCore.App.Runtime.CoreCLR.browser-wasm/", StringComparison.OrdinalIgnoreCase))
-                .Select(library => library.Value.GetProperty("path").GetString())
-                .FirstOrDefault();
-
-            if (runtimePackPath is null)
+            // Workload and PackageDownload packs are not entries in project.assets.json's libraries.
+            var command = new GetValuesCommand(Log, projectDirectory, DefaultTfm, "ResolvedRuntimePack", GetValuesCommand.ValueType.Item)
             {
-                throw new InvalidOperationException($"Could not find the CoreCLR browser runtime pack in '{assetsFile}'.");
-            }
+                Configuration = "Release",
+                DependsOnTargets = "ResolveFrameworkReferences",
+                MetadataNames = new List<string> { "RuntimeIdentifier", "PackageDirectory" }
+            };
+            ExecuteCommand(command, "/p:Configuration=Release").Should().Pass();
 
-            var runtimePackNativeFile = assets.RootElement.GetProperty("packageFolders")
-                .EnumerateObject()
-                .Select(folder => Path.Combine(folder.Name, runtimePackPath, "runtimes", "browser-wasm", "native", "dotnet.native.wasm"))
-                .FirstOrDefault(File.Exists);
-
-            return runtimePackNativeFile
-                ?? throw new FileNotFoundException($"Could not find dotnet.native.wasm for the runtime pack '{runtimePackPath}'.");
+            var runtimePacks = command.GetValuesWithMetadata()
+                .Where(pack => pack.metadata["RuntimeIdentifier"] == "browser-wasm")
+                .ToList();
+            runtimePacks.Should().ContainSingle("the build should resolve one browser runtime pack");
+            var runtimePackNativeFile = Path.Combine(runtimePacks.Single().metadata["PackageDirectory"],
+                "runtimes", "browser-wasm", "native", "dotnet.native.wasm");
+            new FileInfo(runtimePackNativeFile).Should().Exist();
+            return runtimePackNativeFile;
         }
     }
 }
