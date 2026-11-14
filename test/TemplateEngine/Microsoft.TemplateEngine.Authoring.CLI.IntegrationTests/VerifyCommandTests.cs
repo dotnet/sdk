@@ -18,7 +18,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
         private ILogger Log => new TestContextLogger(TestContext);
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/53889")]
         public void VerifyCommandFullDevLoop()
         {
             // dots issue https://github.com/VerifyTests/Verify/issues/658
@@ -43,7 +42,9 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 "--unique-for",
                 "architecture",
                 "--unique-for",
-                "RuntimeAndVersion");
+                "RuntimeAndVersion",
+                "--unique-for",
+                "TargetFrameworkAndVersion");
 
             cmd.Execute()
                 .Should()
@@ -107,7 +108,9 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 "--unique-for",
                 "architecture",
                 "--unique-for",
-                "RuntimeAndVersion");
+                "RuntimeAndVersion",
+                "--unique-for",
+                "TargetFrameworkAndVersion");
 
             cmd2.Execute()
                 .Should()
@@ -121,7 +124,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/53889")]
         public void VerifyCommandFullDevLoopWithNotInstalledTemplate()
         {
             // dots issue https://github.com/VerifyTests/Verify/issues/658
