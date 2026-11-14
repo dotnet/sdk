@@ -41,11 +41,6 @@
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
   <PropertyGroup>
-    <!-- Workaround for https://github.com/NuGet/Home/issues/14745 -->
-    <SDKAnalysisLevel>10.0.200</SDKAnalysisLevel>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <SdkSrcRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src'))</SdkSrcRoot>
     <TemplateEngSrcDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src', 'TemplateEngine'))</TemplateEngSrcDir>
     <TemplateEngTestDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'test', 'TemplateEngine'))</TemplateEngTestDir>
