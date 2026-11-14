@@ -723,16 +723,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Tanılama çıkışını etkinleştirir.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SdkDirectoryCouldNotBeDetermined">
-        <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
-        <target state="translated">uyarı: yazılım geliştirme seti dizini belirlenemedi. sdk_dir sağlanmadı ve dotnet-aot kendi modülünü bulamadı. Yazılım geliştirme seti ile ilgili çözümleme yanlış olabilir.</target>
-        <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
-      </trans-unit>
-      <trans-unit id="SdkRootDirectoryDoesNotExist">
-        <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="translated">'{1}' ayarı aracılığıyla sağlanan SDK kök dizini '{0}' yok.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="translated">'--self-contained' ve '--no-self-contained' seçenekleri birlikte kullanılamaz.</target>

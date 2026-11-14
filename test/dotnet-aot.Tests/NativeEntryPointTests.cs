@@ -165,49 +165,41 @@ public partial class NativeEntryPointTests
     }
 
     [TestMethod]
-    public void ExecuteCore_PresetSdkRootMissingDirectory_ErrorsOut()
+    [DataRow(null)]
+    [DataRow("")]
+    public void ExecuteCore_MissingSdkDir_Throws(string? sdkDir)
     {
         WithEnvRestore(() =>
         {
-            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
-
-            // A caller-provided SDK root (e.g. via runtimeconfig) that does not exist is a
-            // misconfiguration - the bridge must fail fast rather than publish a bogus SDK root.
-            string missing = Path.Combine(Path.GetTempPath(), "aot-sdkroot-missing-" + Guid.NewGuid().ToString("N"));
-            AppContext.SetData(SdkPaths.DataName, missing);
-
-            int exitCode = NativeEntryPoint.ExecuteCore(
+            Assert.Throws<ArgumentException>(() => NativeEntryPoint.ExecuteCore(
                 hostPath: "test-host",
                 dotnetRoot: "test-root",
-                sdkDir: "",
+                sdkDir: sdkDir!,
                 hostfxrPath: "",
-                args: ["--version"]);
-
-            Assert.AreNotEqual(0, exitCode);
+                args: ["--version"]));
         });
     }
 
     [TestMethod]
-    public void ExecuteCore_PresetSdkRootExistingDirectory_IsHonored()
+    public void ExecuteCore_SdkDir_ReplacesPresetSdkRoot()
     {
         WithEnvRestore(() =>
         {
             Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
 
-            // An existing caller-provided SDK root is authoritative and is not overwritten by the
-            // host-provided sdk_dir argument.
-            string preset = Directory.CreateTempSubdirectory("aot-sdkroot-preset-").FullName;
-            AppContext.SetData(SdkPaths.DataName, preset);
+            // configProperties are baked into the AOT image at build time, so the host-provided
+            // sdk_dir always wins over a preset Microsoft.DotNet.Sdk.Root value.
+            AppContext.SetData(SdkPaths.DataName, "preset-sdk-dir");
 
             NativeEntryPoint.ExecuteCore(
                 hostPath: "test-host",
                 dotnetRoot: "test-root",
-                sdkDir: "some-other-dir",
+                sdkDir: "host-sdk-dir",
                 hostfxrPath: "",
                 args: ["--version"]);
 
-            Assert.AreEqual(preset, AppContext.GetData(SdkPaths.DataName));
-            Assert.AreEqual(preset, NativeEntryPoint.SdkDirectory);
+            Assert.AreEqual("host-sdk-dir", AppContext.GetData(SdkPaths.DataName));
+            Assert.AreEqual("host-sdk-dir", NativeEntryPoint.SdkDirectory);
         });
     }
 
@@ -460,7 +452,7 @@ public partial class NativeEntryPointTests
                 int exitCode = NativeEntryPoint.ExecuteCore(
                     hostPath: "test-host",
                     dotnetRoot: "test-root",
-                    sdkDir: "",
+                    sdkDir: "nonexistent-sdk-dir",
                     hostfxrPath: "",
                     args: [csFile]);
 
@@ -512,7 +504,7 @@ public partial class NativeEntryPointTests
                 int exitCode = NativeEntryPoint.ExecuteCore(
                     hostPath: "test-host",
                     dotnetRoot: "test-root",
-                    sdkDir: "",
+                    sdkDir: "nonexistent-sdk-dir",
                     hostfxrPath: "",
                     args: [commandToken, "--no-build", "--no-launch-profile"]);
 
@@ -554,7 +546,7 @@ public partial class NativeEntryPointTests
                 int exitCode = NativeEntryPoint.ExecuteCore(
                     hostPath: "test-host",
                     dotnetRoot: "test-root",
-                    sdkDir: "",
+                    sdkDir: "nonexistent-sdk-dir",
                     hostfxrPath: "",
                     args: [sourcePath, "--no-build", "--launch-profile", "MissingExecutable"]);
 
@@ -743,12 +735,10 @@ public partial class NativeEntryPointTests
                 }
 
                 Environment.SetEnvironmentVariable("PATH", toolDirectory + Path.PathSeparator + originalPath);
-                string sdkDirectory = SdkRootLocator.TrySelfLocateSdkDirectory() ?? AppContext.BaseDirectory;
-
                 int exitCode = NativeEntryPoint.ExecuteCore(
                     hostPath: "test-host",
                     dotnetRoot: "test-root",
-                    sdkDir: sdkDirectory,
+                    sdkDir: AppContext.BaseDirectory,
                     hostfxrPath: "",
                     args: ["aotlocalized"]);
 

@@ -723,16 +723,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">진단 출력을 사용합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SdkDirectoryCouldNotBeDetermined">
-        <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
-        <target state="translated">경고: SDK 디렉터리를 확인할 수 없습니다. sdk_dir이 제공되지 않았고 dotnet-aot가 자체 모듈을 찾을 수 없으므로 SDK 상대 경로 확인이 올바르지 않을 수 있습니다.</target>
-        <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
-      </trans-unit>
-      <trans-unit id="SdkRootDirectoryDoesNotExist">
-        <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="translated">'{1}' 설정을 통해 제공된 SDK 루트 디렉터리 '{0}'가 없습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="translated">'--self-contained' 및 '--no-self-contained' 옵션은 함께 사용할 수 없습니다.</target>

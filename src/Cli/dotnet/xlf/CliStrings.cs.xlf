@@ -723,16 +723,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Povolí diagnostický výstup.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SdkDirectoryCouldNotBeDetermined">
-        <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
-        <target state="translated">upozornění: nepovedlo se určit adresář SDK – nebyla zadaná hodnota sdk_dir a dotnet-aot nemohl najít vlastní modul; rozlišení relativní k SDK může být nesprávné.</target>
-        <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
-      </trans-unit>
-      <trans-unit id="SdkRootDirectoryDoesNotExist">
-        <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="translated">Kořenový adresář sady SDK '{0}' poskytnutý prostřednictvím nastavení '{1}' neexistuje.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="translated">Možnosti --self-contained a --no-self-contained nelze použít společně.</target>
