@@ -20,6 +20,7 @@ public class BuildProjects
         public readonly FileWatcher FileWatcher;
         public readonly TestConsole Console;
         public readonly TestLogger BuildLogger;
+        public readonly TestLogger Logger;
 
         public readonly List<string> BuildInvocations = [];
         public string? SolutionFile;
@@ -39,12 +40,13 @@ public class BuildProjects
             };
 
             BuildLogger = new TestLogger(output);
+            Logger = new TestLogger(output);
 
             var context = new DotNetWatchContext()
             {
                 ProcessOutputReporter = processOutputReporter,
                 LoggerFactory = NullLoggerFactory.Instance,
-                Logger = NullLogger.Instance,
+                Logger = Logger,
                 BuildLogger = BuildLogger,
                 ProcessRunner = processRunner,
                 Options = new(),
@@ -180,6 +182,77 @@ public class BuildProjects
             $"restore {project} -p A=1 -consoleLoggerParameters:NoSummary",
             $"build {project} -p A=1 --framework {ToolsetInfo.CurrentTargetFramework} -p:Device={EscapedDeviceId} --no-restore"
         ], context.BuildInvocations);
+    }
+
+    [TestMethod]
+    [CombinatorialData]
+    public async Task SingleProject_DeviceDiscoveryFails(bool failInDependency)
+    {
+        const string ErrorMessage = "This version of .NET for iOS requires a newer Xcode.";
+
+        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [failInDependency]);
+        var project = Path.Combine(dir.Path, "Project.csproj");
+        File.WriteAllText(project, $"""
+        <Project>
+          <PropertyGroup>
+            <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+          </PropertyGroup>
+          <Target Name="ValidateXcodeVersion">
+            <Error Text="{ErrorMessage}" Condition="'{failInDependency}' == 'True'" />
+          </Target>
+          <Target Name="ComputeAvailableDevices" DependsOnTargets="ValidateXcodeVersion" Returns="@(Devices)">
+            <Error Text="{ErrorMessage}" Condition="'{failInDependency}' == 'False'" />
+          </Target>
+        </Project>
+        """);
+
+        using var context = CreateContext([project]);
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(project, entryPointFilePath: null)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.ProjectOptions with { TargetFramework = ToolsetInfo.CurrentTargetFramework },
+            frameworkSelector: null,
+            deviceSelector: (_, _) => throw new AssertFailedException("Device selection should not be invoked"),
+            CancellationToken.None);
+
+        Assert.IsFalse(result.Success);
+        Assert.IsNull(result.SelectedDevice);
+        AssertEx.SequenceEqual(
+        [
+            $"restore {project} -p A=1 -consoleLoggerParameters:NoSummary"
+        ], context.BuildInvocations);
+
+        var messages = context.BuildLogger.GetAndClearMessages().AddRange(context.Logger.GetAndClearMessages());
+        Assert.ContainsSingle(messages.Where(message => message.Contains(ErrorMessage)), string.Join(Environment.NewLine, messages));
+        Assert.IsFalse(messages.Any(message => message.Contains("No devices are available")), string.Join(Environment.NewLine, messages));
+    }
+
+    [TestMethod]
+    public async Task SingleProject_NoDevicesAvailable()
+    {
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project = Path.Combine(dir.Path, "Project.csproj");
+        File.WriteAllText(project, $"""
+        <Project>
+          <PropertyGroup>
+            <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+          </PropertyGroup>
+          <Target Name="ComputeAvailableDevices" Returns="@(Devices)" />
+        </Project>
+        """);
+
+        using var context = CreateContext([project]);
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(project, entryPointFilePath: null)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.ProjectOptions with { TargetFramework = ToolsetInfo.CurrentTargetFramework },
+            frameworkSelector: null,
+            deviceSelector: (_, _) => throw new AssertFailedException("Device selection should not be invoked"),
+            CancellationToken.None);
+
+        Assert.IsFalse(result.Success);
+        Assert.IsNull(result.SelectedDevice);
+        Assert.Contains("[Error] No devices are available for this project.", context.Logger.GetAndClearMessages());
     }
 
     [TestMethod]
