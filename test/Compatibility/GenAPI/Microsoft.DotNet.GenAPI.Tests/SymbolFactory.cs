@@ -36,7 +36,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             byte[] publicKey = null,
             [CallerMemberName] string assemblyName = "",
             bool allowUnsafe = false,
-            bool usePreviewLanguageVersion = false)
+            bool usePreviewLanguageVersion = false,
+            bool useMemorySafetyRulesVersion2 = false)
         {
             CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(
                 syntax,
@@ -45,7 +46,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
                 publicKey,
                 allowUnsafe,
                 diagnosticOptions,
-                usePreviewLanguageVersion);
+                usePreviewLanguageVersion,
+                useMemorySafetyRulesVersion2);
 
             Assert.IsEmpty(compilation.GetDiagnostics());
 
@@ -59,9 +61,11 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             bool enableNullable = false,
             byte[] publicKey = null,
             [CallerMemberName] string assemblyName = "",
-            bool allowUnsafe = false)
+            bool allowUnsafe = false,
+            bool useMemorySafetyRulesVersion2 = false)
         {
-            CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey, allowUnsafe);
+            CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey, allowUnsafe,
+                useMemorySafetyRulesVersion2: useMemorySafetyRulesVersion2);
 
             Assert.IsEmpty(compilation.GetDiagnostics());
 
@@ -92,10 +96,24 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             byte[] publicKey,
             bool allowUnsafe,
             IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions = null,
-            bool usePreviewLanguageVersion = false)
+            bool usePreviewLanguageVersion = false,
+            bool useMemorySafetyRulesVersion2 = false)
         {
             CSharpCompilation compilation = CreateCSharpCompilation(name, enableNullable, publicKey, allowUnsafe, diagnosticOptions);
-            return compilation.AddSyntaxTrees(GetSyntaxTree(syntax, usePreviewLanguageVersion));
+            CSharpParseOptions parseOptions = usePreviewLanguageVersion
+                ? ParseOptions.WithLanguageVersion(LanguageVersion.Preview)
+                : ParseOptions;
+            if (useMemorySafetyRulesVersion2)
+            {
+#pragma warning disable RSEXPERIMENTAL006
+                // Unsafe v2 currently requires Preview. Remove this override once the feature
+                // is available in a released language version.
+                parseOptions = parseOptions.WithLanguageVersion(LanguageVersion.Preview);
+                // Version2 safety checks are configured on the compilation, not through parser feature flags.
+                compilation = compilation.WithOptions(compilation.Options.WithMemorySafetyRulesVersion(MemorySafetyRulesVersion.Version2));
+#pragma warning restore RSEXPERIMENTAL006
+            }
+            return compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(syntax, parseOptions));
         }
 
         private static CSharpCompilation CreateCSharpCompilationFromSyntax(IEnumerable<string> syntax, string name, bool enableNullable, byte[] publicKey, bool allowUnsafe)

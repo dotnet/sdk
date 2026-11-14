@@ -17,6 +17,10 @@ namespace Microsoft.DotNet.GenAPI
         // SyntaxGenerator does not generates attributes neither for types, neither for members.
         public static SyntaxNode DeclarationExt(this SyntaxGenerator syntaxGenerator, ISymbol symbol, ISymbolFilter symbolFilter)
         {
+#pragma warning disable RSEXPERIMENTAL006
+            bool usesMemorySafetyRulesVersion2 = symbol.ContainingModule?.MemorySafetyRulesVersion == MemorySafetyRulesVersion.Version2;
+#pragma warning restore RSEXPERIMENTAL006
+
             if (symbol.Kind == SymbolKind.NamedType)
             {
                 INamedTypeSymbol type = (INamedTypeSymbol)symbol;
@@ -48,12 +52,14 @@ namespace Microsoft.DotNet.GenAPI
             if (symbol.Kind == SymbolKind.Method)
             {
                 IMethodSymbol method = (IMethodSymbol)symbol;
+                SyntaxNode? declaration = null;
+
                 if (method.MethodKind == MethodKind.Constructor)
                 {
                     INamedTypeSymbol? baseType = method.ContainingType.BaseType;
                     if (baseType != null)
                     {
-                        IEnumerable<IMethodSymbol> baseConstructors = baseType.Constructors.Where(symbolFilter.Include);
+                        IEnumerable<IMethodSymbol> baseConstructors = method.GetBaseConstructorCandidates(symbolFilter);
                         // If the base type does not have default constructor.
                         if (baseConstructors.Any() && baseConstructors.All(c => !c.Parameters.IsEmpty))
                         {
@@ -65,17 +71,40 @@ namespace Microsoft.DotNet.GenAPI
                             {
                                 IMethodSymbol constructor = baseTypeConstructors.First();
 
-                                ConstructorDeclarationSyntax declaration = (ConstructorDeclarationSyntax)syntaxGenerator.Declaration(method);
-                                if (!declaration.Modifiers.Any(m => m.RawKind == (int)SyntaxKind.UnsafeKeyword) &&
+                                ConstructorDeclarationSyntax constructorDeclaration = (ConstructorDeclarationSyntax)syntaxGenerator.Declaration(method);
+                                // Pointer signatures require an unsafe declaration only under the Version1 rules.
+                                if (!usesMemorySafetyRulesVersion2 && !constructorDeclaration.Modifiers.Any(m => m.RawKind == (int)SyntaxKind.UnsafeKeyword) &&
                                     // if at least one parameter of a base constructor is raw pointer type
                                     constructor.Parameters.Any(p => p.Type.TypeKind == TypeKind.Pointer))
                                 {
-                                    declaration = declaration.AddModifiers(SyntaxFactory.Token(SyntaxKind.UnsafeKeyword));
+                                    constructorDeclaration = constructorDeclaration.AddModifiers(SyntaxFactory.Token(SyntaxKind.UnsafeKeyword));
                                 }
-                                return declaration.WithInitializer(constructor.GenerateBaseConstructorInitializer());
+                                declaration = constructorDeclaration.WithInitializer(constructor.GenerateBaseConstructorInitializer());
                             }
                         }
                     }
+                }
+
+                if (usesMemorySafetyRulesVersion2 && method.MethodKind == MethodKind.Constructor)
+                {
+                    // Under Version2, unsafe is part of the constructor's contract, not just required by pointer syntax.
+                    declaration ??= syntaxGenerator.Declaration(method);
+#pragma warning disable RSEXPERIMENTAL006
+                    declaration = syntaxGenerator.WithModifiers(declaration,
+                        syntaxGenerator.GetModifiers(declaration).WithIsUnsafe(method.RequiresUnsafeContext));
+#pragma warning restore RSEXPERIMENTAL006
+                }
+
+                if (usesMemorySafetyRulesVersion2 && method.IsExtern)
+                {
+                    // GenAPI supplies a stub body, so remove extern after adding any required base initializer.
+                    declaration ??= syntaxGenerator.Declaration(method).AddMissingSpecialConstraints(symbol);
+                    declaration = syntaxGenerator.WithModifiers(declaration, syntaxGenerator.GetModifiers(declaration).WithIsExtern(false));
+                }
+
+                if (declaration != null)
+                {
+                    return declaration;
                 }
             }
 
@@ -87,7 +116,10 @@ namespace Microsoft.DotNet.GenAPI
                 // to compile (CS0535).
                 if (!eventSymbol.ExplicitInterfaceImplementations.IsEmpty)
                 {
-                    return CreateExplicitInterfaceEventDeclaration(syntaxGenerator, eventSymbol);
+                    SyntaxNode declaration = CreateExplicitInterfaceEventDeclaration(syntaxGenerator, eventSymbol);
+                    return usesMemorySafetyRulesVersion2
+                        ? syntaxGenerator.WithModifiers(declaration, DeclarationModifiers.From(eventSymbol))
+                        : declaration;
                 }
 
                 // adds generation of add & remove accessors for the non abstract events.
@@ -104,6 +136,15 @@ namespace Microsoft.DotNet.GenAPI
                 if (!propertySymbol.IsIndexer && propertySymbol.ExplicitInterfaceImplementations.Any(i => i.IsIndexer))
                 {
                     return syntaxGenerator.IndexerDeclaration(propertySymbol);
+                }
+
+                if (usesMemorySafetyRulesVersion2 && !propertySymbol.IsAbstract && !propertySymbol.IsIndexer)
+                {
+                    // Add the accessor bodies now so Roslyn knows this is not an auto-property when choosing safety modifiers.
+                    // These bodies would normally be added later, but the modifiers would not be recalculated.
+                    return syntaxGenerator.PropertyDeclaration(propertySymbol,
+                        getAccessorStatements: [SyntaxFactory.ThrowStatement(SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression))],
+                        setAccessorStatements: []);
                 }
             }
 
