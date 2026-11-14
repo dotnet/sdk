@@ -43,8 +43,8 @@
                                     Trim="true" />
   </ItemGroup>
 
-  <!-- The package's current-TFM _._ prevents NuGet from importing its minimum-TFM buildTransitive target.
-       Remove this workaround when https://github.com/dotnet/msbuild/issues/14467 is fixed. -->
+  <!-- dotnet/msbuild#14467 placed this target in the minimum-TFM asset group, but the package's
+       newer-TFM _._ still prevents NuGet from importing it for NetCurrent consumers. -->
   <Import Project="$(PkgMicrosoft_Build_Framework)\buildTransitive\$(NetMinimum)\Microsoft.Build.Framework.targets"
           Condition="Exists('$(PkgMicrosoft_Build_Framework)\buildTransitive\$(NetMinimum)\Microsoft.Build.Framework.targets')" />
 
