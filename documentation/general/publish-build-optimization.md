@@ -31,15 +31,16 @@ Key insight: All post-processing steps read from `@(IntermediateAssembly)` (obj)
 
 ### PublishAot (Native AOT)
 
-**Status: Opt-in optimization in .NET 11**
+**Status: Optimized by default in .NET 12**
 
 - `IlcCompile` reads `@(IntermediateAssembly)` from `obj\` and produces a native binary
 - The full `Build` was running a self-contained deployment to `bin\<config>\<tfm>\<rid>\`,
   including apphost, managed DLLs, deps.json, runtimeconfig.json, and runtime pack files
 - **None of these files are used** by the AOT pipeline
 - **Optimization**: Replace `Build` with `Compile` (plus resource/satellite targets)
-- **Opt-in**: Set `UseOptimizedPublish=true` to enable the optimization. The default is
-  `false` in .NET 11, preserving full `Build` behavior.
+- **Default**: The optimization is enabled by default in .NET 12. Set
+  `UseOptimizedPublish=false` to restore full `Build` behavior.
+- .NET 11 keeps the optimization opt-in to preserve compatibility.
 - `UseOptimizedPublish` currently has no effect when `PublishAot` is not enabled
 - `--no-build` continues to skip the build regardless of `UseOptimizedPublish`
 
@@ -110,22 +111,22 @@ applies when the outermost mode is optimized:
 
 | Combination | Optimized? | Notes |
 |---|---|---|
-| PublishAot (implies trimmed) | ✅ Opt-in | Requires `UseOptimizedPublish=true` |
+| PublishAot (implies trimmed) | ✅ Yes | Set `UseOptimizedPublish=false` to opt out |
 | PublishTrimmed + PublishSingleFile | ❌ Not yet | Future candidate |
 | PublishReadyToRun + PublishSingleFile | ❌ Not yet | Future candidate |
 | PublishTrimmed alone | ❌ Not yet | Future candidate |
 | PublishReadyToRun alone | ❌ Not yet | Future candidate |
 
-## Opt-In Behavior: AOT Publish Build Optimization
+## Default Behavior: AOT Publish Build Optimization
 
 ### What Changed
 
-In .NET 11, `dotnet publish` with `PublishAot=true` still runs a full `Build` by default.
-The default rollout of the optimization is deferred while compatibility issues are addressed.
-When explicitly enabled with `UseOptimizedPublish=true`, publish runs only `Compile`
-(and resource/satellite assembly targets) instead of a full `Build`.
+Starting in .NET 12, `dotnet publish` with `PublishAot=true` no longer runs a full `Build`
+before publish. Instead, it runs only `Compile` (and resource/satellite assembly targets).
+.NET 11 preserves full `Build` behavior by default and requires
+`UseOptimizedPublish=true` to enable the optimization.
 
-### Impact When Opted In
+### Impact
 
 - **BeforeBuild / AfterBuild targets**: These will not execute during AOT publish. If you have
   custom targets attached to `BeforeBuild`, `AfterBuild`, or using
@@ -140,23 +141,21 @@ When explicitly enabled with `UseOptimizedPublish=true`, publish runs only `Comp
   DLLs, deps.json, runtimeconfig.json, or runtime pack files. Only `native\` and `publish\`
   subdirectories will be present, along with `shims\` for explicitly requested tool shims.
 
-### Opt-In
+### Opt-Out
 
-To enable the optimization for AOT publish, set:
+To restore the previous behavior of running a full `Build` before AOT publish, set:
 
 ```xml
 <PropertyGroup>
-  <UseOptimizedPublish>true</UseOptimizedPublish>
+  <UseOptimizedPublish>false</UseOptimizedPublish>
 </PropertyGroup>
 ```
 
 Or pass it on the command line:
 
 ```
-dotnet publish /p:UseOptimizedPublish=true
+dotnet publish /p:UseOptimizedPublish=false
 ```
-
-To retain full `Build` behavior, omit the property or set `UseOptimizedPublish=false`.
 
 ## Future Work
 
