@@ -107,6 +107,11 @@ namespace Microsoft.DotNet.GenAPI
                 }
             }
 
+            if (symbol is IFieldSymbol { IsFixedSizeBuffer: true } fixedBuffer)
+            {
+                return CreateFixedBufferFieldDeclaration(syntaxGenerator, fixedBuffer);
+            }
+
             try
             {
                 return syntaxGenerator.Declaration(symbol).AddMissingSpecialConstraints(symbol);
@@ -116,6 +121,30 @@ namespace Microsoft.DotNet.GenAPI
                 // re-throw the ArgumentException with the symbol that caused it.
                 throw new ArgumentException(ex.Message, symbol.ToDisplayString(), innerException: ex);
             }
+        }
+
+        // SyntaxGenerator declares a fixed size buffer as the pointer field the compiler emits to metadata
+        // (`int* Buffer;`), so turn it back into the `fixed int Buffer[64];` declaration it came from.
+        private static FieldDeclarationSyntax CreateFixedBufferFieldDeclaration(SyntaxGenerator syntaxGenerator, IFieldSymbol field)
+        {
+            FieldDeclarationSyntax declaration = (FieldDeclarationSyntax)syntaxGenerator.Declaration(field);
+            VariableDeclarationSyntax variableDeclaration = declaration.Declaration;
+            TypeSyntax elementType = ((PointerTypeSyntax)variableDeclaration.Type).ElementType;
+            VariableDeclaratorSyntax variable = variableDeclaration.Variables[0]
+                .WithArgumentList(SyntaxFactory.BracketedArgumentList(
+                    SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(
+                        SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(field.FixedSize))))));
+
+            declaration = declaration.WithDeclaration(variableDeclaration
+                .WithType(elementType)
+                .WithVariables(SyntaxFactory.SingletonSeparatedList(variable)));
+
+            if (!declaration.Modifiers.Any(SyntaxKind.UnsafeKeyword))
+            {
+                declaration = declaration.AddModifiers(SyntaxFactory.Token(SyntaxKind.UnsafeKeyword));
+            }
+
+            return declaration.AddModifiers(SyntaxFactory.Token(SyntaxKind.FixedKeyword));
         }
 
         // Builds an EventDeclarationSyntax for an explicit interface implementation event with empty
