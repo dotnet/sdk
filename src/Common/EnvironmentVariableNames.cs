@@ -28,6 +28,7 @@ internal static class EnvironmentVariableNames
     public static readonly string DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK = nameof(DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK);
     public static readonly string DOTNET_CLI_ENABLEAOT = nameof(DOTNET_CLI_ENABLEAOT);
     public static readonly string DOTNET_CLI_TELEMETRY_SESSIONID = nameof(DOTNET_CLI_TELEMETRY_SESSIONID);
+    public static readonly string COPILOT_AGENT_SESSION_ID = nameof(COPILOT_AGENT_SESSION_ID);
     public static readonly string DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING = nameof(DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING);
     // Telemetry logging/debug/testing.
     public static readonly string DOTNET_CLI_TELEMETRY_STORAGE_PATH = nameof(DOTNET_CLI_TELEMETRY_STORAGE_PATH);

@@ -3,6 +3,7 @@
 
 using System.Collections.Frozen;
 using System.Net.NetworkInformation;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Utilities;
@@ -11,7 +12,7 @@ using RuntimeInformation = System.Runtime.InteropServices.RuntimeInformation;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class TelemetryCommonProperties(
+internal partial class TelemetryCommonProperties(
     Func<string>? getCurrentDirectory = null,
     Func<string, string>? hasher = null,
     Func<string?>? getMACAddress = null,
@@ -19,8 +20,10 @@ internal class TelemetryCommonProperties(
     IDockerContainerDetector? dockerContainerDetector = null,
     IUserLevelCacheWriter? userLevelCacheWriter = null,
     ICIEnvironmentDetector? ciEnvironmentDetector = null,
-    ILLMEnvironmentDetector? llmEnvironmentDetector = null)
+    ILLMEnvironmentDetector? llmEnvironmentDetector = null,
+    IEnvironmentProvider? environmentProvider = null)
 {
+    private readonly IEnvironmentProvider _environmentProvider = environmentProvider ?? new EnvironmentProvider();
     private readonly IDockerContainerDetector _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
     private readonly ICIEnvironmentDetector _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
     private readonly ILLMEnvironmentDetector _llmEnvironmentDetector = llmEnvironmentDetector ?? new LLMEnvironmentDetectorForTelemetry(environmentProvider: null);
@@ -48,6 +51,7 @@ internal class TelemetryCommonProperties(
     private const string LibcRelease = "Libc Release";
     private const string LibcVersion = "Libc Version";
     private const string SessionId = "SessionId";
+    private const string CopilotAgentSessionId = "CopilotAgentSessionId";
     private const string CI = "Continuous Integration";
     private const string LLM = "llm";
     private const string TelemetryProfileEnvironmentVariable = "DOTNET_CLI_TELEMETRY_PROFILE";
@@ -78,7 +82,32 @@ internal class TelemetryCommonProperties(
         { LibcRelease,      ExternalTelemetryProperties.GetLibcRelease() },
         { LibcVersion,      ExternalTelemetryProperties.GetLibcVersion() },
         { SessionId,        currentSessionId }
+    }.Concat(GetTelemetryContextProperties()).ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Captures common properties that can change between events in a reused host,
+    /// without recollecting the cached machine-level properties.
+    /// </summary>
+    public FrozenDictionary<string, string?> GetTelemetryContextProperties() => new Dictionary<string, string?>
+    {
+        { CopilotAgentSessionId, GetCopilotAgentSessionId() }
     }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
+    private string GetCopilotAgentSessionId()
+    {
+        string? sessionId = _environmentProvider.GetEnvironmentVariable(EnvironmentVariableNames.COPILOT_AGENT_SESSION_ID);
+        if (string.IsNullOrEmpty(sessionId))
+        {
+            return "not_present";
+        }
+
+        return CopilotSessionUuidPattern().IsMatch(sessionId) ? sessionId : _hasher(sessionId);
+    }
+
+    // Match Copilot's hash_string_if_not_uuid: canonical UUID versions 1-8 with RFC variant, or nil.
+    [GeneratedRegex(@"\A(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)\z",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex CopilotSessionUuidPattern();
 
     private string GetMachineId()
     {
