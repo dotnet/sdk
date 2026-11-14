@@ -388,6 +388,32 @@ Dotnet 本地...  tool-manifest
         }
 
         [TestMethod]
+        public void CanDisplayTemplateListJson_NeutralAndNonPreferredLanguageDoesNotMarkNonPreferredAsDefault()
+        {
+            MockTemplateInfo templateNeutral = new MockTemplateInfo("mixed", name: "Mixed Language", identity: "Microsoft.Mixed.Neutral", groupIdentity: "Microsoft.Mixed", author: "Microsoft")
+                .WithClassifications("Common", "Code")
+                .WithTag("type", "item");
+            MockTemplateInfo templateFSharp = new MockTemplateInfo("mixed", name: "Mixed Language", identity: "Microsoft.Mixed.FSharp", groupIdentity: "Microsoft.Mixed", author: "Microsoft")
+                .WithClassifications("Common", "Code")
+                .WithTag("language", "F#")
+                .WithTag("type", "item");
+
+            IEnumerable<TemplateGroup> templateGroups = TemplateGroup.FromTemplateList(
+                CliTemplateInfo.FromTemplateInfo(new[] { templateNeutral, templateFSharp }, A.Fake<IHostSpecificDataLoader>()));
+
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(defaultParameters: new Dictionary<string, string> { { "prefs:language", "C#" } });
+            IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
+            BufferedReporter reporter = new();
+
+            TemplateGroupDisplay.DisplayTemplateListJson(settings, templateGroups, reporter);
+
+            Assert.HasCount(1, reporter.Lines);
+            Assert.AreEqual(
+                """{"version":1,"data":[{"name":"Mixed Language","shortNames":["mixed"],"languages":[{"id":"F#","default":false}],"types":["item"],"authors":["Microsoft"],"classifications":["Common","Code"]}]}""",
+                reporter.Lines[0]);
+        }
+
+        [TestMethod]
         public void CanDisplayEmptyTemplateListJson()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost();

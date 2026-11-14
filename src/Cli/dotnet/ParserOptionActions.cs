@@ -56,9 +56,10 @@ internal class HandleDiagnosticAction(Option<bool> option) : InvocableOptionActi
             CommandLoggingContext.SetVerbose(true);
             Option<Commands.New.NewListOutputFormat>? newListFormatOption = parseResult.CommandResult.Command switch
             {
+                Microsoft.TemplateEngine.Cli.Commands.BaseListCommand listCommand => listCommand.Definition.FormatOption,
                 Commands.New.NewListCommandDefinition listCommand => listCommand.FormatOption,
                 Commands.New.NewCommandDefinition newCommand => newCommand.LegacyListCommand.FormatOption,
-                _ => null
+                _ => parseResult.CommandResult.Command.Options.OfType<Option<Commands.New.NewListOutputFormat>>().FirstOrDefault(o => o.Name == Commands.New.NewListCommandDefinition.FormatOptionName)
             };
             if (newListFormatOption is not null
                 && parseResult.GetResult(newListFormatOption) is { Implicit: false } formatResult

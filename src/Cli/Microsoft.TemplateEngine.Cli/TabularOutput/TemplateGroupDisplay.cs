@@ -348,24 +348,27 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                 return null;
             }
 
-            IReadOnlyList<ITemplateInfo> templatesToCheck = templateList;
+            int highestPrecedence = templateList.Max(t => t.Precedence);
+            IReadOnlyList<ITemplateInfo> highestPrecedenceTemplates = templateList
+                .Where(t => t.Precedence == highestPrecedence)
+                .ToList();
+
+            IReadOnlyList<ITemplateInfo> templatesToCheck = highestPrecedenceTemplates;
             if (!string.IsNullOrWhiteSpace(defaultLanguage))
             {
-                List<ITemplateInfo> preferredTemplates = templateList
-                    .Where(t => string.Equals(t.GetLanguage(), defaultLanguage, StringComparison.OrdinalIgnoreCase))
+                List<ITemplateInfo> languageAwareTemplates = highestPrecedenceTemplates
+                    .Where(t => string.IsNullOrWhiteSpace(t.GetLanguage())
+                        || string.Equals(t.GetLanguage(), defaultLanguage, StringComparison.OrdinalIgnoreCase))
                     .ToList();
-                if (preferredTemplates.Count > 0)
+                if (languageAwareTemplates.Count > 0)
                 {
-                    templatesToCheck = preferredTemplates;
+                    templatesToCheck = languageAwareTemplates;
                 }
             }
 
-            int highestPrecedence = templatesToCheck.Max(t => t.Precedence);
-            List<string> candidateLanguages = templatesToCheck
-                .Where(t => t.Precedence == highestPrecedence)
+            List<string?> candidateLanguages = templatesToCheck
                 .Select(t => t.GetLanguage())
-                .Where(lang => !string.IsNullOrWhiteSpace(lang))
-                .Select(lang => lang!)
+                .Select(lang => string.IsNullOrWhiteSpace(lang) ? null : lang)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 

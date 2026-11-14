@@ -130,11 +130,45 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [TestMethod]
         [DataRow("list --format json")]
         [DataRow("--list --format json")]
-        [DataRow("list --format json --diagnostics")]
-        public void JsonFormatRoutesEngineWarningsAndDiagnosticsToStdErr(string command)
+        public void JsonFormatDoesNotMarkNonPreferredLanguageAsDefaultWhenNeutralVariantExists(string command)
         {
             string customHivePath = CreateTemporaryFolder(folderName: "Home");
-            InstallTestTemplate("Invalid/InvalidHostData", _log, customHivePath);
+            string templateRoot = CreateTemporaryFolder(folderName: "Templates");
+            string neutralConfigDir = Path.Combine(templateRoot, "NeutralVariant", ".template.config");
+            string fsharpConfigDir = Path.Combine(templateRoot, "FSharpVariant", ".template.config");
+            Directory.CreateDirectory(neutralConfigDir);
+            Directory.CreateDirectory(fsharpConfigDir);
+
+            File.WriteAllText(
+                Path.Combine(neutralConfigDir, "template.json"),
+                """
+                {
+                  "$schema": "http://json.schemastore.org/template",
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "MixedNeutralAndFSharp",
+                  "tags": { "type": "item" },
+                  "identity": "TestAssets.MixedNeutralAndFSharp.Neutral",
+                  "groupIdentity": "TestAssets.MixedNeutralAndFSharp",
+                  "shortName": "review-mixed-language"
+                }
+                """);
+            File.WriteAllText(
+                Path.Combine(fsharpConfigDir, "template.json"),
+                """
+                {
+                  "$schema": "http://json.schemastore.org/template",
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "MixedNeutralAndFSharp",
+                  "tags": { "language": "F#", "type": "item" },
+                  "identity": "TestAssets.MixedNeutralAndFSharp.FSharp",
+                  "groupIdentity": "TestAssets.MixedNeutralAndFSharp",
+                  "shortName": "review-mixed-language"
+                }
+                """);
+
+            InstallTestTemplate(templateRoot, _log, customHivePath);
 
             CommandResult result = new DotnetNewCommand(_log, command.Split(" "))
                 .WithCustomHive(customHivePath)
@@ -144,11 +178,56 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             result
                 .Should()
                 .ExitWith(0)
+                .And.NotHaveStdErr();
+
+            using JsonDocument document = JsonDocument.Parse(result.StdOut!);
+            JsonElement template = document.RootElement.GetProperty("data").EnumerateArray().Single();
+            Assert.AreEqual("MixedNeutralAndFSharp", template.GetProperty("name").GetString());
+
+            JsonElement fsharpLang = template.GetProperty("languages").EnumerateArray().Single();
+            Assert.AreEqual("F#", fsharpLang.GetProperty("id").GetString());
+            Assert.IsFalse(fsharpLang.GetProperty("default").GetBoolean());
+        }
+
+        [TestMethod]
+        [DataRow("list --format json")]
+        [DataRow("--list --format json")]
+        [DataRow("list --format json --diagnostics")]
+        [DataRow("-d new list --format json")]
+        [DataRow("--diagnostics new list --format json")]
+        [DataRow("-d new --list --format json")]
+        [DataRow("--diagnostics new --list --format json")]
+        public void JsonFormatRoutesEngineWarningsAndDiagnosticsToStdErr(string command)
+        {
+            string customHivePath = CreateTemporaryFolder(folderName: "Home");
+            InstallTestTemplate("Invalid/InvalidHostData", _log, customHivePath);
+
+            string[] tokens = command.Split(" ");
+            DotnetNewCommand dotnetNewCommand;
+            if (tokens[0] is "-d" or "--diagnostics" && tokens[1] == "new")
+            {
+                dotnetNewCommand = new DotnetNewCommand(_log, tokens[2..]);
+                dotnetNewCommand.Arguments.Insert(0, tokens[0]);
+            }
+            else
+            {
+                dotnetNewCommand = new DotnetNewCommand(_log, tokens);
+            }
+
+            CommandResult result = dotnetNewCommand
+                .WithCustomHive(customHivePath)
+                .WithoutBuiltInTemplates()
+                .WithEnvironmentVariable("DOTNET_CLI_HOME", customHivePath)
+                .Execute();
+
+            result
+                .Should()
+                .ExitWith(0)
                 .And.HaveStdErrContaining("Warning:");
 
             using JsonDocument document = JsonDocument.Parse(result.StdOut!);
             JsonElement template = document.RootElement.GetProperty("data").EnumerateArray().Single();
-            Assert.AreEqual("Invalid.HostData", template.GetProperty("name").GetString());
+            Assert.AreEqual("TestAssets.Invalid.InvalidHostData", template.GetProperty("name").GetString());
         }
 
         [TestMethod]
