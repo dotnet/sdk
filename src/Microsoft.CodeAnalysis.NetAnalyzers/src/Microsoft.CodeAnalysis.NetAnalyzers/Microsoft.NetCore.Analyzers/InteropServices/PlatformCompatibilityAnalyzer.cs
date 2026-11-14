@@ -1565,10 +1565,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                 diagnosticAttribute.SupportedFirst = (Version)attributeToCheck.Clone();
                             }
 
+                            // A narrower minimum supported version does not remove the upper unsupported bound.
                             if (attribute.UnsupportedFirst != null &&
                                 (!mandatorySupportFound.Value ||
-                                  !(SuppressedByCallSiteSupported(attribute, callSiteAttribute.SupportedFirst) ||
-                                  SuppressedByCallSiteUnsupported(callSiteAttribute, attribute.UnsupportedFirst))))
+                                  !SuppressedByCallSiteUnsupported(callSiteAttribute, attribute.UnsupportedFirst)))
                             {
                                 diagnosticAttribute.UnsupportedFirst = (Version)attribute.UnsupportedFirst.Clone();
                                 diagnosticAttribute.UnsupportedMessage = attribute.UnsupportedMessage;
