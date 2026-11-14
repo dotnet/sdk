@@ -6,13 +6,14 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.DotNet.Dotnetup.Release;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public sealed class ReleaseToolTests : SdkTest
+public sealed class ReleaseToolTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     private const int BuildId = 123;
     private const string Commit = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     private static readonly string[] s_rids = ["linux-arm64", "linux-musl-arm64", "linux-musl-x64", "linux-x64", "osx-arm64", "osx-x64", "win-arm64", "win-x64"];
@@ -21,8 +22,11 @@ public sealed class ReleaseToolTests : SdkTest
     [TestInitialize]
     public void Initialize()
     {
-        _root = TestAssetsManager.CreateTestDirectory(identifier: Guid.NewGuid().ToString("N")).Path;
+        _root = Directory.CreateTempSubdirectory("dotnetup-release-tests-").FullName;
     }
+
+    [TestCleanup]
+    public void Cleanup() => Directory.Delete(_root, recursive: true);
 
     [TestMethod]
     [DataRow("preview", "0.3.0-preview.1.26554.2")]
