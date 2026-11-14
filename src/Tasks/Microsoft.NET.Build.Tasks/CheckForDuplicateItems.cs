@@ -29,6 +29,13 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string MoreInformationLink { get; set; }
 
+        /// <summary>
+        /// Optional name of a metadata that can make items with the same item spec distinct. Items with the same
+        /// item spec are not treated as duplicates if each of them has a different, non-empty value for this metadata
+        /// (for example, the same file embedded more than once with different LogicalName values).
+        /// </summary>
+        public string DistinguishingMetadataName { get; set; }
+
         [Output]
         public ITaskItem[] DeduplicatedItems { get; set; }
 
@@ -40,7 +47,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 var itemGroups = Items.GroupBy(i => i.ItemSpec, StringComparer.OrdinalIgnoreCase);
 
-                var duplicateItems = itemGroups.Where(g => g.Count() > 1).ToList();
+                var duplicateItems = itemGroups.Where(IsDuplicate).ToList();
                 if (duplicateItems.Any())
                 {
                     string duplicateItemsFormatted = string.Join("; ", duplicateItems.Select(d => $"'{d.Key}'"));
@@ -54,9 +61,28 @@ namespace Microsoft.NET.Build.Tasks
 
                     Log.LogError(message);
 
-                    DeduplicatedItems = itemGroups.Select(g => g.First()).ToArray();
+                    DeduplicatedItems = itemGroups.SelectMany(g => IsDuplicate(g) ? g.Take(1) : g).ToArray();
                 }
             }
+        }
+
+        private bool IsDuplicate(IGrouping<string, ITaskItem> itemGroup)
+        {
+            if (itemGroup.Count() <= 1)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(DistinguishingMetadataName))
+            {
+                return true;
+            }
+
+            var metadataValues = itemGroup.Select(i => i.GetMetadata(DistinguishingMetadataName)).ToList();
+            bool allValuesAreDistinct = metadataValues.All(v => !string.IsNullOrEmpty(v)) &&
+                metadataValues.Distinct(StringComparer.Ordinal).Count() == metadataValues.Count;
+
+            return !allValuesAreDistinct;
         }
     }
 }
