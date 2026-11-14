@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.Commands.Package.Remove;
 using Microsoft.DotNet.Cli.Commands.Package.Search;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
@@ -21,14 +22,14 @@ internal sealed class PackageCommandParser
     {
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
-        command.RemoveCommand.SetAction(parseResult => new PackageRemoveCommand(parseResult).Execute());
-        command.ListCommand.SetAction(parseResult => new PackageListCommand(parseResult).Execute());
+        command.RemoveCommand.SetAction((parseResult, cancellationToken) => new PackageRemoveCommand(parseResult).Execute(cancellationToken));
+        command.ListCommand.SetAction((parseResult, cancellationToken) => new PackageListCommand(parseResult).Execute(cancellationToken));
         ConfigureAddCommand(command.AddCommand);
 
-        command.SearchCommand.SetAction(parseResult =>
+        command.SearchCommand.SetAction((parseResult, cancellationToken) =>
         {
             var command = new PackageSearchCommand(parseResult);
-            int exitCode = command.Execute();
+            int exitCode = command.Execute(cancellationToken);
 
             if (exitCode == 1)
             {
@@ -45,7 +46,10 @@ internal sealed class PackageCommandParser
         {
             // we should take --prerelease flags into account for version completion
             var allowPrerelease = context.ParseResult.GetValue(def.PrereleaseOption);
-            return QueryNuGet(context.WordToComplete, allowPrerelease, CancellationToken.None).Result.Select(packageId => new CompletionItem(packageId));
+            return QueryNuGet(context.WordToComplete, allowPrerelease, ProcessLifecycle.CancellationToken)
+                .GetAwaiter()
+                .GetResult()
+                .Select(packageId => new CompletionItem(packageId));
         });
 
         def.VersionOption.CompletionSources.Add(context =>
@@ -55,8 +59,9 @@ internal sealed class PackageCommandParser
             {
                 // we should take --prerelease flags into account for version completion
                 var allowPrerelease = context.ParseResult.GetValue(def.PrereleaseOption);
-                return QueryVersionsForPackage(packageId.Id, context.WordToComplete, allowPrerelease, CancellationToken.None)
-                    .Result
+                return QueryVersionsForPackage(packageId.Id, context.WordToComplete, allowPrerelease, ProcessLifecycle.CancellationToken)
+                    .GetAwaiter()
+                    .GetResult()
                     .Select(version => new CompletionItem(version.ToNormalizedString()));
             }
             else
@@ -65,7 +70,7 @@ internal sealed class PackageCommandParser
             }
         });
 
-        def.SetAction(parseResult => new PackageAddCommand(parseResult).Execute());
+        def.SetAction((parseResult, cancellationToken) => new PackageAddCommand(parseResult).Execute(cancellationToken));
     }
 
     private static async Task<IEnumerable<string>> QueryNuGet(string packageStem, bool allowPrerelease, CancellationToken cancellationToken)
@@ -76,7 +81,7 @@ internal sealed class PackageCommandParser
             var versions = await downloader.GetPackageIdsAsync(packageStem, allowPrerelease, cancellationToken: cancellationToken);
             return versions;
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             return [];
         }
@@ -90,7 +95,7 @@ internal sealed class PackageCommandParser
             var versions = await downloader.GetPackageVersionsAsync(new(packageId), versionFragment, allowPrerelease, cancellationToken: cancellationToken);
             return versions;
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             return [];
         }

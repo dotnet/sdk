@@ -126,8 +126,13 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <summary>
     /// Cleans up and removes stale workload packs.
     /// </summary>
-    public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
+    public void GarbageCollect(
+        Func<string, IWorkloadResolver> getResolverForWorkloadSet,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null,
+        bool cleanAllPacks = false)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         try
         {
             ReportPendingReboot();
@@ -189,7 +194,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 }
             }
 
-            RemoveWorkloadSets(workloadSetsToRemove, offlineCache);
+            RemoveWorkloadSets(workloadSetsToRemove, cancellationToken, offlineCache);
 
             List<WorkloadManifestRecord> manifestsToRemove = [];
             var installedWorkloadManifests = GetWorkloadManifestRecords();
@@ -239,7 +244,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
             }
 
-            RemoveWorkloadManifests(manifestsToRemove, offlineCache);
+            RemoveWorkloadManifests(manifestsToRemove, cancellationToken, offlineCache);
 
             //  If aliased, the pack records here are the resolved pack from the alias
             IEnumerable<WorkloadPackRecord> installedWorkloadPacks = GetWorkloadPackRecords();
@@ -299,7 +304,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 }
             }
 
-            RemoveWorkloadPacks(packsToRemove, offlineCache);
+            RemoveWorkloadPacks(packsToRemove, cancellationToken, offlineCache);
 
             if (cleanAllPacks)
             {
@@ -313,11 +318,19 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
     }
 
-    public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache)
+    public WorkloadSet InstallWorkloadSet(
+        ITransactionContext context,
+        string workloadSetVersion,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         ReportPendingReboot();
 
-        var (msi, msiPackageId, installationFolder) = GetWorkloadSetPayload(workloadSetVersion, offlineCache);
+        var (msi, msiPackageId, installationFolder) = GetWorkloadSetPayload(
+            workloadSetVersion,
+            cancellationToken,
+            offlineCache);
 
         context.Run(
             action: () =>
@@ -354,7 +367,10 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         return WorkloadSet.FromWorkloadSetFolder(installationFolder, workloadSetVersion, _sdkFeatureBand);
     }
 
-    (MsiPayload msi, string msiPackageId, string installationFolder) GetWorkloadSetPayload(string workloadSetVersion, DirectoryPath? offlineCache)
+    (MsiPayload msi, string msiPackageId, string installationFolder) GetWorkloadSetPayload(
+        string workloadSetVersion,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache)
     {
         var workloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(workloadSetVersion, out var msiPackageVersion);
         string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), workloadSetFeatureBand).ToString();
@@ -365,7 +381,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         MsiPayload msi;
         try
         {
-            msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, offlineCache);
+            msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, cancellationToken, offlineCache);
         }
         //  Unwrap AggregateException caused by switch from async to sync
         catch (Exception ex) when (ex is NuGetPackageNotFoundException || ex.InnerException is NuGetPackageNotFoundException)
@@ -430,15 +446,19 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
     }
 
-    private void RemoveWorkloadSets(List<WorkloadSetRecord> workloadSetsToRemove, DirectoryPath? offlineCache)
+    private void RemoveWorkloadSets(
+        List<WorkloadSetRecord> workloadSetsToRemove,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache)
     {
         foreach (WorkloadSetRecord record in workloadSetsToRemove)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             DetectState state = DetectPackage(record.ProductCode, out Version _);
             if (state == DetectState.Present)
             {
                 string msiNuGetPackageId = $"Microsoft.NET.Workloads.{record.WorkloadSetFeatureBand}.Msi.{HostArchitecture}";
-                MsiPayload msi = GetCachedMsiPayload(msiNuGetPackageId, record.WorkloadSetPackageVersion, offlineCache);
+                MsiPayload msi = GetCachedMsiPayload(msiNuGetPackageId, record.WorkloadSetPackageVersion, cancellationToken, offlineCache);
 
                 if (!string.Equals(record.ProductCode, msi.ProductCode, StringComparison.OrdinalIgnoreCase))
                 {
@@ -456,15 +476,19 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
     }
 
-    private void RemoveWorkloadManifests(List<WorkloadManifestRecord> manifestToRemove, DirectoryPath? offlineCache)
+    private void RemoveWorkloadManifests(
+        List<WorkloadManifestRecord> manifestToRemove,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache)
     {
         foreach (WorkloadManifestRecord record in manifestToRemove)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             DetectState state = DetectPackage(record.ProductCode, out Version _);
             if (state == DetectState.Present)
             {
                 string msiNuGetPackageId = $"{record.ManifestId}.Manifest-{record.ManifestFeatureBand}.Msi.{HostArchitecture}";
-                MsiPayload msi = GetCachedMsiPayload(msiNuGetPackageId, record.ManifestVersion, offlineCache);
+                MsiPayload msi = GetCachedMsiPayload(msiNuGetPackageId, record.ManifestVersion, cancellationToken, offlineCache);
 
                 if (!string.Equals(record.ProductCode, msi.ProductCode, StringComparison.OrdinalIgnoreCase))
                 {
@@ -482,10 +506,14 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
     }
 
-    private void RemoveWorkloadPacks(List<WorkloadPackRecord> packsToRemove, DirectoryPath? offlineCache)
+    private void RemoveWorkloadPacks(
+        List<WorkloadPackRecord> packsToRemove,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache)
     {
         foreach (WorkloadPackRecord record in packsToRemove)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             // We need to make sure the product is actually installed and that we're not dealing with an orphaned record, e.g.
             // if a previous removal was interrupted. We can't safely clean up orphaned records because it's too expensive
             // to query all installed components and determine the product codes associated with the component that
@@ -496,7 +524,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             {
                 // Manually construct the MSI payload package details
                 string id = $"{record.MsiId}.Msi.{HostArchitecture}";
-                MsiPayload msi = GetCachedMsiPayload(id, record.MsiNuGetVersion.ToString(), offlineCache);
+                MsiPayload msi = GetCachedMsiPayload(id, record.MsiNuGetVersion.ToString(), cancellationToken, offlineCache);
 
                 // Make sure the package we have in the cache matches with the record. If it doesn't, we'll do the uninstall
                 // the hard way
@@ -544,18 +572,26 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
     public IWorkloadInstallationRecordRepository GetWorkloadInstallationRecordRepository() => RecordRepository;
 
-    public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
+    public void InstallWorkloadManifest(
+        ManifestVersionUpdate manifestUpdate,
+        ITransactionContext transactionContext,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null)
     {
         try
         {
             transactionContext.Run(
                 action: () =>
                 {
-                    InstallWorkloadManifestImplementation(manifestUpdate, offlineCache);
+                    InstallWorkloadManifestImplementation(manifestUpdate, cancellationToken, offlineCache);
                 },
                 rollback: () =>
                 {
-                    InstallWorkloadManifestImplementation(manifestUpdate, offlineCache: null, action: InstallAction.Uninstall);
+                    InstallWorkloadManifestImplementation(
+                        manifestUpdate,
+                        cancellationToken,
+                        offlineCache: null,
+                        action: InstallAction.Uninstall);
                 });
         }
         catch (Exception e)
@@ -565,8 +601,13 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
     }
 
-    void InstallWorkloadManifestImplementation(ManifestVersionUpdate manifestUpdate, DirectoryPath? offlineCache = null, InstallAction action = InstallAction.Install)
+    void InstallWorkloadManifestImplementation(
+        ManifestVersionUpdate manifestUpdate,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null,
+        InstallAction action = InstallAction.Install)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         ReportPendingReboot();
 
         // Rolling back a manifest update after a successful install is essentially a downgrade, which is blocked so we have to
@@ -581,7 +622,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         Log?.LogMessage($"Resolving {manifestUpdate.ManifestId} ({manifestUpdate.NewVersion}) to {msiPackageId} ({msiPackageVersion}).");
 
         // Retrieve the payload from the MSI package cache.
-        MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, offlineCache);
+        MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, cancellationToken, offlineCache);
         ValidateMsiDatabase(msi);
         DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
         InstallAction plannedAction = PlanPackage(msi, state, action, installedVersion);
@@ -592,16 +633,22 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
     }
 
-    public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null)
+    public void RepairWorkloads(
+        IEnumerable<WorkloadId> workloadIds,
+        SdkFeatureBand sdkFeatureBand,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         try
         {
             ReportPendingReboot();
 
             foreach (var aquirableMsi in GetMsisForWorkloads(workloadIds))
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 // Retrieve the payload from the MSI package cache.
-                MsiPayload msi = GetCachedMsiPayload(aquirableMsi.NuGetPackageId, aquirableMsi.NuGetPackageVersion, offlineCache);
+                MsiPayload msi = GetCachedMsiPayload(aquirableMsi.NuGetPackageId, aquirableMsi.NuGetPackageVersion, cancellationToken, offlineCache);
                 ValidateMsiDatabase(msi);
                 DetectState state = DetectPackage(msi, out Version installedVersion);
                 InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Repair, installedVersion);
@@ -618,14 +665,21 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
     }
 
-    public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
+    public void InstallWorkloads(
+        IEnumerable<WorkloadId> workloadIds,
+        SdkFeatureBand sdkFeatureBand,
+        ITransactionContext transactionContext,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         ReportPendingReboot();
 
         var msisToInstall = GetMsisForWorkloads(workloadIds);
 
         foreach (var msiToInstall in msisToInstall)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             bool shouldRollBackPack = false;
 
             transactionContext.Run(action: () =>
@@ -633,7 +687,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 try
                 {
                     // Retrieve the payload from the MSI package cache.
-                    MsiPayload msi = GetCachedMsiPayload(msiToInstall.NuGetPackageId, msiToInstall.NuGetPackageVersion, offlineCache);
+                    MsiPayload msi = GetCachedMsiPayload(msiToInstall.NuGetPackageId, msiToInstall.NuGetPackageVersion, cancellationToken, offlineCache);
                     ValidateMsiDatabase(msi);
                     DetectState state = DetectPackage(msi, out Version installedVersion);
                     InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
@@ -656,7 +710,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             {
                 if (shouldRollBackPack)
                 {
-                    RollBackMsiInstall(msiToInstall);
+                    RollBackMsiInstall(msiToInstall, cancellationToken);
                 }
             });
         }
@@ -671,7 +725,10 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
     }
 
-    void RollBackMsiInstall(WorkloadDownload msiToRollback, DirectoryPath? offlineCache = null)
+    void RollBackMsiInstall(
+        WorkloadDownload msiToRollback,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache = null)
     {
         try
         {
@@ -679,7 +736,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             Log?.LogMessage($"Rolling back workload pack installation for {msiToRollback.NuGetPackageId}.");
 
             // Retrieve the payload from the MSI package cache.
-            MsiPayload msi = GetCachedMsiPayload(msiToRollback.NuGetPackageId, msiToRollback.NuGetPackageVersion, offlineCache);
+            MsiPayload msi = GetCachedMsiPayload(msiToRollback.NuGetPackageId, msiToRollback.NuGetPackageVersion, cancellationToken, offlineCache);
             ValidateMsiDatabase(msi);
 
             // Check the provider key first in case we were installed and we only need to remove
@@ -741,8 +798,11 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)
         => _manifestInstaller.GetManifestPackageId(manifestId, featureBand);
 
-    public Task ExtractManifestAsync(string nupkgPath, string targetPath)
-        => _manifestInstaller.ExtractManifestAsync(nupkgPath, targetPath);
+    public Task ExtractManifestAsync(
+        string nupkgPath,
+        string targetPath,
+        CancellationToken cancellationToken)
+        => _manifestInstaller.ExtractManifestAsync(nupkgPath, targetPath, cancellationToken);
 
     private void LogPackInfo(PackInfo packInfo)
     {
@@ -854,15 +914,22 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// is downloaded.</param>
     /// <returns>The directory where the package was extracted.</returns>
     /// <exception cref="FileNotFoundException" />
-    private string ExtractPackage(string packageId, string packageVersion, DirectoryPath? offlineCache)
+    private string ExtractPackage(
+        string packageId,
+        string packageVersion,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache)
     {
         string packagePath;
 
         if (offlineCache == null || !offlineCache.HasValue)
         {
             Reporter.WriteLine($"Downloading {packageId} ({packageVersion})");
-            packagePath = _nugetPackageDownloader.DownloadPackageAsync(new PackageId(packageId), new NuGetVersion(packageVersion),
-                _packageSourceLocation).Result;
+            packagePath = _nugetPackageDownloader.DownloadPackageAsync(
+                new PackageId(packageId),
+                cancellationToken,
+                new NuGetVersion(packageVersion),
+                _packageSourceLocation).GetAwaiter().GetResult();
             Log?.LogMessage($"Downloaded {packageId} ({packageVersion}) to '{packagePath}");
         }
         else
@@ -881,7 +948,10 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         string extractionDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(extractionDirectory);
         Log?.LogMessage($"Extracting '{packageId}' to '{extractionDirectory}'");
-        _ = _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(extractionDirectory)).Result;
+        _ = _nugetPackageDownloader.ExtractPackageAsync(
+            packagePath,
+            new DirectoryPath(extractionDirectory),
+            cancellationToken).GetAwaiter().GetResult();
 
         return extractionDirectory;
     }
@@ -917,13 +987,18 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <param name="offlineCache">The path to the offline cache. When <see langword="null"/>, packages are downloaded using the
     /// existing package feeds.</param>
     /// <returns>The MSI payload or <see langword="null"/> if unsuccessful.</returns>
-    private MsiPayload GetCachedMsiPayload(string packageId, string packageVersion, DirectoryPath? offlineCache)
+    private MsiPayload GetCachedMsiPayload(
+        string packageId,
+        string packageVersion,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (!Cache.TryGetPayloadFromCache(packageId, packageVersion, out MsiPayload msiPayload))
         {
             // If it's not fully cached, download or copy if from the local cache and extract the payload package into a
             // temporary location and try to cache it again in the MSI cache. We DO NOT trust partially cached packages.
-            string extractedPackageRootPath = ExtractPackage(packageId, packageVersion, offlineCache);
+            string extractedPackageRootPath = ExtractPackage(packageId, packageVersion, cancellationToken, offlineCache);
             string manifestPath = Path.Combine(extractedPackageRootPath, "data", "msi.json");
             Cache.CachePayload(packageId, packageVersion, manifestPath);
             Directory.Delete(extractedPackageRootPath, recursive: true);
@@ -1128,5 +1203,6 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     // This method should never be called for this kind of installer. It is challenging to get this information from an MSI
     // and totally unnecessary as the information is identical from a file-based installer. It was added to IInstaller only
     // to facilitate testing. As a consequence, it does not need to be implemented.
-    public WorkloadSet GetWorkloadSetContents(string workloadVersion) => throw new NotImplementedException();
+    public WorkloadSet GetWorkloadSetContents(string workloadVersion, CancellationToken cancellationToken)
+        => throw new NotImplementedException();
 }

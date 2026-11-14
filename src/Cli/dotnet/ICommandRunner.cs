@@ -7,5 +7,5 @@ namespace Microsoft.DotNet.Cli;
 
 public interface ICommandRunner
 {
-    int Run(string[] commandArgs);
+    int Run(string[] commandArgs, CancellationToken cancellationToken);
 }

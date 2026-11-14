@@ -77,13 +77,13 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
         _allowPackageDowngrade = parseResult.GetValue(Definition.AllowPackageDowngradeOption);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         if (_updateAll)
         {
             foreach (var (manifestPackage, _) in ((IToolManifestInspector)_toolManifestFinder).Inspect())
             {
-                ExecuteInstallCommand(manifestPackage.PackageId, versionRange: null);
+                ExecuteInstallCommand(manifestPackage.PackageId, versionRange: null, cancellationToken);
             }
 
             return 0;
@@ -98,10 +98,10 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
             _parseResult.GetValue(Definition.VersionOption),
             _parseResult.GetValue(Definition.PrereleaseOption));
 
-        return ExecuteInstallCommand(packageId, versionRange);
+        return ExecuteInstallCommand(packageId, versionRange, cancellationToken);
     }
 
-    private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange)
+    private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange, CancellationToken cancellationToken)
     {
         FilePath manifestFile = GetManifestFilePath();
 
@@ -118,11 +118,11 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
 
         if (!existingPackageWithPackageId.Any())
         {
-            return InstallNewTool(manifestFile, packageId, versionRange);
+            return InstallNewTool(manifestFile, packageId, versionRange, cancellationToken);
         }
 
         var existingPackage = existingPackageWithPackageId.Single();
-        var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile, packageId, versionRange);
+        var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile, packageId, versionRange, cancellationToken);
 
         InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile, packageId);
 
@@ -179,10 +179,14 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
         return 0;
     }
 
-    public int InstallNewTool(FilePath manifestFile, PackageId packageId, VersionRange? versionRange)
+    public int InstallNewTool(
+        FilePath manifestFile,
+        PackageId packageId,
+        VersionRange? versionRange,
+        CancellationToken cancellationToken)
     {
         IToolPackage toolDownloadedPackage =
-            _toolLocalPackageInstaller.Install(manifestFile, packageId, versionRange);
+            _toolLocalPackageInstaller.Install(manifestFile, packageId, versionRange, cancellationToken);
 
         _toolManifestEditor.Add(
             manifestFile,

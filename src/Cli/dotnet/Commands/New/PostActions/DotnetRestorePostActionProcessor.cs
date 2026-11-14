@@ -7,15 +7,15 @@ using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 
 namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
-internal class DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallback = null) : PostActionProcessorBase
+internal class DotnetRestorePostActionProcessor(Func<string, CancellationToken, bool>? restoreCallback = null) : PostActionProcessorBase
 {
-    private readonly Func<string, bool> _restoreCallback = restoreCallback ?? DotnetCommandCallbacks.RestoreProject;
+    private readonly Func<string, CancellationToken, bool> _restoreCallback = restoreCallback ?? DotnetCommandCallbacks.RestoreProject;
 
     public override Guid Id => ActionProcessorId;
 
     internal static Guid ActionProcessorId { get; } = new Guid("210D431B-A78B-4D2F-B762-4ED3E3EA9025");
 
-    protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction actionConfig, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath)
+    protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction actionConfig, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath, CancellationToken cancellationToken)
     {
         bool allSucceeded = true;
         IEnumerable<string> targetFiles = GetConfiguredFiles(actionConfig.Args, creationEffects, "files", outputBasePath);
@@ -39,17 +39,17 @@ internal class DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallb
 
         foreach (string pathToRestore in targetFiles)
         {
-            allSucceeded &= RestoreProject(pathToRestore);
+            allSucceeded &= RestoreProject(pathToRestore, cancellationToken);
         }
         return allSucceeded;
     }
 
-    private bool RestoreProject(string pathToRestore)
+    private bool RestoreProject(string pathToRestore, CancellationToken cancellationToken)
     {
         try
         {
             Reporter.Output.WriteLine(string.Format(CliCommandStrings.PostAction_Restore_Running, pathToRestore));
-            bool succeeded = _restoreCallback(pathToRestore);
+            bool succeeded = _restoreCallback(pathToRestore, cancellationToken);
             if (!succeeded)
             {
                 Reporter.Error.WriteLine(CliCommandStrings.PostAction_Restore_Failed);

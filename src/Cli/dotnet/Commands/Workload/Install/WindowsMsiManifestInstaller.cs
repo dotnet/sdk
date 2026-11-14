@@ -82,7 +82,10 @@ internal class WindowsMsiManifestInstaller(
         }
     }
 
-    public async Task ExtractManifestAsync(string nupkgPath, string targetPath)
+    public async Task ExtractManifestAsync(
+        string nupkgPath,
+        string targetPath,
+        CancellationToken cancellationToken)
     {
         log?.LogMessage($"ExtractManifestAsync: Extracting '{nupkgPath}' to '{targetPath}'");
         string extractionPath = TemporaryDirectory.CreateSubdirectory();
@@ -90,7 +93,10 @@ internal class WindowsMsiManifestInstaller(
         try
         {
             log?.LogMessage($"ExtractManifestAsync: Temporary extraction path: '{extractionPath}'");
-            await nugetPackageDownloader.ExtractPackageAsync(nupkgPath, new DirectoryPath(extractionPath));
+            await nugetPackageDownloader.ExtractPackageAsync(
+                nupkgPath,
+                new DirectoryPath(extractionPath),
+                cancellationToken);
             if (Directory.Exists(targetPath))
             {
                 Directory.Delete(targetPath, true);

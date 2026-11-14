@@ -84,11 +84,11 @@ public sealed class MSBuildActivityTests : SdkTest
         ];
         CommandServices services = TestCommandServices.CreateNonLLM();
         var configured = Parser.Parse([.. arguments, "--configuration", "Debug"]);
-        _ = PublishCommand.FromParseResult(configured, msbuildPath, services);
+        _ = PublishCommand.FromParseResult(configured, TestContext.CancellationToken, msbuildPath, services);
         exported.AssertNoReleasePropertyDiscovery();
 
         var parseResult = Parser.Parse(arguments);
-        var command = (RestoringCommand)PublishCommand.FromParseResult(parseResult, msbuildPath, services);
+        var command = (RestoringCommand)PublishCommand.FromParseResult(parseResult, TestContext.CancellationToken, msbuildPath, services);
         command.MSBuildArguments.Should().Contain("--property:Configuration=Release");
         command.SeparateRestoreCommand.Should().BeNull();
         Activity discovery = exported.AssertReleasePropertyDiscovery(parent);
@@ -97,7 +97,7 @@ public sealed class MSBuildActivityTests : SdkTest
         exported.AssertNoSubmissions();
         Activity.Current.Should().BeSameAs(parent);
 
-        command.Execute().Should().Be(0);
+        command.Execute(TestContext.CancellationToken).Should().Be(0);
         Activity.Current.Should().BeSameAs(parent);
 
         Activity[] submissions = exported.AssertSubmissionMeasurements(expectedCount: 1, parent);
@@ -131,12 +131,13 @@ public sealed class MSBuildActivityTests : SdkTest
                 "--disable-build-servers",
                 binlogArgument,
             ],
+            TestContext.CancellationToken,
             msbuildPath: null,
             services: TestCommandServices.CreateNonLLM());
         command.SeparateRestoreCommand.Should().NotBeNull();
         exported.AssertNoSubmissions();
 
-        int exitCode = command.Execute();
+        int exitCode = command.Execute(TestContext.CancellationToken);
         exitCode.Should().Be(1);
 
         Activity.Current.Should().BeSameAs(parent);
@@ -166,12 +167,13 @@ public sealed class MSBuildActivityTests : SdkTest
                 program, "--no-restore", "--configuration", "Debug", "--output", output,
                 "--disable-build-servers", binlogArgument,
             ],
+            TestContext.CancellationToken,
             msbuildPath: null,
             services: TestCommandServices.CreateNonLLM());
         command.Should().BeOfType<VirtualProjectBuildingCommand>();
         exported.AssertNoSubmissions();
 
-        int exitCode = command.Execute();
+        int exitCode = command.Execute(TestContext.CancellationToken);
 
         exitCode.Should().Be(0);
         Activity.Current.Should().BeSameAs(parent);

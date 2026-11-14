@@ -148,7 +148,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var packId = "Xamarin.Android.Sdk";
             var packVersion = "8.4.7";
             var version = "6.0.100";
-            CliTransaction.RunNew(context => installer.InstallWorkloads(new[] { new WorkloadId("android-sdk-workload") }, new SdkFeatureBand(version), context));
+            CliTransaction.RunNew(context => installer.InstallWorkloads(
+                [new WorkloadId("android-sdk-workload")],
+                new SdkFeatureBand(version),
+                context,
+                TestContext.CancellationToken));
 
             var mockNugetInstaller = nugetInstaller as MockNuGetPackageDownloader;
             mockNugetInstaller.DownloadCallParams.Count.Should().Be(1);
@@ -171,7 +175,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var packVersion = "1.0.3";
 
             var version = "6.0.100";
-            CliTransaction.RunNew(context => installer.InstallWorkloads(new[] { new WorkloadId("android-templates-workload") }, new SdkFeatureBand(version), context));
+            CliTransaction.RunNew(context => installer.InstallWorkloads(
+                [new WorkloadId("android-templates-workload")],
+                new SdkFeatureBand(version),
+                context,
+                TestContext.CancellationToken));
 
             (nugetInstaller as MockNuGetPackageDownloader).DownloadCallParams.Count.Should().Be(1);
             (nugetInstaller as MockNuGetPackageDownloader).DownloadCallParams[0].Should().BeEquivalentTo((new PackageId(packId), new NuGetVersion(packVersion), null as DirectoryPath?, null as PackageSourceLocation));
@@ -196,7 +204,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var packVersion = "8.4.7";
 
             var version = "6.0.100";
-            CliTransaction.RunNew(context => installer.InstallWorkloads(new[] { new WorkloadId("android-buildtools-workload") }, new SdkFeatureBand(version), context));
+            CliTransaction.RunNew(context => installer.InstallWorkloads(
+                [new WorkloadId("android-buildtools-workload")],
+                new SdkFeatureBand(version),
+                context,
+                TestContext.CancellationToken));
 
             mockNugetInstaller.DownloadCallParams.Count.Should().Be(1);
             mockNugetInstaller.DownloadCallParams[0].Should().BeEquivalentTo((new PackageId(packId), new NuGetVersion(packVersion), null as DirectoryPath?, null as PackageSourceLocation));
@@ -216,7 +228,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var packVersion = "8.4.7";
 
             var version = "6.0.100";
-            CliTransaction.RunNew(context => installer.InstallWorkloads(new[] { new WorkloadId("android-sdk-workload") }, new SdkFeatureBand(version), context));
+            CliTransaction.RunNew(context => installer.InstallWorkloads(
+                [new WorkloadId("android-sdk-workload")],
+                new SdkFeatureBand(version),
+                context,
+                TestContext.CancellationToken));
 
             var mockNugetInstaller = nugetInstaller as MockNuGetPackageDownloader;
             mockNugetInstaller.DownloadCallParams.Count.Should().Be(1);
@@ -234,7 +250,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             // Mock installing the pack
             Directory.CreateDirectory(Path.Combine(dotnetRoot, "packs", packId, packVersion));
 
-            CliTransaction.RunNew(context => installer.InstallWorkloads(new[] { new WorkloadId("android-sdk-workload") }, new SdkFeatureBand(version), context));
+            CliTransaction.RunNew(context => installer.InstallWorkloads(
+                [new WorkloadId("android-sdk-workload")],
+                new SdkFeatureBand(version),
+                context,
+                TestContext.CancellationToken));
 
             (nugetInstaller as MockNuGetPackageDownloader).DownloadCallParams.Count.Should().Be(0);
         }
@@ -249,7 +269,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             var exceptionThrown = Assert.ThrowsExactly<Exception>(() =>
             {
-                CliTransaction.RunNew(context => installer.InstallWorkloads(new[] { new WorkloadId("android-sdk-workload") }, new SdkFeatureBand(version), context));
+                CliTransaction.RunNew(context => installer.InstallWorkloads(
+                    [new WorkloadId("android-sdk-workload")],
+                    new SdkFeatureBand(version),
+                    context,
+                    TestContext.CancellationToken));
             });
             exceptionThrown.Message.Should().Be("Test Failure");
             var failingNugetInstaller = nugetInstaller as FailingNuGetPackageDownloader;
@@ -293,7 +317,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installedWorkloadsPath = Path.Combine(dotnetRoot, "metadata", "workloads", sdkVersions[1], "InstalledWorkloads", "xamarin-android-build");
             File.WriteAllText(installedWorkloadsPath, string.Empty);
 
-            installer.GarbageCollect(getResolver);
+            installer.GarbageCollect(getResolver, TestContext.CancellationToken);
 
             Directory.EnumerateFileSystemEntries(installedPacksPath)
                 .Should()
@@ -328,7 +352,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             var manifestUpdate = new ManifestVersionUpdate(manifestId, manifestVersion, featureBand.ToString());
 
-            CliTransaction.RunNew(context => installer.InstallWorkloadManifest(manifestUpdate, context));
+            CliTransaction.RunNew(context => installer.InstallWorkloadManifest(
+                manifestUpdate,
+                context,
+                TestContext.CancellationToken));
 
             var mockNugetInstaller = nugetDownloader as MockNuGetPackageDownloader;
             mockNugetInstaller.DownloadCallParams.Count.Should().Be(1);
@@ -388,7 +415,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var nupkgPath = Path.Combine(cachePath, $"{packId}.{packVersion}.nupkg");
             File.Create(nupkgPath).Close();
 
-            CliTransaction.RunNew(context => installer.InstallWorkloads(new[] { new WorkloadId("android-sdk-workload") }, new SdkFeatureBand(version), context, new DirectoryPath(cachePath)));
+            CliTransaction.RunNew(context => installer.InstallWorkloads(
+                [new WorkloadId("android-sdk-workload")],
+                new SdkFeatureBand(version),
+                context,
+                TestContext.CancellationToken,
+                new DirectoryPath(cachePath)));
             var mockNugetInstaller = nugetInstaller as MockNuGetPackageDownloader;
 
             // We shouldn't download anything, use the cache
@@ -413,7 +445,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var cachePath = Path.Combine(dotnetRoot, "MockCache");
 
             var exceptionThrown = Assert.ThrowsExactly<AggregateException>(() =>
-                CliTransaction.RunNew(context => installer.InstallWorkloads(new[] { new WorkloadId("android-sdk-workload") }, new SdkFeatureBand(version), context, new DirectoryPath(cachePath))));
+                CliTransaction.RunNew(context => installer.InstallWorkloads(
+                    [new WorkloadId("android-sdk-workload")],
+                    new SdkFeatureBand(version),
+                    context,
+                    TestContext.CancellationToken,
+                    new DirectoryPath(cachePath))));
             exceptionThrown.InnerException.Message.Should().Contain(packId);
             exceptionThrown.InnerException.Message.Should().Contain(packVersion);
             exceptionThrown.InnerException.Message.Should().Contain(cachePath);

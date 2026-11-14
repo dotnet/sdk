@@ -80,6 +80,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         INuGetPackageDownloader nugetPackageDownloader,
         string packagesRootPath,
         NuGetVersion packageVersion,
+        CancellationToken cancellationToken,
         PackageSourceLocation packageSourceLocation,
         VerbosityOptions verbosity,
         bool includeUnlisted = false
@@ -104,6 +105,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         DirectoryPath assetsJsonParentDirectory);
 
     public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
+        CancellationToken cancellationToken,
         VerbosityOptions verbosity = VerbosityOptions.normal,
         VersionRange? versionRange = null,
         string? targetFramework = null,
@@ -125,7 +127,11 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
         var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds, _currentWorkingDirectory, packageLocation.PackageSourceOverrides);
 
-        NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
+        NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(
+            packageId,
+            versionRange,
+            cancellationToken,
+            packageSourceLocation).GetAwaiter().GetResult();
 
         bool givenSpecificVersion = false;
         if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
@@ -140,6 +146,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 nugetPackageDownloader,
                 packageId,
                 packageVersion,
+                cancellationToken,
                 givenSpecificVersion,
                 targetFramework,
                 isGlobalToolRollForward,
@@ -152,6 +159,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 nugetPackageDownloader,
                 packageId,
                 packageVersion,
+                cancellationToken,
                 givenSpecificVersion,
                 targetFramework,
                 verbosity: verbosity);
@@ -163,6 +171,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         INuGetPackageDownloader nugetPackageDownloader,
         PackageId packageId,
         NuGetVersion packageVersion,
+        CancellationToken cancellationToken,
         bool givenSpecificVersion,
         string? targetFramework,
         bool isGlobalToolRollForward,
@@ -190,6 +199,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                     packageDownloadDir: _globalToolStageDir,
                     packageId,
                     packageVersion,
+                    cancellationToken,
                     nugetPackageDownloader,
                     packageSourceLocation,
                     givenSpecificVersion,
@@ -425,6 +435,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         INuGetPackageDownloader nugetPackageDownloader,
         PackageId packageId,
         NuGetVersion packageVersion,
+        CancellationToken cancellationToken,
         bool givenSpecificVersion,
         string? targetFramework,
         VerbosityOptions verbosity)
@@ -436,6 +447,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                     packageDownloadDir: _localToolDownloadDir,
                     packageId,
                     packageVersion,
+                    cancellationToken,
                     nugetPackageDownloader,
                     packageSourceLocation,
                     givenSpecificVersion,
@@ -458,6 +470,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         DirectoryPath packageDownloadDir,
         PackageId packageId,
         NuGetVersion packageVersion,
+        CancellationToken cancellationToken,
         INuGetPackageDownloader nugetPackageDownloader,
         PackageSourceLocation packageSourceLocation,
         bool givenSpecificVersion,
@@ -470,6 +483,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             packageDownloadDir,
             packageId,
             packageVersion,
+            cancellationToken,
             nugetPackageDownloader,
             packageSourceLocation,
             includeUnlisted: givenSpecificVersion,
@@ -485,6 +499,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 packageDownloadDir,
                 ridSpecificPackage,
                 packageVersion,
+                cancellationToken,
                 nugetPackageDownloader,
                 packageSourceLocation,
                 includeUnlisted: true,
@@ -503,6 +518,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         DirectoryPath packageDownloadDir,
         PackageId packageId,
         NuGetVersion packageVersion,
+        CancellationToken cancellationToken,
         INuGetPackageDownloader nugetPackageDownloader,
         PackageSourceLocation packageSourceLocation,
         bool includeUnlisted,
@@ -521,6 +537,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 nugetPackageDownloader,
                 packageDownloadDir.Value,
                 packageVersion,
+                cancellationToken,
                 packageSourceLocation,
                 verbosity,
                 includeUnlisted);
@@ -535,6 +552,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 nugetPackageDownloader,
                 packageDownloadDir.Value,
                 packageVersion,
+                cancellationToken,
                 packageSourceLocation,
                 verbosity,
                 includeUnlisted);
@@ -700,8 +718,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             .GetBestPackageVersionAndSourceAsync(
                 packageId,
                 versionRange,
-                packageSourceLocation,
-                cancellationToken)
+                cancellationToken,
+                packageSourceLocation)
             .ConfigureAwait(false);
     }
 }

@@ -14,7 +14,7 @@ internal sealed class ToolListCommand(
     private readonly ToolListGlobalOrToolPathCommand _toolListGlobalOrToolPathCommand = toolListGlobalOrToolPathCommand ?? new(result);
     private readonly ToolListLocalCommand _toolListLocalCommand = toolListLocalCommand ?? new(result);
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         Definition.LocationOptions.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
@@ -24,6 +24,6 @@ internal sealed class ToolListCommand(
             ? _toolListGlobalOrToolPathCommand
             : _toolListLocalCommand;
 
-        return command.Execute();
+        return command.Execute(cancellationToken);
     }
 }

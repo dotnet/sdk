@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 #if !CLI_AOT
 using Microsoft.DotNet.Cli.Commands.Tool.Execute;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
@@ -27,26 +28,26 @@ internal static class ToolCommandParser
         // `--global`/`--tool-path` variants and `install`/`update`/`restore`/`execute` keep the
         // default fallback because they depend on NuGet package install/restore infrastructure that
         // isn't AOT-ready. NativeEntryPoint catches the exception and hosts the managed CLI.
-        command.ListCommand.SetAction(parseResult =>
+        command.ListCommand.SetAction((parseResult, cancellationToken) =>
             command.ListCommand.LocationOptions.IsGlobalOrToolPath(parseResult)
                 ? throw new CommandNotAvailableInAotException()
-                : new ToolListLocalCommand(parseResult).Execute());
-        command.UninstallCommand.SetAction(parseResult =>
+                : new ToolListLocalCommand(parseResult).Execute(cancellationToken));
+        command.UninstallCommand.SetAction((parseResult, cancellationToken) =>
             command.UninstallCommand.LocationOptions.IsGlobalOrToolPath(parseResult)
                 ? throw new CommandNotAvailableInAotException()
-                : new ToolUninstallLocalCommand(parseResult).Execute());
-        command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
+                : new ToolUninstallLocalCommand(parseResult).Execute(cancellationToken));
+        command.RunCommand.SetAction((parseResult, cancellationToken) => new ToolRunCommand(parseResult).Execute(cancellationToken));
         command.SearchCommand.SetAction(
             (parseResult, cancellationToken) => new ToolSearchCommand(parseResult).ExecuteAsync(cancellationToken));
 #else
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
         command.InstallCommand.SetAction((parseResult, cancellationToken) =>
             new ToolInstallCommand(parseResult).ExecuteAsync(cancellationToken));
-        command.UninstallCommand.SetAction(parseResult => new ToolUninstallCommand(parseResult).Execute());
+        command.UninstallCommand.SetAction((parseResult, cancellationToken) => new ToolUninstallCommand(parseResult).Execute(cancellationToken));
         command.UpdateCommand.SetAction((parseResult, cancellationToken) =>
             new ToolUpdateCommand(parseResult).ExecuteAsync(cancellationToken));
-        command.ListCommand.SetAction(parseResult => new ToolListCommand(parseResult).Execute());
-        command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
+        command.ListCommand.SetAction((parseResult, cancellationToken) => new ToolListCommand(parseResult).Execute(cancellationToken));
+        command.RunCommand.SetAction((parseResult, cancellationToken) => new ToolRunCommand(parseResult).Execute(cancellationToken));
         command.SearchCommand.SetAction(
             (parseResult, cancellationToken) => new ToolSearchCommand(parseResult).ExecuteAsync(cancellationToken));
         command.RestoreCommand.SetAction((parseResult, cancellationToken) =>

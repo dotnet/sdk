@@ -9,9 +9,9 @@ using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 
 namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
-internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, string?, bool?, bool>? addProjToSolutionCallback = null) : PostActionProcessorBase
+internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, string?, bool?, CancellationToken, bool>? addProjToSolutionCallback = null) : PostActionProcessorBase
 {
-    private readonly Func<string, IReadOnlyList<string>, string?, bool?, bool> _addProjToSolutionCallback = addProjToSolutionCallback ?? DotnetCommandCallbacks.AddProjectsToSolution;
+    private readonly Func<string, IReadOnlyList<string>, string?, bool?, CancellationToken, bool> _addProjToSolutionCallback = addProjToSolutionCallback ?? DotnetCommandCallbacks.AddProjectsToSolution;
 
     public override Guid Id => ActionProcessorId;
 
@@ -87,7 +87,7 @@ internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, 
         }
     }
 
-    protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction action, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath)
+    protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction action, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath, CancellationToken cancellationToken)
     {
         IReadOnlyList<string> nearestSlnFilesFound = FindSolutionFilesAtOrAbovePath(environment.Host.FileSystem, outputBasePath);
         if (nearestSlnFilesFound.Count != 1)
@@ -129,14 +129,14 @@ internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, 
         {
             Reporter.Output.WriteLine(string.Format(CliCommandStrings.PostAction_AddProjToSln_Running, string.Join(" ", projectFiles), nearestSlnFilesFound[0], solutionFolder));
         }
-        return AddProjectsToSolution(nearestSlnFilesFound[0], projectFiles, solutionFolder, inRoot);
+        return AddProjectsToSolution(nearestSlnFilesFound[0], projectFiles, solutionFolder, inRoot, cancellationToken);
     }
 
-    private bool AddProjectsToSolution(string solutionPath, IReadOnlyList<string> projectsToAdd, string? solutionFolder, bool? inRoot)
+    private bool AddProjectsToSolution(string solutionPath, IReadOnlyList<string> projectsToAdd, string? solutionFolder, bool? inRoot, CancellationToken cancellationToken)
     {
         try
         {
-            bool succeeded = _addProjToSolutionCallback(solutionPath, projectsToAdd, solutionFolder, inRoot);
+            bool succeeded = _addProjToSolutionCallback(solutionPath, projectsToAdd, solutionFolder, inRoot, cancellationToken);
             if (!succeeded)
             {
                 Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddProjToSln_Failed_NoReason);

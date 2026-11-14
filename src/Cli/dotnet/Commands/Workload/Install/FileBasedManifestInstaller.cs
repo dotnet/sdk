@@ -36,8 +36,12 @@ internal class FileBasedManifestInstaller(INuGetPackageDownloader nugetPackageDo
         }
     }
 
-    public async Task ExtractManifestAsync(string nupkgPath, string targetPath)
+    public async Task ExtractManifestAsync(
+        string nupkgPath,
+        string targetPath,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var extractionPath = Path.Combine(tempPackagesDir.Value, "dotnet-sdk-advertising-temp", $"{Path.GetFileName(nupkgPath)}-extracted");
         if (Directory.Exists(extractionPath))
         {
@@ -47,7 +51,10 @@ internal class FileBasedManifestInstaller(INuGetPackageDownloader nugetPackageDo
         try
         {
             Directory.CreateDirectory(extractionPath);
-            await nugetPackageDownloader.ExtractPackageAsync(nupkgPath, new DirectoryPath(extractionPath));
+            await nugetPackageDownloader.ExtractPackageAsync(
+                nupkgPath,
+                new DirectoryPath(extractionPath),
+                cancellationToken);
             if (Directory.Exists(targetPath))
             {
                 Directory.Delete(targetPath, true);
