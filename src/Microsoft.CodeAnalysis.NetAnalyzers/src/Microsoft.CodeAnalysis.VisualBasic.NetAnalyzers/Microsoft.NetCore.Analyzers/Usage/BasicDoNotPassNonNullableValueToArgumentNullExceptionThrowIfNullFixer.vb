@@ -11,6 +11,11 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Usage
     Public NotInheritable Class BasicDoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullFixer
         Inherits DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullFixer(Of InvocationExpressionSyntax)
 
+        ' The statement that is the whole body of a single-line Sub lambda cannot be removed or replaced.
+        Protected Overrides Function CanRewrite(statement As SyntaxNode) As Boolean
+            Return TypeOf statement.Parent IsNot SingleLineLambdaExpressionSyntax
+        End Function
+
         Protected Overrides Sub ReplaceWithNullableStructCheck(invocation As InvocationExpressionSyntax, statement As SyntaxNode, editor As SyntaxEditor)
             Dim generator = editor.Generator
             Dim nullableStructExpression = invocation.ArgumentList.Arguments(0).GetExpression()
