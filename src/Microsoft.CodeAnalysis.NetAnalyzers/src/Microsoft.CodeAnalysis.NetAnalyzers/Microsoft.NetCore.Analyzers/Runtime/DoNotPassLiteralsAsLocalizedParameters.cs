@@ -163,7 +163,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>? ComputeValueContentAnalysisResult()
                 {
-                    var cfg = operationBlockStartContext.OperationBlocks.GetControlFlowGraph();
+                    var cfg = operationBlockStartContext.GetControlFlowGraph();
                     if (cfg != null)
                     {
                         var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartContext.Compilation);

@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Analyzer.Utilities
 {
     /// <summary>
     /// Provides bounded cache for analyzers.
-    /// Acts as a good alternative to <see cref="System.Runtime.CompilerServices.ConditionalWeakTable{TKey, TValue}"/>
-    /// when the cached value has a cyclic reference to the key preventing early garbage collection of entries.
+    /// Entries remain available while their cached key is alive, subject to the capacity bound.
+    /// Conditional ownership allows otherwise unreachable key/value cycles to be collected.
     /// </summary>
     internal class BoundedCacheWithFactory<TKey, TValue>
         where TKey : class
@@ -24,6 +25,8 @@ namespace Analyzer.Utilities
             new WeakReference<Entry?>(null),
             new WeakReference<Entry?>(null),
         };
+
+        private readonly ConditionalWeakTable<TKey, Entry> _entriesByKey = new();
 
         public TValue GetOrCreateValue(TKey key, Func<TKey, TValue> valueFactory)
         {
@@ -60,6 +63,13 @@ namespace Analyzer.Utilities
                 }
 
                 var newEntry = new Entry(key, valueFactory(key));
+                if (_weakReferencedEntries[indexToSetTarget].TryGetTarget(out var evictedEntry) &&
+                    evictedEntry != null)
+                {
+                    _entriesByKey.Remove(evictedEntry.Key);
+                }
+
+                _entriesByKey.Add(key, newEntry);
                 _weakReferencedEntries[indexToSetTarget].SetTarget(newEntry);
                 return newEntry.Value;
             }

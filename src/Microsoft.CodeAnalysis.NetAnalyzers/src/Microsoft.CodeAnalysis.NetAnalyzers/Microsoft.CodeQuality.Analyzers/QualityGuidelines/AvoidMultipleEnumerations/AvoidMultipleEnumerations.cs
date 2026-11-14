@@ -9,6 +9,7 @@ using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis;
 using static Microsoft.CodeQuality.Analyzers.MicrosoftCodeQualityAnalyzersResources;
 using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.AvoidMultipleEnumerationsHelpers;
@@ -290,7 +291,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return;
                 }
 
-                var cfg = context.OperationBlocks.GetControlFlowGraph();
+                if (CanSkipAnalysis(context, potentialDiagnosticOperations, wellKnownSymbolsInfo))
+                {
+                    return;
+                }
+
+                var cfg = context.GetControlFlowGraph();
                 if (cfg == null)
                 {
                     return;
@@ -315,6 +321,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 }
 
                 using var diagnosticOperations = PooledHashSet<IOperation>.GetInstance();
+                using var reportedContributions = PooledHashSet<ImmutableStack<TrackingEnumerationSet>>.GetInstance(ReferenceEqualityComparer.Instance);
+                using var reportedEnumerationSets = PooledHashSet<TrackingEnumerationSet>.GetInstance(ReferenceEqualityComparer.Instance);
+                using var pendingEnumerationSets = ArrayBuilder<TrackingEnumerationSet>.GetInstance();
+
                 foreach (var operation in potentialDiagnosticOperations)
                 {
                     var result = analysisResult[operation.Kind, operation.Syntax];
@@ -323,18 +333,41 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         continue;
                     }
 
-                    foreach (var (_, trackedInvocationSet) in result.TrackedEntities)
+                    for (var contributions = result.ReportableEnumerationSets;
+                        !contributions.IsEmpty && reportedContributions.Add(contributions);
+                        contributions = contributions.Pop())
                     {
-                        // Report if
-                        // 1. EnumerationCount is two or more times.
-                        // 2. There are two or more operations that might be involved.
-                        // (Note: 2 is an aggressive way to report diagnostic, because it is not guaranteed that happens on all the code path)
-                        if (trackedInvocationSet.EnumerationCount == EnumerationCount.TwoOrMoreTime || trackedInvocationSet.Operations.Count > 1)
+                        var trackedInvocationSet = contributions.Peek();
+                        if (reportedEnumerationSets.Add(trackedInvocationSet))
                         {
-                            foreach (var trackedOperation in trackedInvocationSet.Operations)
-                            {
-                                diagnosticOperations.Add(trackedOperation);
-                            }
+                            pendingEnumerationSets.Add(trackedInvocationSet);
+                        }
+                    }
+                }
+
+                // Both count merges and branch intersections union the operation sets.
+                // Walk their shared leaves once instead of rescanning growing unions.
+                while (pendingEnumerationSets.Count > 0)
+                {
+                    var set = pendingEnumerationSets[pendingEnumerationSets.Count - 1];
+                    pendingEnumerationSets.RemoveLast();
+                    if (set.MergedSet1 is { } first && set.MergedSet2 is { } second)
+                    {
+                        if (reportedEnumerationSets.Add(first))
+                        {
+                            pendingEnumerationSets.Add(first);
+                        }
+
+                        if (reportedEnumerationSets.Add(second))
+                        {
+                            pendingEnumerationSets.Add(second);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var trackedOperation in set.Operations)
+                        {
+                            diagnosticOperations.Add(trackedOperation);
                         }
                     }
                 }

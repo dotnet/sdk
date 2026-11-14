@@ -92,13 +92,13 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         {
             if (!indices.IsEmpty)
             {
-                var builder = ArrayBuilder<AbstractIndex>.GetInstance(indices.Length);
+                using var builder = ArrayBuilder<AbstractIndex>.GetInstance(indices.Length);
                 foreach (var index in indices)
                 {
                     builder.Add(CreateAbstractIndex(index));
                 }
 
-                return builder.ToImmutableAndFree();
+                return builder.ToImmutable();
             }
 
             return ImmutableArray<AbstractIndex>.Empty;
@@ -118,6 +118,34 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             //}
 
             return AbstractIndex.Create(operation);
+        }
+
+        private static bool TryCreateAbstractIndices(ImmutableArray<IArgumentOperation> arguments, out ImmutableArray<AbstractIndex> indices)
+        {
+            indices = ImmutableArray<AbstractIndex>.Empty;
+            if (arguments.IsEmpty)
+            {
+                return true;
+            }
+
+            using var builder = ArrayBuilder<AbstractIndex>.GetInstance(arguments.Length);
+            builder.Count = arguments.Length;
+
+            foreach (var argument in arguments)
+            {
+                if (argument.Parameter is not { Ordinal: var ordinal } ||
+                    (uint)ordinal >= (uint)arguments.Length ||
+                    builder[ordinal] is not null)
+                {
+                    // Error-recovery arguments need not have unique bound parameters.
+                    return false;
+                }
+
+                builder[ordinal] = CreateAbstractIndex(argument.Value);
+            }
+
+            indices = builder.ToImmutable();
+            return true;
         }
 
         public bool TryCreate(IOperation operation, [NotNullWhen(returnValue: true)] out AnalysisEntity? analysisEntity)
@@ -292,14 +320,12 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                     // 1) Indexers
                     // 2) Read-only properties.
                     // 3) Properties with a backing field (auto-generated properties)
-                    if (!propertyReference.Arguments.IsEmpty ||
+                    if ((!propertyReference.Arguments.IsEmpty ||
                         propertyReference.Property.IsReadOnly ||
-                        propertyReference.Property.IsPropertyWithBackingField(out _))
+                        propertyReference.Property.IsPropertyWithBackingField(out _)) &&
+                        TryCreateAbstractIndices(propertyReference.Arguments, out indices))
                     {
                         symbol = propertyReference.Property;
-                        indices = !propertyReference.Arguments.IsEmpty ?
-                            CreateAbstractIndices(propertyReference.Arguments.Select(a => a.Value).ToImmutableArray()) :
-                            ImmutableArray<AbstractIndex>.Empty;
                     }
 
                     break;

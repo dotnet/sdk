@@ -1,10 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 
@@ -76,9 +76,17 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             Debug.Assert(value1.Kind == TaintedDataAbstractValueKind.Tainted);
             Debug.Assert(value2.Kind == TaintedDataAbstractValueKind.Tainted);
 
-            return new TaintedDataAbstractValue(
-                TaintedDataAbstractValueKind.Tainted,
-                value1.SourceOrigins.Union(value2.SourceOrigins));
+            if (ReferenceEquals(value1, value2))
+            {
+                return value1;
+            }
+
+            var sourceOrigins = value1.SourceOrigins.Union(value2.SourceOrigins);
+            return ReferenceEquals(sourceOrigins, value1.SourceOrigins)
+                ? value1
+                : ReferenceEquals(sourceOrigins, value2.SourceOrigins)
+                    ? value2
+                    : new TaintedDataAbstractValue(TaintedDataAbstractValueKind.Tainted, sourceOrigins);
         }
 
         /// <summary>
@@ -88,17 +96,32 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
         /// <returns>Tainted abstract value containing the super set of source origins.</returns>
         internal static TaintedDataAbstractValue MergeTainted(IEnumerable<TaintedDataAbstractValue> taintedValues)
         {
-            var sourceOriginsBuilder = PooledHashSet<SymbolAccess>.GetInstance();
-            foreach (TaintedDataAbstractValue value in taintedValues)
+            using var enumerator = taintedValues.GetEnumerator();
+            if (!enumerator.MoveNext())
             {
-                Debug.Assert(value.Kind == TaintedDataAbstractValueKind.Tainted);
-
-                sourceOriginsBuilder.UnionWith(value.SourceOrigins);
+                return new TaintedDataAbstractValue(TaintedDataAbstractValueKind.Tainted, ImmutableHashSet<SymbolAccess>.Empty);
             }
 
-            return new TaintedDataAbstractValue(
-                TaintedDataAbstractValueKind.Tainted,
-                sourceOriginsBuilder.ToImmutableAndFree());
+            var first = enumerator.Current;
+            Debug.Assert(first.Kind == TaintedDataAbstractValueKind.Tainted);
+            if (!enumerator.MoveNext())
+            {
+                return first;
+            }
+
+            var sourceOriginsBuilder = first.SourceOrigins.ToBuilder();
+            do
+            {
+                var value = enumerator.Current;
+                Debug.Assert(value.Kind == TaintedDataAbstractValueKind.Tainted);
+                sourceOriginsBuilder.UnionWith(value.SourceOrigins);
+            }
+            while (enumerator.MoveNext());
+
+            var sourceOrigins = sourceOriginsBuilder.ToImmutable();
+            return ReferenceEquals(sourceOrigins, first.SourceOrigins)
+                ? first
+                : new TaintedDataAbstractValue(TaintedDataAbstractValueKind.Tainted, sourceOrigins);
         }
     }
 }

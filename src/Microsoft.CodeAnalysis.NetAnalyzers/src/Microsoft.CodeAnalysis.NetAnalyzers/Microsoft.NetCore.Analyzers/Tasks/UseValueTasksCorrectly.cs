@@ -218,7 +218,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         /// <summary>Handles more complicated analysis to warn on more complicated erroneous usage patterns.</summary>
         private static void HandleAtypicalValueTaskUsage(OperationAnalysisContext operationContext, INamedTypeSymbol? debugType, IOperation operation, IInvocationOperation invocation)
         {
-            if (TryGetLocalSymbolAssigned(operation.Parent, out var valueTypeSymbol, out var startingBlock))
+            if (TryGetLocalSymbolAssigned(operation.Parent, operationContext, out var valueTypeSymbol, out var startingBlock))
             {
                 // At this point, it's very likely misuse and we could warn. However, there are a few advanced
                 // patterns where the ValueTask might be stored into a local and very carefully used. As value
@@ -382,13 +382,14 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             public bool ThisConsumption { get; set; }
         }
 
-        private static bool TryGetLocalSymbolAssigned(IOperation? operation, [NotNullWhen(true)] out ISymbol? symbol, [NotNullWhen(true)] out BasicBlock? startingBlock)
+        private static bool TryGetLocalSymbolAssigned(IOperation? operation, OperationAnalysisContext operationContext,
+            [NotNullWhen(true)] out ISymbol? symbol, [NotNullWhen(true)] out BasicBlock? startingBlock)
         {
             ControlFlowGraph? cfg;
             switch (operation?.Kind)
             {
                 case OperationKind.VariableInitializer when operation.Parent is IVariableDeclaratorOperation decl:
-                    if (decl.TryGetEnclosingControlFlowGraph(out cfg))
+                    if (operationContext.TryGetEnclosingControlFlowGraph(out cfg))
                     {
                         symbol = decl.Symbol;
                         startingBlock = cfg.GetEntry();
@@ -399,7 +400,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
 
                 case OperationKind.SimpleAssignment:
                     var assn = (ISimpleAssignmentOperation)operation;
-                    if (assn.TryGetEnclosingControlFlowGraph(out cfg))
+                    if (operationContext.TryGetEnclosingControlFlowGraph(out cfg))
                     {
                         switch (assn.Target)
                         {

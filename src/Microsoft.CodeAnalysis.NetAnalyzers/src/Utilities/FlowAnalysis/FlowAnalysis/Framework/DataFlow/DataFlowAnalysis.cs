@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -21,7 +22,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         where TAnalysisResult : DataFlowAnalysisResult<TBlockAnalysisResult, TAbstractAnalysisValue>
         where TBlockAnalysisResult : AbstractBlockAnalysisResult
     {
-        private static readonly BoundedCache<IOperation, SingleThreadedConcurrentDictionary<TAnalysisContext, TAnalysisResult>> s_resultCache =
+        private static readonly ConditionalWeakTable<Compilation, BoundedCache<IOperation, SingleThreadedConcurrentDictionary<TAnalysisContext, TAnalysisResult>>> s_resultCachesByCompilation =
             new();
 
         protected DataFlowAnalysis(AbstractAnalysisDomain<TAnalysisData> analysisDomain, DataFlowOperationVisitor<TAnalysisData, TAnalysisContext, TAnalysisResult, TAbstractAnalysisValue> operationVisitor)
@@ -40,13 +41,14 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 throw new ArgumentNullException(nameof(analysisContext));
             }
 
-            // Don't add interprocedural analysis result to our static results cache.
+            // Don't add interprocedural analysis results to the compilation's results cache.
             if (!cacheResult || analysisContext.InterproceduralAnalysisData != null)
             {
                 return Run(analysisContext);
             }
 
-            var analysisResultsMap = s_resultCache.GetOrCreateValue(analysisContext.ControlFlowGraph.OriginalOperation);
+            var compilationCache = s_resultCachesByCompilation.GetValue(analysisContext.WellKnownTypeProvider.Compilation, static _ => new());
+            var analysisResultsMap = compilationCache.GetOrCreateValue(analysisContext.ControlFlowGraph.OriginalOperation);
             return analysisResultsMap.GetOrAdd(analysisContext, _ => Run(analysisContext));
         }
 

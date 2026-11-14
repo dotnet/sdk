@@ -2,15 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -439,17 +440,61 @@ namespace Analyzer.Utilities.Extensions
         /// across analyzers and analyzer callbacks to re-use the control flow graph.
         /// </summary>
         /// <remarks>Also see <see cref="IMethodSymbolExtensions.s_methodToTopmostOperationBlockCache"/></remarks>
-        private static readonly BoundedCache<Compilation, ConcurrentDictionary<IOperation, ControlFlowGraph?>> s_operationToCfgCache
+        private static readonly ConditionalWeakTable<Compilation, ConditionalWeakTable<IOperation, ControlFlowGraphCacheEntry>> s_operationToCfgCachesByCompilation
             = new();
 
         public static bool TryGetEnclosingControlFlowGraph(this IOperation operation, [NotNullWhen(returnValue: true)] out ControlFlowGraph? cfg)
+            => operation.TryGetEnclosingControlFlowGraph(out cfg, getControlFlowGraph: null);
+
+        public static bool TryGetEnclosingControlFlowGraph(
+            this IOperation operation, [NotNullWhen(returnValue: true)] out ControlFlowGraph? cfg,
+            Func<ControlFlowGraph>? getControlFlowGraph)
+            => TryGetEnclosingControlFlowGraphCore(operation, out cfg, getControlFlowGraph,
+                static (root, factory) => CreateControlFlowGraph(root, factory));
+
+        internal static bool TryGetEnclosingControlFlowGraph<TArg>(
+            this IOperation operation, [NotNullWhen(returnValue: true)] out ControlFlowGraph? cfg,
+            TArg argument, Func<TArg, ControlFlowGraph> getControlFlowGraph)
+            => TryGetEnclosingControlFlowGraphCore(operation, out cfg, (argument, getControlFlowGraph),
+                static (root, state) => CreateControlFlowGraph(root, () => state.getControlFlowGraph(state.argument)));
+
+        private static bool TryGetEnclosingControlFlowGraphCore<TArg>(
+            IOperation operation, [NotNullWhen(returnValue: true)] out ControlFlowGraph? cfg,
+            TArg argument, Func<IOperation, TArg, ControlFlowGraph?> createControlFlowGraph)
         {
             operation = operation.GetRoot();
             RoslynDebug.Assert(operation.SemanticModel is not null);
-            var operationToCfgMap = s_operationToCfgCache.GetOrCreateValue(operation.SemanticModel.Compilation);
-            cfg = operationToCfgMap.GetOrAdd(operation, CreateControlFlowGraph);
+            // Keep an existing graph canonical, including one created for an interprocedural call.
+            // A host factory is invoked only on a miss and is never retained by this cache.
+            var compilationCache = s_operationToCfgCachesByCompilation.GetValue(operation.SemanticModel.Compilation, static _ => new());
+            var entry = compilationCache.GetValue(operation, static _ => new ControlFlowGraphCacheEntry());
+            cfg = entry.GetOrCreate(operation, argument, createControlFlowGraph);
             return cfg != null;
         }
+
+        private sealed class ControlFlowGraphCacheEntry
+        {
+            private readonly WeakReference<ControlFlowGraph?> _graph = new(null);
+
+            public ControlFlowGraph? GetOrCreate<TArg>(
+                IOperation root, TArg argument, Func<IOperation, TArg, ControlFlowGraph?> createControlFlowGraph)
+            {
+                lock (this)
+                {
+                    if (!_graph.TryGetTarget(out var graph) || graph is null)
+                    {
+                        graph = createControlFlowGraph(root, argument);
+                        _graph.SetTarget(graph);
+                    }
+
+                    return graph;
+                }
+            }
+        }
+
+        public static bool TryGetEnclosingControlFlowGraph(
+            this OperationAnalysisContext context, [NotNullWhen(returnValue: true)] out ControlFlowGraph? cfg)
+            => context.Operation.TryGetEnclosingControlFlowGraph(out cfg, context, static state => state.GetControlFlowGraph());
 
         public static ControlFlowGraph? GetEnclosingControlFlowGraph(this IBlockOperation blockOperation)
         {
@@ -459,24 +504,24 @@ namespace Analyzer.Utilities.Extensions
             return cfg;
         }
 
-        private static ControlFlowGraph? CreateControlFlowGraph(IOperation operation)
+        private static ControlFlowGraph? CreateControlFlowGraph(IOperation operation, Func<ControlFlowGraph>? getControlFlowGraph)
         {
             switch (operation)
             {
                 case IBlockOperation blockOperation:
-                    return ControlFlowGraph.Create(blockOperation);
+                    return getControlFlowGraph is null ? ControlFlowGraph.Create(blockOperation) : getControlFlowGraph();
 
                 case IMethodBodyOperation methodBodyOperation:
-                    return ControlFlowGraph.Create(methodBodyOperation);
+                    return getControlFlowGraph is null ? ControlFlowGraph.Create(methodBodyOperation) : getControlFlowGraph();
 
                 case IConstructorBodyOperation constructorBodyOperation:
-                    return ControlFlowGraph.Create(constructorBodyOperation);
+                    return getControlFlowGraph is null ? ControlFlowGraph.Create(constructorBodyOperation) : getControlFlowGraph();
 
                 case IFieldInitializerOperation fieldInitializerOperation:
-                    return ControlFlowGraph.Create(fieldInitializerOperation);
+                    return getControlFlowGraph is null ? ControlFlowGraph.Create(fieldInitializerOperation) : getControlFlowGraph();
 
                 case IPropertyInitializerOperation propertyInitializerOperation:
-                    return ControlFlowGraph.Create(propertyInitializerOperation);
+                    return getControlFlowGraph is null ? ControlFlowGraph.Create(propertyInitializerOperation) : getControlFlowGraph();
 
                 case IParameterInitializerOperation:
                     // We do not support flow analysis for parameter initializers
