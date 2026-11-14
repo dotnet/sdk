@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine.Completions;
+using FakeItEasy;
 using Microsoft.DotNet.Cli.Commands.New;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
+using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Mocks;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
@@ -332,6 +335,95 @@ Dotnet 本地...  tool-manifest
             var columnNamesConstants = typeof(TabularOutputSettingsColumnNames).GetFields().Select(fi => (string?)fi.GetValue(null)).Order();
 
             Assert.AreSequenceEqual(suggestedValues, columnNamesConstants);
+        }
+
+        [TestMethod]
+        public void CanDisplayTemplateListJson()
+        {
+            MockTemplateInfo templateCSharp = new MockTemplateInfo("web", name: "ASP.NET Core Empty", identity: "Microsoft.Web.Empty.CSharp", groupIdentity: "Microsoft.Web.Empty", author: "Microsoft")
+                .WithClassifications("Web", "Empty")
+                .WithTag("language", "C#")
+                .WithTag("type", "project");
+            MockTemplateInfo templateFSharp = new MockTemplateInfo("web", name: "ASP.NET Core Empty", identity: "Microsoft.Web.Empty.FSharp", groupIdentity: "Microsoft.Web.Empty", author: "Microsoft")
+                .WithClassifications("Web", "Empty")
+                .WithTag("language", "F#")
+                .WithTag("type", "project");
+
+            IEnumerable<TemplateGroup> templateGroups = TemplateGroup.FromTemplateList(
+                CliTemplateInfo.FromTemplateInfo(new[] { templateCSharp, templateFSharp }, A.Fake<IHostSpecificDataLoader>()));
+
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(defaultParameters: new Dictionary<string, string> { { "prefs:language", "C#" } });
+            IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
+            BufferedReporter reporter = new();
+
+            TemplateGroupDisplay.DisplayTemplateListJson(settings, templateGroups, reporter);
+
+            Assert.HasCount(1, reporter.Lines);
+            Assert.AreEqual(
+                """{"version":1,"data":[{"name":"ASP.NET Core Empty","shortNames":["web"],"languages":[{"id":"C#","default":true},{"id":"F#","default":false}],"types":["project"],"authors":["Microsoft"],"classifications":["Web","Empty"]}]}""",
+                reporter.Lines[0]);
+        }
+
+        [TestMethod]
+        public void CanDisplayTemplateListJson_FallbackLanguageIsDefault()
+        {
+            MockTemplateInfo templateFSharp = new MockTemplateInfo("basic", name: "Basic FSharp", identity: "Microsoft.Basic.FSharp", groupIdentity: "Microsoft.Basic", author: "Microsoft")
+                .WithClassifications("Common", "Code")
+                .WithTag("language", "F#")
+                .WithTag("type", "item");
+
+            IEnumerable<TemplateGroup> templateGroups = TemplateGroup.FromTemplateList(
+                CliTemplateInfo.FromTemplateInfo(new[] { templateFSharp }, A.Fake<IHostSpecificDataLoader>()));
+
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(defaultParameters: new Dictionary<string, string> { { "prefs:language", "C#" } });
+            IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
+            BufferedReporter reporter = new();
+
+            TemplateGroupDisplay.DisplayTemplateListJson(settings, templateGroups, reporter);
+
+            Assert.HasCount(1, reporter.Lines);
+            Assert.AreEqual(
+                """{"version":1,"data":[{"name":"Basic FSharp","shortNames":["basic"],"languages":[{"id":"F#","default":true}],"types":["item"],"authors":["Microsoft"],"classifications":["Common","Code"]}]}""",
+                reporter.Lines[0]);
+        }
+
+        [TestMethod]
+        public void CanDisplayTemplateListJson_NeutralAndNonPreferredLanguageDoesNotMarkNonPreferredAsDefault()
+        {
+            MockTemplateInfo templateNeutral = new MockTemplateInfo("mixed", name: "Mixed Language", identity: "Microsoft.Mixed.Neutral", groupIdentity: "Microsoft.Mixed", author: "Microsoft")
+                .WithClassifications("Common", "Code")
+                .WithTag("type", "item");
+            MockTemplateInfo templateFSharp = new MockTemplateInfo("mixed", name: "Mixed Language", identity: "Microsoft.Mixed.FSharp", groupIdentity: "Microsoft.Mixed", author: "Microsoft")
+                .WithClassifications("Common", "Code")
+                .WithTag("language", "F#")
+                .WithTag("type", "item");
+
+            IEnumerable<TemplateGroup> templateGroups = TemplateGroup.FromTemplateList(
+                CliTemplateInfo.FromTemplateInfo(new[] { templateNeutral, templateFSharp }, A.Fake<IHostSpecificDataLoader>()));
+
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(defaultParameters: new Dictionary<string, string> { { "prefs:language", "C#" } });
+            IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
+            BufferedReporter reporter = new();
+
+            TemplateGroupDisplay.DisplayTemplateListJson(settings, templateGroups, reporter);
+
+            Assert.HasCount(1, reporter.Lines);
+            Assert.AreEqual(
+                """{"version":1,"data":[{"name":"Mixed Language","shortNames":["mixed"],"languages":[{"id":"F#","default":false}],"types":["item"],"authors":["Microsoft"],"classifications":["Common","Code"]}]}""",
+                reporter.Lines[0]);
+        }
+
+        [TestMethod]
+        public void CanDisplayEmptyTemplateListJson()
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost();
+            IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
+            BufferedReporter reporter = new();
+
+            TemplateGroupDisplay.DisplayTemplateListJson(settings, [], reporter);
+
+            Assert.HasCount(1, reporter.Lines);
+            Assert.AreEqual("""{"version":1,"data":[]}""", reporter.Lines[0]);
         }
     }
 }

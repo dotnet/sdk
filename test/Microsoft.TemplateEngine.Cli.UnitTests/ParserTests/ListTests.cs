@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.TestHelper;
 
@@ -240,6 +241,41 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             Assert.IsNotEmpty(parseResult.Errors);
             Assert.Contains("Argument 'c1' not recognized. Must be one of:", parseResult.Errors[0].Message);
+        }
+
+        [TestMethod]
+        [DataRow("new list", NewListOutputFormat.table)]
+        [DataRow("new list --format table", NewListOutputFormat.table)]
+        [DataRow("new list --format json", NewListOutputFormat.json)]
+        [DataRow("new --list --format json", NewListOutputFormat.json)]
+        public void List_CanParseFormat(string command, NewListOutputFormat expectedFormat)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+
+            Assert.IsEmpty(parseResult.Errors);
+            ListCommandArgs args = new((BaseListCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.AreEqual(expectedFormat, args.Format);
+        }
+
+        [TestMethod]
+        [DataRow("new list --format invalid")]
+        [DataRow("new --list --format invalid")]
+        [DataRow("new list --format 2")]
+        [DataRow("new --list --format 2")]
+        [DataRow("new list --format table,json")]
+        [DataRow("new --list --format table,json")]
+        public void List_CannotParseInvalidFormat(string command)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+
+            Assert.IsNotEmpty(parseResult.Errors);
         }
 
         [TestMethod]
