@@ -140,7 +140,9 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                             continue;
                         }
 
-                        if (block.IsReachable)
+                        // Keep blocks rejected by a prerequisite analysis in the unreachable pass; otherwise they can
+                        // flow into live successors during exception analysis.
+                        if (OperationVisitor.GetBlockReachability(block))
                         {
                             worklist.Add(block.Ordinal);
                         }
