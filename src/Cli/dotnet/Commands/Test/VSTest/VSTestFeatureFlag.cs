@@ -35,4 +35,8 @@ internal class FeatureFlag
     // Added in TP 17.2-preview, .NET 7.0-preview, disables additional artifact post-processing,
     // such as combining code coverage files into one file.
     public const string DISABLE_ARTIFACTS_POSTPROCESSING = VSTEST_ + nameof(DISABLE_ARTIFACTS_POSTPROCESSING);
+
+    // Disables the verification vstest.console performs on the directory the SDK passes in
+    // VSTEST_ARTIFACTS_DIRECTORY. Read by vstest.console only; listed here to keep the names in sync.
+    public const string DISABLE_ARTIFACTS_DIRECTORY_VERIFICATION = VSTEST_ + nameof(DISABLE_ARTIFACTS_DIRECTORY_VERIFICATION);
 }

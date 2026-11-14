@@ -1198,9 +1198,9 @@ Per installare questi carichi di lavoro, eseguire il seguente comando: dotnet wo
         <note>{StrBegins="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="MonoRuntimeNotSupportedForPlatform">
-        <source>NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</source>
-        <target state="translated">NETSDK1242: la compilazione di {0} progetti con il runtime Mono non è supportata in .NET 11.0 e versioni successive. Usare il runtime di CoreCLR oppure impostare .NET 10.0 come destinazione.</target>
-        <note>{StrBegins="NETSDK1242: "}</note>
+        <source>NETSDK1242: The Mono runtime is not supported for target framework '{0}'. Use the CoreCLR runtime instead.</source>
+        <target state="new">NETSDK1242: The Mono runtime is not supported for target framework '{0}'. Use the CoreCLR runtime instead.</target>
+        <note>{StrBegins="NETSDK1242: "}{Locked="{0}"}</note>
       </trans-unit>
     </body>
   </file>

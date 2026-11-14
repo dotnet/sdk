@@ -444,7 +444,8 @@ namespace Microsoft.NET.ToolPack.Tests
                 var tmpfilePath = Path.Combine(asset.TestRoot, "temp", Path.GetRandomFileName());
                 string copiedFile = nupkgReader.ExtractFile(
                     $"tools/netcoreapp3.0/any/shims/win-x64/{_customToolCommandName}.exe",
-                    tmpfilePath,
+                    Path.Combine(asset.TestRoot, "temp"),
+                    Path.GetFileName(tmpfilePath),
                     null);
                 HostModel.AppHost.PEUtils.GetWindowsGraphicalUserInterfaceBit(copiedFile).Should().Be(windowsGUISubsystem);
             }
@@ -470,7 +471,8 @@ namespace Microsoft.NET.ToolPack.Tests
                     string shimPath = Path.Combine(simulateToolPathRoot, $"{_customToolCommandName}.exe");
                     nupkgReader.ExtractFile(
                         $"tools/{framework.GetShortFolderName()}/any/shims/win-x64/{_customToolCommandName}.exe",
-                        shimPath,
+                        simulateToolPathRoot,
+                        Path.GetFileName(shimPath),
                         null);
 
                     var command = new RunExeCommand(Log, shimPath)
@@ -509,7 +511,8 @@ namespace Microsoft.NET.ToolPack.Tests
                     Path.Combine(toolLayoutDirectory, nupkgAssetName);
                 nupkgReader.ExtractFile(
                     $"tools/{framework.GetShortFolderName()}/any/{nupkgAssetName}",
-                    destinationFilePath,
+                    toolLayoutDirectory,
+                    Path.GetFileName(destinationFilePath),
                     null);
             }
         }

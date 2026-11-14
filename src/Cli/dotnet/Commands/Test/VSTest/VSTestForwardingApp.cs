@@ -11,7 +11,21 @@ public class VSTestForwardingApp : ForwardingApp
 {
     private const string VstestAppName = "vstest.console.dll";
 
+    /// <summary>
+    /// Forwards to vstest.console, giving it the private artifacts directory of this CLI invocation.
+    /// </summary>
     public VSTestForwardingApp(IEnumerable<string> argsToForward)
+        : this(argsToForward, useArtifactsDirectory: true)
+    {
+    }
+
+    /// <param name="argsToForward">The arguments to forward to vstest.console.</param>
+    /// <param name="useArtifactsDirectory">
+    /// Whether to create - if this is the first vstest.console of the invocation - and pass the private artifacts
+    /// directory. Invocations that cannot produce artifacts, such as forwarding <c>--help</c>, pass
+    /// <see langword="false"/> so that they do not create a directory they will never write to.
+    /// </param>
+    internal VSTestForwardingApp(IEnumerable<string> argsToForward, bool useArtifactsDirectory)
         : base(GetVSTestExePath(), argsToForward)
     {
         Dictionary<string, string> variables = GetVSTestRootVariables();
@@ -19,6 +33,16 @@ public class VSTestForwardingApp : ForwardingApp
         {
             WithEnvironmentVariable(rootVariableName, rootValue);
             VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
+        }
+
+        // Hand vstest.console a directory to write the artifacts of the session into. All vstest.console
+        // processes of one invocation get the same directory, which is what lets the post-processing run find
+        // what the collecting run wrote. If it could not be created, the variable is left unset and
+        // vstest.console chooses the location itself.
+        if (useArtifactsDirectory && VSTestArtifactsDirectory.GetOrCreate() is { } artifactsDirectory)
+        {
+            WithEnvironmentVariable(VSTestArtifactsDirectory.EnvironmentVariableName, artifactsDirectory);
+            VSTestTrace.SafeWriteTrace(() => $"Artifacts directory variable set {VSTestArtifactsDirectory.EnvironmentVariableName}:{artifactsDirectory}");
         }
 
         VSTestTrace.SafeWriteTrace(() => $"Forwarding to '{GetVSTestExePath()}' with args \"{string.Join(" | ", argsToForward ?? [])}\"");

@@ -91,6 +91,13 @@ if [[ "$NO_BUILD" == false ]]; then
         -p:UseOptimizedPublish=false \
         -p:PublishDir="$PUBLISH_DIR"
 
+    # AotTestModules_RunsManagedTestModule runs the managed (JIT) build of this test module
+    # through dn. Build it explicitly rather than relying on the NativeAOT publish above to
+    # leave a RID-specific copy in artifacts/bin.
+    "$DOTNET" build "$TEST_PROJECT" \
+        -c "$CONFIGURATION" \
+        -r "$RID"
+
     "$DOTNET" publish "$PRODUCT_PROJECT" \
         -c "$CONFIGURATION" \
         -r "$RID" \

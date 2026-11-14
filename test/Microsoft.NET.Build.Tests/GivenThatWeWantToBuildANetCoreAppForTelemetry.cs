@@ -54,7 +54,8 @@ namespace Microsoft.NET.Build.Tests
                 .Execute(TelemetryTestLogger)
                 .StdOut.Should()
                 .Contain(CreateTargetFrameworkEvalTelemetryJson(
-                    $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}"));
+                    $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}",
+                    useMonoRuntime: "false"));
         }
 
         [TestMethod]
@@ -88,7 +89,8 @@ namespace Microsoft.NET.Build.Tests
                     publishReadyToRunComposite: "null"))
                 .And
                 .Contain(CreateTargetFrameworkEvalTelemetryJson(
-                    $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}"));
+                    $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}",
+                    useMonoRuntime: "false"));
         }
     }
 }

@@ -5,6 +5,8 @@
       <PkgIntermediateDirectory>$(IntermediateOutputPath)pkgs/$(Version)</PkgIntermediateDirectory>
 
       <!-- Properties for pkg build -->
+      <!-- Keep in sync with SetOSTargetMinVersions in dotnet/runtime's root Directory.Build.props. -->
+      <MacOSMinimumVersion Condition="'$(MacOSMinimumVersion)' == ''">12.0</MacOSMinimumVersion>
       <SharedHostComponentId>com.microsoft.dotnet.sharedhost.$(SharedHostVersion).component.osx.$(TargetArchitecture)</SharedHostComponentId>
       <HostFxrComponentId>com.microsoft.dotnet.hostfxr.$(HostFxrVersion).component.osx.$(TargetArchitecture)</HostFxrComponentId>
       <SharedFrameworkComponentId>com.microsoft.dotnet.sharedframework.$(SharedFrameworkNugetName).$(MicrosoftNETCoreAppRuntimePackageVersion).component.osx.$(TargetArchitecture)</SharedFrameworkComponentId>
@@ -88,8 +90,7 @@
         <ReplacementString Condition="'$(TargetArchitecture)' == 'x64'">x86_64</ReplacementString>
       </DistributionTemplateReplacement>
       <DistributionTemplateReplacement Include="{minOsVersion}">
-        <!-- keep in sync with SetOSTargetMinVersions in the root Directory.Build.props in dotnet/runtime -->
-        <ReplacementString>12.0</ReplacementString>
+        <ReplacementString>$(MacOSMinimumVersion)</ReplacementString>
       </DistributionTemplateReplacement>
       <DistributionTemplateReplacement Include="{x64EmulationPkgInstallDirectory}">
         <ReplacementString>$(x64EmulationPkgInstallDirectory)</ReplacementString>
@@ -175,6 +176,8 @@
                     --identifier '$(SdkComponentId)' \
                     --version '$(Version)' \
                     --install-location '$(PkgInstallDirectory)' \
+                    --compression latest \
+                    --min-os-version '$(MacOSMinimumVersion)' \
                     --scripts '$(SdkPkgDestinationScriptsDirectory)' \
                     '$(SdkPKGInstallerFile)'" />
   </Target>

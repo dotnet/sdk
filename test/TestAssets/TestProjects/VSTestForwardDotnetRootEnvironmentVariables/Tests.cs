@@ -4,6 +4,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections;
+using System.IO;
 
 namespace TestNamespace
 {
@@ -13,7 +14,9 @@ namespace TestNamespace
         [TestMethod]
         public void TestForwardDotnetRootEnvironmentVariables()
         {
-            // This project is compiled, and executed by the tests in "test/dotnet-test.Tests/GivenDotnetTestForwardDotnetRootEnvironmentVariables.cs"
+            // This project is compiled, and executed by the tests in
+            // "test/dotnet.Tests/CommandTests/Test/GivenDotnetTestForwardDotnetRootEnvironmentVariables.cs" and
+            // "test/dotnet.Tests/CommandTests/Test/GivenDotnetTestRunsVSTestInAPrivateTempDirectory.cs"
             foreach (DictionaryEntry env in Environment.GetEnvironmentVariables())
             {
                 if (env.Key.ToString().Contains("VSTEST_"))
@@ -21,6 +24,14 @@ namespace TestNamespace
                     Console.WriteLine($"{env.Key.ToString()}={env.Value.ToString()}");
                 }
             }
+
+            // Reported so that the SDK tests can assert which artifacts directory the test host actually runs
+            // with, and that overriding it leaves the temporary directory alone. Printed unconditionally -
+            // including when the value is empty - so that a missing variable is an assertion failure rather than
+            // a missing line.
+            Console.WriteLine($"TESTHOST_VSTEST_ARTIFACTS_DIRECTORY={Environment.GetEnvironmentVariable("VSTEST_ARTIFACTS_DIRECTORY")}");
+            Console.WriteLine($"TESTHOST_TMPDIR={Environment.GetEnvironmentVariable("TMPDIR")}");
+            Console.WriteLine($"TESTHOST_TEMPPATH={Path.GetTempPath()}");
         }
     }
 }
