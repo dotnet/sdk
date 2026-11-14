@@ -208,8 +208,11 @@ When telemetry is enabled, `CopilotAgentSessionId` records the nonempty
 recognized UUIDs are preserved exactly; other values become lowercase SHA-256 hex
 of the original UTF-8 bytes, without trimming or case normalization.
 
-The value is captured before each event is queued, so reused MSBuild hosts pick up
-the current request's ID. Missing/empty environment values produce `not_present`
+`TelemetryCommonProperties` collects and normalizes the value. The sender merges
+common, event, and context properties into a snapshot before queueing each event,
+without modifying the caller's properties, so reused MSBuild hosts pick up
+the current request's ID without recollecting machine-level properties.
+Missing/empty environment values produce `not_present`
 rather than null, which exporters can drop. A missing telemetry field means collection
 support is unknown (for example, an older SDK); `not_present` means no Copilot context
 was observed, not proof of a human invocation. A literal `not_present` environment

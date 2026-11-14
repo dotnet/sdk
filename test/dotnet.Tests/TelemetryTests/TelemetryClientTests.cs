@@ -296,6 +296,9 @@ public class TelemetryClientTests : SdkTest
             environmentProvider
                 .Setup(p => p.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID))
                 .Returns(sessionId);
+            environmentProvider
+                .Setup(p => p.GetEnvironmentVariable(EnvironmentVariableNames.COPILOT_AGENT_SESSION_ID))
+                .Returns((string?)null);
 
             var telemetry = new TelemetryClient(sessionId: null, environmentProvider: environmentProvider.Object);
 
@@ -324,6 +327,9 @@ public class TelemetryClientTests : SdkTest
             environmentProvider
                 .Setup(p => p.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, It.IsAny<bool>()))
                 .Returns(false);
+            environmentProvider
+                .Setup(p => p.GetEnvironmentVariable(EnvironmentVariableNames.COPILOT_AGENT_SESSION_ID))
+                .Returns((string?)null);
 
             var telemetry = new TelemetryClient(sessionId, environmentProvider: environmentProvider.Object);
 
@@ -337,33 +343,11 @@ public class TelemetryClientTests : SdkTest
     }
 
     [TestMethod]
-    [DataRow("11111111-2222-4333-8444-555555555555", "11111111-2222-4333-8444-555555555555")]
     [DataRow("aBCDEfAB-1234-4567-8ABC-DEFaBCDEF012", "aBCDEfAB-1234-4567-8ABC-DEFaBCDEF012")]
-    [DataRow("11111111-2222-1333-8444-555555555555", "11111111-2222-1333-8444-555555555555")]
-    [DataRow("11111111-2222-8333-B444-555555555555", "11111111-2222-8333-B444-555555555555")]
-    [DataRow("00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000")]
     [DataRow(null, "not_present")]
-    [DataRow("", "not_present")]
-    [DataRow("not_present", "edcc84b8e36c26b675c1b102b0e42f3507eee0afe5fbda7c203e9cbb758390e3")]
-    [DataRow("build-investigation-42", "a5b5273cea99d1a7df8e81f234369666daf7d810c64d852df129ae276d5167b2")]
-    [DataRow("BUILD-INVESTIGATION-42", "8495a77b0853a7baf0eaccc4f2cb4b53bd36872da0f13744527a2f8c4142a30f")]
-    [DataRow("11111111-2222-4333-8444-55555555555z", "da8570b51ec8f24bb7194a2999c1fd4f360aeb7f5c00dd67626a8219af4d8cf4")]
-    [DataRow("11111111222243338444555555555555", "a57c45f998b7a947797b97e2a2f9f5193c3f3b0d25846743ffe0ce9d41b8d31a")]
-    [DataRow("{11111111-2222-4333-8444-555555555555}", "317fed678c8ba3993d5679e3e6f9e8812c05a45b6f18f2436fccb6900ad1c8ed")]
-    [DataRow(" 11111111-2222-4333-8444-555555555555", "509590cf9e16ef2e2c18fa3c850252cd38d7a5f933c9b3d9be955a375bc3b424")]
-    [DataRow("11111111-2222-4333-8444-555555555555 ", "a55397b892e7d810f57cf4891c72eb2f4be672aa98ce3666cee9dceb683b2cb0")]
-    [DataRow("11111111-2222-4333-8444-555555555555\n", "1ea86e0cda2cdfa70440c9d56e86fd20e61b6a51daed6a369d403d1e997da00d")]
-    [DataRow("11111111-2222-0333-8444-555555555555", "8b777695ee7f9a53bb76f167e98a835c582ee2da5aeba14055efda55a786eb8d")]
-    [DataRow("11111111-2222-9333-8444-555555555555", "b478764bfaad8e44fbec9869e9287cd58ccb738bb299477b8d77935ede317765")]
-    [DataRow("11111111-2222-4333-7444-555555555555", "b16908ebd945a172e8201459e14ea359bf33417005810f1b28aef64b7d7e32b5")]
-    [DataRow("11111111-2222-4333-c444-555555555555", "d9bb2db9d5fbd352725181efa0c6869e672ad1b9522ed249284b674b5e7c605d")]
-    [DataRow("ffffffff-ffff-ffff-ffff-ffffffffffff", "13984ab878f915021670cd855c9399ebc339676b2581855e4efd60c685f67c8e")]
-    [DataRow(" ", "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068")]
-    [DataRow("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "635361c48bb9eab14198e76ea8ab7f1a41685d6ad62aa9146d301d4f17eb0ae0")]
-    [DataRow("r\u00e9union-\U0001F527", "4f0d2b876136e17123ad90cae429ad8a4672b8acd187746136640f98da7a515e")]
     // TelemetryClient's initialization and providers are process-wide, beyond the scope of a resource lock.
     [DoNotParallelize]
-    public void ItMatchesCopilotSessionNormalizationForEnabledEvents(string? sessionId, string expectedId)
+    public void ItSendsCollectedContextPropertiesWithoutCallerOverrides(string? sessionId, string expectedId)
     {
         const string sdkSessionId = "sdk-correlation-test";
         var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
@@ -381,14 +365,15 @@ public class TelemetryClientTests : SdkTest
         {
             var telemetry = new TelemetryClient(sdkSessionId, environmentProvider.Object);
             using var activity = new Activity("copilot-correlation").Start();
-            telemetry.ThreadBlockingTrackEvent("blocking-correlation", new Dictionary<string, string?>
+            var properties = new Dictionary<string, string?>
             {
                 ["CopilotAgentSessionId"] = "caller-supplied-value",
-            });
-            telemetry.TrackEvent("queued-correlation", new Dictionary<string, string?>
-            {
-                ["CopilotAgentSessionId"] = "caller-supplied-value",
-            });
+                ["command"] = "build",
+                ["optional"] = null,
+            };
+            telemetry.ThreadBlockingTrackEvent("blocking-correlation", properties);
+            properties.Should().NotContainKey("event id");
+            telemetry.TrackEvent("queued-correlation", properties);
             telemetry.WaitForPendingEvents();
 
             activity.Events.Select(e => e.Name).Should().Equal(
@@ -398,8 +383,12 @@ public class TelemetryClientTests : SdkTest
                 var tags = telemetryEvent.Tags.ToDictionary();
                 tags["SessionId"].Should().Be(sdkSessionId);
                 tags["CopilotAgentSessionId"].Should().Be(expectedId);
+                tags["command"].Should().Be("build");
+                tags.Should().NotContainKey("optional");
             }
 
+            properties.Should().HaveCount(3);
+            properties["CopilotAgentSessionId"].Should().Be("caller-supplied-value");
             TelemetryClient.CurrentSessionId.Should().Be(sdkSessionId);
         }
         finally
@@ -443,7 +432,7 @@ public class TelemetryClientTests : SdkTest
     [TestMethod]
     // TelemetryClient's initialization and providers are process-wide, beyond the scope of a resource lock.
     [DoNotParallelize]
-    public void ItSnapshotsCopilotCorrelationBeforeQueueingAndClearsItForLaterRequests()
+    public void ItSnapshotsMergedPropertiesBeforeQueueing()
     {
         const string firstSessionId = "build-investigation-42";
         const string secondSessionId = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee";
@@ -468,12 +457,16 @@ public class TelemetryClientTests : SdkTest
                 .SetValue(telemetry, pendingEvent.Task);
 
             using var activity = new Activity("queued-copilot-correlation").Start();
-            telemetry.TrackEvent("first-build", null);
+            var properties = new Dictionary<string, string?> { ["command"] = "first" };
+            telemetry.TrackEvent("first-build", properties);
             currentSessionId = secondSessionId;
-            telemetry.TrackEvent("second-build", null);
+            properties["command"] = "second";
+            telemetry.TrackEvent("second-build", properties);
             currentSessionId = null;
-            telemetry.TrackEvent("manual-build", null);
+            properties.Clear();
+            telemetry.TrackEvent("manual-build", properties);
             currentSessionId = "99999999-8888-4777-8666-555555555555";
+            properties["command"] = "later";
 
             pendingEvent.SetResult();
             telemetry.WaitForPendingEvents();
@@ -485,6 +478,9 @@ public class TelemetryClientTests : SdkTest
                 "a5b5273cea99d1a7df8e81f234369666daf7d810c64d852df129ae276d5167b2");
             events[1].Tags.ToDictionary()["CopilotAgentSessionId"].Should().Be(secondSessionId);
             events[2].Tags.ToDictionary()["CopilotAgentSessionId"].Should().Be("not_present");
+            events[0].Tags.ToDictionary()["command"].Should().Be("first");
+            events[1].Tags.ToDictionary()["command"].Should().Be("second");
+            events[2].Tags.ToDictionary().Should().NotContainKey("command");
         }
         finally
         {
