@@ -338,6 +338,70 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().NotHaveFile("TestLibrary.pdb");
         }
 
+        [TestMethod]
+        public void It_preserves_requested_metadata_on_items_from_the_current_and_referenced_projects()
+        {
+            const string metadataProperty = "MSBuildGetCopyToPublishDirectoryAdditionalItemMetadataToCopy";
+
+            var library = new TestProject
+            {
+                Name = "Library",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+            library.AdditionalProperties[metadataProperty] = "RequestedMetadata";
+            library.SourceFiles["library.txt"] = string.Empty;
+            library.AddItem("None", new()
+            {
+                ["Update"] = "library.txt",
+                ["CopyToPublishDirectory"] = "PreserveNewest",
+                ["RequestedMetadata"] = "FromLibrary",
+                ["UnrequestedMetadata"] = "ShouldBeRemoved",
+            });
+
+            var app = new TestProject
+            {
+                Name = "App",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+            app.ReferencedProjects.Add(library);
+            app.AdditionalProperties[metadataProperty] = "RequestedMetadata";
+            app.SourceFiles["app.txt"] = string.Empty;
+            app.AddItem("None", new()
+            {
+                ["Update"] = "app.txt",
+                ["CopyToPublishDirectory"] = "PreserveNewest",
+                ["RequestedMetadata"] = "FromApp",
+                ["UnrequestedMetadata"] = "ShouldBeRemoved",
+            });
+
+            var testAsset = TestAssetsManager.CreateTestProject(app);
+            var command = new GetValuesCommand(
+                testAsset,
+                "AllPublishItemsFullPathWithTargetPath",
+                GetValuesCommand.ValueType.Item)
+            {
+                DependsOnTargets = "ResolveReferences;GetCopyToPublishDirectoryItems",
+                MetadataNames = { "RequestedMetadata", "UnrequestedMetadata" },
+            };
+
+            command.Execute().Should().Pass();
+
+            var items = command.GetValuesWithMetadata();
+            items.Single(item => Path.GetFileName(item.value) == "app.txt").metadata.Should().BeEquivalentTo(
+                new Dictionary<string, string>
+                {
+                    ["RequestedMetadata"] = "FromApp",
+                    ["UnrequestedMetadata"] = string.Empty,
+                });
+            items.Single(item => Path.GetFileName(item.value) == "library.txt").metadata.Should().BeEquivalentTo(
+                new Dictionary<string, string>
+                {
+                    ["RequestedMetadata"] = "FromLibrary",
+                    ["UnrequestedMetadata"] = string.Empty,
+                });
+        }
+
         private static JObject ReadJson(string path)
         {
             using (JsonTextReader jsonReader = new(File.OpenText(path)))
