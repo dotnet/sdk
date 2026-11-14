@@ -67,11 +67,17 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         public void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode)
-        { }
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            var contents = InstallStateContents.FromPath(path);
+            contents.UseWorkloadSets = newMode;
+            File.WriteAllText(path, contents.ToString());
+        }
 
         public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion)
         {
-            var installStatePath = Path.Combine(Path.GetTempPath(), "dotnetTestPath", "metadata", "workloads", sdkFeatureBand.ToString(), "InstallState", "default.json");
+            var installStatePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
             var contents = InstallStateContents.FromPath(installStatePath);
             contents.WorkloadVersion = workloadVersion;
             if (File.Exists(installStatePath))
