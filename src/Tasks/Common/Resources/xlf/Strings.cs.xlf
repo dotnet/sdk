@@ -826,6 +826,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1226: Data vyřazení balíčku nebyla nalezena {0}{1}{2}.  Chcete-li tuto chybu ignorovat, nastavte vlastnost AllowMissingPrunePackageData na hodnotu true.</target>
         <note>{StrBegins="NETSDK1226: "}</note>
       </trans-unit>
+      <trans-unit id="PublishInputFileNotFound">
+        <source>NETSDK1247: The file '{0}' required for publishing was not found. Publish without '--no-build', or ensure the project has been built with the appropriate Configuration, TargetFramework, RuntimeIdentifier, and SelfContained properties.</source>
+        <target state="new">NETSDK1247: The file '{0}' required for publishing was not found. Publish without '--no-build', or ensure the project has been built with the appropriate Configuration, TargetFramework, RuntimeIdentifier, and SelfContained properties.</target>
+        <note>{StrBegins="NETSDK1247: "}{Locked="{0}"}{Locked="--no-build"}{Locked="Configuration"}{Locked="TargetFramework"}{Locked="RuntimeIdentifier"}{Locked="SelfContained"}</note>
+      </trans-unit>
       <trans-unit id="PublishProfileNotPresent">
         <source>NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name.</source>
         <target state="translated">NETSDK1198: Profil publikování s názvem {0} se v projektu nenašel. Nastavte vlastnost PublishProfile na platný název souboru.</target>

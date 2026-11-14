@@ -556,7 +556,9 @@ namespace Microsoft.NET.Publish.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("16.8.0")]
-        public void It_uses_appropriate_host_on_selfcontained_publish_with_no_build()
+        [DataRow(true)]
+        [DataRow(false)]
+        public void It_uses_appropriate_host_on_publish_with_no_build(bool selfContained)
         {
             var testProject = new TestProject()
             {
@@ -565,8 +567,8 @@ namespace Microsoft.NET.Publish.Tests
                 RuntimeIdentifier = RuntimeInformation.RuntimeIdentifier,
                 IsExe = true,
             };
-            testProject.AdditionalProperties.Add("SelfContained", "true");
-            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject);
+            testProject.AdditionalProperties.Add("SelfContained", selfContained.ToString());
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: selfContained.ToString());
 
             // Build will create app using apphost
             var buildCommand = new BuildCommand(testAsset);
@@ -575,7 +577,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass();
 
-            // Publish without build should create app using singlefilehost
+            // Enable single-file publishing without rebuilding.
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
                 .Execute(PublishSingleFile, "/p:NoBuild=true")
@@ -591,6 +593,35 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass()
                 .And.HaveStdOutContaining("Hello World");
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void It_reports_missing_inputs_on_single_file_publish_with_no_build(bool selfContained)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                RuntimeIdentifier = RuntimeInformation.RuntimeIdentifier,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("SelfContained", selfContained.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: selfContained.ToString());
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute(PublishSingleFile).Should().Pass();
+
+            var intermediateDirectory = publishCommand.GetIntermediateDirectory(
+                ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
+            string assemblyPath = Path.Combine(intermediateDirectory.FullName, $"{testProject.Name}.dll");
+            File.Delete(assemblyPath);
+
+            publishCommand.Execute(PublishSingleFile, "/p:NoBuild=true")
+                .Should()
+                .Fail()
+                .And.HaveStdOutContaining(string.Format(Strings.PublishInputFileNotFound, assemblyPath))
+                .And.NotHaveStdOutContaining("MSB4018");
         }
 
         [TestMethod]
