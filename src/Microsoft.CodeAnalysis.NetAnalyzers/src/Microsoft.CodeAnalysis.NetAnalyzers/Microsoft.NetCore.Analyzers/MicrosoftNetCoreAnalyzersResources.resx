@@ -204,6 +204,18 @@
   <data name="DoNotUseAsParallelInForEachLoopDescription" xml:space="preserve">
     <value>Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</value>
   </data>
+  <data name="AvoidNonEquatableValueTypesInRecordsTitle" xml:space="preserve">
+    <value>Avoid value types that do not implement IEquatable&lt;T&gt; in records</value>
+    <comment>{Locked="IEquatable&lt;T&gt;"}</comment>
+  </data>
+  <data name="AvoidNonEquatableValueTypesInRecordsMessage" xml:space="preserve">
+    <value>'{0}' is of value type '{1}', which does not implement 'IEquatable&lt;{1}&gt;', so the generated equality members of record '{2}' box it on every comparison</value>
+    <comment>{Locked="IEquatable"}</comment>
+  </data>
+  <data name="AvoidNonEquatableValueTypesInRecordsDescription" xml:space="preserve">
+    <value>The equality members that the compiler generates for a record compare each instance field by using 'EqualityComparer&lt;T&gt;.Default'. For a value type that does not implement 'IEquatable&lt;T&gt;', that comparer falls back to 'Object.Equals(Object)', which boxes the value on every comparison. Implement 'IEquatable&lt;T&gt;' on the value type, or declare 'Equals' on the record yourself.</value>
+    <comment>{Locked="EqualityComparer&lt;T&gt;.Default"}{Locked="IEquatable&lt;T&gt;"}{Locked="Object.Equals(Object)"}{Locked="Equals"}</comment>
+  </data>
   <data name="PreferConvertToHexStringOverBitConverterTitle" xml:space="preserve">
     <value>Prefer 'Convert.ToHexString' and 'Convert.ToHexStringLower' over call chains based on 'BitConverter.ToString'</value>
   </data>

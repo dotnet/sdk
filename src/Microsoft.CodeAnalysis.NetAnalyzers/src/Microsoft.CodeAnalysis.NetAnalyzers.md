@@ -1956,6 +1956,18 @@ If an array field is readonly and the array is never modified, the compiler can 
 |CodeFix|True|
 ---
 
+## [CA1882](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1882): Avoid value types that do not implement IEquatable\<T> in records
+
+The equality members that the compiler generates for a record compare each instance field by using 'EqualityComparer\<T>.Default'. For a value type that does not implement 'IEquatable\<T>', that comparer falls back to 'Object.Equals(Object)', which boxes the value on every comparison. Implement 'IEquatable\<T>' on the value type, or declare 'Equals' on the record yourself.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
+---
+
 ## [CA2000](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.

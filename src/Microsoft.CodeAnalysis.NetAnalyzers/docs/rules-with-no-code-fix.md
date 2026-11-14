@@ -13,7 +13,7 @@ the rule should keep reporting without it - decide that before writing code. Do 
 placeholder that registers nothing: the generated rule table reports `CodeFix: True` for any
 rule with an exported fixer, so an empty one advertises a fix that never appears.
 
-## Shipping rules (33)
+## Shipping rules (34)
 
 | Rule | Title | Category |
 |------|-------|----------|
@@ -44,6 +44,7 @@ rule with an exported fixer, so an empty one advertises a fix that never appears
 | [CA1812](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1812) | Avoid uninstantiated internal classes | Performance |
 | [CA1814](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1814) | Prefer jagged arrays over multidimensional | Performance |
 | [CA1816](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1816) | Dispose methods should call SuppressFinalize | Usage |
+| [CA1882](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1882) | Avoid value types that do not implement IEquatable\<T> in records | Performance |
 | [CA2002](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2002) | Do not lock on objects with weak identity | Reliability |
 | [CA2008](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2008) | Do not create tasks without passing a TaskScheduler | Reliability |
 | [CA2207](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2207) | Initialize value type static fields inline | Usage |
