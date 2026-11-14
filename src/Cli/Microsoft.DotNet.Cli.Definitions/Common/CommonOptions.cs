@@ -185,7 +185,7 @@ internal static class CommonOptions
         {
             Description = CommandDefinitionStrings.ArtifactsPathOptionDescription,
             HelpName = CommandDefinitionStrings.ArtifactsPathArgumentName
-        }.ForwardAsSingle(o => $"--property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
+        }.ForwardAsPathProperty("ArtifactsPath");
 
     public static Option<bool> CreateUseCurrentRuntimeOption(string description) =>
         new Option<bool>("--use-current-runtime", "--ucr")

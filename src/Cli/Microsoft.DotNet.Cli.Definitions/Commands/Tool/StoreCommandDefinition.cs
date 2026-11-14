@@ -52,7 +52,7 @@ internal sealed class StoreCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.IntermediateWorkingDirOptionDescription,
         HelpName = CommandDefinitionStrings.IntermediateWorkingDirOption
-    }.ForwardAsSingle(o => $"-property:ComposeWorkingDir={CommandDirectoryContext.GetFullPath(o)}");
+    }.ForwardAsPathProperty("ComposeWorkingDir");
 
     public readonly Option<bool> SkipOptimizationOption = new Option<bool>("--skip-optimization")
     {

@@ -12,6 +12,7 @@ internal static class RunCommandParser
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static void ConfigureCommand(RunCommandDefinition command)
     {
+        command.ArtifactsPathOption.ForwardAsLiteralPathProperty("ArtifactsPath");
         command.SetAction(RunCommand.Run);
         command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
         command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);

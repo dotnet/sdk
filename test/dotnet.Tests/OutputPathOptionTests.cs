@@ -15,6 +15,44 @@ namespace dotnet.Tests
         }
 
         [TestMethod]
+        [CombinatorialData]
+        public void OutputOptionWritesFilesToLiteralPath(
+            [CombinatorialValues("build", "publish")] string command,
+            [CombinatorialValues("out;put", "out %3B $(Configuration) @() ',comma")] string directoryName,
+            bool absolutePath,
+            bool trailingSeparator)
+        {
+            var testProject = new TestProject("OutputPathApp")
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+            var testAsset = TestAssetsManager.CreateTestProject(testProject,
+                identifier: $"{command}_{directoryName}_{absolutePath}_{trailingSeparator}");
+            string workingDirectory = Path.Combine(testAsset.Path, "working;directory");
+            Directory.CreateDirectory(workingDirectory);
+
+            string outputDirectory = Path.Combine(workingDirectory, directoryName);
+            string outputArgument = absolutePath ? outputDirectory : directoryName;
+            if (trailingSeparator)
+            {
+                outputArgument += Path.DirectorySeparatorChar;
+            }
+
+            new DotnetCommand(Log)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute(command, Path.Combine(testAsset.Path, testProject.Name), "--output", outputArgument)
+                .Should().Pass();
+
+            new DirectoryInfo(outputDirectory).Should().HaveFiles([
+                $"{testProject.Name}.dll",
+                $"{testProject.Name}.pdb",
+                $"{testProject.Name}.deps.json",
+                $"{testProject.Name}.runtimeconfig.json"
+            ]);
+        }
+
+        [TestMethod]
         [DataRow("build", true)]
         [DataRow("clean", true)]
         [DataRow("pack", false)]
