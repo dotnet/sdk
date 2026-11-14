@@ -2906,6 +2906,47 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task WrongInstanceGuardedWorkInLogWithMethodCallReceiver_ReportsDiagnostic_CS()
+        {
+            // A method call receiver may return a different logger on each call, so a guard on 'GetLogger()' is
+            // never matched against a log invocation, even one on the same 'GetLogger()' expression.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                class C
+                {
+                    private ILogger _logger;
+
+                    void M(ILogger logger, EventId eventId)
+                    {
+                        if (GetLogger().IsEnabled(LogLevel.Information))
+                        {
+                            GetLogger().LogInformation([|ExpensiveMethodCall()|]);
+                            GetLogger().Log(LogLevel.Information, eventId, [|ExpensiveMethodCall()|]);
+                            logger.LogInformation([|ExpensiveMethodCall()|]);
+                            _logger.LogInformation([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            GetLogger().LogInformation([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    ILogger GetLogger() => _logger;
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
         public async Task WrongInstanceGuardedWorkInLoggerMessage_ReportsDiagnostic_CS()
         {
             string source = """
@@ -2941,6 +2982,135 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task WrongIndexerElementGuardedWorkInLog_ReportsDiagnostic_CS()
+        {
+            // 'loggers[0]' and 'loggers[1]' resolve to the same indexer on the same receiver, but they select
+            // different elements, so a guard on one is not a guard on the other.
+            string source = """
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.Extensions.Logging;
+
+                class C
+                {
+                    private const int Index = 0;
+
+                    void M(List<ILogger> loggers, int i, int j)
+                    {
+                        if (loggers[0].IsEnabled(LogLevel.Information))
+                        {
+                            loggers[1].LogInformation([|ExpensiveMethodCall()|]);
+                            loggers[i].LogInformation([|ExpensiveMethodCall()|]);
+                            loggers[0].LogInformation(ExpensiveMethodCall());
+                            loggers[Index].LogInformation(ExpensiveMethodCall());
+                        }
+
+                        if (loggers[i].IsEnabled(LogLevel.Information))
+                        {
+                            loggers[j].LogInformation([|ExpensiveMethodCall()|]);
+                            loggers[0].LogInformation([|ExpensiveMethodCall()|]);
+                            loggers[i].LogInformation(ExpensiveMethodCall());
+                        }
+
+                        if (loggers[GetIndex()].IsEnabled(LogLevel.Information))
+                        {
+                            loggers[GetIndex()].LogInformation([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    int GetIndex() => 0;
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongArrayElementGuardedWorkInLog_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                class C
+                {
+                    private ILogger[] _loggers;
+
+                    void M(ILogger[] loggers, int i, int j)
+                    {
+                        if (loggers[0].IsEnabled(LogLevel.Information))
+                        {
+                            loggers[1].LogInformation([|ExpensiveMethodCall()|]);
+                            loggers[i].LogInformation([|ExpensiveMethodCall()|]);
+                            _loggers[0].LogInformation([|ExpensiveMethodCall()|]);
+                            loggers[0].LogInformation(ExpensiveMethodCall());
+                        }
+
+                        if (_loggers[i].IsEnabled(LogLevel.Information))
+                        {
+                            _loggers[j].LogInformation([|ExpensiveMethodCall()|]);
+                            _loggers[i].LogInformation(ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongIndexerElementGuardedWorkInLoggerMessage_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    public static partial void StaticLogLevel(ILogger logger, string argument);
+                    public static partial void StaticLogLevel(ILogger logger, string argument) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    void M(List<ILogger> loggers, ILogger[] array)
+                    {
+                        if (loggers[0].IsEnabled(LogLevel.Information))
+                        {
+                            Log.StaticLogLevel(loggers[1], [|ExpensiveMethodCall()|]);
+                            Log.StaticLogLevel(loggers[0], ExpensiveMethodCall());
+                        }
+
+                        if (array[0].IsEnabled(LogLevel.Information))
+                        {
+                            Log.StaticLogLevel(array[1], [|ExpensiveMethodCall()|]);
+                            Log.StaticLogLevel(array[0], ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
         public async Task GuardAfterLogInvocation_ReportsDiagnostic_CS()
         {
             string source = """
@@ -2956,6 +3126,1207 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         if (!logger.IsEnabled(LogLevel.Debug))
                         {
                             return;
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(LogLevels))]
+        public async Task GuardedWorkInStaticLoggerMessage_NoDiagnostic_CS(string logLevel)
+        {
+            string source = $$"""
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.{{logLevel}}, Message = "Static log level `{argument}`")]
+                    public static partial void StaticLogLevel(ILogger logger, string argument);
+                    public static partial void StaticLogLevel(ILogger logger, string argument) { } // Normally provided by the logging source generator.
+
+                    [LoggerMessage(EventId = 1, Message = "Dynamic log level `{argument}`")]
+                    public static partial void DynamicLogLevel(ILogger logger, LogLevel level, string argument);
+                    public static partial void DynamicLogLevel(ILogger logger, LogLevel level, string argument) { } // Normally provided by the logging source generator.
+
+                    [LoggerMessage(EventId = 2, Level = LogLevel.{{logLevel}}, Message = "Logger not first `{argument}`")]
+                    public static partial void LoggerNotFirst(string argument, ILogger logger);
+                    public static partial void LoggerNotFirst(string argument, ILogger logger) { } // Normally provided by the logging source generator.
+
+                    [LoggerMessage(EventId = 3, Level = LogLevel.{{logLevel}}, Message = "Generic logger `{argument}`")]
+                    public static partial void GenericLogger(ILogger<C> logger, string argument);
+                    public static partial void GenericLogger(ILogger<C> logger, string argument) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    private readonly ILogger _logger;
+                    private readonly ILogger<C> _genericLogger;
+
+                    void M(ILogger logger)
+                    {
+                        if (logger.IsEnabled(LogLevel.{{logLevel}}))
+                        {
+                            Log.StaticLogLevel(logger, ExpensiveMethodCall());
+                            Log.DynamicLogLevel(logger, LogLevel.{{logLevel}}, ExpensiveMethodCall());
+                            Log.LoggerNotFirst(ExpensiveMethodCall(), logger);
+                            Log.StaticLogLevel(argument: ExpensiveMethodCall(), logger: logger);
+                        }
+
+                        if (_logger.IsEnabled(LogLevel.{{logLevel}}))
+                        {
+                            Log.StaticLogLevel(_logger, ExpensiveMethodCall());
+                        }
+
+                        if (this._logger.IsEnabled(LogLevel.{{logLevel}}))
+                        {
+                            Log.StaticLogLevel(_logger, ExpensiveMethodCall());
+                        }
+
+                        if (_genericLogger.IsEnabled(LogLevel.{{logLevel}}))
+                        {
+                            Log.GenericLogger(_genericLogger, ExpensiveMethodCall());
+                        }
+
+                        if (logger?.IsEnabled(LogLevel.{{logLevel}}) == true)
+                        {
+                            Log.StaticLogLevel(logger, ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(LogLevels))]
+        public async Task GuardedWorkWithReturnInStaticLoggerMessage_NoDiagnostic_CS(string logLevel)
+        {
+            string source = $$"""
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.{{logLevel}}, Message = "Static log level `{argument}`")]
+                    public static partial void StaticLogLevel(ILogger logger, string argument);
+                    public static partial void StaticLogLevel(ILogger logger, string argument) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    void M(ILogger logger)
+                    {
+                        if (!logger.IsEnabled(LogLevel.{{logLevel}}))
+                        {
+                            return;
+                        }
+
+                        Log.StaticLogLevel(logger, ExpensiveMethodCall());
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInStaticLoggerMessageWithCollectionExpression_NoDiagnostic_CS()
+        {
+            // Regression test for https://github.com/dotnet/roslyn-analyzers/issues/7690.
+            string source = """
+                using System.Collections.Generic;
+                using System.Linq;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Keys: {Keys}")]
+                    public static partial void SomeInformationalLog(ILogger logger, string[] keys);
+                    public static partial void SomeInformationalLog(ILogger logger, string[] keys) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    void M(ILogger logger, Dictionary<string, string> someDictionary)
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.SomeInformationalLog(
+                                logger,
+                                [.. someDictionary.Select((p) => p.Key)]);
+                        }
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source, CodeAnalysis.CSharp.LanguageVersion.CSharp12);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(LogLevels))]
+        public async Task GuardedWorkInInstanceLoggerMessage_NoDiagnostic_CS(string logLevel)
+        {
+            string source = $$"""
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C
+                {
+                    private readonly ILogger _logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.{{logLevel}}, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    [LoggerMessage(EventId = 1, Message = "Dynamic log level `{argument}`")]
+                    partial void DynamicLogLevel(LogLevel level, string argument);
+
+                    void M(C other)
+                    {
+                        if (_logger.IsEnabled(LogLevel.{{logLevel}}))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                            this.StaticLogLevel(ExpensiveMethodCall());
+                            DynamicLogLevel(LogLevel.{{logLevel}}, ExpensiveMethodCall());
+                        }
+
+                        if (this._logger.IsEnabled(LogLevel.{{logLevel}}))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+
+                        if (_logger?.IsEnabled(LogLevel.{{logLevel}}) == true)
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+
+                        if (other._logger.IsEnabled(LogLevel.{{logLevel}}))
+                        {
+                            other.StaticLogLevel(ExpensiveMethodCall());
+                        }
+
+                        if (!_logger.IsEnabled(LogLevel.{{logLevel}}))
+                        {
+                            return;
+                        }
+
+                        StaticLogLevel(ExpensiveMethodCall());
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithOnlyLoggerProperty_ReportsDiagnostic_CS()
+        {
+            // The logging source generator only resolves a logger from a field (or a primary constructor
+            // parameter), never a property, so a type with only an 'ILogger' property has no valid logger
+            // source for the generated method; guarding on the property therefore does not apply here.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C
+                {
+                    private ILogger<C> Logger { get; }
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (Logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInInstanceLoggerMessageWithLoggerFieldAndProperty_ReportsDiagnostic_CS()
+        {
+            // The source generator prioritizes an 'ILogger' field over an 'ILogger' property, so guarding on
+            // 'OtherLogger' does not guard the generated method, which actually logs through '_logger'.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C
+                {
+                    private readonly ILogger _logger;
+
+                    public ILogger OtherLogger { get; }
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (OtherLogger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithAmbiguousLoggerFields_ReportsDiagnostic_CS()
+        {
+            // The source generator reports an error and does not emit the method when more than one 'ILogger'
+            // field candidate exists, so no guard can be recognized for the generated method in that case,
+            // regardless of which (or whether any) of the ambiguous fields is checked.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C
+                {
+                    private readonly ILogger _logger;
+                    private readonly ILogger _otherLogger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithAmbiguousPrimaryConstructorLoggerParameters_ReportsDiagnostic_CS()
+        {
+            // The source generator reports an error and does not emit the method when more than one 'ILogger'
+            // primary constructor parameter candidate exists (and there is no field), so no guard can be
+            // recognized for the generated method in that case.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C(ILogger logger, ILogger otherLogger)
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source, CodeAnalysis.CSharp.LanguageVersion.CSharp12);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInStaticLoggerMessageWithGenericLoggerConstraint_NoDiagnostic_CS()
+        {
+            // 'TLogger' is constrained to 'ILogger' without a 'class' constraint, so converting a 'TLogger'
+            // value to 'ILogger' is a boxing conversion, not the identity/implicit-reference conversion the
+            // source generator requires; the generator therefore uses the 'logger' parameter, not 'candidate'.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Candidate `{candidate}` `{argument}`")]
+                    public static partial void Message<TLogger>(TLogger candidate, ILogger logger, string argument) where TLogger : ILogger;
+                    public static partial void Message<TLogger>(TLogger candidate, ILogger logger, string argument) where TLogger : ILogger { } // Normally provided by the logging source generator.
+                }
+
+                struct FakeLogger : ILogger
+                {
+                    public IDisposable BeginScope<TState>(TState state) { return default; }
+                    public bool IsEnabled(LogLevel logLevel) { return true; }
+                    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) { }
+                }
+
+                class C
+                {
+                    void M(FakeLogger candidate, ILogger logger)
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.Message(candidate, logger, ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInLoggerMessageWithGenericLoggerConstraintInferredAsReferenceType_NoDiagnostic_CS()
+        {
+            // The source generator classifies the declared 'TLogger' parameter type, which has only a boxing
+            // conversion to 'ILogger', so 'logger' is the logger even when 'TLogger' is inferred as 'ILogger'
+            // (for which the substituted parameter type would have an identity conversion) at the call site.
+            // This also applies when 'candidate' is an extension method's receiver.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Candidate `{candidate}` `{argument}`")]
+                    public static partial void Message<TLogger>(TLogger candidate, ILogger logger, string argument) where TLogger : ILogger;
+                    public static partial void Message<TLogger>(TLogger candidate, ILogger logger, string argument) where TLogger : ILogger { } // Normally provided by the logging source generator.
+
+                    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Candidate `{candidate}` `{argument}`")]
+                    public static partial void ExtensionMessage<TLogger>(this TLogger candidate, ILogger logger, string argument) where TLogger : ILogger;
+                    public static partial void ExtensionMessage<TLogger>(this TLogger candidate, ILogger logger, string argument) where TLogger : ILogger { } // Normally provided by the logging source generator.
+                }
+
+                struct FakeLogger : ILogger
+                {
+                    public IDisposable BeginScope<TState>(TState state) { return default; }
+                    public bool IsEnabled(LogLevel logLevel) { return true; }
+                    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) { }
+                }
+
+                class C
+                {
+                    void M(ILogger candidate, FakeLogger fakeCandidate, ILogger logger)
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.Message(candidate, logger, ExpensiveMethodCall());
+                            candidate.ExtensionMessage(logger, ExpensiveMethodCall());
+                            fakeCandidate.ExtensionMessage(logger, ExpensiveMethodCall());
+                            candidate.ExtensionMessage(argument: ExpensiveMethodCall(), logger: logger);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInLoggerMessageWithGenericLoggerConstraint_ReportsDiagnostic_CS()
+        {
+            // Guarding the 'TLogger' candidate (including an extension method's receiver) does not guard the
+            // generated method, which logs through the later 'logger' parameter.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Candidate `{candidate}` `{argument}`")]
+                    public static partial void Message<TLogger>(TLogger candidate, ILogger logger, string argument) where TLogger : ILogger;
+                    public static partial void Message<TLogger>(TLogger candidate, ILogger logger, string argument) where TLogger : ILogger { } // Normally provided by the logging source generator.
+
+                    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Candidate `{candidate}` `{argument}`")]
+                    public static partial void ExtensionMessage<TLogger>(this TLogger candidate, ILogger logger, string argument) where TLogger : ILogger;
+                    public static partial void ExtensionMessage<TLogger>(this TLogger candidate, ILogger logger, string argument) where TLogger : ILogger { } // Normally provided by the logging source generator.
+                }
+
+                struct FakeLogger : ILogger
+                {
+                    public IDisposable BeginScope<TState>(TState state) { return default; }
+                    public bool IsEnabled(LogLevel logLevel) { return true; }
+                    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) { }
+                }
+
+                class C
+                {
+                    void M(ILogger candidate, FakeLogger fakeCandidate, ILogger logger)
+                    {
+                        if (candidate.IsEnabled(LogLevel.Information))
+                        {
+                            Log.Message(candidate, logger, [|ExpensiveMethodCall()|]);
+                            candidate.ExtensionMessage(logger, [|ExpensiveMethodCall()|]);
+                            candidate?.ExtensionMessage(logger, [|ExpensiveMethodCall()|]);
+                        }
+
+                        if (fakeCandidate.IsEnabled(LogLevel.Information))
+                        {
+                            fakeCandidate.ExtensionMessage(logger, [|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithShadowedPrimaryConstructorLoggerParameter_NoDiagnostic_CS()
+        {
+            // The non-logger 'logger' field shadows the 'logger' primary constructor parameter, so the source
+            // generator skips that parameter and uses 'other', which is therefore not ambiguous.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C(ILogger logger, string name, ILogger other)
+                {
+                    private readonly object logger = logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (other.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source, CodeAnalysis.CSharp.LanguageVersion.CSharp12);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithOnlyShadowedPrimaryConstructorLoggerParameter_ReportsDiagnostic_CS()
+        {
+            // The only 'ILogger' primary constructor parameter is shadowed by a non-logger field, so the source
+            // generator reports an error and does not emit the method, and no guard can be recognized for it.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C(ILogger logger)
+                {
+                    private readonly object logger = logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (((ILogger)logger).IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source, CodeAnalysis.CSharp.LanguageVersion.CSharp12);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithStaticLoggerField_NoDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C
+                {
+                    private static ILogger s_logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongTypeArgumentGuardedWorkInInstanceLoggerMessageWithStaticLoggerField_ReportsDiagnostic_CS()
+        {
+            // Each construction of a generic type has its own static field, so 'Log<int>.s_logger' is a different
+            // logger instance from the 's_logger' used by a [LoggerMessage] method invoked on 'Log<T>'.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class Log<T>
+                {
+                    private static ILogger s_logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M(Log<string> other)
+                    {
+                        if (Log<int>.s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                            other.StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (Log<string>.s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                            other.StaticLogLevel(ExpensiveMethodCall());
+                        }
+
+                        if (s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                            other.StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (Log<T>.s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongTypeArgumentGuardedWorkInInstanceLoggerMessageWithBaseClassLoggerField_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                class B<T>
+                {
+                    public static ILogger s_logger;
+                }
+
+                partial class C : B<int>
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (B<string>.s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (B<int>.s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+
+                        if (s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithBaseClassLoggerField_NoDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                class B<T>
+                {
+                    protected ILogger _logger;
+                }
+
+                partial class C : B<int>
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+
+                        if (base._logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithAmbiguousLoggerFieldsAcrossBaseAndDerivedTypes_ReportsDiagnostic_CS()
+        {
+            // An accessible (non-private) 'ILogger' field on a base type is still a candidate alongside a field
+            // declared on the derived type, so the source generator is unable to unambiguously resolve a logger
+            // field here either, even though the two candidates are declared in different types.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                class B
+                {
+                    protected ILogger _baseLogger;
+                }
+
+                partial class C : B
+                {
+                    private readonly ILogger _logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithPrimaryConstructor_NoDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C(ILogger<C> logger)
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source, CodeAnalysis.CSharp.LanguageVersion.CSharp12);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithLoggerParameter_NoDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(ILogger logger, string argument);
+
+                    void M(ILogger logger)
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(logger, ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInStaticLoggerMessage_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    public static partial void StaticLogLevel(ILogger logger, string argument);
+                    public static partial void StaticLogLevel(ILogger logger, string argument) { } // Normally provided by the logging source generator.
+
+                    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "No logger `{argument}`")]
+                    public static partial void NoLogger(string argument);
+                    public static partial void NoLogger(string argument) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    private ILogger _otherLogger;
+
+                    void M(ILogger logger)
+                    {
+                        if (_otherLogger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.StaticLogLevel(logger, [|ExpensiveMethodCall()|]);
+                        }
+
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.StaticLogLevel(_otherLogger, [|ExpensiveMethodCall()|]);
+                            Log.StaticLogLevel([|GetLogger()|], [|ExpensiveMethodCall()|]);
+                            Log.NoLogger([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    ILogger GetLogger() => _otherLogger;
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInStaticLoggerMessageWithMultipleLoggerParameters_NoDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Other logger `{other}` `{argument}`")]
+                    public static partial void TwoLoggers(ILogger logger, ILogger other, string argument);
+                    public static partial void TwoLoggers(ILogger logger, ILogger other, string argument) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    void M(ILogger logger, ILogger otherLogger)
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.TwoLoggers(logger, otherLogger, ExpensiveMethodCall());
+                            Log.TwoLoggers(other: otherLogger, logger: logger, argument: ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInStaticLoggerMessageWithMultipleLoggerParameters_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Other logger `{other}` `{argument}`")]
+                    public static partial void TwoLoggers(ILogger logger, ILogger other, string argument);
+                    public static partial void TwoLoggers(ILogger logger, ILogger other, string argument) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    void M(ILogger logger, ILogger otherLogger)
+                    {
+                        if (otherLogger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.TwoLoggers(logger, otherLogger, [|ExpensiveMethodCall()|]);
+                            Log.TwoLoggers(other: otherLogger, logger: logger, [|argument: ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongLogLevelGuardedWorkInStaticLoggerMessage_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    public static partial void StaticLogLevel(ILogger logger, string argument);
+                    public static partial void StaticLogLevel(ILogger logger, string argument) { } // Normally provided by the logging source generator.
+
+                    [LoggerMessage(EventId = 1, Message = "Dynamic log level `{argument}`")]
+                    public static partial void DynamicLogLevel(ILogger logger, LogLevel level, string argument);
+                    public static partial void DynamicLogLevel(ILogger logger, LogLevel level, string argument) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    void M(ILogger logger)
+                    {
+                        if (logger.IsEnabled(LogLevel.Critical))
+                        {
+                            Log.StaticLogLevel(logger, [|ExpensiveMethodCall()|]);
+                            Log.DynamicLogLevel(logger, LogLevel.Information, [|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInInstanceLoggerMessage_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static class Other
+                {
+                    public static ILogger Logger { get; set; }
+                }
+
+                partial class C
+                {
+                    private readonly ILogger _logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M(ILogger logger, C other)
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (Other.Logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (GetLogger().IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+
+                        var localLogger = _logger;
+                        if (localLogger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            other.StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (other._logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (GetOther()._logger.IsEnabled(LogLevel.Information))
+                        {
+                            GetOther().StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    ILogger GetLogger() => _logger;
+
+                    C GetOther() => this;
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongLogLevelGuardedWorkInInstanceLoggerMessage_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C
+                {
+                    private readonly ILogger _logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (_logger.IsEnabled(LogLevel.Critical))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInInstanceLoggerMessageWithPrimaryConstructor_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C(ILogger<C> logger)
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M(C other)
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            other.StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    void N(ILogger otherLogger)
+                    {
+                        if (otherLogger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source, CodeAnalysis.CSharp.LanguageVersion.CSharp12);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInInstanceLoggerMessageWithLoggerParameter_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C
+                {
+                    private readonly ILogger _logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(ILogger logger, string argument);
+
+                    void M(ILogger logger)
+                    {
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(logger, [|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInStaticLoggerMessageWithLoggerArgumentFieldOnDifferentReceiver_ReportsDiagnostic_CS()
+        {
+            // 'other._logger' and '_logger' both resolve to the same '_logger' field symbol, but they are
+            // accessed through different receivers ('other' vs. the implicit 'this'), so they are not the
+            // same logger instance and the guard does not apply to the logged call.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    public static partial void StaticLogLevel(ILogger logger, string argument);
+                    public static partial void StaticLogLevel(ILogger logger, string argument) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    private readonly ILogger _logger;
+
+                    void M(C other)
+                    {
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.StaticLogLevel(other._logger, [|ExpensiveMethodCall()|]);
                         }
                     }
 
@@ -4630,6 +6001,32 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task GuardedWorkWithParenthesizedInstanceInLog_NoDiagnostic_VB()
+        {
+            // Unlike C#, VB's IOperation tree represents parenthesized expressions as a distinct
+            // 'IParenthesizedOperation' node, so parentheses around the guard and/or logging instance must not
+            // prevent matching the guard against the logging call.
+            string source = """
+                Imports System
+                Imports Microsoft.Extensions.Logging
+
+                Class C
+                    Sub M(logger As ILogger, eventId As EventId, exception As Exception, formatter As Func(Of String, Exception, String))
+                        If (logger).IsEnabled(LogLevel.Information) Then
+                            Call (logger).Log(LogLevel.Information, eventId, ExpensiveMethodCall(), exception, formatter)
+                        End If
+                    End Sub
+
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
         public async Task GuardedWorkInLogConditionalAccess_NoDiagnostic_VB()
         {
             string source = """
@@ -5496,6 +6893,78 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task WrongIndexerElementGuardedWorkInLog_ReportsDiagnostic_VB()
+        {
+            string source = """
+                Imports System
+                Imports System.Collections.Generic
+                Imports Microsoft.Extensions.Logging
+
+                Class C
+                    Private _loggers As ILogger()
+
+                    Sub M(loggers As List(Of ILogger), i As Integer, j As Integer)
+                        If loggers(0).IsEnabled(LogLevel.Information) Then loggers(1).LogInformation([|ExpensiveMethodCall()|])
+                        If loggers(0).IsEnabled(LogLevel.Information) Then loggers(i).LogInformation([|ExpensiveMethodCall()|])
+                        If loggers(0).IsEnabled(LogLevel.Information) Then loggers(0).LogInformation(ExpensiveMethodCall())
+                        If loggers(i).IsEnabled(LogLevel.Information) Then loggers(j).LogInformation([|ExpensiveMethodCall()|])
+                        If loggers(i).IsEnabled(LogLevel.Information) Then loggers(i).LogInformation(ExpensiveMethodCall())
+
+                        If _loggers(0).IsEnabled(LogLevel.Information) Then _loggers(1).LogInformation([|ExpensiveMethodCall()|])
+                        If _loggers(0).IsEnabled(LogLevel.Information) Then _loggers(0).LogInformation(ExpensiveMethodCall())
+                        If _loggers(i).IsEnabled(LogLevel.Information) Then _loggers(j).LogInformation([|ExpensiveMethodCall()|])
+                        If _loggers(i).IsEnabled(LogLevel.Information) Then _loggers(i).LogInformation(ExpensiveMethodCall())
+                    End Sub
+
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInLogWithImplicitReceiver_ReportsDiagnostic_VB()
+        {
+            // Inside a 'With' block, '.Logger' is accessed through the block's implicit receiver, which is a
+            // different object from 'Me' even though both are represented as instance references.
+            string source = """
+                Imports System
+                Imports Microsoft.Extensions.Logging
+
+                Class C
+                    Public Property Logger As ILogger
+
+                    Sub M(other As C)
+                        With other
+                            If .Logger.IsEnabled(LogLevel.Information) Then
+                                Me.Logger.LogInformation([|ExpensiveMethodCall()|])
+                                Logger.LogInformation([|ExpensiveMethodCall()|])
+                            End If
+
+                            If Me.Logger.IsEnabled(LogLevel.Information) Then
+                                .Logger.LogInformation([|ExpensiveMethodCall()|])
+                                Me.Logger.LogInformation(ExpensiveMethodCall())
+                            End If
+
+                            If other.Logger.IsEnabled(LogLevel.Information) Then
+                                other.Logger.LogInformation(ExpensiveMethodCall())
+                            End If
+                        End With
+                    End Sub
+
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
         public async Task WrongInstanceGuardedWorkInLogNamed_ReportsDiagnostic_VB()
         {
             string source = """
@@ -5571,6 +7040,188 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         If logger.IsEnabled(LogLevel.Debug) Then Return
                     End Sub
                 
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(LogLevels))]
+        public async Task GuardedWorkInStaticLoggerMessage_NoDiagnostic_VB(string logLevel)
+        {
+            string source = $$"""
+                Imports System
+                Imports Microsoft.Extensions.Logging
+
+                Partial Class C
+                    Private _logger As ILogger
+
+                    <LoggerMessage(EventId:=0, Level:=LogLevel.{{logLevel}}, Message:="Static log level `{argument}`")>
+                    Partial Private Shared Sub StaticLogLevel(logger As ILogger, argument As String)
+                    End Sub
+
+                    <LoggerMessage(EventId:=1, Message:="Dynamic log level `{argument}`")>
+                    Partial Private Shared Sub DynamicLogLevel(logger As ILogger, level As LogLevel, argument As String)
+                    End Sub
+
+                    Sub M(logger As ILogger)
+                        If logger.IsEnabled(LogLevel.{{logLevel}}) Then StaticLogLevel(logger, ExpensiveMethodCall())
+                        If logger.IsEnabled(LogLevel.{{logLevel}}) Then C.DynamicLogLevel(logger, LogLevel.{{logLevel}}, ExpensiveMethodCall())
+                        If _logger.IsEnabled(LogLevel.{{logLevel}}) Then StaticLogLevel(_logger, ExpensiveMethodCall())
+                    End Sub
+
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(LogLevels))]
+        public async Task GuardedWorkInInstanceLoggerMessage_NoDiagnostic_VB(string logLevel)
+        {
+            string source = $$"""
+                Imports System
+                Imports Microsoft.Extensions.Logging
+
+                Partial Class C
+                    Private _logger As ILogger
+
+                    <LoggerMessage(EventId:=0, Level:=LogLevel.{{logLevel}}, Message:="Static log level `{argument}`")>
+                    Partial Private Sub StaticLogLevel(argument As String)
+                    End Sub
+
+                    <LoggerMessage(EventId:=1, Message:="Dynamic log level `{argument}`")>
+                    Partial Private Sub DynamicLogLevel(level As LogLevel, argument As String)
+                    End Sub
+
+                    Sub M(other As C)
+                        If _logger.IsEnabled(LogLevel.{{logLevel}}) Then StaticLogLevel(ExpensiveMethodCall())
+                        If Me._logger.IsEnabled(LogLevel.{{logLevel}}) Then Me.DynamicLogLevel(LogLevel.{{logLevel}}, ExpensiveMethodCall())
+                        If other._logger.IsEnabled(LogLevel.{{logLevel}}) Then other.StaticLogLevel(ExpensiveMethodCall())
+                    End Sub
+
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInStaticLoggerMessage_ReportsDiagnostic_VB()
+        {
+            string source = """
+                Imports System
+                Imports Microsoft.Extensions.Logging
+
+                Partial Class C
+                    Private _otherLogger As ILogger
+
+                    <LoggerMessage(EventId:=0, Level:=LogLevel.Information, Message:="Static log level `{argument}`")>
+                    Partial Private Shared Sub StaticLogLevel(logger As ILogger, argument As String)
+                    End Sub
+
+                    Sub M(logger As ILogger)
+                        If _otherLogger.IsEnabled(LogLevel.Information) Then StaticLogLevel(logger, [|ExpensiveMethodCall()|])
+                        If logger.IsEnabled(LogLevel.Information) Then StaticLogLevel(_otherLogger, [|ExpensiveMethodCall()|])
+                    End Sub
+
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInStaticLoggerMessageWithMultipleLoggerParameters_UsesFirstLoggerParameter_VB()
+        {
+            string source = """
+                Imports System
+                Imports Microsoft.Extensions.Logging
+
+                Partial Class C
+                    <LoggerMessage(EventId:=0, Level:=LogLevel.Information, Message:="Other logger `{other}` `{argument}`")>
+                    Partial Private Shared Sub TwoLoggers(logger As ILogger, other As ILogger, argument As String)
+                    End Sub
+
+                    Sub M(logger As ILogger, otherLogger As ILogger)
+                        If logger.IsEnabled(LogLevel.Information) Then TwoLoggers(other:=otherLogger, logger:=logger, argument:=ExpensiveMethodCall())
+                        If otherLogger.IsEnabled(LogLevel.Information) Then TwoLoggers(other:=otherLogger, logger:=logger, [|argument:=ExpensiveMethodCall()|])
+                    End Sub
+
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInExtensionLoggerMessageWithGenericLoggerConstraint_UsesLoggerParameter_VB()
+        {
+            // 'TLogger' has only a boxing conversion to 'ILogger', so the source generator uses the 'logger'
+            // parameter rather than the extension method's receiver.
+            string source = """
+                Imports System
+                Imports System.Runtime.CompilerServices
+                Imports Microsoft.Extensions.Logging
+
+                Partial Module C
+                    <Extension>
+                    <LoggerMessage(EventId:=0, Level:=LogLevel.Information, Message:="Candidate `{candidate}` `{argument}`")>
+                    Partial Private Sub Message(Of TLogger As ILogger)(candidate As TLogger, logger As ILogger, argument As String)
+                    End Sub
+
+                    Sub M(candidate As ILogger, logger As ILogger)
+                        If logger.IsEnabled(LogLevel.Information) Then candidate.Message(logger, ExpensiveMethodCall())
+                        If logger.IsEnabled(LogLevel.Information) Then candidate.Message(argument:=ExpensiveMethodCall(), logger:=logger)
+                        If candidate.IsEnabled(LogLevel.Information) Then candidate.Message(logger, [|ExpensiveMethodCall()|])
+                    End Sub
+
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Module
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInInstanceLoggerMessage_ReportsDiagnostic_VB()
+        {
+            string source = """
+                Imports System
+                Imports Microsoft.Extensions.Logging
+
+                Partial Class C
+                    Private _logger As ILogger
+
+                    <LoggerMessage(EventId:=0, Level:=LogLevel.Information, Message:="Static log level `{argument}`")>
+                    Partial Private Sub StaticLogLevel(argument As String)
+                    End Sub
+
+                    Sub M(logger As ILogger, other As C)
+                        If logger.IsEnabled(LogLevel.Information) Then StaticLogLevel([|ExpensiveMethodCall()|])
+                        If _logger.IsEnabled(LogLevel.Information) Then other.StaticLogLevel([|ExpensiveMethodCall()|])
+                        If _logger.IsEnabled(LogLevel.Critical) Then StaticLogLevel([|ExpensiveMethodCall()|])
+                    End Sub
+
                     Function ExpensiveMethodCall() As String
                         Return "very expensive call"
                     End Function
