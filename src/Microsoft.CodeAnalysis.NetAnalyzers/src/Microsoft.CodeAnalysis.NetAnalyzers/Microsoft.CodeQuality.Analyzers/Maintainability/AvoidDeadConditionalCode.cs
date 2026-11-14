@@ -99,6 +99,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                             }
 
                             var cfg = operationBlockContext.GetControlFlowGraph(operationRoot);
+                            if (!cfg.SupportsFlowAnalysis())
+                            {
+                                continue;
+                            }
+
                             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockContext.Compilation);
                             var valueContentAnalysisResult = ValueContentAnalysis.TryGetOrComputeResult(cfg, owningSymbol, wellKnownTypeProvider,
                                     operationBlockContext.Options, AlwaysTrueFalseOrNullRule,
