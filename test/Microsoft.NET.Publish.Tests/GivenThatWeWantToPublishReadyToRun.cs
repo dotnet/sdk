@@ -663,6 +663,31 @@ public class Program
             Publish("").Should().NotBe(changed, "restoring the previous crossgen2 arguments should recompile");
         }
 
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        public void It_passes_PublishReadyToRunInstructionSet_to_crossgen2(string targetFramework)
+        {
+            var testProject = CreateTestProjectForR2RTesting(
+                targetFramework,
+                "CrossgenInstructionSet",
+                "ClassLib");
+
+            testProject.AdditionalProperties["PublishReadyToRun"] = "True";
+            testProject.SelfContained = "False";
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            new PublishCommand(testProjectInstance).Execute().Should().Pass();
+
+            // An instruction set that is invalid on every architecture shows that the property reaches crossgen2,
+            // and that changing it reruns the compiler after an up-to-date publish.
+            new PublishCommand(testProjectInstance)
+                .Execute("-p:PublishReadyToRunInstructionSet=not-an-instruction-set")
+                .Should().Fail()
+                .And.HaveStdOutContaining("not-an-instruction-set");
+        }
+
         public static bool DoesImageHaveR2RInfo(string path)
         {
             using (FileStream fs = new(path, FileMode.Open, FileAccess.Read))
