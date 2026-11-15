@@ -622,6 +622,47 @@ public class Program
             DoesImageHaveR2RInfo(classLibDll).Should().BeTrue();
         }
 
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        public void It_recompiles_readytorun_images_when_crossgen2_arguments_change(string targetFramework)
+        {
+            var projectName = "CrossgenArgsIncremental";
+
+            var testProject = CreateTestProjectForR2RTesting(
+                targetFramework,
+                projectName,
+                "ClassLib");
+
+            testProject.AdditionalProperties["PublishReadyToRun"] = "True";
+            testProject.SelfContained = "False";
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var publishCommand = new PublishCommand(testProjectInstance);
+            var r2rImage = new FileInfo(Path.Combine(
+                publishCommand.GetIntermediateDirectory(targetFramework, "Debug", testProject.RuntimeIdentifier).FullName,
+                "R2R",
+                $"{projectName}.dll"));
+
+            DateTime Publish(string extraArgs)
+            {
+                new PublishCommand(testProjectInstance)
+                    .Execute($"-p:PublishReadyToRunCrossgen2ExtraArgs={extraArgs}")
+                    .Should().Pass();
+                r2rImage.Refresh();
+                return r2rImage.LastWriteTimeUtc;
+            }
+
+            DateTime initial = Publish("");
+            Publish("").Should().Be(initial, "an unchanged publish should not recompile");
+
+            DateTime changed = Publish("--Ot");
+            changed.Should().NotBe(initial, "changing the crossgen2 arguments should recompile");
+
+            Publish("").Should().NotBe(changed, "restoring the previous crossgen2 arguments should recompile");
+        }
+
         public static bool DoesImageHaveR2RInfo(string path)
         {
             using (FileStream fs = new(path, FileMode.Open, FileAccess.Read))
