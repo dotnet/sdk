@@ -62,9 +62,7 @@ jobs:
     needs: collect
     if: github.repository == 'dotnet/sdk' && github.ref == 'refs/heads/main' && needs.collect.outputs.has_misses == 'true'
     permissions:
-      # The compiler declares this for its disabled conclusion job. Executing
-      # interpreter jobs explicitly retain read-only Actions permissions.
-      actions: write
+      actions: read
       contents: read
       copilot-requests: write
       pull-requests: read

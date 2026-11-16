@@ -17,17 +17,20 @@
 #     gh-aw's importable field set; the engine identifier in particular is
 #     always inherited from the importing workflow.
 #
-# Editing any block below changes BOTH workflows. Use the v0.89.22 compiler
+# Editing any block below changes BOTH workflows. Use the v1.2.2 compiler
 # and matching setup runtime so threat detection preserves sandbox.agent.images
 # (github/gh-aw#63014). This includes the connection-reset retries when
 # installing Copilot and AWF (dotnet/sdk#56224; github/gh-aw#53112 and
 # github/gh-aw#53154). Regenerate both locks with:
 # gh aw compile build-failure-analysis build-failure-analysis-command
 #   --strict --approve --no-check-update --schedule-seed dotnet/sdk
-#   --action-mode action --action-tag 2fbab69bfca02bebd76cd0fc43f2d12acfed994f
+#   --action-mode action --action-tag v1.2.2
 #   --validate --actionlint
-# The setup action SHA above is the immutable v0.89.22 release commit.
+# The setup action SHA is pinned in .github/aw/actions-lock.json.
 
+permissions:
+  pull-requests: read
+  contents: read
 description: "Shared body for build-failure-analysis workflows"
 
 # Threat detection inherits this model. Preserve the agent/default overrides.
