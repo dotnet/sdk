@@ -501,12 +501,13 @@ public class GivenDotnetTestSelectsDevice : SdkTest
                 <TargetFrameworks>{{ToolsetInfo.CurrentTargetFramework}}</TargetFrameworks>
                 <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
               </PropertyGroup>
-              <Target Name="ComputeAvailableDevices" Returns="@(Devices)" Condition="'$(TargetFramework)' != ''">
-                <ItemGroup>
-                  <Devices Include="app-device-1" />
-                  <Devices Include="app-device-2" />
-                </ItemGroup>
-              </Target>
+              <Import Project="App.Device.targets" Condition="'$(TargetFramework)' != ''" />
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(appDir, "App.Device.targets"),
+            """
+            <Project>
+              <Target Name="ComputeAvailableDevices" Returns="@(Devices)" />
             </Project>
             """);
 
@@ -524,8 +525,12 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             .Execute("--solution", "TestSolution.slnx", "-p:SingleDevice=true", "-bl");
 
         result.Should().Pass()
-            .And.NotHaveStdErrContaining("app-device-1");
+            .And.NotHaveStdErrContaining(CliCommandStrings.RunCommandNoDevicesAvailable);
 
+        AssertTargetInBinlog(
+            Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"),
+            "ComputeAvailableDevices",
+            targets => targets.Should().HaveCount(2, "only the test project's target frameworks should discover devices"));
         AssertTargetInBinlog(
             Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"),
             "DeployToDevice",
