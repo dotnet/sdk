@@ -1123,15 +1123,7 @@ internal sealed class HotReloadDotNetWatcher
                     var device = new DeviceId(deviceInfo.Id, deviceInfo.RuntimeIdentifier);
                     selectedDevice = device;
                     _context.Logger.LogDebug("Selected device: {DeviceId}", device.Name);
-
-                    var projectInstance = projectNodeForDeviceCheck.ProjectInstance;
-                    var reloadGraph = projectInstance.GetPropertyValue(PropertyNames.Device) != device.Name ||
-                        (device.RuntimeIdentifier != null &&
-                         projectInstance.GetPropertyValue(PropertyNames.RuntimeIdentifier) != device.RuntimeIdentifier);
-                    if (reloadGraph)
-                    {
-                        projectGraph = null;
-                    }
+                    projectGraph = null;
 
                     // If the device provides a RuntimeIdentifier, re-restore so the assets file
                     // includes the RID target. This mirrors the dotnet-run behavior.
@@ -1141,14 +1133,12 @@ internal sealed class HotReloadDotNetWatcher
                         return false;
                     }
 
-                    if (reloadGraph)
+                    // Reevaluate with the selected Device and RuntimeIdentifier as global properties,
+                    // so that RID-specific outputs and imports flow to referenced projects.
+                    projectGraph = TryLoadProjectGraph(targetFramework, device, cancellationToken);
+                    if (projectGraph == null)
                     {
-                        // Reevaluate with the selected build properties, including RID-specific outputs and imports.
-                        projectGraph = TryLoadProjectGraph(targetFramework, device, cancellationToken);
-                        if (projectGraph == null)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
             }

@@ -192,16 +192,14 @@ public class BuildProjects
     }
 
     [TestMethod]
-    [DataRow("ios-arm64", "")]
-    [DataRow("iossimulator-arm64", "")]
-    [DataRow("ios-arm64", "test-iphone")]
-    [DataRow("iossimulator-arm64", "test-iphone")]
-    public async Task SingleProject_DeviceRuntimeIdentifierDeterminesIntermediateOutputPath(string defaultRuntimeIdentifier, string defaultDevice)
+    [DataRow("ios-arm64")]
+    [DataRow("iossimulator-arm64")]
+    public async Task SingleProject_DeviceRuntimeIdentifierDeterminesIntermediateOutputPath(string defaultRuntimeIdentifier)
     {
         const string DeviceName = "test-iphone";
         const string DeviceRuntimeIdentifier = "ios-arm64";
         var targetFramework = ToolsetInfo.CurrentTargetFramework;
-        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [defaultRuntimeIdentifier, defaultDevice]);
+        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [defaultRuntimeIdentifier]);
         var project = Path.Combine(dir.Path, "Project.csproj");
 
         // Model the Apple workload's default simulator RID without requiring a mobile SDK.
@@ -209,7 +207,6 @@ public class BuildProjects
         <Project>
           <PropertyGroup>
             <TargetFramework>{targetFramework}</TargetFramework>
-            <Device Condition="'$(Device)' == ''">{defaultDevice}</Device>
             <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">{defaultRuntimeIdentifier}</RuntimeIdentifier>
             <IntermediateOutputPath>obj\Debug\$(TargetFramework)\$(RuntimeIdentifier)\</IntermediateOutputPath>
           </PropertyGroup>
@@ -248,9 +245,9 @@ public class BuildProjects
         var projectNode = result.ProjectGraph.TryGetProjectNode(project, targetFramework);
         Assert.IsNotNull(projectNode);
         Assert.AreEqual(DeviceName, projectNode.ProjectInstance.GetPropertyValue(PropertyNames.Device));
-        var expectedGraphLoads = defaultDevice == DeviceName && defaultRuntimeIdentifier == DeviceRuntimeIdentifier ? 1 : 2;
-        Assert.AreEqual(expectedGraphLoads,
-            context.BuildLogger.GetAndClearMessages().Count(message => message.StartsWith("[Debug] Project graph loaded in ", StringComparison.Ordinal)));
+
+        // Global properties flow to referenced projects, even when the project's default RID already matches.
+        Assert.AreEqual(DeviceRuntimeIdentifier, projectNode.ProjectInstance.GlobalProperties[PropertyNames.RuntimeIdentifier]);
         var watcherKeyPath = Path.Combine(projectNode.ProjectInstance.GetIntermediateOutputDirectory()!, "HotReload", "websocket-key.private.json");
         var buildKeyPath = Path.Combine(dir.Path, "obj", "Debug", targetFramework, DeviceRuntimeIdentifier, "HotReload", "websocket-key.private.json");
 
