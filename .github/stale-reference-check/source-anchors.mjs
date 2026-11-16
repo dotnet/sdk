@@ -114,6 +114,33 @@ export function csharpAttributeSites(lines) {
         while (index >= 0 && tokens[index].kind === 'comment') index--;
         return tokens[index];
     };
+    const expressionOperators = new Set(['is', 'as', 'switch', 'with', 'when', 'or', 'and', 'not']);
+    const declarationContinuation = end => {
+        let index = end + 1;
+        const skipComments = () => {
+            while (index < tokens.length && tokens[index].kind === 'comment') index++;
+        };
+        skipComments();
+        while (tokens[index]?.kind === 'code' && tokens[index].value === '[') {
+            let nameIndex = index + 1;
+            while (tokens[nameIndex]?.kind === 'comment') nameIndex++;
+            if (!identifier(tokens[nameIndex])) return false;
+
+            let depth = 1;
+            let next = index + 1;
+            for (; next < tokens.length && depth > 0; next++) {
+                if (tokens[next].kind !== 'code') continue;
+                if (tokens[next].value === '[') depth++;
+                else if (tokens[next].value === ']') depth--;
+            }
+            if (depth !== 0) return false;
+            index = next;
+            skipComments();
+        }
+
+        const next = tokens[index];
+        return identifier(next) && !expressionOperators.has(next.value);
+    };
     const precedingLine = start => lines.slice(0, start - 1).reverse().find(line => line.trim())?.trim() ?? null;
     const followingLine = end => lines.slice(end).find(line => line.trim())?.trim() ?? null;
 
@@ -132,6 +159,7 @@ export function csharpAttributeSites(lines) {
         }
         if (depth !== 0) continue;
         end--;
+        if (['(', ','].includes(previous?.value) && !declarationContinuation(end)) continue;
 
         let nameIndex = start + 1;
         if (identifier(tokens[nameIndex]) && tokens[nameIndex + 1]?.value === ':') nameIndex += 2;

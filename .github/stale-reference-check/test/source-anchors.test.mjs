@@ -140,6 +140,24 @@ test('actionable C# attribute arguments get stable source-owned identities', () 
     ], 'src/Cases.cs')(4), /not a comment or actionable attribute/);
 });
 
+test('parameter attributes are not confused with collection expressions', () => {
+    const lines = [
+        'class Cases {',
+        '    void Run([ParameterAttribute("TODO remove once https://github.com/dotnet/sdk/issues/123 is fixed")] string value) {}',
+        '    void Invoke() {',
+        '        Consume([Create("TODO remove once https://github.com/dotnet/sdk/issues/456")]);',
+        '    }',
+        '}',
+    ];
+
+    const sites = csharpAttributeSites(lines);
+
+    assert.ok(sites.has(2));
+    assert.equal(sites.has(4), false);
+    assert.match(sourceAnchors(lines, 'src/Cases.cs')(2), /^csharp attribute: [a-f0-9]{64}$/);
+    assert.throws(() => sourceAnchors(lines, 'src/Cases.cs')(4), /not a comment or actionable attribute/);
+});
+
 test('overloads, different types and different control-flow blocks have distinct lexical sites', () => {
     const lines = [
         'namespace N;',
