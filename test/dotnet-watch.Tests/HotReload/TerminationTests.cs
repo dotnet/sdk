@@ -34,9 +34,19 @@ public class TerminationTests : DotNetWatchTestBase
                     UseShellExecute = false,
                 });
             }
+            else if (args[0] == "child")
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = Environment.ProcessPath,
+                    Arguments = "grandchild",
+                    UseShellExecute = false,
+                });
+                Console.WriteLine($"Child: {Environment.ProcessId}");
+            }
             else
             {
-                Console.WriteLine($"Child: {Environment.ProcessId}");
+                Console.WriteLine($"Grandchild: {Environment.ProcessId}");
             }
 
             Thread.Sleep(Timeout.Infinite);
@@ -47,6 +57,7 @@ public class TerminationTests : DotNetWatchTestBase
             .Should().Pass();
 
         var childStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var grandchildStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
         var processSpec = new ProcessSpec
         {
             Executable = Path.Combine(testAsset.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "WatchHotReloadApp.exe"),
@@ -58,6 +69,10 @@ public class TerminationTests : DotNetWatchTestBase
                 {
                     childStarted.TrySetResult(int.Parse(line.Content["Child: ".Length..]));
                 }
+                else if (line.Content.StartsWith("Grandchild: ", StringComparison.Ordinal))
+                {
+                    grandchildStarted.TrySetResult(int.Parse(line.Content["Grandchild: ".Length..]));
+                }
             },
         };
         SdkTestContext.Current.AddTestEnvironmentVariables(processSpec.EnvironmentVariables);
@@ -66,14 +81,18 @@ public class TerminationTests : DotNetWatchTestBase
         var runner = new ProcessRunner(processCleanupTimeout: TimeSpan.FromSeconds(1));
         var runTask = runner.RunAsync(processSpec, new TestLogger(Logger), launchResult: null, terminationSource.Token);
         Process child = null;
+        Process grandchild = null;
         try
         {
             var childId = await childStarted.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
             child = Process.GetProcessById(childId);
+            var grandchildId = await grandchildStarted.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+            grandchild = Process.GetProcessById(grandchildId);
             terminationSource.Cancel();
 
             await runTask.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
             Assert.IsTrue(child.WaitForExit(10_000), "Force termination must not leave the child process running.");
+            Assert.IsTrue(grandchild.WaitForExit(10_000), "Force termination must not leave the grandchild process running.");
         }
         finally
         {
@@ -84,15 +103,23 @@ public class TerminationTests : DotNetWatchTestBase
             }
             finally
             {
-                if (child != null)
+                foreach (var process in new[] { child, grandchild })
                 {
-                    if (!child.HasExited)
+                    if (process != null)
                     {
-                        child.Kill(entireProcessTree: true);
-                        await child.WaitForExitAsync(CancellationToken.None);
+                        try
+                        {
+                            if (!process.HasExited)
+                            {
+                                process.Kill(entireProcessTree: true);
+                                await process.WaitForExitAsync(CancellationToken.None);
+                            }
+                        }
+                        finally
+                        {
+                            process.Dispose();
+                        }
                     }
-
-                    child.Dispose();
                 }
             }
         }
