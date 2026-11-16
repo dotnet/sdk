@@ -58,7 +58,6 @@ Platform Options:
   --ansi                          Control whether ANSI escape characters are emitted.
                                   Valid values are 'auto' (default), 'on' (also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
                                   'on' forces ANSI escape codes (including cursor movement) even when stdout is redirected; pair it with --progress off if you only want colors.
-                                  When both --ansi and --no-ansi are provided, --ansi wins.
   --coverage-threshold-branch     Specifies the minimum overall branch coverage percentage, from 0 to 100. Requires non-empty coverage data from a compatible collector.
   --coverage-threshold-line       Specifies the minimum overall line coverage percentage, from 0 to 100. Requires non-empty coverage data from a compatible collector.
   --debug                         Allows to pause execution in order to attach to the process for debug purposes.
@@ -80,7 +79,7 @@ Platform Options:
   --info                          Display .NET test application information.
   --progress                      Control whether progress is reported to screen.
                                   Valid values are 'auto' (default), 'on' (also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
-                                  'auto' shows progress unless the terminal cannot update in place (for example with --no-ansi or in CI).
+                                  'auto' shows progress unless the terminal cannot update in place (for example with --ansi off or in CI).
                                   This option takes precedence over the deprecated --no-progress flag.
   --show-flaky-tests              Control whether tests that failed at least once but eventually passed after a retry are listed in the run summary.
                                   Valid values are 'on' (the default, also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
@@ -101,3 +100,4 @@ Extension Options:
   --report-trx-filename  The name of the generated TRX report. May include a relative or absolute path; relative paths are resolved against the test results directory and missing directories are created.
                          Supports the following placeholders: {pname} (test application name), {pid} (process ID), {asm} (entry assembly name), {tfm} (target framework moniker), {arch} (process architecture), {time} (timestamp).
                          Example: 'MyReport_{tfm}.trx'.
+  --trx-mode             TRX generation mode: 'in-process' disables controller-backed recovery; 'out-of-process' enables it (the default on supported platforms). Requires '--report-trx'.
