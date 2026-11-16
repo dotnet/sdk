@@ -29,7 +29,7 @@ internal partial class WorkloadManifestUpdater
     ///  <see cref="FileBasedInstaller"/>/<see cref="NetSdkMsiInstallerClient"/> installer or, on Windows,
     ///  any elevated MSI IPC).
     /// </summary>
-    private static WorkloadAdvertisingManifestUpdater GetAdvertisingUpdaterInstance(string userProfileDir, string workingDirectory)
+    private static WorkloadAdvertisingManifestUpdater GetAdvertisingUpdaterInstance(string userProfileDir, string workingDirectory, DirectoryPath tempPackagesDir)
     {
         var reporter = new NullReporter();
         var dotnetPath = Path.GetDirectoryName(Environment.ProcessPath);
@@ -37,7 +37,6 @@ internal partial class WorkloadManifestUpdater
         var sdkFeatureBand = new SdkFeatureBand(sdkVersion);
         var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, sdkVersion, userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(workingDirectory));
         var workloadResolver = WorkloadResolver.Create(workloadManifestProvider, dotnetPath, sdkVersion, userProfileDir);
-        var tempPackagesDir = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
         // NuGet verification uses ShouldVerifySignatures() (respects registry policy and host
         // signing status, but not --skip-sign-check since this is a background operation).
         // MSI verification is intentionally disabled — this updater only downloads advertising
@@ -78,7 +77,9 @@ internal partial class WorkloadManifestUpdater
     {
         try
         {
-            var advertisingUpdater = GetAdvertisingUpdaterInstance(userProfileDir, workingDirectory ?? Directory.GetCurrentDirectory());
+            // This runs for every build, run, test and publish, so the directory must not outlive the update check.
+            using var tempPackagesDir = new TemporaryDirectory();
+            var advertisingUpdater = GetAdvertisingUpdaterInstance(userProfileDir, workingDirectory ?? Directory.GetCurrentDirectory(), new DirectoryPath(tempPackagesDir.DirectoryPath));
             await advertisingUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
         }
         catch (Exception)

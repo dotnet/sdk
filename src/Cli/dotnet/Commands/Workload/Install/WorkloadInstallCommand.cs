@@ -121,7 +121,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
         }
     }
 
-    public override int Execute()
+    protected override int ExecuteCore()
     {
         bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
         var filteredWorkloadIds = GetValidWorkloadIds();

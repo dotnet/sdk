@@ -40,7 +40,8 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         string? currentSdkVersion = null,
         string? dotnetDir = null,
         string? userProfileDir = null,
-        IWorkloadResolver? workloadResolver = null)
+        IWorkloadResolver? workloadResolver = null,
+        string? tempDirPath = null)
     {
         DotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath)!;
         ReleaseVersion currentSdkReleaseVersion = new(currentSdkVersion ?? Product.Version);
@@ -78,6 +79,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
             verbosity,
             userProfileDir,
             verifyMsiSignature: verifyMsiSignature ?? WorkloadUtilities.ShouldVerifySignatures(),
+            tempDirPath: tempDirPath,
             restoreActionConfig: restoreConfig,
             elevationRequired: false,
             shouldLog: false);

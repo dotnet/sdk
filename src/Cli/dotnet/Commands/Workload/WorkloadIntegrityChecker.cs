@@ -18,9 +18,9 @@ internal static class WorkloadIntegrityChecker
         var creationResult = new WorkloadResolverFactory().Create();
         var sdkFeatureBand = new SdkFeatureBand(creationResult.SdkVersion);
         var verifySignatures = WorkloadUtilities.ShouldVerifySignatures();
-        var tempPackagesDirectory = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
+        using var tempDirectory = new TemporaryDirectory();
         var packageDownloader = NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
-            tempPackagesDirectory,
+            new DirectoryPath(tempDirectory.DirectoryPath),
             verifySignatures);
 
         var installer = WorkloadInstallerFactory.GetWorkloadInstaller(
@@ -31,7 +31,8 @@ internal static class WorkloadIntegrityChecker
             creationResult.UserProfileDir,
             verifySignatures,
             packageDownloader,
-            creationResult.DotnetPath);
+            creationResult.DotnetPath,
+            tempDirectory.DirectoryPath);
         var repository = installer.GetWorkloadInstallationRecordRepository();
         var installedWorkloads = repository.GetInstalledWorkloads(sdkFeatureBand);
 
