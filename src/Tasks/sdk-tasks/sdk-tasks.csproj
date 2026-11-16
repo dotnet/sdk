@@ -9,8 +9,6 @@
   <PropertyGroup>
     <TargetFramework>$(BundledNETCoreAppTargetFramework)</TargetFramework>
     <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
-    <!-- Runtime-excluded MSBuild dependencies must remain compatible with the bootstrap host. -->
-    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -24,13 +22,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" />
+    <!-- Compile against the bootstrap .NET task host, not the shipping MSBuild packages.
+         Use NetCoreSdkRoot rather than MSBuildBinPath because these tasks run with Runtime="NET"
+         even when the outer build uses Full Framework MSBuild. -->
+    <Reference Include="$(NetCoreSdkRoot)Microsoft.Build.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)Microsoft.Build.Framework.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)Microsoft.Build.Tasks.Core.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)Microsoft.Build.Utilities.Core.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)NuGet.Frameworks.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)NuGet.Packaging.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)NuGet.Versioning.dll" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
-    <PackageReference Include="NuGet.Packaging" />
-    <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 
