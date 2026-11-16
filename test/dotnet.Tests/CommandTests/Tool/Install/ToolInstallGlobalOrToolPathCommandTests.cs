@@ -1040,11 +1040,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         internal class NoOpFilePermissionSetter : IFilePermissionSetter
         {
-            public void SetUserExecutionPermission(string path)
+            public void SetUserExecutionPermission(string path, CancellationToken cancellationToken)
             {
             }
 
-            public void SetPermission(string path, string chmodArgument)
+            public void SetPermission(string path, string chmodArgument, CancellationToken cancellationToken)
             {
             }
         }
@@ -1057,10 +1057,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             public Task CreateStarted => _createStarted.Task;
 
-            public void CreateShim(ToolCommand toolCommand, IReadOnlyList<FilePath> packagedShims = null)
+            public void CreateShim(
+                ToolCommand toolCommand,
+                CancellationToken cancellationToken,
+                IReadOnlyList<FilePath> packagedShims = null)
             {
                 _createStarted.TrySetResult();
-                _continue.Wait();
+                _continue.Wait(cancellationToken);
                 throw new ShellShimException("Simulated shim creation failure.");
             }
 

@@ -374,7 +374,8 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
                     _filePermissionSetter
                         .SetPermission(
                             fullPath,
-                            fileAndPermission.Permission);
+                            fileAndPermission.Permission,
+                            cancellationToken);
                 }
             }
         }

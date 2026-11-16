@@ -42,6 +42,9 @@ feature (`Microsoft.NET.Build.Containers`).
   [AuthHandshakeMessageHandler.cs](Microsoft.NET.Build.Containers/AuthHandshakeMessageHandler.cs)
   allows one completed authentication acquisition per request; transport failures before
   acquisition remain retryable within the existing retry budget.
+- **Runtime probes and foreground process operations require the task cancellation token.**
+  Propagate `OperationCanceledException`; do not convert cancellation into an unavailable
+  runtime, an insecure-registry result, or another fallback value.
 
 ## Tests
 

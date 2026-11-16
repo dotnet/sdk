@@ -23,19 +23,17 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
 
     private bool _logProcess = true;
 
-    public CommandResult Execute()
-    {
-        return Execute(null);
-    }
-
     public CommandResult Execute(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return Execute(processStarted: null, cancellationToken);
+        return ExecuteCore(processStarted: null, cancellationToken);
     }
 
-    public CommandResult Execute(Action<Process>? processStarted) =>
-        Execute(processStarted, cancellationToken: null);
+    public CommandResult Execute(Action<Process>? processStarted, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return ExecuteCore(processStarted, cancellationToken);
+    }
 
     internal Command WithoutProcessLogging()
     {
@@ -44,7 +42,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
         return this;
     }
 
-    private CommandResult Execute(Action<Process>? processStarted, CancellationToken? cancellationToken)
+    private CommandResult ExecuteCore(Action<Process>? processStarted, CancellationToken cancellationToken)
     {
         if (_logProcess)
         {
@@ -84,14 +82,14 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             var taskOut = _stdOut?.BeginRead(_process.StandardOutput);
             var taskErr = _stdErr?.BeginRead(_process.StandardError);
 
-            if (cancellationToken is null)
+            CancellationToken processTerminationToken =
+                ProcessLifecycle.GetProcessTerminationToken(cancellationToken);
+            if (!processTerminationToken.CanBeCanceled)
             {
                 _process.WaitForExit();
             }
             else
             {
-                CancellationToken processTerminationToken =
-                    ProcessLifecycle.GetProcessTerminationToken(cancellationToken.Value);
                 bool cancellationWon = false;
                 while (!_process.WaitForExit(milliseconds: 100))
                 {
@@ -105,7 +103,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
 
                 if (cancellationWon)
                 {
-                    cancellationToken.Value.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
             }
 

@@ -5,8 +5,6 @@ namespace Microsoft.DotNet.Cli.Utils;
 
 public interface ICommand
 {
-    CommandResult Execute();
-
     CommandResult Execute(CancellationToken cancellationToken);
 
     ICommand WorkingDirectory(string projectDirectory);

@@ -34,8 +34,10 @@ public class BuiltInCommand : ICommand
         _stdErr = new StreamForwarder();
     }
 
-    public CommandResult Execute()
+    public CommandResult Execute(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         TextWriter originalConsoleOut = _environment.GetConsoleOut();
         TextWriter originalConsoleError = _environment.GetConsoleError();
         string originalWorkingDirectory = _environment.GetWorkingDirectory();
@@ -81,12 +83,6 @@ public class BuiltInCommand : ICommand
 
             Reporter.Reset();
         }
-    }
-
-    public CommandResult Execute(CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        return Execute();
     }
 
     public ICommand OnOutputLine(Action<string> handler)
