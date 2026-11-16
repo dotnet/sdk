@@ -11,7 +11,8 @@ internal class SdkOutputWriter(
     IEnumerable<NetSdkInfo> sdkInfo,
     ProductCollection productCollection,
     IProductCollectionProvider productCollectionProvider,
-    IReporter reporter) : BundleOutputWriter(productCollection, productCollectionProvider, reporter)
+    IReporter reporter,
+    CancellationToken cancellationToken) : BundleOutputWriter(productCollection, productCollectionProvider, reporter, cancellationToken)
 {
     private readonly IEnumerable<NetSdkInfo> _sdkInfo = sdkInfo;
 
@@ -83,7 +84,7 @@ internal class SdkOutputWriter(
         else
         {
             // Fetch detailed product release information
-            var productReleases = _productCollectionProvider.GetProductReleases(product);
+            var productReleases = _productCollectionProvider.GetProductReleases(product, _cancellationToken);
             var featureBandVersions = productReleases
                 .SelectMany(release => release.Sdks)
                 .Select(sdk => sdk.Version)

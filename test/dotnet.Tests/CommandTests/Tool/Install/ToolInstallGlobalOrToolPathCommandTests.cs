@@ -934,7 +934,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            var exceptionThrown = Assert.ThrowsExactly<AggregateException>(() => toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None));
+            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None));
             exceptionThrown.Message.Should().Contain("-invalid is invalid");
         }
 

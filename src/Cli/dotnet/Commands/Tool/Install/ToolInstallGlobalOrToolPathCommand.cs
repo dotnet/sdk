@@ -272,7 +272,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                     _architecture,
                     framework,
                     RuntimeInformation.ProcessArchitecture,
-                    cancellationToken).Result;
+                    cancellationToken).GetAwaiter().GetResult();
 
                 shellShimRepository.CreateShim(newInstalledPackage.Command, newInstalledPackage.PackagedShims);
                 shimActivity?.Dispose();

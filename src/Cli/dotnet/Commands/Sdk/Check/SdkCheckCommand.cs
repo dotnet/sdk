@@ -48,14 +48,16 @@ public class SdkCheckCommand : CommandBase
         }
         else
         {
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 var productCollection = _productCollectionProvider.GetProductCollection(
+                    cancellationToken,
                     _sdkCheckConfig?.ReleasesUri == null ? null : new Uri(_sdkCheckConfig.ReleasesUri),
                     _sdkCheckConfig?.ReleasesFilePath == null ? null : _sdkCheckConfig.ReleasesFilePath);
                 var environmentInfo = _netBundleProvider.GetDotnetEnvironmentInfo(_dotnetPath);
-                var sdkFormatter = new SdkOutputWriter(environmentInfo.SdkInfo, productCollection, _productCollectionProvider, _reporter);
-                var runtimeFormatter = new RuntimeOutputWriter(environmentInfo.RuntimeInfo, productCollection, _productCollectionProvider, _reporter);
+                var sdkFormatter = new SdkOutputWriter(environmentInfo.SdkInfo, productCollection, _productCollectionProvider, _reporter, cancellationToken);
+                var runtimeFormatter = new RuntimeOutputWriter(environmentInfo.RuntimeInfo, productCollection, _productCollectionProvider, _reporter, cancellationToken);
 
                 sdkFormatter.PrintSdkInfo();
                 _reporter.WriteLine();

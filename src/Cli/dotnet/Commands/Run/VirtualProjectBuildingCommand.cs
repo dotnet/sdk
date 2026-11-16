@@ -826,13 +826,19 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
-        return CreateProjectInstance(projectCollection, additionalGlobalProperties: null, cancellationToken: default);
+        return CreateProjectInstance(
+            projectCollection,
+            additionalGlobalProperties: null,
+            ProcessLifecycle.CancellationToken);
     }
 
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, IDictionary<string, string>? additionalGlobalProperties = null)
     {
-        return CreateProjectInstance(projectCollection, additionalGlobalProperties, cancellationToken: default);
+        return CreateProjectInstance(
+            projectCollection,
+            additionalGlobalProperties,
+            ProcessLifecycle.CancellationToken);
     }
 
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
