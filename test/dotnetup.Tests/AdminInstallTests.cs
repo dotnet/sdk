@@ -65,16 +65,16 @@ public class AdminInstallRootResolverTests
         var resolver = new AdminInstallRootResolver(Architecture.Arm64, ProgramFiles, ProgramFilesX86);
 
         resolver.ResolveSupported().Should().Equal(
-            new DotnetInstallRoot(@"C:\PF\dotnet", InstallArchitecture.arm64),
-            new DotnetInstallRoot(@"C:\PFx86\dotnet", InstallArchitecture.x86),
-            new DotnetInstallRoot(@"C:\PF\dotnet\x64", InstallArchitecture.x64));
+            new DotnetInstallRoot(Path.Combine(ProgramFiles, "dotnet"), InstallArchitecture.arm64),
+            new DotnetInstallRoot(Path.Combine(ProgramFilesX86, "dotnet"), InstallArchitecture.x86),
+            new DotnetInstallRoot(Path.Combine(ProgramFiles, "dotnet", "x64"), InstallArchitecture.x64));
     }
 
     [TestMethod]
     public void ResolveSupported_SkipsArchitecturesWithoutARoot()
     {
         new AdminInstallRootResolver(Architecture.X64, ProgramFiles, string.Empty).ResolveSupported()
-            .Should().Equal(new DotnetInstallRoot(@"C:\PF\dotnet", InstallArchitecture.x64));
+            .Should().Equal(new DotnetInstallRoot(Path.Combine(ProgramFiles, "dotnet"), InstallArchitecture.x64));
         new AdminInstallRootResolver(Architecture.Arm, ProgramFiles, ProgramFilesX86).ResolveSupported()
             .Should().BeEmpty();
     }

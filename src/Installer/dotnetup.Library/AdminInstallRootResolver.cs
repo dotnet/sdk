@@ -77,7 +77,7 @@ internal sealed class AdminInstallRootResolver
             return null;
         }
 
-        string? path = null;
+        string? path;
         if (architecture == osArchitecture)
         {
             path = CombineWithFolder(_programFiles, "dotnet");
