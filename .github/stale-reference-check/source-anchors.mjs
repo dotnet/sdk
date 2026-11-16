@@ -162,9 +162,15 @@ export function csharpAttributeSites(lines) {
         if (['(', ','].includes(previous?.value) && !declarationContinuation(end)) continue;
 
         let nameIndex = start + 1;
-        if (identifier(tokens[nameIndex]) && tokens[nameIndex + 1]?.value === ':') nameIndex += 2;
+        if (identifier(tokens[nameIndex]) && tokens[nameIndex + 1]?.value === ':' &&
+            tokens[nameIndex + 2]?.value !== ':') nameIndex += 2;
         if (!identifier(tokens[nameIndex])) continue;
         nameIndex++;
+        if (tokens[nameIndex]?.value === ':' && tokens[nameIndex + 1]?.value === ':') {
+            nameIndex += 2;
+            if (!identifier(tokens[nameIndex])) continue;
+            nameIndex++;
+        }
         while (tokens[nameIndex]?.value === '.' && identifier(tokens[nameIndex + 1])) nameIndex += 2;
         if (!['(', ',', ']'].includes(tokens[nameIndex]?.value)) continue;
 

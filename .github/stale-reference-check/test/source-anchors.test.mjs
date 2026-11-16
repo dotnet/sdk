@@ -158,6 +158,20 @@ test('parameter attributes are not confused with collection expressions', () => 
     assert.throws(() => sourceAnchors(lines, 'src/Cases.cs')(4), /not a comment or actionable attribute/);
 });
 
+test('alias-qualified attribute names are distinct from attribute targets', () => {
+    const lines = [
+        '[global::System.Obsolete("TODO remove once https://github.com/dotnet/sdk/issues/123 is fixed")]',
+        '[assembly: global::System.Obsolete("TODO remove once https://github.com/dotnet/sdk/issues/456 is fixed")]',
+    ];
+
+    const sites = csharpAttributeSites(lines);
+
+    assert.ok(sites.has(1));
+    assert.ok(sites.has(2));
+    assert.match(sourceAnchors(lines, 'src/Attributes.cs')(1), /^csharp attribute: [a-f0-9]{64}$/);
+    assert.match(sourceAnchors(lines, 'src/Attributes.cs')(2), /^csharp attribute: [a-f0-9]{64}$/);
+});
+
 test('overloads, different types and different control-flow blocks have distinct lexical sites', () => {
     const lines = [
         'namespace N;',
