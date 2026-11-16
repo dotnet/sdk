@@ -71,7 +71,7 @@ public class Program
 
     public static int Main(string[] args)
     {
-        _ = ProcessLifecycle.CancellationToken;
+        using IDisposable processLifecycle = ProcessLifecycle.Initialize();
         using AutomaticEncodingRestorer encodingRestorer = new();
 
         if (Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING) != "1"
@@ -91,6 +91,17 @@ public class Program
         try
         {
             exitCode = ProcessArgsAndExecute(args);
+            if (ProcessLifecycle.TryGetSignalExitCode(ProcessLifecycle.CancellationToken, out int signalExitCode))
+            {
+                exitCode = signalExitCode;
+            }
+            s_mainActivity?.AddTag("process.exit.code", exitCode)?.SetStatus(ActivityStatusCode.Ok);
+            return exitCode;
+        }
+        catch (OperationCanceledException) when (
+            ProcessLifecycle.TryGetSignalExitCode(ProcessLifecycle.CancellationToken, out int signalExitCode))
+        {
+            exitCode = signalExitCode;
             s_mainActivity?.AddTag("process.exit.code", exitCode)?.SetStatus(ActivityStatusCode.Ok);
             return exitCode;
         }

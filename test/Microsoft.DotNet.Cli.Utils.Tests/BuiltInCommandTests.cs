@@ -47,6 +47,25 @@ namespace Microsoft.DotNet.Cli.Utils
             Assert.IsFalse(invoked);
         }
 
+        [TestMethod]
+        public void ExecuteReturnsCompletedResultWhenCancellationLosesTheRace()
+        {
+            using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+            var builtInCommand = new BuiltInCommand(
+                "fakeCommand",
+                [],
+                _ =>
+                {
+                    cancellationSource.Cancel();
+                    return 42;
+                },
+                new TestBuiltInCommandEnvironment());
+
+            CommandResult result = builtInCommand.Execute(cancellationSource.Token);
+
+            Assert.AreEqual(42, result.ExitCode);
+        }
+
         /// <summary>
         /// Tests that BuiltInCommand.Execute raises the OnOutputLine and OnErrorLine
         /// the correct number of times and with the correct content.

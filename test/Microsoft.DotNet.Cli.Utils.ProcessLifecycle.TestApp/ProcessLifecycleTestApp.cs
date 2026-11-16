@@ -31,6 +31,7 @@ public static class ProcessLifecycleTestApp
             return 0;
         }
 
+        using IDisposable processLifecycle = ProcessLifecycle.Initialize();
         CancellationToken cancellationToken = ProcessLifecycle.CancellationToken;
         File.WriteAllText(markerPath, "ready");
 
@@ -39,11 +40,22 @@ public static class ProcessLifecycleTestApp
             Thread.Sleep(Timeout.Infinite);
         }
 
+        if (childMode == "extended-grace")
+        {
+            cancellationToken.WaitHandle.WaitOne();
+            using IDisposable softCancellationTimeout =
+                ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan);
+            File.WriteAllText(markerPath, "signal-cancelled");
+            Thread.Sleep(TimeSpan.FromMilliseconds(750));
+            File.WriteAllText(markerPath, "override-completed");
+            return GetSignalExitCode(cancellationToken);
+        }
+
         cancellationToken.WaitHandle.WaitOne();
         File.WriteAllText(
             markerPath,
             ProcessLifecycle.IsSignalTerminationRequested ? "signal-cancelled" : "cancelled");
-        return 0;
+        return GetSignalExitCode(cancellationToken);
     }
 
     private static void RunReaperParent(string[] args, string markerPath, string childMode)
@@ -118,4 +130,9 @@ public static class ProcessLifecycleTestApp
             throw new TimeoutException($"Timed out waiting for marker '{expectedValue}'.");
         }
     }
+
+    private static int GetSignalExitCode(CancellationToken cancellationToken)
+        => ProcessLifecycle.TryGetSignalExitCode(cancellationToken, out int exitCode)
+            ? exitCode
+            : 0;
 }

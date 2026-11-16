@@ -45,6 +45,11 @@ internal static class CommandInvocation
             throw;
         }
 #endif
+        catch (OperationCanceledException) when (
+            ProcessLifecycle.TryGetSignalExitCode(cancellationToken, out int signalExitCode))
+        {
+            exitCode = signalExitCode;
+        }
         catch (Exception exception)
         {
             exitCode = Parser.ExceptionHandler(exception, parseResult);

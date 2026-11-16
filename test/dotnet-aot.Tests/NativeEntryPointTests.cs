@@ -794,7 +794,7 @@ public partial class NativeEntryPointTests
                 int exitCode = NativeEntryPoint.ExecuteCoreForNativeEntryPoint(
                     hostPath: "test-host",
                     dotnetRoot: "test-root",
-                    sdkDir: "nonexistent-sdk-dir",
+                    sdkDir: AppContext.BaseDirectory,
                     hostfxrPath: "",
                     args: ["aotcanceledtool"],
                     cancellationToken: cancellationSource.Token);

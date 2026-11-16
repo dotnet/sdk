@@ -86,9 +86,7 @@ public class BuiltInCommand : ICommand
     public CommandResult Execute(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        CommandResult result = Execute();
-        cancellationToken.ThrowIfCancellationRequested();
-        return result;
+        return Execute();
     }
 
     public ICommand OnOutputLine(Action<string> handler)

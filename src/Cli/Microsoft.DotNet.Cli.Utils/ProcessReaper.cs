@@ -31,7 +31,6 @@ namespace Microsoft.DotNet.Cli.Utils;
 internal class ProcessReaper : IDisposable
 {
     private readonly Process _process;
-    private readonly IDisposable _processLifecycleCancellationSuppression;
 
 #if TARGET_WINDOWS
     private sealed class WindowsProcessReaper : ProcessReaper
@@ -147,6 +146,8 @@ internal class ProcessReaper : IDisposable
 #if !TARGET_WINDOWS && NET
     private sealed class UnixProcessReaper : ProcessReaper
     {
+        private readonly PosixSignalRegistration _sigTermRegistration;
+
         // Coordinates Dispose (typically the main thread) with HandleProcessExit,
         // which is raised on the AppDomain.ProcessExit thread when the CLI itself is
         // shutting down (for example when a SIGTERM handler calls Environment.Exit).
@@ -163,10 +164,23 @@ internal class ProcessReaper : IDisposable
         public UnixProcessReaper(Process process) : base(process)
         {
             AppDomain.CurrentDomain.ProcessExit += HandleProcessExit;
+            _sigTermRegistration = PosixSignalRegistration.Create(
+                PosixSignal.SIGTERM,
+                context =>
+                {
+                    if (ProcessLifecycle.IsInitialized)
+                    {
+                        return;
+                    }
+
+                    context.Cancel = true;
+                    Environment.Exit(143);
+                });
         }
 
         public override void Dispose()
         {
+            _sigTermRegistration.Dispose();
             AppDomain.CurrentDomain.ProcessExit -= HandleProcessExit;
 
             // If a ProcessExit driven shutdown is already running on another thread,
@@ -196,22 +210,17 @@ internal class ProcessReaper : IDisposable
 
                 try
                 {
-                    // If the target is still running, forward SIGTERM so it can shut
-                    // down as well. Signal returns false if the process already exited,
-                    // and throws Win32Exception if the signal could not be delivered.
-                    if (!_process.WaitForExit(0))
-                    {
-                        _process.SafeHandle.Signal(PosixSignal.SIGTERM);
-                    }
-
-                    if (ProcessLifecycle.IsSignalTerminationRequested &&
-                        !_process.WaitForExit((int)ProcessLifecycle.SignalTerminationTimeout.TotalMilliseconds))
+                    if (ProcessLifecycle.IsForcefulCancellationRequested)
                     {
                         TerminateProcess();
                     }
+                    else if (!_process.WaitForExit(0))
+                    {
+                        // For ordinary process exit, forward SIGTERM so the child can
+                        // shut down cooperatively.
+                        _process.SafeHandle.Signal(PosixSignal.SIGTERM);
+                    }
 
-                    // For non-signal process exits, preserve the existing behavior of waiting
-                    // for the child after forwarding SIGTERM.
                     _process.WaitForExit();
 
                     Environment.ExitCode = _process.ExitCode;
@@ -257,10 +266,6 @@ internal class ProcessReaper : IDisposable
     private ProcessReaper(Process process)
     {
         _process = process;
-        // The reaper forwards termination signals to the child, so the process-wide lifecycle
-        // token must not race that forwarding and terminate a child that is shutting down
-        // cooperatively.
-        _processLifecycleCancellationSuppression = ProcessLifecycle.SuppressTerminationCancellation();
 
         // The tests need the event handlers registered prior to spawning the child to prevent a race
         // where the child writes output the test expects before the intermediate dotnet process
@@ -285,7 +290,6 @@ internal class ProcessReaper : IDisposable
     public virtual void Dispose()
     {
         Console.CancelKeyPress -= HandleCancelKeyPress;
-        _processLifecycleCancellationSuppression.Dispose();
     }
 
     private void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)

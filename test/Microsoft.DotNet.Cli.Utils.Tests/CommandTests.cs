@@ -57,4 +57,33 @@ public class CommandTests
             await cancellationSource.CancelAsync();
         }
     }
+
+    [TestMethod]
+    public void ExecuteReturnsCompletedResultWhenCancellationLosesTheRace()
+    {
+        ProcessStartInfo startInfo = new()
+        {
+            FileName = OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh",
+            Arguments = OperatingSystem.IsWindows()
+                ? "/c \"echo done & exit /b 42\""
+                : "-c \"echo done; exit 42\"",
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+        };
+        using Process process = new() { StartInfo = startInfo };
+        using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+        var command = new Command(process);
+        command.OnOutputLine(_ =>
+        {
+            process.WaitForExit();
+            cancellationSource.Cancel();
+        });
+
+        CommandResult result = command.Execute(cancellationSource.Token);
+
+        Assert.IsTrue(cancellationSource.IsCancellationRequested);
+        Assert.AreEqual(42, result.ExitCode);
+    }
 }

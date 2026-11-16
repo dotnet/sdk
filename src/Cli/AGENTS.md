@@ -22,10 +22,20 @@ context for each persistent-server request.
 
 Managed and Native AOT command execution use
 `Microsoft.DotNet.Cli.Utils/ProcessLifecycle.cs` as the shared owner of Ctrl+C,
-SIGTERM, and process-exit cancellation. Pass its token through System.CommandLine
-invocation and command operations. `ProcessReaper.cs` owns child-process signal
-forwarding and cleanup; do not add a competing command-line termination handler for
-those signals.
+SIGTERM, and process-exit cancellation. The managed entry point initializes it for the
+process lifetime; the Native AOT entry point initializes it only while handling a command
+in-process and unregisters it before managed fallback. Merely launching a child through
+`ProcessReaper.cs` must not initialize CLI lifecycle handling in library hosts.
+
+Pass the lifecycle token through System.CommandLine invocation and command operations.
+The first Ctrl+C requests cooperative cancellation and permits 200 milliseconds for
+cleanup; a second Ctrl+C, SIGTERM, or expiration of that deadline requests forceful
+cancellation and terminates with the signal-derived exit code. Transaction rollback and
+other critical operations may use `OverrideSoftCancellationTimeout` to extend or suspend
+the automatic deadline, but the override must never suppress an explicit forceful signal.
+Child processes observe cooperative signals directly and are killed only when forceful
+cancellation is requested. `ProcessReaper.cs` owns child-process signal forwarding and
+cleanup; do not add a competing command-line termination handler for those signals.
 
 ## Three-project command split
 

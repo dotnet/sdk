@@ -235,9 +235,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
         try
         {
             // Execute MSBuild in the current process by calling its Main method.
-            int exitCode = Build.CommandLine.MSBuildApp.Main(arguments);
-            cancellationToken.ThrowIfCancellationRequested();
-            return exitCode;
+            return Build.CommandLine.MSBuildApp.Main(arguments);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {

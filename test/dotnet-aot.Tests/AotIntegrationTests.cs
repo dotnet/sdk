@@ -932,6 +932,68 @@ public partial class AotIntegrationTests
     }
 
     [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void AotExternalCommand_SigIntExitsQuietlyWithSignalExitCode()
+    {
+        SkipIfDnUnavailable();
+
+        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-cancellation-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDirectory);
+        string markerPath = Path.Join(testDirectory, "ready");
+        string commandPath = Path.Join(testDirectory, "dotnet-aot-cancellation-test");
+        File.WriteAllText(
+            commandPath,
+            $"#!/bin/sh{Environment.NewLine}echo ready > '{markerPath}'{Environment.NewLine}sleep 30{Environment.NewLine}");
+        File.SetUnixFileMode(
+            commandPath,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+            UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+            UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+
+        ProcessStartInfo startInfo = new(FindDnPath()!)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        startInfo.ArgumentList.Add("aot-cancellation-test");
+        startInfo.Environment["DOTNET_CLI_ENABLEAOT"] = "true";
+        startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
+        startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
+        startInfo.Environment["PATH"] =
+            testDirectory + Path.PathSeparator + startInfo.Environment["PATH"];
+
+        using Process process = new() { StartInfo = startInfo };
+        try
+        {
+            process.Start();
+            Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
+            Task<string> stderrTask = process.StandardError.ReadToEndAsync(TestContext.CancellationToken);
+            SpinWait.SpinUntil(() => File.Exists(markerPath), TimeSpan.FromSeconds(10))
+                .Should().BeTrue("the external command should start");
+
+            process.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
+            process.WaitForExit(10_000).Should().BeTrue();
+
+            process.ExitCode.Should().Be(130);
+            string standardError = stderrTask.GetAwaiter().GetResult();
+            standardError.Should().NotContain("Unhandled exception");
+            standardError.Should().NotContain("The operation was canceled");
+            _ = stdoutTask.GetAwaiter().GetResult();
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+
+            try { Directory.Delete(testDirectory, recursive: true); } catch { }
+        }
+    }
+
+    [TestMethod]
     public void Version_WithAotDisabled_StillWorks()
     {
         SkipIfDnUnavailable();

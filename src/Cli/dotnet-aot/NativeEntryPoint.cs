@@ -61,7 +61,7 @@ static unsafe partial class NativeEntryPoint
             sdkDir,
             hostfxrPath,
             args,
-            ProcessLifecycle.CancellationToken);
+            default);
     }
 
     internal static int ExecuteCoreForNativeEntryPoint(
@@ -78,6 +78,11 @@ static unsafe partial class NativeEntryPoint
                 hostfxrPath,
                 args,
                 cancellationToken);
+        }
+        catch (OperationCanceledException) when (
+            ProcessLifecycle.TryGetSignalExitCode(ProcessLifecycle.CancellationToken, out int signalExitCode))
+        {
+            return signalExitCode;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -202,6 +207,10 @@ static unsafe partial class NativeEntryPoint
 
             if (ShouldAttemptAotExecution(args))
             {
+                using IDisposable? processLifecycle =
+                    cancellationToken == default ? ProcessLifecycle.Initialize() : null;
+                CancellationToken aotCancellationToken =
+                    processLifecycle is null ? cancellationToken : ProcessLifecycle.CancellationToken;
                 ParseResult? parseResult = null;
                 bool genericCommandHelp = false;
                 using (var parse = Activities.Source.StartActivity("parse"))
@@ -247,7 +256,11 @@ static unsafe partial class NativeEntryPoint
                         {
                             try
                             {
-                                exitCode = CommandInvocation.ExecuteInternalCommand(parseResult, cancellationToken);
+                                exitCode = CommandInvocation.ExecuteInternalCommand(parseResult, aotCancellationToken);
+                                if (ProcessLifecycle.TryGetSignalExitCode(aotCancellationToken, out int signalExitCode))
+                                {
+                                    exitCode = signalExitCode;
+                                }
                                 success = true;
                                 aotHandledInProcess = true;
                                 SendAotParserTelemetry(parseResult, globalJsonState);
@@ -269,10 +282,14 @@ static unsafe partial class NativeEntryPoint
                         sdkDir,
                         mainActivity,
                         globalJsonState,
-                        cancellationToken,
+                        aotCancellationToken,
                         out exitCode,
                         out success))
                     {
+                        if (ProcessLifecycle.TryGetSignalExitCode(aotCancellationToken, out int signalExitCode))
+                        {
+                            exitCode = signalExitCode;
+                        }
                         aotHandledInProcess = true;
                         return exitCode;
                     }

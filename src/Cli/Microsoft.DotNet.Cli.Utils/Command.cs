@@ -31,9 +31,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
     public CommandResult Execute(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        CommandResult result = Execute(processStarted: null, cancellationToken);
-        cancellationToken.ThrowIfCancellationRequested();
-        return result;
+        return Execute(processStarted: null, cancellationToken);
     }
 
     public CommandResult Execute(Action<Process>? processStarted) =>
@@ -92,13 +90,22 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             }
             else
             {
+                CancellationToken processTerminationToken =
+                    ProcessLifecycle.GetProcessTerminationToken(cancellationToken.Value);
+                bool cancellationWon = false;
                 while (!_process.WaitForExit(milliseconds: 100))
                 {
-                    if (cancellationToken.Value.IsCancellationRequested)
+                    if (processTerminationToken.IsCancellationRequested)
                     {
+                        cancellationWon = true;
                         TerminateProcess(reaper, _process);
                         break;
                     }
+                }
+
+                if (cancellationWon)
+                {
+                    cancellationToken.Value.ThrowIfCancellationRequested();
                 }
             }
 
@@ -106,7 +113,6 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             taskErr?.Wait();
         }
 
-        cancellationToken?.ThrowIfCancellationRequested();
         var exitCode = _process.ExitCode;
 
         if (_logProcess && CommandLoggingContext.IsVerbose)
