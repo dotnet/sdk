@@ -485,7 +485,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                     SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
             }
 
-            processStartInfo.ExecuteAndCaptureOutput(out var stdOut, out var stdErr);
+            processStartInfo.ExecuteAndCaptureOutput(out var stdOut, out var stdErr, TestContext.CancellationToken);
 
             stdErr.Should().BeEmpty();
 

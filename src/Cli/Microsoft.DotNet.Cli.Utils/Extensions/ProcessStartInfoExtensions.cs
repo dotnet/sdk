@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli.Utils.Extensions;
 
 internal static class ProcessStartInfoExtensions
 {
-    public static int Execute(this ProcessStartInfo startInfo, CancellationToken cancellationToken = default)
+    public static int Execute(this ProcessStartInfo startInfo, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(startInfo);
 
@@ -23,7 +23,7 @@ internal static class ProcessStartInfoExtensions
         this ProcessStartInfo startInfo,
         out string? stdOut,
         out string? stdErr,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         using var process = new Process
         {

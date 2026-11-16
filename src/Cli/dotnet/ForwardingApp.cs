@@ -35,11 +35,6 @@ public class ForwardingApp(
         return this;
     }
 
-    public int Execute()
-    {
-        return _implementation.Execute();
-    }
-
     public int Execute(CancellationToken cancellationToken)
     {
         return _implementation.Execute(cancellationToken);

@@ -28,6 +28,8 @@ in-process and unregisters it before managed fallback. Merely launching a child 
 `ProcessReaper.cs` must not initialize CLI lifecycle handling in library hosts.
 
 Pass the lifecycle token through System.CommandLine invocation and command operations.
+Process-launch and forwarding helpers must require callers to supply a cancellation
+token; do not add tokenless overloads or optional cancellation-token parameters.
 The first Ctrl+C requests cooperative cancellation and permits 200 milliseconds for
 cleanup; a second Ctrl+C, SIGTERM, or expiration of that deadline requests forceful
 cancellation and terminates with the signal-derived exit code. Transaction rollback and
