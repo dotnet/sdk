@@ -1021,6 +1021,9 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// filename will be used.</param>
     private void ExecutePackage(MsiPayload msi, InstallAction action, string displayName = null)
     {
+        using IDisposable softCancellationTimeout =
+            ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan);
+
         uint error = Error.SUCCESS;
         string logFile = GetMsiLogName(msi, action);
         string name = string.IsNullOrWhiteSpace(displayName) ? msi.Payload : displayName;
