@@ -124,6 +124,12 @@ directory so relative arguments and logs retain their meaning. Keep one coherent
 target-produced project state, and the session's success/failure cleanup. Cover these boundaries in
 [`GivenDotnetTestProducesBinaryLog`](../../test/dotnet.Tests/CommandTests/Test/GivenDotnetTestProducesBinaryLog.cs).
 
+In `--solution` runs,
+[`device selection`](dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs) applies only to
+test projects (`IsTestProject` or `IsTestingPlatformApplication`). App and library projects, such as
+MAUI heads, can import `ComputeAvailableDevices` in their inner builds and must not prompt for a device. The single-project
+path evaluates before restore, so it must not apply this NuGet-dependent gate.
+
 Parent-process operations must also use the captured invocation directory: pass it through background
 workload updates to both `global.json` discovery and NuGet configuration, and initialize absolute MTP
 trace paths before starting the session. Changing only a child process's directory is insufficient.
