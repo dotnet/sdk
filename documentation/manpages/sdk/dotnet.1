@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet" "1" "2026-08-28" "" ".NET Documentation"
+.TH "dotnet" "1" "2026-11-13" "" ".NET Documentation"
 .hy
 .SH dotnet command
 .PP
@@ -410,24 +410,19 @@ Function
 T}
 _
 T{
-dotnet nuget delete
+dotnet nuget add client-cert
 T}@T{
-Deletes or unlists a package from the server.
-T}
-T{
-dotnet nuget push
-T}@T{
-Pushes a package to the server and publishes it.
-T}
-T{
-dotnet nuget locals
-T}@T{
-Clears or lists local NuGet resources such as http-request cache, temporary cache, or machine-wide global packages folder.
+Adds a client certificate configuration for a NuGet source.
 T}
 T{
 dotnet nuget add source
 T}@T{
 Adds a NuGet source.
+T}
+T{
+dotnet nuget delete
+T}@T{
+Deletes or unlists a package from the server.
 T}
 T{
 dotnet nuget disable source
@@ -440,14 +435,39 @@ T}@T{
 Enables a NuGet source.
 T}
 T{
+dotnet nuget list client-cert
+T}@T{
+Lists configured NuGet client certificates.
+T}
+T{
 dotnet nuget list source
 T}@T{
 Lists all configured NuGet sources.
 T}
 T{
+dotnet nuget locals
+T}@T{
+Clears or lists local NuGet resources such as http-request cache, temporary cache, or machine-wide global packages folder.
+T}
+T{
+dotnet nuget push
+T}@T{
+Pushes a package to the server and publishes it.
+T}
+T{
+dotnet nuget remove client-cert
+T}@T{
+Removes a client certificate configuration for a NuGet source.
+T}
+T{
 dotnet nuget remove source
 T}@T{
 Removes a NuGet source.
+T}
+T{
+dotnet nuget update client-cert
+T}@T{
+Updates a client certificate configuration for a NuGet source.
 T}
 T{
 dotnet nuget update source
