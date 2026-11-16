@@ -7,6 +7,9 @@ on:
       - '.github/workflows/stale-reference-*'
       - '.github/scripts/issue-monster-search.js'
       - '.github/scripts/issue-monster-search.test.js'
+      - '.github/scripts/issue-triage-*'
+      - '.github/workflows/issue-triage.md'
+      - 'CODEOWNERS'
   workflow_dispatch:
 
 permissions:
@@ -25,7 +28,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
-      - run: node --test .github/stale-reference-check/test/*.test.mjs .github/scripts/issue-monster-search.test.js
+      - run: node --test .github/stale-reference-check/test/*.test.mjs .github/scripts/issue-monster-search.test.js .github/scripts/issue-triage-assignee.test.js
       - name: Verify native MCP protocol compatibility
         timeout-minutes: 5
         run: node .github/stale-reference-check/test/gateway-smoke.mjs

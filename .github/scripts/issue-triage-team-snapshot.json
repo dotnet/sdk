@@ -1,0 +1,16 @@
+{
+    "@dotnet/dotnet-cli": ["dsplaisted", "baronfel", "richlander", "joeloff", "MichaelSimons", "marcpopMSFT", "wtgodbe", "mthalman", "MiYanni", "nagilson", "lbussell", "vlada-shubina"],
+    "@dotnet/dotnetup": ["dsplaisted", "marcpopMSFT", "nagilson"],
+    "@dotnet/aspnet-blazor-eng": ["lewing", "halter73", "pavelsavara", "akoeplinger", "radekdoulik", "javiercn", "maraf", "MackinnonBuck", "ilonatommy", "oroztocil", "dariatiurina"],
+    "@dotnet/razor-tooling": ["DustinCampbell", "davidwengier", "chsienki", "webreidi"],
+    "@dotnet/nuget-team": ["nkolev92", "zivkan", "jebriede", "dtivel", "jeffkl", "martinrrm", "donnie-msft", "kartheekp-ms", "aortiz-msft", "Nigusu-Allehu"],
+    "@dotnet/fsharp": ["0101", "brettfo", "vzarytovskii", "dsyme", "abonie", "T-Gro"],
+    "@dotnet/dotnet-testing": ["0101", "drognanar", "JanKrivanek", "nohwnd", "Evangelink", "YuliiaKovalova", "azat-msft"],
+    "@dotnet/net-sdk-workload-contributors": ["lewing", "dsplaisted", "rolfbjarne", "Redth", "steveisok", "baronfel", "jonathanpeppers", "joeloff", "marcpopMSFT", "MiYanni", "nagilson"],
+    "@dotnet/templating-engine-maintainers": ["joeloff", "marcpopMSFT", "MiYanni"],
+    "@dotnet/illink": ["marek-safar", "agocke", "sbomer", "vitek-karas", "jtschuster"],
+    "@dotnet/roslyn-ide": ["peterwald", "jaredpar", "jasonmalinowski", "JoeRobich", "dibarbet", "AbhitejJohn", "akhera99", "webreidi", "mwiemer-microsoft"],
+    "@dotnet/area-infrastructure-libraries": ["jeffhandley"],
+    "@dotnet/sdk-container-builds-maintainers": ["baronfel", "mthalman", "MiYanni", "rbhanda", "lbussell"],
+    "@dotnet/dotnet-analyzers": ["jaredpar", "krwq", "genlu", "jeffhandley", "tannergooding", "bartonjs", "Evangelink", "jozkee"]
+}
