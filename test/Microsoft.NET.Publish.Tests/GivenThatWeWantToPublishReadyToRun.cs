@@ -678,12 +678,15 @@ public class Program
 
             var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
-            new PublishCommand(testProjectInstance).Execute().Should().Pass();
+            new PublishCommand(testProjectInstance)
+                .Execute("-p:PublishReadyToRunCrossgen2ExtraArgs=--Ot")
+                .Should().Pass();
 
             // An instruction set that is invalid on every architecture shows that the property reaches crossgen2,
-            // and that changing it reruns the compiler after an up-to-date publish.
+            // including when the extra args are a global property, and that changing it reruns the compiler after
+            // an up-to-date publish.
             new PublishCommand(testProjectInstance)
-                .Execute("-p:PublishReadyToRunInstructionSet=not-an-instruction-set")
+                .Execute("-p:PublishReadyToRunCrossgen2ExtraArgs=--Ot", "-p:PublishReadyToRunInstructionSet=not-an-instruction-set")
                 .Should().Fail()
                 .And.HaveStdOutContaining("not-an-instruction-set");
         }
