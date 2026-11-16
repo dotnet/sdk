@@ -91,6 +91,18 @@ function* csharpTokens(source) {
     }
 }
 
+export function csharpCommentLines(lines) {
+    const comments = new Map();
+    for (const token of csharpTokens(lines.join('\n'))) {
+        if (token.kind !== 'comment') continue;
+        token.value.split('\n').forEach((text, index) => {
+            const line = token.startLine + index;
+            comments.set(line, `${comments.get(line) ?? ''}${text}`);
+        });
+    }
+    return comments;
+}
+
 function headerText(tokens) {
     return tokens.map((token, index) => {
         const previous = tokens[index - 1];

@@ -67,6 +67,29 @@ test('Visual Basic sources are not collected', async t => {
     assert.deepEqual(result.candidates.map(candidate => candidate.path), ['src/Owned.cs']);
 });
 
+test('C# TODO and workaround matches must be comments, while Ignore attributes remain candidates', async t => {
+    const root = await fixture(t, {
+        'src/Cases.cs': [
+            'namespace Sample.Tests;',
+            'class Cases {',
+            '[UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Remove when https://github.com/dotnet/sdk/issues/123 is fixed.")]',
+            'public void Suppressed() {}',
+            'void Run() {',
+            '    var message = "TODO remove once https://github.com/dotnet/sdk/issues/123 is fixed";',
+            '    // TODO remove once https://github.com/dotnet/sdk/issues/123 is fixed.',
+            '}',
+            '[Ignore("https://github.com/dotnet/sdk/issues/456")]',
+            'public void Ignored() {}',
+            '}',
+        ].join('\n'),
+    });
+    const result = await collect(root, { rulesHash: 'rules' });
+    assert.deepEqual(result.candidates.map(candidate => [candidate.seedLine, candidate.kindHint]), [
+        [7, 'todo'],
+        [9, 'ignore'],
+    ]);
+});
+
 test('uses tracked committed files and never modifies checkout, index, or HEAD', async t => {
     const root = await fixture(t, { 'src/Owned.cs': '// TODO https://github.com/dotnet/sdk/issues/1\n' });
     await writeFile(path.join(root, 'src', 'Untracked.cs'), '// TODO untracked');

@@ -18,6 +18,8 @@ branch rather than assuming `main`.
 
 1. [`collect.mjs`](collect.mjs) uses tracked-source grep to locate relevant
    constructs and collect numbered context, including URLs on adjacent lines.
+   In C# files, TODO/workaround matches must be in comments; Ignore attributes
+   remain eligible, but TODO-like text inside attributes or string literals is ignored.
 2. [`interpretations.mjs`](interpretations.mjs) restores compatible cached
    classifications and selects a bounded batch of new or changed source.
 3. The [reusable interpreter](../workflows/stale-reference-interpret.md) identifies
