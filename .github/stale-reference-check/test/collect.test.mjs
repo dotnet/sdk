@@ -67,7 +67,7 @@ test('Visual Basic sources are not collected', async t => {
     assert.deepEqual(result.candidates.map(candidate => candidate.path), ['src/Owned.cs']);
 });
 
-test('C# TODO and workaround matches must be comments, while Ignore attributes remain candidates', async t => {
+test('C# TODO and workaround matches in attributes or comments are candidates, but unrelated strings are not', async t => {
     const root = await fixture(t, {
         'src/Cases.cs': [
             'namespace Sample.Tests;',
@@ -85,6 +85,7 @@ test('C# TODO and workaround matches must be comments, while Ignore attributes r
     });
     const result = await collect(root, { rulesHash: 'rules' });
     assert.deepEqual(result.candidates.map(candidate => [candidate.seedLine, candidate.kindHint]), [
+        [3, 'workaround'],
         [7, 'todo'],
         [9, 'ignore'],
     ]);

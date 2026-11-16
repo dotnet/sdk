@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { lstat, readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { referenceUrlPattern, shorthandPattern } from './references.mjs';
-import { csharpCommentLines } from './source-anchors.mjs';
+import { csharpAttributeSites, csharpCommentLines } from './source-anchors.mjs';
 
 const ignorePattern = String.raw`(\[|<|,|^[[:space:]]*)[[:space:]]*([[:alnum:]_.]+[.])?Ignore(Attribute)?([[:space:]]*\(|[[:space:]]*\]|[[:space:]]*>|[[:space:]]*$)`;
 const seedPattern = `${ignorePattern}|` + String.raw`\bTODO\b|\bwork[ -]?around\b|\b(remov(e|ed|al)|delet(e|ed|ion)|revisit|re-?enabl(e|ed))\b.*\b(when|once|after|until)\b|\b(temporary|temporarily)\b.*\b(until|fix|hack)\b`;
@@ -154,10 +154,13 @@ export async function collect(repoRoot, { rulesHash } = {}) {
         const blobSha = files.get(filePath);
         const lines = sourceLines(await git(repoRoot, ['cat-file', 'blob', blobSha]));
         if (!githubReference.test(lines.join('\n'))) continue;
-        const comments = /\.cs$/i.test(filePath) ? csharpCommentLines(lines) : undefined;
+        const isCSharp = /\.cs$/i.test(filePath);
+        const comments = isCSharp ? csharpCommentLines(lines) : undefined;
+        const attributeSites = isCSharp ? csharpAttributeSites(lines) : undefined;
         const windows = [];
         for (const hit of hits.get(filePath).sort((a, b) => a.seedLine - b.seedLine)) {
-            if (comments && hit.kindHint !== 'ignore' && !commentSeedPattern.test(comments.get(hit.seedLine) ?? '')) continue;
+            if (comments && hit.kindHint !== 'ignore' &&
+                !commentSeedPattern.test(comments.get(hit.seedLine) ?? '') && !attributeSites.has(hit.seedLine)) continue;
             const startLine = Math.max(1, hit.seedLine - 20);
             const endLine = Math.min(lines.length, hit.seedLine + 20);
             const previous = windows.at(-1);
