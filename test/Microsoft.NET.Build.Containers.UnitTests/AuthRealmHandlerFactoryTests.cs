@@ -146,7 +146,7 @@ public class AuthRealmHandlerFactoryTests
         Uri realmUri = new($"http://{host}:{((IPEndPoint)listener.LocalEndpoint).Port}/token");
         IPAddress[] addresses = await Dns.GetHostAddressesAsync(realmUri.IdnHost.Trim('[', ']'), TestContext.CancellationToken);
         Assert.IsNotEmpty(addresses);
-        Assert.IsTrue(addresses.All(IPAddress.IsLoopback));
+        Assert.ContainsOnly(IPAddress.IsLoopback, addresses);
 
         AuthRealmHandlerFactory factory = CreateFactory(policyValue: null, allowedAddresses: null, isInsecureRegistry: true);
         using var client = new HttpMessageInvoker(factory.Create(realmUri));

@@ -98,7 +98,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.HasCount(3, searchResultDictionary["source two"].SearchHits);
             Assert.HasCount(2, searchResultDictionary["source one"].SearchHits);
 
-            Assert.IsTrue(createdProviders.All(p => p.WasSearched));
+            Assert.ContainsOnly(p => p.WasSearched, createdProviders);
         }
 
         private static IReadOnlyDictionary<string, IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> GetMockNameSearchResults()
