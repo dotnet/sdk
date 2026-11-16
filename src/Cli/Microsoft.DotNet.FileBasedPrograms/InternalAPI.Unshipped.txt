@@ -1,4 +1,32 @@
 const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.MappingPropertyName = "FileBasedProgramsItemMapping" -> string!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveArgumentKind
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveArgumentKind.Name = 1 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveArgumentKind
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveArgumentKind.Unknown = 0 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveArgumentKind
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveArgumentKind.Value = 2 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveArgumentKind
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.Deconstruct(out string! Text, out int SeparatorIndex) -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.DirectiveToken() -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.DirectiveToken(string! Text, int SeparatorIndex) -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.Equals(Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken other) -> bool
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.NameSpan.get -> Microsoft.CodeAnalysis.Text.TextSpan
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.NameSpan.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.SeparatorIndex.get -> int
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.SeparatorIndex.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.SeparatorSpan.get -> Microsoft.CodeAnalysis.Text.TextSpan
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.SeparatorSpan.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.Text.get -> string!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.Text.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.ValueSpan.get -> Microsoft.CodeAnalysis.Text.TextSpan
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.ValueSpan.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.WithSourceSpans(System.ReadOnlySpan<char> source, int sourceStart, int separatorIndex) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken
+override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.GetHashCode() -> int
+static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.Create(string! text, char? separator, int sourceStart) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken
+static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.operator !=(Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken left, Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken right) -> bool
+static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.operator ==(Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken left, Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken right) -> bool
+static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Tokenize(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context, out Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveArgumentKind argumentKind) -> System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken>?
+static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.TokenizeDirective(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.CodeAnalysis.CSharp.Syntax.IgnoredDirectiveTriviaSyntax! directive, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! errorReporter) -> (Microsoft.CodeAnalysis.Text.TextSpan KindSpan, Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveArgumentKind ArgumentKind, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken>? Tokens)
+~override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.Equals(object obj) -> bool
+~override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveToken.ToString() -> string
 const Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.FromIncludeDirectiveMetadataName = "FileBasedProgramsFromIncludeDirective" -> string!
 const Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.FromRefDirectiveMetadataName = "FileBasedProgramsFromRefDirective" -> string!
 const Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.IncludeDirectiveMetadataNames = "FileBasedProgramsIncludeDirectiveMetadataNames" -> string!
