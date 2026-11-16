@@ -20,6 +20,8 @@ branch rather than assuming `main`.
    constructs and collect numbered context, including URLs on adjacent lines.
    In C# files, TODO/workaround matches in comments and attribute arguments are
    eligible; unrelated TODO-like text in string literals is ignored.
+   If C# lexical analysis fails for a file, that file is skipped with a warning
+   and collection continues for the remaining files.
 2. [`interpretations.mjs`](interpretations.mjs) restores compatible cached
    classifications and selects a bounded batch of new or changed source.
 3. The [reusable interpreter](../workflows/stale-reference-interpret.md) identifies

@@ -150,13 +150,24 @@ export async function collect(repoRoot, { rulesHash } = {}) {
         hits.get(filePath).push({ seedLine: line, kindHint });
     }
     const candidates = [];
+    const diagnostics = [];
     for (const filePath of [...hits.keys()].sort()) {
         const blobSha = files.get(filePath);
         const lines = sourceLines(await git(repoRoot, ['cat-file', 'blob', blobSha]));
         if (!githubReference.test(lines.join('\n'))) continue;
         const isCSharp = /\.cs$/i.test(filePath);
-        const comments = isCSharp ? csharpCommentLines(lines) : undefined;
-        const attributeSites = isCSharp ? csharpAttributeSites(lines) : undefined;
+        let comments;
+        let attributeSites;
+        if (isCSharp) {
+            try {
+                comments = csharpCommentLines(lines);
+                attributeSites = csharpAttributeSites(lines);
+            } catch (error) {
+                if (!(error instanceof Error)) throw error;
+                diagnostics.push(`Skipped C# candidate collection for ${filePath}: ${error.message}`);
+                continue;
+            }
+        }
         const windows = [];
         for (const hit of hits.get(filePath).sort((a, b) => a.seedLine - b.seedLine)) {
             if (comments && hit.kindHint !== 'ignore' &&
@@ -183,5 +194,7 @@ export async function collect(repoRoot, { rulesHash } = {}) {
             }
         }
     }
-    return { schemaVersion: 1, headSha, rulesHash, candidates };
+    const manifest = { schemaVersion: 1, headSha, rulesHash, candidates };
+    if (diagnostics.length) manifest.diagnostics = diagnostics;
+    return manifest;
 }
