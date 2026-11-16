@@ -4,11 +4,38 @@
 using System.Globalization;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
+        [TestMethod]
+        [CombinatorialData]
+        public void VerifyFalseConditionAtEndOfFile(
+            [CombinatorialValues(false, true)] bool xmlStyle,
+            [CombinatorialValues("\n", "\r\n")] string newline,
+            [CombinatorialValues(16, 50, 1024)] int bufferSize,
+            [CombinatorialValues(0, 1, 2)] int trailingNewlines)
+        {
+            string value = xmlStyle
+                ? $"Hello{newline}<!--#if (1.2 > 2.5){newline}#endif -->"
+                : $"Hello{newline}#if (1.2 > 2.5){newline}#endif";
+            string expected = $"Hello{newline}";
+            for (int i = 0; i < trailingNewlines; ++i)
+            {
+                value += newline;
+                if (i > 0)
+                {
+                    expected += newline;
+                }
+            }
+
+            VariableCollection vc = new VariableCollection();
+            IProcessor processor = xmlStyle ? SetupXmlStyleProcessor(vc) : SetupCStyleNoCommentsProcessor(vc);
+            RunAndVerify(value, expected, processor, bufferSize);
+        }
+
         [TestMethod]
         public void VerifyIfEndifTrueCondition()
         {

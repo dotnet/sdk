@@ -9,7 +9,7 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        BenchmarkRunner.Run(typeof(Program).Assembly);
+        BenchmarkRunner.Run(typeof(Program).Assembly, args: args);
 
         // BenchmarkDotNet bakes a fair amount of assumptions into the way it generates
         // projects for running its benchmarks. One of the key problems we run into is how
