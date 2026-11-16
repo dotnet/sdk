@@ -39,6 +39,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <HotReloadBrowserToolsAssetPrefix>Microsoft.NET.Sdk.BlazorWeb.HotReload</HotReloadBrowserToolsAssetPrefix>
     <HotReloadBrowserToolsInitializerFile>$(MSBuildThisFileDirectory)HotReload\Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js</HotReloadBrowserToolsInitializerFile>
     <HotReloadBrowserToolsRegisterInitializerAsJSModule>true</HotReloadBrowserToolsRegisterInitializerAsJSModule>
+    <HotReloadBrowserToolsAssetMode>Local</HotReloadBrowserToolsAssetMode>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets"

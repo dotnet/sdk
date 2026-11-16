@@ -40,7 +40,12 @@ The generated initializer checks the provider-owned
 configuration; this response is not a generated file or Static Web Asset.
 Hosted WebAssembly's client owns these outputs; its server consumes the referenced assets
 rather than generating a competing route and keypair. The assets are build only and must
-never reach publish output. Its generated watch initializer also initializes the SDK Hot
+never reach publish output. Server Web SDK browser-tools assets use `AssetMode=Local`:
+they remain available to their own project but are never exported through project
+references, even in `Root` project mode. WebAssembly-owned browser-tools assets retain
+`AssetMode=All` so a hosted client's assets reach its server. Use the shared manifest-mode
+reference filter rather than adding browser-tools-specific export filtering.
+Its generated watch initializer also initializes the SDK Hot
 Reload agent on .NET 10+; older target frameworks use the runtime's apply API. Do not add a
 second Hot Reload agent initializer—the shared browser-tools rendezvous carries the SDK
 agent's apply functions directly.
@@ -79,7 +84,7 @@ These invariants must hold at all times. Violating any of them is a bug.
 
 - `SourceType` ∈ {`Discovered`, `Computed`, `Project`, `Package`, `Framework`}.
 - `AssetKind` ∈ {`Build`, `Publish`, `All`}.
-- `AssetMode` ∈ {`All`, `CurrentProject`, `Reference`}.
+- `AssetMode` ∈ {`All`, `CurrentProject`, `Reference`, `Local`}.
 - `AssetRole` ∈ {`Primary`, `Related`, `Alternative`}.
 
 **Conditional requirements**

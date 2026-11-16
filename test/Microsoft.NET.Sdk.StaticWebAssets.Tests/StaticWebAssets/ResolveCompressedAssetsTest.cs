@@ -138,10 +138,13 @@ public class ResolveCompressedAssetsTest
     }
 
     [TestMethod]
-    public void ResolvesAssetsMatchingIncludePattern()
+    [DataRow(StaticWebAsset.AssetModes.All)]
+    [DataRow(StaticWebAsset.AssetModes.Local)]
+    public void ResolvesAssetsMatchingIncludePattern(string assetMode)
     {
         // Arrange
         var asset = CreatePrimaryAsset();
+        asset.SetMetadata("AssetMode", assetMode);
 
         var task = new ResolveCompressedAssets()
         {
@@ -157,6 +160,7 @@ public class ResolveCompressedAssetsTest
 
         // Assert
         result.Should().BeTrue();
+        task.AssetsToCompress.Should().OnlyContain(a => a.GetMetadata("AssetMode") == assetMode);
         task.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(2);
         task.AssetsToCompress[0].ItemSpec.Should().EndWith(".gz");
         task.AssetsToCompress[1].ItemSpec.Should().EndWith(".br");

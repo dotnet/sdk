@@ -187,7 +187,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         * "BasePath": The base path where the asset is exposed.
         * "RelativePath": The relative path for the asset.
         * "AssetKind": The asset kind ('Build', 'Publish' or 'All') This is inferred from CopyToOutputDirectory/CopyToPublishDirectory
-        * "AssetMode": The asset mode ('CurrentProject', 'Reference', 'All')
+        * "AssetMode": The asset mode ('CurrentProject', 'Reference', 'All', 'Local').
+          'Local' assets are available locally but never exported through project references,
+          independent of StaticWebAssetProjectMode.
         * "AssetRole": The asset role ('Primary', 'Related', 'Alternative')
         * "AssetMergeSource": The source of the asset when it is being embedded in another TFM.
         * "AssetMergeBehavior": The merge behavior when an asset conflicts with another asset in the same TFM.

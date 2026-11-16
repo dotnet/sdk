@@ -106,6 +106,11 @@ For hosted WebAssembly applications, the browser-facing client project owns the 
 initializer and configuration assets. The launching server consumes those referenced
 assets and hosts the forwarding route, while `dotnet watch` reads the client project's
 deterministic private-key output. This avoids competing host/client keys.
+The [Web SDK](../../src/WebSdk/Web/Targets/Sdk.Server.targets) marks server-owned
+browser-tools assets `AssetMode=Local`, which the shared
+[reference-export predicate](../../src/StaticWebAssetsSdk/Tasks/Data/StaticAssetsManifest.cs)
+excludes regardless of project mode. WebAssembly-owned browser-tools assets keep `All`
+so the hosted client's server can consume them.
 
 The [WebAssembly SDK](../../src/WasmSdk/Sdk/Sdk.targets) and the
 [Web SDK](../../src/WebSdk/Web/Targets/Sdk.Server.targets) opt in by naming their asset

@@ -978,6 +978,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             case AssetModes.All:
             case AssetModes.CurrentProject:
             case AssetModes.Reference:
+            case AssetModes.Local:
                 break;
             default:
                 throw new InvalidOperationException($"Unknown Asset mode '{AssetMode}' for '{Identity}'.");
@@ -1178,6 +1179,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public bool IsForCurrentProjectOnly()
         => string.Equals(AssetMode, AssetModes.CurrentProject, StringComparison.Ordinal);
+
+    public bool IsLocal()
+        => string.Equals(AssetMode, AssetModes.Local, StringComparison.Ordinal);
 
     public bool IsForReferencedProjectsOnly()
         => string.Equals(AssetMode, AssetModes.Reference, StringComparison.Ordinal);
@@ -1462,6 +1466,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public static class AssetModes
     {
+        public const string Local = nameof(Local);
         public const string CurrentProject = nameof(CurrentProject);
         public const string Reference = nameof(Reference);
         public const string All = nameof(All);
