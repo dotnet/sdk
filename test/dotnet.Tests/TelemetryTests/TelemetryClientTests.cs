@@ -90,7 +90,7 @@ public class TelemetryClientTests : SdkTest
     [DataRow("2147483648", 5_000)]
     public void ShutdownTimeoutUsesPositiveOverrideOrFiveSecondDefault(string? value, int expected)
     {
-        TelemetryClient.GetShutdownTimeoutMs(value).Should().Be(expected);
+        TelemetryClient.GetShutdownTimeoutMs(value, defaultTimeoutMs: 5_000).Should().Be(expected);
     }
 
     [TestMethod]
@@ -105,7 +105,7 @@ public class TelemetryClientTests : SdkTest
     [DataRow("2147483648", 100)]
     public void LocalPersistenceTimeoutUsesPositiveOverrideOrHundredMillisecondDefault(string? value, int expected)
     {
-        TelemetryClient.GetShutdownTimeoutMs(value, defaultTimeoutMs: 100).Should().Be(expected);
+        TelemetryClient.GetShutdownTimeoutMs(value).Should().Be(expected);
     }
 
     public static IEnumerable<object[]> CommandsWithExitCode =>
