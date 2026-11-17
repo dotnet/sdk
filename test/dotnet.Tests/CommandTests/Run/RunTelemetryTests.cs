@@ -251,19 +251,25 @@ public class RunTelemetryTests : SdkTest
             "</Project>",
             """
               <ItemGroup>
+                <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
                 <ProjectReference Include="Library/Library.csproj" />
               </ItemGroup>
             </Project>
             """));
 
-        string extensionsPath = SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest;
+        var toolset = SdkTestContext.Current.ToolsetUnderTest;
+        string extensionsPath = toolset.SdkFolderUnderTest;
+        string? originalSdkPath = Environment.GetEnvironmentVariable("MSBuildSDKsPath");
         string? originalExtensionsPath = Environment.GetEnvironmentVariable("MSBuildExtensionsPath");
+        string? originalHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
         var events = new List<(string? eventName, IDictionary<string, string?>? properties)>();
         void handler(object? sender, InstrumentationEventArgs args) => events.Add((args.EventName, args.Properties));
 
         try
         {
+            Environment.SetEnvironmentVariable("MSBuildSDKsPath", null);
             Environment.SetEnvironmentVariable("MSBuildExtensionsPath", extensionsPath);
+            Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", toolset.DotNetHostPath);
             TelemetryEventEntry.EntryPosted += handler;
 
             var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -291,13 +297,15 @@ public class RunTelemetryTests : SdkTest
 
             var runEvent = events.Should().ContainSingle(entry => entry.eventName == "run").Subject;
             runEvent.properties.Should().NotBeNull();
-            runEvent.properties!["package_reference_count"].Should().Be("0");
+            runEvent.properties!["package_reference_count"].Should().Be("1");
             runEvent.properties["project_reference_count"].Should().Be("1");
         }
         finally
         {
             TelemetryEventEntry.EntryPosted -= handler;
+            Environment.SetEnvironmentVariable("MSBuildSDKsPath", originalSdkPath);
             Environment.SetEnvironmentVariable("MSBuildExtensionsPath", originalExtensionsPath);
+            Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", originalHostPath);
         }
     }
 
