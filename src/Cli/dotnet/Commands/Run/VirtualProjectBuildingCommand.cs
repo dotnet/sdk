@@ -13,6 +13,7 @@ using Microsoft.Build.Logging;
 using Microsoft.Build.Logging.SimpleErrorLogger;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -213,6 +214,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             CleanFileBasedAppArtifactsCommand.StartAutomaticCleanupIfNeeded();
         }
 
+        using IDisposable softCancellationTimeout =
+            ProcessLifecycle.OverrideSoftCancellationTimeout(MSBuildForwardingApp.BuildSoftCancellationTimeout);
         IDisposable? environmentScope = null;
         Activity? activity = null;
         bool buildStarted = false;

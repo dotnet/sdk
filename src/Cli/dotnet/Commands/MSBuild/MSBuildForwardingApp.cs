@@ -28,6 +28,9 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 /// </remarks>
 public class MSBuildForwardingApp : CommandBase
 {
+    // MSBuild cancellation needs time to finish nodes and close loggers such as the binary logger.
+    internal static readonly TimeSpan BuildSoftCancellationTimeout = TimeSpan.FromSeconds(2);
+
     private readonly MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
 
     /// <summary>
@@ -141,6 +144,9 @@ public class MSBuildForwardingApp : CommandBase
 
     private int Execute(string? workingDirectory, CancellationToken cancellationToken)
     {
+        using IDisposable softCancellationTimeout =
+            ProcessLifecycle.OverrideSoftCancellationTimeout(BuildSoftCancellationTimeout);
+
         // Ignore Ctrl-C for the remainder of the command's execution
         // Forwarding commands will just spawn the child process and exit
         Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
