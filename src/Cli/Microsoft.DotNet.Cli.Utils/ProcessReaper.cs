@@ -161,6 +161,7 @@ internal class ProcessReaper : IDisposable
         // ProcessExit callback that starts after Dispose has run simply becomes a no-op.
         private readonly Lock _shutdownLock = new();
         private bool _shuttingDown;
+        private int _sigTermRequested;
 
         public UnixProcessReaper(Process process) : base(process)
         {
@@ -175,6 +176,7 @@ internal class ProcessReaper : IDisposable
                     }
 
                     context.Cancel = true;
+                    Volatile.Write(ref _sigTermRequested, 1);
                     Environment.Exit(143);
                 });
         }
@@ -212,6 +214,9 @@ internal class ProcessReaper : IDisposable
                 try
                 {
                     ProcessExitStatus? exitStatus = null;
+                    bool forwardSigTermWithGrace =
+                        ProcessLifecycle.IsSigTermRequested ||
+                        Volatile.Read(ref _sigTermRequested) != 0;
 
                     if (ProcessLifecycle.IsForcefulCancellationRequested &&
                         !ProcessLifecycle.IsSigTermRequested)
@@ -223,7 +228,7 @@ internal class ProcessReaper : IDisposable
                         // Forward SIGTERM before escalating so the child observes the
                         // same hard-shutdown signal as the CLI.
                         if (_process.Signal(PosixSignal.SIGTERM) &&
-                            ProcessLifecycle.IsForcefulCancellationRequested &&
+                            forwardSigTermWithGrace &&
                             !_process.TryWaitForExitStatus(s_forcefulSigTermGracePeriod, out exitStatus))
                         {
                             TerminateProcess();
@@ -232,7 +237,10 @@ internal class ProcessReaper : IDisposable
 
                     exitStatus ??= _process.WaitForExitStatus();
 
-                    Environment.ExitCode = exitStatus.ExitCode;
+                    if (!ProcessLifecycle.IsSignalTerminationRequested)
+                    {
+                        Environment.ExitCode = exitStatus.ExitCode;
+                    }
                 }
                 catch (InvalidOperationException)
                 {

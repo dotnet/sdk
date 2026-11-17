@@ -13,6 +13,13 @@ public static class ProcessLifecycleTestApp
         string childMode = args[0];
         string markerPath = args[1];
 
+        if (childMode == "lifecycle-reaper-parent")
+        {
+            using IDisposable processLifecycle = ProcessLifecycle.Initialize();
+            RunReaperParent(args, markerPath, childMode);
+            return 0;
+        }
+
         if (childMode is "reaper-parent" or "uncooperative-reaper-parent")
         {
             RunReaperParent(args, markerPath, childMode);
@@ -62,7 +69,9 @@ public static class ProcessLifecycleTestApp
     {
         using Process signalChild = CreateChildProcess(
             args,
-            childMode == "reaper-parent" ? "signal-child" : "ignoring-signal-child");
+            childMode is "reaper-parent" or "lifecycle-reaper-parent"
+                ? "signal-child"
+                : "ignoring-signal-child");
         using ProcessReaper reaper = ProcessReaper.Create(signalChild);
 
         signalChild.Start();

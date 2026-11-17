@@ -175,6 +175,23 @@ public class ProcessLifecycleTests : SdkTest
         uncooperativeReaperParent.ExitCode.Should().NotBe(0);
     }
 
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void LifecycleSigTermExitCodeIsNotReplacedByReapedChild()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+
+        using Process reaperParent = StartChild(
+            "lifecycle-reaper-parent",
+            testDirectory.Path);
+
+        WaitForMarker(testDirectory.Path, "reaper-ready");
+        reaperParent.SafeHandle.Signal(PosixSignal.SIGTERM).Should().BeTrue();
+        WaitForMarker(testDirectory.Path, "forwarded");
+        reaperParent.WaitForExit(s_waitTimeout).Should().BeTrue();
+        reaperParent.ExitCode.Should().Be(143);
+    }
+
     private static Process StartChild(string childMode, string testDirectory)
     {
         string markerPath = GetMarkerPath(testDirectory);
