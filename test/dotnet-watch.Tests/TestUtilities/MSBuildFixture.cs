@@ -24,7 +24,7 @@ public static class MSBuildFixture
 
         var toolset = SdkTestContext.Current.ToolsetUnderTest;
         var sdkDir = toolset.SdkFolderUnderTest;
-        var watchDir = Path.Combine(sdkDir, "DotnetTools", "dotnet-watch", toolset.SdkVersion, "tools", ToolsetInfo.SdkTargetFramework, "any");
+        var watchDir = Path.Combine(sdkDir, "DotnetTools", "dotnet-watch", toolset.SdkVersion, "tools", ToolsetInfo.CurrentTargetFramework, "any");
 
         MSBuildLocator.RegisterMSBuildPath(sdkDir);
 

@@ -6,8 +6,6 @@ using Microsoft.DotNet.Cli.Utils;
 namespace Microsoft.DotNet.Tests.TelemetryTests;
 
 [TestClass]
-// The matrix starts and stops per-user build servers that tests throughout this project can use.
-[DoNotParallelize]
 public class TelemetryHostMatrixTests : SdkTest
 {
     [TestMethod]
@@ -153,7 +151,8 @@ public class TelemetryHostMatrixTests : SdkTest
 
     private void ShutdownBuildServers()
     {
-        // Every row shuts down the per-user server before and after its trial so the cold/hot state belongs to this test.
+        // This project runs serially, and every row shuts down the per-user server before
+        // and after its trial so the cold/hot state belongs to this test.
         new DotnetCommand(Log, "build-server", "shutdown")
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "1")
             .Execute()

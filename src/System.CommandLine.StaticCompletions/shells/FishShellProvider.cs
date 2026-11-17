@@ -18,9 +18,6 @@ public class FishShellProvider : IShellProvider
     // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
     public override string ToString() => ArgumentName;
 
-    private static IEnumerable<string> SanitizeOptionNames(IEnumerable<string> names) =>
-        names.Where(n => n.StartsWith('-'));
-
     public string GenerateCompletions(Command command)
     {
         var safeName = command.Name.MakeSafeFunctionName();
@@ -260,7 +257,7 @@ public class FishShellProvider : IShellProvider
 
             foreach (var option in valueOptions)
             {
-                var names = string.Join(" ", SanitizeOptionNames(option.Names()));
+                var names = string.Join(" ", option.Names());
                 var maxValues = option.Arity.MaximumNumberOfValues;
                 bool isBounded = maxValues < UnboundedArityThreshold;
 
@@ -330,11 +327,11 @@ public class FishShellProvider : IShellProvider
                 WriteCandidate(writer, sub.Name, SanitizeDescription(sub.Description));
             }
 
-            // Option completions - emit all supported aliases so both -h and --help are completable
+            // Option completions - emit all aliases so both -h and --help are completable
             foreach (var option in cmd.HierarchicalOptions().Where(o => !o.Hidden))
             {
                 var desc = SanitizeDescription(option.Description);
-                foreach (var name in SanitizeOptionNames(option.Names()))
+                foreach (var name in option.Names())
                 {
                     WriteCandidate(writer, name, desc);
                 }

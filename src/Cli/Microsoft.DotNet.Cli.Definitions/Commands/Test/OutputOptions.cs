@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal enum OutputOptions
 {
-    Normal,
-    Minimal,
-    Detailed
+    Minimal = 1,
+    Normal = 0,
+    Detailed = 2
 }

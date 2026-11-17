@@ -24,7 +24,7 @@ namespace EndToEnd.Tests
         public void ItCanBuildAndRun(string targetPlatformVersion, string packageVersion = "")
         {
             var testInstance = TestAssetsManager
-                .CopyTestAsset("UseCswinrt", identifier: targetPlatformVersion + packageVersion)
+                .CopyTestAsset("UseCswinrt", identifier: targetPlatformVersion)
                 .WithSource();
 
             var projectPath = Path.Combine(testInstance.Path, "consolecswinrt.csproj");

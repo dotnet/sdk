@@ -7,8 +7,6 @@ using Microsoft.DotNet.Cli.Commands.Test;
 namespace Microsoft.DotNet.Cli.Tests;
 
 [TestClass]
-[ResourceLock(nameof(SdkDirectoryScope))]
-[ResourceLock(WellKnownResources.EnvironmentVariables)]
 public class SdkForwardingAppTests
 {
     [TestMethod]

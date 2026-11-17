@@ -31,19 +31,17 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net45.Default,
-                TestCode = """
+                TestCode = @"
+using System;
+using System.Xml;
 
-                    using System;
-                    using System.Xml;
-
-                    namespace TestNamespace
-                    {
-                        class TestClass : XmlTextReader
-                        {
-                            public TestClass () {}
-                        }
-                    }
-                    """,
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader
+    {
+        public TestClass () {}
+    }
+}",
                 ExpectedDiagnostics =
                 {
                     GetCA3077ConstructorCSharpResultAt(9, 16, "TestClass"),
@@ -53,18 +51,16 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net45.Default,
-                TestCode = """
+                TestCode = @"
+Imports System.Xml
 
-                    Imports System.Xml
-
-                    Namespace TestNamespace
-                        Class TestClass
-                            Inherits XmlTextReader
-                            Public Sub New()
-                            End Sub
-                        End Class
-                    End Namespace
-                    """,
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+        End Sub
+    End Class
+End Namespace",
                 ExpectedDiagnostics =
                 {
                     GetCA3077ConstructorBasicResultAt(7, 20, "TestClass"),
@@ -78,72 +74,66 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net452.Default,
-                TestCode = """
-                    using System;
-                    using System.Xml;
+                TestCode = @"
+using System;
+using System.Xml;
 
-                    namespace TestNamespace
-                    {
-                        class TestClass : XmlTextReader
-                        {
-                            public TestClass () {}
-                        }
-                    }
-                    """,
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader
+    {
+        public TestClass () {}
+    }
+}",
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net452.Default,
-                TestCode = """
-                    Imports System.Xml
+                TestCode = @"
+Imports System.Xml
 
-                    Namespace TestNamespace
-                        Class TestClass
-                            Inherits XmlTextReader
-                            Public Sub New()
-                            End Sub
-                        End Class
-                    End Namespace
-                    """,
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+        End Sub
+    End Class
+End Namespace",
             }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         public async Task XmlTextReaderDerivedTypeNoCtorSetUrlResolverToXmlResolverMethodShouldGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                using System;
-                using System.Xml;
-
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public void method()
-                        {
-                            XmlResolver = new XmlUrlResolver();
-                        }
-                    }
-                }
-                """,
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {
+        public void method()
+        {
+            XmlResolver = new XmlUrlResolver();
+        }
+    }
+}",
                 GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodCSharpResultAt(11, 13, "method")
             );
 
-            await VerifyVisualBasicAnalyzerAsync("""
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Imports System.Xml
-
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub method()
-                            XmlResolver = New XmlUrlResolver()
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub method()
+            XmlResolver = New XmlUrlResolver()
+        End Sub
+    End Class
+End Namespace",
                 GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodBasicResultAt(8, 13, "method")
             );
         }
@@ -151,49 +141,45 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetUrlResolverToXmlResolverMethodShouldGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                using System;
-                using System.Xml;
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {    
+        public TestClass()
+        {
+            this.XmlResolver = null;
+            this.DtdProcessing = DtdProcessing.Prohibit;
+        }
 
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public TestClass()
-                        {
-                            this.XmlResolver = null;
-                            this.DtdProcessing = DtdProcessing.Prohibit;
-                        }
-
-                        public void method()
-                        {
-                            XmlResolver = new XmlUrlResolver();
-                        }
-                    }
-                }
-                """,
+        public void method()
+        {
+            XmlResolver = new XmlUrlResolver();
+        }
+    }
+}",
                 GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodCSharpResultAt(17, 13, "method")
             );
 
-            await VerifyVisualBasicAnalyzerAsync("""
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Imports System.Xml
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+            Me.XmlResolver = Nothing
+            Me.DtdProcessing = DtdProcessing.Prohibit
+        End Sub
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub New()
-                            Me.XmlResolver = Nothing
-                            Me.DtdProcessing = DtdProcessing.Prohibit
-                        End Sub
-
-                        Public Sub method()
-                            XmlResolver = New XmlUrlResolver()
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+        Public Sub method()
+            XmlResolver = New XmlUrlResolver()
+        End Sub
+    End Class
+End Namespace",
                 GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodBasicResultAt(13, 13, "method")
             );
         }
@@ -201,49 +187,45 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetDtdProcessingToParseMethodShouldGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                using System;
-                using System.Xml;
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {    
+        public TestClass()
+        {
+            this.XmlResolver = null;
+            this.DtdProcessing = DtdProcessing.Prohibit;
+        }
 
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public TestClass()
-                        {
-                            this.XmlResolver = null;
-                            this.DtdProcessing = DtdProcessing.Prohibit;
-                        }
-
-                        public void method()
-                        {
-                            DtdProcessing = DtdProcessing.Parse;
-                        }
-                    }
-                }
-                """,
+        public void method()
+        {
+            DtdProcessing = DtdProcessing.Parse;
+        }
+    }
+}",
                 GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodCSharpResultAt(17, 13, "method")
             );
 
-            await VerifyVisualBasicAnalyzerAsync("""
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Imports System.Xml
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+            Me.XmlResolver = Nothing
+            Me.DtdProcessing = DtdProcessing.Prohibit
+        End Sub
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub New()
-                            Me.XmlResolver = Nothing
-                            Me.DtdProcessing = DtdProcessing.Prohibit
-                        End Sub
-
-                        Public Sub method()
-                            DtdProcessing = DtdProcessing.Parse
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+        Public Sub method()
+            DtdProcessing = DtdProcessing.Parse
+        End Sub
+    End Class
+End Namespace",
                 GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodBasicResultAt(13, 13, "method")
             );
         }
@@ -251,49 +233,45 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetUrlResolverToThisXmlResolverMethodShouldGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                using System;
-                using System.Xml;
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {    
+        public TestClass()
+        {
+            this.XmlResolver = null;
+            this.DtdProcessing = DtdProcessing.Prohibit;
+        }
 
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public TestClass()
-                        {
-                            this.XmlResolver = null;
-                            this.DtdProcessing = DtdProcessing.Prohibit;
-                        }
-
-                        public void method()
-                        {
-                            this.XmlResolver = new XmlUrlResolver();
-                        }
-                    }
-                }
-                """,
+        public void method()
+        {
+            this.XmlResolver = new XmlUrlResolver();
+        }
+    }
+}",
                 GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodCSharpResultAt(17, 13, "method")
             );
 
-            await VerifyVisualBasicAnalyzerAsync("""
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Imports System.Xml
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+            Me.XmlResolver = Nothing
+            Me.DtdProcessing = DtdProcessing.Prohibit
+        End Sub
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub New()
-                            Me.XmlResolver = Nothing
-                            Me.DtdProcessing = DtdProcessing.Prohibit
-                        End Sub
-
-                        Public Sub method()
-                            Me.XmlResolver = New XmlUrlResolver()
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+        Public Sub method()
+            Me.XmlResolver = New XmlUrlResolver()
+        End Sub
+    End Class
+End Namespace",
                 GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodBasicResultAt(13, 13, "method")
             );
         }
@@ -301,49 +279,45 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetUrlResolverToBaseXmlResolverMethodShouldGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                using System;
-                using System.Xml;
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {    
+        public TestClass()
+        {
+            this.XmlResolver = null;
+            this.DtdProcessing = DtdProcessing.Prohibit;
+        }
 
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public TestClass()
-                        {
-                            this.XmlResolver = null;
-                            this.DtdProcessing = DtdProcessing.Prohibit;
-                        }
-
-                        public void method()
-                        {
-                            base.XmlResolver = new XmlUrlResolver();
-                        }
-                    }
-                }
-                """,
+        public void method()
+        {
+            base.XmlResolver = new XmlUrlResolver();
+        }
+    }
+}",
                 GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodCSharpResultAt(17, 13, "method")
             );
 
-            await VerifyVisualBasicAnalyzerAsync("""
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Imports System.Xml
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+            Me.XmlResolver = Nothing
+            Me.DtdProcessing = DtdProcessing.Prohibit
+        End Sub
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub New()
-                            Me.XmlResolver = Nothing
-                            Me.DtdProcessing = DtdProcessing.Prohibit
-                        End Sub
-
-                        Public Sub method()
-                            MyBase.XmlResolver = New XmlUrlResolver()
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+        Public Sub method()
+            MyBase.XmlResolver = New XmlUrlResolver()
+        End Sub
+    End Class
+End Namespace",
                 GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodBasicResultAt(13, 13, "method")
             );
         }
@@ -351,229 +325,219 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetXmlResolverToNullMethodShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
-                using System;
-                using System.Xml;
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public TestClass()
-                        {
-                            this.XmlResolver = null;
-                            this.DtdProcessing = DtdProcessing.Prohibit;
-                        }
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {    
+        public TestClass()
+        {
+            this.XmlResolver = null;
+            this.DtdProcessing = DtdProcessing.Prohibit;
+        }
 
-                        public void method()
-                        {
-                            XmlResolver = null;
-                        }
-                    }
-                }
-                """
+        public void method()
+        {
+            XmlResolver = null;
+        }
+    }
+}"
             );
 
-            await VerifyVisualBasicAnalyzerAsync("""
-                Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub New()
-                            Me.XmlResolver = Nothing
-                            Me.DtdProcessing = DtdProcessing.Prohibit
-                        End Sub
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+            Me.XmlResolver = Nothing
+            Me.DtdProcessing = DtdProcessing.Prohibit
+        End Sub
 
-                        Public Sub method()
-                            XmlResolver = Nothing
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+        Public Sub method()
+            XmlResolver = Nothing
+        End Sub
+    End Class
+End Namespace");
         }
 
         [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetDtdProcessingToProhibitMethodShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
-                using System;
-                using System.Xml;
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public TestClass()
-                        {
-                            this.XmlResolver = null;
-                            this.DtdProcessing = DtdProcessing.Prohibit;
-                        }
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {    
+        public TestClass()
+        {
+            this.XmlResolver = null;
+            this.DtdProcessing = DtdProcessing.Prohibit;
+        }
 
-                        public void method()
-                        {
-                            DtdProcessing = DtdProcessing.Prohibit;
-                        }
-                    }
-                }
-                """
+        public void method()
+        {
+            DtdProcessing = DtdProcessing.Prohibit;
+        }
+    }
+}"
             );
 
-            await VerifyVisualBasicAnalyzerAsync("""
-                Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub New()
-                            Me.XmlResolver = Nothing
-                            Me.DtdProcessing = DtdProcessing.Prohibit
-                        End Sub
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+            Me.XmlResolver = Nothing
+            Me.DtdProcessing = DtdProcessing.Prohibit
+        End Sub
 
-                        Public Sub method()
-                            DtdProcessing = DtdProcessing.Prohibit
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+        Public Sub method()
+            DtdProcessing = DtdProcessing.Prohibit
+        End Sub
+    End Class
+End Namespace");
         }
 
         [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetDtdProcessingToTypoMethodShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
-                using System;
-                using System.Xml;
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public TestClass()
-                        {
-                            this.XmlResolver = null;
-                            this.DtdProcessing = DtdProcessing.{|CS1061:Prohib|};
-                        }
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {    
+        public TestClass()
+        {
+            this.XmlResolver = null;
+            this.DtdProcessing = DtdProcessing.{|CS1061:Prohib|};
+        }
 
-                        public void method()
-                        {
-                            DtdProcessing = DtdProcessing.{|CS1061:Prohib|};
-                        }
-                    }
-                }
-                """);
+        public void method()
+        {
+            DtdProcessing = DtdProcessing.{|CS1061:Prohib|};
+        }
+    }
+}");
 
-            await VerifyVisualBasicAnalyzerAsync("""
-                Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub New()
-                            Me.XmlResolver = Nothing
-                            Me.DtdProcessing = {|BC30456:DtdProcessing.Prohib|}
-                        End Sub
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+            Me.XmlResolver = Nothing
+            Me.DtdProcessing = {|BC30456:DtdProcessing.Prohib|}
+        End Sub
 
-                        Public Sub method()
-                            DtdProcessing = {|BC30456:DtdProcessing.Prohib|}
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+        Public Sub method()
+            DtdProcessing = {|BC30456:DtdProcessing.Prohib|}
+        End Sub
+    End Class
+End Namespace");
         }
 
         [TestMethod]
         public async Task XmlTextReaderDerivedTypeParseAndNullResolverMethodShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
-                using System;
-                using System.Xml;
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public TestClass()
-                        {
-                            this.XmlResolver = null;
-                            this.DtdProcessing = DtdProcessing.Prohibit;
-                        }
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {    
+        public TestClass()
+        {
+            this.XmlResolver = null;
+            this.DtdProcessing = DtdProcessing.Prohibit;
+        }
 
-                        public void method()
-                        {
-                            DtdProcessing = DtdProcessing.Parse;
-                            XmlResolver = null;
-                        }
-                    }
-                }
-                """
+        public void method()
+        {
+            DtdProcessing = DtdProcessing.Parse;
+            XmlResolver = null;
+        }
+    }
+}"
             );
 
-            await VerifyVisualBasicAnalyzerAsync("""
-                Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub New()
-                            Me.XmlResolver = Nothing
-                            Me.DtdProcessing = DtdProcessing.Prohibit
-                        End Sub
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+            Me.XmlResolver = Nothing
+            Me.DtdProcessing = DtdProcessing.Prohibit
+        End Sub
 
-                        Public Sub method()
-                            DtdProcessing = DtdProcessing.Parse
-                            XmlResolver = Nothing
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+        Public Sub method()
+            DtdProcessing = DtdProcessing.Parse
+            XmlResolver = Nothing
+        End Sub
+    End Class
+End Namespace");
         }
 
         [TestMethod]
         public async Task XmlTextReaderDerivedTypeIgnoreAndUrlResolverMethodShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
-                using System;
-                using System.Xml;
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public TestClass()
-                        {
-                            this.XmlResolver = null;
-                            this.DtdProcessing = DtdProcessing.Prohibit;
-                        }
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {    
+        public TestClass()
+        {
+            this.XmlResolver = null;
+            this.DtdProcessing = DtdProcessing.Prohibit;
+        }
 
-                        public void method()
-                        {
-                            DtdProcessing = DtdProcessing.Ignore;
-                            XmlResolver = new XmlUrlResolver();
-                        }
-                    }
-                }
-                """
+        public void method()
+        {
+            DtdProcessing = DtdProcessing.Ignore;
+            XmlResolver = new XmlUrlResolver();
+        }
+    }
+}"
             );
 
-            await VerifyVisualBasicAnalyzerAsync("""
-                Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub New()
-                            Me.XmlResolver = Nothing
-                            Me.DtdProcessing = DtdProcessing.Prohibit
-                        End Sub
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+            Me.XmlResolver = Nothing
+            Me.DtdProcessing = DtdProcessing.Prohibit
+        End Sub
 
-                        Public Sub method()
-                            DtdProcessing = DtdProcessing.Ignore
-                            XmlResolver = New XmlUrlResolver()
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+        Public Sub method()
+            DtdProcessing = DtdProcessing.Ignore
+            XmlResolver = New XmlUrlResolver()
+        End Sub
+    End Class
+End Namespace");
         }
 
         [TestMethod]
@@ -584,29 +548,27 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
                 .WithLocation(18, 13);
 #pragma warning restore RS0030 // Do not use banned APIs
 
-            await VerifyCSharpAnalyzerAsync("""
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                using System;
-                using System.Xml;
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {    
+        public TestClass()
+        {
+            this.XmlResolver = null;
+            this.DtdProcessing = DtdProcessing.Prohibit;
+        }
 
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public TestClass()
-                        {
-                            this.XmlResolver = null;
-                            this.DtdProcessing = DtdProcessing.Prohibit;
-                        }
-
-                        public void method()
-                        {
-                            DtdProcessing = DtdProcessing.Parse;
-                            XmlResolver = new XmlUrlResolver();
-                        }
-                    }
-                }
-                """,
+        public void method()
+        {
+            DtdProcessing = DtdProcessing.Parse;
+            XmlResolver = new XmlUrlResolver();
+        }
+    }
+}",
                 diagWith2Locations
             );
 
@@ -615,25 +577,23 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
                 .WithLocation(14, 13);
 #pragma warning restore RS0030 // Do not use banned APIs
 
-            await VerifyVisualBasicAnalyzerAsync("""
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Imports System.Xml
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+            Me.XmlResolver = Nothing
+            Me.DtdProcessing = DtdProcessing.Prohibit
+        End Sub
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub New()
-                            Me.XmlResolver = Nothing
-                            Me.DtdProcessing = DtdProcessing.Prohibit
-                        End Sub
-
-                        Public Sub method()
-                            DtdProcessing = DtdProcessing.Parse
-                            XmlResolver = New XmlUrlResolver()
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+        Public Sub method()
+            DtdProcessing = DtdProcessing.Parse
+            XmlResolver = New XmlUrlResolver()
+        End Sub
+    End Class
+End Namespace",
                 diagWith2Locations
             );
         }
@@ -641,125 +601,121 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task XmlTextReaderDerivedTypeSecureResolverInOnePathMethodShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
-                using System;
-                using System.Xml;
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public TestClass()
-                        {
-                            this.XmlResolver = null;
-                            this.DtdProcessing = DtdProcessing.Prohibit;
-                        }
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {    
+        public TestClass()
+        {
+            this.XmlResolver = null;
+            this.DtdProcessing = DtdProcessing.Prohibit;
+        }
 
-                        public void method(bool flag)
-                        {
-                            DtdProcessing = DtdProcessing.Parse;
-                            if (flag)
-                            {
-                                XmlResolver = null;
-                            }
-                            else
-                            {
-                                XmlResolver = new XmlUrlResolver();   // intended false negative, due to the lack of flow analysis
-                            }
-                        }
-                    }
-                }
-                """
+        public void method(bool flag)
+        {
+            DtdProcessing = DtdProcessing.Parse;
+            if (flag)
+            {
+                XmlResolver = null;
+            }
+            else
+            {  
+                XmlResolver = new XmlUrlResolver();   // intended false negative, due to the lack of flow analysis
+            }
+        }
+    }
+}"
             );
 
-            await VerifyVisualBasicAnalyzerAsync("""
-                Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub New()
-                            Me.XmlResolver = Nothing
-                            Me.DtdProcessing = DtdProcessing.Prohibit
-                        End Sub
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+            Me.XmlResolver = Nothing
+            Me.DtdProcessing = DtdProcessing.Prohibit
+        End Sub
 
-                        Public Sub method(flag As Boolean)
-                            DtdProcessing = DtdProcessing.Parse
-                            If flag Then
-                                XmlResolver = Nothing
-                            Else
-                                    ' intended false negative, due to the lack of flow analysis
-                                XmlResolver = New XmlUrlResolver()
-                            End If
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+        Public Sub method(flag As Boolean)
+            DtdProcessing = DtdProcessing.Parse
+            If flag Then
+                XmlResolver = Nothing
+            Else
+                    ' intended false negative, due to the lack of flow analysis
+                XmlResolver = New XmlUrlResolver()
+            End If
+        End Sub
+    End Class
+End Namespace");
         }
 
         [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetInsecureSettingsInSeperatePathsMethodShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync("""
-                using System;
-                using System.Xml;
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.Xml;
 
-                namespace TestNamespace
-                {
-                    class TestClass : XmlTextReader
-                    {
-                        public TestClass()
-                        {
-                            this.XmlResolver = null;
-                            this.DtdProcessing = DtdProcessing.Prohibit;
-                        }
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader 
+    {    
+        public TestClass()
+        {
+            this.XmlResolver = null;
+            this.DtdProcessing = DtdProcessing.Prohibit;
+        }
 
-                        public void method(bool flag)
-                        {
-                            if (flag)
-                            {
-                                // secure
-                                DtdProcessing = DtdProcessing.Ignore;
-                                XmlResolver = null;
-                            }
-                            else
-                            {
-                                // insecure
-                                DtdProcessing = DtdProcessing.Parse;
-                                XmlResolver = new XmlUrlResolver();   // intended false negative, due to the lack of flow analysis
-                            }
-                        }
-                    }
-                }
-                """
+        public void method(bool flag)
+        {
+            if (flag)
+            {
+                // secure
+                DtdProcessing = DtdProcessing.Ignore;
+                XmlResolver = null;
+            }
+            else
+            {  
+                // insecure
+                DtdProcessing = DtdProcessing.Parse;
+                XmlResolver = new XmlUrlResolver();   // intended false negative, due to the lack of flow analysis
+            }
+        }
+    }
+}"
             );
 
-            await VerifyVisualBasicAnalyzerAsync("""
-                Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(@"
+Imports System.Xml
 
-                Namespace TestNamespace
-                    Class TestClass
-                        Inherits XmlTextReader
-                        Public Sub New()
-                            Me.XmlResolver = Nothing
-                            Me.DtdProcessing = DtdProcessing.Prohibit
-                        End Sub
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+            Me.XmlResolver = Nothing
+            Me.DtdProcessing = DtdProcessing.Prohibit
+        End Sub
 
-                        Public Sub method(flag As Boolean)
-                            If flag Then
-                                ' secure
-                                DtdProcessing = DtdProcessing.Ignore
-                                XmlResolver = Nothing
-                            Else
-                                ' insecure
-                                DtdProcessing = DtdProcessing.Parse
-                                    ' intended false negative, due to the lack of flow analysis
-                                XmlResolver = New XmlUrlResolver()
-                            End If
-                        End Sub
-                    End Class
-                End Namespace
-                """);
+        Public Sub method(flag As Boolean)
+            If flag Then
+                ' secure
+                DtdProcessing = DtdProcessing.Ignore
+                XmlResolver = Nothing
+            Else
+                ' insecure
+                DtdProcessing = DtdProcessing.Parse
+                    ' intended false negative, due to the lack of flow analysis
+                XmlResolver = New XmlUrlResolver()
+            End If
+        End Sub
+    End Class
+End Namespace");
         }
     }
 }

@@ -19,6 +19,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public static void WriteHelp(HelpContext context, InstantiateCommandArgs instantiateCommandArgs, IEngineEnvironmentSettings environmentSettings)
         {
+            if (string.IsNullOrWhiteSpace(instantiateCommandArgs.ShortName))
+            {
+                WriteCustomInstantiateHelp(context, instantiateCommandArgs.NewOrInstantiateCommand);
+                return;
+            }
+
             using TemplatePackageManager templatePackageManager = new(environmentSettings);
             HostSpecificDataLoader hostSpecificDataLoader = new(environmentSettings);
 
@@ -86,25 +92,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             yield return (context) =>
             {
                 InstantiateCommandArgs instantiateCommandArgs = new(this, context.ParseResult);
-                if (TryWriteCommandHelp(context, instantiateCommandArgs))
-                {
-                    return;
-                }
-
                 using IEngineEnvironmentSettings environmentSettings = CreateEnvironmentSettings(instantiateCommandArgs, context.ParseResult);
                 WriteHelp(context, instantiateCommandArgs, environmentSettings);
             };
-        }
-
-        internal static bool TryWriteCommandHelp(HelpContext context, InstantiateCommandArgs instantiateCommandArgs)
-        {
-            if (!string.IsNullOrWhiteSpace(instantiateCommandArgs.ShortName))
-            {
-                return false;
-            }
-
-            WriteCustomInstantiateHelp(context, instantiateCommandArgs.NewOrInstantiateCommand);
-            return true;
         }
 
         internal static bool VerifyMatchingTemplates(

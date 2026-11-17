@@ -6,17 +6,7 @@ using TestNodeInfoEntry = (int Passed, int Skipped, int Failed, int LastAttemptN
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
-internal sealed class TestProgressState(
-    long id,
-    string assembly,
-    string? targetFramework,
-    string? architecture,
-    IStopwatch stopwatch,
-    bool isDiscovery,
-    TestResultVisibility testResultVisibility = TestResultVisibility.All,
-    int slowestTestsCount = 0,
-    bool showFlakyTests = true,
-    bool isRetry = false)
+internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch, bool isDiscovery)
 {
     private readonly Lock _lock = new();
     private readonly Dictionary<string, TestNodeInfoEntry> _testUidToResults = new();
@@ -60,7 +50,6 @@ internal sealed class TestProgressState(
     private int _tryCount;
     private TestNodeResultsState? _testNodeResultsState;
     private bool _success;
-    private bool _isRetry = isRetry;
 
     public string Assembly { get; } = assembly;
 
@@ -240,23 +229,6 @@ internal sealed class TestProgressState(
 
     public bool IsDiscovery { get; } = isDiscovery;
 
-    public TestResultVisibility TestResultVisibility { get; } = testResultVisibility;
-
-    public int SlowestTestsCount { get; } = slowestTestsCount;
-
-    public bool ShowFlakyTests { get; } = showFlakyTests;
-
-    public bool IsRetry
-    {
-        get
-        {
-            lock (_lock)
-            {
-                return _isRetry;
-            }
-        }
-    }
-
     public int TryCount
     {
         get
@@ -265,14 +237,6 @@ internal sealed class TestProgressState(
             {
                 return _tryCount;
             }
-        }
-    }
-
-    internal void EnableRetry()
-    {
-        lock (_lock)
-        {
-            _isRetry = true;
         }
     }
 

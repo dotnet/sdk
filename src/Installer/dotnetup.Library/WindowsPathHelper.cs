@@ -197,13 +197,25 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Splits a PATH string into entries.
-    /// Uses EnvironmentProvider's SplitPaths for proper processing.
+    /// Splits a PATH string into entries: trims quotes, drops empty entries, and expands a
+    /// leading <c>~/</c> using <c>HOME</c>, matching the SDK's EnvironmentProvider PATH handling.
     /// </summary>
     public static List<string> SplitPath(string path)
     {
-        var envProvider = new Microsoft.DotNet.Cli.Utils.EnvironmentProvider();
-        return [.. envProvider.SplitPaths(path)];
+        string home = Environment.GetEnvironmentVariable("HOME") ?? string.Empty;
+        return [.. path
+            .Split(Path.PathSeparator)
+            .Select(p => p.Trim('"'))
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => ExpandTildeSlash(p, home))];
+    }
+
+    private static string ExpandTildeSlash(string path, string home)
+    {
+        const string TildeSlash = "~/";
+        return path.StartsWith(TildeSlash, StringComparison.Ordinal) && !string.IsNullOrEmpty(home)
+            ? Path.Combine(home, path[TildeSlash.Length..])
+            : path;
     }
 
     /// <summary>

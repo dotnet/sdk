@@ -10,8 +10,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
     [TestClass]
     public class ExportCommandFailureTests : IDisposable
     {
-        private readonly CultureInfo _originalCurrentCulture;
-        private readonly CultureInfo _originalCurrentUICulture;
         private readonly string _workingDirectory;
 
         public TestContext TestContext { get; set; } = null!;
@@ -20,8 +18,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 
         public ExportCommandFailureTests()
         {
-            _originalCurrentCulture = CultureInfo.CurrentCulture;
-            _originalCurrentUICulture = CultureInfo.CurrentUICulture;
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
 
@@ -31,15 +27,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 
         public void Dispose()
         {
-            try
-            {
-                Directory.Delete(_workingDirectory, true);
-            }
-            finally
-            {
-                CultureInfo.CurrentCulture = _originalCurrentCulture;
-                CultureInfo.CurrentUICulture = _originalCurrentUICulture;
-            }
+            Directory.Delete(_workingDirectory, true);
         }
 
         [TestMethod]

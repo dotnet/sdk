@@ -33,21 +33,21 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod({{hashType}} hash)
-                        {
-                            var buffer = new byte[1024];
-                            int aboveLine = 20;
-                            byte[] digest = hash.ComputeHash(buffer);
-                            int belowLine = 10;
-                        }
-                    }
-                    """;
+public class Test
+{{
+    public static void TestMethod({hashType} hash)
+    {{
+        var buffer = new byte[1024];
+        int aboveLine = 20;
+        byte[] digest = hash.ComputeHash(buffer);
+        int belowLine = 10;
+    }}
+}}
+";
                 await TestCSAsync(csInput);
             }
         }
@@ -63,19 +63,19 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod(sha256 As {{hashType}})
-                            Dim buffer = New Byte(1023) {}
-                            Dim aboveLine = 20
-                            Dim digest As Byte() = sha256.ComputeHash(buffer)
-                            Dim belowLine = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod(sha256 As {hashType})
+        Dim buffer = New Byte(1023) {{}}
+        Dim aboveLine = 20
+        Dim digest As Byte() = sha256.ComputeHash(buffer)
+        Dim belowLine = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(vbInput);
             }
         }
@@ -91,26 +91,26 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void UnknownMethod(HashAlgorithm hasher)
-                        {
-                        }
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            var hasher = {{hashType}}.Create();
-                            UnknownMethod(hasher);
-                            int aboveLine = 20;
-                            byte[] digest = hasher.ComputeHash(buffer);
-                            int belowLine = 10;
-                        }
-                    }
-                    """;
+public class Test
+{{
+    public static void UnknownMethod(HashAlgorithm hasher)
+    {{
+    }}
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        var hasher = {hashType}.Create();
+        UnknownMethod(hasher);
+        int aboveLine = 20;
+        byte[] digest = hasher.ComputeHash(buffer);
+        int belowLine = 10;
+    }}
+}}
+";
                 await TestCSAsync(csInput);
             }
         }
@@ -126,23 +126,23 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub UnknownMethod(hasher As HashAlgorithm)
-                        End Sub
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim hasher As {{hashType}} = {{hashType}}.Create()
-                            UnknownMethod(hasher)
-                            Dim aboveLine = 20
-                            Dim digest As Byte() = hasher.ComputeHash(buffer)
-                            Dim belowLine = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub UnknownMethod(hasher As HashAlgorithm)
+    End Sub
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim hasher As {hashType} = {hashType}.Create()
+        UnknownMethod(hasher)
+        Dim aboveLine = 20
+        Dim digest As Byte() = hasher.ComputeHash(buffer)
+        Dim belowLine = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(vbInput);
             }
         }
@@ -158,21 +158,21 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            var hasher = {{hashType}}.Create();
-                            int aboveLine = 20;
-                            int belowLine = 10;
-                        }
-                    }
-                    """;
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        var hasher = {hashType}.Create();
+        int aboveLine = 20;
+        int belowLine = 10;
+    }}
+}}
+";
                 await TestCSAsync(csInput);
             }
         }
@@ -188,19 +188,19 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim sha256 As {{hashType}} = {{hashType}}.Create()
-                            Dim aboveLine = 20
-                            Dim belowLine = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim sha256 As {hashType} = {hashType}.Create()
+        Dim aboveLine = 20
+        Dim belowLine = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(vbInput);
             }
         }
@@ -216,79 +216,79 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {|#0:{{hashType}}.Create().ComputeHash(buffer)|};
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {{|#0:{hashType}.Create().ComputeHash(buffer)|}};
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line2 = 10;
-                            byte[] digest2 = {|#1:{{hashType}}.Create().ComputeHash(buffer, 0, 10)|};
-                            int line3 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line2 = 10;
+        byte[] digest2 = {{|#1:{hashType}.Create().ComputeHash(buffer, 0, 10)|}};
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line3 = 10;
-                            byte[] digest3 = new byte[1024];
-                            int line4 = 10;
-                            if ({|#2:{{hashType}}.Create().TryComputeHash(buffer, digest3, out var i)|})
-                            {
-                                int line5 = 10;
-                            }
-                            int line6 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line3 = 10;
+        byte[] digest3 = new byte[1024];
+        int line4 = 10;
+        if ({{|#2:{hashType}.Create().TryComputeHash(buffer, digest3, out var i)|}})
+        {{
+            int line5 = 10;
+        }}
+        int line6 = 10;
+    }}
+}}
+";
 
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line2 = 10;
-                            byte[] digest2 = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line3 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line2 = 10;
+        byte[] digest2 = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line3 = 10;
-                            byte[] digest3 = new byte[1024];
-                            int line4 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out var i))
-                            {
-                                int line5 = 10;
-                            }
-                            int line6 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line3 = 10;
+        byte[] digest3 = new byte[1024];
+        int line4 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out var i))
+        {{
+            int line5 = 10;
+        }}
+        int line6 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -307,65 +307,65 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {|#0:{{hashType}}.Create().ComputeHash(buffer)|}
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line2 = 10
-                            Dim digest As Byte() = {|#1:{{hashType}}.Create().ComputeHash(buffer, 0, 10)|}
-                            Dim line3 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line3 = 10
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            If {|#2:{{hashType}}.Create().TryComputeHash(buffer, digest, i)|} Then
-                                Dim line5 = 10
-                            End If
-                            Dim line6 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {{|#0:{hashType}.Create().ComputeHash(buffer)|}}
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line2 = 10
+        Dim digest As Byte() = {{|#1:{hashType}.Create().ComputeHash(buffer, 0, 10)|}}
+        Dim line3 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line3 = 10
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        If {{|#2:{hashType}.Create().TryComputeHash(buffer, digest, i)|}} Then
+            Dim line5 = 10
+        End If
+        Dim line6 = 10
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line2 = 10
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                            Dim line3 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line3 = 10
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line5 = 10
-                            End If
-                            Dim line6 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line2 = 10
+        Dim digest As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+        Dim line3 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line3 = 10
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line5 = 10
+        End If
+        Dim line6 = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,
@@ -384,79 +384,79 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {|#0:{{hashType}}.Create().ComputeHash(buffer: buffer)|};
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {{|#0:{hashType}.Create().ComputeHash(buffer: buffer)|}};
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line2 = 10;
-                            byte[] digest2 = {|#1:{{hashType}}.Create().ComputeHash(offset: 0, count: 10, buffer: buffer)|};
-                            int line3 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line2 = 10;
+        byte[] digest2 = {{|#1:{hashType}.Create().ComputeHash(offset: 0, count: 10, buffer: buffer)|}};
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line3 = 10;
-                            byte[] digest3 = new byte[1024];
-                            int line4 = 10;
-                            if ({|#2:{{hashType}}.Create().TryComputeHash(bytesWritten: out var i, source: buffer, destination: digest3)|})
-                            {
-                                int line5 = 10;
-                            }
-                            int line6 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line3 = 10;
+        byte[] digest3 = new byte[1024];
+        int line4 = 10;
+        if ({{|#2:{hashType}.Create().TryComputeHash(bytesWritten: out var i, source: buffer, destination: digest3)|}})
+        {{
+            int line5 = 10;
+        }}
+        int line6 = 10;
+    }}
+}}
+";
 
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(source: buffer);
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(source: buffer);
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line2 = 10;
-                            byte[] digest2 = {{hashType}}.HashData(source: buffer.AsSpan(start: 0, length: 10));
-                            int line3 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line2 = 10;
+        byte[] digest2 = {hashType}.HashData(source: buffer.AsSpan(start: 0, length: 10));
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line3 = 10;
-                            byte[] digest3 = new byte[1024];
-                            int line4 = 10;
-                            if ({{hashType}}.TryHashData(bytesWritten: out var i, source: buffer, destination: digest3))
-                            {
-                                int line5 = 10;
-                            }
-                            int line6 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line3 = 10;
+        byte[] digest3 = new byte[1024];
+        int line4 = 10;
+        if ({hashType}.TryHashData(bytesWritten: out var i, source: buffer, destination: digest3))
+        {{
+            int line5 = 10;
+        }}
+        int line6 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -475,65 +475,65 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {|#0:{{hashType}}.Create().ComputeHash(buffer:=buffer)|}
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line2 = 10
-                            Dim digest As Byte() = {|#1:{{hashType}}.Create().ComputeHash(OFFSET:=0, count:=10, BUFFER:=buffer)|}
-                            Dim line3 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line3 = 10
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            If {|#2:{{hashType}}.Create().TryComputeHash(bytesWritten:=i, source:=buffer, destination:=digest)|} Then
-                                Dim line5 = 10
-                            End If
-                            Dim line6 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {{|#0:{hashType}.Create().ComputeHash(buffer:=buffer)|}}
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line2 = 10
+        Dim digest As Byte() = {{|#1:{hashType}.Create().ComputeHash(OFFSET:=0, count:=10, BUFFER:=buffer)|}}
+        Dim line3 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line3 = 10
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        If {{|#2:{hashType}.Create().TryComputeHash(bytesWritten:=i, source:=buffer, destination:=digest)|}} Then
+            Dim line5 = 10
+        End If
+        Dim line6 = 10
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(source:=buffer)
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line2 = 10
-                            Dim digest As Byte() = {{hashType}}.HashData(source:=buffer.AsSpan(start:=0, length:=10))
-                            Dim line3 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line3 = 10
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            If {{hashType}}.TryHashData(bytesWritten:=i, source:=buffer, destination:=digest) Then
-                                Dim line5 = 10
-                            End If
-                            Dim line6 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(source:=buffer)
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line2 = 10
+        Dim digest As Byte() = {hashType}.HashData(source:=buffer.AsSpan(start:=0, length:=10))
+        Dim line3 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line3 = 10
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        If {hashType}.TryHashData(bytesWritten:=i, source:=buffer, destination:=digest) Then
+            Dim line5 = 10
+        End If
+        Dim line6 = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,
@@ -552,99 +552,99 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            var {|#2:hasher = {{hashType}}.Create()|};
-                            int line1 = 20;
-                            byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                            int line2 = 10;
-                            byte[] digest2 = {|#1:hasher.ComputeHash(buffer)|};
-                            int line3 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        var {{|#2:hasher = {hashType}.Create()|}};
+        int line1 = 20;
+        byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+        int line2 = 10;
+        byte[] digest2 = {{|#1:hasher.ComputeHash(buffer)|}};
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            var {|#5:hasher = {{hashType}}.Create()|};
-                            int line1 = 20;
-                            byte[] digest = {|#3:hasher.ComputeHash(buffer, 0, 10)|};
-                            int line2 = 10;
-                            byte[] digest2 = {|#4:hasher.ComputeHash(buffer, 0, 10)|};
-                            int line3 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        var {{|#5:hasher = {hashType}.Create()|}};
+        int line1 = 20;
+        byte[] digest = {{|#3:hasher.ComputeHash(buffer, 0, 10)|}};
+        int line2 = 10;
+        byte[] digest2 = {{|#4:hasher.ComputeHash(buffer, 0, 10)|}};
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            var {|#8:hasher = {{hashType}}.Create()|};
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({|#6:hasher.TryComputeHash(buffer, digest3, out var i)|})
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                            if ({|#7:hasher.TryComputeHash(buffer, digest3, out i)|})
-                            {
-                                int line5 = 10;
-                            }
-                            int line6 = 10;
-                        }
-                    }
-                    """;
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        var {{|#8:hasher = {hashType}.Create()|}};
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({{|#6:hasher.TryComputeHash(buffer, digest3, out var i)|}})
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+        if ({{|#7:hasher.TryComputeHash(buffer, digest3, out i)|}})
+        {{
+            int line5 = 10;
+        }}
+        int line6 = 10;
+    }}
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                            byte[] digest2 = {{hashType}}.HashData(buffer);
-                            int line3 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+        byte[] digest2 = {hashType}.HashData(buffer);
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line2 = 10;
-                            byte[] digest2 = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line3 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line2 = 10;
+        byte[] digest2 = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out var i))
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out i))
-                            {
-                                int line5 = 10;
-                            }
-                            int line6 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out var i))
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out i))
+        {{
+            int line5 = 10;
+        }}
+        int line6 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -663,82 +663,82 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim {|#2:hasher As {{hashType}} = {{hashType}}.Create()|}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {|#0:hasher.ComputeHash(buffer)|}
-                            Dim line2 = 10
-                            Dim digest2 As Byte() = {|#1:hasher.ComputeHash(buffer)|}
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim {|#5:hasher As {{hashType}} = {{hashType}}.Create()|}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {|#3:hasher.ComputeHash(buffer, 0, 10)|}
-                            Dim line2 = 10
-                            Dim digest2 As Byte() = {|#4:hasher.ComputeHash(buffer, 0, 10)|}
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim {|#8:hasher As {{hashType}} = {{hashType}}.Create()|}
-                            Dim line1 = 20
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            Dim line2 = 10
-                            If {|#6:hasher.TryComputeHash(buffer, digest, i)|} Then
-                                Dim line3 = 10
-                            End If
-                            Dim line4 = 10
-                            If {|#7:hasher.TryComputeHash(buffer, digest, i)|} Then
-                                Dim line5 = 10
-                            End If
-                            Dim line6 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim {{|#2:hasher As {hashType} = {hashType}.Create()|}}
+        Dim line1 = 20
+        Dim digest As Byte() = {{|#0:hasher.ComputeHash(buffer)|}}
+        Dim line2 = 10
+        Dim digest2 As Byte() = {{|#1:hasher.ComputeHash(buffer)|}}
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim {{|#5:hasher As {hashType} = {hashType}.Create()|}}
+        Dim line1 = 20
+        Dim digest As Byte() = {{|#3:hasher.ComputeHash(buffer, 0, 10)|}}
+        Dim line2 = 10
+        Dim digest2 As Byte() = {{|#4:hasher.ComputeHash(buffer, 0, 10)|}}
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim {{|#8:hasher As {hashType} = {hashType}.Create()|}}
+        Dim line1 = 20
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        Dim line2 = 10
+        If {{|#6:hasher.TryComputeHash(buffer, digest, i)|}} Then
+            Dim line3 = 10
+        End If
+        Dim line4 = 10
+        If {{|#7:hasher.TryComputeHash(buffer, digest, i)|}} Then
+            Dim line5 = 10
+        End If
+        Dim line6 = 10
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim line2 = 10
-                            Dim digest2 As Byte() = {{hashType}}.HashData(buffer)
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                            Dim line2 = 10
-                            Dim digest2 As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            Dim line2 = 10
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line3 = 10
-                            End If
-                            Dim line4 = 10
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line5 = 10
-                            End If
-                            Dim line6 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+        Dim digest2 As Byte() = {hashType}.HashData(buffer)
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+        Dim line2 = 10
+        Dim digest2 As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        Dim line2 = 10
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line3 = 10
+        End If
+        Dim line4 = 10
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line5 = 10
+        End If
+        Dim line6 = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,
@@ -757,81 +757,81 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            var {|#1:hasher = {{hashType}}.Create()|};
-                            int line1 = 20;
-                            byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        var {{|#1:hasher = {hashType}.Create()|}};
+        int line1 = 20;
+        byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            var {|#3:hasher = {{hashType}}.Create()|};
-                            int line1 = 20;
-                            byte[] digest = {|#2:hasher.ComputeHash(buffer, 0, 10)|};
-                            int line2 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        var {{|#3:hasher = {hashType}.Create()|}};
+        int line1 = 20;
+        byte[] digest = {{|#2:hasher.ComputeHash(buffer, 0, 10)|}};
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            var {|#5:hasher = {{hashType}}.Create()|};
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({|#4:hasher.TryComputeHash(buffer, digest3, out var i)|})
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                        }
-                    }
-                    """;
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        var {{|#5:hasher = {hashType}.Create()|}};
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({{|#4:hasher.TryComputeHash(buffer, digest3, out var i)|}})
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+    }}
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line2 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out var i))
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out var i))
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -850,70 +850,70 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim {|#1:hasher As {{hashType}} = {{hashType}}.Create()|}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {|#0:hasher.ComputeHash(buffer)|}
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim {|#3:hasher As {{hashType}} = {{hashType}}.Create()|}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {|#2:hasher.ComputeHash(buffer, 0, 10)|}
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim {|#5:hasher As {{hashType}} = {{hashType}}.Create()|}
-                            Dim line1 = 20
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            Dim line2 = 10
-                            If {|#4:hasher.TryComputeHash(buffer, digest, i)|} Then
-                                Dim line3 = 10
-                            End If
-                            Dim line4 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim {{|#1:hasher As {hashType} = {hashType}.Create()|}}
+        Dim line1 = 20
+        Dim digest As Byte() = {{|#0:hasher.ComputeHash(buffer)|}}
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim {{|#3:hasher As {hashType} = {hashType}.Create()|}}
+        Dim line1 = 20
+        Dim digest As Byte() = {{|#2:hasher.ComputeHash(buffer, 0, 10)|}}
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim {{|#5:hasher As {hashType} = {hashType}.Create()|}}
+        Dim line1 = 20
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        Dim line2 = 10
+        If {{|#4:hasher.TryComputeHash(buffer, digest, i)|}} Then
+            Dim line3 = 10
+        End If
+        Dim line4 = 10
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            Dim line2 = 10
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line3 = 10
-                            End If
-                            Dim line4 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        Dim line2 = 10
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line3 = 10
+        End If
+        Dim line4 = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,
@@ -932,84 +932,84 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            var {|#1:hasher = {{hashType}}.Create()|};
-                            int line1 = 20;
-                            byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                            int line2 = 10;
-                            {|#2:hasher.Dispose();|}
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        var {{|#1:hasher = {hashType}.Create()|}};
+        int line1 = 20;
+        byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+        int line2 = 10;
+        {{|#2:hasher.Dispose();|}}
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            var {|#4:hasher = {{hashType}}.Create()|};
-                            int line1 = 20;
-                            byte[] digest = {|#3:hasher.ComputeHash(buffer,0, 10)|};
-                            int line2 = 10;
-                            {|#5:hasher.Dispose();|}
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        var {{|#4:hasher = {hashType}.Create()|}};
+        int line1 = 20;
+        byte[] digest = {{|#3:hasher.ComputeHash(buffer,0, 10)|}};
+        int line2 = 10;
+        {{|#5:hasher.Dispose();|}}
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            var {|#7:hasher = {{hashType}}.Create()|};
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({|#6:hasher.TryComputeHash(buffer, digest3, out var i)|})
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                            {|#8:hasher.Dispose();|}
-                        }
-                    }
-                    """;
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        var {{|#7:hasher = {hashType}.Create()|}};
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({{|#6:hasher.TryComputeHash(buffer, digest3, out var i)|}})
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+        {{|#8:hasher.Dispose();|}}
+    }}
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line2 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out var i))
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out var i))
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -1028,73 +1028,73 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim {|#1:hasher As {{hashType}} = {{hashType}}.Create()|}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {|#0:hasher.ComputeHash(buffer)|}
-                            Dim line2 = 10
-                            {|#2:hasher.Dispose()|}
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim {|#4:hasher As {{hashType}} = {{hashType}}.Create()|}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {|#3:hasher.ComputeHash(buffer, 0, 10)|}
-                            Dim line2 = 10
-                            {|#5:hasher.Dispose()|}
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim {|#7:hasher As {{hashType}} = {{hashType}}.Create()|}
-                            Dim line1 = 20
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            Dim line2 = 10
-                            If {|#6:hasher.TryComputeHash(buffer, digest, i)|} Then
-                                Dim line3 = 10
-                            End If
-                            Dim line4 = 10
-                            {|#8:hasher.Dispose()|}
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim {{|#1:hasher As {hashType} = {hashType}.Create()|}}
+        Dim line1 = 20
+        Dim digest As Byte() = {{|#0:hasher.ComputeHash(buffer)|}}
+        Dim line2 = 10
+        {{|#2:hasher.Dispose()|}}
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim {{|#4:hasher As {hashType} = {hashType}.Create()|}}
+        Dim line1 = 20
+        Dim digest As Byte() = {{|#3:hasher.ComputeHash(buffer, 0, 10)|}}
+        Dim line2 = 10
+        {{|#5:hasher.Dispose()|}}
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim {{|#7:hasher As {hashType} = {hashType}.Create()|}}
+        Dim line1 = 20
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        Dim line2 = 10
+        If {{|#6:hasher.TryComputeHash(buffer, digest, i)|}} Then
+            Dim line3 = 10
+        End If
+        Dim line4 = 10
+        {{|#8:hasher.Dispose()|}}
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            Dim line2 = 10
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line3 = 10
-                            End If
-                            Dim line4 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        Dim line2 = 10
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line3 = 10
+        End If
+        Dim line4 = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,
@@ -1113,105 +1113,105 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            using (var {|#2:hasher = {{hashType}}.Create()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                                int line2 = 10;
-                                byte[] digest2 = {|#1:hasher.ComputeHash(buffer)|};
-                                int line3 = 10;
-                            }
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        using (var {{|#2:hasher = {hashType}.Create()|}})
+        {{
+            int line1 = 20;
+            byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+            int line2 = 10;
+            byte[] digest2 = {{|#1:hasher.ComputeHash(buffer)|}};
+            int line3 = 10;
+        }}
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            using (var {|#5:hasher = {{hashType}}.Create()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest = {|#3:hasher.ComputeHash(buffer, 0, 10)|};
-                                int line2 = 10;
-                                byte[] digest2 = {|#4:hasher.ComputeHash(buffer, 0, 10)|};
-                                int line3 = 10;
-                            }
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        using (var {{|#5:hasher = {hashType}.Create()|}})
+        {{
+            int line1 = 20;
+            byte[] digest = {{|#3:hasher.ComputeHash(buffer, 0, 10)|}};
+            int line2 = 10;
+            byte[] digest2 = {{|#4:hasher.ComputeHash(buffer, 0, 10)|}};
+            int line3 = 10;
+        }}
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            using (var {|#8:hasher = {{hashType}}.Create()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest3 = new byte[1024];
-                                int line2 = 10;
-                                if ({|#6:hasher.TryComputeHash(buffer, digest3, out var i)|})
-                                {
-                                    int line3 = 10;
-                                }
-                                int line4 = 10;
-                                if ({|#7:hasher.TryComputeHash(buffer, digest3, out i)|})
-                                {
-                                    int line5 = 10;
-                                }
-                                int line6 = 10;
-                            }
-                        }
-                    }
-                    """;
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        using (var {{|#8:hasher = {hashType}.Create()|}})
+        {{
+            int line1 = 20;
+            byte[] digest3 = new byte[1024];
+            int line2 = 10;
+            if ({{|#6:hasher.TryComputeHash(buffer, digest3, out var i)|}})
+            {{
+                int line3 = 10;
+            }}
+            int line4 = 10;
+            if ({{|#7:hasher.TryComputeHash(buffer, digest3, out i)|}})
+            {{
+                int line5 = 10;
+            }}
+            int line6 = 10;
+        }}
+    }}
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                            byte[] digest2 = {{hashType}}.HashData(buffer);
-                            int line3 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+        byte[] digest2 = {hashType}.HashData(buffer);
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line2 = 10;
-                            byte[] digest2 = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line3 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line2 = 10;
+        byte[] digest2 = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out var i))
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out i))
-                            {
-                                int line5 = 10;
-                            }
-                            int line6 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out var i))
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out i))
+        {{
+            int line5 = 10;
+        }}
+        int line6 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -1230,85 +1230,85 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#2:hasher As {{hashType}} = {{hashType}}.Create()|}
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#0:hasher.ComputeHash(buffer)|}
-                                Dim line2 = 10
-                                Dim digest2 As Byte() = {|#1:hasher.ComputeHash(buffer)|}
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#5:hasher As {{hashType}} = {{hashType}}.Create()|}
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#3:hasher.ComputeHash(buffer, 0, 10)|}
-                                Dim line2 = 10
-                                Dim digest2 As Byte() = {|#4:hasher.ComputeHash(buffer, 0, 10)|}
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#8:hasher As {{hashType}} = {{hashType}}.Create()|}
-                                Dim line1 = 20
-                                Dim digest = New Byte(1023) {}
-                                Dim i As Integer
-                                Dim line2 = 10
-                                If {|#6:hasher.TryComputeHash(buffer, digest, i)|} Then
-                                    Dim line3 = 10
-                                End If
-                                Dim line4 = 10
-                                If {|#7:hasher.TryComputeHash(buffer, digest, i)|} Then
-                                    Dim line5 = 10
-                                End If
-                                Dim line6 = 10
-                            End Using
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#2:hasher As {hashType} = {hashType}.Create()|}}
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#0:hasher.ComputeHash(buffer)|}}
+            Dim line2 = 10
+            Dim digest2 As Byte() = {{|#1:hasher.ComputeHash(buffer)|}}
+        End Using
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#5:hasher As {hashType} = {hashType}.Create()|}}
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#3:hasher.ComputeHash(buffer, 0, 10)|}}
+            Dim line2 = 10
+            Dim digest2 As Byte() = {{|#4:hasher.ComputeHash(buffer, 0, 10)|}}
+        End Using
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#8:hasher As {hashType} = {hashType}.Create()|}}
+            Dim line1 = 20
+            Dim digest = New Byte(1023) {{}}
+            Dim i As Integer
+            Dim line2 = 10
+            If {{|#6:hasher.TryComputeHash(buffer, digest, i)|}} Then
+                Dim line3 = 10
+            End If
+            Dim line4 = 10
+            If {{|#7:hasher.TryComputeHash(buffer, digest, i)|}} Then
+                Dim line5 = 10
+            End If
+            Dim line6 = 10
+        End Using
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim line2 = 10
-                            Dim digest2 As Byte() = {{hashType}}.HashData(buffer)
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                            Dim line2 = 10
-                            Dim digest2 As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            Dim line2 = 10
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line3 = 10
-                            End If
-                            Dim line4 = 10
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line5 = 10
-                            End If
-                            Dim line6 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+        Dim digest2 As Byte() = {hashType}.HashData(buffer)
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+        Dim line2 = 10
+        Dim digest2 As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        Dim line2 = 10
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line3 = 10
+        End If
+        Dim line4 = 10
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line5 = 10
+        End If
+        Dim line6 = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,
@@ -1327,81 +1327,81 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            using var {|#1:hasher = {{hashType}}.Create()|};
-                            int line1 = 20;
-                            byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        using var {{|#1:hasher = {hashType}.Create()|}};
+        int line1 = 20;
+        byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            using var {|#3:hasher = {{hashType}}.Create()|};
-                            int line1 = 20;
-                            byte[] digest = {|#2:hasher.ComputeHash(buffer, 0, 10)|};
-                            int line2 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        using var {{|#3:hasher = {hashType}.Create()|}};
+        int line1 = 20;
+        byte[] digest = {{|#2:hasher.ComputeHash(buffer, 0, 10)|}};
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            using var {|#5:hasher = {{hashType}}.Create()|};
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({|#4:hasher.TryComputeHash(buffer, digest3, out var i)|})
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                        }
-                    }
-                    """;
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        using var {{|#5:hasher = {hashType}.Create()|}};
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({{|#4:hasher.TryComputeHash(buffer, digest3, out var i)|}})
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+    }}
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line2 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out var i))
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out var i))
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -1419,42 +1419,42 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
+                string csInput = $@"
+using System;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            byte[] digest1 = {|#0:new System.Security.Cryptography.{{hashType}}Managed().ComputeHash(buffer)|};
-                            byte[] digest2 = {|#1:System.Security.Cryptography.{{hashType}}.Create().ComputeHash(buffer)|};
-                            using (var {|#3:hasher = new System.Security.Cryptography.{{hashType}}Managed()|})
-                            {
-                                byte[] digest3 = {|#2:hasher.ComputeHash(buffer)|};
-                            }
-                            using (var {|#5:hasher = System.Security.Cryptography.{{hashType}}.Create()|})
-                            {
-                                byte[] digest4 = {|#4:hasher.ComputeHash(buffer)|};
-                            }
-                        }
-                    }
-                    """;
-                string csFix = $$"""
-                    using System;
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        byte[] digest1 = {{|#0:new System.Security.Cryptography.{hashType}Managed().ComputeHash(buffer)|}};
+        byte[] digest2 = {{|#1:System.Security.Cryptography.{hashType}.Create().ComputeHash(buffer)|}};
+        using (var {{|#3:hasher = new System.Security.Cryptography.{hashType}Managed()|}})
+        {{
+            byte[] digest3 = {{|#2:hasher.ComputeHash(buffer)|}};
+        }}
+        using (var {{|#5:hasher = System.Security.Cryptography.{hashType}.Create()|}})
+        {{
+            byte[] digest4 = {{|#4:hasher.ComputeHash(buffer)|}};
+        }}
+    }}
+}}
+";
+                string csFix = $@"
+using System;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            byte[] digest1 = System.Security.Cryptography.{{hashType}}.HashData(buffer);
-                            byte[] digest2 = System.Security.Cryptography.{{hashType}}.HashData(buffer);
-                            byte[] digest3 = System.Security.Cryptography.{{hashType}}.HashData(buffer);
-                            byte[] digest4 = System.Security.Cryptography.{{hashType}}.HashData(buffer);
-                        }
-                    }
-                    """;
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        byte[] digest1 = System.Security.Cryptography.{hashType}.HashData(buffer);
+        byte[] digest2 = System.Security.Cryptography.{hashType}.HashData(buffer);
+        byte[] digest3 = System.Security.Cryptography.{hashType}.HashData(buffer);
+        byte[] digest4 = System.Security.Cryptography.{hashType}.HashData(buffer);
+    }}
+}}
+";
                 string hashFullType = $"System.Security.Cryptography.{hashType}";
                 await TestCSAsync(
                     csInput,
@@ -1488,41 +1488,41 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
+                string vbInput = $@"
+Imports System
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim digest1 As Byte() = {|#0:New System.Security.Cryptography.{{hashType}}Managed().ComputeHash(buffer)|}
-                            Dim digest2 As Byte() = {|#1:System.Security.Cryptography.{{hashType}}.Create().ComputeHash(buffer)|}
-                            Using {|#3:hasher As System.Security.Cryptography.{{hashType}}Managed = New System.Security.Cryptography.{{hashType}}Managed()|}
-                                Dim digest3 As Byte() = {|#2:hasher.ComputeHash(buffer)|}
-                            End Using
-                            Using {|#5:hasher As System.Security.Cryptography.{{hashType}} = System.Security.Cryptography.{{hashType}}.Create()|}
-                                Dim digest4 As Byte() = {|#4:hasher.ComputeHash(buffer)|}
-                            End Using
-                            Using {|#7:hasher As New System.Security.Cryptography.{{hashType}}Managed()|}
-                                Dim digest5 As Byte() = {|#6:hasher.ComputeHash(buffer)|}
-                            End Using
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim digest1 As Byte() = {{|#0:New System.Security.Cryptography.{hashType}Managed().ComputeHash(buffer)|}}
+        Dim digest2 As Byte() = {{|#1:System.Security.Cryptography.{hashType}.Create().ComputeHash(buffer)|}}
+        Using {{|#3:hasher As System.Security.Cryptography.{hashType}Managed = New System.Security.Cryptography.{hashType}Managed()|}}
+            Dim digest3 As Byte() = {{|#2:hasher.ComputeHash(buffer)|}}
+        End Using
+        Using {{|#5:hasher As System.Security.Cryptography.{hashType} = System.Security.Cryptography.{hashType}.Create()|}}
+            Dim digest4 As Byte() = {{|#4:hasher.ComputeHash(buffer)|}}
+        End Using
+        Using {{|#7:hasher As New System.Security.Cryptography.{hashType}Managed()|}}
+            Dim digest5 As Byte() = {{|#6:hasher.ComputeHash(buffer)|}}
+        End Using
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
+                string vbFix = $@"
+Imports System
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim digest1 As Byte() = System.Security.Cryptography.{{hashType}}.HashData(buffer)
-                            Dim digest2 As Byte() = System.Security.Cryptography.{{hashType}}.HashData(buffer)
-                            Dim digest3 As Byte() = System.Security.Cryptography.{{hashType}}.HashData(buffer)
-                            Dim digest4 As Byte() = System.Security.Cryptography.{{hashType}}.HashData(buffer)
-                            Dim digest5 As Byte() = System.Security.Cryptography.{{hashType}}.HashData(buffer)
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim digest1 As Byte() = System.Security.Cryptography.{hashType}.HashData(buffer)
+        Dim digest2 As Byte() = System.Security.Cryptography.{hashType}.HashData(buffer)
+        Dim digest3 As Byte() = System.Security.Cryptography.{hashType}.HashData(buffer)
+        Dim digest4 As Byte() = System.Security.Cryptography.{hashType}.HashData(buffer)
+        Dim digest5 As Byte() = System.Security.Cryptography.{hashType}.HashData(buffer)
+    End Sub
+End Class
+";
                 string hashFullType = $"System.Security.Cryptography.{hashType}";
                 await TestVBAsync(
                     vbInput,
@@ -1561,87 +1561,87 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            using (var {|#1:hasher = {{hashType}}.Create()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                                int line2 = 10;
-                            }
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        using (var {{|#1:hasher = {hashType}.Create()|}})
+        {{
+            int line1 = 20;
+            byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+            int line2 = 10;
+        }}
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            using (var {|#3:hasher = {{hashType}}.Create()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest = {|#2:hasher.ComputeHash(buffer, 0, 10)|};
-                                int line2 = 10;
-                            }
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        using (var {{|#3:hasher = {hashType}.Create()|}})
+        {{
+            int line1 = 20;
+            byte[] digest = {{|#2:hasher.ComputeHash(buffer, 0, 10)|}};
+            int line2 = 10;
+        }}
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            using (var {|#5:hasher = {{hashType}}.Create()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest3 = new byte[1024];
-                                int line2 = 10;
-                                if ({|#4:hasher.TryComputeHash(buffer, digest3, out var i)|})
-                                {
-                                    int line3 = 10;
-                                }
-                                int line4 = 10;
-                            }
-                        }
-                    }
-                    """;
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        using (var {{|#5:hasher = {hashType}.Create()|}})
+        {{
+            int line1 = 20;
+            byte[] digest3 = new byte[1024];
+            int line2 = 10;
+            if ({{|#4:hasher.TryComputeHash(buffer, digest3, out var i)|}})
+            {{
+                int line3 = 10;
+            }}
+            int line4 = 10;
+        }}
+    }}
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line2 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out var i))
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out var i))
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -1660,73 +1660,73 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#1:hasher As {{hashType}} = {{hashType}}.Create()|}
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#0:hasher.ComputeHash(buffer)|}
-                                Dim line2 = 10
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#3:hasher As {{hashType}} = {{hashType}}.Create()|}
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#2:hasher.ComputeHash(buffer, 0, 10)|}
-                                Dim line2 = 10
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#5:hasher As {{hashType}} = {{hashType}}.Create()|}
-                                Dim line1 = 20
-                                Dim digest = New Byte(1023) {}
-                                Dim i As Integer
-                                Dim line2 = 10
-                                If {|#4:hasher.TryComputeHash(buffer, digest, i)|} Then
-                                    Dim line3 = 10
-                                End If
-                                Dim line4 = 10
-                            End Using
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#1:hasher As {hashType} = {hashType}.Create()|}}
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#0:hasher.ComputeHash(buffer)|}}
+            Dim line2 = 10
+        End Using
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#3:hasher As {hashType} = {hashType}.Create()|}}
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#2:hasher.ComputeHash(buffer, 0, 10)|}}
+            Dim line2 = 10
+        End Using
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#5:hasher As {hashType} = {hashType}.Create()|}}
+            Dim line1 = 20
+            Dim digest = New Byte(1023) {{}}
+            Dim i As Integer
+            Dim line2 = 10
+            If {{|#4:hasher.TryComputeHash(buffer, digest, i)|}} Then
+                Dim line3 = 10
+            End If
+            Dim line4 = 10
+        End Using
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            Dim line2 = 10
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line3 = 10
-                            End If
-                            Dim line4 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        Dim line2 = 10
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line3 = 10
+        End If
+        Dim line4 = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,
@@ -1745,87 +1745,87 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            using (HashAlgorithm {|#1:hasher = {{hashType}}.Create()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                                int line2 = 10;
-                            }
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        using (HashAlgorithm {{|#1:hasher = {hashType}.Create()|}})
+        {{
+            int line1 = 20;
+            byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+            int line2 = 10;
+        }}
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            using (HashAlgorithm {|#3:hasher = {{hashType}}.Create()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest = {|#2:hasher.ComputeHash(buffer, 0, 10)|};
-                                int line2 = 10;
-                            }
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        using (HashAlgorithm {{|#3:hasher = {hashType}.Create()|}})
+        {{
+            int line1 = 20;
+            byte[] digest = {{|#2:hasher.ComputeHash(buffer, 0, 10)|}};
+            int line2 = 10;
+        }}
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            using (HashAlgorithm {|#5:hasher = {{hashType}}.Create()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest3 = new byte[1024];
-                                int line2 = 10;
-                                if ({|#4:hasher.TryComputeHash(buffer, digest3, out var i)|})
-                                {
-                                    int line3 = 10;
-                                }
-                                int line4 = 10;
-                            }
-                        }
-                    }
-                    """;
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        using (HashAlgorithm {{|#5:hasher = {hashType}.Create()|}})
+        {{
+            int line1 = 20;
+            byte[] digest3 = new byte[1024];
+            int line2 = 10;
+            if ({{|#4:hasher.TryComputeHash(buffer, digest3, out var i)|}})
+            {{
+                int line3 = 10;
+            }}
+            int line4 = 10;
+        }}
+    }}
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line2 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out var i))
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out var i))
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -1844,73 +1844,73 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#1:hasher As HashAlgorithm = {{hashType}}.Create()|}
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#0:hasher.ComputeHash(buffer)|}
-                                Dim line2 = 10
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#3:hasher As HashAlgorithm = {{hashType}}.Create()|}
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#2:hasher.ComputeHash(buffer, 0, 10)|}
-                                Dim line2 = 10
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#5:hasher As HashAlgorithm = {{hashType}}.Create()|}
-                                Dim line1 = 20
-                                Dim digest = New Byte(1023) {}
-                                Dim i As Integer
-                                Dim line2 = 10
-                                If {|#4:hasher.TryComputeHash(buffer, digest, i)|} Then
-                                    Dim line3 = 10
-                                End If
-                                Dim line4 = 10
-                            End Using
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#1:hasher As HashAlgorithm = {hashType}.Create()|}}
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#0:hasher.ComputeHash(buffer)|}}
+            Dim line2 = 10
+        End Using
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#3:hasher As HashAlgorithm = {hashType}.Create()|}}
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#2:hasher.ComputeHash(buffer, 0, 10)|}}
+            Dim line2 = 10
+        End Using
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#5:hasher As HashAlgorithm = {hashType}.Create()|}}
+            Dim line1 = 20
+            Dim digest = New Byte(1023) {{}}
+            Dim i As Integer
+            Dim line2 = 10
+            If {{|#4:hasher.TryComputeHash(buffer, digest, i)|}} Then
+                Dim line3 = 10
+            End If
+            Dim line4 = 10
+        End Using
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            Dim line2 = 10
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line3 = 10
-                            End If
-                            Dim line4 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        Dim line2 = 10
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line3 = 10
+        End If
+        Dim line4 = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,
@@ -1929,61 +1929,61 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            using ({{hashType}} {|#1:hasher = {{hashType}}.Create()|}, {|#4:hasher2 = {{hashType}}.Create()|})
-                            {
-                                int aboveLine = 20;
-                                byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                                int belowLine = 10;
-                                byte[] digest2 = {|#2:hasher2.ComputeHash({|#3:hasher2.ComputeHash(digest)|})|};
-                            }
-                        }
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            using ({{hashType}} {|#6:hasher = {{hashType}}.Create()|}, {|#9:hasher2 = {{hashType}}.Create()|})
-                            {
-                                int aboveLine = 20;
-                                byte[] digest = {|#5:hasher.ComputeHash(buffer, 0, 10)|};
-                                int belowLine = 10;
-                                byte[] digest2 = {|#7:hasher2.ComputeHash({|#8:hasher2.ComputeHash(digest, 0, 10)|}, 0, 10)|};
-                            }
-                        }
-                    }
-                    """;
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        using ({hashType} {{|#1:hasher = {hashType}.Create()|}}, {{|#4:hasher2 = {hashType}.Create()|}})
+        {{
+            int aboveLine = 20;
+            byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+            int belowLine = 10;
+            byte[] digest2 = {{|#2:hasher2.ComputeHash({{|#3:hasher2.ComputeHash(digest)|}})|}};
+        }}
+    }}
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        using ({hashType} {{|#6:hasher = {hashType}.Create()|}}, {{|#9:hasher2 = {hashType}.Create()|}})
+        {{
+            int aboveLine = 20;
+            byte[] digest = {{|#5:hasher.ComputeHash(buffer, 0, 10)|}};
+            int belowLine = 10;
+            byte[] digest2 = {{|#7:hasher2.ComputeHash({{|#8:hasher2.ComputeHash(digest, 0, 10)|}}, 0, 10)|}};
+        }}
+    }}
+}}
+";
 
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int aboveLine = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int belowLine = 10;
-                            byte[] digest2 = {{hashType}}.HashData({{hashType}}.HashData(digest));
-                        }
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int aboveLine = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int belowLine = 10;
-                            byte[] digest2 = {{hashType}}.HashData({{hashType}}.HashData(digest.AsSpan(0, 10)).AsSpan(0, 10));
-                        }
-                    }
-                    """;
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int aboveLine = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int belowLine = 10;
+        byte[] digest2 = {hashType}.HashData({hashType}.HashData(digest));
+    }}
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int aboveLine = 20;
+        byte[] digest = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int belowLine = 10;
+        byte[] digest2 = {hashType}.HashData({hashType}.HashData(digest.AsSpan(0, 10)).AsSpan(0, 10));
+    }}
+}}
+";
                 var hashAlgorithmTypeName = $"System.Security.Cryptography.{hashType}";
                 await TestCSAsync(
                     csInput,
@@ -2028,53 +2028,53 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#1:hasher As {{hashType}} = {{hashType}}.Create()|}, {|#4:hasher2 As {{hashType}} = {{hashType}}.Create()|}
-                                Dim aboveLine = 20
-                                Dim digest As Byte() = {|#0:hasher.ComputeHash(buffer)|}
-                                Dim belowLine = 10
-                                Dim digest2 As Byte() = {|#2:hasher2.ComputeHash({|#3:hasher2.ComputeHash(digest)|})|}
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#6:hasher As {{hashType}} = {{hashType}}.Create()|}, {|#9:hasher2 As {{hashType}} = {{hashType}}.Create()|}
-                                Dim aboveLine = 20
-                                Dim digest As Byte() = {|#5:hasher.ComputeHash(buffer, 0, 10)|}
-                                Dim belowLine = 10
-                                Dim digest2 As Byte() = {|#7:hasher2.ComputeHash({|#8:hasher2.ComputeHash(digest, 0, 10)|}, 0, 10)|}
-                            End Using
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#1:hasher As {hashType} = {hashType}.Create()|}}, {{|#4:hasher2 As {hashType} = {hashType}.Create()|}}
+            Dim aboveLine = 20
+            Dim digest As Byte() = {{|#0:hasher.ComputeHash(buffer)|}}
+            Dim belowLine = 10
+            Dim digest2 As Byte() = {{|#2:hasher2.ComputeHash({{|#3:hasher2.ComputeHash(digest)|}})|}}
+        End Using
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#6:hasher As {hashType} = {hashType}.Create()|}}, {{|#9:hasher2 As {hashType} = {hashType}.Create()|}}
+            Dim aboveLine = 20
+            Dim digest As Byte() = {{|#5:hasher.ComputeHash(buffer, 0, 10)|}}
+            Dim belowLine = 10
+            Dim digest2 As Byte() = {{|#7:hasher2.ComputeHash({{|#8:hasher2.ComputeHash(digest, 0, 10)|}}, 0, 10)|}}
+        End Using
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim aboveLine = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim belowLine = 10
-                            Dim digest2 As Byte() = {{hashType}}.HashData({{hashType}}.HashData(digest))
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim aboveLine = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                            Dim belowLine = 10
-                            Dim digest2 As Byte() = {{hashType}}.HashData({{hashType}}.HashData(digest.AsSpan(0, 10)).AsSpan(0, 10))
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim aboveLine = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim belowLine = 10
+        Dim digest2 As Byte() = {hashType}.HashData({hashType}.HashData(digest))
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim aboveLine = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+        Dim belowLine = 10
+        Dim digest2 As Byte() = {hashType}.HashData({hashType}.HashData(digest.AsSpan(0, 10)).AsSpan(0, 10))
+    End Sub
+End Class
+";
                 var hashAlgorithmTypeName = $"System.Security.Cryptography.{hashType}";
                 await TestVBAsync(
                     vbInput,
@@ -2118,21 +2118,21 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            var sha256 = new {{hashType}}Managed();
-                            int aboveLine = 20;
-                            int belowLine = 10;
-                        }
-                    }
-                    """;
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        var sha256 = new {hashType}Managed();
+        int aboveLine = 20;
+        int belowLine = 10;
+    }}
+}}
+";
                 await TestCSAsync(csInput);
             }
         }
@@ -2147,79 +2147,79 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {|#0:new {{hashType}}Managed().ComputeHash(buffer)|};
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {{|#0:new {hashType}Managed().ComputeHash(buffer)|}};
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line2 = 10;
-                            byte[] digest2 = {|#1:new {{hashType}}Managed().ComputeHash(buffer, 0, 10)|};
-                            int line3 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line2 = 10;
+        byte[] digest2 = {{|#1:new {hashType}Managed().ComputeHash(buffer, 0, 10)|}};
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line3 = 10;
-                            byte[] digest3 = new byte[1024];
-                            int line4 = 10;
-                            if({|#2:new {{hashType}}Managed().TryComputeHash(buffer, digest3, out var i)|})
-                            {
-                                int line5 = 10;
-                            }
-                            int line6 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line3 = 10;
+        byte[] digest3 = new byte[1024];
+        int line4 = 10;
+        if({{|#2:new {hashType}Managed().TryComputeHash(buffer, digest3, out var i)|}})
+        {{
+            int line5 = 10;
+        }}
+        int line6 = 10;
+    }}
+}}
+";
 
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line2 = 10;
-                            byte[] digest2 = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line3 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line2 = 10;
+        byte[] digest2 = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line3 = 10;
-                            byte[] digest3 = new byte[1024];
-                            int line4 = 10;
-                            if({{hashType}}.TryHashData(buffer, digest3, out var i))
-                            {
-                                int line5 = 10;
-                            }
-                            int line6 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line3 = 10;
+        byte[] digest3 = new byte[1024];
+        int line4 = 10;
+        if({hashType}.TryHashData(buffer, digest3, out var i))
+        {{
+            int line5 = 10;
+        }}
+        int line6 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -2237,65 +2237,65 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {|#0:New {{hashType}}Managed().ComputeHash(buffer)|}
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line2 = 10
-                            Dim digest As Byte() = {|#1:New {{hashType}}Managed().ComputeHash(buffer, 0, 10)|}
-                            Dim line3 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line3 = 10
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            If {|#2:New {{hashType}}Managed().TryComputeHash(buffer, digest, i)|} Then
-                                Dim line5 = 10
-                            End If
-                            Dim line6 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {{|#0:New {hashType}Managed().ComputeHash(buffer)|}}
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line2 = 10
+        Dim digest As Byte() = {{|#1:New {hashType}Managed().ComputeHash(buffer, 0, 10)|}}
+        Dim line3 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line3 = 10
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        If {{|#2:New {hashType}Managed().TryComputeHash(buffer, digest, i)|}} Then
+            Dim line5 = 10
+        End If
+        Dim line6 = 10
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line2 = 10
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                            Dim line3 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line3 = 10
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line5 = 10
-                            End If
-                            Dim line6 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line2 = 10
+        Dim digest As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+        Dim line3 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line3 = 10
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line5 = 10
+        End If
+        Dim line6 = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,
@@ -2313,59 +2313,59 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        private static void Test2(byte[] buffer)
-                        {
-                        }
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            Test2({|#0:new {{hashType}}Managed().ComputeHash(buffer)|});
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    private static void Test2(byte[] buffer)
+    {{
+    }}
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        Test2({{|#0:new {hashType}Managed().ComputeHash(buffer)|}});
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line2 = 10;
-                            Test2({|#1:new {{hashType}}Managed().ComputeHash(buffer, 0, 10)|});
-                            int line3 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line2 = 10;
+        Test2({{|#1:new {hashType}Managed().ComputeHash(buffer, 0, 10)|}});
+        int line3 = 10;
+    }}
+}}
+";
 
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        private static void Test2(byte[] buffer)
-                        {
-                        }
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            Test2({{hashType}}.HashData(buffer));
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    private static void Test2(byte[] buffer)
+    {{
+    }}
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        Test2({hashType}.HashData(buffer));
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line2 = 10;
-                            Test2({{hashType}}.HashData(buffer.AsSpan(0, 10)));
-                            int line3 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line2 = 10;
+        Test2({hashType}.HashData(buffer.AsSpan(0, 10)));
+        int line3 = 10;
+    }}
+}}
+";
                 var hashAlgorithmTypeName = $"System.Security.Cryptography.{hashType}";
                 await TestCSAsync(
                     csInput,
@@ -2391,49 +2391,49 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub Test2(buffer As Byte())
-                        End Sub
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Test2({|#0:New {{hashType}}Managed().ComputeHash(buffer)|})
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line2 = 10
-                            Test2({|#1:New {{hashType}}Managed().ComputeHash(buffer, 0, 10)|})
-                            Dim line3 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub Test2(buffer As Byte())
+    End Sub
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Test2({{|#0:New {hashType}Managed().ComputeHash(buffer)|}})
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line2 = 10
+        Test2({{|#1:New {hashType}Managed().ComputeHash(buffer, 0, 10)|}})
+        Dim line3 = 10
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub Test2(buffer As Byte())
-                        End Sub
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Test2({{hashType}}.HashData(buffer))
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line2 = 10
-                            Test2({{hashType}}.HashData(buffer.AsSpan(0, 10)))
-                            Dim line3 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub Test2(buffer As Byte())
+    End Sub
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Test2({hashType}.HashData(buffer))
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line2 = 10
+        Test2({hashType}.HashData(buffer.AsSpan(0, 10)))
+        Dim line3 = 10
+    End Sub
+End Class
+";
                 var hashAlgorithmTypeName = $"System.Security.Cryptography.{hashType}";
                 await TestVBAsync(
                     vbInput,
@@ -2457,105 +2457,105 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            using (var {|#2:hasher = new {{hashType}}Managed()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                                int line2 = 10;
-                                byte[] digest2 = {|#1:hasher.ComputeHash(buffer)|};
-                                int line3 = 10;
-                            }
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        using (var {{|#2:hasher = new {hashType}Managed()|}})
+        {{
+            int line1 = 20;
+            byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+            int line2 = 10;
+            byte[] digest2 = {{|#1:hasher.ComputeHash(buffer)|}};
+            int line3 = 10;
+        }}
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            using (var {|#5:hasher = new {{hashType}}Managed()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest = {|#3:hasher.ComputeHash(buffer, 0, 10)|};
-                                int line2 = 10;
-                                byte[] digest2 = {|#4:hasher.ComputeHash(buffer, 0, 10)|};
-                                int line3 = 10;
-                            }
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        using (var {{|#5:hasher = new {hashType}Managed()|}})
+        {{
+            int line1 = 20;
+            byte[] digest = {{|#3:hasher.ComputeHash(buffer, 0, 10)|}};
+            int line2 = 10;
+            byte[] digest2 = {{|#4:hasher.ComputeHash(buffer, 0, 10)|}};
+            int line3 = 10;
+        }}
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            using (var {|#8:hasher = new {{hashType}}Managed()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest3 = new byte[1024];
-                                int line2 = 10;
-                                if ({|#6:hasher.TryComputeHash(buffer, digest3, out var i)|})
-                                {
-                                    int line3 = 10;
-                                }
-                                int line4 = 10;
-                                if ({|#7:hasher.TryComputeHash(buffer, digest3, out i)|})
-                                {
-                                    int line5 = 10;
-                                }
-                                int line6 = 10;
-                            }
-                        }
-                    }
-                    """;
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        using (var {{|#8:hasher = new {hashType}Managed()|}})
+        {{
+            int line1 = 20;
+            byte[] digest3 = new byte[1024];
+            int line2 = 10;
+            if ({{|#6:hasher.TryComputeHash(buffer, digest3, out var i)|}})
+            {{
+                int line3 = 10;
+            }}
+            int line4 = 10;
+            if ({{|#7:hasher.TryComputeHash(buffer, digest3, out i)|}})
+            {{
+                int line5 = 10;
+            }}
+            int line6 = 10;
+        }}
+    }}
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                            byte[] digest2 = {{hashType}}.HashData(buffer);
-                            int line3 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+        byte[] digest2 = {hashType}.HashData(buffer);
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line2 = 10;
-                            byte[] digest2 = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line3 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line2 = 10;
+        byte[] digest2 = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line3 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out var i))
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out i))
-                            {
-                                int line5 = 10;
-                            }
-                            int line6 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out var i))
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out i))
+        {{
+            int line5 = 10;
+        }}
+        int line6 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -2573,85 +2573,85 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#2:hasher As New {{hashType}}Managed()|}
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#0:hasher.ComputeHash(buffer)|}
-                                Dim line2 = 10
-                                Dim digest2 As Byte() = {|#1:hasher.ComputeHash(buffer)|}
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#5:hasher As New {{hashType}}Managed()|}
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#3:hasher.ComputeHash(buffer, 0, 10)|}
-                                Dim line2 = 10
-                                Dim digest2 As Byte() = {|#4:hasher.ComputeHash(buffer, 0, 10)|}
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#8:hasher As New {{hashType}}Managed()|}
-                                Dim line1 = 20
-                                Dim digest = New Byte(1023) {}
-                                Dim i As Integer
-                                Dim line2 = 10
-                                If {|#6:hasher.TryComputeHash(buffer, digest, i)|} Then
-                                    Dim line3 = 10
-                                End If
-                                Dim line4 = 10
-                                If {|#7:hasher.TryComputeHash(buffer, digest, i)|} Then
-                                    Dim line5 = 10
-                                End If
-                                Dim line6 = 10
-                            End Using
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#2:hasher As New {hashType}Managed()|}}
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#0:hasher.ComputeHash(buffer)|}}
+            Dim line2 = 10
+            Dim digest2 As Byte() = {{|#1:hasher.ComputeHash(buffer)|}}
+        End Using
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#5:hasher As New {hashType}Managed()|}}
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#3:hasher.ComputeHash(buffer, 0, 10)|}}
+            Dim line2 = 10
+            Dim digest2 As Byte() = {{|#4:hasher.ComputeHash(buffer, 0, 10)|}}
+        End Using
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#8:hasher As New {hashType}Managed()|}}
+            Dim line1 = 20
+            Dim digest = New Byte(1023) {{}}
+            Dim i As Integer
+            Dim line2 = 10
+            If {{|#6:hasher.TryComputeHash(buffer, digest, i)|}} Then
+                Dim line3 = 10
+            End If
+            Dim line4 = 10
+            If {{|#7:hasher.TryComputeHash(buffer, digest, i)|}} Then
+                Dim line5 = 10
+            End If
+            Dim line6 = 10
+        End Using
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim line2 = 10
-                            Dim digest2 As Byte() = {{hashType}}.HashData(buffer)
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                            Dim line2 = 10
-                            Dim digest2 As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            Dim line2 = 10
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line3 = 10
-                            End If
-                            Dim line4 = 10
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line5 = 10
-                            End If
-                            Dim line6 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+        Dim digest2 As Byte() = {hashType}.HashData(buffer)
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+        Dim line2 = 10
+        Dim digest2 As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        Dim line2 = 10
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line3 = 10
+        End If
+        Dim line4 = 10
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line5 = 10
+        End If
+        Dim line6 = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,
@@ -2669,87 +2669,87 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            using (var {|#1:hasher = new {{hashType}}Managed()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                                int line2 = 10;
-                            }
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        using (var {{|#1:hasher = new {hashType}Managed()|}})
+        {{
+            int line1 = 20;
+            byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+            int line2 = 10;
+        }}
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            using (var {|#3:hasher = new {{hashType}}Managed()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest = {|#2:hasher.ComputeHash(buffer, 0, 10)|};
-                                int line2 = 10;
-                            }
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        using (var {{|#3:hasher = new {hashType}Managed()|}})
+        {{
+            int line1 = 20;
+            byte[] digest = {{|#2:hasher.ComputeHash(buffer, 0, 10)|}};
+            int line2 = 10;
+        }}
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            using (var {|#5:hasher = new {{hashType}}Managed()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest3 = new byte[1024];
-                                int line2 = 10;
-                                if ({|#4:hasher.TryComputeHash(buffer, digest3, out var i)|})
-                                {
-                                    int line3 = 10;
-                                }
-                                int line4 = 10;
-                            }
-                        }
-                    }
-                    """;
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        using (var {{|#5:hasher = new {hashType}Managed()|}})
+        {{
+            int line1 = 20;
+            byte[] digest3 = new byte[1024];
+            int line2 = 10;
+            if ({{|#4:hasher.TryComputeHash(buffer, digest3, out var i)|}})
+            {{
+                int line3 = 10;
+            }}
+            int line4 = 10;
+        }}
+    }}
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line2 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out var i))
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out var i))
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -2767,67 +2767,63 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    using System;
-                    using System.Security.Cryptography;
+var buffer = new byte[1024];
+using (var {{|#1:hasher = new {hashType}Managed()|}})
+{{
+    int line1 = 20;
+    byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+    int line2 = 10;
+}}
 
-                    var buffer = new byte[1024];
-                    using (var {|#1:hasher = new {{hashType}}Managed()|})
-                    {
-                        int line1 = 20;
-                        byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                        int line2 = 10;
-                    }
+var buffer2 = new byte[1024];
+using (var {{|#3:hasher2 = new {hashType}Managed()|}})
+{{
+    int line12 = 20;
+    byte[] digest2 = {{|#2:hasher2.ComputeHash(buffer2, 0, 10)|}};
+    int line22 = 10;
+}}
 
-                    var buffer2 = new byte[1024];
-                    using (var {|#3:hasher2 = new {{hashType}}Managed()|})
-                    {
-                        int line12 = 20;
-                        byte[] digest2 = {|#2:hasher2.ComputeHash(buffer2, 0, 10)|};
-                        int line22 = 10;
-                    }
+var buffer3 = new byte[1024];
+using (var {{|#5:hasher3 = new {hashType}Managed()|}})
+{{
+    int line13 = 20;
+    byte[] digest3 = new byte[1024];
+    int line23 = 10;
+    if ({{|#4:hasher3.TryComputeHash(buffer3, digest3, out var i)|}})
+    {{
+        int line33 = 10;
+    }}
+    int line43 = 10;
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    var buffer3 = new byte[1024];
-                    using (var {|#5:hasher3 = new {{hashType}}Managed()|})
-                    {
-                        int line13 = 20;
-                        byte[] digest3 = new byte[1024];
-                        int line23 = 10;
-                        if ({|#4:hasher3.TryComputeHash(buffer3, digest3, out var i)|})
-                        {
-                            int line33 = 10;
-                        }
-                        int line43 = 10;
-                    }
+var buffer = new byte[1024];
+int line1 = 20;
+byte[] digest = {hashType}.HashData(buffer);
+int line2 = 10;
 
-                    """;
-                string csFix = $$"""
+var buffer2 = new byte[1024];
+int line12 = 20;
+byte[] digest2 = {hashType}.HashData(buffer2.AsSpan(0, 10));
+int line22 = 10;
 
-                    using System;
-                    using System.Security.Cryptography;
-
-                    var buffer = new byte[1024];
-                    int line1 = 20;
-                    byte[] digest = {{hashType}}.HashData(buffer);
-                    int line2 = 10;
-
-                    var buffer2 = new byte[1024];
-                    int line12 = 20;
-                    byte[] digest2 = {{hashType}}.HashData(buffer2.AsSpan(0, 10));
-                    int line22 = 10;
-
-                    var buffer3 = new byte[1024];
-                    int line13 = 20;
-                    byte[] digest3 = new byte[1024];
-                    int line23 = 10;
-                    if ({{hashType}}.TryHashData(buffer3, digest3, out var i))
-                    {
-                        int line33 = 10;
-                    }
-                    int line43 = 10;
-
-                    """;
+var buffer3 = new byte[1024];
+int line13 = 20;
+byte[] digest3 = new byte[1024];
+int line23 = 10;
+if ({hashType}.TryHashData(buffer3, digest3, out var i))
+{{
+    int line33 = 10;
+}}
+int line43 = 10;
+";
                 await TestCSTopLevelAsync(
                     csInput,
                     csFix,
@@ -2845,73 +2841,73 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#1:hasher As New {{hashType}}Managed()|}
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#0:hasher.ComputeHash(buffer)|}
-                                Dim line2 = 10
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#3:hasher As New {{hashType}}Managed()|}
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#2:hasher.ComputeHash(buffer, 0, 10)|}
-                                Dim line2 = 10
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#5:hasher As New {{hashType}}Managed()|}
-                                Dim line1 = 20
-                                Dim digest = New Byte(1023) {}
-                                Dim i As Integer
-                                Dim line2 = 10
-                                If {|#4:hasher.TryComputeHash(buffer, digest, i)|} Then
-                                    Dim line3 = 10
-                                End If
-                                Dim line4 = 10
-                            End Using
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#1:hasher As New {hashType}Managed()|}}
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#0:hasher.ComputeHash(buffer)|}}
+            Dim line2 = 10
+        End Using
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#3:hasher As New {hashType}Managed()|}}
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#2:hasher.ComputeHash(buffer, 0, 10)|}}
+            Dim line2 = 10
+        End Using
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#5:hasher As New {hashType}Managed()|}}
+            Dim line1 = 20
+            Dim digest = New Byte(1023) {{}}
+            Dim i As Integer
+            Dim line2 = 10
+            If {{|#4:hasher.TryComputeHash(buffer, digest, i)|}} Then
+                Dim line3 = 10
+            End If
+            Dim line4 = 10
+        End Using
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            Dim line2 = 10
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line3 = 10
-                            End If
-                            Dim line4 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        Dim line2 = 10
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line3 = 10
+        End If
+        Dim line4 = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,
@@ -2929,87 +2925,87 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            using (HashAlgorithm {|#1:hasher = new {{hashType}}Managed()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                                int line2 = 10;
-                            }
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        using (HashAlgorithm {{|#1:hasher = new {hashType}Managed()|}})
+        {{
+            int line1 = 20;
+            byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+            int line2 = 10;
+        }}
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            using (HashAlgorithm {|#3:hasher = new {{hashType}}Managed()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest = {|#2:hasher.ComputeHash(buffer, 0, 10)|};
-                                int line2 = 10;
-                            }
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        using (HashAlgorithm {{|#3:hasher = new {hashType}Managed()|}})
+        {{
+            int line1 = 20;
+            byte[] digest = {{|#2:hasher.ComputeHash(buffer, 0, 10)|}};
+            int line2 = 10;
+        }}
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            using (HashAlgorithm {|#5:hasher = new {{hashType}}Managed()|})
-                            {
-                                int line1 = 20;
-                                byte[] digest3 = new byte[1024];
-                                int line2 = 10;
-                                if ({|#4:hasher.TryComputeHash(buffer, digest3, out var i)|})
-                                {
-                                    int line3 = 10;
-                                }
-                                int line4 = 10;
-                            }
-                        }
-                    }
-                    """;
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        using (HashAlgorithm {{|#5:hasher = new {hashType}Managed()|}})
+        {{
+            int line1 = 20;
+            byte[] digest3 = new byte[1024];
+            int line2 = 10;
+            if ({{|#4:hasher.TryComputeHash(buffer, digest3, out var i)|}})
+            {{
+                int line3 = 10;
+            }}
+            int line4 = 10;
+        }}
+    }}
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                        }
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod2()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer.AsSpan(0, 10));
-                            int line2 = 10;
-                        }
+    public static void TestMethod2()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer.AsSpan(0, 10));
+        int line2 = 10;
+    }}
 
-                        public static void TestMethod3()
-                        {
-                            var buffer = new byte[1024];
-                            int line1 = 20;
-                            byte[] digest3 = new byte[1024];
-                            int line2 = 10;
-                            if ({{hashType}}.TryHashData(buffer, digest3, out var i))
-                            {
-                                int line3 = 10;
-                            }
-                            int line4 = 10;
-                        }
-                    }
-                    """;
+    public static void TestMethod3()
+    {{
+        var buffer = new byte[1024];
+        int line1 = 20;
+        byte[] digest3 = new byte[1024];
+        int line2 = 10;
+        if ({hashType}.TryHashData(buffer, digest3, out var i))
+        {{
+            int line3 = 10;
+        }}
+        int line4 = 10;
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -3027,73 +3023,73 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#1:hasher As HashAlgorithm = New {{hashType}}Managed()|}
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#0:hasher.ComputeHash(buffer)|}
-                                Dim line2 = 10
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#3:hasher As HashAlgorithm = New {{hashType}}Managed()|}
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#2:hasher.ComputeHash(buffer, 0, 10)|}
-                                Dim line2 = 10
-                            End Using
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Using {|#5:hasher As HashAlgorithm = New {{hashType}}Managed()|}
-                                Dim line1 = 20
-                                Dim digest = New Byte(1023) {}
-                                Dim i As Integer
-                                Dim line2 = 10
-                                If {|#4:hasher.TryComputeHash(buffer, digest, i)|} Then
-                                    Dim line3 = 10
-                                End If
-                                Dim line4 = 10
-                            End Using
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#1:hasher As HashAlgorithm = New {hashType}Managed()|}}
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#0:hasher.ComputeHash(buffer)|}}
+            Dim line2 = 10
+        End Using
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#3:hasher As HashAlgorithm = New {hashType}Managed()|}}
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#2:hasher.ComputeHash(buffer, 0, 10)|}}
+            Dim line2 = 10
+        End Using
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Using {{|#5:hasher As HashAlgorithm = New {hashType}Managed()|}}
+            Dim line1 = 20
+            Dim digest = New Byte(1023) {{}}
+            Dim i As Integer
+            Dim line2 = 10
+            If {{|#4:hasher.TryComputeHash(buffer, digest, i)|}} Then
+                Dim line3 = 10
+            End If
+            Dim line4 = 10
+        End Using
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod2()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer.AsSpan(0, 10))
-                            Dim line2 = 10
-                        End Sub
-                        Public Shared Sub TestMethod3()
-                            Dim buffer = New Byte(1023) {}
-                            Dim line1 = 20
-                            Dim digest = New Byte(1023) {}
-                            Dim i As Integer
-                            Dim line2 = 10
-                            If {{hashType}}.TryHashData(buffer, digest, i) Then
-                                Dim line3 = 10
-                            End If
-                            Dim line4 = 10
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod2()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer.AsSpan(0, 10))
+        Dim line2 = 10
+    End Sub
+    Public Shared Sub TestMethod3()
+        Dim buffer = New Byte(1023) {{}}
+        Dim line1 = 20
+        Dim digest = New Byte(1023) {{}}
+        Dim i As Integer
+        Dim line2 = 10
+        If {hashType}.TryHashData(buffer, digest, i) Then
+            Dim line3 = 10
+        End If
+        Dim line4 = 10
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,
@@ -3108,60 +3104,60 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string csInput = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                    #if !SOMETHING
-                            using (var {|#1:hasher = {{hashType}}.Create()|})  // test
-                            {  // test2
-                                int line1 = 20;
-                                byte[] digest = {|#0:hasher.ComputeHash(buffer)|};
-                                int line2 = 10;
-                        /* test3
-                         a  */    }
-                    #else
-                            byte[] digest = Array.Empty<byte>();
-                    #endif
-                            //test4
-                            using var {|#3:hasher2 = {{hashType}}.Create()|}; //test5
-                            byte[] digest2 = {|#2:hasher2.ComputeHash(buffer)|};
-                            //test6
-                        }
-                    }
-                    """;
-                string csFix = $$"""
-                    using System;
-                    using System.Security.Cryptography;
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+#if !SOMETHING
+        using (var {{|#1:hasher = {hashType}.Create()|}})  // test
+        {{  // test2
+            int line1 = 20;
+            byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+            int line2 = 10;
+    /* test3
+     a  */    }} 
+#else
+        byte[] digest = Array.Empty<byte>();
+#endif
+        //test4
+        using var {{|#3:hasher2 = {hashType}.Create()|}}; //test5
+        byte[] digest2 = {{|#2:hasher2.ComputeHash(buffer)|}};
+        //test6
+    }}
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
 
-                    public class Test
-                    {
-                        public static void TestMethod()
-                        {
-                            var buffer = new byte[1024];
-                    #if !SOMETHING
-                            // test
-                            // test2
-                            int line1 = 20;
-                            byte[] digest = {{hashType}}.HashData(buffer);
-                            int line2 = 10;
-                            /* test3
-                             a  */
-                    #else
-                            byte[] digest = Array.Empty<byte>();
-                    #endif
-                            //test4
-                            //test5
-                            byte[] digest2 = {{hashType}}.HashData(buffer);
-                            //test6
-                        }
-                    }
-                    """;
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+#if !SOMETHING
+        // test
+        // test2
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+        /* test3
+         a  */
+#else
+        byte[] digest = Array.Empty<byte>();
+#endif
+        //test4
+        //test5
+        byte[] digest2 = {hashType}.HashData(buffer);
+        //test6
+    }}
+}}
+";
                 await TestCSAsync(
                     csInput,
                     csFix,
@@ -3183,55 +3179,55 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             static async Task TestWithType(string hashType)
             {
-                string vbInput = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                    #If Not SOMETHING
-                            Using {|#1:hasher As {{hashType}} = {{hashType}}.Create()|} 'test
-                                'test2
-                                Dim line1 = 20
-                                Dim digest As Byte() = {|#0:hasher.ComputeHash(buffer)|}
-                                Dim line2 = 10
-                            End Using 'test3
-                    #Else
-                            Dim digest As Byte() = Array.Empty<byte>();
-                    #End If
-                            'test4
-                            Dim {|#3:hasher2 As {{hashType}} = {{hashType}}.Create()|} 'test5
-                            Dim digest2 As Byte() = {|#2:hasher2.ComputeHash(buffer)|}
-                            'test6
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+#If Not SOMETHING
+        Using {{|#1:hasher As {hashType} = {hashType}.Create()|}} 'test
+            'test2
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#0:hasher.ComputeHash(buffer)|}}
+            Dim line2 = 10
+        End Using 'test3
+#Else
+        Dim digest As Byte() = Array.Empty<byte>();
+#End If
+        'test4
+        Dim {{|#3:hasher2 As {hashType} = {hashType}.Create()|}} 'test5
+        Dim digest2 As Byte() = {{|#2:hasher2.ComputeHash(buffer)|}}
+        'test6
+    End Sub
+End Class
+";
 
-                string vbFix = $$"""
-                    Imports System
-                    Imports System.Security.Cryptography
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
 
-                    Public Class Test
-                        Public Shared Sub TestMethod()
-                            Dim buffer = New Byte(1023) {}
-                    #If Not SOMETHING
-                            'test
-                            'test2
-                            Dim line1 = 20
-                            Dim digest As Byte() = {{hashType}}.HashData(buffer)
-                            Dim line2 = 10
-                            'test3
-                    #Else
-                            Dim digest As Byte() = Array.Empty<byte>();
-                    #End If
-                            'test4
-                            'test5
-                            Dim digest2 As Byte() = {{hashType}}.HashData(buffer)
-                            'test6
-                        End Sub
-                    End Class
-                    """;
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+#If Not SOMETHING
+        'test
+        'test2
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+        'test3
+#Else
+        Dim digest As Byte() = Array.Empty<byte>();
+#End If
+        'test4
+        'test5
+        Dim digest2 As Byte() = {hashType}.HashData(buffer)
+        'test6
+    End Sub
+End Class
+";
                 await TestVBAsync(
                     vbInput,
                     vbFix,

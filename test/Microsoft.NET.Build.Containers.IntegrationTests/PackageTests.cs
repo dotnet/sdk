@@ -40,7 +40,7 @@ public class PackageTests
     public void PackageContentTest()
     {
         string ignoredZipFileEntriesPrefix = "package/services/metadata";
-        var netTFM = ToolsetInfo.SdkTargetFramework;
+        var netTFM = ToolsetInfo.CurrentTargetFramework;
         IReadOnlyList<string> packageContents = new List<string>()
         {
               "_rels/.rels",

@@ -10,16 +10,16 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class StaticWebAssetsManifest(ImmutableDictionary<string, string> urlToPathMap, ImmutableArray<StaticWebAssetPattern> discoveryPatterns)
+internal sealed partial class StaticWebAssetsManifest(ImmutableDictionary<string, string> urlToPathMap, ImmutableArray<StaticWebAssetPattern> discoveryPatterns)
 {
-    private static readonly JsonSerializerOptions s_options = new()
-    {
-        RespectNullableAnnotations = true,
-    };
+    [JsonSourceGenerationOptions(RespectNullableAnnotations = true)]
+    [JsonSerializable(typeof(ManifestJson))]
+    private sealed partial class StaticWebAssetsManifestJsonContext : JsonSerializerContext;
 
     private sealed class ManifestJson
     {
@@ -143,7 +143,7 @@ internal sealed class StaticWebAssetsManifest(ImmutableDictionary<string, string
 
         try
         {
-            manifest = JsonSerializer.Deserialize<ManifestJson>(stream, s_options);
+            manifest = JsonSerializer.Deserialize(stream, StaticWebAssetsManifestJsonContext.Default.ManifestJson);
         }
         catch (JsonException e)
         {

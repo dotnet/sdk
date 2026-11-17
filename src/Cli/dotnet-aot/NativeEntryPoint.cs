@@ -285,7 +285,7 @@ static unsafe partial class NativeEntryPoint
             mainActivity?.SetEndTime(DateTime.UtcNow);
             Telemetry.TelemetryClient.WaitForInternalMicrosoftDetection();
             mainActivity?.Stop();
-            Telemetry.TelemetryClient.FlushProviders();
+            Telemetry.TelemetryClient.FlushProviders(exitCode);
 
             if (aotHandledInProcess)
             {

@@ -173,8 +173,7 @@ public abstract class RunFileTestBase : SdkTest
         string expectedOutput = "Hello from Program",
         string programFileName = "Program.cs",
         string? workDir = null,
-        Func<TestCommand, TestCommand>? customizeCommand = null,
-        string? expectedOutputPrefix = null)
+        Func<TestCommand, TestCommand>? customizeCommand = null)
     {
         string prefix = expectedLevel switch
         {
@@ -196,7 +195,7 @@ public abstract class RunFileTestBase : SdkTest
 
         command.Execute()
             .Should().Pass()
-            .And.HaveStdOut((expectedOutputPrefix ?? prefix) + expectedOutput);
+            .And.HaveStdOut(prefix + expectedOutput);
 
         var binlogs = new DirectoryInfo(workDir ?? testInstance.Path)
             .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly);

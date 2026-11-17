@@ -17,19 +17,18 @@ public class PublishCommand : RestoringCommand
     private PublishCommand(
         MSBuildArgs msbuildArgs,
         bool noRestore,
-        string? msbuildPath,
-        CommandServices services)
-        : base(msbuildArgs, noRestore, msbuildPath, userProfileDir: null, advertiseWorkloadUpdates: null, services: services)
+        string? msbuildPath = null)
+        : base(msbuildArgs, noRestore, msbuildPath)
     {
     }
 
-    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices services)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
         var parseResult = Parser.Parse(["dotnet", "publish", .. args]);
-        return FromParseResult(parseResult, msbuildPath, services);
+        return FromParseResult(parseResult);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath, CommandServices services)
+    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
         var definition = (PublishCommandDefinition)parseResult.CommandResult.Command;
 
@@ -48,8 +47,7 @@ public class PublishCommand : RestoringCommand
             definition.SlnOrProjectOrFileArgument,
             (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(appFilePath),
-                msbuildArgs: msbuildArgs,
-                services: services)
+                msbuildArgs: msbuildArgs)
             {
                 NoBuild = noBuild,
                 NoRestore = noRestore,
@@ -58,8 +56,7 @@ public class PublishCommand : RestoringCommand
             (msbuildArgs, msbuildPath) => new PublishCommand(
                 msbuildArgs: msbuildArgs,
                 noRestore: noRestore,
-                msbuildPath: msbuildPath,
-                services: services
+                msbuildPath: msbuildPath
             ),
             optionsToUseWhenParsingMSBuildFlags:
             [
@@ -89,6 +86,6 @@ public class PublishCommand : RestoringCommand
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromParseResult(parseResult).Execute();
     }
 }

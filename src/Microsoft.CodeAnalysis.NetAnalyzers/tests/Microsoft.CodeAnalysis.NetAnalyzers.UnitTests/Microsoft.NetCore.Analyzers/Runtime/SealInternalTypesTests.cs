@@ -52,14 +52,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DataRow("")]
         public async Task TopLevelInternalClass_Diagnostic_VB(string accessModifier)
         {
-            string source = $$"""
-                {{accessModifier}}Class {|#0:C|}
-                End Class
-                """;
-            string fixedSource = $"""
-                {accessModifier}NotInheritable Class C
-                End Class
-                """;
+            string source = $@"
+{accessModifier}Class {{|#0:C|}}
+End Class";
+            string fixedSource = $@"
+{accessModifier}NotInheritable Class C
+End Class";
 
             await new VerifyVB.Test
             {
@@ -76,18 +74,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task NonEmptyInternalClass_Diagnostic_CS()
         {
-            string source = """
-                internal class {|#0:C|}
-                {
-                    private int _i;
-                }
-                """;
-            string fixedSource = """
-                internal sealed class C
-                {
-                    private int _i;
-                }
-                """;
+            string source = @"
+internal class {|#0:C|}
+{
+    private int _i;
+}";
+            string fixedSource = @"
+internal sealed class C
+{
+    private int _i;
+}";
 
             await new VerifyCS.Test
             {
@@ -106,18 +102,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DataRow("")]
         public async Task InternalClassInNamespace_Diagnostic_CS(string accessModifier)
         {
-            string source = $$"""
-                namespace N
-                {
-                    {{accessModifier}}class {|#0:C|} { }
-                }
-                """;
-            string fixedSource = $$"""
-                namespace N
-                {
-                    {{accessModifier}}sealed class C { }
-                }
-                """;
+            string source = $@"
+namespace N
+{{
+    {accessModifier}class {{|#0:C|}} {{ }}
+}}";
+            string fixedSource = $@"
+namespace N
+{{
+    {accessModifier}sealed class C {{ }}
+}}";
 
             await new VerifyCS.Test
             {
@@ -136,18 +130,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DataRow("")]
         public async Task InternalClassInNamespace_Diagnostic_VB(string accessModifier)
         {
-            string source = $$"""
-                Namespace N
-                    {{accessModifier}}Class {|#0:C|}
-                    End Class
-                End Namespace
-                """;
-            string fixedSource = $"""
-                Namespace N
-                    {accessModifier}NotInheritable Class C
-                    End Class
-                End Namespace
-                """;
+            string source = $@"
+Namespace N
+    {accessModifier}Class {{|#0:C|}}
+    End Class
+End Namespace";
+            string fixedSource = $@"
+Namespace N
+    {accessModifier}NotInheritable Class C
+    End Class
+End Namespace";
 
             await new VerifyVB.Test
             {
@@ -169,18 +161,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DataRow("internal", "protected internal")]
         public async Task NestedOneDeep_NotExternallyVisible_Diagnostic_CS(string outerModifiers, string innerModifiers)
         {
-            string source = $$"""
-                {{outerModifiers}} sealed class Outer
-                {
-                    {{innerModifiers}} class {|#0:C|} { }
-                }
-                """;
-            string fixedSource = $$"""
-                {{outerModifiers}} sealed class Outer
-                {
-                    {{innerModifiers}} sealed class C { }
-                }
-                """;
+            string source = $@"
+{outerModifiers} sealed class Outer
+{{
+    {innerModifiers} class {{|#0:C|}} {{ }}
+}}";
+            string fixedSource = $@"
+{outerModifiers} sealed class Outer
+{{
+    {innerModifiers} sealed class C {{ }}
+}}";
 
             await new VerifyCS.Test
             {
@@ -202,18 +192,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DataRow("Friend", "Friend Protected")]
         public async Task NestedOneDeep_NotExternallyVisible_Diagnostic_VB(string outerModifiers, string innerModifiers)
         {
-            string source = $$"""
-                {{outerModifiers}} NotInheritable Class Outer
-                    {{innerModifiers}} Class {|#0:C|}
-                    End Class
-                End Class
-                """;
-            string fixedSource = $"""
-                {outerModifiers} NotInheritable Class Outer
-                    {innerModifiers} NotInheritable Class C
-                    End Class
-                End Class
-                """;
+            string source = $@"
+{outerModifiers} NotInheritable Class Outer
+    {innerModifiers} Class {{|#0:C|}}
+    End Class
+End Class";
+            string fixedSource = $@"
+{outerModifiers} NotInheritable Class Outer
+    {innerModifiers} NotInheritable Class C
+    End Class
+End Class";
 
             await new VerifyVB.Test
             {
@@ -233,24 +221,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DataRow("public", "private protected", "public")]
         public async Task NestedTwoDeep_NotExternallyVisible_Diagnostic_CS(string outerModifiers, string middleModifiers, string innerModifiers)
         {
-            string source = $$"""
-                {{outerModifiers}} sealed class Outer
-                {
-                    {{middleModifiers}} sealed class Middle
-                    {
-                        {{innerModifiers}} class {|#0:C|} { }
-                    }
-                }
-                """;
-            string fixedSource = $$"""
-                {{outerModifiers}} sealed class Outer
-                {
-                    {{middleModifiers}} sealed class Middle
-                    {
-                        {{innerModifiers}} sealed class {|#0:C|} { }
-                    }
-                }
-                """;
+            string source = $@"
+{outerModifiers} sealed class Outer
+{{
+    {middleModifiers} sealed class Middle
+    {{
+        {innerModifiers} class {{|#0:C|}} {{ }}
+    }}
+}}";
+            string fixedSource = $@"
+{outerModifiers} sealed class Outer
+{{
+    {middleModifiers} sealed class Middle
+    {{
+        {innerModifiers} sealed class {{|#0:C|}} {{ }}
+    }}
+}}";
 
             await new VerifyCS.Test
             {
@@ -270,22 +256,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DataRow("Public", "Private Protected", "Public")]
         public async Task NestedTwoDeep_NotExternallyVisible_Diagnostic_VB(string outerModifiers, string middleModifiers, string innerModifiers)
         {
-            string source = $$"""
-                {{outerModifiers}} NotInheritable Class Outer
-                    {{middleModifiers}} NotInheritable Class Middle
-                        {{innerModifiers}} Class {|#0:C|}
-                        End Class
-                    End Class
-                End Class
-                """;
-            string fixedSource = $"""
-                {outerModifiers} NotInheritable Class Outer
-                    {middleModifiers} NotInheritable Class Middle
-                        {innerModifiers} NotInheritable Class C
-                        End Class
-                    End Class
-                End Class
-                """;
+            string source = $@"
+{outerModifiers} NotInheritable Class Outer
+    {middleModifiers} NotInheritable Class Middle
+        {innerModifiers} Class {{|#0:C|}}
+        End Class
+    End Class
+End Class";
+            string fixedSource = $@"
+{outerModifiers} NotInheritable Class Outer
+    {middleModifiers} NotInheritable Class Middle
+        {innerModifiers} NotInheritable Class C
+        End Class
+    End Class
+End Class";
 
             await new VerifyVB.Test
             {
@@ -303,22 +287,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [CombinatorialData]
         public async Task InternalsVisibleTo_Diagnostic_WhenOptionsDemandIt(bool ignoreInternalsVisibleTo)
         {
-            string source = """
-                [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("TestProject")]
-                                              internal class {|#0:C|} { }
-                """;
+            string source = @"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(""TestProject"")]
+                              internal class {|#0:C|} { }";
 
             var test = new VerifyCS.Test
             {
                 TestCode = source,
                 TestState =
                 {
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo}
-                        """) }
+[*]
+dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo}
+") }
                 }
             };
 
@@ -369,10 +350,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public Task InternalsVisibleTo_NoDiagnostic()
         {
-            string source = """
-                [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("TestProject")]
-                                              internal class C { }
-                """;
+            string source = @"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(""TestProject"")]
+                              internal class C { }";
 
             return VerifyCS.VerifyCodeFixAsync(source, source);
         }
@@ -401,18 +380,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         [DataRow("Interface I", "End Interface")]
         [DataRow("Structure S", "End Structure")]
-        [DataRow("""
-            Enum E
-                None
-            """, "End Enum")]
+        [DataRow(@"Enum E
+    None", "End Enum")]
         [DataRow("Delegate Sub D()", "")]
         [DataRow("Module M", "End Module")]
         public Task NonClassType_NoDiagnostic_VB(string declaration, string endDeclaration)
         {
-            string source = $"""
-                Friend {declaration}
-                {endDeclaration}
-                """;
+            string source = $@"
+Friend {declaration}
+{endDeclaration}";
 
             return VerifyVB.VerifyCodeFixAsync(source, source);
         }
@@ -420,10 +396,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public Task ClassWithDerivedType_NoDiagnostic_CS()
         {
-            string source = """
-                internal class B { }
-                internal sealed class D : B { }
-                """;
+            string source = @"
+internal class B { }
+internal sealed class D : B { }";
 
             return VerifyCS.VerifyCodeFixAsync(source, source);
         }
@@ -431,12 +406,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public Task ClassWithDerivedType_NoDiagnostic_VB()
         {
-            string source = """
-                Friend Class B
-                End Class
-                Friend NotInheritable Class D : Inherits B
-                End Class
-                """;
+            string source = @"
+Friend Class B
+End Class
+Friend NotInheritable Class D : Inherits B
+End Class";
 
             return VerifyVB.VerifyCodeFixAsync(source, source);
         }
@@ -452,10 +426,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public Task AbstractClass_NoDiagnostic_VB()
         {
-            string source = """
-                Friend MustInherit Class C
-                End Class
-                """;
+            string source = @"
+Friend MustInherit Class C
+End Class";
 
             return VerifyVB.VerifyCodeFixAsync(source, source);
         }
@@ -466,10 +439,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DataRow("B<T, U> { }", "D<T> : B<T, int> { }")]
         public Task GenericClass_WithSubclass_NoDiagnostic_CS(string baseClass, string derivedClass)
         {
-            string source = $"""
-                internal class {baseClass}
-                internal sealed class {derivedClass}
-                """;
+            string source = $@"
+internal class {baseClass}
+internal sealed class {derivedClass}";
 
             return VerifyCS.VerifyCodeFixAsync(source, source);
         }
@@ -480,13 +452,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DataRow("B(Of T, U)", "D(Of T) : Inherits B(Of T, Integer)")]
         public Task GenericClass_WithSubclass_NoDiagnostic_VB(string baseClass, string derivedClass)
         {
-            string source = $"""
-                Friend Class {baseClass}
-                End Class
+            string source = $@"
+Friend Class {baseClass}
+End Class
 
-                Friend NotInheritable Class {derivedClass}
-                End Class
-                """;
+Friend NotInheritable Class {derivedClass}
+End Class";
 
             return VerifyVB.VerifyCodeFixAsync(source, source);
         }
@@ -501,9 +472,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        "internal class Base { }",
-                        "internal partial class {|#0:Derived|} : Base { }",
-                        "internal partial class {|#1:Derived|} : Base { }"
+                        @"internal class Base { }",
+                        @"internal partial class {|#0:Derived|} : Base { }",
+                        @"internal partial class {|#1:Derived|} : Base { }"
                     },
                     ExpectedDiagnostics =
                     {
@@ -514,9 +485,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        "internal class Base { }",
-                        "internal sealed partial class Derived : Base { }",
-                        "internal sealed partial class Derived : Base { }"
+                        @"internal class Base { }",
+                        @"internal sealed partial class Derived : Base { }",
+                        @"internal sealed partial class Derived : Base { }"
                     }
                 }
             };
@@ -532,9 +503,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        ("File1.cs", "internal class Base { }"),
-                        ("File2.cs", "internal partial class {|#0:Derived|} : Base { }"),
-                        ("File3.g.cs", "internal partial class {|#1:Derived|} : Base { }")
+                        ("File1.cs", @"internal class Base { }"),
+                        ("File2.cs", @"internal partial class {|#0:Derived|} : Base { }"),
+                        ("File3.g.cs", @"internal partial class {|#1:Derived|} : Base { }")
                     },
                     ExpectedDiagnostics =
                     {
@@ -545,9 +516,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        ("File1.cs", "internal class Base { }"),
-                        ("File2.cs", "internal sealed partial class {|#0:Derived|} : Base { }"),
-                        ("File3.g.cs", "internal partial class {|#1:Derived|} : Base { }")
+                        ("File1.cs", @"internal class Base { }"),
+                        ("File2.cs", @"internal sealed partial class {|#0:Derived|} : Base { }"),
+                        ("File3.g.cs", @"internal partial class {|#1:Derived|} : Base { }")
                     }
                 }
             };
@@ -564,16 +535,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            Friend Class Base
-                            End Class
-                            """, """
-    Partial Friend Class {|#0:Derived|} : Inherits Base
-    End Class
-    """, """
-    Partial Friend Class {|#1:Derived|} : Inherits Base
-    End Class
-    """
+                        @"
+Friend Class Base
+End Class", @"
+Partial Friend Class {|#0:Derived|} : Inherits Base
+End Class", @"
+Partial Friend Class {|#1:Derived|} : Inherits Base
+End Class"
                     },
                     ExpectedDiagnostics =
                     {
@@ -584,16 +552,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            Friend Class Base
-                            End Class
-                            """, """
-    Partial Friend NotInheritable Class Derived : Inherits Base
-    End Class
-    """, """
-    Partial Friend NotInheritable Class Derived : Inherits Base
-    End Class
-    """
+                        @"
+Friend Class Base
+End Class", @"
+Partial Friend NotInheritable Class Derived : Inherits Base
+End Class", @"
+Partial Friend NotInheritable Class Derived : Inherits Base
+End Class"
                     }
                 }
             };

@@ -25,20 +25,18 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System.Security.Cryptography;
 
-                            using System.Security.Cryptography;
-
-                            class TestClass
-                            {
-                                public void TestMethod(byte[] rgbIV)
-                                {
-                                    var aesCng  = new AesCng();
-                                    aesCng.IV = rgbIV;
-                                    aesCng.CreateEncryptor();
-                                }
-                            }
-                            """,
+class TestClass
+{
+    public void TestMethod(byte[] rgbIV)
+    {
+        var aesCng  = new AesCng();
+        aesCng.IV = rgbIV;
+        aesCng.CreateEncryptor();
+    }
+}",
                     },
                     ExpectedDiagnostics =
                     {
@@ -58,21 +56,19 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System.Security.Cryptography;
 
-                            using System.Security.Cryptography;
-
-                            class TestClass
-                            {
-                                public void TestMethod()
-                                {
-                                    byte[] rgbIV = new byte[] { 1, 2, 3};
-                                    var aesCng  = new AesCng();
-                                    aesCng.IV = rgbIV;
-                                    aesCng.CreateEncryptor();
-                                }
-                            }
-                            """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        byte[] rgbIV = new byte[] { 1, 2, 3};
+        var aesCng  = new AesCng();
+        aesCng.IV = rgbIV;
+        aesCng.CreateEncryptor();
+    }
+}",
 
                     },
                     ExpectedDiagnostics =
@@ -93,27 +89,25 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System;
+using System.Security.Cryptography;
 
-                            using System;
-                            using System.Security.Cryptography;
+class TestClass
+{
+    public void TestMethod(byte[] rgbIV)
+    {
+        var aesCng  = new AesCng();
+        Random r = new Random();
 
-                            class TestClass
-                            {
-                                public void TestMethod(byte[] rgbIV)
-                                {
-                                    var aesCng  = new AesCng();
-                                    Random r = new Random();
+        if (r.Next(6) == 4)
+        {
+            aesCng.IV = rgbIV;
+        }
 
-                                    if (r.Next(6) == 4)
-                                    {
-                                        aesCng.IV = rgbIV;
-                                    }
-
-                                    aesCng.CreateEncryptor();
-                                }
-                            }
-                            """,
+        aesCng.CreateEncryptor();
+    }
+}",
 
                     },
                     ExpectedDiagnostics =
@@ -134,19 +128,17 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System.Security.Cryptography;
 
-                            using System.Security.Cryptography;
-
-                            class TestClass
-                            {
-                                public void TestMethod(byte[] rgbKey, byte[] rgbIV)
-                                {
-                                    var aesCng  = new AesCng();
-                                    aesCng.CreateEncryptor(rgbKey, rgbIV);
-                                }
-                            }
-                            """,
+class TestClass
+{
+    public void TestMethod(byte[] rgbKey, byte[] rgbIV)
+    {
+        var aesCng  = new AesCng();
+        aesCng.CreateEncryptor(rgbKey, rgbIV);
+    }
+}",
                     },
                     ExpectedDiagnostics =
                     {
@@ -165,18 +157,17 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            using System.Security.Cryptography;
+                        @"
+using System.Security.Cryptography;
 
-                            class TestClass
-                            {
-                                public void TestMethod()
-                                {
-                                    var aesCng  = new AesCng();
-                                    aesCng.CreateEncryptor();
-                                }
-                            }
-                            """,
+class TestClass
+{
+    public void TestMethod()
+    {
+        var aesCng  = new AesCng();
+        aesCng.CreateEncryptor();
+    }
+}",
                     },
                 },
             }.RunAsync(CancellationToken.None);

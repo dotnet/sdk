@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text.Json.Serialization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
@@ -12,7 +13,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 internal class DotnetupManifestData
 {
-    public string SchemaVersion { get; set; } = "1";
+    public const int CurrentSchemaVersion = 2;
+
+    public string SchemaVersion { get; set; } = CurrentSchemaVersion.ToString(CultureInfo.InvariantCulture);
     public List<DotnetRootEntry> DotnetRoots { get; set; } = [];
 }
 
@@ -33,9 +36,14 @@ internal class DotnetRootEntry
 internal class InstallSpec
 {
     public InstallComponent Component { get; set; }
+    // Repository entries use the saved channel and constraints only when GlobalJsonPath cannot be read.
     public string VersionOrChannel { get; set; } = string.Empty;
     public InstallSource InstallSource { get; set; }
     public string? GlobalJsonPath { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MinimumVersion { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? AllowPrerelease { get; set; }
 }
 
 /// <summary>
@@ -60,25 +68,6 @@ internal class Installation
     [JsonIgnore]
     public string LayoutPath => Component.GetLayoutPath(LayoutVersion);
 
-    /// <summary>
-    /// Returns true if the spec owns this installation. Only global.json specs match the on-disk version, which the host
-    /// resolves global.json against; other channels match the build version so a daily build can't satisfy channels like latest.
-    /// </summary>
-    public bool IsOwnedBy(InstallSpec spec)
-    {
-        if (spec.Component != Component)
-        {
-            return false;
-        }
-
-        var channel = new UpdateChannel(spec.VersionOrChannel);
-        return IsSatisfiedBy(channel, Version)
-            || (spec.InstallSource == InstallSource.GlobalJson && ProductVersion is not null && IsSatisfiedBy(channel, ProductVersion));
-    }
-
-    private static bool IsSatisfiedBy(UpdateChannel channel, string version) =>
-        ReleaseVersion.TryParse(version, out var parsed) && channel.Matches(parsed);
-
     public DotnetInstall ToDotnetInstall(DotnetInstallRoot installRoot) =>
         new(installRoot, new ReleaseVersion(Version), Component,
             ProductVersion is null ? null : new ReleaseVersion(ProductVersion));
@@ -90,14 +79,4 @@ internal class Installation
         ProductVersion = install.ProductVersion?.ToString(),
         Subcomponents = [.. subcomponents],
     };
-}
-
-/// <summary>
-/// The source of an install spec.
-/// </summary>
-internal enum InstallSource
-{
-    Explicit,
-    GlobalJson,
-    All,
 }

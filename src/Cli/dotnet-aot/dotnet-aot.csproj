@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <Import Project="$(RepositoryEngineeringDir)common\native\NativeAotSupported.props" />
 
@@ -62,6 +62,16 @@
   <Import Project="AotDependencies.props" />
   <Import Project="AotSourceFiles.props" />
 
+  <Target Name="SetSystemCommandLineExecutableNameForOptimizedPublish"
+          BeforeTargets="WriteIlcRspFileForCompilation"
+          Condition="'$(_UseOptimizedPublish)' == 'true'">
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Include="System.CommandLine.ExecutableName"
+                                      Value="$(_SystemCommandLineExecutableName)"
+                                      Trim="false" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <Compile Include="NativeEntryPoint.cs" />
     <Compile Include="MSBuildSdkResolverRegistration.cs" />
@@ -73,7 +83,6 @@
     <ProjectReference Include="..\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
-    <ProjectReference Include="..\Microsoft.DotNet.Cli.Telemetry\Microsoft.DotNet.Cli.Telemetry.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\..\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\..\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" GlobalPropertiesToRemove="PublishDir">
       <Aliases>global,NativeWrapper,DotNetNativeWrapper</Aliases>

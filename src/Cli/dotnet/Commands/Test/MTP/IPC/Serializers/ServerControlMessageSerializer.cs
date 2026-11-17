@@ -12,18 +12,26 @@ internal sealed class ServerControlMessageSerializer : BaseSerializer, INamedPip
     public object Deserialize(Stream stream)
     {
         byte kind = 0;
-        ReadFields(stream, (fieldId, _) =>
-        {
-            switch (fieldId)
-            {
-                case ServerControlMessageFieldsId.Kind:
-                    kind = ReadByte(stream);
-                    return true;
+        ushort fieldCount = ReadUShort(stream);
 
-                default:
-                    return false;
+        for (int i = 0; i < fieldCount; i++)
+        {
+            ushort fieldId = ReadUShort(stream);
+            int fieldSize = ReadInt(stream);
+
+            if (fieldId == ServerControlMessageFieldsId.Kind)
+            {
+                kind = ReadByte(stream);
+                if (fieldSize > 1)
+                {
+                    SetPosition(stream, stream.Position + fieldSize - 1);
+                }
             }
-        });
+            else
+            {
+                SetPosition(stream, stream.Position + fieldSize);
+            }
+        }
 
         return new ServerControlMessage(kind);
     }

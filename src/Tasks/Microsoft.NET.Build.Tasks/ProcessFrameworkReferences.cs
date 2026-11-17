@@ -44,12 +44,6 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool ReadyToRunUseCrossgen2 { get; set; }
 
-        /// <summary>
-        /// Acquires the crossgen2 pack for a build that uses the tool for something other than
-        /// compiling ReadyToRun images, such as reading the target's ABI from its type system.
-        /// </summary>
-        public bool RequiresCrossgen2Pack { get; set; }
-
         public bool PublishAot { get; set; }
 
         public bool RequiresILLinkPack { get; set; }
@@ -479,27 +473,11 @@ namespace Microsoft.NET.Build.Tasks
 
             List<ITaskItem> implicitPackageReferences = new();
 
-            if ((ReadyToRunEnabled && ReadyToRunUseCrossgen2) || RequiresCrossgen2Pack)
+            if (ReadyToRunEnabled && ReadyToRunUseCrossgen2)
             {
-                ToolPackSupport crossgen2PackSupport = AddToolPack(ToolPackType.Crossgen2, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences);
-                if (crossgen2PackSupport is not ToolPackSupport.Supported)
+                if (AddToolPack(ToolPackType.Crossgen2, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
                 {
-                    // ReadyToRun keeps NETSDK1094, which tells the user to turn PublishReadyToRun
-                    // off. That is no help to a build that asked for the tool itself, so report
-                    // whichever of the two the pack did not match: the host, or the target framework.
-                    if (ReadyToRunEnabled)
-                    {
-                        Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
-                    }
-                    else if (crossgen2PackSupport is ToolPackSupport.UnsupportedForHostRuntimeIdentifier)
-                    {
-                        Log.LogError(Strings.Crossgen2UnsupportedHostRuntimeIdentifier, NETCoreSdkRuntimeIdentifier);
-                    }
-                    else
-                    {
-                        Log.LogError(Strings.Crossgen2UnsupportedTargetFramework);
-                    }
-
+                    Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
                     return;
                 }
             }

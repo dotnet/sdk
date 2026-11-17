@@ -9,8 +9,6 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
-// ResourceLock cannot protect unrelated tests that implicitly read the process current directory which this test mutates.
-[DoNotParallelize]
 [TestClass]
 public class CollectStaticWebAssetsToCopyMultiThreadingTest
 {

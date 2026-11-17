@@ -18,1223 +18,1195 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CA1036ClassNoWarningCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                    using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
 
-                    public class A : IComparable
-                    {
-                        public override int GetHashCode()
-                        {
-                            return 1234;
-                        }
+    public class A : IComparable
+    {    
+        public override int GetHashCode()
+        {
+            return 1234;
+        }
 
-                        public int CompareTo(object obj)
-                        {
-                            return 1;
-                        }
+        public int CompareTo(object obj)
+        {
+            return 1;
+        }
 
-                        public override bool Equals(object obj)
-                        {
-                            return true;
-                        }
+        public override bool Equals(object obj)
+        {
+            return true;
+        }
 
-                        public static bool operator ==(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator ==(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator !=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator !=(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator <(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator <=(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator >(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator >(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator >=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-                    }
-                """);
+        public static bool operator >=(A objLeft, A objRight)
+        {
+            return true;
+        }
+    }
+");
         }
 
         [TestMethod]
         public async Task CA1036ClassWrongEqualsCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
 
-                    using System;
+    public class A : IComparable
+    {    
+        public override int GetHashCode()
+        {
+            return 1234;
+        }
 
-                    public class A : IComparable
-                    {
-                        public override int GetHashCode()
-                        {
-                            return 1234;
-                        }
+        public int CompareTo(object obj)
+        {
+            return 1;
+        }
 
-                        public int CompareTo(object obj)
-                        {
-                            return 1;
-                        }
+        public bool Equals;
 
-                        public bool Equals;
+        public static bool operator ==(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator ==(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator !=(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator !=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator <(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-
-                        public static bool operator >(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-                    }
-
-                """, GetCA1036CSharpBothResultAt(4, 18, "A", "<=, >="));
+        public static bool operator >(A objLeft, A objRight)
+        {
+            return true;
+        }
+    }
+", GetCA1036CSharpBothResultAt(4, 18, "A", "<=, >="));
         }
 
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1036ClassWrongEqualsCSharp_InternalAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                    using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
 
-                    internal class A : IComparable
-                    {
-                        public override int GetHashCode()
-                        {
-                            return 1234;
-                        }
+    internal class A : IComparable
+    {    
+        public override int GetHashCode()
+        {
+            return 1234;
+        }
 
-                        public int CompareTo(object obj)
-                        {
-                            return 1;
-                        }
+        public int CompareTo(object obj)
+        {
+            return 1;
+        }
 
-                        public bool Equals;
+        public bool Equals;
 
-                        public static bool operator ==(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator ==(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator !=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator !=(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator <(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator >(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-                    }
+        public static bool operator >(A objLeft, A objRight)
+        {
+            return true;
+        }
+    }
 
-                    public class OuterClass
-                    {
-                        private class A : IComparable
-                        {
-                            public override int GetHashCode()
-                            {
-                                return 1234;
-                            }
+    public class OuterClass
+    {
+        private class A : IComparable
+        {    
+            public override int GetHashCode()
+            {
+                return 1234;
+            }
 
-                            public int CompareTo(object obj)
-                            {
-                                return 1;
-                            }
+            public int CompareTo(object obj)
+            {
+                return 1;
+            }
 
-                            public bool Equals;
+            public bool Equals;
 
-                            public static bool operator ==(A objLeft, A objRight)
-                            {
-                                return true;
-                            }
+            public static bool operator ==(A objLeft, A objRight)
+            {
+                return true;
+            }
 
-                            public static bool operator !=(A objLeft, A objRight)
-                            {
-                                return true;
-                            }
+            public static bool operator !=(A objLeft, A objRight)
+            {
+                return true;
+            }
 
-                            public static bool operator <(A objLeft, A objRight)
-                            {
-                                return true;
-                            }
+            public static bool operator <(A objLeft, A objRight)
+            {
+                return true;
+            }
 
-                            public static bool operator >(A objLeft, A objRight)
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                """);
+            public static bool operator >(A objLeft, A objRight)
+            {
+                return true;
+            }
+        }
+    }
+");
         }
 
         [TestMethod]
         public async Task CA1036ClassWrongEquals2Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
 
-                    using System;
+    public class A : IComparable
+    {    
+        public override int GetHashCode()
+        {
+            return 1234;
+        }
 
-                    public class A : IComparable
-                    {
-                        public override int GetHashCode()
-                        {
-                            return 1234;
-                        }
+        public int CompareTo(object obj)
+        {
+            return 1;
+        }
 
-                        public int CompareTo(object obj)
-                        {
-                            return 1;
-                        }
+        public override bool Equals(object obj)
+        {
+            return true;
+        }
 
-                        public override bool Equals(object obj)
-                        {
-                            return true;
-                        }
+        public static bool operator ==(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator ==(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator !=(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator !=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator <(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator <=(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator >(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator >(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator >=(A objLeft, A objRight)
+        {
+            return true;
+        }
+    }
 
-                        public static bool operator >=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-                    }
+    public class B : IComparable
+    {    
+        public override int GetHashCode()
+        {
+            return 1234;
+        }
 
-                    public class B : IComparable
-                    {
-                        public override int GetHashCode()
-                        {
-                            return 1234;
-                        }
+        public int CompareTo(object obj)
+        {
+            return 1;
+        }
 
-                        public int CompareTo(object obj)
-                        {
-                            return 1;
-                        }
+        public bool Equals;
 
-                        public bool Equals;
+        public static bool operator ==(B objLeft, B objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator ==(B objLeft, B objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator !=(B objLeft, B objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator !=(B objLeft, B objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator <(B objLeft, B objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <(B objLeft, B objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator <=(B objLeft, B objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <=(B objLeft, B objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator >(B objLeft, B objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator >(B objLeft, B objRight)
-                        {
-                            return true;
-                        }
-
-                        public static bool operator >=(B objLeft, B objRight)
-                        {
-                            return true;
-                        }
-                    }
-
-                """,
+        public static bool operator >=(B objLeft, B objRight)
+        {
+            return true;
+        }
+    }
+",
                 GetCA1036CSharpEqualsResultAt(52, 18, "B"));
         }
 
         [TestMethod]
         public async Task CA1036StructNoWarningCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                    using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
 
-                    public struct A : IComparable
-                    {
-                        public override int GetHashCode()
-                        {
-                            return 1234;
-                        }
+    public struct A : IComparable
+    {    
+        public override int GetHashCode()
+        {
+            return 1234;
+        }
 
-                        public int CompareTo(object obj)
-                        {
-                            return 1;
-                        }
+        public int CompareTo(object obj)
+        {
+            return 1;
+        }
 
-                        public override bool Equals(object obj)
-                        {
-                            return true;
-                        }
+        public override bool Equals(object obj)
+        {
+            return true;
+        }
 
-                        public static bool operator ==(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator ==(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator !=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator !=(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator <(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator <=(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator >(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator >(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator >=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-                    }
-                """);
+        public static bool operator >=(A objLeft, A objRight)
+        {
+            return true;
+        }
+    }
+");
         }
 
         [TestMethod]
         public async Task CA1036PrivateClassNoOpLessThanNoWarningCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                    using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
 
-                    public class class1
-                    {
-                        private class A : IComparable
-                        {
-                            public override int GetHashCode()
-                            {
-                                return 1234;
-                            }
+    public class class1
+    {
+        private class A : IComparable
+        {    
+            public override int GetHashCode()
+            {
+                return 1234;
+            }
 
-                            public int CompareTo(object obj)
-                            {
-                                return 1;
-                            }
+            public int CompareTo(object obj)
+            {
+                return 1;
+            }
 
-                            public override bool Equals(object obj)
-                            {
-                                return true;
-                            }
+            public override bool Equals(object obj)
+            {
+                return true;
+            }
 
-                            public static bool operator ==(A objLeft, A objRight)
-                            {
-                                return true;
-                            }
+            public static bool operator ==(A objLeft, A objRight)
+            {
+                return true;
+            }
 
-                            public static bool operator !=(A objLeft, A objRight)
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                """);
+            public static bool operator !=(A objLeft, A objRight)
+            {
+                return true;
+            }
+        }
+    }
+");
         }
 
         [TestMethod]
         public async Task CA1036ClassNoEqualsOperatorCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
 
-                    using System;
+    public class A : IComparable
+    {    
+        public override int GetHashCode()
+        {
+            return 1234;
+        }
 
-                    public class A : IComparable
-                    {
-                        public override int GetHashCode()
-                        {
-                            return 1234;
-                        }
+        public int CompareTo(object obj)
+        {
+            return 1;
+        }
 
-                        public int CompareTo(object obj)
-                        {
-                            return 1;
-                        }
+        public static bool operator ==(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator ==(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator !=(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator !=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator <(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-
-                        public static bool operator >(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-                    }
-
-                """,
+        public static bool operator >(A objLeft, A objRight)
+        {
+            return true;
+        }
+    }
+",
             GetCA1036CSharpBothResultAt(4, 18, "A", "<=, >="));
         }
 
         [TestMethod]
         public async Task CA1036ClassNoOpEqualsOperatorCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
 
-                    using System;
+    public class A : IComparable
+    {    
+        public override int GetHashCode()
+        {
+            return 1234;
+        }
 
-                    public class A : IComparable
-                    {
-                        public override int GetHashCode()
-                        {
-                            return 1234;
-                        }
+        public int CompareTo(object obj)
+        {
+            return 1;
+        }
 
-                        public int CompareTo(object obj)
-                        {
-                            return 1;
-                        }
+        public override bool Equals(object obj)
+        {
+            return true;
+        }
 
-                        public override bool Equals(object obj)
-                        {
-                            return true;
-                        }
+        public static bool operator <(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-
-                        public static bool operator >(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-                    }
-
-                """,
+        public static bool operator >(A objLeft, A objRight)
+        {
+            return true;
+        }
+    }
+",
             GetCA1036CSharpOperatorsResultAt(4, 18, "A", "==, !=, <=, >="));
         }
 
         [TestMethod]
         public async Task CA1036StructNoOpLessThanOperatorCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
 
-                    using System;
+    public struct A : IComparable
+    {    
+        public override int GetHashCode()
+        {
+            return 1234;
+        }
 
-                    public struct A : IComparable
-                    {
-                        public override int GetHashCode()
-                        {
-                            return 1234;
-                        }
+        public int CompareTo(object obj)
+        {
+            return 1;
+        }
 
-                        public int CompareTo(object obj)
-                        {
-                            return 1;
-                        }
+        public override bool Equals(object obj)
+        {
+            return true;
+        }
 
-                        public override bool Equals(object obj)
-                        {
-                            return true;
-                        }
+        public static bool operator ==(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator ==(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-
-                        public static bool operator !=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-                    }
-
-                """,
+        public static bool operator !=(A objLeft, A objRight)
+        {
+            return true;
+        }
+    }
+",
             GetCA1036CSharpOperatorsResultAt(4, 19, "A", "<, <=, >, >="));
         }
 
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1036StructNoOpLessThanOperatorCSharp_InternalAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                    using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
 
-                    internal struct A : IComparable
-                    {
-                        public override int GetHashCode()
-                        {
-                            return 1234;
-                        }
+    internal struct A : IComparable
+    {    
+        public override int GetHashCode()
+        {
+            return 1234;
+        }
 
-                        public int CompareTo(object obj)
-                        {
-                            return 1;
-                        }
+        public int CompareTo(object obj)
+        {
+            return 1;
+        }
 
-                        public override bool Equals(object obj)
-                        {
-                            return true;
-                        }
+        public override bool Equals(object obj)
+        {
+            return true;
+        }
 
-                        public static bool operator ==(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
+        public static bool operator ==(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator !=(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-                    }
+        public static bool operator !=(A objLeft, A objRight)
+        {
+            return true;
+        }
+    }
 
-                    public class OuterClass
-                    {
-                        private struct A : IComparable
-                        {
-                            public override int GetHashCode()
-                            {
-                                return 1234;
-                            }
+    public class OuterClass
+    {
+        private struct A : IComparable
+        {    
+            public override int GetHashCode()
+            {
+                return 1234;
+            }
 
-                            public int CompareTo(object obj)
-                            {
-                                return 1;
-                            }
+            public int CompareTo(object obj)
+            {
+                return 1;
+            }
 
-                            public override bool Equals(object obj)
-                            {
-                                return true;
-                            }
+            public override bool Equals(object obj)
+            {
+                return true;
+            }
 
-                            public static bool operator ==(A objLeft, A objRight)
-                            {
-                                return true;
-                            }
+            public static bool operator ==(A objLeft, A objRight)
+            {
+                return true;
+            }
 
-                            public static bool operator !=(A objLeft, A objRight)
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                """);
+            public static bool operator !=(A objLeft, A objRight)
+            {
+                return true;
+            }
+        }
+    }
+");
         }
 
         [TestMethod]
         public async Task CA1036ClassWithGenericIComparableCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
 
-                    using System;
+    public class A : IComparable<int>
+    {    
+        public override int GetHashCode()
+        {
+            return 1234;
+        }
 
-                    public class A : IComparable<int>
-                    {
-                        public override int GetHashCode()
-                        {
-                            return 1234;
-                        }
+        public int CompareTo(int obj)
+        {
+            return 1;
+        }
 
-                        public int CompareTo(int obj)
-                        {
-                            return 1;
-                        }
+        public override bool Equals(object obj)
+        {
+            return true;
+        }
 
-                        public override bool Equals(object obj)
-                        {
-                            return true;
-                        }
+        public static bool operator <(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-
-                        public static bool operator >(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-                    }
-
-                """,
+        public static bool operator >(A objLeft, A objRight)
+        {
+            return true;
+        }
+    }
+",
             GetCA1036CSharpOperatorsResultAt(4, 18, "A", "==, !=, <=, >="));
         }
 
         [TestMethod]
         public async Task CA1036ClassWithDerivedIComparableCSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
 
-                    using System;
+    interface  IDerived : IComparable<int> { }
 
-                    interface  IDerived : IComparable<int> { }
+    public class A : IDerived
+    {    
+        public override int GetHashCode()
+        {
+            return 1234;
+        }
 
-                    public class A : IDerived
-                    {
-                        public override int GetHashCode()
-                        {
-                            return 1234;
-                        }
+        public int CompareTo(int obj)
+        {
+            return 1;
+        }
 
-                        public int CompareTo(int obj)
-                        {
-                            return 1;
-                        }
+        public override bool Equals(object obj)
+        {
+            return true;
+        }
 
-                        public override bool Equals(object obj)
-                        {
-                            return true;
-                        }
+        public static bool operator <(A objLeft, A objRight)
+        {
+            return true;
+        }
 
-                        public static bool operator <(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-
-                        public static bool operator >(A objLeft, A objRight)
-                        {
-                            return true;
-                        }
-                    }
-
-                """,
+        public static bool operator >(A objLeft, A objRight)
+        {
+            return true;
+        }
+    }
+",
             GetCA1036CSharpOperatorsResultAt(6, 18, "A", "==, !=, <=, >="));
         }
 
         [TestMethod]
         public async Task CA1036ClassNoWarningBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Public Class A : Implements IComparable
+Public Class A : Implements IComparable
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 1234
-                    End Function
+    Public Overrides Function GetHashCode() As Integer
+        Return 1234
+    End Function
 
-                    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                        Return 1
-                    End Function
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
 
-                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-                        Return True
-                    End Function
+    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+        Return True
+    End Function
 
-                    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <=(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <=(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator >=(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator >=(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                End Class
-                """);
+End Class
+");
         }
 
         [TestMethod]
         public async Task CA1036StructWrongEqualsBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
+Public Structure A : Implements IComparable
 
-                Public Structure A : Implements IComparable
+    Public Overrides Function GetHashCode() As Integer
+        Return 1234
+    End Function
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 1234
-                    End Function
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
 
-                    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                        Return 1
-                    End Function
+    Public Shadows Property Equals
 
-                    Public Shadows Property Equals
+    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
-
-                End Structure
-
-                """,
+End Structure
+",
             GetCA1036BasicBothResultAt(4, 18, "A", "<=, >="));
         }
 
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1036StructWrongEqualsBasic_InternalAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Friend Structure A : Implements IComparable
+Friend Structure A : Implements IComparable
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 1234
-                    End Function
+    Public Overrides Function GetHashCode() As Integer
+        Return 1234
+    End Function
 
-                    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                        Return 1
-                    End Function
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
 
-                    Public Shadows Property Equals
+    Public Shadows Property Equals
 
-                    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                End Structure
+End Structure
 
-                Public Class OuterClass
-                    Private Structure A : Implements IComparable
+Public Class OuterClass
+    Private Structure A : Implements IComparable
 
-                        Public Overrides Function GetHashCode() As Integer
-                            Return 1234
-                        End Function
+        Public Overrides Function GetHashCode() As Integer
+            Return 1234
+        End Function
 
-                        Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                            Return 1
-                        End Function
+        Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+            Return 1
+        End Function
 
-                        Public Shadows Property Equals
+        Public Shadows Property Equals
 
-                        Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                            Return True
-                        End Operator
+        Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+            Return True
+        End Operator
 
-                        Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                            Return True
-                        End Operator
+        Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+            Return True
+        End Operator
 
-                        Public Shared Operator <(objLeft As A, objRight As A) As Boolean
-                            Return True
-                        End Operator
+        Public Shared Operator <(objLeft As A, objRight As A) As Boolean
+            Return True
+        End Operator
 
-                        Public Shared Operator >(objLeft As A, objRight As A) As Boolean
-                            Return True
-                        End Operator
+        Public Shared Operator >(objLeft As A, objRight As A) As Boolean
+            Return True
+        End Operator
 
-                    End Structure
-                End Class
-                """);
+    End Structure
+End Class
+");
         }
 
         [TestMethod]
         public async Task CA1036StructWrongEqualsBasic2Async()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
+Public Class A : Implements IComparable
 
-                Public Class A : Implements IComparable
+    Public Overrides Function GetHashCode() As Integer
+        Return 1234
+    End Function
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 1234
-                    End Function
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
 
-                    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                        Return 1
-                    End Function
+    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+        Return True
+    End Function
 
-                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-                        Return True
-                    End Function
+    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <=(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <=(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator >=(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator >=(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+End Class
 
-                End Class
+Public Structure B : Implements IComparable
 
-                Public Structure B : Implements IComparable
+    Public Overrides Function GetHashCode() As Integer
+        Return 1234
+    End Function
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 1234
-                    End Function
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
 
-                    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                        Return 1
-                    End Function
+    Public Shadows Property Equals
 
-                    Public Shadows Property Equals
+    Public Shared Operator =(objLeft As B, objRight As B) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator =(objLeft As B, objRight As B) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <>(objLeft As B, objRight As B) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <>(objLeft As B, objRight As B) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <(objLeft As B, objRight As B) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <(objLeft As B, objRight As B) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator >(objLeft As B, objRight As B) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator >(objLeft As B, objRight As B) As Boolean
-                        Return True
-                    End Operator
-
-                End Structure
-
-                """,
+End Structure
+",
                 GetCA1036BasicBothResultAt(44, 18, "B", "<=, >="));
         }
 
         [TestMethod]
         public async Task CA1036StructNoWarningBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Public Structure A : Implements IComparable
+Public Structure A : Implements IComparable
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 1234
-                    End Function
+    Public Overrides Function GetHashCode() As Integer
+        Return 1234
+    End Function
 
-                    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                        Return 1
-                    End Function
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
 
-                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-                        Return True
-                    End Function
+    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+        Return True
+    End Function
 
-                    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <=(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <=(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator >=(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator >=(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                End Structure
-                """);
+End Structure
+");
         }
 
         [TestMethod]
         public async Task CA1036PrivateClassNoOpLessThanNoWarningBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Public Class Class1
-                    Private Class A : Implements IComparable
+Public Class Class1
+    Private Class A : Implements IComparable
 
-                        Public Overrides Function GetHashCode() As Integer
-                            Return 1234
-                        End Function
+        Public Overrides Function GetHashCode() As Integer
+            Return 1234
+        End Function
 
-                        Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                            Return 1
-                        End Function
+        Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+            Return 1
+        End Function
 
-                        Public Overloads Overrides Function Equals(obj As Object) As Boolean
-                            Return True
-                        End Function
+        Public Overloads Overrides Function Equals(obj As Object) As Boolean
+            Return True
+        End Function
 
-                        Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                            Return True
-                        End Operator
+        Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+            Return True
+        End Operator
 
-                        Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                            Return True
-                        End Operator
+        Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+            Return True
+        End Operator
 
-                    End Class
-                End Class
-                """);
+    End Class
+End Class
+");
         }
 
         [TestMethod]
         public async Task CA1036ClassNoEqualsOperatorBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
+Public Class A : Implements IComparable
 
-                Public Class A : Implements IComparable
+    Public Overrides Function GetHashCode() As Integer
+        Return 1234
+    End Function
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 1234
-                    End Function
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
 
-                    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                        Return 1
-                    End Function
+    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
-
-                End Class
-
-                """,
+End Class
+",
             GetCA1036BasicBothResultAt(4, 14, "A", "<=, >="));
         }
 
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1036ClassNoEqualsOperatorBasic_InternalAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Friend Class A
-                    Implements IComparable
+Friend Class A 
+    Implements IComparable
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 1234
-                    End Function
+    Public Overrides Function GetHashCode() As Integer
+        Return 1234
+    End Function
 
-                    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                        Return 1
-                    End Function
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
 
-                    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                End Class
+End Class
 
-                Public Class OuterClass
-                    Private Class A
-                        Implements IComparable
+Public Class OuterClass
+    Private Class A 
+        Implements IComparable
 
-                        Public Overrides Function GetHashCode() As Integer
-                            Return 1234
-                        End Function
+        Public Overrides Function GetHashCode() As Integer
+            Return 1234
+        End Function
 
-                        Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                            Return 1
-                        End Function
+        Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+            Return 1
+        End Function
 
-                        Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                            Return True
-                        End Operator
+        Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+            Return True
+        End Operator
 
-                        Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                            Return True
-                        End Operator
+        Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+            Return True
+        End Operator
 
-                        Public Shared Operator <(objLeft As A, objRight As A) As Boolean
-                            Return True
-                        End Operator
+        Public Shared Operator <(objLeft As A, objRight As A) As Boolean
+            Return True
+        End Operator
 
-                        Public Shared Operator >(objLeft As A, objRight As A) As Boolean
-                            Return True
-                        End Operator
+        Public Shared Operator >(objLeft As A, objRight As A) As Boolean
+            Return True
+        End Operator
 
-                    End Class
-                End Class
-                """);
+    End Class
+End Class
+");
         }
 
         [TestMethod]
         public async Task CA1036ClassNoOpEqualsOperatorBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
+Public Class A : Implements IComparable
 
-                Public Class A : Implements IComparable
+    Public Overrides Function GetHashCode() As Integer
+        Return 1234
+    End Function
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 1234
-                    End Function
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
 
-                    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                        Return 1
-                    End Function
+    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+        Return True
+    End Function
 
-                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-                        Return True
-                    End Function
+    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator >(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
-
-                End Class
-
-                """,
+End Class
+",
             GetCA1036BasicOperatorsResultAt(4, 14, "A", "=, <>, <=, >="));
         }
 
         [TestMethod]
         public async Task CA1036ClassNoOpLessThanOperatorBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
+Public Structure A : Implements IComparable
 
-                Public Structure A : Implements IComparable
+    Public Overrides Function GetHashCode() As Integer
+        Return 1234
+    End Function
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 1234
-                    End Function
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
 
-                    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
-                        Return 1
-                    End Function
+    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+        Return True
+    End Function
 
-                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-                        Return True
-                    End Function
+    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
-
-                End Structure
-
-                """,
+End Structure
+",
             GetCA1036BasicOperatorsResultAt(4, 18, "A", "<, <=, >, >="));
         }
 
         [TestMethod]
         public async Task CA1036ClassWithGenericIComparableBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
+Public Structure A : Implements IComparable(Of Integer)
 
-                Public Structure A : Implements IComparable(Of Integer)
+    Public Overrides Function GetHashCode() As Integer
+        Return 1234
+    End Function
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 1234
-                    End Function
+    Public Function CompareTo(other As Integer) As Integer Implements IComparable(Of Integer).CompareTo
+        Return 1
+    End Function
 
-                    Public Function CompareTo(other As Integer) As Integer Implements IComparable(Of Integer).CompareTo
-                        Return 1
-                    End Function
+    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+        Return True
+    End Function
 
-                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-                        Return True
-                    End Function
+    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
-
-                End Structure
-
-                """,
+End Structure
+",
             GetCA1036BasicOperatorsResultAt(4, 18, "A", "<, <=, >, >="));
         }
 
         [TestMethod]
         public async Task CA1036ClassWithDerivedIComparableBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
+Public Interface IDerived 
+    Inherits IComparable(Of Integer)
+End Interface
 
-                Public Interface IDerived
-                    Inherits IComparable(Of Integer)
-                End Interface
+Public Structure A : Implements IDerived
 
-                Public Structure A : Implements IDerived
+    Public Overrides Function GetHashCode() As Integer
+        Return 1234
+    End Function
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Return 1234
-                    End Function
+    Public Function CompareTo(other As Integer) As Integer  Implements IComparable(Of Integer).CompareTo
+        Return 1
+    End Function
 
-                    Public Function CompareTo(other As Integer) As Integer  Implements IComparable(Of Integer).CompareTo
-                        Return 1
-                    End Function
+    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+        Return True
+    End Function
 
-                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-                        Return True
-                    End Function
+    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator =(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
+    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
+        Return True
+    End Operator
 
-                    Public Shared Operator <>(objLeft As A, objRight As A) As Boolean
-                        Return True
-                    End Operator
-
-                End Structure
-
-                """,
+End Structure
+",
             GetCA1036BasicOperatorsResultAt(8, 18, "A", "<, <=, >, >="));
         }
 
@@ -1247,87 +1219,82 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task Bug1994VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Enum MyEnum
-                    ValueOne
-                    ValueTwo
-                End Enum
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Enum MyEnum
+    ValueOne
+    ValueTwo
+End Enum");
         }
 
         [TestMethod, WorkItem(1671, "https://github.com/dotnet/roslyn-analyzers/issues/1671")]
         public async Task CA1036BaseTypeComparable_NoWarningOnDerived_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+public class BaseClass : IComparable
+{
+    public int CompareTo(object obj)
+    {
+        throw new NotImplementedException();
+    }
 
-                public class BaseClass : IComparable
-                {
-                    public int CompareTo(object obj)
-                    {
-                        throw new NotImplementedException();
-                    }
+    public override bool Equals(object obj)
+    {
+        throw new NotImplementedException();
+    }
 
-                    public override bool Equals(object obj)
-                    {
-                        throw new NotImplementedException();
-                    }
+    public override int GetHashCode()
+    {
+        throw new NotImplementedException();
+    }
+}
 
-                    public override int GetHashCode()
-                    {
-                        throw new NotImplementedException();
-                    }
-                }
-
-                public class DerivedClass : BaseClass
-                {
-                }
-
-                """,
+public class DerivedClass : BaseClass
+{
+}
+",
             // Test0.cs(4,14): warning CA1036: BaseClass should define operator(s) '==, !=, <, <=, >, >=' since it implements IComparable.
-            GetCA1036CSharpOperatorsResultAt(4, 14, "BaseClass", "==, !=, <, <=, >, >="));
+            GetCA1036CSharpOperatorsResultAt(4, 14, "BaseClass", @"==, !=, <, <=, >, >="));
         }
 
         [TestMethod, WorkItem(1671, "https://github.com/dotnet/roslyn-analyzers/issues/1671")]
         public async Task CA1036BaseTypeGenericComparable_NoWarningOnDerived_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
-
-                public class BaseClass<T> : IComparable<T>
-                     where T : IComparable<T>
-                {
-                    public T Value { get; set; }
+public class BaseClass<T> : IComparable<T>
+     where T : IComparable<T>
+{
+    public T Value { get; set; }
 
 
-                    public int CompareTo(T other)
-                    {
-                        return Value.CompareTo(other);
-                    }
+    public int CompareTo(T other)
+    {
+        return Value.CompareTo(other);
+    }
 
-                    public override bool Equals(object obj)
-                    {
-                        if (obj is BaseClass<T> other)
-                        {
-                            return Value.Equals(other.Value);
-                        }
+    public override bool Equals(object obj)
+    {
+        if (obj is BaseClass<T> other)
+        {
+            return Value.Equals(other.Value);
+        }
 
-                        return false;
-                    }
+        return false;
+    }
 
-                    public override int GetHashCode() => Value?.GetHashCode() ?? 0;
-                }
+    public override int GetHashCode() => Value?.GetHashCode() ?? 0;
+}
 
-                public class DerivedClass<T> : BaseClass<T>
-                    where T : IComparable<T>
-                {
-                }
-
-                """,
+public class DerivedClass<T> : BaseClass<T>
+    where T : IComparable<T>
+{
+}
+",
             // Test0.cs(4,14): warning CA1036: BaseClass should define operator(s) '==, !=, <, <=, >, >=' since it implements IComparable.
-            GetCA1036CSharpOperatorsResultAt(4, 14, "BaseClass", "==, !=, <, <=, >, >="));
+            GetCA1036CSharpOperatorsResultAt(4, 14, "BaseClass", @"==, !=, <, <=, >, >="));
         }
 
         private static DiagnosticResult GetCA1036CSharpOperatorsResultAt(int line, int column, string typeName, string operators)

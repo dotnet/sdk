@@ -1,0 +1,12 @@
+<Project>
+  <!-- dotnetup (release/dnup) pins its telemetry packages independently of the SDK. dotnetup's persistent-storage
+       telemetry pipeline and its Azure Monitor differential tests were built against these versions, while the
+       SDK CLI on the .NET 11 source branch uses newer exporter APIs. Package versions are expanded after all
+       properties are evaluated, so importing this file from a project overrides eng/Versions.props for that
+       project only. Upgrade these deliberately in a dotnetup change. -->
+  <PropertyGroup>
+    <AzureMonitorOpenTelemetryExporterPackageVersion>1.4.0</AzureMonitorOpenTelemetryExporterPackageVersion>
+    <OpenTelemetryDotnetPackageVersion>1.16.0</OpenTelemetryDotnetPackageVersion>
+    <OpenTelemetryPersistentStoragePackageVersion>1.1.0</OpenTelemetryPersistentStoragePackageVersion>
+  </PropertyGroup>
+</Project>

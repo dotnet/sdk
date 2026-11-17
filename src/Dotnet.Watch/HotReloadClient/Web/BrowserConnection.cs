@@ -66,19 +66,9 @@ internal readonly struct BrowserConnection(
         {
             await ClientSocket.SendAsync(data, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
         }
-        catch (WebSocketException e)
-        {
-            // Do not log error if the socket has been closed:
-            if (ClientSocket.State == WebSocketState.Open)
-            {
-                ServerLogger.LogDebug("Failed to send message: {Message}", e.InnerException?.Message ?? e.Message);
-            }
-
-            return false;
-        }
         catch (Exception e) when (e is not OperationCanceledException)
         {
-            ServerLogger.LogDebug("Failed to send message: {Message}", e.ToString());
+            ServerLogger.LogDebug("Failed to send message: {Message}", e.Message);
             return false;
         }
 
@@ -103,19 +93,9 @@ internal readonly struct BrowserConnection(
             {
                 result = await ClientSocket.ReceiveAsync(data, cancellationToken);
             }
-            catch (WebSocketException e)
-            {
-                // Do not log error if the socket has been closed:
-                if (ClientSocket.State == WebSocketState.Open)
-                {
-                    ServerLogger.LogDebug("Failed to receive response: {Message}", e.InnerException?.Message ?? e.Message);
-                }
-
-                return null;
-            }
             catch (Exception e) when (e is not OperationCanceledException)
             {
-                ServerLogger.LogDebug("Failed to receive response: {Message}", e.ToString());
+                ServerLogger.LogDebug("Failed to receive response: {Message}", e.Message);
                 return null;
             }
 

@@ -8,7 +8,6 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -140,32 +139,30 @@ internal static class SolutionAndProjectUtility
         }
 
         var actualSolutionFiles = GetSolutionFilePaths(directory);
-        var solutionFilterFiles = GetSolutionFilterFilePaths(directory);
-        var solutionFiles = actualSolutionFiles.Concat(solutionFilterFiles).ToArray();
 
-        if (solutionFiles.Length == 0)
+        if (actualSolutionFiles.Length == 0)
         {
             return (false, string.Format(CliStrings.SolutionDoesNotExist, directory + Path.DirectorySeparatorChar));
         }
 
-        if (solutionFiles.Length > 1)
+        if (actualSolutionFiles.Length > 1)
         {
             return (false, string.Format(CliStrings.MoreThanOneSolutionInDirectory, directory + Path.DirectorySeparatorChar));
         }
 
-        solutionFilePath = solutionFiles[0];
+        solutionFilePath = actualSolutionFiles[0];
         return (true, string.Empty);
     }
 
-    private static string[] GetSolutionFilePaths(string directory)
-        => GetFilesWithExtensions(directory, ".sln", ".slnx");
+    private static string[] GetSolutionFilePaths(string directory) => [
+            .. Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly),
+            .. Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly)
+        ];
 
     private static string[] GetSolutionFilterFilePaths(string directory)
-        => GetFilesWithExtensions(directory, ".slnf");
-
-    private static string[] GetFilesWithExtensions(string directory, params string[] extensions)
-        => [.. Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly)
-            .Where(path => extensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase))];
+    {
+        return Directory.GetFiles(directory, CliConstants.SolutionFilterExtensionPattern, SearchOption.TopDirectoryOnly);
+    }
 
     private static string[] GetProjectFilePaths(string directory) => Directory.GetFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly);
 
@@ -274,43 +271,8 @@ internal static class SolutionAndProjectUtility
 
             return EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm, configuration, platform, additionalGlobalProperties);
         }
-
-        return GetProjectProperties(
-            projectFilePath,
-            Evaluate,
-            buildOptions,
-            buildSession,
-            configuration,
-            platform,
-            additionalGlobalProperties,
-            visitedTraversalProjects,
-            (path, referenceConfiguration, referencePlatform, visited) =>
-                GetProjectProperties(
-                    path,
-                    projectCollection,
-                    evaluationContext,
-                    buildOptions,
-                    buildSession,
-                    referenceConfiguration,
-                    referencePlatform,
-                    additionalGlobalProperties,
-                    visited));
-    }
-
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(
-        string projectFilePath,
-        Func<string?, ProjectInstance> evaluateProject,
-        BuildOptions buildOptions,
-        MSBuildSession buildSession,
-        string? configuration = null,
-        string? platform = null,
-        IReadOnlyDictionary<string, string>? additionalGlobalProperties = null,
-        HashSet<string>? visitedTraversalProjects = null,
-        Func<string, string?, string?, HashSet<string>, IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules>>? expandTraversalProject = null)
-    {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
-        ProjectInstance projectInstance = evaluateProject(null);
+        ProjectInstance projectInstance = Evaluate(tfm: null);
 
         // Traversal projects (e.g. Microsoft.Build.Traversal "dirs.proj") are not test projects themselves.
         // They act as a container that forwards build/test operations to their ProjectReference items.
@@ -318,17 +280,12 @@ internal static class SolutionAndProjectUtility
         // evaluate each of them. This is done recursively so that nested traversal projects work as well.
         if (IsTraversalProject(projectInstance))
         {
-            if (expandTraversalProject is null)
-            {
-                return projects;
-            }
-
             // Track visited (project, configuration, platform) tuples across the whole traversal graph so
             // that a project referenced by multiple traversal projects with the same configuration/platform
             // (a "diamond") is only tested once, while the same project referenced with a *different*
             // configuration/platform is still tested for each distinct combination. This also guards against
             // cycles (a traversal project that transitively references itself).
-            visitedTraversalProjects ??= CreateTraversalProjectVisitSet();
+            visitedTraversalProjects ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             visitedTraversalProjects.Add(GetTraversalVisitKey(Path.GetFullPath(projectFilePath), configuration, platform));
 
             foreach (var reference in GetTraversalReferencedProjects(projectInstance, configuration, platform))
@@ -340,11 +297,7 @@ internal static class SolutionAndProjectUtility
                     continue;
                 }
 
-                projects.AddRange(expandTraversalProject(
-                    reference.FullPath,
-                    reference.Configuration,
-                    reference.Platform,
-                    visitedTraversalProjects));
+                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, buildSession, reference.Configuration, reference.Platform, additionalGlobalProperties, visitedTraversalProjects));
             }
 
             return projects;
@@ -382,7 +335,7 @@ internal static class SolutionAndProjectUtility
             {
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = evaluateProject(framework);
+                    projectInstance = Evaluate(framework);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
@@ -396,7 +349,7 @@ internal static class SolutionAndProjectUtility
                 List<TestModule>? innerModules = null;
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = evaluateProject(framework);
+                    projectInstance = Evaluate(framework);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
@@ -431,9 +384,6 @@ internal static class SolutionAndProjectUtility
     /// </summary>
     private static string GetTraversalVisitKey(string fullPath, string? configuration, string? platform)
         => $"{fullPath}|{configuration}|{platform}";
-
-    internal static HashSet<string> CreateTraversalProjectVisitSet()
-        => new(FileUtilities.PathComparer);
 
     /// <summary>
     /// Returns the projects a traversal project references. The globs and conditions in the traversal
@@ -502,8 +452,6 @@ internal static class SolutionAndProjectUtility
         {
             return null;
         }
-
-        using var activity = Activities.PerformanceSource.StartActivity("test-project-discovery");
 
         var collection = buildSession.ProjectCollection;
         evaluationContext ??= EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);

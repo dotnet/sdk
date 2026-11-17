@@ -99,7 +99,10 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
         _fromRollbackDefinition = parseResult.GetValue(Definition.FromRollbackFileOption);
         _workloadSetVersionFromCommandLine = parseResult.GetValue(Definition.WorkloadSetVersionOption);
 
-        _packageSourceLocation = parseResult.ToPackageSourceLocation(Definition.ConfigOption, Definition.SourceOption);
+        var configOption = parseResult.GetValue(Definition.ConfigOption);
+        var sourceOption = parseResult.GetValue(Definition.SourceOption);
+        _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
+            new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
 
         _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
@@ -236,9 +239,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
                     PackageDownloader,
                     _workloadSetVersionFromCommandLine,
                     _workloadResolver,
-                    numberOfWorkloadSetsToTake: 1,
-                    _packageSourceLocation,
-                    RestoreActionConfiguration);
+                    numberOfWorkloadSetsToTake: 1);
 
                 if (versions is null)
                 {

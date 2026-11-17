@@ -153,16 +153,12 @@ Run "dotnet --debug <command>" which will launch dotnet and pause waiting for us
 
 ## Run tests from the command line
 
-```powershell
+```shell
 build.cmd # to have a full build first
-.\.dotnet\dotnet.exe scripts\RunTests.cs -- `
-  --project test\YOURTEST.Tests\YOURTEST.Tests.csproj `
-  --filter "FullyQualifiedName~TESTNAME"
+.\artifacts\sdk-build-env.bat
+cd test\YOURTEST.Tests # cd to the test folder that contains the test csproj file
+dotnet test --filter "FullyQualifiedName~TESTNAME" # run individual test
 ```
-
-The runner builds the selected test project incrementally and retains its TRX and MSBuild
-binlog paths under `artifacts/log/test-runs/`. Pass `--repeat N` to build once and run
-the selected tests repeatedly, with separate TRX output and timing for each iteration.
 
 ## Run tests in Visual Studio
 

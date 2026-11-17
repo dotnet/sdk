@@ -29,6 +29,9 @@ internal sealed class ToolInstallCommand : CommandBase<ToolInstallCommandDefinit
     }
 
     public override int Execute()
+        => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+    internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
         Definition.LocationOptions.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
@@ -40,7 +43,8 @@ internal sealed class ToolInstallCommand : CommandBase<ToolInstallCommandDefinit
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
-            return (_toolInstallGlobalOrToolPathCommand ?? new ToolInstallGlobalOrToolPathCommand(_parseResult)).Execute();
+            return await (_toolInstallGlobalOrToolPathCommand ?? new ToolInstallGlobalOrToolPathCommand(_parseResult))
+                .ExecuteAsync(cancellationToken);
         }
         else
         {

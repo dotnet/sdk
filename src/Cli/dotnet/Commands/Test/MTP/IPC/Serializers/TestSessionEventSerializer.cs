@@ -32,26 +32,33 @@ internal sealed class TestSessionEventSerializer : BaseSerializer, INamedPipeSer
         string? sessionUid = null;
         string? executionId = null;
 
-        ReadFields(stream, (fieldId, fieldSize) =>
+        ushort fieldCount = ReadUShort(stream);
+
+        for (int i = 0; i < fieldCount; i++)
         {
+            ushort fieldId = ReadUShort(stream);
+            int fieldSize = ReadInt(stream);
+
             switch (fieldId)
             {
                 case TestSessionEventFieldsId.SessionType:
                     type = ReadByte(stream);
-                    return true;
+                    break;
 
                 case TestSessionEventFieldsId.SessionUid:
                     sessionUid = ReadStringValue(stream, fieldSize);
-                    return true;
+                    break;
 
                 case TestSessionEventFieldsId.ExecutionId:
                     executionId = ReadStringValue(stream, fieldSize);
-                    return true;
+                    break;
 
                 default:
-                    return false;
+                    // If we don't recognize the field id, skip the payload corresponding to that field
+                    SetPosition(stream, stream.Position + fieldSize);
+                    break;
             }
-        });
+        }
 
         return new TestSessionEvent(type, sessionUid, executionId);
     }

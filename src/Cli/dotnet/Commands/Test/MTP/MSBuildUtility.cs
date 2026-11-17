@@ -14,8 +14,6 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.FileBasedPrograms;
-using Microsoft.DotNet.ProjectTools;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Immutable;
@@ -24,9 +22,6 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class MSBuildUtility
 {
-    public static BuildOptions GetBuildOptions(ParseResult parseResult)
-        => TestCommandOptions.GetBuildOptions(parseResult);
-
     // Related: https://github.com/dotnet/msbuild/pull/7992
     // Related: https://github.com/dotnet/msbuild/issues/12711
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "ProjectShouldBuild")]
@@ -92,11 +87,6 @@ internal static class MSBuildUtility
     {
         using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
 
-        if (VirtualProjectBuilder.IsValidEntryPointPath(projectFilePath))
-        {
-            return GetProjectsFromFile(projectFilePath, buildOptions, buildSession);
-        }
-
         // Pre-build device selection: evaluate the project to select devices BEFORE building,
         // so that device-provided RuntimeIdentifiers are included in the build.
         var deviceEvaluation = SolutionAndProjectUtility.EvaluateProjectForDeviceSelection(
@@ -134,55 +124,6 @@ internal static class MSBuildUtility
         return (projects, buildExitCode);
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    private static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromFile(
-        string entryPointFilePath,
-        BuildOptions buildOptions,
-        MSBuildSession buildSession)
-    {
-        var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs);
-        string fullEntryPointFilePath = Path.GetFullPath(entryPointFilePath);
-        var buildCommand = new VirtualProjectBuildingCommand(
-            fullEntryPointFilePath,
-            msbuildArgs,
-            CommandServices.CreateDefault())
-        {
-            NoRestore = buildOptions.HasNoRestore,
-            NoCache = true,
-        };
-
-        int buildExitCode = buildOptions.HasNoBuild ? 0 : buildCommand.Execute();
-        if (buildExitCode != 0)
-        {
-            return ([], buildExitCode);
-        }
-
-        Dictionary<string, string> globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
-        ProjectInstance EvaluateProject(string? targetFramework)
-        {
-            var properties = new Dictionary<string, string>(globalProperties, StringComparer.OrdinalIgnoreCase);
-            if (targetFramework is not null)
-            {
-                properties[ProjectProperties.TargetFramework] = targetFramework;
-            }
-
-            var evaluationCommand = new VirtualProjectBuildingCommand(
-                fullEntryPointFilePath,
-                msbuildArgs,
-                CommandServices.CreateDefault());
-            return evaluationCommand.CreateProjectInstance(buildSession.ProjectCollection, properties);
-        }
-
-        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects =
-            SolutionAndProjectUtility.GetProjectProperties(
-                VirtualProjectBuilder.GetVirtualProjectPath(fullEntryPointFilePath),
-                EvaluateProject,
-                buildOptions,
-                buildSession);
-
-        return (projects, buildExitCode);
-    }
-
     /// <summary>
     /// Builds each TFM separately with its selected device/RuntimeIdentifier injected, then
     /// evaluates each to get test modules. This ensures device-provided RIDs are part of the build.
@@ -208,7 +149,7 @@ internal static class MSBuildUtility
 
             if (device is not null)
             {
-                perTfmArgs = perTfmArgs.Append($"-p:Device={MSBuildPropertyEscaping.Escape(device)}");
+                perTfmArgs = perTfmArgs.Append($"-p:Device={device}");
             }
 
             if (!string.IsNullOrEmpty(rid))
@@ -277,6 +218,185 @@ internal static class MSBuildUtility
         return (allGroups, 0);
     }
 
+    public static BuildOptions GetBuildOptions(ParseResult parseResult)
+    {
+        var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
+
+        ImmutableArray<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
+        ImmutableArray<string> msbuildOnlyArgs;
+        ImmutableArray<string> otherArgs;
+        int positionalArgumentCount;
+        if (CommonRunHelpers.TrySplitApplicationArgumentsAtDoubleDash(
+            parseResult,
+            unmatchedTokens,
+            out int unmatchedTokenCountBeforeDoubleDash,
+            out string[] argumentsAfterDoubleDash))
+        {
+            LoggerUtility.SeparateMSBuildArguments(
+                unmatchedTokens[..unmatchedTokenCountBeforeDoubleDash],
+                out msbuildOnlyArgs,
+                out var argumentsBeforeDoubleDash);
+            positionalArgumentCount = argumentsBeforeDoubleDash.Length;
+            otherArgs = [.. argumentsBeforeDoubleDash, .. argumentsAfterDoubleDash];
+        }
+        else
+        {
+            LoggerUtility.SeparateMSBuildArguments(unmatchedTokens, out msbuildOnlyArgs, out otherArgs);
+            positionalArgumentCount = otherArgs.Length;
+        }
+
+        if (parseResult.GetValue(definition.NoLogoOption) && !otherArgs.Contains("--no-banner"))
+        {
+            otherArgs = otherArgs.Add("--no-banner");
+        }
+
+        var projectOrSolutionOptionValue = parseResult.GetValue(definition.ProjectOrSolutionOption);
+        var solutionOptionValue = parseResult.GetValue(definition.SolutionOption);
+        var testModulesFilterOptionValue = parseResult.GetValue(definition.TestModulesFilterOption);
+
+        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(
+            positionalArgumentCount,
+            projectOrSolutionOptionValue is not null ||
+                solutionOptionValue is not null ||
+                testModulesFilterOptionValue is not null,
+            ref otherArgs);
+
+        var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
+            .Concat(msbuildOnlyArgs);
+
+        string? resultsDirectory = parseResult.GetValue(definition.ResultsDirectoryOption);
+        if (resultsDirectory is not null)
+        {
+            resultsDirectory = Path.GetFullPath(resultsDirectory);
+        }
+
+        string? configFile = parseResult.GetValue(definition.ConfigFileOption);
+        if (configFile is not null)
+        {
+            configFile = Path.GetFullPath(configFile);
+        }
+
+        string? diagnosticOutputDirectory = parseResult.GetValue(definition.DiagnosticOutputDirectoryOption);
+        if (diagnosticOutputDirectory is not null)
+        {
+            diagnosticOutputDirectory = Path.GetFullPath(diagnosticOutputDirectory);
+        }
+
+        if ((projectOrSolutionOptionValue is not null && positionalProjectOrSolution is not null) ||
+            (testModulesFilterOptionValue is not null && positionalTestModules is not null))
+        {
+            throw new GracefulException(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
+        }
+
+        PathOptions pathOptions = new(
+            positionalProjectOrSolution ?? projectOrSolutionOptionValue,
+            solutionOptionValue,
+            positionalTestModules ?? testModulesFilterOptionValue,
+            resultsDirectory,
+            parseResult.GetValue(definition.ResultsDirectoryLayoutOption) == "per-module"
+                ? ResultsDirectoryLayout.PerModule
+                : ResultsDirectoryLayout.Flat,
+            configFile,
+            diagnosticOutputDirectory,
+            parseResult.HasOption(definition.ResultsDirectoryLayoutOption));
+
+        return new BuildOptions(
+            pathOptions,
+            parseResult.GetValue(definition.NoRestoreOption),
+            parseResult.GetValue(definition.NoBuildOption),
+            parseResult.HasOption(definition.VerbosityOption) ? parseResult.GetValue(definition.VerbosityOption) : null,
+            parseResult.GetValue(definition.NoLaunchProfileOption),
+            parseResult.GetValue(definition.NoLaunchProfileArgumentsOption),
+            otherArgs,
+            msbuildArgs,
+            Device: parseResult.GetValue(definition.DeviceOption),
+            ListDevices: parseResult.GetValue(definition.ListDevicesOption),
+            EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
+    }
+
+    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(
+        int positionalArgumentCount,
+        bool hasExplicitBuildPath,
+        ref ImmutableArray<string> otherArgs)
+    {
+        string? positionalProjectOrSolution = null;
+        string? positionalTestModules = null;
+
+        // In case there is a valid case, users can opt-out.
+        // Note that the validation here is added to have a "better" error message for scenarios that will already fail.
+        // So, disabling validation is okay if the user scenario is valid.
+        bool throwOnUnexpectedFilePassedAsNonFirstPositionalArgument =
+            !hasExplicitBuildPath &&
+            Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is not ("true" or "1");
+
+        for (int i = 0; i < positionalArgumentCount; i++)
+        {
+            var token = otherArgs[i];
+            if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
+                token.EndsWith(".slnf", StringComparison.OrdinalIgnoreCase) ||
+                token.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalProjectOrSolution = token;
+                    otherArgs = otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseSolution);
+                }
+            }
+            else if (Path.GetExtension(token).EndsWith("proj", StringComparison.OrdinalIgnoreCase) && File.Exists(token))
+            {
+                // Any MSBuild project extension ending in "proj" (.csproj, .vbproj, .fsproj, and traversal
+                // container projects such as dirs.proj / *.proj). This mirrors ValidateProjectOrSolutionPath,
+                // which accepts any "*proj" extension. Recognizing it here ensures the project path is not
+                // accidentally forwarded to the test application as an argument.
+                if (i == 0)
+                {
+                    positionalProjectOrSolution = token;
+                    otherArgs = otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseProject);
+                }
+            }
+            else if ((token.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                      token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) &&
+                     File.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalTestModules = token;
+                    otherArgs = otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseTestModules);
+                }
+            }
+            else if (Directory.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalProjectOrSolution = token;
+                    otherArgs = otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseDirectoryWithSwitch);
+                }
+            }
+        }
+
+        return (positionalProjectOrSolution, positionalTestModules);
+    }
+
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
     {
@@ -306,7 +426,6 @@ internal static class MSBuildUtility
             if (buildOptions.EnvironmentVariables.Count > 0 &&
                 Path.GetExtension(filePath).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
             {
-                using var activity = Activities.PerformanceSource.StartActivity("test-environment-discovery");
                 var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(parsedMSBuildArgs);
                 using var collection = new ProjectCollection(globalProperties);
                 var project = ProjectInstance.FromFile(filePath, new ProjectOptions
@@ -327,13 +446,7 @@ internal static class MSBuildUtility
                 }
             }
 
-            return new RestoringCommand(
-                parsedMSBuildArgs,
-                buildOptions.HasNoRestore,
-                msbuildPath: null,
-                userProfileDir: null,
-                advertiseWorkloadUpdates: null,
-                CommandServices.CreateDefault()).Execute();
+            return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
         }
         finally
         {

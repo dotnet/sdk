@@ -533,6 +533,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/50140")]
         public void PublishingRegistersWrittenFilesForProperCleanup()
         {
             var testProject = new TestProject()

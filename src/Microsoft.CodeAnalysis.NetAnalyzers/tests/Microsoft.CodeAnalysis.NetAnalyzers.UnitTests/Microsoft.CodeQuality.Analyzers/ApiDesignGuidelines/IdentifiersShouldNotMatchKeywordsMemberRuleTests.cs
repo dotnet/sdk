@@ -23,412 +23,364 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public class C
-                {
-                    public virtual void @internal() {}
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public virtual void @internal() {}
+}",
                 GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Class C
-                    Public Overridable Sub internal()
-                    End Sub
-                End Class
-
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Overridable Sub internal()
+    End Sub
+End Class
+",
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"));
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForCaseSensitiveKeywordNamedPublicVirtualMethodInPublicClassWithDifferentCasingAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                public class C
-                {
-                    public virtual void @iNtErNaL() {}
-                }
-                """);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public virtual void @iNtErNaL() {}
+}");
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForCaseSensitiveKeywordNamedPublicVirtualMethodInPublicClassWithDifferentCasingAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Public Class C
-                    Public Overridable Sub iNtErNaL()
-                    End Sub
-                End Class
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Overridable Sub iNtErNaL()
+    End Sub
+End Class");
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForCaseInsensitiveKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public class C
-                {
-                    // Matches VB AddHandler keyword:
-                    public virtual void aDdHaNdLeR() {}
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    // Matches VB AddHandler keyword:
+    public virtual void aDdHaNdLeR() {}
+}",
                 GetCSharpResultAt(5, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.aDdHaNdLeR()", "AddHandler"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForCaseInsensitiveKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Class C
-                    ' Matches VB AddHandler keyword:
-                    Public Overridable Sub [aDdHaNdLeR]()
-                    End Sub
-                End Class
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    ' Matches VB AddHandler keyword:
+    Public Overridable Sub [aDdHaNdLeR]()
+    End Sub
+End Class",
                 GetBasicResultAt(4, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.aDdHaNdLeR()", "AddHandler"));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedProtectedVirtualMethodInPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public class C
-                {
-                    protected virtual void @for() {}
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    protected virtual void @for() {}
+}",
                 GetCSharpResultAt(4, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedProtectedVirtualMethodInPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Class C
-                    Protected Overridable Sub [for]()
-                    End Sub
-                End Class
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Protected Overridable Sub [for]()
+    End Sub
+End Class",
                 GetBasicResultAt(3, 31, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"));
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedInternalVirtualMethodInPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                public class C
-                {
-                    internal virtual void @for() {}
-                }
-                """);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    internal virtual void @for() {}
+}");
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedInternalVirtualMethodInPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Public Class C
-                    Friend Overridable Sub [for]()
-                    End Sub
-                End Class
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Friend Overridable Sub [for]()
+    End Sub
+End Class");
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedPublicNonVirtualMethodInPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                public class C
-                {
-                    public void @for() {}
-                }
-                """);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public void @for() {}
+}");
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedPublicNonVirtualMethodInPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Public Class C
-                    Public Sub [for]()
-                    End Sub
-                End Class
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Sub [for]()
+    End Sub
+End Class");
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForNonKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                public class C
-                {
-                    public virtual void fort() {}
-                }
-                """);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public virtual void fort() {}
+}");
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForNonKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Public Class C
-                    Public Overridable Sub fort()
-                    End Sub
-                End Class
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Overridable Sub fort()
+    End Sub
+End Class");
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedVirtualMethodInInternalClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                internal class C
-                {
-                    public virtual void @for() {}
-                }
-                """);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+internal class C
+{
+    public virtual void @for() {}
+}");
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedVirtualMethodInInternalClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Friend Class C
-                    Public Overridable Sub [for]()
-                    End Sub
-                End Class
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Friend Class C
+    Public Overridable Sub [for]()
+    End Sub
+End Class");
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedMethodInPublicInterfaceAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public interface I
-                {
-                    void @for();
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public interface I
+{
+    void @for();
+}",
                 GetCSharpResultAt(4, 10, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "I.for()", "for"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedMethodInPublicInterfaceAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Interface I
-                    Sub [for]()
-                End Interface
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Interface I
+    Sub [for]()
+End Interface",
                 GetBasicResultAt(3, 9, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "I.for()", "for"));
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedMethodOfInternalInterfaceAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                internal interface I
-                {
-                    void @for();
-                }
-                """);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+internal interface I
+{
+    void @for();
+}");
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedMethodOfInternalInterfaceAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Friend Interface I
-                    Sub [for]()
-                End Interface
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Friend Interface I
+    Sub [for]()
+End Interface");
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForKeyWordNamedPublicVirtualPropertyOfPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public class C
-                {
-                    private int _for;
-                    public virtual int @for
-                    {
-                        get
-                        {
-                            return _for;
-                        }
-                        set
-                        {
-                            _for = value;
-                        }
-                    }
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    private int _for;
+    public virtual int @for
+    {
+        get
+        {
+            return _for;
+        }
+        set
+        {
+            _for = value;
+        }
+    }
+}",
                 GetCSharpResultAt(5, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForKeyWordNamedPublicVirtualPropertyOfPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Class C
-                    Private _for As Integer
-                    Public Overridable Property [Sub] As Integer
-                        Get
-                            Return _for
-                        End Get
-                        Set(value As Integer)
-                            _for = value
-                        End Set
-                    End Property
-                End Class
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Private _for As Integer
+    Public Overridable Property [Sub] As Integer
+        Get
+            Return _for
+        End Get
+        Set(value As Integer)
+            _for = value
+        End Set
+    End Property
+End Class",
                 GetBasicResultAt(4, 33, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.Sub", "Sub"));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForKeyWordNamedPublicVirtualAutoPropertyOfPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public class C
-                {
-                    public virtual int @for { get; set; }
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public virtual int @for { get; set; }
+}",
                 GetCSharpResultAt(4, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForKeyWordNamedPublicVirtualAutoPropertyOfPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Class C
-                    Public Overridable Property [Sub] As Integer
-                End Class
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Overridable Property [Sub] As Integer
+End Class",
                 GetBasicResultAt(3, 33, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.Sub", "Sub"));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForKeyWordNamedPublicVirtualReadOnlyPropertyOfPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public class C
-                {
-                    private int _for;
-                    public virtual int @for
-                    {
-                        get
-                        {
-                            return _for;
-                        }
-                    }
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    private int _for;
+    public virtual int @for
+    {
+        get
+        {
+            return _for;
+        }
+    }
+}",
                 GetCSharpResultAt(5, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForKeyWordNamedPublicVirtualReadOnlyPropertyOfPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Class C
-                    Private _for As Integer
-                    Public Overridable ReadOnly Property [Sub] As Integer
-                        Get
-                            Return _for
-                        End Get
-                    End Property
-                End Class
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Private _for As Integer
+    Public Overridable ReadOnly Property [Sub] As Integer
+        Get
+            Return _for
+        End Get
+    End Property
+End Class",
                 GetBasicResultAt(4, 42, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.Sub", "Sub"));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForKeyWordNamedPublicVirtualWriteOnlyPropertyOfPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public class C
-                {
-                    private int _for;
-                    public virtual int @for
-                    {
-                        set
-                        {
-                            _for = value;
-                        }
-                    }
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    private int _for;
+    public virtual int @for
+    {
+        set
+        {
+            _for = value;
+        }
+    }
+}",
                 GetCSharpResultAt(5, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForKeyWordNamedPublicVirtualWriteOnlyPropertyOfPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Class C
-                    Private _for As Integer
-                    Public Overridable WriteOnly Property [Sub] As Integer
-                        Set(value As Integer)
-                            _for = value
-                        End Set
-                    End Property
-                End Class
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Private _for As Integer
+    Public Overridable WriteOnly Property [Sub] As Integer
+        Set(value As Integer)
+            _for = value
+        End Set
+    End Property
+End Class",
                 GetBasicResultAt(4, 43, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.Sub", "Sub"));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForKeyWordNamedPublicVirtualExpressionBodyPropertyOfPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public class C
-                {
-                    private int _for;
-                    public virtual int @for => _for;
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    private int _for;
+    public virtual int @for => _for;
+}",
                 GetCSharpResultAt(5, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"));
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticForOverrideOfKeywordNamedPublicVirtualMethodOfPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public virtual void @internal() {}
+}
 
-                public class C
-                {
-                    public virtual void @internal() {}
-                }
-
-                public class D : C
-                {
-                    public override void @internal() {}
-                }
-                """,
+public class D : C
+{
+    public override void @internal() {}
+}",
                 // Diagnostic for the virtual in C, but none for the override in D.
                 GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"));
         }
@@ -436,19 +388,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task BasicNoDiagnosticForOverrideOfKeywordNamedPublicVirtualMethodOfPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Overridable Sub [internal]()
+    End Sub
+End Class
 
-                Public Class C
-                    Public Overridable Sub [internal]()
-                    End Sub
-                End Class
-
-                Public Class D
-                    Inherits C
-                    Public Overrides Sub [internal]()
-                    End Sub
-                End Class
-                """,
+Public Class D
+    Inherits C
+    Public Overrides Sub [internal]()
+    End Sub
+End Class",
                 // Diagnostic for the virtual in C, but none for the override in D.
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"));
         }
@@ -456,18 +406,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CSharpNoDiagnosticForSealedOverrideOfKeywordNamedPublicVirtualMethodOfPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public virtual void @internal() {}
+}
 
-                public class C
-                {
-                    public virtual void @internal() {}
-                }
-
-                public class D : C
-                {
-                    public sealed override void @internal() {}
-                }
-                """,
+public class D : C
+{
+    public sealed override void @internal() {}
+}",
                 // Diagnostic for the virtual in C, but none for the sealed override in D.
                 GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"));
         }
@@ -475,19 +423,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task BasicNoDiagnosticForSealedOverrideOfKeywordNamedPublicVirtualMethodOfPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Overridable Sub [friend]()
+    End Sub
+End Class
 
-                Public Class C
-                    Public Overridable Sub [friend]()
-                    End Sub
-                End Class
-
-                Public Class D
-                    Inherits C
-                    Public NotOverridable Overrides Sub [friend]()
-                    End Sub
-                End Class
-                """,
+Public Class D
+    Inherits C
+    Public NotOverridable Overrides Sub [friend]()
+    End Sub
+End Class",
                 // Diagnostic for the virtual in C, but none for the sealed override in D.
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.friend()", "friend"));
         }
@@ -495,14 +441,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CSharpDiagnosticForEachOverloadOfCaseSensitiveKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public class C
-                {
-                    public virtual void @internal() {}
-                    public virtual void @internal(int n) {}
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public virtual void @internal() {}
+    public virtual void @internal(int n) {}
+}",
                 GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"),
                 GetCSharpResultAt(5, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal(int)", "internal"));
         }
@@ -510,15 +454,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task BasicDiagnosticForEachOverloadOfCaseSensitiveKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Class C
-                    Public Overridable Sub internal()
-                    End Sub
-                    Public Overridable Sub internal(n As Integer)
-                    End Sub
-                End Class
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Overridable Sub internal()
+    End Sub
+    Public Overridable Sub internal(n As Integer)
+    End Sub
+End Class",
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"),
                 GetBasicResultAt(5, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal(Integer)", "internal"));
         }
@@ -526,18 +468,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedNewMethodInPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public virtual void @for() {}
+}
 
-                public class C
-                {
-                    public virtual void @for() {}
-                }
-
-                public class D : C
-                {
-                    public new void @for() {}
-                }
-                """,
+public class D : C
+{
+    public new void @for() {}
+}",
                 // Diagnostic for the virtual in C, but none for the new method in D.
                 GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"));
         }
@@ -545,20 +485,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedNewMethodInPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Overridable Sub [for]()
+    End Sub
+End Class
 
-                Public Class C
-                    Public Overridable Sub [for]()
-                    End Sub
-                End Class
+Public Class D
+    Inherits C
 
-                Public Class D
-                    Inherits C
-
-                    Public Shadows Sub [for]()
-                    End Sub
-                End Class
-                """,
+    Public Shadows Sub [for]()
+    End Sub
+End Class",
                 // Diagnostic for the virtual in C, but none for the new method in D.
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"));
         }
@@ -566,18 +504,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CSharpDiagnosticForVirtualNewMethodAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public virtual void @for() {}
+}
 
-                public class C
-                {
-                    public virtual void @for() {}
-                }
-
-                public class D : C
-                {
-                    public virtual new void @for() {}
-                }
-                """,
+public class D : C
+{
+    public virtual new void @for() {}
+}",
                 // Diagnostics for both the virtual in C, and the virtual new method in D.
                 GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"),
                 GetCSharpResultAt(9, 29, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "D.for()", "for"));
@@ -586,20 +522,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task BasicDiagnosticForVirtualNewMethodAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Overridable Sub [for]()
+    End Sub
+End Class
 
-                Public Class C
-                    Public Overridable Sub [for]()
-                    End Sub
-                End Class
+Public Class D
+    Inherits C
 
-                Public Class D
-                    Inherits C
-
-                    Public Overridable Shadows Sub [for]()
-                    End Sub
-                End Class
-                """,
+    Public Overridable Shadows Sub [for]()
+    End Sub
+End Class",
                 // Diagnostics for both the virtual in C, and the virtual new method in D.
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"),
                 GetBasicResultAt(10, 36, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "D.for()", "for"));
@@ -608,45 +542,39 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedProtectedVirtualMethodInProtectedTypeNestedInPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public class C
-                {
-                    protected class D
-                    {
-                        protected virtual void @protected() {}
-                    }
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    protected class D
+    {
+        protected virtual void @protected() {}
+    }
+}",
                 GetCSharpResultAt(6, 32, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.D.protected()", "protected"));
         }
 
         [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedProtectedVirtualMethodInProtectedTypeNestedInPublicClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Class C
-                    Protected Class D
-                        Protected Overridable Sub [Protected]()
-                        End Sub
-                    End Class
-                End Class
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Protected Class D
+        Protected Overridable Sub [Protected]()
+        End Sub
+    End Class
+End Class",
                 GetBasicResultAt(4, 35, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.D.Protected()", "Protected"));
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedPublicVirtualEventInPublicClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public class C
-                {
-                    public delegate void Callback(object sender, System.EventArgs e);
-                    public virtual event Callback @float;
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public delegate void Callback(object sender, System.EventArgs e);
+    public virtual event Callback @float;
+}",
                 // Diagnostics for both the virtual in C, and the virtual new method in D.
                 GetCSharpResultAt(5, 35, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.float", "float"));
         }
@@ -656,16 +584,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CSharpDiagnosticForVirtualPublicMethodInPublicClassInNamespaceAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                namespace N
-                {
-                    public class C
-                    {
-                        public virtual void @for() {}
-                    }
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+namespace N
+{
+    public class C
+    {
+        public virtual void @for() {}
+    }
+}",
                 // Don't include the namespace name.
                 GetCSharpResultAt(6, 29, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"));
         }
@@ -673,15 +599,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task BasicDiagnosticForVirtualPublicMethodInPublicClassInNamespaceAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Namespace N
-                    Public Class C
-                        Public Overridable Sub [for]()
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Namespace N
+    Public Class C
+        Public Overridable Sub [for]()
+        End Sub
+    End Class
+End Namespace",
                 // Don't include the namespace name.
                 GetBasicResultAt(4, 32, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"));
         }
@@ -691,13 +615,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CSharpDiagnosticForVirtualPublicMethodInPublicGenericClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-
-                public class C<T> where T : class
-                {
-                    public virtual void @for() {}
-                }
-                """,
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C<T> where T : class
+{
+    public virtual void @for() {}
+}",
                 // Include the type parameter name but not the constraint.
                 GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C<T>.for()", "for"));
         }
@@ -705,13 +627,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task BasicDiagnosticForVirtualPublicMethodInPublicGenericClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public Class C(Of T As Class)
-                    Public Overridable Sub [for]()
-                    End Sub
-                End Class
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C(Of T As Class)
+    Public Overridable Sub [for]()
+    End Sub
+End Class",
                 // Include the type parameter name but not the constraint.
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C(Of T).for()", "for"));
         }
@@ -729,19 +649,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            public class C
-                            {
-                                public virtual void @internal() {}
-                            }
-                            """,
+                        @"
+public class C
+{
+    public virtual void @internal() {}
+}
+",
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-                        """) },
+[*]
+{editorConfigText}
+") },
                 },
             }.RunAsync(CancellationToken.None);
 
@@ -751,19 +670,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            Public Class C
-                                Public Overridable Sub internal()
-                                End Sub
-                            End Class
-                            """,
+                        @"
+Public Class C
+    Public Overridable Sub internal()
+    End Sub
+End Class",
             },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-                        """) },
+[*]
+{editorConfigText}
+") },
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -781,22 +698,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-
-                            public class C
-                            {
-                                public virtual void @internal() {}
-                            }
-
-                            """,
+                        @"
+public class C
+{
+    public virtual void @internal() {}
+}
+",
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-
-                        """) },
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"), },
                 },
             }.RunAsync(CancellationToken.None);
@@ -807,21 +720,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-
-                            Public Class C
-                                Public Overridable Sub internal()
-                                End Sub
-                            End Class
-                            """,
+                        @"
+Public Class C
+    Public Overridable Sub internal()
+    End Sub
+End Class",
             },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-
-                        """) },
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"), },
                 },
             }.RunAsync(CancellationToken.None);
@@ -840,19 +749,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            public class C
-                            {
-                                public virtual int @for { get; set; }
-                            }
-                            """,
+                        @"
+public class C
+{
+    public virtual int @for { get; set; }
+}
+",
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-                        """) },
+[*]
+{editorConfigText}
+") },
                 },
             }.RunAsync(CancellationToken.None);
 
@@ -862,18 +770,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            Public Class C
-                                Public Overridable Property [Sub] As Integer
-                            End Class
-                            """,
+                        @"
+Public Class C
+    Public Overridable Property [Sub] As Integer
+End Class",
             },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-                        """) },
+[*]
+{editorConfigText}
+") },
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -891,22 +797,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-
-                            public class C
-                            {
-                                public virtual int @for { get; set; }
-                            }
-
-                            """,
+                        @"
+public class C
+{
+    public virtual int @for { get; set; }
+}
+",
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-
-                        """) },
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCSharpResultAt(4, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"), },
                 },
             }.RunAsync(CancellationToken.None);
@@ -917,20 +819,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-
-                            Public Class C
-                                Public Overridable Property [Sub] As Integer
-                            End Class
-                            """,
+                        @"
+Public Class C
+    Public Overridable Property [Sub] As Integer
+End Class",
             },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-
-                        """) },
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetBasicResultAt(3, 33, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.Sub", "Sub"), },
                 },
             }.RunAsync(CancellationToken.None);
@@ -949,20 +847,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            public class C
-                            {
-                                public delegate void Callback(object sender, System.EventArgs e);
-                                public virtual event Callback @float;
-                            }
-                            """,
+                        @"
+public class C
+{
+    public delegate void Callback(object sender, System.EventArgs e);
+    public virtual event Callback @float;
+}
+",
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-                        """) },
+[*]
+{editorConfigText}
+") },
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -980,23 +877,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        """
-
-                            public class C
-                            {
-                                public delegate void Callback(object sender, System.EventArgs e);
-                                public virtual event Callback @float;
-                            }
-
-                            """,
+                        @"
+public class C
+{
+    public delegate void Callback(object sender, System.EventArgs e);
+    public virtual event Callback @float;
+}
+",
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-
-                        """) },
+[*]
+{editorConfigText}
+") },
                     ExpectedDiagnostics = { GetCSharpResultAt(5, 35, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.float", "float"), },
                 },
             }.RunAsync(CancellationToken.None);

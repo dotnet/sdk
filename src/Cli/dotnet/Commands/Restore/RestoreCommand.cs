@@ -11,13 +11,13 @@ namespace Microsoft.DotNet.Cli.Commands.Restore;
 
 public static class RestoreCommand
 {
-    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices services)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
         var result = Parser.Parse(["dotnet", "restore", .. args]);
-        return FromParseResult(result, msbuildPath, services);
+        return FromParseResult(result, msbuildPath);
     }
 
-    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath, CommandServices services)
+    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null)
     {
         var definition = (RestoreCommandDefinition)result.CommandResult.Command;
 
@@ -27,21 +27,20 @@ public static class RestoreCommand
         return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
-            (msbuildArgs, appFilePath) =>
+            static (msbuildArgs, appFilePath) =>
             {
                 return new VirtualProjectBuildingCommand(
                     entryPointFileFullPath: Path.GetFullPath(appFilePath),
-                    msbuildArgs: msbuildArgs,
-                    services: services
+                    msbuildArgs: msbuildArgs
                 )
                 {
                     NoBuild = true,
                     NoCache = true,
                 };
             },
-            (msbuildArgs, msbuildPath) =>
+            static (msbuildArgs, msbuildPath) =>
             {
-                return CreateForwarding(msbuildArgs, msbuildPath, services);
+                return CreateForwarding(msbuildArgs, msbuildPath);
             },
             optionsToUseWhenParsingMSBuildFlags:
             [
@@ -56,9 +55,9 @@ public static class RestoreCommand
         );
     }
 
-    public static MSBuildForwardingApp CreateForwarding(MSBuildArgs msbuildArgs, string? msbuildPath, CommandServices services)
+    public static MSBuildForwardingApp CreateForwarding(MSBuildArgs msbuildArgs, string? msbuildPath = null)
     {
-        var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath, services);
+        var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath);
         NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp);
         return forwardingApp;
     }
@@ -67,13 +66,13 @@ public static class RestoreCommand
     {
         DebugHelper.HandleDebugSwitch(ref args);
 
-        return FromArgs(args, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromArgs(args).Execute();
     }
 
     public static int Run(ParseResult parseResult)
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromParseResult(parseResult).Execute();
     }
 }

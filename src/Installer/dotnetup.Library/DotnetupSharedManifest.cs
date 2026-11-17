@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
@@ -134,6 +135,8 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             var manifest = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.DotnetupManifestData);
             if (manifest is not null)
             {
+                ValidateSchemaVersion(manifest.SchemaVersion);
+
                 // Only validate field values if the checksum doesn't match — if we wrote
                 // the file ourselves the data is trusted; validation is only needed to
                 // catch external / manual edits.
@@ -147,6 +150,22 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
         catch (JsonException ex)
         {
+            try
+            {
+                // Newer schemas may contain values the current model cannot deserialize.
+                using var document = JsonDocument.Parse(json);
+                if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                    document.RootElement.TryGetProperty("schemaVersion", out var schemaVersion) &&
+                    schemaVersion.ValueKind == JsonValueKind.String)
+                {
+                    ValidateSchemaVersion(schemaVersion.GetString());
+                }
+            }
+            catch (JsonException)
+            {
+                // Report the original error below if the JSON or schema version is malformed.
+            }
+
             // Check if it's a legacy format (JSON array of DotnetInstall objects)
             if (json.TrimStart().StartsWith('[', StringComparison.Ordinal))
             {
@@ -177,9 +196,25 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         return new();
     }
 
+    private void ValidateSchemaVersion(string? schemaVersion)
+    {
+        if (!int.TryParse(schemaVersion, NumberStyles.None, CultureInfo.InvariantCulture, out var version))
+        {
+            throw new JsonException("The manifest schemaVersion must be a non-negative integer string.");
+        }
+
+        if (version > DotnetupManifestData.CurrentSchemaVersion)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.LocalManifestError,
+                string.Format(CultureInfo.CurrentCulture, Strings.ManifestSchemaVersionTooNew,
+                    ManifestPath, version, DotnetupManifestData.CurrentSchemaVersion));
+        }
+    }
+
     internal void WriteManifest(DotnetupManifestData manifest)
     {
         AssertHasFinalizationMutex();
+        manifest.SchemaVersion = DotnetupManifestData.CurrentSchemaVersion.ToString(CultureInfo.InvariantCulture);
         var json = JsonSerializer.Serialize(manifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
         WriteManifestWithChecksum(json);
     }
@@ -328,6 +363,11 @@ internal class DotnetupSharedManifest : IDotnetupManifest
                 {
                     errors.Add($"An install spec for {spec.Component} in root '{root.Path}' has an empty version/channel.");
                 }
+                if ((spec.MinimumVersion is null) != (spec.AllowPrerelease is null)
+                    || (spec.MinimumVersion is { } minimum && !ReleaseVersion.TryParse(minimum, out _)))
+                {
+                    errors.Add($"An install spec in root '{root.Path}' has an invalid last known repository requirement.");
+                }
             }
         }
 
@@ -342,8 +382,8 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     // --- Install Spec operations ---
     // An InstallSpec records the user's *intent*: "I want SDK channel 9.0" or
-    // "global.json pins SDK 9.0.100". The update command iterates specs to
-    // know which channels to resolve. A spec can exist without a corresponding
+    // "follow this global.json". Repository specs are identified by path, not
+    // by their cached channel. A spec can exist without a corresponding
     // Installation (e.g., after uninstall + re-add), and an Installation can
     // exist without a spec (e.g., --untracked installs).
 
@@ -355,22 +395,25 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public void AddInstallSpec(DotnetInstallRoot installRoot, InstallSpec spec)
     {
-        if (spec.InstallSource == InstallSource.All)
+        if (!Enum.IsDefined(spec.InstallSource) || spec.InstallSource == InstallSource.All)
         {
-            throw new ArgumentException("InstallSource.All cannot be used in manifest data. It is only valid as a filter.", nameof(spec));
+            throw new ArgumentException("Unknown install source.", nameof(spec));
         }
 
         var manifest = ReadManifest();
         var root = GetOrAddDotnetRoot(manifest, installRoot.Path, installRoot.Architecture);
 
         // Don't add duplicate install specs
-        if (!root.InstallSpecs.Any(s =>
-            s.Component == spec.Component &&
-            s.VersionOrChannel == spec.VersionOrChannel &&
-            s.InstallSource == spec.InstallSource &&
-            s.GlobalJsonPath == spec.GlobalJsonPath))
+        var existing = root.InstallSpecs.FirstOrDefault(s => SameSpec(s, spec));
+        if (existing is null)
         {
             root.InstallSpecs.Add(spec);
+        }
+        else if (spec.InstallSource == InstallSource.GlobalJson)
+        {
+            existing.VersionOrChannel = spec.VersionOrChannel;
+            existing.MinimumVersion = spec.MinimumVersion;
+            existing.AllowPrerelease = spec.AllowPrerelease;
         }
 
         WriteManifest(manifest);
@@ -386,14 +429,16 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             return;
         }
 
-        root.InstallSpecs.RemoveAll(s =>
-            s.Component == spec.Component &&
-            s.VersionOrChannel == spec.VersionOrChannel &&
-            s.InstallSource == spec.InstallSource &&
-            s.GlobalJsonPath == spec.GlobalJsonPath);
+        root.InstallSpecs.RemoveAll(s => SameSpec(s, spec));
 
         WriteManifest(manifest);
     }
+
+    private static bool SameSpec(InstallSpec left, InstallSpec right) =>
+        left.Component == right.Component && left.InstallSource == right.InstallSource
+        && (left.InstallSource == InstallSource.GlobalJson
+            ? DotnetupUtilities.PathsEqual(left.GlobalJsonPath, right.GlobalJsonPath)
+            : left.VersionOrChannel == right.VersionOrChannel && left.GlobalJsonPath == right.GlobalJsonPath);
 
     // --- Installation operations ---
     // An Installation records a *fact*: "SDK 9.0.103 is on disk at this root".
@@ -481,7 +526,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
 
         var owningSpecs = root!.InstallSpecs
-            .Where(spec => GarbageCollector.ResolveLatestMatchingInstallation(spec, root.Installations) is { } kept && conflicts.Contains(kept))
+            .Where(spec => InstallSpecResolver.Resolve(spec, root.Installations).Installation is { } kept && conflicts.Contains(kept))
             .ToList();
         return (conflicts, owningSpecs);
     }
@@ -528,12 +573,12 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         {
             Component = installRequest.Component,
             VersionOrChannel = installRequest.Channel.Name,
-            InstallSource = installRequest.Options.InstallSource switch
-            {
-                InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
-                _ => InstallSource.Explicit,
-            },
-            GlobalJsonPath = installRequest.Options.GlobalJsonPath
+            InstallSource = installRequest.Options.InstallSource,
+            GlobalJsonPath = installRequest.Options.GlobalJsonPath,
+            MinimumVersion = installRequest.Options.InstallSource == InstallSource.GlobalJson
+                ? installRequest.Channel.MinimumVersion?.ToString() : null,
+            AllowPrerelease = installRequest.Options.InstallSource == InstallSource.GlobalJson
+                ? installRequest.Channel.AllowPrerelease : null
         });
     }
 

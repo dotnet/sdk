@@ -211,7 +211,7 @@ touch the network — during a normal CI pass. To run them locally against your 
 
 ```powershell
 $env:DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING = "InstrumentationKey=<guid>;IngestionEndpoint=https://<region>.in.applicationinsights.azure.com/"
-dotnet test test/Microsoft.DotNet.Cli.Telemetry.Tests --filter "FullyQualifiedName~RealEndpointTelemetryE2ETests"
+dotnet test test/dotnetup.Telemetry.Tests --filter "FullyQualifiedName~RealEndpointTelemetryE2ETests"
 ```
 
 The Breeze endpoint reports `itemsReceived` / `itemsAccepted` / `errors` **synchronously** in the
@@ -236,7 +236,7 @@ for ingestion, then query for exactly that run:
 $runId = [guid]::NewGuid().ToString("N")
 $env:DOTNET_CLI_TELEMETRY_E2E_RUN_ID = $runId
 $env:DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING = "InstrumentationKey=<guid>;IngestionEndpoint=https://<region>.in.applicationinsights.azure.com/"
-dotnet test test/Microsoft.DotNet.Cli.Telemetry.Tests --filter "FullyQualifiedName~RealEndpointTelemetryE2ETests"
+dotnet test test/dotnetup.Telemetry.Tests --filter "FullyQualifiedName~RealEndpointTelemetryE2ETests"
 ```
 
 After roughly an hour, confirm delivery by searching the .NET CLI telemetry destination table for

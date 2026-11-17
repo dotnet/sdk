@@ -18,66 +18,60 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestSelfReferDirectlyDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+            using System;
 
-                            using System;
+            [Serializable()]
+            class TestClass
+            {
+                private TestClass testClass;
 
-                            [Serializable()]
-                            class TestClass
-                            {
-                                private TestClass testClass;
-
-                                public void TestMethod()
-                                {
-                                }
-                            }
-                """,
+                public void TestMethod()
+                {
+                }
+            }",
             GetCSharpResultAt(7, 35, "testClass"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
-
-                Namespace TestNamespace
-                    <Serializable()>
-                    Class TestClass
-                        Private testClass As TestClass
-
-                        Sub TestMethod()
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+Namespace TestNamespace
+    <Serializable()>
+    Class TestClass
+        Private testClass As TestClass
+        
+        Sub TestMethod()
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(7, 17, "testClass"));
         }
 
         [TestMethod]
         public async Task TestParentChildCircleDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClassA
+{
+    private TestClassB testClassB;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private TestClassB testClassB;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB
+{
+    private TestClassA testClassA;
 
-                [Serializable()]
-                class TestClassB
-                {
-                    private TestClassA testClassA;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 24, "testClassB"),
             GetCSharpResultAt(17, 24, "testClassA"));
         }
@@ -85,50 +79,48 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestParentGrandchildCircleDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClassA
+{
+    private TestClassB testClassBInA;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private TestClassB testClassBInA;
+    private TestClassD testClassDInD;
 
-                    private TestClassD testClassDInD;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB
+{
+    private TestClassC testClassCInB;
 
-                [Serializable()]
-                class TestClassB
-                {
-                    private TestClassC testClassCInB;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassC
+{
+    private TestClassA testClassAInC;
 
-                [Serializable()]
-                class TestClassC
-                {
-                    private TestClassA testClassAInC;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
-
-                [Serializable()]
-                class TestClassD
-                {
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+[Serializable()]
+class TestClassD
+{
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 24, "testClassBInA"),
             GetCSharpResultAt(19, 24, "testClassCInB"),
             GetCSharpResultAt(29, 24, "testClassAInC"));
@@ -137,70 +129,66 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestChildCircleDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClassA
+{
+    private TestClassA testClassAInA;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private TestClassA testClassAInA;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB
+{
+    private TestClassA testClassAInB;
 
-                [Serializable()]
-                class TestClassB
-                {
-                    private TestClassA testClassAInB;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 24, "testClassAInA"));
         }
 
         [TestMethod]
         public async Task TestChildGrandchildCircleDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClassA
+{
+    private TestClassB testClassBInA;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private TestClassB testClassBInA;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB
+{
+    private TestClassC testClassCInB;
 
-                [Serializable()]
-                class TestClassB
-                {
-                    private TestClassC testClassCInB;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassC
+{
+    private TestClassB testClassBInC;
 
-                [Serializable()]
-                class TestClassC
-                {
-                    private TestClassB testClassBInC;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(17, 24, "testClassCInB"),
             GetCSharpResultAt(27, 24, "testClassBInC"));
         }
@@ -208,72 +196,70 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestClassReferedInTwoLoopsDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClassA
+{
+    private TestClassB testClassBInA;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private TestClassB testClassBInA;
+    private TestClassD testClassDInA;
 
-                    private TestClassD testClassDInA;
+    private TestClassB2 testClassB2InA;
 
-                    private TestClassB2 testClassB2InA;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB
+{
+    private TestClassC testClassCInB;
 
-                [Serializable()]
-                class TestClassB
-                {
-                    private TestClassC testClassCInB;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassC
+{
+    private TestClassA testClassAInC;
 
-                [Serializable()]
-                class TestClassC
-                {
-                    private TestClassA testClassAInC;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassD
+{
+    public void TestMethod()
+    {
+    }
+}
 
-                [Serializable()]
-                class TestClassD
-                {
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB2
+{
+    private TestClassC2 testClassC2InB2;
 
-                [Serializable()]
-                class TestClassB2
-                {
-                    private TestClassC2 testClassC2InB2;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassC2
+{
+    private TestClassA testClassAInC2;
 
-                [Serializable()]
-                class TestClassC2
-                {
-                    private TestClassA testClassAInC2;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 24, "testClassBInA"),
             GetCSharpResultAt(11, 25, "testClassB2InA"),
             GetCSharpResultAt(21, 24, "testClassCInB"),
@@ -285,34 +271,32 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestMultiFieldsWithSameTypeDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClassA
+{
+    private TestClassB testClassBInA;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private TestClassB testClassBInA;
+    private TestClassB testClassB2InA;
 
-                    private TestClassB testClassB2InA;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB
+{
+    private TestClassA testClassAInB;
 
-                [Serializable()]
-                class TestClassB
-                {
-                    private TestClassA testClassAInB;
+    private TestClassA testClassA2InB;
 
-                    private TestClassA testClassA2InB;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 24, "testClassBInA"),
             GetCSharpResultAt(9, 24, "testClassB2InA"),
             GetCSharpResultAt(19, 24, "testClassAInB"),
@@ -322,32 +306,30 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestChildCircleWithParentChildCircleDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClassA
+{
+    private TestClassB testClassBInA;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private TestClassB testClassBInA;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB
+{
+    private TestClassA testClassAInB;
 
-                [Serializable()]
-                class TestClassB
-                {
-                    private TestClassA testClassAInB;
+    private TestClassB testClassBInB;
 
-                    private TestClassB testClassBInB;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 24, "testClassBInA"),
             GetCSharpResultAt(17, 24, "testClassAInB"),
             GetCSharpResultAt(19, 24, "testClassBInB"));
@@ -356,50 +338,48 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestTwoIndependentParentChildCirclesDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClassA
+{
+    private TestClassB testClassB;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private TestClassB testClassB;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB
+{
+    private TestClassA testClassA;
 
-                [Serializable()]
-                class TestClassB
-                {
-                    private TestClassA testClassA;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassA2
+{
+    private TestClassB2 testClassB2;
 
-                [Serializable()]
-                class TestClassA2
-                {
-                    private TestClassB2 testClassB2;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB2
+{
+    private TestClassA2 testClassA2;
 
-                [Serializable()]
-                class TestClassB2
-                {
-                    private TestClassA2 testClassA2;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 24, "testClassB"),
             GetCSharpResultAt(17, 24, "testClassA"),
             GetCSharpResultAt(27, 25, "testClassB2"),
@@ -409,341 +389,313 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestSelfReferDirectlyByPropertyDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClass
+{
+    public TestClass TestClassProperty { get; set; }
 
-                [Serializable()]
-                class TestClass
-                {
-                    public TestClass TestClassProperty { get; set; }
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 22, "TestClassProperty"));
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyWithGenericTypeDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[System.Serializable]
+public class GenericClass<T>
+{
+}
 
-                [System.Serializable]
-                public class GenericClass<T>
-                {
-                }
+[Serializable()]
+class TestClass
+{
+    private GenericClass<TestClass> testClasses;
 
-                [Serializable()]
-                class TestClass
-                {
-                    private GenericClass<TestClass> testClasses;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(12, 37, "testClasses"));
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyWithArrayDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClass
+{
+    private TestClass[] testClasses;
 
-                [Serializable()]
-                class TestClass
-                {
-                    private TestClass[] testClasses;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 25, "testClasses"));
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyWithDoubleDimensionalArrayDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClass
+{
+    private TestClass[][] testClasses;
 
-                [Serializable()]
-                class TestClass
-                {
-                    private TestClass[][] testClasses;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 27, "testClasses"));
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyWithListDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
 
-                using System;
-                using System.Collections.Generic;
+[Serializable()]
+class TestClass
+{
+    private List<TestClass> testClasses;
 
-                [Serializable()]
-                class TestClass
-                {
-                    private List<TestClass> testClasses;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(8, 29, "testClasses"));
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyWithListListDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
 
-                using System;
-                using System.Collections.Generic;
+[Serializable()]
+class TestClass
+{
+    private List<List<TestClass>> testClasses;
 
-                [Serializable()]
-                class TestClass
-                {
-                    private List<List<TestClass>> testClasses;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(8, 35, "testClasses"));
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyWithListListListDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
 
-                using System;
-                using System.Collections.Generic;
+[Serializable()]
+class TestClass
+{
+    private List<List<List<TestClass>>> testClasses;
 
-                [Serializable()]
-                class TestClass
-                {
-                    private List<List<List<TestClass>>> testClasses;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(8, 41, "testClasses"));
         }
 
         [TestMethod]
         public async Task TestGenericChildCircleDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
 
-                using System;
-                using System.Collections.Generic;
+[Serializable()]
+class TestClassA
+{
+    private List<TestClassA> testClassAInA;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private List<TestClassA> testClassAInA;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB
+{
+    private TestClassA testClassAInB;
 
-                [Serializable()]
-                class TestClassB
-                {
-                    private TestClassA testClassAInB;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(8, 30, "testClassAInA"));
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyByPropertyWithArrayDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClass
+{
+    public TestClass[] TestClassProperty { get; set; }
 
-                [Serializable()]
-                class TestClass
-                {
-                    public TestClass[] TestClassProperty { get; set; }
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 24, "TestClassProperty"));
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyWithinGenericTypeDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClass<T>
+{
+    private TestClass<T> testClass;
 
-                [Serializable()]
-                class TestClass<T>
-                {
-                    private TestClass<T> testClass;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 26, "testClass"));
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyWithDictionaryDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
 
-                using System;
-                using System.Collections.Generic;
+[Serializable()]
+class NormalClass
+{
+}
 
-                [Serializable()]
-                class NormalClass
-                {
-                }
+[Serializable()]
+class TestClass
+{
+    private Dictionary<TestClass, NormalClass> testClasses;
 
-                [Serializable()]
-                class TestClass
-                {
-                    private Dictionary<TestClass, NormalClass> testClasses;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(13, 48, "testClasses"));
         }
 
         [TestMethod]
         public async Task TestParentClassSubclassCirlceDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClassA
+{
+    private TestClassB testClassB;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private TestClassB testClassB;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB : TestClassA
+{
+    private int b;
 
-                [Serializable()]
-                class TestClassB : TestClassA
-                {
-                    private int b;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 24, "testClassB"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
+Namespace TestNamespace
+    <Serializable()> _
+    Class TestClassA
+        Private testClassB As TestClassB
+        
+        Sub TestMethod()
+        End Sub
+    End Class
 
-                Namespace TestNamespace
-                    <Serializable()> _
-                    Class TestClassA
-                        Private testClassB As TestClassB
+    <Serializable()> _
+    Class TestClassB
+        Inherits TestClassA
 
-                        Sub TestMethod()
-                        End Sub
-                    End Class
+        Private b As Integer
 
-                    <Serializable()> _
-                    Class TestClassB
-                        Inherits TestClassA
-
-                        Private b As Integer
-
-                        Sub TestMethod()
-                        End Sub
-                    End Class
-                End Namespace
-                """,
+        Sub TestMethod()
+        End Sub
+    End Class
+End Namespace",
             GetBasicResultAt(7, 17, "testClassB"));
         }
 
         [TestMethod]
         public async Task TestParentClassIndirectSubclassCirlceDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+[Serializable()]
+class TestClassA
+{
+    private TestClassB testClassB;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private TestClassB testClassB;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassB : TestClassA
+{   
+    private TestClassC testClassC;
 
-                [Serializable()]
-                class TestClassB : TestClassA
-                {
-                    private TestClassC testClassC;
+    public void TestMethod()
+    {
+    }
+}
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+[Serializable()]
+class TestClassC : TestClassB
+{   
+    private TestClassA testClassA;
 
-                [Serializable()]
-                class TestClassC : TestClassB
-                {
-                    private TestClassA testClassA;
-
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """,
+    public void TestMethod()
+    {
+    }
+}",
             GetCSharpResultAt(7, 24, "testClassB"),
             GetCSharpResultAt(17, 24, "testClassC"),
             GetCSharpResultAt(27, 24, "testClassA"));
@@ -752,236 +704,227 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestWithoutSelfReferNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private int a;
+[Serializable()]
+class TestClassA
+{
+    private int a;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+    public void TestMethod()
+    {
+    }
+}
 
-                [Serializable()]
-                class TestClassB
-                {
-                    private TestClassA testClassA;
+[Serializable()]
+class TestClassB
+{
+    private TestClassA testClassA;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+    }
+}");
         }
 
         [TestMethod]
         public async Task TestStaticSelfReferNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                [Serializable()]
-                class TestClass
-                {
-                    private static TestClass testClass;
+[Serializable()]
+class TestClass
+{
+    private static TestClass testClass;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+    }
+}");
         }
 
         [TestMethod]
         public async Task TestStaticParentChildCircleNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private TestClassB testClassB;
+[Serializable()]
+class TestClassA
+{
+    private TestClassB testClassB;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+    public void TestMethod()
+    {
+    }
+}
 
-                [Serializable()]
-                class TestClassB
-                {
-                    private static TestClassA testClassA;
+[Serializable()]
+class TestClassB
+{
+    private static TestClassA testClassA;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+    }
+}");
         }
 
         [TestMethod]
         public async Task TestStaticParentGrandchildCircleNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                [Serializable()]
-                class TestClassA
-                {
-                    private TestClassB testClassBInA;
+[Serializable()]
+class TestClassA
+{
+    private TestClassB testClassBInA;
 
-                    private TestClassD testClassDInD;
+    private TestClassD testClassDInD;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+    public void TestMethod()
+    {
+    }
+}
 
-                [Serializable()]
-                class TestClassB
-                {
-                    private TestClassC testClassCInB;
+[Serializable()]
+class TestClassB
+{
+    private TestClassC testClassCInB;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+    public void TestMethod()
+    {
+    }
+}
 
-                [Serializable()]
-                class TestClassC
-                {
-                    private static TestClassA testClassAInC;
+[Serializable()]
+class TestClassC
+{
+    private static TestClassA testClassAInC;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
+    public void TestMethod()
+    {
+    }
+}
 
-                [Serializable()]
-                class TestClassD
-                {
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """);
+[Serializable()]
+class TestClassD
+{
+    public void TestMethod()
+    {
+    }
+}");
         }
 
         [TestMethod]
         public async Task TestNonSerializedAttributeSelfReferNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                [Serializable()]
-                class TestClass
-                {
-                    [NonSerialized]
-                    private TestClass testClass;
+[Serializable()]
+class TestClass
+{
+    [NonSerialized]
+    private TestClass testClass;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+    }
+}");
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyWithArrayNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                [Serializable()]
-                class NormalClass
-                {
-                }
+[Serializable()]
+class NormalClass
+{
+}
 
-                [Serializable()]
-                class TestClass
-                {
-                    private NormalClass[] normalClasses;
+[Serializable()]
+class TestClass
+{
+    private NormalClass[] normalClasses;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+    }
+}");
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyWithDoubleDimensionalArrayNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                [Serializable()]
-                class NormalClass
-                {
-                }
+[Serializable()]
+class NormalClass
+{
+}
 
-                [Serializable()]
-                class TestClass
-                {
-                    private NormalClass[][] normalClasses;
+[Serializable()]
+class TestClass
+{
+    private NormalClass[][] normalClasses;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+    }
+}");
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyWithListNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Collections.Generic;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
 
-                [Serializable()]
-                class NormalClass
-                {
-                }
+[Serializable()]
+class NormalClass
+{
+}
 
-                [Serializable()]
-                class TestClass
-                {
-                    private List<NormalClass> normalClasses;
+[Serializable()]
+class TestClass
+{
+    private List<NormalClass> normalClasses;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+    }
+}");
         }
 
         [TestMethod]
         public async Task TestSelfReferDirectlyWithListListNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Collections.Generic;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
 
-                [Serializable()]
-                class NormalClass
-                {
-                }
+[Serializable()]
+class NormalClass
+{
+}
 
-                [Serializable()]
-                class TestClass
-                {
-                    private List<List<NormalClass>> normalClasses;
+[Serializable()]
+class TestClass
+{
+    private List<List<NormalClass>> normalClasses;
 
-                    public void TestMethod()
-                    {
-                    }
-                }
-                """);
+    public void TestMethod()
+    {
+    }
+}");
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

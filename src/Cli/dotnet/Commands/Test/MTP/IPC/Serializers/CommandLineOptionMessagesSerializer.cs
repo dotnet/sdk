@@ -46,25 +46,29 @@ internal sealed class CommandLineOptionMessagesSerializer : BaseSerializer, INam
         string? moduleName = null;
         List<CommandLineOptionMessage>? commandLineOptionMessages = null;
 
-        ReadFields(stream, (fieldId, fieldSize) =>
+        ushort fieldCount = ReadUShort(stream);
+
+        for (int i = 0; i < fieldCount; i++)
         {
+            int fieldId = ReadUShort(stream);
+            int fieldSize = ReadInt(stream);
+
             switch (fieldId)
             {
                 case CommandLineOptionMessagesFieldsId.ModulePath:
                     moduleName = ReadStringValue(stream, fieldSize);
-                    return true;
+                    break;
 
                 case CommandLineOptionMessagesFieldsId.CommandLineOptionMessageList:
-                    commandLineOptionMessages = ReadFieldPayload(
-                        stream,
-                        fieldSize,
-                        ReadCommandLineOptionMessagesPayload);
-                    return true;
+                    commandLineOptionMessages = ReadCommandLineOptionMessagesPayload(stream);
+                    break;
 
                 default:
-                    return false;
+                    // If we don't recognize the field id, skip the payload corresponding to that field
+                    SetPosition(stream, stream.Position + fieldSize);
+                    break;
             }
-        });
+        }
 
         return new CommandLineOptionMessages(moduleName, commandLineOptionMessages is null ? [] : [.. commandLineOptionMessages]);
     }
@@ -73,36 +77,42 @@ internal sealed class CommandLineOptionMessagesSerializer : BaseSerializer, INam
     {
         List<CommandLineOptionMessage> commandLineOptionMessages = [];
 
-        int length = ReadCollectionLength(stream, sizeof(ushort));
+        int length = ReadInt(stream);
         for (int i = 0; i < length; i++)
         {
             string? name = null, description = null;
             bool? isHidden = null, isBuiltIn = null;
 
-            ReadFields(stream, (fieldId, fieldSize) =>
+            int fieldCount = ReadUShort(stream);
+
+            for (int j = 0; j < fieldCount; j++)
             {
+                int fieldId = ReadUShort(stream);
+                int fieldSize = ReadInt(stream);
+
                 switch (fieldId)
                 {
                     case CommandLineOptionMessageFieldsId.Name:
                         name = ReadStringValue(stream, fieldSize);
-                        return true;
+                        break;
 
                     case CommandLineOptionMessageFieldsId.Description:
                         description = ReadStringValue(stream, fieldSize);
-                        return true;
+                        break;
 
                     case CommandLineOptionMessageFieldsId.IsHidden:
                         isHidden = ReadBool(stream);
-                        return true;
+                        break;
 
                     case CommandLineOptionMessageFieldsId.IsBuiltIn:
                         isBuiltIn = ReadBool(stream);
-                        return true;
+                        break;
 
                     default:
-                        return false;
+                        SetPosition(stream, stream.Position + fieldSize);
+                        break;
                 }
-            });
+            }
 
             commandLineOptionMessages.Add(new CommandLineOptionMessage(name, description, isHidden, isBuiltIn));
         }
@@ -123,15 +133,34 @@ internal sealed class CommandLineOptionMessagesSerializer : BaseSerializer, INam
     }
 
     private static void WriteCommandLineOptionMessagesPayload(Stream stream, CommandLineOptionMessage[]? commandLineOptionMessageList)
-        => WriteListPayload(stream, CommandLineOptionMessagesFieldsId.CommandLineOptionMessageList, commandLineOptionMessageList, static (s, commandLineOptionMessage) =>
+    {
+        if (commandLineOptionMessageList is null || commandLineOptionMessageList.Length == 0)
         {
-            WriteUShort(s, GetFieldCount(commandLineOptionMessage));
+            return;
+        }
 
-            WriteField(s, CommandLineOptionMessageFieldsId.Name, commandLineOptionMessage.Name);
-            WriteField(s, CommandLineOptionMessageFieldsId.Description, commandLineOptionMessage.Description);
-            WriteField(s, CommandLineOptionMessageFieldsId.IsHidden, commandLineOptionMessage.IsHidden);
-            WriteField(s, CommandLineOptionMessageFieldsId.IsBuiltIn, commandLineOptionMessage.IsBuiltIn);
-        });
+        WriteUShort(stream, CommandLineOptionMessagesFieldsId.CommandLineOptionMessageList);
+
+        // We will reserve an int (4 bytes)
+        // so that we fill the size later, once we write the payload
+        WriteInt(stream, 0);
+
+        long before = stream.Position;
+        WriteInt(stream, commandLineOptionMessageList.Length);
+        foreach (CommandLineOptionMessage commandLineOptionMessage in commandLineOptionMessageList)
+        {
+            WriteUShort(stream, GetFieldCount(commandLineOptionMessage));
+
+            WriteField(stream, CommandLineOptionMessageFieldsId.Name, commandLineOptionMessage.Name);
+            WriteField(stream, CommandLineOptionMessageFieldsId.Description, commandLineOptionMessage.Description);
+            WriteField(stream, CommandLineOptionMessageFieldsId.IsHidden, commandLineOptionMessage.IsHidden);
+            WriteField(stream, CommandLineOptionMessageFieldsId.IsBuiltIn, commandLineOptionMessage.IsBuiltIn);
+        }
+
+        // NOTE: We are able to seek only if we are using a MemoryStream
+        // thus, the seek operation is fast as we are only changing the value of a property
+        WriteAtPosition(stream, (int)(stream.Position - before), before - sizeof(int));
+    }
 
     private static ushort GetFieldCount(CommandLineOptionMessages commandLineOptionMessages) =>
         (ushort)((commandLineOptionMessages.ModulePath is null ? 0 : 1) +

@@ -13,7 +13,6 @@ using Microsoft.DotNet.Cli.Utils;
 namespace Microsoft.DotNet.Cli.Tests;
 
 [TestClass]
-[ResourceLock(nameof(SdkDirectoryScope))]
 public class MSBuildEvaluationTests
 {
     public TestContext TestContext { get; set; } = null!;

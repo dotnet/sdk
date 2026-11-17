@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.CompilerServices;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
@@ -25,14 +24,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             SetupCorruptWorkloadSet(
                 TestAssetsManager testAssetsManager,
                 bool userLocal,
-                out string sdkFeatureVersion,
-                [CallerMemberName] string? testName = null,
-                [CallerFilePath] string? callerFilePath = null)
+                out string sdkFeatureVersion)
         {
-            var testDirectory = testAssetsManager.CreateTestDirectory(
-                testName,
-                identifier: userLocal ? "userlocal" : "default",
-                callerFilePath: callerFilePath).Path;
+            var testDirectory = testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             sdkFeatureVersion = "6.0.100";

@@ -18,13 +18,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task ProtectedSubInNotInheritable_DiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-
-                Public NotInheritable Class C
-                    Protected Sub M()
-                    End Sub
-                End Class
-                """,
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public NotInheritable Class C
+    Protected Sub M()
+    End Sub
+End Class",
                 VerifyVB.Diagnostic().WithSpan(3, 19, 3, 20).WithArguments("M", "C"));
         }
 
@@ -40,27 +38,25 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        $$"""
-                            using System;
+                        $@"
+using System;
 
-                            public sealed class C
-                            {
-                                {{accessModifier}} int [|SomeField|];
+public sealed class C
+{{
+    {accessModifier} int [|SomeField|];
 
-                                {{accessModifier}} int [|SomeProperty|] { [|get|]; [|set|]; }
+    {accessModifier} int [|SomeProperty|] {{ [|get|]; [|set|]; }}
 
-                                {{accessModifier}} event EventHandler [|SomeEvent|];
+    {accessModifier} event EventHandler [|SomeEvent|];
 
-                                {{accessModifier}} void [|SomeMethod|]() { }
-                            }
-                            """
+    {accessModifier} void [|SomeMethod|]() {{ }}
+}}"
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        dotnet_code_quality.CA1047.api_surface = All
-                        """) }
+[*]
+dotnet_code_quality.CA1047.api_surface = All
+") }
                 }
             }.RunAsync(CancellationToken.None);
         }
@@ -75,30 +71,28 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             {
                 TestState =
                 {
-                    Sources = { $"""
-                        Imports System
+                    Sources = { $@"
+Imports System
 
-                        Public NotInheritable Class C
-                            {accessModifier} [|SomeField|] As Integer
+Public NotInheritable Class C
+    {accessModifier} [|SomeField|] As Integer
 
-                            {accessModifier} Property [|SomeProperty|] As Integer
+    {accessModifier} Property [|SomeProperty|] As Integer
 
-                            {accessModifier} Event [|SomeEvent|] As EventHandler
+    {accessModifier} Event [|SomeEvent|] As EventHandler
 
-                            {accessModifier} Sub [|SomeSub|]()
-                            End Sub
+    {accessModifier} Sub [|SomeSub|]()
+    End Sub
 
-                            {accessModifier} Function [|SomeFunction|]() As Integer
-                            End Function
-                        End Class
-                        """
+    {accessModifier} Function [|SomeFunction|]() As Integer
+    End Function
+End Class"
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        dotnet_code_quality.CA1047.api_surface = All
-                        """) }
+[*]
+dotnet_code_quality.CA1047.api_surface = All
+") }
                 }
             }.RunAsync(CancellationToken.None);
         }
@@ -106,30 +100,29 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task ProtectedOverridesMemberInNotInheritable_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Public Class C
-                    Protected Overridable Property SomeProperty As Integer
+Public Class C
+    Protected Overridable Property SomeProperty As Integer
 
-                    Protected Overridable Sub SomeSub()
-                    End Sub
+    Protected Overridable Sub SomeSub()
+    End Sub
 
-                    Protected Overridable Function SomeFunction() As Integer
-                    End Function
-                End Class
+    Protected Overridable Function SomeFunction() As Integer
+    End Function
+End Class
 
-                Public NotInheritable Class C2
-                    Inherits C
-                    Protected Overrides Property SomeProperty As Integer
+Public NotInheritable Class C2
+    Inherits C
+    Protected Overrides Property SomeProperty As Integer
 
-                    Protected Overrides Sub SomeSub()
-                    End Sub
+    Protected Overrides Sub SomeSub()
+    End Sub
 
-                    Protected Overrides Function SomeFunction() As Integer
-                    End Function
-                End Class
-                """);
+    Protected Overrides Function SomeFunction() As Integer
+    End Function
+End Class");
         }
 
         [TestMethod]
@@ -150,17 +143,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [DataRow("Friend", "dotnet_code_quality.CA1047.api_surface = All")]
         [DataRow("Friend", "dotnet_code_quality.Design.api_surface = All")]
         // General + Specific analyzer option
-        [DataRow("Friend", """
-            dotnet_code_quality.api_surface = Private
-                                            dotnet_code_quality.CA1047.api_surface = All
-            """)]
+        [DataRow("Friend", @"dotnet_code_quality.api_surface = Private
+                                dotnet_code_quality.CA1047.api_surface = All")]
         // Case-insensitive analyzer option
         [DataRow("Friend", "DOTNET_code_quality.CA1047.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [DataRow("Friend", """
-            dotnet_code_quality.api_surface = All
-                                            dotnet_code_quality.CA1047.api_surface_2 = Private
-            """)]
+        [DataRow("Friend", @"dotnet_code_quality.api_surface = All
+                                dotnet_code_quality.CA1047.api_surface_2 = Private")]
         public async Task VisualBasic_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
@@ -169,20 +158,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        $"""
-                            Public Class OuterClass
-                                {accessibility} NotInheritable Class C
-                                    Protected [|SomeField|] As Integer
-                                End Class
-                            End Class
-                            """
+                        $@"
+Public Class OuterClass
+    {accessibility} NotInheritable Class C
+        Protected [|SomeField|] As Integer
+    End Class
+End Class"
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-                        """), },
+[*]
+{editorConfigText}
+"), },
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -190,12 +177,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task Finalize_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Public NotInheritable Class C
-                    Protected Overrides Sub Finalize()
-                    End Sub
-                End Class
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public NotInheritable Class C
+    Protected Overrides Sub Finalize()
+    End Sub
+End Class");
         }
     }
 }

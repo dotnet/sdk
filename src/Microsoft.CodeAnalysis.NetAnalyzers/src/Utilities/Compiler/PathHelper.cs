@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if CODEANALYSIS_V3_OR_BETTER
+
 using System;
 using System.IO;
 
@@ -23,3 +25,5 @@ namespace Analyzer.Utilities
         }
     }
 }
+
+#endif

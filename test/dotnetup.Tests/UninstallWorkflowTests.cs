@@ -66,6 +66,59 @@ public class UninstallWorkflowTests
     }
 
     [TestMethod]
+    public void Execute_OlderMatchingInstallationIsRetained_StillPrompts()
+    {
+        using var environment = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(environment.ManifestPath);
+        var root = new DotnetInstallRoot(environment.InstallPath, InstallArchitecture.x64);
+        AddInstallation(environment, manifest, root, InstallComponent.SDK, "8.0.100");
+        AddInstallation(environment, manifest, root, InstallComponent.SDK, "8.0.101");
+        AddSpec(manifest, root, InstallComponent.SDK, "8");
+        AddSpec(manifest, root, InstallComponent.SDK, "8.0.100");
+        var before = File.ReadAllText(environment.ManifestPath);
+        var prompted = false;
+
+        Action uninstall = () => UninstallWorkflow.Execute(
+            environment.ManifestPath, environment.InstallPath, "8", InstallSource.Explicit, InstallComponent.SDK,
+            interactive: true, confirm: () => { prompted = true; return ConfirmResult.No; });
+
+        uninstall.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.OperationCancelled);
+        prompted.Should().BeTrue();
+        File.ReadAllText(environment.ManifestPath).Should().Be(before);
+    }
+
+    [TestMethod]
+    public void Execute_RepositoryTargetUsesCurrentRequirementRatherThanCachedChannel()
+    {
+        using var environment = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(environment.ManifestPath);
+        var root = new DotnetInstallRoot(environment.InstallPath, InstallArchitecture.x64);
+        AddInstallation(environment, manifest, root, InstallComponent.SDK, "10.0.105");
+        AddSpec(manifest, root, InstallComponent.SDK, "10.0.105");
+        var path = Path.Combine(environment.TempRoot, "global.json");
+        File.WriteAllText(path, """{"sdk":{"version":"10.0.103","rollForward":"latestPatch","allowPrerelease":false}}""");
+        manifest.AddInstallSpec(root, new InstallSpec
+        {
+            Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson,
+            VersionOrChannel = "9", GlobalJsonPath = path
+        });
+        var before = File.ReadAllText(environment.ManifestPath);
+        var prompted = false;
+
+        Action uninstall = () => UninstallWorkflow.Execute(
+            environment.ManifestPath, environment.InstallPath, "9", InstallSource.GlobalJson, InstallComponent.SDK,
+            interactive: true, confirm: () => { prompted = true; return ConfirmResult.No; });
+
+        uninstall.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.OperationCancelled);
+        prompted.Should().BeTrue();
+        File.ReadAllText(environment.ManifestPath).Should().Be(before);
+    }
+
+    [TestMethod]
     public void Execute_Decline_DoesNotPersistPruningOrGlobalJsonRefresh()
     {
         using var environment = new TestEnvironment();

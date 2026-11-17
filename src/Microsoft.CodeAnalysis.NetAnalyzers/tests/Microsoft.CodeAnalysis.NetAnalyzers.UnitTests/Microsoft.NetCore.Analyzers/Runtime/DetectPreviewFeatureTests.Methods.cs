@@ -16,44 +16,42 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestGenericPreviewParametersToPreviewMethod()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+using System.Collections.Generic;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                using System.Collections.Generic;
-                namespace Preview_Feature_Scratch
-                {
+    class Program
+    {
+        public Dictionary<int, {|#1:Foo|}> Getter(Dictionary<int, {|#0:Foo|}> foo)
+        {
+            return foo;
+        }
 
-                    class Program
-                    {
-                        public Dictionary<int, {|#1:Foo|}> Getter(Dictionary<int, {|#0:Foo|}> foo)
-                        {
-                            return foo;
-                        }
+#nullable enable
+        public Dictionary<int, {|#2:Foo|}?> GetterNullable(Dictionary<int, {|#3:Foo|}?> foo)
+        {
+            return foo;
+        }
 
-                #nullable enable
-                        public Dictionary<int, {|#2:Foo|}?> GetterNullable(Dictionary<int, {|#3:Foo|}?> foo)
-                        {
-                            return foo;
-                        }
+        public Dictionary<int, {|#4:Foo?|}[]> GetterNullableArray(Dictionary<int, {|#5:Foo?|}[]> foo)
+        {
+            return foo;
+        }
 
-                        public Dictionary<int, {|#4:Foo?|}[]> GetterNullableArray(Dictionary<int, {|#5:Foo?|}[]> foo)
-                        {
-                            return foo;
-                        }
+#nullable disable
 
-                #nullable disable
+        static void Main(string[] args)
+        {
+        }
+    }
 
-                        static void Main(string[] args)
-                        {
-                        }
-                    }
-
-                    [RequiresPreviewFeatures]
-                    public class Foo
-                    {
-                    }
-                }
-                """;
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -64,25 +62,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(5).WithArguments("GetterNullableArray", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             await test.RunAsync(CancellationToken.None);
 
-            var vbInput = """
+            var vbInput = @" 
+        Imports System
+        Imports System.Runtime.Versioning
+        Imports System.Collections.Generic
+        Module Preview_Feature_Scratch
+            Public Class Program
+                Public Function Getter(foo As Dictionary(Of Int32, {|#0:Foo|})) As Dictionary(Of Int32, {|#1:Foo|})
+                    Return foo
+                End Function
+            End Class
 
-                        Imports System
-                        Imports System.Runtime.Versioning
-                        Imports System.Collections.Generic
-                        Module Preview_Feature_Scratch
-                            Public Class Program
-                                Public Function Getter(foo As Dictionary(Of Int32, {|#0:Foo|})) As Dictionary(Of Int32, {|#1:Foo|})
-                                    Return foo
-                                End Function
-                            End Class
+            <RequiresPreviewFeatures>
+            Public Class Foo
+            End Class
 
-                            <RequiresPreviewFeatures>
-                            Public Class Foo
-                            End Class
-
-                        End Module
-
-                """;
+        End Module
+            ";
 
             var testVb = TestVB(vbInput);
             testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -93,58 +89,55 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestNestedGenericPreviewParametersToPreviewMethod()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+using System.Collections.Generic;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                using System.Collections.Generic;
-                namespace Preview_Feature_Scratch
-                {
+    class Program
+    {
+        public List<List<List<{|#1:Foo|}>>> Getter(List<List<List<{|#0:Foo|}>>> foo)
+        {
+            return foo;
+        }
 
-                    class Program
-                    {
-                        public List<List<List<{|#1:Foo|}>>> Getter(List<List<List<{|#0:Foo|}>>> foo)
-                        {
-                            return foo;
-                        }
+        static void Main(string[] args)
+        {
+        }
+    }
 
-                        static void Main(string[] args)
-                        {
-                        }
-                    }
-
-                    [RequiresPreviewFeatures]
-                    public class Foo
-                    {
-                    }
-                }
-                """;
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(1).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             await test.RunAsync(CancellationToken.None);
 
-            var vbInput = """
+            var vbInput = @" 
+Imports System.Runtime.Versioning
+Imports System
+Imports System.Collections.Generic
 
-                Imports System.Runtime.Versioning
-                Imports System
-                Imports System.Collections.Generic
+Namespace Preview_Feature_Scratch
+    Class Program
+        Public Function Getter(ByVal foo As List(Of List(Of List(Of {|#0:Foo|})))) As List(Of List(Of List(Of {|#1:Foo|})))
+            Return foo
+        End Function
 
-                Namespace Preview_Feature_Scratch
-                    Class Program
-                        Public Function Getter(ByVal foo As List(Of List(Of List(Of {|#0:Foo|})))) As List(Of List(Of List(Of {|#1:Foo|})))
-                            Return foo
-                        End Function
+        Private Shared Sub Main(ByVal args As String())
+        End Sub
+    End Class
 
-                        Private Shared Sub Main(ByVal args As String())
-                        End Sub
-                    End Class
-
-                    <RequiresPreviewFeatures>
-                    Public Class Foo
-                    End Class
-                End Namespace
-                """;
+    <RequiresPreviewFeatures>
+    Public Class Foo
+    End Class
+End Namespace
+";
             var testVb = TestVB(vbInput);
             testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(1).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -154,60 +147,57 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestPreviewParametersToPreviewMethod()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
+    [RequiresPreviewFeatures]
+    class Program
+    {
+        public Foo Getter(Foo foo)
+        {
+            return foo;
+        }
 
-                    [RequiresPreviewFeatures]
-                    class Program
-                    {
-                        public Foo Getter(Foo foo)
-                        {
-                            return foo;
-                        }
+        static void Main(string[] args)
+        {
+            Program prog = new Program();
+            prog.Getter(new Foo());
+        }
+    }
 
-                        static void Main(string[] args)
-                        {
-                            Program prog = new Program();
-                            prog.Getter(new Foo());
-                        }
-                    }
-
-                    [RequiresPreviewFeatures]
-                    public class Foo
-                    {
-                    }
-                }
-                """;
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
 
             var test = TestCS(csInput);
             await test.RunAsync(CancellationToken.None);
 
-            var vbInput = """
+            var vbInput = @" 
+Imports System.Runtime.Versioning
+Imports System
 
-                Imports System.Runtime.Versioning
-                Imports System
+Namespace Preview_Feature_Scratch
+    <RequiresPreviewFeatures>
+    Class Program
+        Public Function Getter(ByVal foo As Foo) As Foo
+            Return foo
+        End Function
 
-                Namespace Preview_Feature_Scratch
-                    <RequiresPreviewFeatures>
-                    Class Program
-                        Public Function Getter(ByVal foo As Foo) As Foo
-                            Return foo
-                        End Function
+        Private Shared Sub Main(ByVal args As String())
+            Dim prog As Program = New Program()
+            prog.Getter(New Foo())
+        End Sub
+    End Class
 
-                        Private Shared Sub Main(ByVal args As String())
-                            Dim prog As Program = New Program()
-                            prog.Getter(New Foo())
-                        End Sub
-                    End Class
-
-                    <RequiresPreviewFeatures>
-                    Public Class Foo
-                    End Class
-                End Namespace
-                """;
+    <RequiresPreviewFeatures>
+    Public Class Foo
+    End Class
+End Namespace
+";
 
             var vbTest = TestVB(vbInput);
             await vbTest.RunAsync(CancellationToken.None);
@@ -216,39 +206,37 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestPreviewParametersToMethodsWithCustomMessageAndUrl()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
+    class Program
+    {
+        public {|#2:Foo|} Getter({|#0:Foo|} foo)
+        {
+            return foo;
+        }
 
-                    class Program
-                    {
-                        public {|#2:Foo|} Getter({|#0:Foo|} foo)
-                        {
-                            return foo;
-                        }
+#nullable enable
+        public {|#4:Foo|}? GetterNullable({|#3:Foo|}? foo)
+        {
+            return foo;
+        }
+#nullable disable
 
-                #nullable enable
-                        public {|#4:Foo|}? GetterNullable({|#3:Foo|}? foo)
-                        {
-                            return foo;
-                        }
-                #nullable disable
+        static void Main(string[] args)
+        {
+            Program prog = new Program();
+            prog.Getter({|#1:new Foo()|});
+        }
+    }
 
-                        static void Main(string[] args)
-                        {
-                            Program prog = new Program();
-                            prog.Getter({|#1:new Foo()|});
-                        }
-                    }
-
-                    [RequiresPreviewFeatures("Lib is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
-                    public class Foo
-                    {
-                    }
-                }
-                """;
+    [RequiresPreviewFeatures(""Lib is in preview."", Url = ""https://aka.ms/aspnet/kestrel/http3reqs"")]
+    public class Foo
+    {
+    }
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRuleWithCustomMessage).WithLocation(0).WithArguments("Getter", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
@@ -258,28 +246,27 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRuleWithCustomMessage).WithLocation(4).WithArguments("GetterNullable", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             await test.RunAsync(CancellationToken.None);
 
-            var vbInput = """
+            var vbInput = @" 
+Imports System.Runtime.Versioning
+Imports System
 
-                Imports System.Runtime.Versioning
-                Imports System
+Namespace Preview_Feature_Scratch
+    Class Program
+        Public Function Getter(ByVal foo As {|#0:Foo|}) As {|#2:Foo|}
+            Return foo
+        End Function
 
-                Namespace Preview_Feature_Scratch
-                    Class Program
-                        Public Function Getter(ByVal foo As {|#0:Foo|}) As {|#2:Foo|}
-                            Return foo
-                        End Function
+        Private Shared Sub Main(ByVal args As String())
+            Dim prog As Program = New Program()
+            prog.Getter({|#1:New Foo()|})
+        End Sub
+    End Class
 
-                        Private Shared Sub Main(ByVal args As String())
-                            Dim prog As Program = New Program()
-                            prog.Getter({|#1:New Foo()|})
-                        End Sub
-                    End Class
-
-                    <RequiresPreviewFeatures("Lib is in preview.", Url:="https://aka.ms/aspnet/kestrel/http3reqs")>
-                    Public Class Foo
-                    End Class
-                End Namespace
-                """;
+    <RequiresPreviewFeatures(""Lib is in preview."", Url:=""https://aka.ms/aspnet/kestrel/http3reqs"")>
+    Public Class Foo
+    End Class
+End Namespace
+";
             var testVb = TestVB(vbInput);
             testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRuleWithCustomMessage).WithLocation(0).WithArguments("Getter", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRuleWithCustomMessage).WithLocation(1).WithArguments("Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
@@ -290,39 +277,37 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestPreviewParametersToMethods()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
+    class Program
+    {
+        public {|#2:Foo|} Getter({|#0:Foo|} foo)
+        {
+            return foo;
+        }
 
-                    class Program
-                    {
-                        public {|#2:Foo|} Getter({|#0:Foo|} foo)
-                        {
-                            return foo;
-                        }
+#nullable enable
+        public {|#4:Foo|}? GetterNullable({|#3:Foo|}? foo)
+        {
+            return foo;
+        }
+#nullable disable
 
-                #nullable enable
-                        public {|#4:Foo|}? GetterNullable({|#3:Foo|}? foo)
-                        {
-                            return foo;
-                        }
-                #nullable disable
+        static void Main(string[] args)
+        {
+            Program prog = new Program();
+            prog.Getter({|#1:new Foo()|});
+        }
+    }
 
-                        static void Main(string[] args)
-                        {
-                            Program prog = new Program();
-                            prog.Getter({|#1:new Foo()|});
-                        }
-                    }
-
-                    [RequiresPreviewFeatures]
-                    public class Foo
-                    {
-                    }
-                }
-                """;
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRule).WithLocation(0).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -332,24 +317,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(4).WithArguments("GetterNullable", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             await test.RunAsync(CancellationToken.None);
 
-            var vbInput = """
+            var vbInput = @" 
+        Imports System
+        Imports System.Runtime.Versioning
+        Module Preview_Feature_Scratch
+            Public Class Program
+                Public Function Getter(foo As {|#0:Foo|}) As {|#2:Foo|}
+                    Return foo
+                End Function
+            End Class
 
-                        Imports System
-                        Imports System.Runtime.Versioning
-                        Module Preview_Feature_Scratch
-                            Public Class Program
-                                Public Function Getter(foo As {|#0:Foo|}) As {|#2:Foo|}
-                                    Return foo
-                                End Function
-                            End Class
+            <RequiresPreviewFeatures>
+            Public Structure Foo
+            End Structure
 
-                            <RequiresPreviewFeatures>
-                            Public Structure Foo
-                            End Structure
-
-                        End Module
-
-                """;
+        End Module
+            ";
 
             var testVb = TestVB(vbInput);
             testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRule).WithLocation(0).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -360,31 +343,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestUnmarkedPreviewMethodCallingPreviewMethod()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
+        [RequiresPreviewFeatures]
+        public class Program
+        {
+            public bool CallSite()
+            {
+                return UnmarkedPreviewClass.SomeStaticMethod();
+            }
+        }
 
-                        using System.Runtime.Versioning; using System;
-                        namespace Preview_Feature_Scratch
-                        {
-                        [RequiresPreviewFeatures]
-                        public class Program
-                        {
-                            public bool CallSite()
-                            {
-                                return UnmarkedPreviewClass.SomeStaticMethod();
-                            }
-                        }
-
-                        public class UnmarkedPreviewClass
-                        {
-                                [RequiresPreviewFeatures]
-                                public static bool SomeStaticMethod()
-                                {
-                                    return false;
-                                }
-                        }
-                        }
-
-                """;
+        public class UnmarkedPreviewClass
+        {
+                [RequiresPreviewFeatures]
+                public static bool SomeStaticMethod()
+                {
+                    return false;
+                }
+        }
+        }
+        ";
 
             var test = TestCS(csInput);
             await test.RunAsync(CancellationToken.None);
@@ -393,27 +374,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestSyntaxNodeNameComparison()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
+            [RequiresPreviewFeatures]
+            public class T { }
 
-                        using System.Runtime.Versioning; using System;
-                        namespace Preview_Feature_Scratch
-                        {
-                            [RequiresPreviewFeatures]
-                            public class T { }
+            public class C
+            {
+                public void M1<T>(Preview_Feature_Scratch.T {|#0:t|}) // Doesn't use the type parameter. The location detection logic for syntax node doesn't work here.
+                {
+                }
 
-                            public class C
-                            {
-                                public void M1<T>(Preview_Feature_Scratch.T {|#0:t|}) // Doesn't use the type parameter. The location detection logic for syntax node doesn't work here.
-                                {
-                                }
-
-                                public void M2<T>(T t) // Uses the type parameter.
-                                {
-                                }
-                            }
-                        }
-
-                """;
+                public void M2<T>(T t) // Uses the type parameter.
+                {
+                }
+            }
+        }
+        ";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRule).WithLocation(0).WithArguments("M1", "T", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -423,25 +402,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestPreviewMethodCallingPreviewMethod()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
+        public class Program
+        {
+            [RequiresPreviewFeatures]
+            public virtual void PreviewMethod()  { }
 
-                        using System.Runtime.Versioning; using System;
-                        namespace Preview_Feature_Scratch
-                        {
-                        public class Program
-                        {
-                            [RequiresPreviewFeatures]
-                            public virtual void PreviewMethod()  { }
-
-                            [RequiresPreviewFeatures]
-                            void CallSite()
-                            {
-                                PreviewMethod();
-                            }
-                        }
-                        }
-
-                """;
+            [RequiresPreviewFeatures]
+            void CallSite()
+            {
+                PreviewMethod();
+            }
+        }
+        }
+        ";
 
             var test = TestCS(csInput);
             await test.RunAsync(CancellationToken.None);
@@ -450,28 +427,26 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestMethodInvocation_Simple()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
 
-                        using System.Runtime.Versioning; using System;
-                        namespace Preview_Feature_Scratch
-                        {
+            public class Program
+            {
+                [RequiresPreviewFeatures]
+                public virtual void PreviewMethod()
+                {
 
-                            public class Program
-                            {
-                                [RequiresPreviewFeatures]
-                                public virtual void PreviewMethod()
-                                {
+                }
 
-                                }
-
-                                static void Main(string[] args)
-                                {
-                                    var prog = new Program();
-                                    {|#0:prog.PreviewMethod()|};
-                                }
-                            }
-                        }
-                """;
+                static void Main(string[] args)
+                {
+                    var prog = new Program();
+                    {|#0:prog.PreviewMethod()|};
+                }
+            }
+        }";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("PreviewMethod", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -481,38 +456,36 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestMethodInvocation_DeclareDerivedMethod()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
 
-                        using System.Runtime.Versioning; using System;
-                        namespace Preview_Feature_Scratch
-                        {
+            public class Program
+            {
+                [RequiresPreviewFeatures]
+                public virtual void PreviewMethod()
+                {
 
-                            public class Program
-                            {
-                                [RequiresPreviewFeatures]
-                                public virtual void PreviewMethod()
-                                {
+                }
 
-                                }
+                static void Main(string[] args)
+                {
+                }
+            }
 
-                                static void Main(string[] args)
-                                {
-                                }
-                            }
+            public class Derived : Program
+            {
+                public Derived() : base()
+                {
+                }
 
-                            public class Derived : Program
-                            {
-                                public Derived() : base()
-                                {
-                                }
-
-                                public override void {|#0:PreviewMethod|}()
-                                {
-                                    {|#1:base.PreviewMethod()|};
-                                }
-                            }
-                        }
-                """;
+                public override void {|#0:PreviewMethod|}()
+                {
+                    {|#1:base.PreviewMethod()|};
+                }
+            }
+        }";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.OverridesPreviewMethodRule).WithLocation(0).WithArguments("PreviewMethod", "Program.PreviewMethod", DetectPreviewFeatureAnalyzer.DefaultURL));

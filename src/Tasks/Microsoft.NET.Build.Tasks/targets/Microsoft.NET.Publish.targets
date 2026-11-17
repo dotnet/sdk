@@ -17,21 +17,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsPublishable Condition="'$(IsPublishable)' == ''">true</IsPublishable>
   </PropertyGroup>
 
-  <!--
-    Flow this project's IsPublishable value onto the item returned by GetTargetPath / GetTargetPathWithTargetPlatformMoniker,
-    so that referencing projects can tell (via %(ReferenceCopyLocalPaths.IsPublishable)) whether a project reference's
-    outputs came from a project that opted out of being published, and can avoid copying files (like .pdb) to the
-    publish directory that are only useful when the referenced project itself is publishable.
-  -->
-  <Target Name="_AddIsPublishableToTargetPathWithTargetPlatformMoniker"
-          AfterTargets="GetTargetPathWithTargetPlatformMoniker">
-    <ItemGroup>
-      <TargetPathWithTargetPlatformMoniker>
-        <IsPublishable>$(IsPublishable)</IsPublishable>
-      </TargetPathWithTargetPlatformMoniker>
-    </ItemGroup>
-  </Target>
-
   <!-- Trimming/AOT/publish* property configuration -->
   <PropertyGroup>
     <!-- PublishAot depends on PublishTrimmed. This must be set early enough for the KnownILLinkPack to be restored. -->
@@ -168,14 +153,18 @@ Copyright (c) .NET Foundation. All rights reserved.
          @(IntermediateAssembly) in obj\, not from bin\ output. Skipping Build avoids producing
          unnecessary self-contained managed output (apphost, deps.json, runtimeconfig, runtime
          pack files) in the output directory that would confuse users and automation.
-         Set UseOptimizedPublish=false to restore the previous behavior of running full Build. -->
-    <UseOptimizedPublish Condition="'$(UseOptimizedPublish)' == '' and '$(PublishAot)' == 'true'">true</UseOptimizedPublish>
+         This optimization is opt-in in .NET 11. Set UseOptimizedPublish=true to enable it. -->
+    <UseOptimizedPublish Condition="'$(UseOptimizedPublish)' == '' and '$(PublishAot)' == 'true'">false</UseOptimizedPublish>
     <!-- Native AOT is currently the only publish mode that supports optimized publish. -->
     <_UseOptimizedPublish Condition="'$(PublishAot)' == 'true' and '$(UseOptimizedPublish)' == 'true'">true</_UseOptimizedPublish>
     <_BeforeOptimizedPublishTargets Condition="'$(_UseOptimizedPublish)' == 'true'">
+      _CheckForInvalidConfigurationAndPlatform;
       BuildOnlySettings;
       PrepareForBuild;
+      PreBuildEvent;
+      ResolveReferences;
       PrepareResources;
+      ResolveKeySource;
       Compile;
       CreateSatelliteAssemblies;
     </_BeforeOptimizedPublishTargets>
@@ -191,7 +180,14 @@ Copyright (c) .NET Foundation. All rights reserved.
        publish targets that consume its outputs. -->
   <Target Name="_PublishOptimizedBuildAlternative"
           Condition="'$(NoBuild)' != 'true' and '$(_UseOptimizedPublish)' == 'true'"
-          DependsOnTargets="$(_BeforeOptimizedPublishTargets);$(_AdditionalOptimizedPublishTargets);$(_CorePublishTargets)" />
+          DependsOnTargets="_BuildForOptimizedPublish;$(_CorePublishTargets)" />
+
+  <!-- Keep build cleanup before publish post-processing, matching CoreBuild's successful and
+       failed build bookkeeping without copying managed outputs to the build directory. -->
+  <Target Name="_BuildForOptimizedPublish"
+          DependsOnTargets="$(_BeforeOptimizedPublishTargets);$(_AdditionalOptimizedPublishTargets);IncrementalClean">
+    <OnError ExecuteTargets="_CleanRecordFileWrites" />
+  </Target>
 
   <Target Name="_PublishNoBuildAlternative"
           Condition="'$(NoBuild)' == 'true'"
@@ -670,9 +666,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Copy the xml documentation (if enabled) -->
       <ResolvedFileToPublish Include="@(FinalDocFile)"
-                              Condition="'$(PublishDocumentationFile)' == 'true' and
+                              Condition="'$(_UseOptimizedPublish)' != 'true' and
+                                         '$(PublishDocumentationFile)' == 'true' and
                                          '$(CopyDocumentationFileToOutputDirectory)' != 'false'">
         <RelativePath>@(FinalDocFile->'%(Filename)%(Extension)')</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+      <ResolvedFileToPublish Include="@(DocFileItem)"
+                              Condition="'$(_UseOptimizedPublish)' == 'true' and
+                                         '$(PublishDocumentationFile)' == 'true' and
+                                         '$(CopyDocumentationFileToOutputDirectory)' != 'false'">
+        <RelativePath>@(DocFileItem->'%(Filename)%(Extension)')</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
 
@@ -799,7 +803,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_ResolvedCopyLocalPublishAssets Include="@(ReferenceCopyLocalPaths)"
                                        Exclude="@(_ResolvedCopyLocalBuildAssets);@(RuntimePackAsset)"
                                        Condition="(('$(PublishReferencesDocumentationFiles)' == 'true' and '%(ReferenceCopyLocalPaths.Extension)' == '.xml')
-                                                  or ('$(PublishReferencesSymbols)' == 'true' and '%(ReferenceCopyLocalPaths.Extension)' == '.pdb' and '%(ReferenceCopyLocalPaths.IsPublishable)' != 'false')
+                                                  or ('$(PublishReferencesSymbols)' == 'true' and '%(ReferenceCopyLocalPaths.Extension)' == '.pdb')
                                                   or ('%(ReferenceCopyLocalPaths.Extension)' != '.xml' and '%(ReferenceCopyLocalPaths.Extension)' != '.pdb'))
                                                   and '%(ReferenceCopyLocalPaths.Private)' != 'false'">
         <DestinationSubPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</DestinationSubPath>
@@ -1504,7 +1508,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(TargetFramework)))"
+      PackagedShimOutputDirectory="$(_PackagedShimOutputDirectory)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)"
       >

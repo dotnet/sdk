@@ -195,10 +195,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
             string testProjectDirectory = Path.Combine(testInstance.Path, "TestProject");
-            List<string> arguments =
-            [
+            var arguments = new List<string>
+            {
                 "--project", "TestProject.csproj",
-            ];
+            };
 
             if (useArgumentSeparator)
             {

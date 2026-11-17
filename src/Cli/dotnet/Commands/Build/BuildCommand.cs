@@ -11,13 +11,13 @@ namespace Microsoft.DotNet.Cli.Commands.Build;
 
 public static class BuildCommand
 {
-    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices services)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
         var parseResult = Parser.Parse(["dotnet", "build", .. args]);
-        return FromParseResult(parseResult, msbuildPath, services);
+        return FromParseResult(parseResult, msbuildPath);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath, CommandServices services)
+    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
         var definition = (BuildCommandDefinition)parseResult.CommandResult.Command;
 
@@ -34,8 +34,7 @@ public static class BuildCommand
             definition.SlnOrProjectOrFileArgument,
             createVirtualCommand: (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(appFilePath),
-                msbuildArgs: msbuildArgs,
-                services: services)
+                msbuildArgs: msbuildArgs)
             {
                 NoRestore = noRestore,
                 NoCache = true,
@@ -43,10 +42,7 @@ public static class BuildCommand
             createPhysicalCommand: (msbuildArgs, msbuildPath) => new RestoringCommand(
                 msbuildArgs: msbuildArgs.CloneWithAdditionalArgs("-consoleloggerparameters:Summary"),
                 noRestore: noRestore,
-                msbuildPath: msbuildPath,
-                userProfileDir: null,
-                advertiseWorkloadUpdates: null,
-                services: services
+                msbuildPath: msbuildPath
             ),
             optionsToUseWhenParsingMSBuildFlags:
             [
@@ -65,6 +61,6 @@ public static class BuildCommand
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromParseResult(parseResult).Execute();
     }
 }
