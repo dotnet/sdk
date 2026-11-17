@@ -273,20 +273,32 @@ public class OrasRegistryAdapterTests
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public async Task BearerHandshakeUsesProtectedRealmTransportAndNeverFollowsRedirect(bool redirect)
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public async Task BearerHandshakeUsesProtectedRealmTransportAndNeverFollowsRedirect(bool redirect, bool passwordFallback)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(20));
         using var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
         var realm = new Uri($"http://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}/token");
-        const string token = "{\"token\":\"local-token\"}";
+        const string token = "{\"token\":\"local-token\",\"access_token\":\"local-token\"}";
         string reply = redirect
             ? "HTTP/1.1 307 Temporary Redirect\r\nLocation: http://127.0.0.1:1/never\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
             : $"HTTP/1.1 200 OK\r\nContent-Length: {token.Length}\r\nConnection: close\r\n\r\n{token}";
-        Task<string> serve = AuthRealmHandlerFactoryTests.ServeAsync(listener, reply, timeout.Token);
+        Task<string> serve = ServeTokenRequestsAsync();
+        async Task<string> ServeTokenRequestsAsync()
+        {
+            string? getRequest = null;
+            if (passwordFallback && !redirect)
+                getRequest = await AuthRealmHandlerFactoryTests.ServeAsync(listener,
+                    "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\nConnection: close\r\n\r\n", timeout.Token);
+            string finalRequest = await AuthRealmHandlerFactoryTests.ServeAsync(listener, reply, timeout.Token);
+            if (getRequest is not null) Assert.StartsWith("GET /token?", getRequest);
+            return finalRequest;
+        }
         var environment = new Mock<IEnvironmentProvider>();
         environment.Setup(e => e.GetEnvironmentVariable(RegistrySettings.EnvVariables.AuthRealmPolicy)).Returns("AllowlistOnly");
         environment.Setup(e => e.GetEnvironmentVariable(RegistrySettings.EnvVariables.AuthRealmAllowedAddresses)).Returns("127.0.0.1");
@@ -315,6 +327,11 @@ public class OrasRegistryAdapterTests
             await File.WriteAllTextAsync(authFile, "{\"auths\":{}}", timeout.Token);
             Environment.SetEnvironmentVariable("REGISTRY_AUTH_FILE", authFile);
             foreach (string variable in CredentialEnvironmentVariables) Environment.SetEnvironmentVariable(variable, null);
+            if (passwordFallback)
+            {
+                Environment.SetEnvironmentVariable(ContainerHelpers.PullHostObjectUser, "synthetic-user");
+                Environment.SetEnvironmentVariable(ContainerHelpers.PullHostObjectPass, "synthetic-password");
+            }
             var settings = new RegistrySettings { IsInsecure = true };
             var client = OrasRepositoryFactory.CreateClient(host, registryUri, settings, NullLogger.Instance,
                 RegistryMode.Pull, transport.Object, realmFactory.Create);
@@ -327,7 +344,7 @@ public class OrasRegistryAdapterTests
             else
                 Assert.IsTrue(await exists);
             string request = await serve;
-            Assert.StartsWith("GET /token?", request);
+            Assert.StartsWith(passwordFallback && !redirect ? "POST /token " : "GET /token?", request);
         }
         finally
         {

@@ -65,6 +65,7 @@ internal sealed class OrasRepositoryFactory : IRepositoryFactory
             cache: null)
         {
             ClientId = "netsdkcontainers",
+            AttemptOAuth2Fallback = true,
             TokenClient = new HttpClient(new RealmTransportHandler(realmHandlerFactory ??
                 new AuthRealmHandlerFactory(registryName, baseUri, isInsecureRegistry).Create)),
             RealmValidator = new OrasRealmValidator(registryName, isInsecureRegistry),
