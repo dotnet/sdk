@@ -7,6 +7,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -532,6 +533,131 @@ public class RegistryTests : IDisposable
         });
 
         blobs.Verify(b => b.FetchAsync(descriptor, cancellationToken), Times.Exactly(5));
+    }
+
+    [TestMethod]
+    [DataRow(OrasProject.Oras.Docker.MediaType.ManifestList)]
+    [DataRow(MediaType.ImageIndex)]
+    public async Task GetManifestListAcceptsBothIndexFormats(string mediaType)
+    {
+        byte[] json = "{\"schemaVersion\":2,\"manifests\":[]}"u8.ToArray();
+        Descriptor descriptor = Descriptor.Create(json, mediaType);
+        var registry = RegistryWithManifest(descriptor, json);
+        var index = await registry.GetManifestListAsync("app", "latest", TestContext.CancellationToken);
+        Assert.IsNotNull(index);
+        Assert.IsEmpty(index.Manifests);
+    }
+
+    [TestMethod]
+    public async Task GetManifestListRejectsTamperedContent()
+    {
+        byte[] json = "{\"schemaVersion\":2,\"manifests\":[]}"u8.ToArray();
+        Descriptor descriptor = Descriptor.Create(json, MediaType.ImageIndex);
+        byte[] tampered = Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(json).Replace(":2", ":3", StringComparison.Ordinal));
+        var registry = RegistryWithManifest(descriptor, tampered);
+        await Assert.ThrowsExactlyAsync<OrasProject.Oras.Content.Exceptions.MismatchedDigestException>(() =>
+            registry.GetManifestListAsync("app", "latest", TestContext.CancellationToken));
+    }
+
+    [TestMethod]
+    public async Task GetManifestListRejectsOversizedMetadataBeforeReading()
+    {
+        Descriptor descriptor = new() { Digest = "sha256:unused", Size = (long)int.MaxValue + 1, MediaType = MediaType.ImageIndex };
+        var registry = RegistryWithManifest(descriptor, []);
+        await Assert.ThrowsExactlyAsync<InvalidDataException>(() =>
+            registry.GetManifestListAsync("app", "latest", TestContext.CancellationToken));
+    }
+
+    [TestMethod]
+    public async Task GetImageManifestRejectsTamperedConfig()
+    {
+        byte[] config = "{\"architecture\":\"amd64\",\"os\":\"linux\"}"u8.ToArray();
+        Descriptor configDescriptor = Descriptor.Create(config, MediaType.ImageConfig);
+        var manifest = new Manifest { SchemaVersion = 2, Config = configDescriptor, Layers = [] };
+        byte[] json = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(manifest);
+        Descriptor descriptor = Descriptor.Create(json, MediaType.ImageManifest);
+        var manifests = new Mock<IManifestStore>(MockBehavior.Strict);
+        manifests.Setup(m => m.FetchAsync("latest", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((descriptor, new MemoryStream(json)));
+        var blobs = new Mock<IBlobStore>(MockBehavior.Strict);
+        blobs.Setup(b => b.FetchAsync(It.Is<Descriptor>(d => d.Digest == configDescriptor.Digest), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(config).Replace("amd64", "arm64", StringComparison.Ordinal))));
+        var repository = new Mock<IRepository>(MockBehavior.Strict);
+        repository.SetupGet(r => r.Manifests).Returns(manifests.Object);
+        repository.SetupGet(r => r.Blobs).Returns(blobs.Object);
+        var factory = new Mock<IRepositoryFactory>(MockBehavior.Strict);
+        factory.Setup(f => f.Create("app")).Returns(repository.Object);
+        var registry = new Registry("example.com", _loggerFactory.CreateLogger("tampered-config"), factory.Object);
+        await Assert.ThrowsExactlyAsync<OrasProject.Oras.Content.Exceptions.MismatchedDigestException>(() =>
+            registry.GetImageManifestAsync("app", "latest", "linux-x64", Mock.Of<IManifestPicker>(), TestContext.CancellationToken));
+    }
+
+    [TestMethod]
+    public async Task DownloadBlobPreservesCancellationOnLastAttempt()
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString());
+        Descriptor descriptor = Descriptor.Create(bytes, MediaType.ImageLayerGzip);
+        using var cancellation = new CancellationTokenSource();
+        int calls = 0;
+        var blobs = new Mock<IBlobStore>(MockBehavior.Strict);
+        blobs.Setup(b => b.FetchAsync(descriptor, It.IsAny<CancellationToken>())).Returns(() =>
+        {
+            if (++calls == 5)
+            {
+                cancellation.Cancel();
+                return Task.FromCanceled<Stream>(cancellation.Token);
+            }
+            return Task.FromException<Stream>(new IOException("interrupted download"));
+        });
+        var repository = new Mock<IRepository>(MockBehavior.Strict);
+        repository.SetupGet(r => r.Blobs).Returns(blobs.Object);
+        var factory = new Mock<IRepositoryFactory>(MockBehavior.Strict);
+        factory.Setup(f => f.Create("app")).Returns(repository.Object);
+        var registry = new Registry("example.com", _loggerFactory.CreateLogger("canceled-download"), factory.Object, retryDelayProvider: () => TimeSpan.Zero);
+        await Assert.ThrowsAsync<OperationCanceledException>(() => registry.DownloadBlobAsync("app", descriptor, cancellation.Token));
+        Assert.AreEqual(5, calls);
+    }
+
+    [TestMethod]
+    [DataRow("DOTNET_CONTAINER_REGISTRY_CHUNKED_UPLOAD_SIZE_BYTES", "0")]
+    [DataRow("SDK_CONTAINER_REGISTRY_CHUNKED_UPLOAD_SIZE_BYTES", "-1")]
+    public void InvalidChunkSettingReportsTheEnvironmentVariable(string variable, string value)
+    {
+        var error = Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new RegistrySettings(environment:
+            new MockEnvironmentProvider(new Dictionary<string, string> { [variable] = value })));
+        Assert.Contains(variable, error.Message);
+    }
+
+    [TestMethod]
+    public async Task CachedBlobDoesNotKeepTheFileOpen()
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString());
+        Descriptor descriptor = Descriptor.Create(bytes, MediaType.ImageLayerGzip);
+        string path = ContentStore.PathForDescriptor(descriptor);
+        await File.WriteAllBytesAsync(path, bytes, TestContext.CancellationToken);
+        try
+        {
+            var registry = new Registry("example.com", _loggerFactory.CreateLogger("cached-blob"), Mock.Of<IRepositoryFactory>());
+            Assert.AreEqual(path, await registry.DownloadBlobAsync("app", descriptor, TestContext.CancellationToken));
+            using var exclusive = File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            Assert.AreEqual(bytes.Length, exclusive.Length);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    private Registry RegistryWithManifest(Descriptor descriptor, byte[] content)
+    {
+        var manifests = new Mock<IManifestStore>(MockBehavior.Strict);
+        manifests.Setup(m => m.FetchAsync("latest", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((descriptor, new MemoryStream(content)));
+        var repository = new Mock<IRepository>(MockBehavior.Strict);
+        repository.SetupGet(r => r.Manifests).Returns(manifests.Object);
+        var factory = new Mock<IRepositoryFactory>(MockBehavior.Strict);
+        factory.Setup(f => f.Create("app")).Returns(repository.Object);
+        return new Registry("example.com", _loggerFactory.CreateLogger("metadata"), factory.Object);
     }
 
     private class MockEnvironmentProvider : IEnvironmentProvider

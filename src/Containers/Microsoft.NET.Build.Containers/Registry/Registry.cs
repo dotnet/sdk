@@ -68,6 +68,9 @@ internal sealed class Registry
     private const string DockerHubRegistry1 = "registry-1.docker.io";
     private const string DockerHubRegistry2 = "registry.hub.docker.com";
     private const int MaxDownloadRetries = 5;
+    // Manifests and image configs are metadata, never layer payloads. Bound the
+    // allocation before asking ORAS to verify the descriptor size and digest.
+    private const int MaxMetadataBytes = 4 * 1024 * 1024;
     private readonly Func<TimeSpan> _retryDelayProvider;
 
     private readonly ILogger _logger;
@@ -170,13 +173,14 @@ internal sealed class Registry
         (Descriptor initialDescriptor, Stream initialManifestStream) = await FetchManifestAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
         await using (initialManifestStream.ConfigureAwait(false))
         {
+            byte[] metadata = await ReadMetadataAsync(initialManifestStream, initialDescriptor, cancellationToken).ConfigureAwait(false);
             return initialDescriptor.MediaType switch
             {
                 OrasProject.Oras.Docker.MediaType.Manifest or MediaType.ImageManifest => await ReadSingleManifest().ConfigureAwait(false),
                 OrasProject.Oras.Docker.MediaType.ManifestList or MediaType.ImageIndex => await PickBestImageFromIndexAsync(
                     repositoryName,
                     reference,
-                    await JsonSerializer.DeserializeAsync<OrasProject.Oras.Oci.Index>(initialManifestStream, cancellationToken: cancellationToken).ConfigureAwait(false),
+                    JsonSerializer.Deserialize<OrasProject.Oras.Oci.Index>(metadata),
                     runtimeIdentifier,
                     manifestPicker,
                     cancellationToken).ConfigureAwait(false),
@@ -190,7 +194,7 @@ internal sealed class Registry
 
             async Task<ImageBuilder> ReadSingleManifest()
             {
-                Manifest manifest = await JsonSerializer.DeserializeAsync<Manifest>(initialManifestStream, cancellationToken: cancellationToken).ConfigureAwait(false)
+                Manifest manifest = JsonSerializer.Deserialize<Manifest>(metadata)
                     ?? throw new InvalidDataException("The image manifest contained invalid JSON.");
                 return await ReadSingleImageAsync(
                     repositoryName,
@@ -208,8 +212,8 @@ internal sealed class Registry
         (Descriptor descriptor, Stream content) = await FetchManifestAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
         await using (content.ConfigureAwait(false))
         {
-            return descriptor.MediaType == OrasProject.Oras.Docker.MediaType.ManifestList
-                ? await JsonSerializer.DeserializeAsync<OrasProject.Oras.Oci.Index>(content, cancellationToken: cancellationToken).ConfigureAwait(false)
+            return descriptor.MediaType is OrasProject.Oras.Docker.MediaType.ManifestList or MediaType.ImageIndex
+                ? JsonSerializer.Deserialize<OrasProject.Oras.Oci.Index>(await ReadMetadataAsync(content, descriptor, cancellationToken).ConfigureAwait(false))
                 : null;
         }
     }
@@ -312,10 +316,10 @@ internal sealed class Registry
         IEnumerable<string> rids,
         CancellationToken cancellationToken)
     {
-        (Descriptor _, Stream content) = await FetchManifestAsync(repositoryName, manifestDigest, cancellationToken).ConfigureAwait(false);
+        (Descriptor descriptor, Stream content) = await FetchManifestAsync(repositoryName, manifestDigest, cancellationToken).ConfigureAwait(false);
         await using (content.ConfigureAwait(false))
         {
-            Manifest? manifest = await JsonSerializer.DeserializeAsync<Manifest>(content, cancellationToken: cancellationToken).ConfigureAwait(false);
+            Manifest? manifest = JsonSerializer.Deserialize<Manifest>(await ReadMetadataAsync(content, descriptor, cancellationToken).ConfigureAwait(false));
             if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, rids);
             DigestUtils.ValidateDigest(manifestDigest);
             return await ReadSingleImageAsync(
@@ -340,9 +344,9 @@ internal sealed class Registry
 
         try
         {
-            var fileStream = File.OpenRead(localPath);
+            await using var fileStream = File.OpenRead(localPath);
 
-            var actualHash = SHA256.HashData(fileStream);
+            var actualHash = await SHA256.HashDataAsync(fileStream, cancellationToken).ConfigureAwait(false);
             var expectedHash = DigestUtils.GetEncodedValue(descriptor.Digest);
             InvalidDigestException.ThrowIfMismatched(expectedHash, actualHash);
 
@@ -384,7 +388,7 @@ internal sealed class Registry
                 // Break the loop if successful
                 break;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 retryCount++;
                 if (retryCount >= MaxDownloadRetries)
@@ -437,10 +441,12 @@ internal sealed class Registry
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        byte[] manifestBytes = Encoding.UTF8.GetBytes(multiArchImage.ImageIndex);
+        Descriptor descriptor = Descriptor.Create(manifestBytes, multiArchImage.ImageIndexMediaType);
         foreach (var tag in destinationImageReference.Tags)
         {
             _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-            await PushManifestAsync(destinationImageReference.Repository, tag, multiArchImage.ImageIndex, multiArchImage.ImageIndexMediaType, cancellationToken).ConfigureAwait(false);
+            await PushManifestAsync(destinationImageReference.Repository, tag, manifestBytes, descriptor, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
         }
     }
@@ -526,6 +532,14 @@ internal sealed class Registry
             }
         }
 
+        if (!pushTags && manifestExists)
+        {
+            return;
+        }
+
+        byte[] manifestBytes = Encoding.UTF8.GetBytes(builtImage.Manifest);
+        Descriptor manifestDescriptor = Descriptor.Create(manifestBytes, builtImage.ManifestMediaType);
+
         // Tags can refer to an image manifest or an image manifest list.
         // In the first case, we push tags to the registry.
         // In the second case, we push the manifest digest so the manifest list can refer to it.
@@ -535,14 +549,14 @@ internal sealed class Registry
             foreach (string tag in destination.Tags)
             {
                 _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-                await PushManifestAsync(destination.Repository, tag, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
+                await PushManifestAsync(destination.Repository, tag, manifestBytes, manifestDescriptor, cancellationToken).ConfigureAwait(false);
                 _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
             }
         }
         else if (!manifestExists)
         {
             _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, builtImage.ManifestDigest);
-            await PushManifestAsync(destination.Repository, builtImage.ManifestDigest, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
+            await PushManifestAsync(destination.Repository, builtImage.ManifestDigest, manifestBytes, manifestDescriptor, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
         }
     }
@@ -594,8 +608,17 @@ internal sealed class Registry
     private async Task<JsonNode> FetchBlobJsonAsync(string repositoryName, Descriptor descriptor, CancellationToken cancellationToken)
     {
         await using Stream stream = await FetchBlobAsync(repositoryName, descriptor, cancellationToken).ConfigureAwait(false);
-        return await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false)
+        return JsonNode.Parse(await ReadMetadataAsync(stream, descriptor, cancellationToken).ConfigureAwait(false))
             ?? throw new InvalidDataException($"Blob '{descriptor.Digest}' contained invalid JSON.");
+    }
+
+    private static Task<byte[]> ReadMetadataAsync(Stream stream, Descriptor descriptor, CancellationToken cancellationToken)
+    {
+        if (descriptor.Size > MaxMetadataBytes)
+        {
+            throw new InvalidDataException($"Metadata '{descriptor.Digest}' exceeds the {MaxMetadataBytes} byte limit.");
+        }
+        return OrasProject.Oras.Content.StreamExtensions.ReadAllAsync(stream, descriptor, cancellationToken);
     }
 
     private async Task<Stream> FetchBlobAsync(string repositoryName, Descriptor descriptor, CancellationToken cancellationToken)
@@ -678,12 +701,10 @@ internal sealed class Registry
     private async Task PushManifestAsync(
         string repositoryName,
         string reference,
-        string manifestJson,
-        string mediaType,
+        byte[] manifestBytes,
+        Descriptor descriptor,
         CancellationToken cancellationToken)
     {
-        byte[] manifestBytes = Encoding.UTF8.GetBytes(manifestJson);
-        Descriptor descriptor = Descriptor.Create(manifestBytes, mediaType);
         using MemoryStream content = new(manifestBytes, writable: false);
         try
         {

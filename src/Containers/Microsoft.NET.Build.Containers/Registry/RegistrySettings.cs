@@ -28,8 +28,23 @@ internal class RegistrySettings
 
     /// <summary>
     /// When chunking is enabled, allows explicit control over the size of the chunks uploaded.
+    /// Configured sizes must be greater than zero.
     /// </summary>
-    internal int? ChunkedUploadSizeBytes { get; init; }
+    internal int? ChunkedUploadSizeBytes
+    {
+        get => _chunkedUploadSizeBytes;
+        init
+        {
+            if (value is <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(ChunkedUploadSizeBytes), value,
+                    $"{EnvVariables.ChunkedUploadSizeBytes} ({EnvVariables.ChunkedUploadSizeBytesLegacy}) must be greater than zero.");
+            }
+            _chunkedUploadSizeBytes = value;
+        }
+    }
+
+    private readonly int? _chunkedUploadSizeBytes;
 
     /// <summary>
     /// Allows forcing chunked upload for debugging purposes.
