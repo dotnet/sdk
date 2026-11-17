@@ -282,18 +282,14 @@ public class TelemetryClient : ITelemetryClient
         }
         else
         {
-            // This timeout includes batch serialization and the atomic storage write. Ten milliseconds can
-            // interrupt the write before its temporary file is finalized, leaving nothing a later run can drain.
-            s_tracerProvider?.Shutdown(LocalTracePersistenceTimeoutMilliseconds);
+            s_tracerProvider?.Shutdown(timeoutMilliseconds: 10);
             s_metricsProvider?.Shutdown(timeoutMilliseconds: 10);
         }
     }
 
     internal static void ForceFlushProviders()
     {
-        int timeout = s_isCIEnvironment || s_enableOtlpExporter
-            ? s_shutdownTimeoutMs
-            : LocalTracePersistenceTimeoutMilliseconds;
+        int timeout = s_isCIEnvironment || s_enableOtlpExporter ? s_shutdownTimeoutMs : 10;
         long started = Stopwatch.GetTimestamp();
         s_tracerProvider?.ForceFlush(timeout);
         int remaining = Math.Max(0, timeout - (int)Stopwatch.GetElapsedTime(started).TotalMilliseconds);

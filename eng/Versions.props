@@ -6,10 +6,10 @@
     <VersionMajor>11</VersionMajor>
     <VersionMinor>0</VersionMinor>
     <VersionSDKMinor>1</VersionSDKMinor>
-    <VersionSDKMinorPatch>0</VersionSDKMinorPatch>
+    <VersionSDKMinorPatch>1</VersionSDKMinorPatch>
     <VersionFeature>$([System.String]::Copy('$(VersionSDKMinorPatch)').PadLeft(2, '0'))</VersionFeature>
     <VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionSDKMinor)$(VersionFeature)</VersionPrefix>
-    <PreReleaseVersionLabel>rtm</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
     <PreReleaseVersionIteration></PreReleaseVersionIteration>
     <!-- Allowed values: '', 'prerelease', 'release'. Set to 'release' when stabilizing. -->
     <DotNetFinalVersionKind></DotNetFinalVersionKind>
@@ -151,19 +151,19 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Workload manifest package versions">
-    <MauiFeatureBand>11.0.100-preview.6</MauiFeatureBand>
+    <MauiFeatureBand>11.0.100</MauiFeatureBand>
 
     <!--
       Updates to any of these versions will require the updating of that package version in the
       source-build-assets repo as a text-only package.
       See https://github.com/dotnet/source-build-assets?tab=readme-ov-file#text-only
     -->
-    <MauiWorkloadManifestVersion>11.0.0-preview.6.26360.8</MauiWorkloadManifestVersion>
-    <XamarinAndroidWorkloadManifestVersion>37.0.0-preview.6.59</XamarinAndroidWorkloadManifestVersion>
-    <XamarinIOSWorkloadManifestVersion>26.5.11720-net11-p6</XamarinIOSWorkloadManifestVersion>
-    <XamarinMacCatalystWorkloadManifestVersion>26.5.11720-net11-p6</XamarinMacCatalystWorkloadManifestVersion>
-    <XamarinMacOSWorkloadManifestVersion>26.5.11720-net11-p6</XamarinMacOSWorkloadManifestVersion>
-    <XamarinTvOSWorkloadManifestVersion>26.5.11720-net11-p6</XamarinTvOSWorkloadManifestVersion>
+    <MauiWorkloadManifestVersion>11.0.0</MauiWorkloadManifestVersion>
+    <XamarinAndroidWorkloadManifestVersion>37.2.31</XamarinAndroidWorkloadManifestVersion>
+    <XamarinIOSWorkloadManifestVersion>27.2.11039</XamarinIOSWorkloadManifestVersion>
+    <XamarinMacCatalystWorkloadManifestVersion>27.2.11039</XamarinMacCatalystWorkloadManifestVersion>
+    <XamarinMacOSWorkloadManifestVersion>27.2.11039</XamarinMacOSWorkloadManifestVersion>
+    <XamarinTvOSWorkloadManifestVersion>27.2.11039</XamarinTvOSWorkloadManifestVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Pinned dependency">
