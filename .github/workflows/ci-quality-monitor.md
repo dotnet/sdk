@@ -163,7 +163,7 @@ jobs:
           node .github/ci-quality-monitor/collect-ci-evidence.mjs "${args[@]}"
       - name: Upload public CI evidence
         if: steps.collect.outputs.should_run == 'true'
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: ci-quality-evidence
           path: .ci-quality-monitor/dossier.json
@@ -277,7 +277,7 @@ pre-steps:
 
 steps:
   - name: Download public CI evidence
-    uses: actions/download-artifact@v8.0.1
+    uses: actions/download-artifact@v8.0.2
     with:
       name: ci-quality-evidence
       path: .ci-quality-monitor

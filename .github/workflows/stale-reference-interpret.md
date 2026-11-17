@@ -166,6 +166,7 @@ mcp-scripts:
 
 safe-outputs:
   threat-detection:
+    report-as-issue: false
     engine:
       id: copilot
       model: detection

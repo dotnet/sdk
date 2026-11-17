@@ -36,10 +36,6 @@
     payload) in a sdk\<version>\ subfolder while dn stays in the parent, emulating the deployed muxer
     layout so AppContext.BaseDirectory is no longer the SDK directory.
 
-.PARAMETER SelfLocate
-    With -Layout Separated, make dn pass an empty sdk_dir so dotnet-aot resolves the SDK directory by
-    self-locating its own module (the fallback path).
-
 .PARAMETER NoBuild
     Skip the publish/build/copy steps and run the already-assembled layout.
 
@@ -60,7 +56,6 @@ param(
     [string]$Mode = "Aot",
     [ValidateSet("Flat", "Separated")]
     [string]$Layout = "Flat",
-    [switch]$SelfLocate,
     [string]$Configuration = "Debug",
     [string]$Rid,
     [switch]$NoBuild
@@ -140,7 +135,6 @@ $environmentVariableNames = @(
     "DOTNET_CLI_TELEMETRY_OPTOUT",
     "DOTNET_AOT_SDK_DIR",
     "DOTNET_AOT_LIBRARY_DIR",
-    "DOTNET_AOT_BLANK_SDKDIR",
     "DOTNET_CLI_ENABLEAOT"
 )
 $previousEnvironment = @{}
@@ -158,20 +152,13 @@ try {
     Remove-Item Env:\DOTNET_AOT_LIBRARY_DIR -ErrorAction SilentlyContinue
 
     # Emulate the deployed non-flat layout: tell dn to load dotnet-aot from (and pass as sdk_dir) the
-    # versioned SDK subfolder, optionally forcing the self-locate fallback by blanking sdk_dir.
+    # versioned SDK subfolder.
     if ($Layout -eq "Separated") {
         $env:DOTNET_AOT_SDK_DIR = (Join-Path $dnPublishDir "sdk/11.0.100")
         Write-Host "Layout:        Separated (dotnet-aot in $($env:DOTNET_AOT_SDK_DIR))" -ForegroundColor Cyan
     }
     else {
         Remove-Item Env:\DOTNET_AOT_SDK_DIR -ErrorAction SilentlyContinue
-    }
-    if ($SelfLocate) {
-        $env:DOTNET_AOT_BLANK_SDKDIR = "1"
-        Write-Host "Self-locate:   enabled (dn passes empty sdk_dir; dotnet-aot self-locates)" -ForegroundColor Cyan
-    }
-    else {
-        Remove-Item Env:\DOTNET_AOT_BLANK_SDKDIR -ErrorAction SilentlyContinue
     }
 
     function Invoke-Dn([bool]$enableAot) {

@@ -69,6 +69,117 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    public void ParseGenericCommandHelp_UsesMinimalTreeWithFullParserParityForAllInProcessCommands()
+    {
+        HashSet<string> excludedCommands = ["new", "test", "completions", "package"];
+        HashSet<string> externalHelpCommands = ["msbuild", "nuget", "vstest", "format", "fsi"];
+        HashSet<string> rootCommandNames = Parser.RootCommand.Subcommands.Select(c => c.Name).ToHashSet(StringComparer.Ordinal);
+        Assert.IsTrue(excludedCommands.IsSubsetOf(rootCommandNames));
+        Assert.IsTrue(externalHelpCommands.IsSubsetOf(rootCommandNames));
+
+        foreach (System.CommandLine.Command command in Parser.RootCommand.Subcommands)
+        {
+            if (excludedCommands.Contains(command.Name) || externalHelpCommands.Contains(command.Name))
+            {
+                continue;
+            }
+
+            foreach (string token in (string[])[command.Name, .. command.Aliases])
+            {
+                AssertMinimalTreeWithFullParserParity([token, "--help"], token);
+            }
+        }
+    }
+
+    [TestMethod]
+    [DataRow("build -h")]
+    [DataRow("build /h")]
+    [DataRow("build --help")]
+    [DataRow("build -?")]
+    [DataRow("build /?")]
+    public void ParseGenericCommandHelp_UsesMinimalTreeWithFullParserParity(string commandLine)
+        => AssertMinimalTreeWithFullParserParity(commandLine.Split(' '), commandLine);
+
+    private static void AssertMinimalTreeWithFullParserParity(string[] args, string context)
+    {
+        Assert.IsTrue(Parser.TryParseGenericCommandHelp(args, out ParseResult? minimalResult), context);
+        Assert.HasCount(1, minimalResult.RootCommandResult.Command.Subcommands, context);
+
+        (int minimalExitCode, string minimalOutput, string minimalError) = InvokeWithCapture(minimalResult);
+        (int fullExitCode, string fullOutput, string fullError) = InvokeWithCapture(Parser.Parse(args));
+
+        Assert.AreEqual(fullExitCode, minimalExitCode, context);
+        Assert.AreEqual(fullOutput, minimalOutput, context);
+        Assert.AreEqual(fullError, minimalError, context);
+    }
+
+    [TestMethod]
+    [DataRow(null, "dotnet")]
+    [DataRow("", "dotnet")]
+    [DataRow("custom-host", "custom-host")]
+    [DoNotParallelize] // AppContext is shared with all parser tests.
+    public void ParseGenericCommandHelp_InitializesExecutableName(string? configuredName, string expectedName)
+    {
+        const string key = "System.CommandLine.ExecutableName";
+        object? originalName = AppContext.GetData(key);
+        try
+        {
+            AppContext.SetData(key, configuredName);
+
+            Assert.IsTrue(Parser.TryParseGenericCommandHelp(["help", "--help"], out _));
+            Assert.AreEqual(expectedName, AppContext.GetData(key) as string);
+        }
+        finally
+        {
+            AppContext.SetData(key, originalName);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("new --help")]
+    [DataRow("new create --help")]
+    [DataRow("test --help")]
+    [DataRow("completions --help")]
+    [DataRow("package --help")]
+    [DataRow("package -?")]
+    public void ParseGenericCommandHelp_RejectsDynamicHelp(string commandLine)
+    {
+        Assert.IsFalse(Parser.TryParseGenericCommandHelp(commandLine.Split(' '), out ParseResult? parseResult));
+        Assert.IsNull(parseResult);
+    }
+
+    [TestMethod]
+    public void ParseGenericCommandHelp_CoversEveryEligibleTopLevelCommandAndAlias()
+    {
+        HashSet<string> excludedCommands = ["new", "test", "completions", "package"];
+        HashSet<string> rootCommandNames = Parser.RootCommand.Subcommands.Select(c => c.Name).ToHashSet(StringComparer.Ordinal);
+        Assert.IsTrue(excludedCommands.IsSubsetOf(rootCommandNames));
+
+        foreach (System.CommandLine.Command command in Parser.RootCommand.Subcommands)
+        {
+            bool expected = !excludedCommands.Contains(command.Name);
+
+            foreach (string token in (string[])[command.Name, .. command.Aliases])
+            {
+                Assert.AreEqual(
+                    expected,
+                    Parser.TryParseGenericCommandHelp([token, "--help"], out ParseResult? parseResult),
+                    token);
+
+                if (expected)
+                {
+                    Assert.IsNotNull(parseResult, token);
+                    Assert.HasCount(1, parseResult.RootCommandResult.Command.Subcommands, token);
+                }
+                else
+                {
+                    Assert.IsNull(parseResult, token);
+                }
+            }
+        }
+    }
+
+    [TestMethod]
     public void ParseSdkCheck_HasNoErrors()
     {
         // `sdk check` is AOT-capable, so it parses cleanly from the shared command tree.

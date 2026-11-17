@@ -483,6 +483,61 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItDoesNotSelectDevicesForNonTestProjectsInSolution()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+
+        // Mimics a MAUI app in the same solution: the workload imports ComputeAvailableDevices into
+        // its inner builds even though it is not a test project. See https://github.com/dotnet/sdk/issues/57120.
+        string appDir = Path.Combine(testInstance.Path, "App");
+        Directory.CreateDirectory(appDir);
+        File.WriteAllText(Path.Combine(appDir, "Program.cs"), "System.Console.WriteLine();");
+        File.WriteAllText(Path.Combine(appDir, "App.csproj"),
+            $$"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFrameworks>{{ToolsetInfo.CurrentTargetFramework}}</TargetFrameworks>
+                <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+              </PropertyGroup>
+              <Import Project="App.Device.targets" Condition="'$(TargetFramework)' != ''" />
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(appDir, "App.Device.targets"),
+            """
+            <Project>
+              <Target Name="ComputeAvailableDevices" Returns="@(Devices)" />
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Combine(testInstance.Path, "TestSolution.slnx"),
+            """
+            <Solution>
+              <Project Path="App\App.csproj" />
+              <Project Path="DotnetTestDevices.csproj" />
+            </Solution>
+            """);
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--solution", "TestSolution.slnx", "-p:SingleDevice=true", "-bl");
+
+        result.Should().Pass()
+            .And.NotHaveStdErrContaining(CliCommandStrings.RunCommandNoDevicesAvailable);
+
+        AssertTargetInBinlog(
+            Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"),
+            "ComputeAvailableDevices",
+            targets => targets.Should().HaveCount(2, "only the test project's target frameworks should discover devices"));
+        AssertTargetInBinlog(
+            Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"),
+            "DeployToDevice",
+            targets => targets.Should().HaveCount(2, "only the test project's target frameworks should be deployed"));
+    }
+
+    [TestMethod]
     public void ItAcceptsDeviceViaMSBuildProperty()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")

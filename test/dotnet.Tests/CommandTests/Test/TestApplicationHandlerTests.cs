@@ -28,6 +28,10 @@ public class TestApplicationHandlerTests : IDisposable
     }
 
     [TestMethod]
+    [DataRow("net472", null, ".NET Framework 4.8", "net472|x64, runtime: net48")]
+    [DataRow("net48", null, ".NET Framework 4.8", "net48|x64")]
+    [DataRow(null, "net48", ".NET Framework 4.8", "net48|x64")]
+    [DataRow(null, null, ".NET Framework 4.8", "x64, runtime: net48")]
     [DataRow("net472", null, ".NET Framework 4.8.1", "net472|x64, runtime: net481")]
     [DataRow("net472", "net481", ".NET Framework 4.8.1", "net472|x64, runtime: net481")]
     [DataRow("net481", null, ".NET Framework 4.8.1", "net481|x64")]

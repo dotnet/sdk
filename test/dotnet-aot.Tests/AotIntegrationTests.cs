@@ -252,26 +252,14 @@ public partial class AotIntegrationTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(stdout), "Expected version output");
     }
 
+    // Emulates the deployed muxer layout: dotnet-aot lives in a directory other than dn's own, so
+    // AppContext.BaseDirectory is no longer the SDK directory. Verifies that --info's Base Path still
+    // reports the sdk_dir passed in by the host.
     [TestMethod]
     public void AotInfo_SeparatedLayout_BasePathIsResolvedSdkDirectory()
     {
         SkipIfDnUnavailable();
-        RunSeparatedLayoutBasePathTest(selfLocate: false);
-    }
 
-    [TestMethod]
-    public void AotInfo_SeparatedLayout_SelfLocate_BasePathIsResolvedSdkDirectory()
-    {
-        SkipIfDnUnavailable();
-        RunSeparatedLayoutBasePathTest(selfLocate: true);
-    }
-
-    // Emulates the deployed muxer layout: dotnet-aot lives in a directory other than dn's own, so
-    // AppContext.BaseDirectory is no longer the SDK directory. Verifies that --info's Base Path still
-    // reports the resolved SDK directory - whether it was passed in as sdk_dir (selfLocate: false) or
-    // self-located from the loaded module (selfLocate: true).
-    private void RunSeparatedLayoutBasePathTest(bool selfLocate)
-    {
         string dnPath = FindDnPath()!;
         string sdkLayoutDir = Path.GetDirectoryName(dnPath)!;
         string aotLib = OperatingSystem.IsWindows() ? "dotnet-aot.dll"
@@ -302,10 +290,6 @@ public partial class AotIntegrationTests
                 // Telemetry's SDK-resolution probe can print installed SDKs to stdout on Windows.
                 ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1",
             };
-            if (selfLocate)
-            {
-                env["DOTNET_AOT_BLANK_SDKDIR"] = "1";
-            }
 
             var (exitCode, stdout, _) = RunDn(["--info"], enableAot: true, extraEnv: env);
 

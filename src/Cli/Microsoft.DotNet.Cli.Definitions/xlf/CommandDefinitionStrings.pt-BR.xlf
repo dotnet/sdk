@@ -1942,8 +1942,10 @@ O padrão é "false." No entanto, ao direcionar para .NET 7 ou inferior, o padr�
         <note />
       </trans-unit>
       <trans-unit id="StoreAppDescription">
-        <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
-        <target state="translated">Armazena os assemblies especificados para a Plataforma .NET. Por padrão, serão otimizados para o runtime e a estrutura de destino.</target>
+        <source>Warning: The dotnet store command and the runtime package store feature are deprecated and no longer supported.
+
+Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
+        <target state="needs-review-translation">Armazena os assemblies especificados para a Plataforma .NET. Por padrão, serão otimizados para o runtime e a estrutura de destino.</target>
         <note />
       </trans-unit>
       <trans-unit id="StoreFrameworkOptionDescription">

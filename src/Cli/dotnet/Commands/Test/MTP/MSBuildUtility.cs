@@ -383,7 +383,10 @@ internal static class MSBuildUtility
                         buildSession,
                         evaluationContext,
                         project.Configuration,
-                        project.Platform);
+                        project.Platform,
+                        // The solution was already restored and built above, so test-project properties
+                        // imported from NuGet packages are reliable here.
+                        requireTestProject: true);
 
                     if (evaluation?.SupportsDeviceSelection == true)
                     {

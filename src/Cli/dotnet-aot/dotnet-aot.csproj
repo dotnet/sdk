@@ -70,7 +70,6 @@
   <ItemGroup>
     <Compile Include="NativeEntryPoint.cs" />
     <Compile Include="MSBuildSdkResolverRegistration.cs" />
-    <Compile Include="SdkRootLocator.cs" />
     <Compile Include="ManagedHost.cs" />
   </ItemGroup>
 

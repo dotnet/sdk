@@ -16,6 +16,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition="'$(RuntimeIdentifier)' == 'wasi-wasm' and '$(_WasmSdkImportsMicrosoftNetSdk)' == 'true'" />
   <Import Project="TargetFrameworks.props" />
 
+  <!-- Restore excludes the runtime package's R2R default, so request crossgen2 here. -->
+  <PropertyGroup Condition="'$(UseMonoRuntime)' == 'false' and '$(RuntimeIdentifier)' == 'browser-wasm' and
+                            '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
+                            $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '12.0'))">
+    <RequiresCrossgen2Pack Condition="'$(RequiresCrossgen2Pack)' == '' and '$(PublishReadyToRun)' != 'false'">true</RequiresCrossgen2Pack>
+  </PropertyGroup>
+
   <PropertyGroup>
     <_WasmEnableHotReload>$(WasmEnableHotReload)</_WasmEnableHotReload>
     <_WasmEnableHotReload Condition="'$(_WasmEnableHotReload)' == '' and '$(Configuration)' != 'Debug'">false</_WasmEnableHotReload>
