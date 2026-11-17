@@ -580,10 +580,11 @@ internal sealed class Registry
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        ReadOnlyMemory<byte> indexContent = Encoding.UTF8.GetBytes(multiArchImage.ImageIndex);
         foreach (var tag in destinationImageReference.Tags)
         {
             _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-            await _registryAPI.Manifest.PutAsync(destinationImageReference.Repository, tag, multiArchImage.ImageIndex, multiArchImage.ImageIndexMediaType, cancellationToken).ConfigureAwait(false);
+            await _registryAPI.Manifest.PutAsync(destinationImageReference.Repository, tag, indexContent, multiArchImage.ImageIndexMediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
         }
     }
@@ -669,17 +670,18 @@ internal sealed class Registry
         if (pushTags)
         {
             Debug.Assert(destination.Tags.Length > 0);
+            ReadOnlyMemory<byte> manifestContent = Encoding.UTF8.GetBytes(builtImage.Manifest);
             foreach (string tag in destination.Tags)
             {
                 _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
+                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, manifestContent, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
                 _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
             }
         }
         else if (!manifestExists)
         {
             _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, builtImage.ManifestDigest);
-            await _registryAPI.Manifest.PutAsync(destination.Repository, builtImage.ManifestDigest, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
+            await _registryAPI.Manifest.PutAsync(destination.Repository, builtImage.ManifestDigest, Encoding.UTF8.GetBytes(builtImage.Manifest), builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
         }
     }

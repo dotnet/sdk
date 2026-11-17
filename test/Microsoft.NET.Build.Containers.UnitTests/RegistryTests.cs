@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Text;
 using System.Net.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -104,7 +105,7 @@ public class RegistryTests : IDisposable
         foreach (string tag in tags)
         {
             manifestOperations
-                .Setup(m => m.PutAsync(repository, tag, "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()))
+                .Setup(m => m.PutAsync(repository, tag, It.Is<ReadOnlyMemory<byte>>(body => Encoding.UTF8.GetString(body.ToArray()) == "{}"), SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
         }
 
@@ -130,7 +131,7 @@ public class RegistryTests : IDisposable
         manifestOperations.Verify(m => m.ExistsAsync(repository, manifestDigest, It.IsAny<CancellationToken>()), Times.Once);
         foreach (string tag in tags)
         {
-            manifestOperations.Verify(m => m.PutAsync(repository, tag, "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()), Times.Once);
+            manifestOperations.Verify(m => m.PutAsync(repository, tag, It.Is<ReadOnlyMemory<byte>>(body => Encoding.UTF8.GetString(body.ToArray()) == "{}"), SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()), Times.Once);
         }
         api.VerifyGet(a => a.Blob, Times.Never);
     }
@@ -148,7 +149,7 @@ public class RegistryTests : IDisposable
             .ReturnsAsync(true);
         Mock<IManifestOperations> manifestOperations = new(MockBehavior.Strict);
         manifestOperations
-            .Setup(m => m.PutAsync(repository, "latest", "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()))
+            .Setup(m => m.PutAsync(repository, "latest", It.Is<ReadOnlyMemory<byte>>(body => Encoding.UTF8.GetString(body.ToArray()) == "{}"), SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         Mock<IRegistryAPI> api = new(MockBehavior.Strict);
         api.SetupGet(a => a.Blob).Returns(blobOperations.Object);
@@ -173,7 +174,7 @@ public class RegistryTests : IDisposable
 
         manifestOperations.Verify(m => m.ExistsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         blobOperations.Verify(b => b.ExistsAsync(repository, configDigest, It.IsAny<CancellationToken>()), Times.Once);
-        manifestOperations.Verify(m => m.PutAsync(repository, "latest", "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()), Times.Once);
+        manifestOperations.Verify(m => m.PutAsync(repository, "latest", It.Is<ReadOnlyMemory<byte>>(body => Encoding.UTF8.GetString(body.ToArray()) == "{}"), SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [TestMethod]

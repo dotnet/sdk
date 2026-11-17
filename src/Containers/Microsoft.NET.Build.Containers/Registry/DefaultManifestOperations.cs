@@ -90,12 +90,13 @@ internal class DefaultManifestOperations : IManifestOperations
         );
     }
 
-    public async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)
+    public async Task PutAsync(string repositoryName, string reference, ReadOnlyMemory<byte> manifestContent, string mediaType, CancellationToken cancellationToken)
     {
-        HttpContent manifestUploadContent = new StringContent(manifestJson);
+        cancellationToken.ThrowIfCancellationRequested();
+        using HttpContent manifestUploadContent = new ReadOnlyMemoryContent(manifestContent);
         manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
 
-        HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
 
         if (!putResponse.IsSuccessStatusCode)
         {

@@ -19,5 +19,5 @@ internal interface IManifestOperations
     /// </summary>
     public Task<ManifestResponse> GetAsync(string repositoryPath, string tagOrDigest, CancellationToken cancellationToken);
 
-    public Task PutAsync(string repositoryName, string reference, string manifestListJson, string mediaType, CancellationToken cancellationToken);
+    public Task PutAsync(string repositoryName, string reference, ReadOnlyMemory<byte> manifestContent, string mediaType, CancellationToken cancellationToken);
 }
