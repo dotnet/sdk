@@ -121,31 +121,23 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
 
             string temporaryFilePath = filePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+            string? stagingDirectory = null;
             try
             {
-                bool downloadSucceeded;
-                using (Stream packageStream = _environmentSettings.Host.FileSystem.CreateFile(temporaryFilePath))
+                // Verification requires a physical file, but the host file system may be virtualized. Stage the
+                // download in a private directory so that another user cannot replace it before it is verified and copied.
+                stagingDirectory = CreatePrivateStagingDirectory();
+                string stagedPackagePath = Path.Combine(stagingDirectory, "package.nupkg");
+                await DownloadToStagingFileAsync(stagedPackagePath).ConfigureAwait(false);
+
+                // Keep the staged package open without write sharing until its verified content has been copied.
+                using (FileStream stagedPackage = new(stagedPackagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    downloadSucceeded = await resource.CopyNupkgToStreamAsync(
-                        packageMetadata.Identity.Id,
-                        packageMetadata.Identity.Version,
-                        packageStream,
-                        _cacheSettings,
-                        _nugetLogger,
-                        cancellationToken).ConfigureAwait(false);
+                    await VerifyPackageAsync(stagedPackagePath, cancellationToken).ConfigureAwait(false);
+                    using Stream packageStream = _environmentSettings.Host.FileSystem.CreateFile(temporaryFilePath);
+                    await stagedPackage.CopyToAsync(packageStream, 81920, cancellationToken).ConfigureAwait(false);
                 }
 
-                if (!downloadSucceeded)
-                {
-                    _nugetLogger.LogWarning(
-                        string.Format(
-                            LocalizableStrings.NuGetApiPackageManager_Warning_FailedToDownload,
-                            $"{packageMetadata.Identity.Id}@{packageMetadata.Identity.Version}",
-                            source.Source));
-                    throw new DownloadException(packageMetadata.Identity.Id, packageMetadata.Identity.Version.ToNormalizedString(), new[] { source.Source });
-                }
-
-                await VerifyPackageAsync(temporaryFilePath, cancellationToken).ConfigureAwait(false);
                 TryCopyFile(temporaryFilePath, filePath);
 
                 return new NuGetPackageInfo(
@@ -170,7 +162,37 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
             finally
             {
-                TryDeleteFile(temporaryFilePath);
+                if (_environmentSettings.Host.FileSystem.FileExists(temporaryFilePath))
+                {
+                    TryDeleteFile(temporaryFilePath);
+                }
+
+                TryDeleteStagingDirectory(stagingDirectory);
+            }
+
+            async Task DownloadToStagingFileAsync(string stagedPackagePath)
+            {
+                bool downloadSucceeded;
+                using (FileStream packageStream = new(stagedPackagePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
+                    downloadSucceeded = await resource.CopyNupkgToStreamAsync(
+                        packageMetadata.Identity.Id,
+                        packageMetadata.Identity.Version,
+                        packageStream,
+                        _cacheSettings,
+                        _nugetLogger,
+                        cancellationToken).ConfigureAwait(false);
+                }
+
+                if (!downloadSucceeded)
+                {
+                    _nugetLogger.LogWarning(
+                        string.Format(
+                            LocalizableStrings.NuGetApiPackageManager_Warning_FailedToDownload,
+                            $"{packageMetadata.Identity.Id}@{packageMetadata.Identity.Version}",
+                            source.Source));
+                    throw new DownloadException(packageMetadata.Identity.Id, packageMetadata.Identity.Version.ToNormalizedString(), new[] { source.Source });
+                }
             }
 
             async Task VerifyPackageAsync(string packagePath, CancellationToken cancellationToken)
@@ -212,6 +234,36 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     _nugetLogger.LogDebug($"Details: {ex}.");
                 }
             }
+
+            void TryDeleteStagingDirectory(string? directory)
+            {
+                if (directory is null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    Directory.Delete(directory, recursive: true);
+                }
+                catch (Exception ex)
+                {
+                    _nugetLogger.LogDebug($"Failed to delete staging directory '{directory}': {ex}.");
+                }
+            }
+        }
+
+        private static string CreatePrivateStagingDirectory()
+        {
+#if NET
+            // On Unix, this creates the directory with owner-only permissions.
+            return Directory.CreateTempSubdirectory("dotnet-template-package-").FullName;
+#else
+            // .NET Framework runs only on Windows, where the temp directory is private to the user.
+            string directory = Path.Combine(Path.GetTempPath(), "dotnet-template-package-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(directory);
+            return directory;
+#endif
         }
 
         /// <summary>
