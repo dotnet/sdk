@@ -2413,7 +2413,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 try
                 {
                     // Each overlapping challenge gets its own disposable realm transport.
-                    Assert.IsTrue(responses.All(response => response.StatusCode == HttpStatusCode.OK));
+                    Assert.ContainsOnly(response => response.StatusCode == HttpStatusCode.OK, responses);
                     Assert.AreEqual(RequestCount, authenticationHandlerCount);
                     Assert.AreEqual(RequestCount, authenticationRequestCount);
                 }
