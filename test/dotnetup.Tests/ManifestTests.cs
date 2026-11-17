@@ -91,7 +91,7 @@ public class ManifestTests
         var data = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.DotnetupManifestData);
 
         data.Should().NotBeNull();
-        data!.SchemaVersion.Should().Be("1");
+        data!.SchemaVersion.Should().Be("2");
         data.DotnetRoots.Should().BeEmpty();
     }
 
@@ -100,7 +100,7 @@ public class ManifestTests
     {
         var original = new DotnetupManifestData
         {
-            SchemaVersion = "1",
+            SchemaVersion = "2",
             DotnetRoots =
             [
                 new DotnetRootEntry
@@ -146,7 +146,7 @@ public class ManifestTests
         var deserialized = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.DotnetupManifestData);
 
         deserialized.Should().NotBeNull();
-        deserialized!.SchemaVersion.Should().Be("1");
+        deserialized!.SchemaVersion.Should().Be("2");
         deserialized.DotnetRoots.Should().HaveCount(1);
 
         var root = deserialized.DotnetRoots[0];
@@ -188,10 +188,37 @@ public class ManifestTests
             """);
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
         var data = manifest.ReadManifest();
+        data.SchemaVersion.Should().Be("1");
         data.DotnetRoots.Single().InstallSpecs.Single().InstallSource.Should().Be(InstallSource.Explicit);
 
         manifest.WriteManifest(data);
-        manifest.ReadManifest().DotnetRoots.Single().InstallSpecs.Single().InstallSource.Should().Be(InstallSource.Explicit);
+        var updated = manifest.ReadManifest();
+        updated.SchemaVersion.Should().Be("2");
+        updated.DotnetRoots.Single().InstallSpecs.Single().InstallSource.Should().Be(InstallSource.Explicit);
+    }
+
+    [TestMethod]
+    [DataRow("3", false)]
+    [DataRow("10", false)]
+    [DataRow("3", true)]
+    [DataRow("10", true)]
+    public void NewerManifestSchemaRequiresUpdate(string version, bool incompatibleContents)
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var roots = incompatibleContents ? """[{"architecture":"future-architecture"}]""" : "[]";
+        var json = $$"""
+            {"dotnetRoots":{{roots}},"schemaVersion":"{{version}}"}
+            """;
+        File.WriteAllText(testEnv.ManifestPath, json);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        var act = () => manifest.ReadManifest();
+
+        act.Should().Throw<DotnetInstallException>()
+            .Where(e => e.ErrorCode == DotnetInstallErrorCode.LocalManifestError)
+            .WithMessage($"*schema version {version}*supports up to version 2*Update dotnetup*");
+        File.ReadAllText(testEnv.ManifestPath).Should().Be(json);
     }
 
     [TestMethod]

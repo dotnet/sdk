@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text.Json.Serialization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
@@ -12,7 +13,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 internal class DotnetupManifestData
 {
-    public string SchemaVersion { get; set; } = "1";
+    public const int CurrentSchemaVersion = 2;
+
+    public string SchemaVersion { get; set; } = CurrentSchemaVersion.ToString(CultureInfo.InvariantCulture);
     public List<DotnetRootEntry> DotnetRoots { get; set; } = [];
 }
 

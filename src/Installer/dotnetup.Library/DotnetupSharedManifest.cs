@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
@@ -134,6 +135,8 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             var manifest = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.DotnetupManifestData);
             if (manifest is not null)
             {
+                ValidateSchemaVersion(manifest.SchemaVersion);
+
                 // Only validate field values if the checksum doesn't match — if we wrote
                 // the file ourselves the data is trusted; validation is only needed to
                 // catch external / manual edits.
@@ -147,6 +150,22 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
         catch (JsonException ex)
         {
+            try
+            {
+                // Newer schemas may contain values the current model cannot deserialize.
+                using var document = JsonDocument.Parse(json);
+                if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                    document.RootElement.TryGetProperty("schemaVersion", out var schemaVersion) &&
+                    schemaVersion.ValueKind == JsonValueKind.String)
+                {
+                    ValidateSchemaVersion(schemaVersion.GetString());
+                }
+            }
+            catch (JsonException)
+            {
+                // Report the original error below if the JSON or schema version is malformed.
+            }
+
             // Check if it's a legacy format (JSON array of DotnetInstall objects)
             if (json.TrimStart().StartsWith('[', StringComparison.Ordinal))
             {
@@ -177,9 +196,25 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         return new();
     }
 
+    private void ValidateSchemaVersion(string? schemaVersion)
+    {
+        if (!int.TryParse(schemaVersion, NumberStyles.None, CultureInfo.InvariantCulture, out var version))
+        {
+            throw new JsonException("The manifest schemaVersion must be a non-negative integer string.");
+        }
+
+        if (version > DotnetupManifestData.CurrentSchemaVersion)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.LocalManifestError,
+                string.Format(CultureInfo.CurrentCulture, Strings.ManifestSchemaVersionTooNew,
+                    ManifestPath, version, DotnetupManifestData.CurrentSchemaVersion));
+        }
+    }
+
     internal void WriteManifest(DotnetupManifestData manifest)
     {
         AssertHasFinalizationMutex();
+        manifest.SchemaVersion = DotnetupManifestData.CurrentSchemaVersion.ToString(CultureInfo.InvariantCulture);
         var json = JsonSerializer.Serialize(manifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
         WriteManifestWithChecksum(json);
     }

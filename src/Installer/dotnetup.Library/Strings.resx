@@ -834,4 +834,8 @@ Or open a new terminal.</value>
   <data name="GarbageCollectionNoFilesRemoved" xml:space="preserve">
     <value>No files were removed.</value>
   </data>
+  <data name="ManifestSchemaVersionTooNew" xml:space="preserve">
+    <value>The dotnetup manifest at '{0}' uses schema version {1}, but this version of dotnetup supports up to version {2}. Update dotnetup to read this manifest.</value>
+    <comment>{0} is the manifest path; {1} is the manifest schema version; {2} is the highest supported schema version.</comment>
+  </data>
 </root>

@@ -661,6 +661,11 @@ Or open a new terminal.</target>
         <target state="new">Warning: {0} {1} is invalid: {2}</target>
         <note>0: component, 1: version, 2: validation failure.</note>
       </trans-unit>
+      <trans-unit id="ManifestSchemaVersionTooNew">
+        <source>The dotnetup manifest at '{0}' uses schema version {1}, but this version of dotnetup supports up to version {2}. Update dotnetup to read this manifest.</source>
+        <target state="new">The dotnetup manifest at '{0}' uses schema version {1}, but this version of dotnetup supports up to version {2}. Update dotnetup to read this manifest.</target>
+        <note>{0} is the manifest path; {1} is the manifest schema version; {2} is the highest supported schema version.</note>
+      </trans-unit>
       <trans-unit id="PathGuidanceEverywhere">
         <source>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</source>
         <target state="new">PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</target>

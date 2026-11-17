@@ -61,7 +61,7 @@ We could represent the dotnet roots in the manifest as a node which has properti
 
 ```json
 {
-  "schemaVersion": "1",
+  "schemaVersion": "2",
   "dotnetRoots": [
     {
       "path": "C:\\Users\\Daniel\\AppData\\Local\\dotnet",
