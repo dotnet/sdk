@@ -69,10 +69,14 @@ public static class GlobalJsonHelper
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed,
-                string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError, globalJsonPath, ex.Message), ex);
+            throw CreateUnreadableGlobalJsonException(globalJsonPath, ex);
         }
     }
+
+    /// <summary>Creates the user-facing error for a global.json file that cannot be read or written.</summary>
+    internal static DotnetInstallException CreateUnreadableGlobalJsonException(string globalJsonPath, Exception ex) =>
+        new(DotnetInstallErrorCode.ContextResolutionFailed,
+            string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError, globalJsonPath, ex.Message), ex);
 
     /// <summary>
     /// Creates the user-facing error for a global.json file that is not valid JSON or has invalid SDK settings.

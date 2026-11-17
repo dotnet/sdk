@@ -274,6 +274,26 @@ public class GlobalJsonUpdateTests : IDisposable
         File.ReadAllText(path).Should().Be("{ malformed");
     }
 
+    [TestMethod]
+    public void ApplyGlobalJsonModifications_ReportsUnreadableGlobalJson()
+    {
+        var installRoot = new DotnetInstallRoot(Path.Combine(_testDir, "dotnet"), InstallerUtilities.GetDefaultInstallArchitecture());
+        var version = new ReleaseVersion("10.0.103");
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, """{"sdk":{"version":"10.0.100"}}""");
+        var request = new DotnetInstallRequest(installRoot, new UpdateChannel("10.0.103"), InstallComponent.SDK,
+            new InstallRequestOptions { GlobalJsonPath = path });
+        using var exclusiveLock = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+        var apply = () => new DotnetEnvironmentManager().ApplyGlobalJsonModifications(
+            [new ResolvedInstallRequest(request, version)], []);
+
+        var error = apply.Should().Throw<DotnetInstallException>().Which;
+        error.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        error.Message.Should().Contain(path);
+        error.InnerException.Should().BeAssignableTo<IOException>();
+    }
+
     // ──────────────────────────────────────────────────────────────
     //  Default behavior: --update-global-json is NOT on by default
     // ──────────────────────────────────────────────────────────────

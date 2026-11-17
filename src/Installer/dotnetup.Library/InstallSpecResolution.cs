@@ -23,5 +23,7 @@ internal sealed class InstallSpecResolution
     public IReadOnlyList<Installation> MatchingInstallations { get; set; } = [];
     public Installation? Installation => MatchingInstallations.Count > 0 ? MatchingInstallations[0] : null;
     public string? Error { get; init; }
+    /// <summary>The read or parse failure behind <see cref="Error"/>, so callers can report its kind.</summary>
+    public Exception? ErrorException { get; init; }
     public bool UsesLastKnownRequirement => Error is not null && Spec is not null;
 }

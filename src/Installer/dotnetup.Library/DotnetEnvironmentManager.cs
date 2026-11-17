@@ -386,6 +386,10 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                 {
                     throw GlobalJsonHelper.CreateMalformedGlobalJsonException(globalJsonPath, ex);
                 }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    throw GlobalJsonHelper.CreateUnreadableGlobalJsonException(globalJsonPath, ex);
+                }
             }
         }
     }

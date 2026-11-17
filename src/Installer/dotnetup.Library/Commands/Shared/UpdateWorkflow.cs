@@ -237,7 +237,13 @@ internal class UpdateWorkflow
         {
             if (!usesLastKnownRequirement)
             {
-                throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error);
+                throw evaluation.ErrorException switch
+                {
+                    JsonException json when !string.IsNullOrEmpty(spec.GlobalJsonPath)
+                        => GlobalJsonHelper.CreateMalformedGlobalJsonException(spec.GlobalJsonPath, json),
+                    { } ex => new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error, ex),
+                    null => new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error),
+                };
             }
             AnsiConsole.MarkupLine(DotnetupTheme.Warning(evaluation.Error.EscapeMarkup()));
             AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,

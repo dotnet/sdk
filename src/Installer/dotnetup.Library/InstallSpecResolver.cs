@@ -78,7 +78,8 @@ internal static class InstallSpecResolver
                 Spec = spec.MinimumVersion is { } minimum && spec.AllowPrerelease is { } previews
                     ? new UpdateChannel(spec.VersionOrChannel, new ReleaseVersion(minimum), previews) : null,
                 Error = string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError,
-                    spec.GlobalJsonPath, ex.Message)
+                    spec.GlobalJsonPath, ex.Message),
+                ErrorException = ex
             };
         }
     }
