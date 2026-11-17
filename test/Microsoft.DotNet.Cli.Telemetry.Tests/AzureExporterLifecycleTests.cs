@@ -42,35 +42,45 @@ public class AzureExporterLifecycleTests
     }
 
     [TestMethod]
-    public void LocalShutdownPersistsQueuedActivitiesWithinCliBudget()
+    [DataRow(1)]
+    [DataRow(500)]
+    public void LocalShutdownPersistsQueuedActivitiesWithinCliBudget(int activityCount)
     {
         using var settings = new ExporterSettingsScope(ci: false);
         using var scope = new AzureExporterTestScope();
         using var handler = new RecordingHandler();
         using var provider = scope.CreateProvider(handler);
-        using var activity = scope.Emit("cli-budget");
+        for (int index = 0; index < activityCount; index++)
+        {
+            using var activity = scope.Emit($"cli-budget-{index}");
+        }
 
-        provider.Shutdown(100).Should().BeTrue();
+        provider.Shutdown(1_000).Should().BeTrue();
 
         handler.Payloads.Should().BeEmpty();
         scope.StoredFiles().Select(File.ReadAllText)
-            .Should().Contain(payload => payload.Contains("cli-budget", StringComparison.Ordinal));
+            .Should().Contain(payload => payload.Contains($"cli-budget-{activityCount - 1}", StringComparison.Ordinal));
     }
 
     [TestMethod]
-    public void LocalForceFlushPersistsQueuedActivitiesWithinCliBudget()
+    [DataRow(1)]
+    [DataRow(500)]
+    public void LocalForceFlushPersistsQueuedActivitiesWithinCliBudget(int activityCount)
     {
         using var settings = new ExporterSettingsScope(ci: false);
         using var scope = new AzureExporterTestScope();
         using var handler = new RecordingHandler();
         using var provider = scope.CreateProvider(handler);
-        using var activity = scope.Emit("cli-force-flush-budget");
+        for (int index = 0; index < activityCount; index++)
+        {
+            using var activity = scope.Emit($"cli-force-flush-budget-{index}");
+        }
 
-        provider.ForceFlush(100).Should().BeTrue();
+        provider.ForceFlush(1_000).Should().BeTrue();
 
         handler.Payloads.Should().BeEmpty();
         scope.StoredFiles().Select(File.ReadAllText)
-            .Should().Contain(payload => payload.Contains("cli-force-flush-budget", StringComparison.Ordinal));
+            .Should().Contain(payload => payload.Contains($"cli-force-flush-budget-{activityCount - 1}", StringComparison.Ordinal));
     }
 
     [TestMethod]

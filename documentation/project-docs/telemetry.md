@@ -90,9 +90,9 @@ and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.c
   use a separate 300-ms trace allowance in each runtime; there is no cross-runtime deadline coordination.
   Normal exports before shutdown remain network-first; this is not synchronous
   persistence of every ended span, and abrupt termination can lose queued spans. An upload already in flight
-  can still delay shutdown. Successful local shutdown gives the trace batch processor 100 ms to finalize
-  persistence; the zero drain budget prevents waiting for the subsequent upload. This is long enough for a cold
-  exporter to complete its atomic file write without reintroducing an unbounded exit delay. Failed-command
+  can still delay shutdown. Successful local shutdown gives the trace batch processor one second to finalize
+  persistence; the zero drain budget prevents waiting for the subsequent upload. This allows more time for a cold
+  exporter or a busy filesystem to complete its atomic file write while keeping the wait bounded. Failed-command
   persistence is subject to the 300-ms timeout.
 2. **Subsequent invocations.** Azure schedules an eager background drain after a 50-ms startup delay; actual
   start time also depends on thread scheduling and storage work. The two-minute periodic retry timer remains.
@@ -115,7 +115,7 @@ and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.c
   be persisted, and a timeout can leave telemetry undelivered.
 4. **Persistent MSBuild hosts.** A logger finishes a build request with nonterminal `ForceFlush`, allowing the
   same provider to handle later builds. Locally the SDK enables
-  `Azure.Monitor.OpenTelemetry.Exporter.PersistOnForceFlush` and gives trace persistence 100 ms; process exit uses
+  `Azure.Monitor.OpenTelemetry.Exporter.PersistOnForceFlush` and gives trace persistence one second; process exit uses
   `Shutdown`. CI uses a bounded network-first flush. A force-flush result is not an ingestion acknowledgment.
 
 These Azure settings are process-wide. OTLP-enabled invocations retain bounded provider shutdown, and the trace

@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 public class TelemetryClient : ITelemetryClient
 {
-    private const int LocalTracePersistenceTimeoutMilliseconds = 100;
+    private const int LocalTracePersistenceTimeoutMilliseconds = 1_000;
 
     private static FrozenDictionary<string, string?> s_commonProperties = [];
     private Task? _trackEventTask;
@@ -282,7 +282,7 @@ public class TelemetryClient : ITelemetryClient
         }
         else
         {
-            // This timeout includes batch serialization and the atomic storage write. Ten milliseconds can
+            // This timeout includes batch serialization and the atomic storage write. Short timeouts can
             // interrupt the write before its temporary file is finalized, leaving nothing a later run can drain.
             s_tracerProvider?.Shutdown(LocalTracePersistenceTimeoutMilliseconds);
             s_metricsProvider?.Shutdown(timeoutMilliseconds: 10);
