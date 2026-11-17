@@ -25,10 +25,10 @@ internal static class InstallationListRenderer
         {
             var resolution = InstallSpecResolver.Evaluate(spec.ManifestSpec);
             var selected = resolution.Spec is { } requirement
-                ? InstallSpecResolver.SelectInstallation(spec.Component, requirement, installations,
+                ? InstallSpecResolver.GetMatchingInstallations(spec.Component, requirement, installations,
                     i => i.Component, i => versions[i.Version],
                     spec.Source == InstallSource.GlobalJson
-                        ? i => ReleaseVersion.TryParse(i.ProductVersion, out var version) ? version : null : null)
+                        ? i => ReleaseVersion.TryParse(i.ProductVersion, out var version) ? version : null : null).FirstOrDefault()
                 : null;
             var row = CreateSpecRow(spec, resolution, selected);
             if (row is not null)

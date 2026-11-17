@@ -50,10 +50,21 @@ internal class UninstallWorkflow
 
         var matchingSpecs = FindMatchingSpecs(root, versionOrChannel, sourceFilter, componentFilter);
 
-        var targetedInstallations = root.Installations
-            .Where(i => i.Component == componentFilter &&
-                        matchingSpecs.Any(i.IsOwnedBy))
-            .ToList();
+        var targetedInstallations = new List<Installation>();
+        foreach (var spec in matchingSpecs)
+        {
+            var resolution = InstallSpecResolver.Resolve(spec, root.Installations);
+            if (resolution.Error is not null)
+            {
+                Console.Error.WriteLine(resolution.Error);
+                if (resolution.UsesLastKnownRequirement)
+                {
+                    Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                        Strings.RepositoryUsingLastKnownRequirement, spec.GlobalJsonPath));
+                }
+            }
+            targetedInstallations.AddRange(resolution.MatchingInstallations);
+        }
 
         RemoveSpecsAndRunGc(manifest, manifestData, installRoot, matchingSpecs, targetedInstallations, interactive, confirm);
 

@@ -6,7 +6,7 @@ using Microsoft.Dotnet.Installation.Internal;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// The current evaluated version spec and selected installation for a saved spec. Missing or
+/// The current evaluated version spec and matching installations for a saved spec. Missing or
 /// versionless repository files are inactive; unreadable requirements remain active
 /// with a diagnostic, using the last known requirement when available.
 /// </summary>
@@ -19,7 +19,9 @@ internal sealed class InstallSpecResolution
     /// </summary>
     public UpdateChannel? Spec { get; init; }
     public GlobalJsonContents.SdkSection? GlobalJsonSdk { get; init; }
-    public Installation? Installation { get; set; }
+    /// <summary>Eligible installations ordered newest first.</summary>
+    public IReadOnlyList<Installation> MatchingInstallations { get; set; } = [];
+    public Installation? Installation => MatchingInstallations.Count > 0 ? MatchingInstallations[0] : null;
     public string? Error { get; init; }
     public bool UsesLastKnownRequirement => Error is not null && Spec is not null;
 }

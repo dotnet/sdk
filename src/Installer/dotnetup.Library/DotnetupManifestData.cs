@@ -68,25 +68,6 @@ internal class Installation
     [JsonIgnore]
     public string LayoutPath => Component.GetLayoutPath(LayoutVersion);
 
-    /// <summary>
-    /// Returns true if the spec owns this installation. Only global.json specs match the on-disk version, which the host
-    /// resolves global.json against; other channels match the build version so a daily build can't satisfy channels like latest.
-    /// </summary>
-    public bool IsOwnedBy(InstallSpec spec)
-    {
-        if (spec.Component != Component)
-        {
-            return false;
-        }
-
-        var channel = new UpdateChannel(spec.VersionOrChannel);
-        return IsSatisfiedBy(channel, Version)
-            || (spec.InstallSource == InstallSource.GlobalJson && ProductVersion is not null && IsSatisfiedBy(channel, ProductVersion));
-    }
-
-    private static bool IsSatisfiedBy(UpdateChannel channel, string version) =>
-        ReleaseVersion.TryParse(version, out var parsed) && channel.IsSatisfiedBy(parsed);
-
     public DotnetInstall ToDotnetInstall(DotnetInstallRoot installRoot) =>
         new(installRoot, new ReleaseVersion(Version), Component,
             ProductVersion is null ? null : new ReleaseVersion(ProductVersion));

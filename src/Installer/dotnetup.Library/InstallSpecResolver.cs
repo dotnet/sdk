@@ -20,25 +20,25 @@ internal static class InstallSpecResolver
         var result = Evaluate(spec);
         if (result.Spec is { } requirement)
         {
-            result.Installation = SelectInstallation(spec.Component, requirement, installations,
+            result.MatchingInstallations = GetMatchingInstallations(spec.Component, requirement, installations,
                 i => i.Component, i => ReleaseVersion.TryParse(i.Version, out var version) ? version : null,
                 spec.InstallSource == InstallSource.GlobalJson
-                    ? i => ReleaseVersion.TryParse(i.ProductVersion, out var version) ? version : null : null);
+                    ? i => ReleaseVersion.TryParse(i.ProductVersion, out var version) ? version : null : null).ToList();
         }
         return result;
     }
 
-    public static T? SelectInstallation<T>(InstallComponent component, UpdateChannel requirement,
+    /// <summary>Returns eligible installations ordered newest first.</summary>
+    public static IEnumerable<T> GetMatchingInstallations<T>(InstallComponent component, UpdateChannel requirement,
         IEnumerable<T> installations, Func<T, InstallComponent> getComponent, Func<T, ReleaseVersion?> getVersion,
-        Func<T, ReleaseVersion?>? getProductVersion = null)
+        Func<T, ReleaseVersion?>? getProductVersion)
         where T : class =>
         installations.Where(i => getComponent(i) == component)
             .Select(i => (Installation: i, Version: getVersion(i)))
             .Where(i => i.Version is { } version && (requirement.IsSatisfiedBy(version) ||
                 (getProductVersion?.Invoke(i.Installation) is { } productVersion && requirement.IsSatisfiedBy(productVersion))))
             .OrderByDescending(i => i.Version)
-            .Select(i => i.Installation)
-            .FirstOrDefault();
+            .Select(i => i.Installation);
 
     /// <summary>
     /// Evaluates a requirement using the supplied parsed contents, or the current file when none are supplied.

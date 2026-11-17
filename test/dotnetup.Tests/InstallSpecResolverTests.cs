@@ -11,6 +11,39 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class InstallSpecResolverTests
 {
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Resolve_ReturnsAllMatchesUsingCurrentOrLastKnownRepositoryConstraints(bool useSavedRequirement)
+    {
+        using var env = new TestEnvironment();
+        var path = Path.Combine(env.TempRoot, "global.json");
+        File.WriteAllText(path, useSavedRequirement ? "{broken"
+            : """{"sdk":{"version":"10.0.103","rollForward":"latestPatch","allowPrerelease":false}}""");
+        var spec = new InstallSpec
+        {
+            Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson, GlobalJsonPath = path,
+            VersionOrChannel = useSavedRequirement ? "10.0.1xx" : "9",
+            MinimumVersion = "10.0.103", AllowPrerelease = false
+        };
+        var older = new Installation { Component = InstallComponent.SDK, Version = "10.0.103" };
+        var newest = new Installation { Component = InstallComponent.SDK, Version = "10.0.105" };
+
+        var result = InstallSpecResolver.Resolve(spec,
+        [
+            new() { Component = InstallComponent.SDK, Version = "10.0.101" },
+            older,
+            new() { Component = InstallComponent.SDK, Version = "10.0.106-preview.1" },
+            newest,
+            new() { Component = InstallComponent.SDK, Version = "10.0.200" },
+            new() { Component = InstallComponent.Runtime, Version = "10.0.104" }
+        ]);
+
+        result.MatchingInstallations.Should().Equal(newest, older);
+        result.Installation.Should().BeSameAs(newest);
+        result.UsesLastKnownRequirement.Should().Be(useSavedRequirement);
+    }
+
+    [TestMethod]
     [DataRow("malformed")]
     [DataRow("unreadable")]
     [DataRow("invalid-policy")]
@@ -142,6 +175,7 @@ public class InstallSpecResolverTests
         var result = InstallSpecResolver.Resolve(spec, [daily]);
 
         result.Installation.Should().BeSameAs(daily);
+        result.MatchingInstallations.Should().ContainSingle().Which.Should().BeSameAs(daily);
         result.UsesLastKnownRequirement.Should().Be(useSavedRequirement);
     }
 
