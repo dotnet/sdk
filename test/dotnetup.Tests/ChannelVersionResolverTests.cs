@@ -49,6 +49,39 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         }
 
         [TestMethod]
+        [DoNotParallelize]
+        [DataRow("latest", "not-a-version", "10.0.202")]
+        [DataRow("10", "9.invalid", "10.0.202")]
+        [DataRow("latest", "2147483648.0", "10.0.202")]
+        [DataRow("9", "", null)]
+        public void MatchingResolutionSkipsInvalidProductVersionWithWarning(string name, string invalidVersion, string? expected)
+        {
+            var fixture = ReleaseIndexFixture.Create(version9ProductVersion: invalidVersion);
+            var loaded = new List<string>();
+            using var error = new StringWriter();
+            var originalError = Console.Error;
+            try
+            {
+                Console.SetError(error);
+                var selected = ChannelVersionResolver.GetLatestMatchingVersion(
+                    new UpdateChannel(name), InstallComponent.SDK, fixture.Index, product =>
+                    {
+                        loaded.Add(product.ProductVersion);
+                        return fixture.GetReleases(product);
+                    });
+
+                (selected?.ToString()).Should().Be(expected);
+            }
+            finally
+            {
+                Console.SetError(originalError);
+            }
+
+            loaded.Should().NotContain(invalidVersion);
+            error.ToString().Should().Contain($"invalid product version '{invalidVersion}'");
+        }
+
+        [TestMethod]
         [DataRow(null, null)]
         [DataRow(null, false)]
         [DataRow(null, true)]

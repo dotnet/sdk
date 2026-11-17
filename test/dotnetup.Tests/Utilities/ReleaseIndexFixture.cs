@@ -24,7 +24,7 @@ internal sealed class ReleaseIndexFixture
 
     public IEnumerable<ProductRelease> GetReleases(Product product) => _releases[product.ProductVersion];
 
-    public static ReleaseIndexFixture Create(string version11Phase = "preview")
+    public static ReleaseIndexFixture Create(string version11Phase = "preview", string version9ProductVersion = "9.0")
     {
         var directory = Directory.CreateTempSubdirectory("dotnetup-releases-");
         try
@@ -44,7 +44,7 @@ internal sealed class ReleaseIndexFixture
             foreach (var product in products)
             {
                 entries.Add($$"""
-                    {"channel-version":"{{product.Version}}","support-phase":"{{product.Phase}}","release-type":"{{product.Type}}",
+                    {"channel-version":"{{(product.Version == "9.0" ? version9ProductVersion : product.Version)}}","support-phase":"{{product.Phase}}","release-type":"{{product.Type}}",
                     "latest-release-date":"2026-01-01","latest-release":"{{product.Version}}.5",
                     "latest-runtime":"{{product.Version}}.5","latest-sdk":"{{product.Sdks.Max(v => new ReleaseVersion(v))}}",
                     "product":".NET","eol-date":"2028-11-01","security":false,

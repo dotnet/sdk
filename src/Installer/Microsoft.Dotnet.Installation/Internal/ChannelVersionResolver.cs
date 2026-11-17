@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -329,15 +330,16 @@ internal class ChannelVersionResolver
         IEnumerable<Product> index,
         Func<Product, IEnumerable<ProductRelease>> getReleases)
     {
-        var products = index.Where(product => IsProductInChannelScope(new Version(product.ProductVersion), channel, productMajorMinor));
+        var products = GetProductsWithValidVersions(index)
+            .Where(product => IsProductInChannelScope(product.Version, channel, productMajorMinor));
         if (channel.Name.Equals(LtsChannel, StringComparison.OrdinalIgnoreCase))
         {
-            products = products.Where(p => p.ReleaseType == ReleaseType.LTS);
+            products = products.Where(p => p.Product.ReleaseType == ReleaseType.LTS);
         }
 
         // Component versions follow the product's major/minor, so older products
         // cannot provide a greater match once this product satisfies the request.
-        foreach (var product in products.OrderByDescending(p => new Version(p.ProductVersion)))
+        foreach (var (product, _) in products.OrderByDescending(p => p.Version))
         {
             var latest = GetLatestMatchingVersion(channel, component, getReleases(product));
             if (latest is not null)
@@ -347,6 +349,22 @@ internal class ChannelVersionResolver
         }
 
         return null;
+    }
+
+    private static IEnumerable<(Product Product, Version Version)> GetProductsWithValidVersions(IEnumerable<Product> index)
+    {
+        foreach (var product in index)
+        {
+            if (Version.TryParse(product.ProductVersion, out var version))
+            {
+                yield return (product, version);
+            }
+            else
+            {
+                Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                    Strings.InvalidReleaseIndexProductVersion, product.ProductVersion));
+            }
+        }
     }
 
     private static bool IsProductInChannelScope(Version productVersion, UpdateChannel channel, (int? Major, int? Minor) productMajorMinor)

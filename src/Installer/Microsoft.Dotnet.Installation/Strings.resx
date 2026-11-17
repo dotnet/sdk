@@ -203,4 +203,8 @@
     <value>'{0}' holds a different build than {1} {2} includes, and installing would keep the existing files. Remove '{0}' or uninstall the component that installed it first to proceed.</value>
     <comment>{0}=existing SDK or framework folder path, {1}=component display name, {2}=resolved version.</comment>
   </data>
+  <data name="InvalidReleaseIndexProductVersion" xml:space="preserve">
+    <value>Warning: Skipping release-index entry with invalid product version '{0}'.</value>
+    <comment>{0}=invalid product version from the release index.</comment>
+  </data>
 </root>
