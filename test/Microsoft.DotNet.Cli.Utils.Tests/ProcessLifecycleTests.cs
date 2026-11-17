@@ -141,7 +141,9 @@ public class ProcessLifecycleTests : SdkTest
 
         startInfo.Environment["DOTNET_CLI_ENABLEAOT"] = "0";
         startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
-        startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
+        startInfo.Environment["DOTNET_GENERATE_ASPNET_CERTIFICATE"] = bool.FalseString;
+        startInfo.Environment["DOTNET_NOLOGO"] = bool.TrueString;
+        startInfo.Environment["DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK"] = bool.TrueString;
         startInfo.Environment["PATH"] =
             testDirectory.Path + Path.PathSeparator + startInfo.Environment["PATH"];
 
