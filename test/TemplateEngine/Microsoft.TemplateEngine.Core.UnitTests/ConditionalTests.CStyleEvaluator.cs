@@ -4,6 +4,7 @@
 using System.Globalization;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
@@ -34,6 +35,20 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             VariableCollection vc = new VariableCollection();
             IProcessor processor = xmlStyle ? SetupXmlStyleProcessor(vc) : SetupCStyleNoCommentsProcessor(vc);
             RunAndVerify(value, expected, processor, bufferSize);
+        }
+
+        [TestMethod]
+        public void VerifyFalseConditionAtEndOfFileWithOverlappingToken()
+        {
+            string value = "#if (1.2 > 2.5)\n#endif\n";
+            string replacementToken = value + "X";
+            IOperationProvider[] operations = CStyleNoCommentsConditionalOperations;
+            Array.Resize(ref operations, operations.Length + 1);
+            operations[^1] = new Replacement(replacementToken.TokenConfig(), "replacement", null, true);
+
+            VariableCollection vc = new VariableCollection();
+            IProcessor processor = SetupTestProcessor(operations, vc);
+            RunAndVerify(value, string.Empty, processor, 1024);
         }
 
         [TestMethod]

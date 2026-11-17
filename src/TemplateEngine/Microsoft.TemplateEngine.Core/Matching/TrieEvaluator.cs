@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
 
         internal void AdvanceTo(int sequenceNumber)
         {
-            if (sequenceNumber > _expectedSequenceNumber)
+            if (sequenceNumber >= _expectedSequenceNumber)
             {
                 // Operations can consume input without passing the skipped bytes through Accept.
                 _activePaths.Clear();
