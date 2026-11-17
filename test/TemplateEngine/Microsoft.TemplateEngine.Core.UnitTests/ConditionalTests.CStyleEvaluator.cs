@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             string replacementToken = value + "X";
             IOperationProvider[] operations = CStyleNoCommentsConditionalOperations;
             Array.Resize(ref operations, operations.Length + 1);
-            operations[^1] = new Replacement(replacementToken.TokenConfig(), "replacement", null, true);
+            operations[operations.Length - 1] = new Replacement(replacementToken.TokenConfig(), "replacement", null, true);
 
             VariableCollection vc = new VariableCollection();
             IProcessor processor = SetupTestProcessor(operations, vc);
