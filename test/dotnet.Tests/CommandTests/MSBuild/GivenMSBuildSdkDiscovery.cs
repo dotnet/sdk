@@ -21,16 +21,22 @@ public sealed class GivenMSBuildSdkDiscovery : SdkTest
 
         Directory.CreateDirectory(nestedDirectory);
         File.Copy(Path.Combine(asset.Path, "Probe.proj"), Path.Combine(nestedDirectory, "Probe.proj"), overwrite: true);
-        CopyDirectory(toolset.SdkFolderUnderTest, alternateSdk);
-        CopyDirectory(Path.Combine(toolset.DotNetRoot, "shared"), Path.Combine(alternateRoot, "shared"));
-        CopyDirectory(Path.Combine(toolset.DotNetRoot, "host"), Path.Combine(alternateRoot, "host"));
+        Directory.CreateDirectory(Path.GetDirectoryName(alternateSdk)!);
+        Directory.CreateSymbolicLink(alternateSdk, toolset.SdkFolderUnderTest);
+        Directory.CreateSymbolicLink(Path.Combine(alternateRoot, "shared"), Path.Combine(toolset.DotNetRoot, "shared"));
+        Directory.CreateSymbolicLink(Path.Combine(alternateRoot, "host"), Path.Combine(toolset.DotNetRoot, "host"));
 
         WriteGlobalJson(asset.Path, toolset.DotNetRoot, toolset.SdkVersion);
         WriteGlobalJson(nestedDirectory, alternateRoot, "99.0.100");
 
         int invocation = 0;
-        // Repeat the server-enabled case with node reuse permitted.
-        foreach (var (outOfProc, useServer) in new[] { (false, false), (true, false), (false, true), (false, true) })
+        foreach (var (outOfProc, useServer, nodeReuse) in new[]
+        {
+            (false, false, false),
+            (true, false, false),
+            (false, true, false),
+            (false, true, true)
+        })
         {
             string binlog = Path.Combine(asset.Path, $"{++invocation}.binlog");
             var command = CreateDiscoveryCommand(asset.Path, "msbuild");
@@ -38,8 +44,8 @@ public sealed class GivenMSBuildSdkDiscovery : SdkTest
             command.WithEnvironmentVariable("DOTNET_CLI_USE_MSBUILD_SERVER", useServer.ToString());
             command.WithEnvironmentVariable("MSBUILDUSESERVER", useServer ? "1" : "0");
             command.WithEnvironmentVariable("MSBUILDNOINPROCNODE", "1");
-            var result = command.Execute("Probe.proj", "-t:Probe", $"-nr:{useServer}",
-                $"-p:DiscoveryUseServer={useServer}", $"-bl:{binlog}");
+            var result = command.Execute("Probe.proj", "-t:Probe", $"-nr:{nodeReuse}",
+                $"-p:DiscoveryUseServer={useServer}", $"-p:DiscoveryNodeReuse={nodeReuse}", $"-bl:{binlog}");
             if (File.Exists(binlog))
             {
                 TestContext.AddResultFile(binlog);
@@ -119,16 +125,6 @@ public sealed class GivenMSBuildSdkDiscovery : SdkTest
         {
             sdk = new { version, paths = new[] { root }, rollForward = "disable", allowPrerelease = true }
         }));
-
-    private static void CopyDirectory(string sourceDirectory, string destinationDirectory)
-    {
-        foreach (string source in Directory.EnumerateFiles(sourceDirectory, "*", SearchOption.AllDirectories))
-        {
-            string destination = Path.Combine(destinationDirectory, Path.GetRelativePath(sourceDirectory, source));
-            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-            File.Copy(source, destination, overwrite: true);
-        }
-    }
 
     private static void AssertPaths(string projectDirectory, string sdkDirectory)
     {

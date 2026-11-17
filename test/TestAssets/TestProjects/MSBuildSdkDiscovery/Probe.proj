@@ -18,6 +18,6 @@
              BuildInParallel="true" />
     <Exec Condition="'$(Nested)' != 'true'"
           WorkingDirectory="$(MSBuildProjectDirectory)\nested"
-          Command="&quot;$(DOTNET_HOST_PATH)&quot; msbuild Probe.proj -t:Probe -p:Nested=true -nr:$(DiscoveryUseServer) -bl:2-{}.binlog" />
+          Command="&quot;$(DOTNET_HOST_PATH)&quot; msbuild Probe.proj -t:Probe -p:Nested=true -p:DiscoveryNodeReuse=$(DiscoveryNodeReuse) -nr:$(DiscoveryNodeReuse) -bl:2-{}.binlog" />
   </Target>
 </Project>
