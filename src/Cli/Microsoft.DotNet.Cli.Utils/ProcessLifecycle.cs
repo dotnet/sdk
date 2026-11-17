@@ -29,6 +29,8 @@ internal static class ProcessLifecycle
 
     internal static bool IsSignalTerminationRequested => Volatile.Read(ref s_signalExitCode) != 0;
 
+    internal static bool IsSigTermRequested => Volatile.Read(ref s_signalExitCode) == SigTermExitCode;
+
     internal static bool IsForcefulCancellationRequested => Volatile.Read(ref s_forcefulCancellationRequested) != 0;
 
     internal static bool IsInitialized => Volatile.Read(ref s_initializationCount) != 0;

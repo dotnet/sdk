@@ -146,6 +146,7 @@ internal class ProcessReaper : IDisposable
 #if !TARGET_WINDOWS && NET
     private sealed class UnixProcessReaper : ProcessReaper
     {
+        private static readonly TimeSpan s_forcefulSigTermGracePeriod = TimeSpan.FromMilliseconds(200);
         private readonly PosixSignalRegistration _sigTermRegistration;
 
         // Coordinates Dispose (typically the main thread) with HandleProcessExit,
@@ -210,15 +211,22 @@ internal class ProcessReaper : IDisposable
 
                 try
                 {
-                    if (ProcessLifecycle.IsForcefulCancellationRequested)
+                    if (ProcessLifecycle.IsForcefulCancellationRequested &&
+                        !ProcessLifecycle.IsSigTermRequested)
                     {
                         TerminateProcess();
                     }
                     else if (!_process.WaitForExit(0))
                     {
-                        // For ordinary process exit, forward SIGTERM so the child can
-                        // shut down cooperatively.
+                        // Forward SIGTERM before escalating so the child observes the
+                        // same hard-shutdown signal as the CLI.
                         _process.SafeHandle.Signal(PosixSignal.SIGTERM);
+
+                        if (ProcessLifecycle.IsForcefulCancellationRequested &&
+                            !_process.WaitForExit(s_forcefulSigTermGracePeriod))
+                        {
+                            TerminateProcess();
+                        }
                     }
 
                     _process.WaitForExit();
