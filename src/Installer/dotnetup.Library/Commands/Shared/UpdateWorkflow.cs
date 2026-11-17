@@ -233,19 +233,13 @@ internal class UpdateWorkflow
     {
         var evaluation = InstallSpecResolver.Evaluate(spec);
         usesLastKnownRequirement = evaluation.UsesLastKnownRequirement;
-        if (evaluation.Error is not null)
+        if (evaluation is { Failure: { } failure, Error: { } warning })
         {
             if (!usesLastKnownRequirement)
             {
-                throw evaluation.ErrorException switch
-                {
-                    JsonException json when !string.IsNullOrEmpty(spec.GlobalJsonPath)
-                        => GlobalJsonHelper.CreateMalformedGlobalJsonException(spec.GlobalJsonPath, json),
-                    { } ex => new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error, ex),
-                    null => new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error),
-                };
+                throw failure;
             }
-            AnsiConsole.MarkupLine(DotnetupTheme.Warning(evaluation.Error.EscapeMarkup()));
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(warning.EscapeMarkup()));
             AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
                 Strings.RepositoryUsingLastKnownRequirement, spec.GlobalJsonPath).EscapeMarkup()));
         }

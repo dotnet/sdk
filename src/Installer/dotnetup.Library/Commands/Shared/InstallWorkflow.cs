@@ -332,8 +332,7 @@ internal class InstallWorkflow
 
         if (component == InstallComponent.SDK && globalJson?.GlobalJsonPath is { } globalJsonPath)
         {
-            var contents = globalJson.GlobalJsonContents ?? GlobalJsonHelper.ReadGlobalJsonForCommand(globalJsonPath);
-            if (GlobalJsonChannelResolver.GetChannelForCommand(globalJsonPath, contents) is { } channelFromGlobalJson)
+            if (InstallSpecResolver.EvaluateGlobalJsonForCommand(globalJsonPath, globalJson.GlobalJsonContents) is { } channelFromGlobalJson)
             {
                 SpectreAnsiConsole.MarkupLine(string.Format(
                     CultureInfo.InvariantCulture,

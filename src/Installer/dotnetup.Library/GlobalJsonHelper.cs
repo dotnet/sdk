@@ -57,7 +57,7 @@ public static class GlobalJsonHelper
     /// <see cref="DotnetInstallErrorCode.MalformedGlobalJson"/> when the file is not valid global.json, or
     /// <see cref="DotnetInstallErrorCode.ContextResolutionFailed"/> when it cannot be read.
     /// </exception>
-    internal static GlobalJsonContents ReadGlobalJsonForCommand(string globalJsonPath)
+    private static GlobalJsonContents ReadGlobalJsonForCommand(string globalJsonPath)
     {
         try
         {
@@ -74,7 +74,7 @@ public static class GlobalJsonHelper
     }
 
     /// <summary>Creates the user-facing error for a global.json file that cannot be read or written.</summary>
-    internal static DotnetInstallException CreateUnreadableGlobalJsonException(string globalJsonPath, Exception ex) =>
+    internal static DotnetInstallException CreateUnreadableGlobalJsonException(string? globalJsonPath, Exception ex) =>
         new(DotnetInstallErrorCode.ContextResolutionFailed,
             string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError, globalJsonPath, ex.Message), ex);
 

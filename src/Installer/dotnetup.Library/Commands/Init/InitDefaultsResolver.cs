@@ -189,8 +189,8 @@ internal static class InitDefaultsResolver
     /// </summary>
     private static DefaultChannelDisplay ResolveChannelDisplay(GlobalJsonInfo globalJson)
     {
-        if (globalJson.GlobalJsonPath is { } globalJsonPath && globalJson.GlobalJsonContents is { } contents
-            && GlobalJsonChannelResolver.GetChannelForCommand(globalJsonPath, contents) is { } channel)
+        if (globalJson.GlobalJsonPath is { } globalJsonPath
+            && InstallSpecResolver.EvaluateGlobalJsonForCommand(globalJsonPath, globalJson.GlobalJsonContents) is { } channel)
         {
             return new DefaultChannelDisplay(channel.Name, globalJsonPath);
         }

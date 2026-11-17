@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -22,8 +23,13 @@ internal sealed class InstallSpecResolution
     /// <summary>Eligible installations ordered newest first.</summary>
     public IReadOnlyList<Installation> MatchingInstallations { get; set; } = [];
     public Installation? Installation => MatchingInstallations.Count > 0 ? MatchingInstallations[0] : null;
+    /// <summary>Warning text for commands that continue past an unreadable requirement.</summary>
     public string? Error { get; init; }
-    /// <summary>The read or parse failure behind <see cref="Error"/>, so callers can report its kind.</summary>
-    public Exception? ErrorException { get; init; }
+    /// <summary>
+    /// The user-facing error for an unreadable requirement: <see cref="DotnetInstallErrorCode.MalformedGlobalJson"/>
+    /// for invalid contents, otherwise <see cref="DotnetInstallErrorCode.ContextResolutionFailed"/>.
+    /// Callers that cannot use the last known requirement throw it.
+    /// </summary>
+    public DotnetInstallException? Failure { get; init; }
     public bool UsesLastKnownRequirement => Error is not null && Spec is not null;
 }
