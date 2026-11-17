@@ -113,7 +113,7 @@ public class ProcessLifecycleTests : SdkTest
         string commandPath = Path.Combine(testDirectory.Path, "dotnet-cancellation-test");
         File.WriteAllText(
             commandPath,
-            $"#!/bin/sh{Environment.NewLine}echo ready > '{markerPath}'{Environment.NewLine}sleep 30{Environment.NewLine}");
+            $"#!/bin/sh{Environment.NewLine}printf ready > '{markerPath}'{Environment.NewLine}sleep 30{Environment.NewLine}");
         if (!OperatingSystem.IsWindows())
         {
             File.SetUnixFileMode(
