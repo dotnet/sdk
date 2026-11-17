@@ -29,6 +29,37 @@ public class ImageBuilderTests
     }
 
     [TestMethod]
+    public void RebuiltConfigDoesNotRetainBaseContentLocations()
+    {
+        const string config = """{"architecture":"amd64","os":"linux","config":{},"rootfs":{"type":"layers","diff_ids":[]}}""";
+        var manifest = new Manifest
+        {
+            SchemaVersion = 2,
+            MediaType = MediaType.ImageManifest,
+            Config = new Descriptor
+            {
+                Digest = DigestUtils.FormatSha256Digest(DigestUtils.ComputeSha256(config)),
+                Size = System.Text.Encoding.UTF8.GetByteCount(config),
+                MediaType = MediaType.ImageConfig,
+                Data = System.Text.Encoding.UTF8.GetBytes(config),
+                Urls = ["https://example.com/old-config"],
+                Annotations = new Dictionary<string, string> { ["example.annotation"] = "retained" },
+            },
+            Layers = [],
+        };
+        var builder = new ImageBuilder(manifest, StaticKnownDigestValue, manifest.MediaType,
+            new ImageConfig(config), _loggerFactory.CreateLogger(nameof(RebuiltConfigDoesNotRetainBaseContentLocations)));
+        builder.AddLabel("new-label", "new-value");
+        BuiltImage image = builder.Build(DateTime.UnixEpoch);
+        var rebuilt = System.Text.Json.JsonSerializer.Deserialize<Manifest>(image.Manifest)!;
+        Assert.IsNull(rebuilt.Config.Data);
+        Assert.IsNull(rebuilt.Config.Urls);
+        Assert.AreEqual("retained", rebuilt.Config.Annotations!["example.annotation"]);
+        Assert.AreEqual(image.ImageDigest, rebuilt.Config.Digest);
+        Assert.AreEqual(System.Text.Encoding.UTF8.GetByteCount(image.Config), rebuilt.Config.Size);
+    }
+
+    [TestMethod]
     public void CanAddLabelsToImage()
     {
         string simpleImageConfig =

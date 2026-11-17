@@ -87,9 +87,7 @@ internal sealed class ImageBuilder
                 OrasProject.Oras.Docker.MediaType.Manifest => OrasProject.Oras.Docker.MediaType.Config,
                 _ => MediaType.ImageConfig // opinion - defaulting to modern here, but really this should never happen
             },
-            Urls = _manifest.Config.Urls,
             Annotations = _manifest.Config.Annotations,
-            Data = _manifest.Config.Data,
         };
 
         Manifest newManifest = new()
