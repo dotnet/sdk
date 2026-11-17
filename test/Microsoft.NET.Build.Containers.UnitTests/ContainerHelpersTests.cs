@@ -98,6 +98,7 @@ public class ContainerHelpersTests
     [TestMethod]
     [DataRow("6.0", true)] // baseline
     [DataRow("5.2-asd123", true)] // with commit hash
+    [DataRow("v1@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", false)]
     [DataRow(".6.0", false)] // starts with .
     [DataRow("-6.0", false)] // starts with -
     [DataRow("---", false)] // malformed

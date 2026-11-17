@@ -153,7 +153,8 @@ public static class ContainerHelpers
     /// <returns></returns>
     internal static bool IsValidImageTag(string imageTag)
     {
-        return Reference.TryParse($"registry.invalid/repository:{imageTag}", out _);
+        return Reference.TryParse($"registry.invalid/repository:{imageTag}", out var reference) &&
+            reference.ContentReference == imageTag;
     }
 
     /// <summary>
