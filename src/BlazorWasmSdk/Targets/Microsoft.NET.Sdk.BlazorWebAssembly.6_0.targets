@@ -114,7 +114,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <WasmAssembliesToBundle Condition="'%(WasmAssembliesToBundle.FileName)' == 'Microsoft.JSInterop.WebAssembly'" AOT_InternalForceToInterpret="true" />
     </ItemGroup>
   </Target>
-  
+
   <!-- For .NET 11+, when BlazorFingerprintBlazorJs is enabled, make the package-provided
      Blazor startup script's fingerprint mandatory so standalone publish uses matching
      fingerprinted filenames and HTML URLs. -->
