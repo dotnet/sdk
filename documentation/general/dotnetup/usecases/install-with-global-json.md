@@ -9,9 +9,10 @@ ms.date: 08/07/2026
 
 When you do not supply an SDK channel, `dotnetup sdk install` searches from
 the current directory toward the file system root. It uses the nearest
-existing `global.json` file. If that file is malformed, the command fails
-instead of searching a parent directory. If the file parses but doesn't
-contain a usable SDK requirement, or if no file exists, it uses `latest`.
+existing `global.json` file. If that file is unreadable, malformed, or contains
+invalid SDK settings, the command fails instead of searching a parent directory.
+Comments are allowed. If the file parses but doesn't specify an SDK version,
+or if no file exists, it uses `latest` without searching past the nearest file.
 
 ## Install the repository requirement
 
@@ -43,45 +44,57 @@ dotnetup list
 
 For an SDK version such as `10.0.103`, dotnetup maps `rollForward` as follows:
 
-| `rollForward` value | Stored dotnetup channel |
+| `rollForward` value | Dotnetup channel |
 | --- | --- |
-| Omitted or `latestPatch` | `10.0.1xx` |
-| `latestFeature` | `10.0` |
-| `latestMinor` | `10` |
-| `latestMajor` | `latest` |
-| `disable`, `patch`, `feature`, `minor`, or `major` | Exact version `10.0.103` |
+| Omitted, `patch`, or `latestPatch` | `10.0.1xx` |
+| `feature` or `latestFeature` | `10.0` |
+| `minor` or `latestMinor` | `10` |
+| `major` or `latestMajor` | `latest` |
+| `disable` | Exact version `10.0.103` |
 
-An exact requirement is pinned and is not changed by `dotnetup update`.
-The `allowPrerelease` property doesn't affect the channel that `dotnetup`
-derives. If the repository must prohibit prerelease SDKs, install an acceptable
-released version explicitly.
+Dotnetup selects the latest eligible SDK in that scope, with `sdk.version` as
+the minimum and `allowPrerelease` controlling preview eligibility. `disable`
+requires the exact version currently in the file. Install and update read the
+file again, so editing its version or policy changes the requirement.
+
+The non-`latest` policies use their `latest` counterparts for dotnetup management;
+the .NET host's selection rules are unchanged. See
+[repository SDK rules](../concepts/repositories.md#rollforward-mapping).
 
 ## Use `sdk.paths`
 
-If `global.json` contains `sdk.paths`, dotnetup uses the first path when no
-`--install-path` option is present. It resolves a relative value from the
-directory that contains `global.json`.
+If `global.json` contains `sdk.paths`, dotnetup uses the first non-null,
+non-whitespace entry when no `--install-path` option is present. It resolves
+a relative value from the directory that contains `global.json`.
 
 The install-path precedence is:
 
 1. `--install-path`
-2. The first `sdk.paths` entry
+2. The first meaningful `sdk.paths` entry
 3. The default dotnetup-managed .NET installation root
 
-### Preview limitations
+### The `$host$` sentinel
 
-The current public-preview build treats the first `sdk.paths` entry as a path.
-It doesn't interpret `$host$` as a sentinel or skip empty entries. To use the
-default dotnetup-managed installation root, omit `sdk.paths` or set
-`--install-path` explicitly.
+`$host$` is **not** a literal directory. It selects the default dotnetup-managed
+.NET installation root. Dotnetup skips empty, null, or whitespace entries while
+looking for the first meaningful entry.
+
+| First meaningful `sdk.paths` entry | Where dotnetup installs |
+| --- | --- |
+| A relative or absolute path (for example, `.dotnet`) | That path, resolved relative to the directory containing `global.json` |
+| `$host$` | The default dotnetup-managed .NET installation root |
+| No usable entry | The default dotnetup-managed .NET installation root |
+
+Because `sdk.paths` is ordered, the first meaningful entry wins.
+`["$host$", ".dotnet"]` installs to the default installation root, while
+`[".dotnet", "$host$"]` installs to `.dotnet`.
 
 ## Update `global.json`
 
 After you change `sdk.version` or `rollForward`, run `dotnetup sdk install`
-from the repository directory to apply the new requirement. Before garbage
-collection refreshes changed `global.json` sources, `dotnetup sdk update`
-processes stored requirements, so its first pass might still use the previous
-requirement.
+from the repository directory to apply the new requirement. For a registered
+repository, `dotnetup sdk update` also reads the current file before resolving
+its SDK requirement.
 
 To install the newest version in the derived channel and write that version
 back to `global.json`, run:
@@ -100,6 +113,13 @@ The update changes only `sdk.version`. It preserves the existing formatting,
 other properties, and detected text encoding.
 
 ## Remove matching repository requirements
+
+Remove `sdk.version` from `global.json`, or delete the file if it is no longer
+needed. Dotnetup picks up the removal during garbage collection and removes
+files only when no remaining requirement needs them.
+
+To use a different SDK instead, update `sdk.version` and run
+`dotnetup sdk install` from the repository directory.
 
 The uninstall command removes every matching `globaljson` specification in
 the selected installation root. It doesn't target one repository. To remove

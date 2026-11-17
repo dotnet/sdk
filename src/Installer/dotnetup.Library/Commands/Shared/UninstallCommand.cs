@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 /// </summary>
 internal abstract class UninstallCommand : CommandBase
 {
-    private readonly InstallSource _sourceFilter;
+    private readonly InstallSource? _sourceFilter;
     private readonly string? _manifestPath;
     private readonly string? _installPath;
     private readonly bool _interactive;

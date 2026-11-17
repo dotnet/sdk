@@ -107,10 +107,9 @@ internal class CommonOptions
         Description = "Custom path to the manifest file for tracking .NET installations",
     };
 
-    public static readonly Option<InstallSource> SourceOption = new("--source")
+    public static readonly Option<InstallSource?> SourceOption = new("--source")
     {
-        Description = "Filter by install source (explicit, globaljson, all).",
-        DefaultValueFactory = _ => InstallSource.Explicit
+        Description = "Filter by install source (explicit, migration, globaljson, all). Defaults to explicit and migration."
     };
 
     public static readonly Option<bool> RequireMuxerUpdateOption = new("--require-muxer-update")
