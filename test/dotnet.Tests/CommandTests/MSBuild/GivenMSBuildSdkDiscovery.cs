@@ -21,8 +21,15 @@ public sealed class GivenMSBuildSdkDiscovery : SdkTest
 
         Directory.CreateDirectory(nestedDirectory);
         File.Copy(Path.Combine(asset.Path, "Probe.proj"), Path.Combine(nestedDirectory, "Probe.proj"), overwrite: true);
-        Directory.CreateDirectory(Path.GetDirectoryName(alternateSdk)!);
-        Directory.CreateSymbolicLink(alternateSdk, toolset.SdkFolderUnderTest);
+        Directory.CreateDirectory(alternateSdk);
+        foreach (string file in Directory.EnumerateFiles(toolset.SdkFolderUnderTest))
+        {
+            File.Copy(file, Path.Combine(alternateSdk, Path.GetFileName(file)));
+        }
+        foreach (string directory in Directory.EnumerateDirectories(toolset.SdkFolderUnderTest))
+        {
+            Directory.CreateSymbolicLink(Path.Combine(alternateSdk, Path.GetFileName(directory)), directory);
+        }
         Directory.CreateSymbolicLink(Path.Combine(alternateRoot, "shared"), Path.Combine(toolset.DotNetRoot, "shared"));
         Directory.CreateSymbolicLink(Path.Combine(alternateRoot, "host"), Path.Combine(toolset.DotNetRoot, "host"));
 
@@ -128,6 +135,7 @@ public sealed class GivenMSBuildSdkDiscovery : SdkTest
 
     private static void AssertPaths(string projectDirectory, string sdkDirectory)
     {
+        sdkDirectory = TestPathUtility.ResolveTempPrefixLink(sdkDirectory);
         string[] paths = File.ReadAllLines(Path.Combine(projectDirectory, "paths.txt"));
         paths.Should().HaveCount(4);
         Path.TrimEndingDirectorySeparator(paths[0]).Should().Be(sdkDirectory);
