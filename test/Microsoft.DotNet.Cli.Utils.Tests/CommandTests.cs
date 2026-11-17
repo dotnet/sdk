@@ -6,6 +6,7 @@ using System.Diagnostics;
 namespace Microsoft.DotNet.Cli.Utils;
 
 [TestClass]
+[DoNotParallelize]
 public class CommandTests
 {
     public TestContext TestContext { get; set; } = null!;
@@ -85,5 +86,18 @@ public class CommandTests
 
         Assert.IsTrue(cancellationSource.IsCancellationRequested);
         Assert.AreEqual(42, result.ExitCode);
+    }
+
+    [TestMethod]
+    public void ProcessTerminationUsesForcefulTokenForLinkedLifecycleCancellation()
+    {
+        using IDisposable processLifecycle = ProcessLifecycle.Initialize();
+        using var linkedSource =
+            CancellationTokenSource.CreateLinkedTokenSource(ProcessLifecycle.CancellationToken);
+
+        CancellationToken processTerminationToken =
+            ProcessLifecycle.GetProcessTerminationToken(linkedSource.Token);
+
+        Assert.AreEqual(ProcessLifecycle.ForcefulCancellationToken, processTerminationToken);
     }
 }

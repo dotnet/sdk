@@ -67,7 +67,9 @@ internal static class ProcessLifecycle
     }
 
     internal static CancellationToken GetProcessTerminationToken(CancellationToken cancellationToken)
-        => cancellationToken == s_cancellationTokenSource.Token
+        // System.CommandLine links the invocation token before passing it to command
+        // actions, so lifecycle-originated tokens do not retain identity here.
+        => IsInitialized
             ? s_forcefulCancellationTokenSource.Token
             : cancellationToken;
 
