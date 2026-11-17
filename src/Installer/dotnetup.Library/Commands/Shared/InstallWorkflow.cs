@@ -152,7 +152,9 @@ internal class InstallWorkflow
         MinimalInstallSpec[] componentSpecs,
         DotnetAccessMode? selectedAccessMode = null)
     {
-        var globalJson = GlobalJsonHelper.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        var globalJson = GlobalJsonHelper.GetGlobalJsonInfo(
+            Environment.CurrentDirectory,
+            parseContents: NeedsGlobalJsonContents(componentSpecs, _command.InstallPath));
 
         DotnetAccessMode? accessMode = selectedAccessMode ?? DotnetupConfig.ReadEffectiveAccessMode();
         var target = accessMode == DotnetAccessMode.Admin
@@ -168,6 +170,15 @@ internal class InstallWorkflow
 
         return requests;
     }
+
+    /// <summary>
+    /// The global.json contents are needed only to choose the install path (no explicit path) or the
+    /// SDK channel (an SDK spec without a channel). Otherwise only the file's location is used, so a
+    /// malformed global.json does not block an install that never relies on it.
+    /// </summary>
+    internal static bool NeedsGlobalJsonContents(MinimalInstallSpec[] componentSpecs, string? installPath)
+        => installPath is null
+            || componentSpecs.Any(spec => spec.Component == InstallComponent.SDK && spec.VersionOrChannel is null);
 
     /// <summary>Where install requests are directed and how they are installed.</summary>
     /// <param name="InstallRoot">The root that receives the install.</param>
@@ -319,17 +330,10 @@ internal class InstallWorkflow
             return (new UpdateChannel(explicitChannel), false);
         }
 
-        if (component == InstallComponent.SDK && globalJson?.GlobalJsonPath is not null)
+        if (component == InstallComponent.SDK && globalJson?.GlobalJsonPath is { } globalJsonPath)
         {
-            var evaluation = InstallSpecResolver.Evaluate(new InstallSpec
-            {
-                Component = component, InstallSource = InstallSource.GlobalJson, GlobalJsonPath = globalJson.GlobalJsonPath
-            }, globalJson.GlobalJsonContents);
-            if (evaluation.Error is not null)
-            {
-                throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error);
-            }
-            if (evaluation.Spec is { } channelFromGlobalJson)
+            var contents = globalJson.GlobalJsonContents ?? GlobalJsonHelper.ReadGlobalJsonForCommand(globalJsonPath);
+            if (GlobalJsonChannelResolver.GetChannelForCommand(globalJsonPath, contents) is { } channelFromGlobalJson)
             {
                 SpectreAnsiConsole.MarkupLine(string.Format(
                     CultureInfo.InvariantCulture,
@@ -337,7 +341,7 @@ internal class InstallWorkflow
                     DotnetupTheme.Current.Dim,
                     component.GetDisplayName(),
                     channelFromGlobalJson.Name,
-                    globalJson.GlobalJsonPath));
+                    globalJsonPath));
                 return (channelFromGlobalJson, true);
             }
         }

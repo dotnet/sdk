@@ -14,6 +14,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 public static class GlobalJsonHelper
 {
+    private const int MaxMalformedDetailLength = 256;
+
     /// <summary>
     /// Reads UTF-8 global.json files, allowing comments but not trailing commas, like the muxer.
     /// SDK version and roll-forward validation belongs to the channel resolver.
@@ -25,12 +27,69 @@ public static class GlobalJsonHelper
 
     /// <summary>
     /// Searches for a global.json file starting from <paramref name="initialDirectory"/>
-    /// and walking up the directory tree. Returns the parsed contents and path if found.
+    /// and walking up the directory tree. Returns the path if found and, only when
+    /// <paramref name="parseContents"/> is set, the parsed contents. Callers must opt in to
+    /// parsing so a malformed global.json does not fail commands that never use its contents.
     /// </summary>
     /// <exception cref="DotnetInstallException">
-    /// The file cannot be read or parsed. The error code is <see cref="DotnetInstallErrorCode.ContextResolutionFailed"/>.
+    /// <paramref name="parseContents"/> is set and the file cannot be read or parsed.
+    /// See <see cref="ReadGlobalJsonForCommand"/>.
     /// </exception>
-    public static GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
+    public static GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory, bool parseContents)
+    {
+        string? globalJsonPath = FindGlobalJsonPath(initialDirectory);
+        if (globalJsonPath is null)
+        {
+            return new GlobalJsonInfo();
+        }
+
+        return new GlobalJsonInfo
+        {
+            GlobalJsonPath = globalJsonPath,
+            GlobalJsonContents = parseContents ? ReadGlobalJsonForCommand(globalJsonPath) : null
+        };
+    }
+
+    /// <summary>
+    /// Reads global.json contents that a command requires, converting failures to user-facing errors.
+    /// </summary>
+    /// <exception cref="DotnetInstallException">
+    /// <see cref="DotnetInstallErrorCode.MalformedGlobalJson"/> when the file is not valid global.json, or
+    /// <see cref="DotnetInstallErrorCode.ContextResolutionFailed"/> when it cannot be read.
+    /// </exception>
+    internal static GlobalJsonContents ReadGlobalJsonForCommand(string globalJsonPath)
+    {
+        try
+        {
+            return ReadGlobalJson(globalJsonPath);
+        }
+        catch (JsonException ex)
+        {
+            throw CreateMalformedGlobalJsonException(globalJsonPath, ex);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed,
+                string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError, globalJsonPath, ex.Message), ex);
+        }
+    }
+
+    /// <summary>
+    /// Creates the user-facing error for a global.json file that is not valid JSON or has invalid SDK settings.
+    /// The parse detail is truncated so a large invalid value cannot flood the console.
+    /// </summary>
+    internal static DotnetInstallException CreateMalformedGlobalJsonException(string globalJsonPath, JsonException ex)
+    {
+        string detail = ex.Message.Length <= MaxMalformedDetailLength
+            ? ex.Message
+            : string.Concat(ex.Message.AsSpan(0, MaxMalformedDetailLength), "...");
+        return new DotnetInstallException(
+            DotnetInstallErrorCode.MalformedGlobalJson,
+            string.Format(CultureInfo.InvariantCulture, Strings.MalformedGlobalJson, globalJsonPath, detail),
+            ex);
+    }
+
+    private static string? FindGlobalJsonPath(string initialDirectory)
     {
         string? directory = initialDirectory;
         while (!string.IsNullOrEmpty(directory))
@@ -38,33 +97,13 @@ public static class GlobalJsonHelper
             string globalJsonPath = Path.Combine(directory, "global.json");
             if (File.Exists(globalJsonPath))
             {
-                GlobalJsonContents contents;
-                try
-                {
-                    contents = ReadGlobalJson(globalJsonPath);
-                }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
-                {
-                    throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed,
-                        string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError, globalJsonPath, ex.Message), ex);
-                }
-                return new GlobalJsonInfo
-                {
-                    GlobalJsonPath = globalJsonPath,
-                    GlobalJsonContents = contents
-                };
+                return globalJsonPath;
             }
 
-            var parent = Directory.GetParent(directory);
-            if (parent == null)
-            {
-                break;
-            }
-
-            directory = parent.FullName;
+            directory = Directory.GetParent(directory)?.FullName;
         }
 
-        return new GlobalJsonInfo();
+        return null;
     }
 
     /// <summary>

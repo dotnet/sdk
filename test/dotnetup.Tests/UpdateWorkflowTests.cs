@@ -231,7 +231,7 @@ public class UpdateWorkflowTests
             .Execute(env.ManifestPath, root.Path, InstallComponent.SDK, noProgress: true, updateGlobalJson: true);
 
         var failure = update.Should().Throw<DotnetInstallException>().Which;
-        failure.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        failure.ErrorCode.Should().Be(deleteFile ? DotnetInstallErrorCode.ContextResolutionFailed : DotnetInstallErrorCode.MalformedGlobalJson);
         failure.Message.Should().Contain(path);
         if (deleteFile)
         {

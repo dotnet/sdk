@@ -45,6 +45,23 @@ internal static class GlobalJsonChannelResolver
     }
 
     /// <summary>
+    /// Resolves the channel requested by already-parsed contents for a command that relies on the file.
+    /// Returns null when the file has no SDK version.
+    /// </summary>
+    /// <exception cref="DotnetInstallException">The SDK settings are invalid (<see cref="DotnetInstallErrorCode.MalformedGlobalJson"/>).</exception>
+    public static UpdateChannel? GetChannelForCommand(string globalJsonPath, GlobalJsonContents contents)
+    {
+        try
+        {
+            return GetSdkSection(contents) is { } sdk ? CreateChannel(sdk) : null;
+        }
+        catch (JsonException ex)
+        {
+            throw GlobalJsonHelper.CreateMalformedGlobalJsonException(globalJsonPath, ex);
+        }
+    }
+
+    /// <summary>
     /// Converts validated SDK settings to the same channel model used by standalone specs.
     /// A prerelease request permits prereleases even if allowPrerelease is false.
     /// </summary>

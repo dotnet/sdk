@@ -34,7 +34,7 @@ internal static class InitDefaultsResolver
         // could pin a local install path or channel) is ignored.
         var globalJson = ignoreGlobalJson
             ? new GlobalJsonInfo()
-            : GlobalJsonHelper.GetGlobalJsonInfo(Environment.CurrentDirectory);
+            : GlobalJsonHelper.GetGlobalJsonInfo(Environment.CurrentDirectory, parseContents: true);
         var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(command.InstallPath, globalJson);
 
         if (preResolvedRequests is { Count: > 0 })
@@ -189,22 +189,10 @@ internal static class InitDefaultsResolver
     /// </summary>
     private static DefaultChannelDisplay ResolveChannelDisplay(GlobalJsonInfo globalJson)
     {
-        if (globalJson.GlobalJsonPath is not null)
+        if (globalJson.GlobalJsonPath is { } globalJsonPath && globalJson.GlobalJsonContents is { } contents
+            && GlobalJsonChannelResolver.GetChannelForCommand(globalJsonPath, contents) is { } channel)
         {
-            var evaluation = InstallSpecResolver.Evaluate(new InstallSpec
-            {
-                Component = InstallComponent.SDK,
-                InstallSource = InstallSource.GlobalJson,
-                GlobalJsonPath = globalJson.GlobalJsonPath
-            }, globalJson.GlobalJsonContents);
-            if (evaluation.Error is not null)
-            {
-                throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error);
-            }
-            if (evaluation.Spec is { } channel)
-            {
-                return new DefaultChannelDisplay(channel.Name, globalJson.GlobalJsonPath);
-            }
+            return new DefaultChannelDisplay(channel.Name, globalJsonPath);
         }
 
         return new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, null);

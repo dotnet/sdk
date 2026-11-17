@@ -260,7 +260,11 @@ internal class UpdateWorkflow
             }
             return false;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        catch (JsonException ex)
+        {
+            throw GlobalJsonHelper.CreateMalformedGlobalJsonException(globalJsonPath, ex);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed,
                 $"Failed to update '{globalJsonPath}': {ex.Message}", ex);

@@ -838,4 +838,8 @@ Or open a new terminal.</value>
     <value>The dotnetup manifest at '{0}' uses schema version {1}, but this version of dotnetup supports up to version {2}. Update dotnetup to read this manifest.</value>
     <comment>{0} is the manifest path; {1} is the manifest schema version; {2} is the highest supported schema version.</comment>
   </data>
+  <data name="MalformedGlobalJson" xml:space="preserve">
+    <value>The global.json file '{0}' is malformed: {1}</value>
+    <comment>{Locked="global.json"} {0} is the path to the global.json file. {1} is a short description of the parse or validation failure.</comment>
+  </data>
 </root>
