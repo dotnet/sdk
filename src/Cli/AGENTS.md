@@ -36,8 +36,14 @@ cancellation and terminates with the signal-derived exit code. Transaction rollb
 other critical operations may use `OverrideSoftCancellationTimeout` to extend or suspend
 the automatic deadline, but the override must never suppress an explicit forceful signal.
 Child processes observe cooperative signals directly and are killed only when forceful
-cancellation is requested. `ProcessReaper.cs` owns child-process signal forwarding and
-cleanup; do not add a competing command-line termination handler for those signals.
+cancellation is requested. System.CommandLine may wrap the lifecycle token before it
+reaches a command action, so process termination must use lifecycle initialization state
+rather than token identity to distinguish lifecycle cancellation from standalone library
+callers. On Unix, forward SIGTERM to the child before bounded forceful termination.
+`ProcessReaper.cs` owns child-process signal forwarding and cleanup; do not add a
+competing command-line termination handler for those signals. MSBuild operations use a
+two-second soft-cancellation override so submissions and loggers, including binary
+loggers, can finish cancellation cleanup; a second Ctrl+C or SIGTERM still bypasses it.
 
 ## Three-project command split
 
