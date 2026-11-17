@@ -3767,6 +3767,91 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [TestMethod]
+        public void TestMemorySafetyRulesVersion2UnsafeDefaultBaseConstructorIsNotUsed()
+        {
+            RunTest(original: """
+                public class Base
+                {
+                    public unsafe Base() { }
+                    public Base(int value) { }
+                }
+                public class Derived : Base
+                {
+                    public Derived() : base(0) { }
+                }
+                """,
+                expected: """
+                public partial class Base
+                {
+                    public unsafe Base() { }
+                    public Base(int value) { }
+                }
+                public partial class Derived : Base
+                {
+                    public Derived() : base(default) { }
+                }
+                """,
+                allowUnsafe: true,
+                useMemorySafetyRulesVersion2: true);
+        }
+
+        [TestMethod]
+        public void TestMemorySafetyRulesVersion2SynthesizedConstructorWithUnsafeBase()
+        {
+            RunTest(original: """
+                public class Base
+                {
+                    public unsafe Base(int value) { }
+                }
+                public class Derived : Base
+                {
+                    private unsafe Derived() : base(default) { }
+                }
+                """,
+                expected: """
+                public partial class Base
+                {
+                    public unsafe Base(int value) { }
+                }
+                public partial class Derived : Base
+                {
+                    internal unsafe Derived() : base(default) { }
+                }
+                """,
+                allowUnsafe: true,
+                useMemorySafetyRulesVersion2: true);
+        }
+
+        [TestMethod]
+        public void TestMemorySafetyRulesVersion2SynthesizedConstructorPrefersSafeBaseOverload()
+        {
+            RunTest(original: """
+                public class Base
+                {
+                    public unsafe Base() { }
+                    public Base(int value) { }
+                }
+                public class Derived : Base
+                {
+                    private unsafe Derived() { }
+                }
+                """,
+                expected: """
+                public partial class Base
+                {
+                    public unsafe Base() { }
+                    public Base(int value) { }
+                }
+                public partial class Derived : Base
+                {
+                    internal Derived() : base(default) { }
+                }
+                """,
+                allowUnsafe: true,
+                useMemorySafetyRulesVersion2: true);
+        }
+
+        [TestMethod]
         public void TestMemorySafetyRulesVersion2PointerBaseConstructorGeneration()
         {
             RunTest(original: """
