@@ -17,5 +17,6 @@ internal static class SelfUpdateDownloadProgress
         var task = reporter.AddTask(description, 100);
         download(new DownloadProgressReporter(task, description));
         task.Value = task.MaxValue;
+        task.Description = Strings.SelfUpdateDownloaded.EscapeMarkup();
     }
 }

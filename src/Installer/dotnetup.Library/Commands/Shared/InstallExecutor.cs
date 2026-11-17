@@ -119,16 +119,21 @@ internal class InstallExecutor
             return match;
         }
 
+        bool[] failed = requests.Select(request => batchResult.Failures.Any(f => ReferenceEquals(f.Request, request))).ToArray();
+
         for (int i = 0; i < requests.Count; i++)
         {
             var request = requests[i];
-            matches[i] = Claim(r => r.Install.Component == request.Request.Component && r.Install.Version.Equals(request.ResolvedVersion));
+            if (!failed[i])
+            {
+                matches[i] = Claim(r => r.Install.Component == request.Request.Component && r.Install.Version.Equals(request.ResolvedVersion));
+            }
         }
 
         for (int i = 0; i < requests.Count; i++)
         {
             var request = requests[i];
-            if (matches[i] is null && !batchResult.Failures.Any(f => ReferenceEquals(f.Request, request)))
+            if (matches[i] is null && !failed[i])
             {
                 matches[i] = Claim(r => r.Install.Component == request.Request.Component);
             }

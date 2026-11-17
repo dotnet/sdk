@@ -9,15 +9,17 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 /// <remarks>
 /// Task descriptions are padded for the column layout of <see cref="SpectreProgressTarget"/>, so the
-/// padding is collapsed before it is written. A task's finished description is the one it is given after
-/// reaching its maximum (for example "Installed ..."); tasks that never get one finish on dispose with
-/// their start description.
+/// padding is collapsed before it is written. A task finishes only when it is given a finished description
+/// after reaching its maximum (for example "Installed ..."), so work that fails after reaching its maximum
+/// is never reported as finished.
 /// </remarks>
-public abstract class AppendOnlyProgressTarget(int progressStepPercent) : IProgressTarget
+public abstract class AppendOnlyProgressTarget(int progressStepPercent, ProgressTaskIds? taskIds = null) : IProgressTarget
 {
     public IProgressReporter CreateProgressReporter() => new Reporter(this);
 
     private int ProgressStepPercent { get; } = progressStepPercent;
+
+    private ProgressTaskIds TaskIds { get; } = taskIds ?? new ProgressTaskIds();
 
     /// <summary>Writes that a task started.</summary>
     protected abstract void WriteStarted(int taskId, string description);
@@ -25,11 +27,8 @@ public abstract class AppendOnlyProgressTarget(int progressStepPercent) : IProgr
     /// <summary>Writes that a task crossed a step; <paramref name="currentDescription"/> may carry details such as byte counts.</summary>
     protected abstract void WriteStep(int taskId, string startDescription, string currentDescription, int percent);
 
-    /// <summary>
-    /// Writes that a task finished. <paramref name="hasFinishedDescription"/> is false when the task never
-    /// received a finished description and <paramref name="description"/> is its start description.
-    /// </summary>
-    protected abstract void WriteFinished(int taskId, string description, bool hasFinishedDescription);
+    /// <summary>Writes that a task finished with its finished description.</summary>
+    protected abstract void WriteFinished(int taskId, string description);
 
     private static string CollapseAlignmentPadding(string description) =>
         string.Join(' ', description.Split(' ', StringSplitOptions.RemoveEmptyEntries)).Replace("( ", "(", StringComparison.Ordinal);
@@ -37,14 +36,12 @@ public abstract class AppendOnlyProgressTarget(int progressStepPercent) : IProgr
     private sealed class Reporter(AppendOnlyProgressTarget target) : IProgressReporter
     {
         private readonly object _outputLock = new();
-        private readonly List<ProgressTaskImpl> _tasks = [];
 
         public IProgressTask AddTask(string description, double maxValue)
         {
             lock (_outputLock)
             {
-                var task = new ProgressTaskImpl(target, _tasks.Count + 1, description, _outputLock) { MaxValue = maxValue };
-                _tasks.Add(task);
+                var task = new ProgressTaskImpl(target, target.TaskIds.Next(), description, _outputLock) { MaxValue = maxValue };
                 target.WriteStarted(task.Id, CollapseAlignmentPadding(description));
                 return task;
             }
@@ -52,21 +49,12 @@ public abstract class AppendOnlyProgressTarget(int progressStepPercent) : IProgr
 
         public void Dispose()
         {
-            lock (_outputLock)
-            {
-                foreach (var task in _tasks)
-                {
-                    task.FinishIfUnreported();
-                }
-            }
         }
     }
 
     private sealed class ProgressTaskImpl(AppendOnlyProgressTarget target, int id, string description, object outputLock) : IProgressTask
     {
         private readonly string _startDescription = CollapseAlignmentPadding(description);
-        private string _description = description;
-        private double _value;
         private int _lastReportedPercent;
         private bool _completed;
         private bool _reported;
@@ -75,13 +63,13 @@ public abstract class AppendOnlyProgressTarget(int progressStepPercent) : IProgr
 
         public double Value
         {
-            get => _value;
+            get;
             set
             {
                 lock (outputLock)
                 {
-                    _value = value;
-                    _completed |= _value >= MaxValue;
+                    field = value;
+                    _completed |= field >= MaxValue;
                     ReportStepIfCrossed();
                 }
             }
@@ -89,34 +77,25 @@ public abstract class AppendOnlyProgressTarget(int progressStepPercent) : IProgr
 
         public string Description
         {
-            get => _description;
+            get;
             set
             {
                 lock (outputLock)
                 {
-                    _description = value;
+                    field = value;
                     string collapsed = CollapseAlignmentPadding(value);
                     // Byte-count updates keep the start text as a prefix; a new label marks the finished state.
                     if (_completed && !_reported && !collapsed.StartsWith(_startDescription, StringComparison.Ordinal))
                     {
                         _reported = true;
-                        target.WriteFinished(id, collapsed, hasFinishedDescription: true);
+                        target.WriteFinished(id, collapsed);
                     }
                 }
             }
-        }
+        } = description;
 
         public double MaxValue { get; set; }
         public bool RequiresKnownMaximum => target.ProgressStepPercent > 0;
-
-        public void FinishIfUnreported()
-        {
-            if (_completed && !_reported)
-            {
-                _reported = true;
-                target.WriteFinished(id, _startDescription, hasFinishedDescription: false);
-            }
-        }
 
         private void ReportStepIfCrossed()
         {
@@ -126,14 +105,14 @@ public abstract class AppendOnlyProgressTarget(int progressStepPercent) : IProgr
                 return;
             }
 
-            int percent = (int)(_value / MaxValue * 100) / step * step;
+            int percent = (int)(Value / MaxValue * 100) / step * step;
             if (percent <= _lastReportedPercent)
             {
                 return;
             }
 
             _lastReportedPercent = percent;
-            target.WriteStep(id, _startDescription, CollapseAlignmentPadding(_description), percent);
+            target.WriteStep(id, _startDescription, CollapseAlignmentPadding(Description), percent);
         }
     }
 }

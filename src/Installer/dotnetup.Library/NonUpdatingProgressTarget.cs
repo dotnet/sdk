@@ -20,15 +20,6 @@ public class NonUpdatingProgressTarget(int progressStepPercent = 0) : AppendOnly
         AnsiConsole.WriteLine(FormattableString.Invariant($"{startDescription}: {percent}%{detail}"));
     }
 
-    protected override void WriteFinished(int taskId, string description, bool hasFinishedDescription)
-    {
-        if (hasFinishedDescription)
-        {
-            AnsiConsole.WriteLine(description);
-        }
-        else
-        {
-            AnsiConsole.MarkupLine($"{DotnetupTheme.Brand("Completed:")} {description}");
-        }
-    }
+    protected override void WriteFinished(int taskId, string description) =>
+        AnsiConsole.WriteLine(description);
 }

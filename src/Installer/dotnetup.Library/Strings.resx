@@ -136,6 +136,10 @@
     <value>Downloading dotnetup</value>
     <comment>{Locked="dotnetup"} Download progress task description.</comment>
   </data>
+  <data name="SelfUpdateDownloaded" xml:space="preserve">
+    <value>Downloaded dotnetup</value>
+    <comment>{Locked="dotnetup"} Download progress task description after the download succeeds.</comment>
+  </data>
   <data name="SelfUpdateAlreadyUpToDate" xml:space="preserve">
     <value>Dotnetup was not updated. Current version: {0}. Available version: {1}. No newer update is available.</value>
     <comment>{Locked="Dotnetup"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</comment>

@@ -121,7 +121,7 @@ goes to stderr. Use the exit code to decide success.
 | Field | Description |
 | --- | --- |
 | `version` | Event format version. It increases only for incompatible changes. |
-| `event` | `started`, `progress`, or `finished`. |
+| `event` | `started`, `progress`, or `finished`. A task that fails gets no `finished` event. |
 | `task` | Identifies the task within one command. Concurrent installs interleave tasks. |
 | `description` | Display text for the task's current state. |
 | `percent` | Whole-number completion, on `progress` events only. A task can finish without reporting every percentage. |

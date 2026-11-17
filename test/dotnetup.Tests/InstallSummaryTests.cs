@@ -81,6 +81,22 @@ public class InstallSummaryTests
             $"Installed at {RootPath}.");
     }
 
+    [TestMethod]
+    public void Summary_DoesNotGiveFailedRequestTheSuccessOfAnotherRequestForTheSameVersion()
+    {
+        var failedRequest = Request(InstallComponent.SDK, "10.0.100");
+        var succeededRequest = Request(InstallComponent.SDK, "10.0.100");
+        var batch = new InstallBatchResult(
+            [Result(succeededRequest, downloadedBytes: 31_200_000)],
+            [new InstallFailure(failedRequest, new DotnetInstallException(DotnetInstallErrorCode.DownloadFailed, "boom"))]);
+
+        string sdk = InstallComponent.SDK.GetDisplayName();
+        CaptureLines(() => InstallExecutor.DisplaySummaryInRequestOrder([failedRequest, succeededRequest], batch, RootPath)).Should().Equal(
+            $"  {sdk} 10.0.100  failed: boom",
+            $"  {sdk} 10.0.100  installed (29.8 MB)",
+            $"Installed at {RootPath}.");
+    }
+
     private static ResolvedInstallRequest Request(InstallComponent component, string version) =>
         new(new DotnetInstallRequest(s_root, new UpdateChannel(version), component, new InstallRequestOptions()), new ReleaseVersion(version));
 

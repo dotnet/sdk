@@ -34,7 +34,7 @@ internal static class ProgressTargets
     {
         ProgressMode.None => new NullProgressTarget(),
         ProgressMode.Lines => new NonUpdatingProgressTarget(LinesProgressStepPercent),
-        ProgressMode.Json => new JsonProgressTarget(JsonProgressOutput.Events),
+        ProgressMode.Json => new JsonProgressTarget(JsonProgressOutput.Events, JsonProgressOutput.TaskIds),
         _ => new SpectreProgressTarget(),
     };
 }

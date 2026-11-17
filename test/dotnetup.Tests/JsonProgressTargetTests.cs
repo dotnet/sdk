@@ -63,17 +63,48 @@ public class JsonProgressTargetTests
     }
 
     [TestMethod]
-    public void TaskWithoutFinishedDescription_FinishesOnDisposeWithStartDescription()
+    public void DownloadThatFailsAfterAllBytesArrive_DoesNotFinish()
     {
         using var output = new StringWriter();
-        using (var reporter = new JsonProgressTarget(output).CreateProgressReporter())
+        Action download = () =>
         {
-            reporter.AddTask("Downloading dotnetup", 100).Value = 100;
+            using var reporter = new JsonProgressTarget(output).CreateProgressReporter();
+            var task = reporter.AddTask("Downloading dotnetup", 100);
+            var progress = new DownloadProgressReporter(task, "Downloading dotnetup");
+            progress.Report(new DownloadProgress(512, 1024));
+            progress.Report(new DownloadProgress(1024, 1024));
+            throw new InvalidOperationException("Hash mismatch.");
+        };
+
+        download.Should().Throw<InvalidOperationException>();
+        ReadEvents(output).Select(e => (e.Event, e.Percent)).Should().Equal(("started", (int?)null), ("progress", 50));
+    }
+
+    [TestMethod]
+    public void TargetsCreatedWithinOneCommand_ShareTaskIds()
+    {
+        TextWriter originalOut = Console.Out;
+        using var stdout = new StringWriter();
+        try
+        {
+            Console.SetOut(stdout);
+            using (JsonProgressOutput.Begin())
+            {
+                // Update installs each spec with its own target and reporter.
+                for (int spec = 0; spec < 2; spec++)
+                {
+                    using var reporter = ProgressTargets.Create(ProgressMode.Json).CreateProgressReporter();
+                    reporter.AddTask("Downloading .NET SDK", 100);
+                    reporter.AddTask("Installing .NET SDK", 100);
+                }
+            }
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
         }
 
-        ReadEvents(output).Select(e => (e.Event, e.Description)).Should().Equal(
-            ("started", "Downloading dotnetup"),
-            ("finished", "Downloading dotnetup"));
+        ReadEvents(stdout).Select(e => e.Task).Should().Equal(1, 2, 3, 4);
     }
 
     [TestMethod]

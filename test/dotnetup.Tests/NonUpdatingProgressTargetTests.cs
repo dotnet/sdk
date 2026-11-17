@@ -51,18 +51,23 @@ public class NonUpdatingProgressTargetTests
     }
 
     [TestMethod]
-    public void TaskWithoutFinishedLabel_ReportsCompletedOnceOnDispose()
+    public void DownloadThatFailsAfterAllBytesArrive_DoesNotReportCompletion()
     {
         string[] lines = CaptureLines(() =>
         {
-            using var reporter = new NonUpdatingProgressTarget().CreateProgressReporter();
-            var task = reporter.AddTask("Downloading dotnetup", 100);
-            var progress = new DownloadProgressReporter(task, "Downloading dotnetup");
-            progress.Report(new DownloadProgress(1024 * 1024, 1024 * 1024));
-            task.Value = task.MaxValue;
+            Action download = () =>
+            {
+                using var reporter = new NonUpdatingProgressTarget().CreateProgressReporter();
+                var task = reporter.AddTask("Downloading dotnetup", 100);
+                var progress = new DownloadProgressReporter(task, "Downloading dotnetup");
+                progress.Report(new DownloadProgress(1024 * 1024, 1024 * 1024));
+                throw new InvalidOperationException("Hash mismatch.");
+            };
+
+            download.Should().Throw<InvalidOperationException>();
         });
 
-        lines.Should().Equal("Downloading dotnetup...", "Completed: Downloading dotnetup");
+        lines.Should().Equal("Downloading dotnetup...");
     }
 
     [TestMethod]

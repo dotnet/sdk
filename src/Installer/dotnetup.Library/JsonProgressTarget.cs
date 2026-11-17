@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Text;
 using System.Text.Json;
 using Spectre.Console;
 
@@ -13,7 +12,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// <c>{"version":1,"event":"started|progress|finished","task":1,"description":"...","percent":25}</c>,
 /// where <c>percent</c> appears only on <c>progress</c> events.
 /// </summary>
-public sealed class JsonProgressTarget(TextWriter output) : AppendOnlyProgressTarget(progressStepPercent: 1)
+public sealed class JsonProgressTarget(TextWriter output, ProgressTaskIds? taskIds = null) : AppendOnlyProgressTarget(progressStepPercent: 1, taskIds)
 {
     public const int EventVersion = 1;
 
@@ -25,7 +24,7 @@ public sealed class JsonProgressTarget(TextWriter output) : AppendOnlyProgressTa
     protected override void WriteStep(int taskId, string startDescription, string currentDescription, int percent) =>
         WriteEvent("progress", taskId, currentDescription, percent);
 
-    protected override void WriteFinished(int taskId, string description, bool hasFinishedDescription) =>
+    protected override void WriteFinished(int taskId, string description) =>
         WriteEvent("finished", taskId, description, percent: null);
 
     private void WriteEvent(string eventName, int taskId, string description, int? percent)
@@ -60,17 +59,20 @@ public sealed class JsonProgressTarget(TextWriter output) : AppendOnlyProgressTa
 /// </summary>
 internal static class JsonProgressOutput
 {
-    private static TextWriter? s_events;
+    private static Scope? s_scope;
 
     /// <summary>The writer for JSON progress events: the original stdout inside <see cref="Begin"/>, otherwise stdout.</summary>
-    public static TextWriter Events => s_events ?? Console.Out;
+    public static TextWriter Events => s_scope?.Events ?? Console.Out;
+
+    /// <summary>Task IDs shared by every JSON progress target inside <see cref="Begin"/>, so IDs are unique per command.</summary>
+    public static ProgressTaskIds TaskIds => s_scope?.TaskIds ?? new ProgressTaskIds();
 
     public static IDisposable Begin()
     {
         TextWriter stdout = Console.Out;
         IAnsiConsole previousConsole = AnsiConsole.Console;
 
-        s_events = stdout;
+        s_scope = new Scope(stdout, previousConsole);
         Console.SetOut(Console.Error);
         AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings { Out = new AnsiConsoleOutput(Console.Error) });
         if (Console.IsErrorRedirected)
@@ -78,16 +80,20 @@ internal static class JsonProgressOutput
             AnsiConsole.Profile.Width = int.MaxValue;
         }
 
-        return new Scope(stdout, previousConsole);
+        return s_scope;
     }
 
     private sealed class Scope(TextWriter stdout, IAnsiConsole previousConsole) : IDisposable
     {
+        public TextWriter Events => stdout;
+
+        public ProgressTaskIds TaskIds { get; } = new();
+
         public void Dispose()
         {
             Console.SetOut(stdout);
             AnsiConsole.Console = previousConsole;
-            s_events = null;
+            s_scope = null;
         }
     }
 }
