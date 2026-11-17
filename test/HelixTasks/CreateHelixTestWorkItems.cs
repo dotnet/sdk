@@ -3,7 +3,6 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Framework;
-using Newtonsoft.Json;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.SdkCustomHelix.Sdk
