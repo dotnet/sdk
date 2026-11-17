@@ -158,6 +158,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
 
         if (!processSpec.UseShellExecute)
         {
+            // Inherit only standard handles, not unrelated handles held by the watch process.
             process.StartInfo.InheritedHandles = [];
         }
 

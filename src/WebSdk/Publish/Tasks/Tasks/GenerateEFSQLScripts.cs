@@ -111,6 +111,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 if (!isLoggingEnabled)
                 {
                     using SafeFileHandle nullHandle = File.OpenNullHandle();
+                    psi.RedirectStandardOutput = false;
+                    psi.RedirectStandardError = false;
                     psi.StandardOutputHandle = nullHandle;
                     psi.StandardErrorHandle = nullHandle;
 
@@ -182,9 +184,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                     if (!process.HasExited)
                     {
                         process.Kill();
+                        // A finite wait does not join output callbacks on Framework.
+                        process.WaitForExit(int.MaxValue);
                     }
-
-                    process.WaitForExit(); // The finite wait doesn't join the output callbacks on .NET Framework.
                 }
             }
 

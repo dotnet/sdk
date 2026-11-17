@@ -57,9 +57,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                         try
                         {
                             using Process process = Process.GetProcessById(response.ServerProcessId);
-                            await process.WaitForExitStatusAsync(Cancelled).ConfigureAwait(false);
+                            // The server is not our child; status waits do not support non-child processes on Unix.
+                            await process.WaitForExitAsync(Cancelled).ConfigureAwait(false);
                         }
-                        catch (Exception ex)
+                        catch (Exception ex) when (ex is not OperationCanceledException)
                         {
                             // There is an inherent race here with the server process.  If it has already shutdown
                             // by the time we try to access it then the operation has succeeded.
@@ -70,7 +71,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                     }
                 }
             }
-            catch (Exception ex) when (IsServerRunning())
+            catch (Exception ex) when (ex is not OperationCanceledException && IsServerRunning())
             {
                 // Ignore an exception that occurred while the server was shutting down.
                 Error.Write(ex);
