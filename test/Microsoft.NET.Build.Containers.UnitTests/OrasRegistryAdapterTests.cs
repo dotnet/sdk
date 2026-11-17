@@ -200,6 +200,41 @@ public class OrasRegistryAdapterTests
     }
 
     [TestMethod]
+    [DataRow("docker.io")]
+    [DataRow("https://index.docker.io/v1/")]
+    [DataRow("registry-1.docker.io")]
+    public async Task DockerHubCredentialsSurviveRegistryAliasRewriting(string credentialKey)
+    {
+        string authFile = Path.GetTempFileName();
+        string? previousFile = Environment.GetEnvironmentVariable("REGISTRY_AUTH_FILE");
+        var previousCredentials = CredentialEnvironmentVariables.ToDictionary(variable => variable, Environment.GetEnvironmentVariable);
+        try
+        {
+            foreach (string variable in CredentialEnvironmentVariables)
+            {
+                Environment.SetEnvironmentVariable(variable, null);
+            }
+            string auth = Convert.ToBase64String(Encoding.UTF8.GetBytes("hub-user:hub-password"));
+            await File.WriteAllTextAsync(authFile,
+                System.Text.Json.JsonSerializer.Serialize(new { auths = new Dictionary<string, object> { [credentialKey] = new { auth } } }), TestContext.CancellationToken);
+            Environment.SetEnvironmentVariable("REGISTRY_AUTH_FILE", authFile);
+            var provider = new OrasCredentialProvider(RegistryMode.Pull, "registry-1.docker.io");
+            var credential = await provider.ResolveCredentialAsync("registry-1.docker.io", TestContext.CancellationToken);
+            Assert.AreEqual("hub-user", credential.Username);
+            Assert.AreEqual("hub-password", credential.Password);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("REGISTRY_AUTH_FILE", previousFile);
+            foreach ((string variable, string? value) in previousCredentials)
+            {
+                Environment.SetEnvironmentVariable(variable, value);
+            }
+            File.Delete(authFile);
+        }
+    }
+
+    [TestMethod]
     [DataRow("https://auth.example.com/token", false)]
     [DataRow("https://auth.example.com:8443/token", false)]
     [DataRow("https://203.0.113.10/token", false)]

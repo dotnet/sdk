@@ -81,6 +81,18 @@ internal sealed class OrasCredentialProvider(RegistryMode mode, string registryA
             catch
             {
             }
+
+            // ORAS uses the registry endpoint, while Podman auth files can use docker.io.
+            if (registry != "docker.io")
+            {
+                try
+                {
+                    return await CredsProvider.GetCredentialsAsync("docker.io").ConfigureAwait(false);
+                }
+                catch
+                {
+                }
+            }
         }
 
         try
