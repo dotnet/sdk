@@ -91,10 +91,6 @@ public class Program
         try
         {
             exitCode = ProcessArgsAndExecute(args);
-            if (ProcessLifecycle.TryGetSignalExitCode(ProcessLifecycle.CancellationToken, out int signalExitCode))
-            {
-                exitCode = signalExitCode;
-            }
             s_mainActivity?.AddTag("process.exit.code", exitCode)?.SetStatus(ActivityStatusCode.Ok);
             return exitCode;
         }

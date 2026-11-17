@@ -257,10 +257,6 @@ static unsafe partial class NativeEntryPoint
                             try
                             {
                                 exitCode = CommandInvocation.ExecuteInternalCommand(parseResult, aotCancellationToken);
-                                if (ProcessLifecycle.TryGetSignalExitCode(aotCancellationToken, out int signalExitCode))
-                                {
-                                    exitCode = signalExitCode;
-                                }
                                 success = true;
                                 aotHandledInProcess = true;
                                 SendAotParserTelemetry(parseResult, globalJsonState);
@@ -286,10 +282,6 @@ static unsafe partial class NativeEntryPoint
                         out exitCode,
                         out success))
                     {
-                        if (ProcessLifecycle.TryGetSignalExitCode(aotCancellationToken, out int signalExitCode))
-                        {
-                            exitCode = signalExitCode;
-                        }
                         aotHandledInProcess = true;
                         return exitCode;
                     }
