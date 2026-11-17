@@ -41,7 +41,9 @@ public static class BuildCommand
                 NoCache = true,
             },
             createPhysicalCommand: (msbuildArgs, msbuildPath) => new RestoringCommand(
-                msbuildArgs: msbuildArgs.CloneWithAdditionalArgs("-consoleloggerparameters:Summary"),
+                msbuildArgs: msbuildArgs.Verbosity?.IsQuiet() == true
+                    ? msbuildArgs
+                    : msbuildArgs.CloneWithAdditionalArgs("-consoleloggerparameters:Summary"),
                 noRestore: noRestore,
                 msbuildPath: msbuildPath,
                 userProfileDir: null,

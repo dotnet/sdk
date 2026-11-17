@@ -78,6 +78,38 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
+        [DataRow(new string[] { "-v", "q" })]
+        [DataRow(new string[] { "-v", "quiet" })]
+        [DataRow(new string[] { "--verbosity", "quiet" })]
+        [DataRow(new string[] { "/v:q" })]
+        [DataRow(new string[] { "-verbosity:quiet" })]
+        public void QuietVerbosityDoesNotForceBuildSummary(string[] args)
+        {
+            CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
+            {
+                var msbuildPath = "<msbuildpath>";
+                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
+
+                command.GetArgumentTokensToMSBuild().Should().NotContain("-consoleloggerparameters:Summary");
+            });
+        }
+
+        [TestMethod]
+        [DataRow(new string[] { "-v", "m" })]
+        [DataRow(new string[] { "-v", "n" })]
+        [DataRow(new string[] { "/v:diag" })]
+        public void NonQuietVerbosityKeepsBuildSummary(string[] args)
+        {
+            CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
+            {
+                var msbuildPath = "<msbuildpath>";
+                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
+
+                command.GetArgumentTokensToMSBuild().Should().Contain("-consoleloggerparameters:Summary");
+            });
+        }
+
+        [TestMethod]
         [DataRow(new string[] { "-f", "tfm" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "--property:TargetFramework=tfm" })]
