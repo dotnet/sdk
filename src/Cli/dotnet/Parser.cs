@@ -599,7 +599,7 @@ public static class Parser
             }
             else if (command is VSTestCommandDefinition)
             {
-                new VSTestForwardingApp(["--help"]).Execute(ProcessLifecycle.CancellationToken);
+                new VSTestForwardingApp(["--help"], useArtifactsDirectory: false).Execute(ProcessLifecycle.CancellationToken);
             }
             else if (command is FormatCommandDefinition format)
             {
