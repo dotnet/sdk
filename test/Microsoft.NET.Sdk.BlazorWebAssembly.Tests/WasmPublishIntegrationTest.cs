@@ -1642,13 +1642,36 @@ public class TestReference
 
         [TestMethod]
         [RequiresMSBuildVersion("17.12")]
-        public void Publish_StandaloneBlazorWasm_FingerprintsStartupScript()
+        [DataRow(false)]
+        [DataRow(true)]
+        public void Publish_StandaloneBlazorWasm_FingerprintsStartupScript(bool noBuild)
         {
-            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer");
-            var publishCommand = CreatePublishCommand(testInstance, "Client");
-            ExecuteCommand(publishCommand).Should().Pass();
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer",
+                identifier: noBuild ? "StandaloneWasmNoBuild" : "StandaloneWasm");
+            if (noBuild)
+            {
+                var buildCommand = CreateBuildCommand(testInstance, "Client");
+                ExecuteCommand(buildCommand, "/p:Configuration=Release").Should().Pass();
+            }
 
-            var wwwroot = Path.Combine(publishCommand.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot");
+            var publishCommand = CreatePublishCommand(testInstance, "Client");
+            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm, "Release").ToString();
+            if (Directory.Exists(publishDirectory))
+            {
+                Directory.Delete(publishDirectory, recursive: true);
+            }
+
+            if (noBuild)
+            {
+                ExecuteCommand(publishCommand, "/p:Configuration=Release", "/p:NoBuild=true",
+                    "/p:BuildProjectReferences=false").Should().Pass();
+            }
+            else
+            {
+                ExecuteCommand(publishCommand, "/p:Configuration=Release").Should().Pass();
+            }
+
+            var wwwroot = Path.Combine(publishDirectory, "wwwroot");
             var html = File.ReadAllText(Path.Combine(wwwroot, "index.html"));
             var scriptPath = Regex.Match(html,
                 @"src=""(?<path>_framework/blazor\.webassembly\.[a-z0-9]{10}\.js)""").Groups["path"].Value;
