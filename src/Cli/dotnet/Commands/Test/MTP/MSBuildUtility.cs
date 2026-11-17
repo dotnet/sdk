@@ -384,9 +384,9 @@ internal static class MSBuildUtility
                         evaluationContext,
                         project.Configuration,
                         project.Platform,
-                        // The solution was already restored and built above, so test-project properties
-                        // imported from NuGet packages are reliable here.
-                        requireTestProject: true);
+                        // The solution was already restored and built above, so IsTestingPlatformApplication
+                        // imported from NuGet packages is reliable here.
+                        requireTestingPlatformApplication: true);
 
                     if (evaluation?.SupportsDeviceSelection == true)
                     {
