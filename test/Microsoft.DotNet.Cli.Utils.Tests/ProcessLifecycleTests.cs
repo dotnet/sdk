@@ -41,6 +41,21 @@ public class ProcessLifecycleTests : SdkTest
     }
 
     [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void ConsoleCtrlCCancelsTokenAndForcesTerminationWhenCancellationIsIgnored()
+        => VerifyCancellationSignal(PosixSignal.SIGINT, expectedForcedExitCode: 130);
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void RepeatedSigIntTerminatesAnUncooperativeProcess()
+        => VerifyRepeatedSignal(PosixSignal.SIGINT, expectedExitCode: 130);
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void RepeatedConsoleCtrlCTerminatesAnUncooperativeProcess()
+        => VerifyRepeatedSignal(PosixSignal.SIGINT, expectedExitCode: 130);
+
+    [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void SigIntForcesTerminationAfterSoftCancellationTimeout()
     {
@@ -233,13 +248,93 @@ public class ProcessLifecycleTests : SdkTest
         reaperParent.ExitCode.Should().Be(143);
     }
 
+    private void VerifyCancellationSignal(PosixSignal signal, int expectedForcedExitCode)
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+
+        using (Process cooperativeChild = StartChild("cooperative", testDirectory.Path))
+        {
+            try
+            {
+                WaitForMarker(testDirectory.Path, "ready");
+                SendSignal(cooperativeChild, testDirectory.Path, signal);
+                WaitForMarker(testDirectory.Path, "signal-cancelled");
+                cooperativeChild.WaitForExit(s_waitTimeout).Should().BeTrue();
+                cooperativeChild.ExitCode.Should().Be(130);
+            }
+            finally
+            {
+                StopChild(cooperativeChild);
+            }
+        }
+
+        using (Process uncooperativeChild = StartChild("uncooperative", testDirectory.Path))
+        {
+            try
+            {
+                WaitForMarker(testDirectory.Path, "ready");
+                SendSignal(uncooperativeChild, testDirectory.Path, signal);
+                uncooperativeChild.WaitForExit(s_waitTimeout).Should().BeTrue();
+                uncooperativeChild.ExitCode.Should().Be(expectedForcedExitCode);
+            }
+            finally
+            {
+                StopChild(uncooperativeChild);
+            }
+        }
+    }
+
+    private void VerifyRepeatedSignal(PosixSignal signal, int expectedExitCode)
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+        using Process child = StartChild("repeated", testDirectory.Path);
+        try
+        {
+            WaitForMarker(testDirectory.Path, "ready");
+            SendSignal(child, testDirectory.Path, signal);
+            WaitForMarker(testDirectory.Path, "signal-cancelled");
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            SendSignal(child, testDirectory.Path, signal, sequence: 2);
+            child.WaitForExit(s_waitTimeout).Should().BeTrue();
+            child.ExitCode.Should().Be(expectedExitCode);
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
+        }
+        finally
+        {
+            StopChild(child);
+        }
+    }
+
     private static Process StartChild(string childMode, string testDirectory)
     {
         string markerPath = GetMarkerPath(testDirectory);
         File.Delete(markerPath);
+        File.Delete(markerPath + ".signal-1");
+        File.Delete(markerPath + ".signal-2");
         Process process = CreateChildProcess(childMode, testDirectory);
         process.Start();
         return process;
+    }
+
+    private static void SendSignal(Process child, string testDirectory, PosixSignal signal, int sequence = 1)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            File.WriteAllText(Path.Combine(testDirectory, $"signal-marker.signal-{sequence}"), "");
+        }
+        else
+        {
+            child.SafeHandle.Signal(signal).Should().BeTrue();
+        }
+    }
+
+    private static void StopChild(Process child)
+    {
+        if (!child.HasExited)
+        {
+            child.Kill(entireProcessTree: true);
+            child.WaitForExit(s_waitTimeout).Should().BeTrue();
+        }
     }
 
     private static Process CreateChildProcess(string childMode, string testDirectory)
