@@ -49,6 +49,9 @@ internal sealed class RunFileBuildCacheEntry
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
     public HashSet<AdditionalSource> AdditionalSources { get; }
 
+    /// <summary>Gets or sets the full paths of files produced in the build output directory.</summary>
+    public ImmutableArray<string> BuildOutputs { get; set; } = [];
+
     /// <summary>Gets or sets the build level used to produce this entry.</summary>
     public BuildLevel BuildLevel { get; set; }
 

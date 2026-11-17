@@ -14,82 +14,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
     public class WasmAoTPublishIntegrationTest : WasmPublishIntegrationTestBase
     {
         [TestMethod]
-        public void AoT_Publish_InRelease_Works()
-        {
-            // Arrange
-            var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" })
-                .WithProjectChanges((p, doc) =>
-                {
-                    var itemGroup = new XElement("PropertyGroup");
-                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
-                    doc.Root.Add(itemGroup);
-                });
-
-            File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
-
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute("/p:Configuration=Release").Should().Pass();
-
-            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm, "Release");
-
-            var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
-
-            var expectedFiles = new[]
-            {
-                $"wwwroot/_framework/{WasmBootConfigFileName}",
-                "wwwroot/_framework/blazor.webassembly.js",
-                "wwwroot/_framework/dotnet.native.wasm",
-                "wwwroot/_framework/blazorwasm.wasm",
-                "wwwroot/_framework/System.Text.Json.wasm",
-                "wwwroot/_content/RazorClassLibrary/wwwroot/exampleJsInterop.js",
-                "wwwroot/_content/RazorClassLibrary/styles.css",
-                "wwwroot/index.html",
-                "wwwroot/js/LinkedScript.js",
-                "wwwroot/blazorwasm.styles.css",
-                "wwwroot/css/app.css",
-                "web.config"
-            };
-
-            publishDirectory.Should().HaveFiles(expectedFiles);
-
-            new FileInfo(Path.Combine(blazorPublishDirectory, "css", "app.css")).Should().Contain(".publish");
-        }
-
-        [TestMethod]
-        public void AoT_Publish_WithExistingWebConfig_Works()
-        {
-            // Arrange
-            var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" })
-                .WithProjectChanges((p, doc) =>
-                {
-                    var itemGroup = new XElement("PropertyGroup");
-                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
-                    doc.Root.Add(itemGroup);
-                });
-
-            var webConfigContents = "test webconfig contents";
-            File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "web.config"), webConfigContents);
-
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute("/p:Configuration=Release").Should().Pass();
-
-            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm, "Release");
-
-            var webConfig = new BuildCommand(testInstance, "blazorwasm").GetOutputDirectory(configuration: "Release").File("web.config");
-
-            // Verify web.config
-            webConfig.Should().Exist();
-            webConfig.Should().Contain(webConfigContents);
-        }
-
-        [TestMethod]
-        public void AoT_Publish_HostedAppWithScopedCss_VisualStudio()
+        public void ReadyToRun_Publish_HostedAppWithScopedCss_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm", "blazorhosted" })
+            var testInstance = CreateAspNetSdkTestAssetWithReadyToRun(testAppName, new[] { "blazorwasm" })
                 .WithProjectChanges((p, doc) =>
                 {
                     if (Path.GetFileName(p) == "blazorwasm.csproj")
@@ -101,6 +30,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
                 });
 
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
+
+            // ReadyToRun is a publish-time operation; publish the client first so this test verifies the CoreCLR compiler output.
+            var blazorPublishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(blazorPublishCommand, "/p:Configuration=Release").Should().Pass();
+
+            var clientPublishDirectory = blazorPublishCommand.GetOutputDirectory(DefaultTfm, "Release");
+            AssertReadyToRunAndNativeRelink(testInstance, clientPublishDirectory);
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
             var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
@@ -184,24 +120,70 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        private TestAsset CreateAspNetSdkTestAssetWithAot(
+        private TestAsset CreateAspNetSdkTestAssetWithReadyToRun(
             string testAsset,
-            string[] projectsToAoT,
+            string[] projectsToReadyToRun,
             [CallerMemberName] string callerName = "")
         {
-            return CreateAspNetSdkTestAsset(testAsset, callerName: callerName, identifier: "AoT")
+            return CreateAspNetSdkTestAsset(testAsset, callerName: callerName, identifier: "ReadyToRun")
                     .WithProjectChanges((project, document) =>
                     {
-                        if (projectsToAoT.Contains(Path.GetFileNameWithoutExtension(project)))
+                        if (projectsToReadyToRun.Contains(Path.GetFileNameWithoutExtension(project)))
                         {
-                            document.Descendants("PropertyGroup").First().Add(new XElement("RunAoTCompilation", "true"));
+                            var propertyGroup = new XElement("PropertyGroup");
+                            propertyGroup.Add(new XElement("PublishReadyToRun", "true"));
+                            propertyGroup.Add(new XElement("WasmBuildNative", "true"));
+                            document.Root.Add(propertyGroup);
 
-                            foreach (var item in document.Descendants("PackageReference"))
-                            {
-                                item.SetAttributeValue("Version", "6.0.0");
-                            }
+                            // Remove once the fix for https://github.com/dotnet/runtime/issues/136499 flows into the runtime packs.
+                            document.Root.Add(new XElement("Target",
+                                new XAttribute("Name", "PruneRuntimePackReadyToRunImagesForTest"),
+                                new XAttribute("BeforeTargets", "_HandleFileConflictsForPublish"),
+                                new XElement("ItemGroup",
+                                    new XElement("_RuntimePackReadyToRunImages",
+                                        new XAttribute("Include", "@(ResolvedRuntimePack->'%(PackageDirectory)/runtimes/browser-wasm/native/r2r/*.wasm')")),
+                                    new XElement("ResolvedFileToPublish",
+                                        new XAttribute("Remove", "@(_RuntimePackReadyToRunImages)")))));
                         }
                     });
+        }
+
+        private void AssertReadyToRunAndNativeRelink(TestAsset testInstance, DirectoryInfo publishDirectory)
+        {
+            var projectDirectory = Path.Combine(testInstance.TestRoot, "blazorwasm");
+            var readyToRunImage = new FileInfo(Path.Combine(projectDirectory, "obj", "Release", DefaultTfm, "R2R", "System.Private.CoreLib.wasm"));
+            readyToRunImage.Should().Exist();
+            readyToRunImage.Length.Should().BeGreaterThan(0);
+
+            var relinkedNative = Path.Combine(projectDirectory, "obj", "Release", DefaultTfm, "wasm", "for-publish", "dotnet.native.wasm");
+            var publishedNative = Path.Combine(publishDirectory.FullName, "wwwroot", "_framework", "dotnet.native.wasm");
+            var runtimePackNative = GetRuntimePackNativeFile(projectDirectory);
+
+            File.Exists(relinkedNative).Should().BeTrue($"Expected the relinked native output at '{relinkedNative}'.");
+            File.Exists(publishedNative).Should().BeTrue($"Expected the published native output at '{publishedNative}'.");
+            File.ReadAllBytes(publishedNative).SequenceEqual(File.ReadAllBytes(relinkedNative)).Should().BeTrue("the publish output should use the relinked native bundle");
+            File.ReadAllBytes(publishedNative).SequenceEqual(File.ReadAllBytes(runtimePackNative)).Should().BeFalse("the publish output should not copy the runtime-pack native bundle");
+        }
+
+        private string GetRuntimePackNativeFile(string projectDirectory)
+        {
+            // Workload and PackageDownload packs are not entries in project.assets.json's libraries.
+            var command = new GetValuesCommand(Log, projectDirectory, DefaultTfm, "ResolvedRuntimePack", GetValuesCommand.ValueType.Item)
+            {
+                Configuration = "Release",
+                DependsOnTargets = "ResolveFrameworkReferences",
+                MetadataNames = new List<string> { "RuntimeIdentifier", "PackageDirectory" }
+            };
+            ExecuteCommand(command, "/p:Configuration=Release").Should().Pass();
+
+            var runtimePacks = command.GetValuesWithMetadata()
+                .Where(pack => pack.metadata["RuntimeIdentifier"] == "browser-wasm")
+                .ToList();
+            runtimePacks.Should().ContainSingle("the build should resolve one browser runtime pack");
+            var runtimePackNativeFile = Path.Combine(runtimePacks.Single().metadata["PackageDirectory"],
+                "runtimes", "browser-wasm", "native", "dotnet.native.wasm");
+            new FileInfo(runtimePackNativeFile).Should().Exist();
+            return runtimePackNativeFile;
         }
     }
 }

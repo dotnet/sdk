@@ -87,15 +87,12 @@ export function shouldRunAgent(dossier)
     return issueCandidates + actionableHealth > 0;
 }
 
-async function writeGitHubOutputs(outputPath, dossier)
+export async function writeGitHubOutputs(outputPath, dossier)
 {
     if (!outputPath) return;
-    const delimiter = `CI_QUALITY_${Date.now()}`;
-    const compactDossier = JSON.stringify(dossier);
     const actionableHealth = dossier.pipelineHealth.filter(observation => observation.actionable).length;
     await appendFile(outputPath, `should_run=${shouldRunAgent(dossier)}\n`);
     await appendFile(outputPath, `failure_count=${dossier.failures.length + actionableHealth}\n`);
-    await appendFile(outputPath, `dossier<<${delimiter}\n${compactDossier}\n${delimiter}\n`);
 }
 
 async function main()

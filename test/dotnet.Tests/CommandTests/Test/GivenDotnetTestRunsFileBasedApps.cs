@@ -118,6 +118,58 @@ public class GivenDotnetTestRunsFileBasedApps : SdkTest
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void RunWithNoBuildHonorsMultiThreading(bool multiThreaded)
+    {
+        var testDirectory = CreateTestDirectory(
+            """
+            [TestClass]
+            public class FileBasedTests
+            {
+                [TestMethod]
+                public void Passes()
+                {
+                }
+            }
+            """);
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testDirectory.Path)
+            .Execute("PassingTests.cs", "--no-progress")
+            .ExitCode.Should().Be(ExitCodes.Success);
+
+        File.WriteAllText(Path.Combine(testDirectory.Path, "Directory.Build.targets"), """
+            <Project>
+              <Target Name="RecordPreparationDirectory" BeforeTargets="ComputeRunArguments">
+                <WriteLinesToFile File="$(MSBuildProjectDirectory)/preparation.cwd"
+                                  Lines="$([System.IO.Directory]::GetCurrentDirectory())" Overwrite="true" />
+              </Target>
+            </Project>
+            """);
+
+        string relativeTracePath = Path.Combine("trace-output", "trace.log");
+        string tracePath = Path.Combine(testDirectory.Path, relativeTracePath);
+        CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testDirectory.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_TEST_TRACEFILE", relativeTracePath)
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDDISABLEFEATURESFROMVERSION", "")
+            .WithEnvironmentVariable("MSBUILDENABLEALLPROPERTYFUNCTIONS", "1")
+            .Execute("PassingTests.cs", "--no-build", "--no-progress", $"-mt:{multiThreaded}");
+
+        result.ExitCode.Should().Be(ExitCodes.Success);
+        result.StdOut.Should().NotContain("MSB4287").And.NotContain(nameof(DirectoryNotFoundException));
+        result.StdErr.Should().NotContain("MSB4287").And.NotContain(nameof(DirectoryNotFoundException));
+        File.Exists(tracePath).Should().BeTrue();
+        File.ReadAllText(tracePath).Should().Contain("Loaded project").And.Contain("Starting test process");
+        string preparationDirectory = File.ReadAllText(Path.Combine(testDirectory.Path, "preparation.cwd")).Trim();
+        Path.GetFileName(preparationDirectory).Should().Be(
+            multiThreaded ? "MT-sentinel-CWD" : Path.GetFileName(testDirectory.Path));
+    }
+
+    [TestMethod]
     public void RunWithNoRestore()
     {
         var testDirectory = CreateTestDirectory(

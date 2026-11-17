@@ -21,13 +21,17 @@ internal sealed class TestApplicationHandler
     private readonly TestApplicationSettings _testApplicationSettings;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
+    private readonly HashSet<string> _coverageSummaryInstances = new(StringComparer.Ordinal);
 
-    private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
+    private (string? RuntimeFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
+    private string? _targetFramework;
+    private string? _reportedModulePath;
     private bool _receivedTestHostHandshake;
     private bool _receivedAffectedTestsOrchestratorHandshake;
     private bool _receivedIncompleteHandshake;
     private bool _handshakeRejected;
     private bool _retryEnabled;
+    private bool _postProcessorSupportsCoverageSummary;
 
     public TestApplicationHandler(
         TerminalTestReporter output,
@@ -46,6 +50,7 @@ internal sealed class TestApplicationHandler
         _testRunPolicy = testRunPolicy;
         _testApplicationSettings = testApplicationSettings ?? TestApplicationSettings.Default;
         _retryEnabled = _testApplicationSettings.LegacyRetryEnabled;
+        _targetFramework = string.IsNullOrWhiteSpace(module.TargetFramework) ? null : module.TargetFramework;
     }
 
     /// <summary>
@@ -82,8 +87,8 @@ internal sealed class TestApplicationHandler
         }
 
         var arch = architecture!.ToLowerInvariant();
-        var tfm = TargetFrameworkParser.GetShortTargetFramework(framework);
-        var currentHandshakeInfo = (tfm, arch, executionId!);
+        var runtimeFramework = TargetFrameworkParser.GetShortTargetFramework(framework);
+        var currentHandshakeInfo = (runtimeFramework, arch, executionId!);
 
         if (_options.IsArtifactPostProcessing
             && hostType != HandshakeMessageHostTypes.ArtifactPostProcessor)
@@ -114,6 +119,14 @@ internal sealed class TestApplicationHandler
             return false;
         }
 
+        // Keep the module identity established by the first test-host handshake stable across retries.
+        if (!_receivedTestHostHandshake && _targetFramework is null &&
+            handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.TargetFramework, out string? targetFramework) &&
+            !string.IsNullOrWhiteSpace(targetFramework))
+        {
+            _targetFramework = targetFramework;
+        }
+
         if (hostType == HandshakeMessageHostTypes.TestHost)
         {
             int? attemptNumber = null;
@@ -132,12 +145,13 @@ internal sealed class TestApplicationHandler
             var handshakeInfo = _handshakeInfo.Value;
             _output.AssemblyRunStarted(
                 _module.TargetPath,
-                handshakeInfo.TargetFramework,
+                _targetFramework,
                 handshakeInfo.Architecture,
                 handshakeInfo.ExecutionId,
                 instanceId!,
                 attemptNumber,
-                _testApplicationSettings with { LegacyRetryEnabled = _retryEnabled });
+                _testApplicationSettings with { LegacyRetryEnabled = _retryEnabled },
+                handshakeInfo.RuntimeFramework);
         }
 
         // Validate the optional ExecutionMode property last (after AssemblyRunStarted) so that any
@@ -181,11 +195,30 @@ internal sealed class TestApplicationHandler
 
         if (!_options.IsArtifactPostProcessing)
         {
+            if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ModulePath, out string? modulePath)
+                && !string.IsNullOrWhiteSpace(modulePath))
+            {
+                _reportedModulePath = modulePath;
+            }
+
             _artifactPostProcessingManager?.RecordCapabilities(
                 _module,
-                _module.TargetFramework ?? tfm,
+                _targetFramework,
                 arch,
                 handshakeMessage);
+        }
+
+        if (TestApplication.SupportsCoverageSummary(handshakeMessage))
+        {
+            if (_options.IsArtifactPostProcessing)
+            {
+                _postProcessorSupportsCoverageSummary = true;
+            }
+            else if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.InstanceId, out string? coverageInstanceId)
+                && !string.IsNullOrWhiteSpace(coverageInstanceId))
+            {
+                _coverageSummaryInstances.Add(coverageInstanceId);
+            }
         }
 
         return true;
@@ -283,6 +316,7 @@ internal sealed class TestApplicationHandler
             HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy),
             HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds => nameof(HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds),
             HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy),
+            HandshakeMessagePropertyNames.RequiredPostProcessorKinds => nameof(HandshakeMessagePropertyNames.RequiredPostProcessorKinds),
             _ => string.Empty,
         };
 
@@ -372,7 +406,7 @@ internal sealed class TestApplicationHandler
 
         foreach (var testResult in testResultMessage.SuccessfulTestMessages)
         {
-            _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+            _output.TestCompleted(_module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
                 instanceId,
                 ValidateRequiredMessageProperty(testResult.Uid, nameof(SuccessfulTestResultMessage.Uid), nameof(SuccessfulTestResultMessage)),
                 ValidateRequiredMessageProperty(testResult.DisplayName, nameof(SuccessfulTestResultMessage.DisplayName), nameof(SuccessfulTestResultMessage)),
@@ -388,7 +422,7 @@ internal sealed class TestApplicationHandler
 
         foreach (var testResult in testResultMessage.FailedTestMessages)
         {
-            _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+            _output.TestCompleted(_module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
                 instanceId,
                 ValidateRequiredMessageProperty(testResult.Uid, nameof(FailedTestResultMessage.Uid), nameof(FailedTestResultMessage)),
                 ValidateRequiredMessageProperty(testResult.DisplayName, nameof(FailedTestResultMessage.DisplayName), nameof(FailedTestResultMessage)),
@@ -445,7 +479,7 @@ internal sealed class TestApplicationHandler
         {
             _output.TestInProgress(
                 _module.TargetPath,
-                handshakeInfo.TargetFramework,
+                _targetFramework,
                 handshakeInfo.Architecture,
                 handshakeInfo.ExecutionId,
                 instanceId,
@@ -496,30 +530,70 @@ internal sealed class TestApplicationHandler
 
             if (_artifactPostProcessingInvocation is not null)
             {
+                _output.CoverageArtifactReplaced(fullPath);
                 _artifactPostProcessingInvocation.RecordOutput(
                     _module,
-                    handshakeInfo.TargetFramework,
+                    _targetFramework,
                     handshakeInfo.Architecture,
                     handshakeInfo.ExecutionId,
-                    artifact with { FullPath = fullPath });
+                    artifact with
+                    {
+                        FullPath = fullPath,
+                        CoverageSummary = _postProcessorSupportsCoverageSummary ? artifact.CoverageSummary : null,
+                    });
             }
             else
             {
                 _artifactPostProcessingManager?.RecordArtifact(
                     _module,
-                    _module.TargetFramework ?? handshakeInfo.TargetFramework,
+                    _targetFramework,
                     handshakeInfo.Architecture,
                     handshakeInfo.ExecutionId,
-                    artifact with { FullPath = fullPath });
+                    artifact with { FullPath = fullPath },
+                    _reportedModulePath);
                 _output.ArtifactAdded(
                     outOfProcess: false,
-                    _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
-                    artifact.TestDisplayName, fullPath);
+                    _module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+                    artifact.TestDisplayName, fullPath, fileArtifactMessages.InstanceId, artifact.SessionUid);
             }
         }
     }
 
-    internal void OnSessionEventReceived(TestSessionEvent sessionEvent)
+    internal void OnCoverageSummaryReceived(CoverageSummaryMessages message)
+    {
+        if (_options.IsHelp)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageInHelpMode, nameof(CoverageSummaryMessages)));
+        }
+
+        if (!_handshakeInfo.HasValue)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(CoverageSummaryMessages)));
+        }
+
+        if (!_receivedTestHostHandshake || _options.IsArtifactPostProcessing)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutTestHostHandshake, nameof(CoverageSummaryMessages)));
+        }
+
+        string executionId = ValidateRequiredMessageProperty(message.ExecutionId, nameof(CoverageSummaryMessages.ExecutionId), nameof(CoverageSummaryMessages));
+        string instanceId = ValidateRequiredMessageProperty(message.InstanceId, nameof(CoverageSummaryMessages.InstanceId), nameof(CoverageSummaryMessages));
+        if (executionId != _handshakeInfo.Value.ExecutionId)
+        {
+            throw new InvalidOperationException(string.Format(
+                CliCommandStrings.DotnetTestMismatchingExecutionId, executionId, nameof(CoverageSummaryMessages), _handshakeInfo.Value.ExecutionId));
+        }
+
+        if (!_coverageSummaryInstances.Contains(instanceId))
+        {
+            _output.WriteWarningMessage(CliCommandStrings.UnnegotiatedCoverageSummary);
+            return;
+        }
+
+        _output.CoverageSummaryAdded(_module.TargetPath, executionId, instanceId, message.Summaries);
+    }
+
+    internal void OnSessionEventReceived(TestSessionEvent sessionEvent, string? instanceId = null)
     {
         lock (_lock)
         {
@@ -562,6 +636,7 @@ internal sealed class TestApplicationHandler
             if (sessionEvent.SessionType == SessionEventTypes.TestSessionStart)
             {
                 IncreaseTestSessionStart(sessionUid);
+                _output.TestSessionStarted(sessionExecutionId, sessionUid, instanceId);
             }
             else if (sessionEvent.SessionType == SessionEventTypes.TestSessionEnd)
             {
@@ -570,6 +645,8 @@ internal sealed class TestApplicationHandler
                 {
                     throw new InvalidOperationException(CliCommandStrings.UnexpectedTestSessionEnd);
                 }
+
+                _output.TestSessionEnded(sessionExecutionId, sessionUid, instanceId);
             }
             else
             {
@@ -673,6 +750,11 @@ internal sealed class TestApplicationHandler
     {
         if (_options.IsArtifactPostProcessing)
         {
+            if (!_handshakeInfo.HasValue && exitCode == ExitCode.Success)
+            {
+                _artifactPostProcessingInvocation?.RecordFailure(CliCommandStrings.ArtifactPostProcessingMissingHandshake);
+            }
+
             WriteMessage(outputData);
             WriteMessage(errorData);
             LogTestProcessExit(exitCode, outputData, errorData);
@@ -681,7 +763,9 @@ internal sealed class TestApplicationHandler
 
         if (_receivedTestHostHandshake && _handshakeInfo.HasValue)
         {
-            _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData);
+            _output.AssemblyRunCompleted(
+                _handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData,
+                hasIncompleteTestResults: HasMismatchingTestSessionEventCount());
         }
         else if (exitCode != ExitCode.Success ||
             _handshakeRejected ||
@@ -692,6 +776,14 @@ internal sealed class TestApplicationHandler
             // recognized orchestrator without starting a TestHost. Legacy collection can also
             // suppress all handshakes. Neither path excuses rejected or partial handshakes.
             _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputData, errorData);
+        }
+        else if (_options.AffectedTests)
+        {
+            _output.AssemblyRunNotSelected(
+                _module.TargetPath ?? _module.ProjectFullPath ?? string.Empty,
+                _targetFramework,
+                _handshakeInfo?.Architecture,
+                _handshakeInfo?.RuntimeFramework);
         }
 
         LogTestProcessExit(exitCode, outputData, errorData);

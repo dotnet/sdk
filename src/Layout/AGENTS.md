@@ -51,11 +51,13 @@ than the test targeting packs pinned by
 
 ### macOS tool signing
 
-`PublishRoslyn` and `CreateMSBuildAppHost` ad hoc sign the concrete SDK apphosts with
+`CreateRoslynAppHosts` (called by `PublishRoslyn`) and `CreateMSBuildAppHost` ad hoc sign the concrete SDK apphosts with
 per-tool `SigningIdentifier` metadata and their existing entitlement files, while
 preserving other signing metadata. Official signing must preserve those identifiers
 and entitlements or explicitly supply the same values. Do not assign a shared
 product identifier to apphost templates.
+Use `CreateRoslynAppHosts` to regenerate apphosts in an existing SDK layout without
+re-copying compiler files from the Roslyn package.
 Identifiers use `com.microsoft.dotnet.<executable-name>` in lowercase, including
 `msbuild`, `vbcscompiler`, and the `dotnet-*` tool names.
 

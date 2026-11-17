@@ -20,6 +20,19 @@ public class CliSchemaTests : SdkTest
   "description": "List all projects in a solution file.",
   "hidden": false,
   "options": {
+    "--format": {
+      "description": "The output format for the list of paths. JSON output is an array of paths.",
+      "hidden": false,
+      "valueType": "System.String",
+      "hasDefaultValue": true,
+      "defaultValue": "table",
+      "arity": {
+        "minimum": 1,
+        "maximum": 1
+      },
+      "required": false,
+      "recursive": false
+    },
     "--solution-folders": {
       "description": "Display solution folder paths.",
       "hidden": false,
@@ -326,7 +339,7 @@ public class CliSchemaTests : SdkTest
 {
   "name": "reference",
   "version": "{{Product.Version}}",
-  "description": ".NET Remove Command",
+  "description": "Add, remove, or list ProjectReferences for a .NET project.",
   "hidden": false,
   "options": {
     "--project": {
@@ -494,7 +507,7 @@ public class CliSchemaTests : SdkTest
       "description": "The NuGet configuration file to use.",
       "hidden": false,
       "helpName": "FILE",
-      "valueType": "System.String",
+      "valueType": "System.IO.FileInfo",
       "hasDefaultValue": false,
       "arity": {
         "minimum": 1,

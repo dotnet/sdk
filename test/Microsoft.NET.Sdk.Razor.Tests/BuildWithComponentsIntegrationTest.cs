@@ -61,7 +61,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/55879")]
         public void Build_ComponentApp_IncludesEmbeddedValidatableTypeAttributeForNet100()
         {
             var testAsset = "RazorComponentApp";

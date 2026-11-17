@@ -800,7 +800,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string responseFile = Path.Combine(temp.Path, "reporter.rsp");
             File.WriteAllText(
                 responseFile,
-                "--show-test-results passed --show-slowest-tests 7 --show-flaky-tests off --retry-failed-tests");
+                "--show-test-results passed --show-slowest-tests 7 --show-flaky-tests off --retry-failed-tests --show-stdout all --show-stderr none");
             BuildOptions buildOptions = CreateBuildOptions(
                 ImmutableArray.Create($"@{responseFile}"));
 
@@ -814,6 +814,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             settings.SlowestTestsCount.Should().Be(7);
             settings.ShowFlakyTests.Should().BeFalse();
             settings.LegacyRetryEnabled.Should().BeTrue();
+            settings.ShowStdout.Should().Be(OutputShowMode.All);
+            settings.ShowStderr.Should().Be(OutputShowMode.None);
         }
 
         [TestMethod]
@@ -829,7 +831,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     "show-test-results": ["passed", "skipped"],
                     "show-slowest-tests": 5,
                     "show-flaky-tests": "off",
-                    "retry-failed-tests": true
+                    "retry-failed-tests": true,
+                    "show-stdout": "all",
+                    "show-stderr": "none"
                   }
                 }
                 """);
@@ -848,6 +852,53 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             settings.SlowestTestsCount.Should().Be(5);
             settings.ShowFlakyTests.Should().BeFalse();
             settings.LegacyRetryEnabled.Should().BeTrue();
+            settings.ShowStdout.Should().Be(OutputShowMode.All);
+            settings.ShowStderr.Should().Be(OutputShowMode.None);
+        }
+
+        [TestMethod]
+        [DataRow(new string[0], (int)OutputShowMode.Failed, (int)OutputShowMode.Failed)]
+        [DataRow(new[] { "--show-stdout", "All" }, (int)OutputShowMode.All, (int)OutputShowMode.Failed)]
+        [DataRow(new[] { "--show-stderr", "NoNe" }, (int)OutputShowMode.Failed, (int)OutputShowMode.None)]
+        [DataRow(new[] { "--show-stdout=none", "--show-stderr:all" }, (int)OutputShowMode.None, (int)OutputShowMode.All)]
+        public void MTPCommandResolvesCapturedOutputModes(string[] arguments, int stdoutMode, int stderrMode)
+        {
+            TestApplicationSettings settings =
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
+                    module: null,
+                    CreateBuildOptions([.. arguments]),
+                    OutputOptions.Detailed);
+
+            settings.ShowStdout.Should().Be((OutputShowMode)stdoutMode);
+            settings.ShowStderr.Should().Be((OutputShowMode)stderrMode);
+        }
+
+        [TestMethod]
+        [DataRow("commandLineOptions")]
+        [DataRow("commandLineOptionDefaults")]
+        public void MTPCommandReadsCapturedOutputFromConfiguration(string propertyName)
+        {
+            using var temp = new TempDirectory();
+            string configurationFile = Path.Combine(temp.Path, "output.testconfig.json");
+            File.WriteAllText(
+                configurationFile,
+                $$"""
+                {
+                  "{{propertyName}}": {
+                    "show-stdout": ["all"],
+                    "show-stderr": ["none"]
+                  }
+                }
+                """);
+
+            TestApplicationSettings settings =
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
+                    module: null,
+                    CreateBuildOptions([], configFilePath: configurationFile),
+                    OutputOptions.Detailed);
+
+            settings.ShowStdout.Should().Be(OutputShowMode.All);
+            settings.ShowStderr.Should().Be(OutputShowMode.None);
         }
 
         [TestMethod]
@@ -972,7 +1023,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                   "commandLineOptions": {
                     "show-test-results": ["passed"],
                     "show-slowest-tests": 5,
-                    "show-flaky-tests": "off"
+                    "show-flaky-tests": "off",
+                    "show-stdout": "all",
+                    "show-stderr": "none"
                   }
                 }
                 """);
@@ -980,7 +1033,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 ImmutableArray.Create(
                     "--show-test-results", "failed",
                     "--show-slowest-tests", "2",
-                    "--show-flaky-tests", "on"),
+                    "--show-flaky-tests", "on",
+                    "--show-stdout", "none",
+                    "--show-stderr", "all"),
                 configFilePath: configurationFile);
 
             TestApplicationSettings settings =
@@ -992,6 +1047,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             settings.TestResultVisibility.Should().Be(TestResultVisibility.Failed);
             settings.SlowestTestsCount.Should().Be(2);
             settings.ShowFlakyTests.Should().BeTrue();
+            settings.ShowStdout.Should().Be(OutputShowMode.None);
+            settings.ShowStderr.Should().Be(OutputShowMode.All);
         }
 
         [TestMethod]
@@ -1000,13 +1057,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             BuildOptions buildOptions = CreateBuildOptions([]);
             var launchProfile = new ProjectLaunchProfile
             {
-                CommandLineArgs = "--show-slowest-tests 4 --show-flaky-tests off",
+                CommandLineArgs = "--show-slowest-tests 4 --show-flaky-tests off --show-stderr all",
                 EnvironmentVariables = ImmutableDictionary<string, string>.Empty,
             };
             var module = new TestModule(
                 new RunProperties(
                     "dotnet",
-                    "exec tests.dll --show-test-results passed",
+                    "exec tests.dll --show-test-results passed --show-stdout none",
                     Directory.GetCurrentDirectory()),
                 ProjectFullPath: "tests.csproj",
                 TargetFramework: "net11.0",
@@ -1025,6 +1082,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             settings.TestResultVisibility.Should().Be(TestResultVisibility.Passed);
             settings.SlowestTestsCount.Should().Be(4);
             settings.ShowFlakyTests.Should().BeFalse();
+            settings.ShowStdout.Should().Be(OutputShowMode.None);
+            settings.ShowStderr.Should().Be(OutputShowMode.All);
         }
 
         [TestMethod]

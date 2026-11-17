@@ -11,7 +11,10 @@
     publishes the dotnet-aot library and dn host, and runs the resulting native
     test binary. This verifies both the Native AOT test closure and end-to-end dn
     integration against a complete SDK installation. The test publish retains
-    managed build output for test-module integration validation.
+    managed build output for test-module integration validation. Build the redist
+    SDK first: the script copies its SDK content into an isolated host-native
+    installation and overlays the test-built native library there. Test setup
+    and managed fallback use that SDK, not the bootstrap or cross-built host.
 
 .PARAMETER Configuration
     Build configuration (Debug or Release). Default: Debug.
@@ -57,6 +60,7 @@ $dotnet = [System.IO.Path]::Combine($repoRoot, ".dotnet", $dotnetName)
 $testProject = Join-Path $PSScriptRoot "dotnet-aot.Tests.csproj"
 $productProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dotnet-aot", "dotnet-aot.csproj")
 $dnProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dn", "dn.csproj")
+$layoutProject = Join-Path $PSScriptRoot "PrepareTestSdk.proj"
 
 # Auto-detect RID
 if (-not $RuntimeIdentifier) {
@@ -85,6 +89,8 @@ $dnName = if ($RuntimeIdentifier.StartsWith("win")) { "dn.exe" } else { "dn" }
 $exePath = Join-Path $publishDir $exeName
 $aotLibraryPath = Join-Path $aotPublishDir $aotLibraryName
 $dnPath = Join-Path $dnPublishDir $dnName
+$testDotnetRoot = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "test-sdk", $Configuration, $RuntimeIdentifier)
+$testDotnet = Join-Path $testDotnetRoot $dotnetName
 
 Write-Host "=== dotnet-aot NativeAOT Test Runner ===" -ForegroundColor Cyan
 Write-Host "  Configuration: $Configuration"
@@ -138,12 +144,27 @@ if (-not $NoBuild) {
     Write-Host ""
 }
 
-$managedTestModule = & $dotnet msbuild $testProject `
-    -p:Configuration=$Configuration `
-    -p:RuntimeIdentifier=$RuntimeIdentifier `
+# Prepare even with -NoBuild so runtime versions and SDK content cannot go stale.
+& $dotnet msbuild $layoutProject -restore -t:PrepareTestSdk `
+    -p:Configuration=$Configuration -p:RuntimeIdentifier=$RuntimeIdentifier
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not prepare the host-native test SDK (exit code $LASTEXITCODE)."
+}
+
+# Do not resolve through --info here: the repository global.json selects the bootstrap SDK.
+$sdkDirectories = @(Get-ChildItem -LiteralPath (Join-Path $testDotnetRoot "sdk") -Directory |
+    Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "dotnet.dll") -PathType Leaf })
+if ($sdkDirectories.Count -ne 1) {
+    throw "Expected one test SDK in $testDotnetRoot, found $($sdkDirectories.Count)."
+}
+$sdkDirectory = $sdkDirectories[0].FullName
+
+$managedTestModule = & $dotnet msbuild $testProject -nologo `
+    "-p:Configuration=$Configuration" `
+    "-p:RuntimeIdentifier=$RuntimeIdentifier" `
     -p:PublishAotTests=true `
     -p:UseOptimizedPublish=false `
-    -p:PublishDir=$publishDir `
+    "-p:PublishDir=$publishDir" `
     -getProperty:TargetPath
 
 if ($LASTEXITCODE -ne 0) {
@@ -165,7 +186,7 @@ if (-not (Test-Path $dnPath)) {
     Write-Host "ERROR: Published dn host not found at $dnPath" -ForegroundColor Red
     exit 1
 }
-if (-not (Test-Path -LiteralPath $managedTestModule -PathType Leaf)) {
+if (-not $managedTestModule -or -not (Test-Path -LiteralPath $managedTestModule -PathType Leaf)) {
     Write-Host "ERROR: Managed test module not found at $managedTestModule for Native AOT integration validation." -ForegroundColor Red
     exit 1
 }
@@ -173,26 +194,19 @@ if (-not (Test-Path -LiteralPath $managedTestModule -PathType Leaf)) {
 Write-Host "Running AOT tests..." -ForegroundColor Yellow
 Write-Host ""
 
-$sdkDirectory = & $dotnet --info 2>$null | ForEach-Object {
-    if ($_ -match '^\s*Base Path:\s*(.+?)\s*$') {
-        $Matches[1]
-    }
-} | Select-Object -First 1
-
-if (-not $sdkDirectory) {
-    Write-Host "ERROR: Could not determine the bootstrap SDK directory." -ForegroundColor Red
-    exit 1
-}
+Copy-Item -LiteralPath $aotLibraryPath -Destination (Join-Path $sdkDirectory $aotLibraryName) -Force
 
 $environment = @{
-    DOTNET_AOT_LIBRARY_DIR = $aotPublishDir
+    DOTNET_AOT_LIBRARY_DIR = $sdkDirectory
     DOTNET_AOT_SDK_DIR = $sdkDirectory
     DOTNET_AOT_TEST_DN_PATH = $dnPath
     DOTNET_AOT_TEST_MANAGED_TEST_MODULE = $managedTestModule
     DOTNET_AOT_TEST_NUGET_CONFIG = [System.IO.Path]::Combine($repoRoot, "NuGet.config")
     DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
-    DOTNET_HOST_PATH = $dotnet
-    DOTNET_ROOT = [System.IO.Path]::Combine($repoRoot, ".dotnet")
+    DOTNET_HOST_PATH = $testDotnet
+    DOTNET_ROOT = $testDotnetRoot
+    DOTNET_CLI_USE_MSBUILD_SERVER = "0"
+    MSBUILDDISABLENODEREUSE = "1"
 }
 $previousEnvironment = @{}
 foreach ($entry in $environment.GetEnumerator()) {
@@ -219,8 +233,16 @@ try {
     $testExitCode = $LASTEXITCODE
 }
 finally {
-    foreach ($entry in $previousEnvironment.GetEnumerator()) {
-        [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value)
+    try {
+        & $testDotnet exec (Join-Path $sdkDirectory "dotnet.dll") build-server shutdown
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not shut down the isolated test SDK's build servers (exit code $LASTEXITCODE)."
+        }
+    }
+    finally {
+        foreach ($entry in $previousEnvironment.GetEnumerator()) {
+            [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value)
+        }
     }
 }
 

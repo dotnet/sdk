@@ -204,15 +204,25 @@
         <target state="translated">이미지가 제공되지 않았으므로 이미지 인덱스를 만들 수 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidAuthRealmAllowedAddress">
+        <source>CONTAINER2033: The {0} environment variable contains '{1}', which is not a valid IP address or CIDR range. Separate entries with semicolons.</source>
+        <target state="new">CONTAINER2033: The {0} environment variable contains '{1}', which is not a valid IP address or CIDR range. Separate entries with semicolons.</target>
+        <note>{StrBegins="CONTAINER2033: "} {0} is an environment variable name; {1} is the invalid entry.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthRealmPolicy">
+        <source>CONTAINER2034: The {0} environment variable has the value '{1}', which is not a valid policy. Valid values are 'Public', 'AllowlistOnly', and 'None'.</source>
+        <target state="new">CONTAINER2034: The {0} environment variable has the value '{1}', which is not a valid policy. Valid values are 'Public', 'AllowlistOnly', and 'None'.</target>
+        <note>{StrBegins="CONTAINER2034: "} {0} is an environment variable name; {1} is its value. Do not translate 'Public', 'AllowlistOnly', or 'None'.</note>
+      </trans-unit>
       <trans-unit id="InvalidAuthResponse_DisallowedScheme">
         <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
         <target state="translated">전달자 영역 '{0}'은(는) 허용되지 않는 '{1}' 체계를 사용합니다. 'https'만 허용됩니다(또는 레지스트리가 안전하지 않은 것으로 구성된 경우 'http').</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
       </trans-unit>
-      <trans-unit id="InvalidAuthResponse_PrivateIpLiteralRealm">
-        <source>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</source>
-        <target state="translated">전달자 영역 '{0}'은(는) 프라이빗, 루프백, 링크 로컬 또는 지정되지 않은 IP 리터럴 주소인 '{1}'(으)로 확인됩니다.</target>
-        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</note>
+      <trans-unit id="InvalidAuthResponse_RealmBlockedBySsrfPolicy">
+        <source>the token request to bearer realm '{0}' was blocked by server-side request forgery (SSRF) protection: {1} If the realm is trusted, add its IP addresses to the {2} environment variable, or change the policy with the {3} environment variable</source>
+        <target state="new">the token request to bearer realm '{0}' was blocked by server-side request forgery (SSRF) protection: {1} If the realm is trusted, add its IP addresses to the {2} environment variable, or change the policy with the {3} environment variable</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is a non-localized detail message from the SSRF protection library; {2} and {3} are environment variable names and must not be translated.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
         <source>bearer realm '{0}' is not a valid absolute URI</source>

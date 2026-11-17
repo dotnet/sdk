@@ -26,7 +26,7 @@ internal abstract class ToolExecuteCommandDefinitionBase : Command
     public readonly Option<string> VersionOption = ToolAppliedOption.CreateVersionOption();
     public readonly Option<bool> RollForwardOption = ToolAppliedOption.CreateRollForwardOption();
     public readonly Option<bool> PrereleaseOption = ToolAppliedOption.CreatePrereleaseOption();
-    public readonly Option<string> ConfigOption = ToolAppliedOption.CreateConfigOption();
+    public readonly Option<FileInfo> ConfigOption = ToolAppliedOption.CreateConfigOption();
     public readonly Option<string[]> SourceOption = ToolAppliedOption.CreateSourceOption();
     public readonly Option<string[]> AddSourceOption = ToolAppliedOption.CreateAddSourceOption();
     public readonly Option<bool> YesOption = CommonOptions.CreateYesOption(hidden: true);

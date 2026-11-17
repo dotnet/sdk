@@ -66,6 +66,19 @@ internal class RegistrySettings
         internal const string ParallelUploadEnabledLegacy = "SDK_CONTAINER_REGISTRY_PARALLEL_UPLOAD";
 
         internal const string InsecureRegistries = "DOTNET_CONTAINER_INSECURE_REGISTRIES";
+
+        /// <summary>
+        /// SSRF protection policy for bearer-token (realm) requests: Public (default; public addresses plus
+        /// <see cref="AuthRealmAllowedAddresses"/>), AllowlistOnly (only <see cref="AuthRealmAllowedAddresses"/>),
+        /// or None (no address restrictions).
+        /// </summary>
+        internal const string AuthRealmPolicy = "DOTNET_CONTAINER_AUTH_REALM_POLICY";
+
+        /// <summary>
+        /// Semicolon-separated IP addresses and CIDR ranges that bearer-token (realm) requests may connect to,
+        /// as governed by <see cref="AuthRealmPolicy"/>.
+        /// </summary>
+        internal const string AuthRealmAllowedAddresses = "DOTNET_CONTAINER_AUTH_REALM_ALLOWED_ADDRESSES";
     }
 
     private static bool IsInsecureRegistry(IEnvironmentProvider environment, string registryName)

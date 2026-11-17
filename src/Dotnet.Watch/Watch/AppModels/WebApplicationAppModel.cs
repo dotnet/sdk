@@ -83,7 +83,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             return null;
         }
 
-        if (BrowserToolsBuildOutputs.FromProject(projectNode.ProjectInstance, logger) is not { } browserToolsOutputs)
+        if (SharedSecretBuildOutputs.FromProject(projectNode.ProjectInstance, logger) is not { } browserToolsOutputs)
         {
             // The application has no pinned key, so nothing in the browser would ever connect to a
             // provider. This is not an error: the project simply does not opt into browser tools.
