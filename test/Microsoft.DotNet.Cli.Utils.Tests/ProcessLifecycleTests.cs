@@ -129,6 +129,7 @@ public class ProcessLifecycleTests : SdkTest
             CreateNoWindow = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            WorkingDirectory = testDirectory.Path,
         };
         startInfo.ArgumentList.Add("cancellation-test");
         var testEnvironment = new Dictionary<string, string?>();
@@ -275,9 +276,19 @@ public class ProcessLifecycleTests : SdkTest
     private static bool TryWaitForMarker(string testDirectory, string expectedValue)
     {
         string markerPath = GetMarkerPath(testDirectory);
-        return SpinWait.SpinUntil(
-            () => File.Exists(markerPath) && File.ReadAllText(markerPath) == expectedValue,
-            s_waitTimeout);
+        return SpinWait.SpinUntil(() => MarkerHasValue(markerPath, expectedValue), s_waitTimeout);
+    }
+
+    private static bool MarkerHasValue(string markerPath, string expectedValue)
+    {
+        try
+        {
+            return File.Exists(markerPath) && File.ReadAllText(markerPath) == expectedValue;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
     }
 
     private static string GetMarkerPath(string testDirectory)
