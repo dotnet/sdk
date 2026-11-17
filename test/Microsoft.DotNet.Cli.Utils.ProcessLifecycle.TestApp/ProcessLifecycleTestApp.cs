@@ -15,7 +15,7 @@ public static class ProcessLifecycleTestApp
 
         if (childMode == "lifecycle-reaper-parent")
         {
-            using IDisposable processLifecycle = ProcessLifecycle.Initialize();
+            using IDisposable lifecycle = ProcessLifecycle.Initialize();
             RunReaperParent(args, markerPath, childMode);
             return 0;
         }
