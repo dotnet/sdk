@@ -23,13 +23,11 @@ internal sealed class InstallSpecResolution
     /// <summary>Eligible installations ordered newest first.</summary>
     public IReadOnlyList<Installation> MatchingInstallations { get; set; } = [];
     public Installation? Installation => MatchingInstallations.Count > 0 ? MatchingInstallations[0] : null;
-    /// <summary>Warning text for commands that continue past an unreadable requirement.</summary>
-    public string? Error { get; init; }
     /// <summary>
-    /// The user-facing error for an unreadable requirement: <see cref="DotnetInstallErrorCode.MalformedGlobalJson"/>
-    /// for invalid contents, otherwise <see cref="DotnetInstallErrorCode.ContextResolutionFailed"/>.
-    /// Callers that cannot use the last known requirement throw it.
+    /// Why the requirement could not be read: <see cref="DotnetInstallErrorCode.MalformedGlobalJson"/> for invalid
+    /// contents, otherwise <see cref="DotnetInstallErrorCode.ContextResolutionFailed"/>. Commands that can continue
+    /// report its message; commands that cannot use the last known requirement throw it.
     /// </summary>
     public DotnetInstallException? Failure { get; init; }
-    public bool UsesLastKnownRequirement => Error is not null && Spec is not null;
+    public bool UsesLastKnownRequirement => Failure is not null && Spec is not null;
 }

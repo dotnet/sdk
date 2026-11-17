@@ -233,13 +233,13 @@ internal class UpdateWorkflow
     {
         var evaluation = InstallSpecResolver.Evaluate(spec);
         usesLastKnownRequirement = evaluation.UsesLastKnownRequirement;
-        if (evaluation is { Failure: { } failure, Error: { } warning })
+        if (evaluation.Failure is { } failure)
         {
             if (!usesLastKnownRequirement)
             {
                 throw failure;
             }
-            AnsiConsole.MarkupLine(DotnetupTheme.Warning(warning.EscapeMarkup()));
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(failure.Message.EscapeMarkup()));
             AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
                 Strings.RepositoryUsingLastKnownRequirement, spec.GlobalJsonPath).EscapeMarkup()));
         }

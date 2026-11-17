@@ -77,8 +77,6 @@ internal static class InstallSpecResolver
             {
                 Spec = spec.MinimumVersion is { } minimum && spec.AllowPrerelease is { } previews
                     ? new UpdateChannel(spec.VersionOrChannel, new ReleaseVersion(minimum), previews) : null,
-                Error = string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError,
-                    spec.GlobalJsonPath, ex.Message),
                 Failure = ex is JsonException json && !string.IsNullOrEmpty(spec.GlobalJsonPath)
                     ? GlobalJsonHelper.CreateMalformedGlobalJsonException(spec.GlobalJsonPath, json)
                     : GlobalJsonHelper.CreateUnreadableGlobalJsonException(spec.GlobalJsonPath, ex)

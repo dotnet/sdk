@@ -77,7 +77,7 @@ public class InstallSpecResolverTests
         ]);
 
         result.UsesLastKnownRequirement.Should().BeTrue();
-        result.Error.Should().Contain(path);
+        result.Failure!.Message.Should().Contain(path);
         result.Spec!.MinimumVersion!.ToString().Should().Be("10.0.103");
         result.Spec.AllowPrerelease.Should().BeFalse();
         result.Installation!.Version.Should().Be("10.0.105");
@@ -105,7 +105,7 @@ public class InstallSpecResolverTests
 
         var result = InstallSpecResolver.Evaluate(spec);
 
-        result.Error.Should().BeNull();
+        result.Failure.Should().BeNull();
         result.UsesLastKnownRequirement.Should().BeFalse();
         result.IsActive.Should().Be(contents?.Contains("11.0.100") == true);
         result.Spec?.Name.Should().Be(result.IsActive ? "11.0.100" : null);
@@ -135,7 +135,7 @@ public class InstallSpecResolverTests
         result.Installation.Should().BeSameAs(latest);
         result.GlobalJsonSdk.Should().BeNull();
         result.Spec!.Name.Should().Be("10.0");
-        result.Error.Should().BeNull();
+        result.Failure.Should().BeNull();
         spec.VersionOrChannel.Should().Be("10.0");
     }
 
@@ -149,7 +149,7 @@ public class InstallSpecResolverTests
 
         result.IsActive.Should().BeTrue();
         result.Installation.Should().BeNull();
-        result.Error.Should().BeNull();
+        result.Failure.Should().BeNull();
     }
 
     [TestMethod]
@@ -196,7 +196,7 @@ public class InstallSpecResolverTests
         result.Installation.Should().BeNull();
         result.GlobalJsonSdk.Should().BeNull();
         result.Spec.Should().BeNull();
-        result.Error.Should().Contain(".NET SDK install spec '10.0.1xx'")
+        result.Failure!.Message.Should().Contain(".NET SDK install spec '10.0.1xx'")
             .And.Contain("does not contain a global.json path");
     }
 }
