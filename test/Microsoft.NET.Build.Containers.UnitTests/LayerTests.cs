@@ -35,7 +35,7 @@ public class LayerTests
                 File.SetUnixFileMode(executableFilePath, executeMode);
             }
 
-            Layer layer = Layer.FromDirectory(folder.FullName, "/app", false, SchemaTypes.DockerManifestV2);
+            Layer layer = Layer.FromDirectory(folder.FullName, "/app", false, OrasProject.Oras.Docker.MediaType.Manifest);
             backingFile = layer.BackingFile;
 
             Dictionary<string, TarEntry> entries = LoadAllTarEntries(backingFile);

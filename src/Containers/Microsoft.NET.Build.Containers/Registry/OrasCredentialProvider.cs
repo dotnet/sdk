@@ -99,6 +99,11 @@ internal sealed class OrasCredentialProvider(RegistryMode mode, string registryA
         {
             return await CredsProvider.GetCredentialsAsync(registry).ConfigureAwait(false);
         }
+        catch (CredsNotFoundException)
+        {
+            // Public registries may still require an anonymous bearer-token handshake.
+            return new DockerCredentials(string.Empty, string.Empty);
+        }
         catch (Exception e)
         {
             throw new CredentialRetrievalException(registry, e);

@@ -296,7 +296,7 @@ public class AuthRealmHandlerFactoryTests
             environment.Object);
     }
 
-    private static async Task<string> ServeAsync(TcpListener listener, string response, CancellationToken cancellationToken)
+    internal static async Task<string> ServeAsync(TcpListener listener, string response, CancellationToken cancellationToken)
     {
         using TcpClient client = await listener.AcceptTcpClientAsync(cancellationToken);
         using NetworkStream stream = client.GetStream();

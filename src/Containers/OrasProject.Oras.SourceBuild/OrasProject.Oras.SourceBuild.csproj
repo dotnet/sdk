@@ -24,7 +24,7 @@
     <RunAnalyzers>false</RunAnalyzers>
 
     <!-- Pin the exact reviewed PR commit so builds cannot change when the contributor branch moves. -->
-    <OrasSourceCommit>4e05a65d0e6f60b70f50c10031e87e7ed238025c</OrasSourceCommit>
+    <OrasSourceCommit>4935afa6e58e1275d362aa085d59432e00d4169e</OrasSourceCommit>
     <OrasSourceArchiveName>oras-dotnet-$(OrasSourceCommit).zip</OrasSourceArchiveName>
     <OrasSourceArchiveUrl>https://github.com/jetersen/oras-dotnet/archive/$(OrasSourceCommit).zip</OrasSourceArchiveUrl>
     <OrasSourceWorkDir>$(BaseIntermediateOutputPath)source-build/</OrasSourceWorkDir>

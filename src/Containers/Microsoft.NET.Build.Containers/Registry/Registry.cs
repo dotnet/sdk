@@ -321,7 +321,7 @@ internal sealed class Registry
         {
             Manifest? manifest = JsonSerializer.Deserialize<Manifest>(await ReadMetadataAsync(content, descriptor, cancellationToken).ConfigureAwait(false));
             if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, rids);
-            DigestUtils.ValidateDigest(manifestDigest);
+            DigestUtils.ValidateSupportedDigestFormat(manifestDigest, out _, out _);
             return await ReadSingleImageAsync(
                 repositoryName,
                 manifest,
@@ -388,7 +388,7 @@ internal sealed class Registry
                 // Break the loop if successful
                 break;
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (ex is not OperationCanceledException and not InvalidAuthResponseException and not InvalidAuthRealmConfigurationException)
             {
                 retryCount++;
                 if (retryCount >= MaxDownloadRetries)

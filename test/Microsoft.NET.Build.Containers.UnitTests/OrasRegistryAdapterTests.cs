@@ -2,6 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Security.Authentication;
 using Moq;
 using Moq.Protected;
@@ -269,103 +273,68 @@ public class OrasRegistryAdapterTests
     }
 
     [TestMethod]
-    [DataRow("https://127.0.0.1/token")]
-    [DataRow("https://127.5.6.7/token")]
-    [DataRow("https://0.0.0.0/token")]
-    [DataRow("https://10.0.0.5/token")]
-    [DataRow("https://172.16.0.1/token")]
-    [DataRow("https://172.31.255.255/token")]
-    [DataRow("https://192.168.1.5/token")]
-    [DataRow("https://169.254.169.254/token")]
-    [DataRow("https://224.0.0.1/token")]
-    [DataRow("https://[::1]/token")]
-    [DataRow("https://[::]/token")]
-    [DataRow("https://[fe80::1]/token")]
-    [DataRow("https://[ff02::1]/token")]
-    [DataRow("https://[fc00::1]/token")]
-    [DataRow("https://[fec0::1]/token")]
-    [DataRow("https://[::ffff:127.0.0.1]/token")]
-    [DataRow("https://[::ffff:169.254.169.254]/token")]
-    [DataRow("https://127\uFF0E0\uFF0E0\uFF0E1/token")]
-    [DataRow("https://169\uFF0E254\uFF0E169\uFF0E254/token")]
-    [DataRow("https://10\uFF0E0\uFF0E0\uFF0E1/token")]
-    [DataRow("https://127\u30020\u30020\u30021/token")]
-    [DataRow("https://127.0.0.1./token")]
-    [DataRow("https://169.254.169.254./token")]
-    [DataRow("https://10.0.0.5./token")]
-    public void ValidateRealmUriRejectsBlockedIpLiteralsOnSecureRegistry(string realm)
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task BearerHandshakeUsesProtectedRealmTransportAndNeverFollowsRedirect(bool redirect)
     {
-        Assert.ThrowsExactly<InvalidAuthResponseException>(() =>
-            OrasRealmValidator.ValidateRealmUri(realm, "registry.example.com", isInsecureRegistry: false));
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(20));
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var realm = new Uri($"http://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}/token");
+        const string token = "{\"token\":\"local-token\"}";
+        string reply = redirect
+            ? "HTTP/1.1 307 Temporary Redirect\r\nLocation: http://127.0.0.1:1/never\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+            : $"HTTP/1.1 200 OK\r\nContent-Length: {token.Length}\r\nConnection: close\r\n\r\n{token}";
+        Task<string> serve = AuthRealmHandlerFactoryTests.ServeAsync(listener, reply, timeout.Token);
+        var environment = new Mock<IEnvironmentProvider>();
+        environment.Setup(e => e.GetEnvironmentVariable(RegistrySettings.EnvVariables.AuthRealmPolicy)).Returns("AllowlistOnly");
+        environment.Setup(e => e.GetEnvironmentVariable(RegistrySettings.EnvVariables.AuthRealmAllowedAddresses)).Returns("127.0.0.1");
+        string host = Guid.NewGuid().ToString("N") + ".example.com";
+        var registryUri = new Uri($"https://{host}");
+        var realmFactory = new AuthRealmHandlerFactory(host, registryUri, true, environment.Object);
+        var transport = new Mock<HttpMessageHandler>();
+        transport.Protected().Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync((HttpRequestMessage request, CancellationToken _) =>
+            {
+                bool authenticated = request.Headers.Authorization?.ToString() == "Bearer local-token";
+                var response = new HttpResponseMessage(authenticated ? HttpStatusCode.OK : HttpStatusCode.Unauthorized)
+                {
+                    RequestMessage = request,
+                    Content = new ByteArrayContent([]),
+                };
+                if (!authenticated)
+                    response.Headers.WwwAuthenticate.ParseAdd($"Bearer realm=\"{realm}\",service=\"registry\"");
+                return response;
+            });
+        string authFile = Path.GetTempFileName();
+        string? previousFile = Environment.GetEnvironmentVariable("REGISTRY_AUTH_FILE");
+        var previousCredentials = CredentialEnvironmentVariables.ToDictionary(variable => variable, Environment.GetEnvironmentVariable);
+        try
+        {
+            await File.WriteAllTextAsync(authFile, "{\"auths\":{}}", timeout.Token);
+            Environment.SetEnvironmentVariable("REGISTRY_AUTH_FILE", authFile);
+            foreach (string variable in CredentialEnvironmentVariables) Environment.SetEnvironmentVariable(variable, null);
+            var settings = new RegistrySettings { IsInsecure = true };
+            var client = OrasRepositoryFactory.CreateClient(host, registryUri, settings, NullLogger.Instance,
+                RegistryMode.Pull, transport.Object, realmFactory.Create);
+            using var registryHttp = client.BaseClient;
+            using var tokenHttp = client.TokenClient;
+            var factory = new OrasRepositoryFactory(registryUri, client, settings);
+            Task<bool> exists = factory.Create("app").Blobs.ExistsAsync(Descriptor.Create([], "application/octet-stream"), timeout.Token);
+            if (redirect)
+                await Assert.ThrowsExactlyAsync<OrasProject.Oras.Registry.Remote.Exceptions.ResponseException>(() => exists);
+            else
+                Assert.IsTrue(await exists);
+            string request = await serve;
+            Assert.StartsWith("GET /token?", request);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("REGISTRY_AUTH_FILE", previousFile);
+            foreach ((string variable, string? value) in previousCredentials) Environment.SetEnvironmentVariable(variable, value);
+            File.Delete(authFile);
+        }
     }
 
-    [TestMethod]
-    [DataRow("https://169.254.169.254/token", "192.168.1.5:5000")]
-    [DataRow("https://10.0.0.5/token", "192.168.1.5:5000")]
-    [DataRow("https://[::1]/token", "192.168.1.5:5000")]
-    [DataRow("https://169.254.169.254/token", "localhost:5000")]
-    [DataRow("https://192.168.1.5/token", "localhost:5000")]
-    [DataRow("https://127.0.0.1/token", "localhost.example.com:5000")]
-    public void ValidateRealmUriRejectsBlockedIpLiteralsWhenInsecureRegistryHostsDiffer(string realm, string registryName)
-    {
-        Assert.ThrowsExactly<InvalidAuthResponseException>(() =>
-            OrasRealmValidator.ValidateRealmUri(realm, registryName, isInsecureRegistry: true));
-    }
-
-    [TestMethod]
-    [DataRow("http://192.168.1.5/auth", "192.168.1.5")]
-    [DataRow("http://192.168.1.5:6000/auth", "192.168.1.5:5000")]
-    [DataRow("https://192.168.1.5/auth", "192.168.1.5:5000")]
-    [DataRow("http://127.0.0.1:7000/auth", "127.0.0.1:5000")]
-    [DataRow("https://[::1]:7000/auth", "[::1]:5000")]
-    [DataRow("http://127.0.0.1:5000/auth", "localhost:5000")]
-    [DataRow("http://[::1]:5000/auth", "localhost:5000")]
-    [DataRow("http://127.0.0.1:5000/auth", "registry.localhost:5000")]
-    public void ValidateRealmUriAllowsMatchingIpLiteralWhenInsecure(string realm, string registryName)
-    {
-        Uri uri = OrasRealmValidator.ValidateRealmUri(realm, registryName, isInsecureRegistry: true);
-        Assert.AreEqual(realm, uri.AbsoluteUri);
-    }
-
-    [TestMethod]
-    [DataRow("https://localhost/token", "registry.example.com", false)]
-    [DataRow("https://foo.localhost/token", "registry.example.com", false)]
-    [DataRow("https://localhost./token", "registry.example.com", false)]
-    [DataRow("https://localhost\u3002/token", "registry.example.com", false)]
-    [DataRow("http://localhost/token", "192.168.1.5:5000", true)]
-    [DataRow("http://localhost/token", "localhost.example.com:5000", true)]
-    public void ValidateRealmUriRejectsLoopbackDnsNameRealm(string realm, string registryName, bool isInsecureRegistry)
-    {
-        Assert.ThrowsExactly<InvalidAuthResponseException>(() =>
-            OrasRealmValidator.ValidateRealmUri(realm, registryName, isInsecureRegistry));
-    }
-
-    [TestMethod]
-    [DataRow("http://localhost:5000/auth", "localhost:5000")]
-    [DataRow("https://localhost:5000/auth", "localhost:5000")]
-    [DataRow("http://localhost:7000/auth", "localhost:5000")]
-    [DataRow("http://foo.localhost:5000/auth", "localhost:5000")]
-    [DataRow("http://localhost:5000/auth", "registry.localhost:5000")]
-    [DataRow("http://localhost:5000/auth", "127.0.0.1:5000")]
-    [DataRow("http://localhost:5000/auth", "[::1]:5000")]
-    public async Task RealmValidatorAllowsLoopbackOnlyForInsecureLoopbackRegistry(string realm, string registryName)
-    {
-        var validator = new OrasRealmValidator(registryName, isInsecureRegistry: true);
-        bool allowed = await validator.IsRealmAllowedAsync(
-            new Uri($"http://{registryName}"),
-            new Uri(realm),
-            TestContext.CancellationToken);
-        Assert.IsTrue(allowed);
-    }
-
-    [TestMethod]
-    public async Task RealmValidatorRejectsPrivateTokenEndpoint()
-    {
-        var validator = new OrasRealmValidator("registry.example.com", isInsecureRegistry: false);
-        bool allowed = await validator.IsRealmAllowedAsync(
-            new Uri("https://registry.example.com"),
-            new Uri("https://169.254.169.254/token"),
-            TestContext.CancellationToken);
-        Assert.IsFalse(allowed);
-    }
 }
