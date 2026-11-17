@@ -6,6 +6,9 @@
   <!--
     Temporary source build for https://github.com/oras-project/oras-dotnet/pull/428.
 
+    For local integration testing, set OrasSourceOverride to an ORAS src/OrasProject.Oras/
+    directory, including its trailing slash. Normal builds use the pinned archive below.
+
     Remove this project and replace its ProjectReference with the released OrasProject.Oras
     package once the PR is merged, released, and available on the SDK's mirrored feeds.
   -->
@@ -21,13 +24,14 @@
     <RunAnalyzers>false</RunAnalyzers>
 
     <!-- Pin the exact reviewed PR commit so builds cannot change when the contributor branch moves. -->
-    <OrasSourceCommit>d0fc46893b451cd8770c1758327d855e4e79d20e</OrasSourceCommit>
+    <OrasSourceCommit>4e05a65d0e6f60b70f50c10031e87e7ed238025c</OrasSourceCommit>
     <OrasSourceArchiveName>oras-dotnet-$(OrasSourceCommit).zip</OrasSourceArchiveName>
-    <OrasSourceArchiveUrl>https://github.com/oras-project/oras-dotnet/archive/$(OrasSourceCommit).zip</OrasSourceArchiveUrl>
+    <OrasSourceArchiveUrl>https://github.com/jetersen/oras-dotnet/archive/$(OrasSourceCommit).zip</OrasSourceArchiveUrl>
     <OrasSourceWorkDir>$(BaseIntermediateOutputPath)source-build/</OrasSourceWorkDir>
     <OrasSourceArchive>$(OrasSourceWorkDir)$(OrasSourceArchiveName)</OrasSourceArchive>
     <OrasSourceExtractDir>$(OrasSourceWorkDir)$(OrasSourceCommit)/</OrasSourceExtractDir>
-    <OrasSourceDir>$(OrasSourceExtractDir)oras-dotnet-$(OrasSourceCommit)/src/OrasProject.Oras/</OrasSourceDir>
+    <OrasSourceDir Condition="'$(OrasSourceOverride)' == ''">$(OrasSourceExtractDir)oras-dotnet-$(OrasSourceCommit)/src/OrasProject.Oras/</OrasSourceDir>
+    <OrasSourceDir Condition="'$(OrasSourceOverride)' != ''">$(OrasSourceOverride)</OrasSourceDir>
     <OrasSourceMarker>$(OrasSourceExtractDir).complete</OrasSourceMarker>
   </PropertyGroup>
 
@@ -35,7 +39,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
   </ItemGroup>
 
-  <Target Name="AcquireOrasSource" Condition="!Exists('$(OrasSourceMarker)')">
+  <Target Name="AcquireOrasSource" Condition="'$(OrasSourceOverride)' == '' and !Exists('$(OrasSourceMarker)')">
     <Message Importance="High" Text="Downloading ORAS.NET PR #428 commit $(OrasSourceCommit)" />
     <MakeDir Directories="$(OrasSourceWorkDir)" />
     <DownloadFile SourceUrl="$(OrasSourceArchiveUrl)"
@@ -54,7 +58,7 @@
           BeforeTargets="CoreCompile"
           DependsOnTargets="AcquireOrasSource">
     <ItemGroup>
-      <_OrasSourceFile Include="$(OrasSourceDir)**/*.cs" />
+      <_OrasSourceFile Include="$(OrasSourceDir)**/*.cs" Exclude="$(OrasSourceDir)**/bin/**/*.cs;$(OrasSourceDir)**/obj/**/*.cs" />
       <Compile Include="@(_OrasSourceFile)" LinkBase="OrasProject.Oras" />
     </ItemGroup>
     <Error Condition="'@(_OrasSourceFile)' == ''"
