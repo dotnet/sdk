@@ -334,11 +334,6 @@ namespace Microsoft.NET.TestFramework
             Environment.SetEnvironmentVariable(
                 "MSBuildSDKsPath",
                 Path.Combine(testContext.ToolsetUnderTest.SdksPath));
-
-#if NETCOREAPP
-            MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
-                testContext.ToolsetUnderTest.SdkFolderUnderTest;
-#endif
         }
 
         public static string? GetRepoRoot()
