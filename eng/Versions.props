@@ -48,6 +48,8 @@
     <VersionFeature110ForWorkloads>0-rc.1.26453.118</VersionFeature110ForWorkloads>
   </PropertyGroup>
   <PropertyGroup Label="Production dependencies">
+    <!-- Matches the ORAS integration package in source-build-assets. -->
+    <OrasProjectOrasPackageVersion>0.0.0-dev</OrasProjectOrasPackageVersion>
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</NETStandardLibraryNETFrameworkVersion>
     <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
