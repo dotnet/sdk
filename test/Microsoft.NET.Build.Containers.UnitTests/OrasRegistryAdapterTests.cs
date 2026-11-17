@@ -292,7 +292,7 @@ public class OrasRegistryAdapterTests
         async Task<string> ServeTokenRequestsAsync()
         {
             string? getRequest = null;
-            if (passwordFallback && !redirect)
+            if (passwordFallback)
                 getRequest = await AuthRealmHandlerFactoryTests.ServeAsync(listener,
                     "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\nConnection: close\r\n\r\n", timeout.Token);
             string finalRequest = await AuthRealmHandlerFactoryTests.ServeAsync(listener, reply, timeout.Token);
@@ -344,7 +344,13 @@ public class OrasRegistryAdapterTests
             else
                 Assert.IsTrue(await exists);
             string request = await serve;
-            Assert.StartsWith(passwordFallback && !redirect ? "POST /token " : "GET /token?", request);
+            Assert.StartsWith(passwordFallback ? "POST /token " : "GET /token?", request);
+            if (passwordFallback)
+            {
+                Assert.Contains("grant_type=password", request);
+                Assert.Contains("username=synthetic-user", request);
+                Assert.Contains("password=synthetic-password", request);
+            }
         }
         finally
         {

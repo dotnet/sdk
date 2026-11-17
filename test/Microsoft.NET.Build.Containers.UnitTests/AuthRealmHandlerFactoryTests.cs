@@ -311,6 +311,17 @@ public class AuthRealmHandlerFactoryTests
             }
             request += Encoding.ASCII.GetString(buffer, 0, read);
         }
+        int headerEnd = request.IndexOf("\r\n\r\n", StringComparison.Ordinal);
+        string? lengthHeader = request[..headerEnd].Split("\r\n")
+            .FirstOrDefault(line => line.StartsWith("Content-Length:", StringComparison.OrdinalIgnoreCase));
+        int contentLength = lengthHeader is null ? 0 : int.Parse(lengthHeader.Split(':', 2)[1],
+            System.Globalization.CultureInfo.InvariantCulture);
+        while (request.Length < headerEnd + 4 + contentLength)
+        {
+            int read = await stream.ReadAsync(buffer, cancellationToken);
+            if (read == 0) throw new EndOfStreamException();
+            request += Encoding.ASCII.GetString(buffer, 0, read);
+        }
         await stream.WriteAsync(Encoding.ASCII.GetBytes(response), cancellationToken);
         return request;
     }
