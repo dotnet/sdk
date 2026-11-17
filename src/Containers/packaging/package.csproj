@@ -44,7 +44,7 @@
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('Newtonsoft')) or
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('Valleysoft')) or
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('Microsoft.Security.AntiSSRF')) or
-                                '%(_AllNetContainerTaskDependencies.NuGetPackageId)' == 'OrasProject.Oras' or
+                                $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Equals('OrasProject.Oras')) or
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('Microsoft.Extensions'))
                             ) and
                             %(_AllNetContainerTaskDependencies.NuGetIsFrameworkReference) != true" />
