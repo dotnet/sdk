@@ -16,7 +16,8 @@ public class ContainerHelpersTests
 
     // // Invalid tests
     [DataRow("mcr.mi-=crosoft.com", false)] // invalid url
-    [DataRow("mcr.microsoft.com/", false)] // invalid url
+    [DataRow("example.com/team", false)]
+    [DataRow("mcr.microsoft.com/", false)]
     public void IsValidRegistry(string registry, bool expectedReturn)
     {
         Assert.AreEqual(expectedReturn, ContainerHelpers.IsValidRegistry(registry));
@@ -64,6 +65,8 @@ public class ContainerHelpersTests
     [DataRow("foo/bar-", false)]
     [DataRow("foo/bar.", false)]
     [DataRow("foo/bar_", false)]
+    [DataRow("team/app:tag", false)]
+    [DataRow("team/app@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", false)]
     [DataRow("--------", false)]
     public void IsValidImageName(string imageName, bool expectedReturn)
     {

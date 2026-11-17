@@ -131,7 +131,7 @@ public static class ContainerHelpers
     /// <param name="registryName"></param>
     /// <returns></returns>
     internal static bool IsValidRegistry(string registryName) =>
-        Reference.TryParse($"{registryName}/repository", out _);
+        Reference.TryParse($"{registryName}/repository", out var reference) && reference.Registry == registryName;
 
     /// <summary>
     /// Ensures the given image name is valid.
@@ -141,7 +141,8 @@ public static class ContainerHelpers
     /// <returns></returns>
     internal static bool IsValidImageName(string imageName)
     {
-        return Reference.TryParse($"registry.invalid/{imageName}", out _);
+        return Reference.TryParse($"registry.invalid/{imageName}", out var reference) &&
+            reference.Repository == imageName && reference.ContentReference is null;
     }
 
     /// <summary>
