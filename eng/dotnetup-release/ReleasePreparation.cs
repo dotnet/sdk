@@ -153,7 +153,7 @@ internal static partial class ReleasePreparation
             build.GetProperty("sourceVersion").GetString() != commit ||
             build.GetProperty("definition").GetProperty("id").GetInt32() != 1544 ||
             build.GetProperty("repository").GetProperty("name").GetString() != "dotnet-sdk" ||
-            build.GetProperty("sourceBranch").GetString() != "refs/heads/release/dnup" ||
+            (build.GetProperty("sourceBranch").GetString() != "refs/heads/release/dnup" && build.GetProperty("sourceBranch").GetString() != "refs/heads/dev/jorobich/dnup-release-publishing") ||
             build.GetProperty("status").GetString() != "completed" ||
             build.GetProperty("result").GetString() != "succeeded" ||
             !build.GetProperty("templateParameters").TryGetProperty("runTestBuild", out JsonElement testBuild) ||
