@@ -157,8 +157,8 @@ internal class InstallExecutor
         if (result.WasAlreadyInstalled)
         {
             return result.Install.Version.Equals(request.ResolvedVersion)
-                ? "already present, skipped"
-                : $"already present as {result.Install.Version}, skipped";
+                ? "already installed, skipped"
+                : $"already installed as {result.Install.Version}, skipped";
         }
 
         var details = new List<string>();

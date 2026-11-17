@@ -631,7 +631,7 @@ public class MultiChannelSdkInstallTests
         string[] lines = output.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
         lines.Count(line => line.StartsWith("Installed at ", StringComparison.Ordinal)).Should().Be(1,
             "The completion message should appear exactly once. Output:\n" + output);
-        lines.Count(line => line.Contains("  installed", StringComparison.Ordinal) || line.Contains("already present, skipped", StringComparison.Ordinal))
+        lines.Count(line => line.Contains("  installed", StringComparison.Ordinal) || line.Contains("already installed, skipped", StringComparison.Ordinal))
             .Should().Be(2, "There should be one result line per channel. Output:\n" + output);
         output.Should().NotContain("Downloading", "--no-progress should not print per-step progress");
 

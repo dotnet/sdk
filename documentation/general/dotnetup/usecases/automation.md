@@ -95,7 +95,7 @@ present and valid.
 
   ```text
   Installing dotnet (runtime) 8.0.27, 9.0.16 to D:\sdk\.dotnet...
-    dotnet (runtime) 8.0.27  already present, skipped
+    dotnet (runtime) 8.0.27  already installed, skipped
     dotnet (runtime) 9.0.16  installed (30.4 MB)
   Installed at D:\sdk\.dotnet.
   ```

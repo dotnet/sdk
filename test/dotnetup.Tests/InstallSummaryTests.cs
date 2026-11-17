@@ -54,7 +54,7 @@ public class InstallSummaryTests
         string runtime = InstallComponent.Runtime.GetDisplayName();
         CaptureLines(() => InstallExecutor.DisplaySummaryInRequestOrder(requests, batch, RootPath)).Should().Equal(
             $"  {runtime} 6.0.36  installed (27.0 MB, repaired)",
-            $"  {runtime} 8.0.27  already present, skipped",
+            $"  {runtime} 8.0.27  already installed, skipped",
             $"  {runtime} 9.0.16  failed: Download failed.",
             $"  {runtime} 10.0.8  installed (29.8 MB)",
             $"Installed at {RootPath}.");
@@ -77,7 +77,7 @@ public class InstallSummaryTests
         var batch = new InstallBatchResult([Result(request, alreadyInstalled: true, installedVersion: "11.0.100-rtm.26510.101")], []);
 
         CaptureLines(() => InstallExecutor.DisplaySummaryInRequestOrder([request], batch, RootPath)).Should().Equal(
-            $"  {InstallComponent.SDK.GetDisplayName()} 11.0.100  already present as 11.0.100-rtm.26510.101, skipped",
+            $"  {InstallComponent.SDK.GetDisplayName()} 11.0.100  already installed as 11.0.100-rtm.26510.101, skipped",
             $"Installed at {RootPath}.");
     }
 
