@@ -94,9 +94,10 @@ Many CLI tests use Verify (`[UsesVerify]` / VerifyMSTest):
 
 In `--solution` runs,
 [`device selection`](dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs) applies only to
-test projects (`IsTestProject` or `IsTestingPlatformApplication`). App and library projects, such as
-MAUI heads, can import `ComputeAvailableDevices` in their inner builds and must not prompt for a device. The single-project
-path evaluates before restore, so it must not apply this NuGet-dependent gate.
+MTP test applications (`IsTestingPlatformApplication`); `IsTestProject` is a VSTest concept and must not
+opt a project in. App and library projects, such as MAUI heads, can import `ComputeAvailableDevices` in
+their inner builds and must not prompt for a device. The single-project path evaluates before restore, so
+it must not apply this NuGet-dependent gate.
 
 ## MTP process completion
 
