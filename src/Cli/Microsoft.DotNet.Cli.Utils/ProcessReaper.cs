@@ -211,27 +211,28 @@ internal class ProcessReaper : IDisposable
 
                 try
                 {
+                    ProcessExitStatus? exitStatus = null;
+
                     if (ProcessLifecycle.IsForcefulCancellationRequested &&
                         !ProcessLifecycle.IsSigTermRequested)
                     {
                         TerminateProcess();
                     }
-                    else if (!_process.WaitForExit(0))
+                    else
                     {
                         // Forward SIGTERM before escalating so the child observes the
                         // same hard-shutdown signal as the CLI.
-                        _process.SafeHandle.Signal(PosixSignal.SIGTERM);
-
-                        if (ProcessLifecycle.IsForcefulCancellationRequested &&
-                            !_process.WaitForExit(s_forcefulSigTermGracePeriod))
+                        if (_process.Signal(PosixSignal.SIGTERM) &&
+                            ProcessLifecycle.IsForcefulCancellationRequested &&
+                            !_process.TryWaitForExitStatus(s_forcefulSigTermGracePeriod, out exitStatus))
                         {
                             TerminateProcess();
                         }
                     }
 
-                    _process.WaitForExit();
+                    exitStatus ??= _process.WaitForExitStatus();
 
-                    Environment.ExitCode = _process.ExitCode;
+                    Environment.ExitCode = exitStatus.ExitCode;
                 }
                 catch (InvalidOperationException)
                 {
