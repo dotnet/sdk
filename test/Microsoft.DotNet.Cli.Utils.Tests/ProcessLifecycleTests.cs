@@ -131,6 +131,13 @@ public class ProcessLifecycleTests : SdkTest
             RedirectStandardError = true,
         };
         startInfo.ArgumentList.Add("cancellation-test");
+        var testEnvironment = new Dictionary<string, string?>();
+        SdkTestContext.Current.AddTestEnvironmentVariables(testEnvironment);
+        foreach ((string name, string? value) in testEnvironment)
+        {
+            startInfo.Environment[name] = value;
+        }
+
         startInfo.Environment["DOTNET_CLI_ENABLEAOT"] = "0";
         startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
         startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
@@ -138,15 +145,46 @@ public class ProcessLifecycleTests : SdkTest
             testDirectory.Path + Path.PathSeparator + startInfo.Environment["PATH"];
 
         using Process child = new() { StartInfo = startInfo };
-        child.Start();
-        WaitForMarker(testDirectory.Path, "ready");
-        child.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
-        child.WaitForExit(s_waitTimeout).Should().BeTrue();
+        bool childStarted = false;
+        try
+        {
+            child.Start();
+            childStarted = true;
+            Task<string> stdoutTask = child.StandardOutput.ReadToEndAsync();
+            Task<string> stderrTask = child.StandardError.ReadToEndAsync();
 
-        child.ExitCode.Should().Be(130);
-        string standardError = child.StandardError.ReadToEnd();
-        standardError.Should().NotContain("Unhandled exception");
-        standardError.Should().NotContain("The operation was canceled");
+            if (!TryWaitForMarker(testDirectory.Path, "ready"))
+            {
+                if (!child.HasExited)
+                {
+                    child.Kill(entireProcessTree: true);
+                }
+
+                child.WaitForExit();
+                Assert.Fail(
+                    $"The managed CLI did not start the external command.{Environment.NewLine}" +
+                    $"Exit code: {child.ExitCode}{Environment.NewLine}" +
+                    $"Standard output:{Environment.NewLine}{stdoutTask.GetAwaiter().GetResult()}{Environment.NewLine}" +
+                    $"Standard error:{Environment.NewLine}{stderrTask.GetAwaiter().GetResult()}");
+            }
+
+            child.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
+            child.WaitForExit(s_waitTimeout).Should().BeTrue();
+
+            child.ExitCode.Should().Be(130);
+            string standardError = stderrTask.GetAwaiter().GetResult();
+            standardError.Should().NotContain("Unhandled exception");
+            standardError.Should().NotContain("The operation was canceled");
+            _ = stdoutTask.GetAwaiter().GetResult();
+        }
+        finally
+        {
+            if (childStarted && !child.HasExited)
+            {
+                child.Kill(entireProcessTree: true);
+                child.WaitForExit();
+            }
+        }
     }
 
     [TestMethod]
@@ -230,11 +268,16 @@ public class ProcessLifecycleTests : SdkTest
 
     private static void WaitForMarker(string testDirectory, string expectedValue)
     {
-        string markerPath = GetMarkerPath(testDirectory);
-        SpinWait.SpinUntil(
-                () => File.Exists(markerPath) && File.ReadAllText(markerPath) == expectedValue,
-                s_waitTimeout)
+        TryWaitForMarker(testDirectory, expectedValue)
             .Should().BeTrue($"the child process should write '{expectedValue}' to the signal marker");
+    }
+
+    private static bool TryWaitForMarker(string testDirectory, string expectedValue)
+    {
+        string markerPath = GetMarkerPath(testDirectory);
+        return SpinWait.SpinUntil(
+            () => File.Exists(markerPath) && File.ReadAllText(markerPath) == expectedValue,
+            s_waitTimeout);
     }
 
     private static string GetMarkerPath(string testDirectory)
