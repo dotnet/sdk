@@ -8,11 +8,18 @@ using Valleysoft.DockerCredsProvider;
 
 namespace Microsoft.NET.Build.Containers;
 
-internal sealed class OrasCredentialProvider(RegistryMode mode) : ICredentialProvider
+internal sealed class OrasCredentialProvider(RegistryMode mode, string registryAuthority) : ICredentialProvider
 {
     public async Task<Credential> ResolveCredentialAsync(string hostname, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        // Upload Location headers can name a different authority. Environment overrides
+        // are credentials for the configured registry, not for those upload endpoints.
+        if (!string.Equals(hostname, registryAuthority, StringComparison.OrdinalIgnoreCase))
+        {
+            return default;
+        }
 
         DockerCredentials credentials;
         if (GetDockerCredentialsFromEnvironment(mode) is (string username, string password))

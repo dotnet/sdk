@@ -39,7 +39,7 @@ internal sealed class OrasRealmValidator(string registryName, bool isInsecureReg
 
     internal static Uri ValidateRealmUri(string realm, string registryName, bool isInsecureRegistry)
     {
-        if (!Uri.TryCreate(realm, UriKind.Absolute, out Uri? realmUri))
+        if (!Uri.TryCreate(realm, UriKind.Absolute, out Uri? realmUri) || !string.IsNullOrEmpty(realmUri.UserInfo))
         {
             throw new InvalidAuthResponseException(
                 registryName,

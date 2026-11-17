@@ -1,7 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
+using System.Security.Authentication;
 using Moq;
+using Moq.Protected;
+using OrasProject.Oras.Oci;
 using OrasProject.Oras.Registry.Remote;
 using OrasProject.Oras.Registry.Remote.Auth;
 
@@ -26,9 +30,59 @@ public class OrasRegistryAdapterTests
     ];
 
     [TestMethod]
+    public async Task ForeignUploadBasicChallengeCannotObtainEnvironmentCredentials()
+    {
+        string? oldUser = Environment.GetEnvironmentVariable(ContainerHelpers.PushHostObjectUser);
+        string? oldPassword = Environment.GetEnvironmentVariable(ContainerHelpers.PushHostObjectPass);
+        try
+        {
+            Environment.SetEnvironmentVariable(ContainerHelpers.PushHostObjectUser, "synthetic-user");
+            Environment.SetEnvironmentVariable(ContainerHelpers.PushHostObjectPass, "synthetic-password");
+            string registryHost = Guid.NewGuid().ToString("N") + ".example.com";
+            int foreignRequests = 0;
+            var handler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handler.Protected().Setup("Dispose", ItExpr.IsAny<bool>());
+            handler.Protected().Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync((HttpRequestMessage request, CancellationToken _) =>
+                {
+                    Assert.AreEqual("http", request.RequestUri!.Scheme);
+                    var response = new HttpResponseMessage(HttpStatusCode.Accepted) { RequestMessage = request };
+                    if (request.Method == HttpMethod.Post)
+                    {
+                        response.Headers.Location = new Uri("http://upload.example.com/session");
+                    }
+                    else
+                    {
+                        Assert.AreEqual("upload.example.com", request.RequestUri.Host);
+                        Assert.IsNull(request.Headers.Authorization);
+                        foreignRequests++;
+                        response.StatusCode = HttpStatusCode.Unauthorized;
+                        response.Headers.WwwAuthenticate.ParseAdd("Basic realm=foreign");
+                    }
+                    return response;
+                });
+            using var http = new HttpClient(handler.Object);
+            var client = new Client(http, new OrasCredentialProvider(RegistryMode.Push, registryHost));
+            var factory = new OrasRepositoryFactory(new Uri($"http://{registryHost}"), client,
+                new RegistrySettings { ForceChunkedUpload = true });
+            using var content = new MemoryStream();
+            await Assert.ThrowsExactlyAsync<AuthenticationException>(() =>
+                factory.Create("app").Blobs.PushAsync(Descriptor.Create([], "application/octet-stream"), content, TestContext.CancellationToken));
+            Assert.AreEqual(1, foreignRequests);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(ContainerHelpers.PushHostObjectUser, oldUser);
+            Environment.SetEnvironmentVariable(ContainerHelpers.PushHostObjectPass, oldPassword);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("http://registry.example.com:5000", false, null, (int)BlobUploadMode.MonolithicWithChunkedFallback, 64 * 1024)]
     [DataRow("https://registry.example.com", false, null, (int)BlobUploadMode.MonolithicWithChunkedFallback, 64 * 1024)]
     [DataRow("https://registry.example.com", true, 1024 * 1024, (int)BlobUploadMode.Chunked, 1024 * 1024)]
-    [DataRow("https://123456789012.dkr.ecr.eu-west-1.amazonaws.com", false, null, (int)BlobUploadMode.MonolithicWithChunkedFallback, 64 * 1024)]
+    [DataRow("https://123456789012.dkr.ecr.eu-west-1.amazonaws.com", false, null, (int)BlobUploadMode.MonolithicWithChunkedFallback, 5_248_080)]
+    [DataRow("https://123456789012.dkr.ecr.eu-west-1.amazonaws.com", true, 6 * 1024 * 1024, (int)BlobUploadMode.Chunked, 6 * 1024 * 1024)]
     public void RepositoryFactoryPreservesUploadConfiguration(
         string registryUri,
         bool forceChunkedUpload,
@@ -47,6 +101,7 @@ public class OrasRegistryAdapterTests
 
         Assert.AreEqual((BlobUploadMode)expectedUploadMode, repository.Options.BlobUploadMode);
         Assert.AreEqual(expectedChunkSize, repository.Options.BlobUploadChunkSize);
+        Assert.AreEqual(new Uri(registryUri).Scheme == Uri.UriSchemeHttp, repository.Options.PlainHttp);
     }
 
     [TestMethod]
@@ -70,12 +125,16 @@ public class OrasRegistryAdapterTests
             Environment.SetEnvironmentVariable(usernameVariable, "uname");
             Environment.SetEnvironmentVariable(passwordVariable, "pword");
 
-            var provider = new OrasCredentialProvider((RegistryMode)mode);
+            var provider = new OrasCredentialProvider((RegistryMode)mode, "registry.example.com");
             OrasProject.Oras.Registry.Remote.Auth.Credential credential =
                 await provider.ResolveCredentialAsync("registry.example.com", TestContext.CancellationToken);
 
             Assert.AreEqual("uname", credential.Username);
             Assert.AreEqual("pword", credential.Password);
+            var foreignCredential = await provider.ResolveCredentialAsync("upload.example.com", TestContext.CancellationToken);
+            Assert.IsTrue(foreignCredential.IsEmpty());
+            var differentPort = await provider.ResolveCredentialAsync("registry.example.com:5000", TestContext.CancellationToken);
+            Assert.IsTrue(differentPort.IsEmpty());
         }
         finally
         {
@@ -119,11 +178,11 @@ public class OrasRegistryAdapterTests
                 TestContext.CancellationToken);
             Environment.SetEnvironmentVariable("REGISTRY_AUTH_FILE", authFile);
 
-            var provider = new OrasCredentialProvider(RegistryMode.Push);
+            var provider = new OrasCredentialProvider(RegistryMode.Push, usernameRegistry);
             OrasProject.Oras.Registry.Remote.Auth.Credential usernameCredential =
                 await provider.ResolveCredentialAsync(usernameRegistry, TestContext.CancellationToken);
             OrasProject.Oras.Registry.Remote.Auth.Credential tokenCredential =
-                await provider.ResolveCredentialAsync(tokenRegistry, TestContext.CancellationToken);
+                await new OrasCredentialProvider(RegistryMode.Push, tokenRegistry).ResolveCredentialAsync(tokenRegistry, TestContext.CancellationToken);
 
             Assert.AreEqual("user", usernameCredential.Username);
             Assert.AreEqual("password", usernameCredential.Password);
@@ -153,6 +212,8 @@ public class OrasRegistryAdapterTests
 
     [TestMethod]
     [DataRow("http://auth.example.com/token", false)]
+    [DataRow("https://user:pass@auth.example.com/token", false)]
+    [DataRow("https://user@auth.example.com/token", true)]
     [DataRow("ftp://auth.example.com/token", false)]
     [DataRow("ftp://auth.example.com/token", true)]
     [DataRow("file:///etc/passwd", false)]

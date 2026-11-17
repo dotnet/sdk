@@ -18,6 +18,8 @@ internal interface IRepositoryFactory
 internal sealed class OrasRepositoryFactory : IRepositoryFactory
 {
     private const int DefaultChunkSizeBytes = 64 * 1024;
+    // Preserve the SDK's ECR default when the registry does not advertise a minimum.
+    private const int DefaultEcrChunkSizeBytes = 5_248_080;
     private static readonly TimeSpan s_longRequestTimeout = TimeSpan.FromMinutes(30);
 
     private readonly Uri _baseUri;
@@ -38,11 +40,12 @@ internal sealed class OrasRepositoryFactory : IRepositoryFactory
 
     public IRepository Create(string repositoryName) => new Repository(new RepositoryOptions
     {
-        BlobUploadChunkSize = _settings.ChunkedUploadSizeBytes ?? DefaultChunkSizeBytes,
+        BlobUploadChunkSize = _settings.ChunkedUploadSizeBytes ?? (_baseUri.IsAmazonECRRegistry() ? DefaultEcrChunkSizeBytes : DefaultChunkSizeBytes),
         BlobUploadMode = _settings.ForceChunkedUpload ?
             BlobUploadMode.Chunked :
             BlobUploadMode.MonolithicWithChunkedFallback,
         Client = _client,
+        PlainHttp = _baseUri.Scheme == Uri.UriSchemeHttp,
         Reference = Reference.Parse($"{_baseUri.Authority}/{repositoryName}"),
     });
 
@@ -52,7 +55,7 @@ internal sealed class OrasRepositoryFactory : IRepositoryFactory
         Client client = new(
             CreateHttpClient(registryName, baseUri, logger, isInsecureRegistry, allowAutoRedirect: true),
             CreateHttpClient(registryName, baseUri, logger, isInsecureRegistry, allowAutoRedirect: false),
-            new OrasCredentialProvider(mode),
+            new OrasCredentialProvider(mode, baseUri.Authority),
             accessTokenProvider: null,
             cache: null)
         {
