@@ -36,6 +36,10 @@ public class VSTestCommand
         // We run post processing also if execution is failed for possible partial successful result to post process.
         exitCode |= TestCommand.RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Instance);
 
+        // Reached only when the invocation completed, whether the tests passed or failed. An invocation that
+        // throws or is interrupted deliberately leaves the artifacts on disk for diagnosis.
+        VSTestArtifactsDirectory.Delete();
+
         return exitCode;
     }
 
