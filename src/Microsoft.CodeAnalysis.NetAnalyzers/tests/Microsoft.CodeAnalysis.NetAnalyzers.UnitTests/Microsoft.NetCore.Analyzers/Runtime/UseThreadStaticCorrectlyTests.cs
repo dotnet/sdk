@@ -163,5 +163,151 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                     """);
         }
+
+        [TestMethod]
+        public async Task AttributeOnInstanceField_Diagnostic_CSharp()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                TestCode = """
+                    using System;
+                    using System.Runtime.CompilerServices;
+
+                    class C
+                    {
+                        [ContextStatic]
+                        object {|#0:_context|};
+
+                        [FixedAddressValueType]
+                        Int128 {|#1:_fixed|};
+
+                        [field: ContextStatic]
+                        object {|#2:Prop|} { get; set; }
+
+                        [ThreadStatic]
+                        object {|#3:_thread|};
+
+                        [ContextStatic]
+                        static object s_context;
+
+                        [FixedAddressValueType]
+                        static Int128 s_fixed;
+                    }
+                    """,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(0).WithArguments("ContextStatic", "_context"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(1).WithArguments("FixedAddressValueType", "_fixed"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(2).WithArguments("ContextStatic", "Prop"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(3).WithArguments("ThreadStatic", "_thread"),
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task AttributeOnInstanceField_Diagnostic_VB()
+        {
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                TestCode = """
+                    Imports System
+                    Imports System.Runtime.CompilerServices
+
+                    Class C
+                        <ContextStatic>
+                        Private {|#0:_context|} As Object
+
+                        <FixedAddressValueType>
+                        Private {|#1:_fixed|} As Int128
+
+                        <ContextStatic>
+                        Private Shared s_context As Object
+
+                        <FixedAddressValueType>
+                        Private Shared s_fixed As Int128
+                    End Class
+                    """,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(0).WithArguments("ContextStatic", "_context"),
+                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(1).WithArguments("FixedAddressValueType", "_fixed"),
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task SuppressGCTransition_NotPInvoke_Diagnostic_CSharp()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp10,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                TestCode = """
+                    using System.Runtime.InteropServices;
+                    using System.Runtime.InteropServices.Marshalling;
+
+                    [GeneratedComInterface]
+                    [Guid("5C1A6F38-3F5B-4D2E-9B7A-1E2C3D4F5A6B")]
+                    partial interface IComApi
+                    {
+                        [SuppressGCTransition]
+                        void ComMethod();
+                    }
+
+                    partial class C
+                    {
+                        [DllImport("native")]
+                        [SuppressGCTransition]
+                        static extern int DllImportMethod();
+
+                        [LibraryImport("native")]
+                        [SuppressGCTransition]
+                        internal static partial int LibraryImportMethod();
+
+                        internal static partial int LibraryImportMethod() => 0;
+
+                        [SuppressGCTransition]
+                        static int {|#0:Managed|}() => 0;
+                    }
+                    """,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(0).WithArguments("SuppressGCTransition", "Managed"),
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task SuppressGCTransition_NotPInvoke_Diagnostic_VB()
+        {
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                TestCode = """
+                    Imports System.Runtime.InteropServices
+
+                    Class C
+                        <SuppressGCTransition>
+                        Private Declare Function DeclareMethod Lib "native" () As Integer
+
+                        <DllImport("native")>
+                        <SuppressGCTransition>
+                        Private Shared Function DllImportMethod() As Integer
+                        End Function
+
+                        <SuppressGCTransition>
+                        Private Shared Function {|#0:Managed|}() As Integer
+                            Return 0
+                        End Function
+                    End Class
+                    """,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(0).WithArguments("SuppressGCTransition", "Managed"),
+                },
+            }.RunAsync(CancellationToken.None);
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2259: <inheritdoc cref="ThreadStaticOnNonStaticFieldTitle"/>
+    /// CA2259: <inheritdoc cref="AttributeHasNoEffectTitle"/>
     /// CA2019: <inheritdoc cref="ThreadStaticInitializedInlineTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
@@ -22,14 +22,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string ThreadStaticNonStaticFieldRuleId = "CA2259";
         internal const string ThreadStaticInitializedInlineRuleId = "CA2019";
 
-        // [ThreadStatic]
+        // [ThreadStatic], [ContextStatic] or [FixedAddressValueType]
         // private object t_nonStaticField;
-        internal static readonly DiagnosticDescriptor ThreadStaticOnNonStaticFieldRule = DiagnosticDescriptorHelper.Create(ThreadStaticNonStaticFieldRuleId,
-            CreateLocalizableResourceString(nameof(ThreadStaticOnNonStaticFieldTitle)),
-            CreateLocalizableResourceString(nameof(ThreadStaticOnNonStaticFieldMessage)),
+        // [SuppressGCTransition] on a method that is not a P/Invoke
+        internal static readonly DiagnosticDescriptor AttributeHasNoEffectRule = DiagnosticDescriptorHelper.Create(ThreadStaticNonStaticFieldRuleId,
+            CreateLocalizableResourceString(nameof(AttributeHasNoEffectTitle)),
+            CreateLocalizableResourceString(nameof(AttributeHasNoEffectMessage)),
             DiagnosticCategory.Usage,
             RuleLevel.BuildWarning,
-            CreateLocalizableResourceString(nameof(ThreadStaticOnNonStaticFieldDescription)),
+            CreateLocalizableResourceString(nameof(AttributeHasNoEffectDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
@@ -44,7 +45,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(ThreadStaticOnNonStaticFieldRule, ThreadStaticInitializedInlineRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(AttributeHasNoEffectRule, ThreadStaticInitializedInlineRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -58,7 +59,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
-                // Warn on any [ThreadStatic] instance field.
+                var contextStaticAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemContextStaticAttribute);
+                var fixedAddressValueTypeAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesFixedAddressValueTypeAttribute);
+
+                // Warn on any [ThreadStatic], [ContextStatic] or [FixedAddressValueType] instance field.
                 context.RegisterSymbolAction(context =>
                 {
                     ISymbol symbol = context.Symbol;
@@ -79,9 +83,39 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     // Once we have the field, see if it's attributed with [ThreadStatic].
                     if (fieldSymbol?.HasAnyAttribute(threadStaticAttributeType) == true)
                     {
-                        context.ReportDiagnostic(symbol.CreateDiagnostic(ThreadStaticOnNonStaticFieldRule));
+                        context.ReportDiagnostic(symbol.CreateDiagnostic(AttributeHasNoEffectRule, "ThreadStatic", symbol.Name));
+                    }
+
+                    if (fieldSymbol?.HasAnyAttribute(contextStaticAttributeType) == true)
+                    {
+                        context.ReportDiagnostic(symbol.CreateDiagnostic(AttributeHasNoEffectRule, "ContextStatic", symbol.Name));
+                    }
+
+                    if (fieldSymbol?.HasAnyAttribute(fixedAddressValueTypeAttributeType) == true)
+                    {
+                        context.ReportDiagnostic(symbol.CreateDiagnostic(AttributeHasNoEffectRule, "FixedAddressValueType", symbol.Name));
                     }
                 }, SymbolKind.Field, SymbolKind.Property);
+
+                // Warn on [SuppressGCTransition] on a method that is not a P/Invoke. The interop source generators
+                // also forward it from [LibraryImport] methods and [GeneratedComInterface] interface methods.
+                if (context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesSuppressGCTransitionAttribute, out var suppressGCTransitionAttributeType))
+                {
+                    var libraryImportAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesLibraryImportAttribute);
+                    var generatedComInterfaceAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesMarshallingGeneratedComInterfaceAttribute);
+
+                    context.RegisterSymbolAction(context =>
+                    {
+                        var method = (IMethodSymbol)context.Symbol;
+                        if (method.HasAnyAttribute(suppressGCTransitionAttributeType) &&
+                            method.GetDllImportData() is null &&
+                            !method.HasAnyAttribute(libraryImportAttributeType) &&
+                            !method.ContainingType.HasAnyAttribute(generatedComInterfaceAttributeType))
+                        {
+                            context.ReportDiagnostic(method.CreateDiagnostic(AttributeHasNoEffectRule, "SuppressGCTransition", method.Name));
+                        }
+                    }, SymbolKind.Method);
+                }
 
                 // Warn on any [ThreadStatic] field inline initialization.
                 context.RegisterOperationAction(context =>
