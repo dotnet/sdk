@@ -108,6 +108,25 @@ public sealed class RunFileTests_Directives : RunFileTestBase
     }
 
     [TestMethod]
+    [DataRow(16)]
+    [DataRow(27)]
+    public void TokenizeDirective_TruncatedQuote(int length)
+    {
+        var source = new SourceFile("test.cs", SourceText.From("""
+            #:package Pkg@"1.0" Note="x"
+            """));
+        var syntax = GetDirectiveSyntax(new SourceFile(source.Path, source.Text.GetSubText(new TextSpan(0, length))));
+        var errorReporter = ErrorReporters.CreateCollectingReporter(out var diagnostics);
+
+        var (kindSpan, argumentKind, tokens) = FileLevelDirectiveHelpers.TokenizeDirective(source, syntax, errorReporter);
+
+        kindSpan.Should().Be(new TextSpan(2, 7));
+        argumentKind.Should().Be(DirectiveArgumentKind.Name);
+        tokens.Should().BeNull();
+        diagnostics.Should().ContainSingle().Which.Message.Should().Be(FileBasedProgramsResources.UnterminatedQuoteInDirective);
+    }
+
+    [TestMethod]
     public void Define_01()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
