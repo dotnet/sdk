@@ -150,8 +150,8 @@ public class ProcessLifecycleTests : SdkTest
         {
             child.Start();
             childStarted = true;
-            Task<string> stdoutTask = child.StandardOutput.ReadToEndAsync();
-            Task<string> stderrTask = child.StandardError.ReadToEndAsync();
+            Task<string> stdoutTask = child.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
+            Task<string> stderrTask = child.StandardError.ReadToEndAsync(TestContext.CancellationToken);
 
             if (!TryWaitForMarker(testDirectory.Path, "ready"))
             {
