@@ -484,16 +484,22 @@ internal sealed class Registry
 
             if (source.Registry is { } sourceRegistry)
             {
-                await MountBlobAsync(
-                    destination.Repository,
-                    source.Repository,
-                    descriptor,
-                    async token =>
-                    {
-                        string localPath = await sourceRegistry.DownloadBlobAsync(source.Repository, descriptor, token).ConfigureAwait(false);
-                        return File.OpenRead(localPath);
-                    },
-                    cancellationToken).ConfigureAwait(false);
+                async Task<Stream> GetContent(CancellationToken token)
+                {
+                    string localPath = await sourceRegistry.DownloadBlobAsync(source.Repository, descriptor, token).ConfigureAwait(false);
+                    return File.OpenRead(localPath);
+                }
+
+                if (sourceRegistry.BaseUri == destinationRegistry.BaseUri)
+                {
+                    await MountBlobAsync(destination.Repository, source.Repository, descriptor, GetContent, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await using Stream content = await GetContent(cancellationToken).ConfigureAwait(false);
+                    await PushBlobAsync(destination.Repository, descriptor, content, cancellationToken).ConfigureAwait(false);
+                }
                 _logger.LogInformation(Strings.Registry_LayerUploaded, digest, destinationRegistry.RegistryName);
             }
             else
@@ -679,13 +685,24 @@ internal sealed class Registry
         Func<CancellationToken, Task<Stream>> getContent,
         CancellationToken cancellationToken)
     {
+        bool contentRequested = false;
         try
         {
             await _repositoryFactory.Create(destinationRepository).MountAsync(
                 descriptor,
                 sourceRepository,
-                getContent,
+                async token =>
+                {
+                    contentRequested = true;
+                    return await getContent(token).ConfigureAwait(false);
+                },
                 cancellationToken).ConfigureAwait(false);
+        }
+        catch (ResponseException) when (!contentRequested)
+        {
+            // Retry a denied/unsupported mount, but never a failed upload in ORAS's 202 fallback.
+            await using Stream content = await getContent(cancellationToken).ConfigureAwait(false);
+            await PushBlobAsync(destinationRepository, descriptor, content, cancellationToken).ConfigureAwait(false);
         }
         catch (ResponseException e) when (e.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {

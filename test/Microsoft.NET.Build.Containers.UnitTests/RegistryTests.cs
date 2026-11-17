@@ -648,6 +648,109 @@ public class RegistryTests : IDisposable
         }
     }
 
+    [TestMethod]
+    [DataRow(true, HttpStatusCode.Forbidden, false)]
+    [DataRow(true, HttpStatusCode.MethodNotAllowed, false)]
+    [DataRow(false, HttpStatusCode.Forbidden, false)]
+    [DataRow(true, HttpStatusCode.Accepted, false)]
+    [DataRow(true, HttpStatusCode.Accepted, true)]
+    public async Task PushLayersFallsBackFromMountWithoutRetryingUploadFailures(
+        bool sameRegistry, HttpStatusCode mountStatus, bool rejectUpload)
+    {
+        byte[] layer = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString());
+        Descriptor descriptor = Descriptor.Create(layer, MediaType.ImageLayerGzip);
+        Descriptor config = Descriptor.Create("{}"u8.ToArray(), MediaType.ImageConfig);
+        string sourceHost = sameRegistry ? "destination.example.com" : "source.example.com";
+        int mounts = 0, downloads = 0, uploads = 0;
+        var methods = new List<string>();
+        using var client = new HttpClient(new MountTestHandler(async (request, token) =>
+        {
+            string path = request.RequestUri!.AbsolutePath;
+            methods.Add(request.Method.Method);
+            var response = new HttpResponseMessage(HttpStatusCode.Created) { RequestMessage = request };
+            if (request.Method == HttpMethod.Head)
+            {
+                response.StatusCode = path.EndsWith(config.Digest, StringComparison.Ordinal) ? HttpStatusCode.OK : HttpStatusCode.NotFound;
+                response.Content = new ByteArrayContent("{}"u8.ToArray());
+            }
+            else if (request.Method == HttpMethod.Get)
+            {
+                Assert.AreEqual(sourceHost, request.RequestUri.Host);
+                Assert.AreEqual($"/v2/base/image/blobs/{descriptor.Digest}", path);
+                downloads++;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Content = new ByteArrayContent(layer);
+            }
+            else if (request.Method == HttpMethod.Post)
+            {
+                bool mounting = System.Web.HttpUtility.ParseQueryString(request.RequestUri.Query)["mount"] is not null;
+                if (mounting)
+                {
+                    Assert.IsTrue(sameRegistry, "A mount must never be attempted across registries.");
+                    mounts++;
+                }
+                response.StatusCode = mounting ? mountStatus : HttpStatusCode.Accepted;
+                response.Headers.Location = new Uri("/upload", UriKind.Relative);
+            }
+            else if (request.Method == HttpMethod.Patch)
+            {
+                uploads++;
+                byte[] uploaded = await request.Content!.ReadAsByteArrayAsync(token);
+                Assert.AreSequenceEqual(layer, uploaded);
+                response.StatusCode = rejectUpload ? HttpStatusCode.Forbidden : HttpStatusCode.Accepted;
+                response.Headers.Location = new Uri("/upload", UriKind.Relative);
+            }
+            return response;
+        }));
+        var destinationFactory = new OrasRepositoryFactory(new Uri("http://destination.example.com"),
+            new OrasProject.Oras.Registry.Remote.PlainClient(client), new RegistrySettings { ForceChunkedUpload = true });
+        var sourceFactory = new OrasRepositoryFactory(new Uri($"http://{sourceHost}"),
+            new OrasProject.Oras.Registry.Remote.PlainClient(client), new RegistrySettings());
+        var destinationRegistry = new Registry(new Uri("http://destination.example.com"), _loggerFactory.CreateLogger("mount-destination"), destinationFactory);
+        var sourceRegistry = new Registry(new Uri($"http://{sourceHost}"), _loggerFactory.CreateLogger("mount-source"), sourceFactory);
+        string manifest = System.Text.Json.JsonSerializer.Serialize(new Manifest { SchemaVersion = 2, Config = config, Layers = [descriptor] });
+        var image = new BuiltImage
+        {
+            Config = "{}",
+            ImageDigest = config.Digest,
+            Manifest = manifest,
+            ManifestDigest = DigestUtils.ComputeSha256Digest(manifest),
+            ManifestMediaType = MediaType.ImageManifest,
+            Layers = [descriptor],
+            OS = "linux",
+            Architecture = "amd64",
+        };
+        try
+        {
+            Task push = destinationRegistry.PushAsync(image,
+                new SourceImageReference(sourceRegistry, "base/image", "latest", null),
+                new DestinationImageReference(destinationRegistry, "app", ["latest"]),
+                noCache: true, TestContext.CancellationToken);
+            if (rejectUpload)
+            {
+                await Assert.ThrowsExactlyAsync<UnableToAccessRepositoryException>(() => push);
+            }
+            else
+            {
+                await push;
+            }
+            Assert.AreEqual(sameRegistry ? 1 : 0, mounts);
+            Assert.AreEqual(1, downloads);
+            Assert.AreEqual(1, uploads);
+            Assert.AreEqual(sameRegistry && mountStatus != HttpStatusCode.Accepted ? 2 : 1, methods.Count(method => method == "POST"));
+        }
+        finally
+        {
+            File.Delete(ContentStore.PathForDescriptor(descriptor));
+        }
+    }
+
+    private sealed class MountTestHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => send(request, cancellationToken);
+    }
+
     private Registry RegistryWithManifest(Descriptor descriptor, byte[] content)
     {
         var manifests = new Mock<IManifestStore>(MockBehavior.Strict);
