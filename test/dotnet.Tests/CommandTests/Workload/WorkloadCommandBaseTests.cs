@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.Utils;
@@ -58,6 +59,28 @@ public class WorkloadCommandBaseTests : SdkTest
         command.ObservedTempDirectory.Should().Be(testDirectory);
         Directory.Exists(testDirectory).Should().BeTrue();
         File.Exists(command.ObservedPackagePath).Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow("search")]
+    [DataRow("repair")]
+    public void TempDirectoryIsDeletedWhenTheCommandConstructorThrows(string subcommand)
+    {
+        // The base constructor creates the temp directory, then the command's own constructor rejects --sdk-version, so
+        // Execute never runs. Run the real CLI with its temp folder redirected to an empty directory to see what's left.
+        var tempDirectory = TestAssetsManager.CreateTestDirectory(identifier: subcommand).Path;
+
+        new DotnetCommand(Log)
+            .WithEnvironmentVariable("TMP", tempDirectory)
+            .WithEnvironmentVariable("TEMP", tempDirectory)
+            .WithEnvironmentVariable("TMPDIR", tempDirectory)
+            .Execute("workload", subcommand, "--sdk-version", "1.0.0")
+            .Should()
+            .Fail()
+            .And
+            .HaveStdErrContaining(CliCommandStrings.SdkVersionOptionNotSupported);
+
+        Directory.GetDirectories(tempDirectory).Should().BeEmpty();
     }
 
     /// <summary>

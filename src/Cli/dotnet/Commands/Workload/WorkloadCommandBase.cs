@@ -142,6 +142,7 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
         else
         {
             _ownedTempDirectory = new TemporaryDirectory();
+            UnfinishedTempDirectories.Add(_ownedTempDirectory);
             TempDirectoryPath = _ownedTempDirectory.DirectoryPath;
         }
 
@@ -176,7 +177,11 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
         }
         finally
         {
-            _ownedTempDirectory?.Dispose();
+            if (_ownedTempDirectory is not null)
+            {
+                _ownedTempDirectory.Dispose();
+                UnfinishedTempDirectories.Remove(_ownedTempDirectory);
+            }
         }
     }
 
@@ -185,4 +190,52 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
     /// so nothing written there may be relied on afterwards.
     /// </summary>
     protected abstract int ExecuteCore();
+}
+
+/// <summary>
+/// Temporary directories created by workload commands that haven't finished <c>Execute</c>. The base constructor creates
+/// the directory, so a command whose own constructor then throws (an unsupported option, a dotnet root the user can't
+/// write to) never reaches <c>Execute</c> to delete it. Those directories are deleted when the process exits instead.
+/// </summary>
+file static class UnfinishedTempDirectories
+{
+    private static readonly HashSet<TemporaryDirectory> s_directories = [];
+    private static bool s_deleteOnProcessExit;
+
+    public static void Add(TemporaryDirectory directory)
+    {
+        lock (s_directories)
+        {
+            if (!s_deleteOnProcessExit)
+            {
+                AppDomain.CurrentDomain.ProcessExit += (_, _) => DeleteAll();
+                s_deleteOnProcessExit = true;
+            }
+
+            s_directories.Add(directory);
+        }
+    }
+
+    public static void Remove(TemporaryDirectory directory)
+    {
+        lock (s_directories)
+        {
+            s_directories.Remove(directory);
+        }
+    }
+
+    private static void DeleteAll()
+    {
+        TemporaryDirectory[] directories;
+        lock (s_directories)
+        {
+            directories = [.. s_directories];
+            s_directories.Clear();
+        }
+
+        foreach (var directory in directories)
+        {
+            directory.Dispose();
+        }
+    }
 }
