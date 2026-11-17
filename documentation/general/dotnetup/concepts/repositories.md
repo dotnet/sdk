@@ -41,6 +41,12 @@ the command uses `latest` without searching parent directories.
 | `major` or `latestMajor` | `latest` |
 | `disable` | Exactly `10.0.103` |
 
+> **Note:** Dotnetup treats `feature` and `latestFeature` identically: both select
+> the latest eligible SDK within the specified major/minor version. Likewise,
+> `patch`, `minor`, and `major` behave like their `latest` counterparts. This
+> differs from the `dotnet` host's SDK selection rules. Dotnetup does not rewrite
+> `rollForward`; the host still applies the original policy when running commands.
+
 Dotnetup always chooses the latest eligible SDK in that scope, never an SDK
 older than `sdk.version`. For example, `10.0.103` with an omitted `rollForward`
 or `patch` can update to `10.0.105`, but not `10.0.202`. `disable` requires the
@@ -50,20 +56,6 @@ exact version currently specified in the file.
 a prerelease. When omitted, prerelease SDKs are eligible. This also applies
 to repository requirements that map to `latest`; the standalone `latest`
 channel continues to select stable releases.
-
-Dotnetup selects the greatest matching version regardless of support phase.
-Maintenance and end-of-life releases remain eligible, but an older release
-does not take precedence over a newer matching version.
-
-Install and update read the current file to choose an available SDK. List and
-garbage collection use the same rules to choose among installed SDKs. Garbage
-collection keeps the selected SDK and removes other SDKs unless another
-requirement needs them.
-
-This is dotnetup's SDK management policy, not the .NET host's SDK selection
-algorithm. Dotnetup treats the non-`latest` policies as their `latest` counterparts
-without rewriting `rollForward` in the file. The `dotnet` host still applies its
-own rules when running a command.
 
 ## Installation path from global.json
 
