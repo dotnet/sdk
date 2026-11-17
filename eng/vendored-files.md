@@ -3,7 +3,9 @@
 A small set of source files in this repo are copied (vendored) from other
 repositories rather than consumed as a NuGet package. Today the tracked set is
 the **`dotnet test` ↔ [Microsoft.Testing.Platform](https://github.com/microsoft/testfx)
-shared source**: the named-pipe wire contract and the terminal reporter that the
+shared source** and the temporary
+[ORAS.NET source dependency](../src/Containers/OrasProject.Oras.SourceBuild/README.md).
+The test-platform sources include the named-pipe wire contract and the terminal reporter that the
 `dotnet test` command hard-forks from
 [`microsoft/testfx`](https://github.com/microsoft/testfx).
 
