@@ -927,8 +927,8 @@ public partial class AotIntegrationTests
         var (aotExitCode, aotOutput, aotError) = RunDn(["build", "--help"], enableAot: true);
 
         Assert.AreEqual(0, aotExitCode, aotError);
-        aotOutput.Should().Contain($"-p, --property <{CommandDefinitionStrings.BuildPropertyArgumentName}>");
-        Regex.Replace(aotOutput, @"\s+", " ").Should().Contain(CommandDefinitionStrings.BuildPropertyOptionDescription);
+        aotOutput.Should().Contain($"-p, -property <{CommandDefinitionStrings.PropertyArgumentName}>");
+        Regex.Replace(aotOutput, @"\s+", " ").Should().Contain(CommandDefinitionStrings.PropertyOptionDescription);
     }
 
     [TestMethod]

@@ -72,10 +72,6 @@ internal sealed class BuildCommandDefinition : Command
     {
         this.DocsLink = Link;
 
-        ImplicitRestoreOptions.PropertiesOption.Hidden = false;
-        ImplicitRestoreOptions.PropertiesOption.Description = CommandDefinitionStrings.BuildPropertyOptionDescription;
-        ImplicitRestoreOptions.PropertiesOption.HelpName = CommandDefinitionStrings.BuildPropertyArgumentName;
-
         Arguments.Add(SlnOrProjectOrFileArgument);
         ImplicitRestoreOptions.AddTo(Options);
         Options.Add(FrameworkOption);

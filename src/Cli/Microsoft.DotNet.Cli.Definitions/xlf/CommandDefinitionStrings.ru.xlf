@@ -72,16 +72,6 @@
         <target state="translated">Выходной каталог для размещения артефактов сборки.</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildPropertyArgumentName">
-        <source>NAME=VALUE</source>
-        <target state="new">NAME=VALUE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="BuildPropertyOptionDescription">
-        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
-        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="BuildRuntimeOptionDescription">
         <source>The target runtime to build for.</source>
         <target state="translated">Целевая среда выполнения для сборки.</target>
@@ -1700,6 +1690,16 @@ If command is specified without the argument, it lists all the template packages
       <trans-unit id="ProjectOrFileArgumentName">
         <source>PROJECT | FILE</source>
         <target state="translated">ПРОЕКТ | ФАЙЛ</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyArgumentName">
+        <source>NAME=VALUE</source>
+        <target state="new">NAME=VALUE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyOptionDescription">
+        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
+        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishAppDescription">

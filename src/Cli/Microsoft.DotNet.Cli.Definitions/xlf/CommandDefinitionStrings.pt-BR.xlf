@@ -72,16 +72,6 @@
         <target state="translated">O diretório de saída no qual os artefatos do build serão colocados.</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildPropertyArgumentName">
-        <source>NAME=VALUE</source>
-        <target state="new">NAME=VALUE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="BuildPropertyOptionDescription">
-        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
-        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="BuildRuntimeOptionDescription">
         <source>The target runtime to build for.</source>
         <target state="translated">O runtime de destino no qual o build ocorrerá.</target>
@@ -1700,6 +1690,16 @@ Se o comando for especificado sem o argumento, ele listará todos os pacotes de 
       <trans-unit id="ProjectOrFileArgumentName">
         <source>PROJECT | FILE</source>
         <target state="translated">PROJETO | ARQUIVO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyArgumentName">
+        <source>NAME=VALUE</source>
+        <target state="new">NAME=VALUE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyOptionDescription">
+        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
+        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishAppDescription">

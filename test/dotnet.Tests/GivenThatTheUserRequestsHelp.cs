@@ -41,35 +41,23 @@ namespace dotnet.Tests
         }
 
         [TestMethod]
-        [DataRow("false")]
-        [DataRow("true")]
-        public void BuildHelpShowsPropertyOption(string enableAot)
-        {
-            var result = new DotnetCommand(Log)
-                .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", enableAot)
-                .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en")
-                .Execute("build", "--help");
-
-            result.Should().Pass()
-                .And.HaveStdOutContaining("-p, --property <NAME=VALUE>")
-                .And.HaveStdOutContaining("Set one or more MSBuild properties.")
-                .And.NotHaveStdOutContaining("--restoreProperty")
-                .And.NotHaveStdOutContaining("--getProperty")
-                .And.NotHaveStdOutContaining("--source");
-        }
-
-        [TestMethod]
-        [DataRow("clean")]
-        [DataRow("pack")]
-        [DataRow("publish")]
-        [DataRow("restore")]
-        public void PropertyOptionRemainsHiddenForOtherCommands(string command)
+        [DataRow("build", "false")]
+        [DataRow("build", "true")]
+        [DataRow("pack", "false")]
+        [DataRow("publish", "false")]
+        [DataRow("restore", "false")]
+        [DataRow("run", "false")]
+        public void HelpShowsPropertyOption(string command, string enableAot)
         {
             new DotnetCommand(Log)
+                .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", enableAot)
                 .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en")
                 .Execute(command, "--help")
                 .Should().Pass()
-                .And.NotHaveStdOutContaining("--property");
+                .And.HaveStdOutContaining("-p, -property <NAME=VALUE>")
+                .And.HaveStdOutContaining("Set one or more MSBuild properties.")
+                .And.NotHaveStdOutContaining("--restoreProperty")
+                .And.NotHaveStdOutContaining("--getProperty");
         }
 
         [TestMethod]

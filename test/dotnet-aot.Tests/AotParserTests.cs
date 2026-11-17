@@ -265,8 +265,8 @@ public partial class AotParserTests
 
         Assert.AreEqual(0, exitCode);
         Assert.IsEmpty(stderr);
-        stdout.Should().Contain($"-p, --property <{CommandDefinitionStrings.BuildPropertyArgumentName}>");
-        Regex.Replace(stdout, @"\s+", " ").Should().Contain(CommandDefinitionStrings.BuildPropertyOptionDescription);
+        stdout.Should().Contain($"-p, -property <{CommandDefinitionStrings.PropertyArgumentName}>");
+        Regex.Replace(stdout, @"\s+", " ").Should().Contain(CommandDefinitionStrings.PropertyOptionDescription);
         stdout.Should().NotContain("--restoreProperty");
         stdout.Should().NotContain("--getProperty");
         stdout.Should().NotContain("--source");
