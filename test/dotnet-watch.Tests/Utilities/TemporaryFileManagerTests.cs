@@ -5,9 +5,10 @@ using System.Runtime.Versioning;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class TemporaryFileManagerTests
 {
-    [Fact]
+    [TestMethod]
     public void CreateFile_IsOwnerOnlyAndRemovedOnDispose()
     {
         string path1;
@@ -21,16 +22,16 @@ public class TemporaryFileManagerTests
             path2 = file2.Stream.Name;
 
             directory = Path.GetDirectoryName(path1)!;
-            Assert.Equal(directory, Path.GetDirectoryName(path2));
+            Assert.AreEqual(directory, Path.GetDirectoryName(path2));
 
-            Assert.Equal("1.slnx", Path.GetFileName(path1));
-            Assert.Equal("2.tmp", Path.GetFileName(path2));
-            Assert.False(File.Exists(path1));
-            Assert.False(File.Exists(path2));
-            Assert.StartsWith(Path.GetFullPath(Path.GetTempPath()), Path.GetFullPath(path1), PathComparison);
+            Assert.AreEqual("1.slnx", Path.GetFileName(path1));
+            Assert.AreEqual("2.tmp", Path.GetFileName(path2));
+            Assert.IsFalse(File.Exists(path1));
+            Assert.IsFalse(File.Exists(path2));
+            Assert.IsTrue(Path.GetFullPath(path1).StartsWith(Path.GetFullPath(Path.GetTempPath()), PathComparison));
 
             File.WriteAllText(path1, "<Solution />");
-            Assert.Equal("<Solution />", File.ReadAllText(path1));
+            Assert.AreEqual("<Solution />", File.ReadAllText(path1));
 
             if (!OperatingSystem.IsWindows())
             {
@@ -38,9 +39,9 @@ public class TemporaryFileManagerTests
             }
         }
 
-        Assert.False(File.Exists(path1));
-        Assert.False(File.Exists(path2));
-        Assert.False(Directory.Exists(directory));
+        Assert.IsFalse(File.Exists(path1));
+        Assert.IsFalse(File.Exists(path2));
+        Assert.IsFalse(Directory.Exists(directory));
     }
 
     [UnsupportedOSPlatform("windows")]
@@ -50,7 +51,7 @@ public class TemporaryFileManagerTests
         const UnixFileMode nonOwnerBits =
             UnixFileMode.GroupRead | UnixFileMode.GroupWrite | UnixFileMode.GroupExecute |
             UnixFileMode.OtherRead | UnixFileMode.OtherWrite | UnixFileMode.OtherExecute;
-        Assert.Equal(UnixFileMode.None, mode & nonOwnerBits);
+        Assert.AreEqual(UnixFileMode.None, mode & nonOwnerBits);
     }
 
     private static StringComparison PathComparison
