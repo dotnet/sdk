@@ -58,8 +58,7 @@ internal sealed class OrasRepositoryFactory : IRepositoryFactory
     {
         bool isInsecureRegistry = settings.IsInsecure;
         Client client = new(
-            registryHandler is null ? CreateHttpClient(registryName, baseUri, logger, isInsecureRegistry, allowAutoRedirect: true)
-                : new HttpClient(new RegistryOriginHandler(registryName, baseUri, isInsecureRegistry, registryHandler)),
+            CreateHttpClient(registryName, baseUri, logger, isInsecureRegistry, allowAutoRedirect: true, registryHandler),
             CreateHttpClient(registryName, baseUri, logger, isInsecureRegistry, allowAutoRedirect: false),
             new OrasCredentialProvider(mode, baseUri.Authority),
             accessTokenProvider: null,
@@ -74,14 +73,11 @@ internal sealed class OrasRepositoryFactory : IRepositoryFactory
         return client;
     }
 
-    private static HttpClient CreateHttpClient(string registryName, Uri baseUri, ILogger logger, bool isInsecureRegistry, bool allowAutoRedirect)
+    private static HttpClient CreateHttpClient(string registryName, Uri baseUri, ILogger logger, bool isInsecureRegistry,
+        bool allowAutoRedirect, HttpMessageHandler? registryHandler = null)
     {
-        HttpMessageHandler clientHandler = CreateHttpHandler(registryName, baseUri, isInsecureRegistry, allowAutoRedirect, logger);
-
-        if (baseUri.IsAmazonECRRegistry())
-        {
-            clientHandler = new AmazonECRMessageHandler(clientHandler);
-        }
+        HttpMessageHandler clientHandler = registryHandler ??
+            CreateHttpHandler(registryName, baseUri, isInsecureRegistry, allowAutoRedirect, logger);
 
         return new HttpClient(new RegistryOriginHandler(registryName, baseUri, isInsecureRegistry, clientHandler))
         {

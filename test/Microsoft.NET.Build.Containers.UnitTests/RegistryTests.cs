@@ -745,6 +745,67 @@ public class RegistryTests : IDisposable
         }
     }
 
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public async Task EcrPrematureResponseFallsBackBeforeTranslatingDiagnostics(bool forceChunked, bool rejectChunks)
+    {
+        const string host = "public.ecr.aws";
+        byte[] bytes = "complete layer content"u8.ToArray();
+        Descriptor descriptor = Descriptor.Create(bytes, MediaType.ImageLayerGzip);
+        int sessions = 0, monolithicAttempts = 0, chunks = 0;
+        var transport = new MountTestHandler(async (request, token) =>
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.Created) { RequestMessage = request };
+            if (request.Method == HttpMethod.Head)
+                response.StatusCode = HttpStatusCode.NotFound;
+            else if (request.Method == HttpMethod.Post)
+            {
+                sessions++;
+                response.StatusCode = HttpStatusCode.Accepted;
+                response.Headers.Location = new Uri($"/uploads/{sessions}", UriKind.Relative);
+            }
+            else if (request.Method == HttpMethod.Patch)
+            {
+                chunks++;
+                Assert.AreSequenceEqual(bytes, await request.Content!.ReadAsByteArrayAsync(token));
+                if (rejectChunks)
+                    throw new HttpRequestException("transport failed", new IOException("The response ended prematurely."));
+                response.StatusCode = HttpStatusCode.Accepted;
+                response.Headers.Location = request.RequestUri;
+            }
+            else if (request.Method == HttpMethod.Put && request.Content!.Headers.ContentLength != 0)
+            {
+                monolithicAttempts++;
+                Assert.AreSequenceEqual(bytes, await request.Content.ReadAsByteArrayAsync(token));
+                throw new HttpRequestException("transport failed", new IOException("The response ended prematurely."));
+            }
+            return response;
+        });
+        var settings = new RegistrySettings { ForceChunkedUpload = forceChunked };
+        var uri = new Uri($"https://{host}");
+        var client = OrasRepositoryFactory.CreateClient(host, uri, settings,
+            _loggerFactory.CreateLogger("ecr-client"), RegistryMode.Push, transport);
+        using var registryHttp = client.BaseClient;
+        using var tokenHttp = client.TokenClient;
+        var factory = new OrasRepositoryFactory(uri, client, settings);
+        var registry = new Registry(uri, _loggerFactory.CreateLogger("ecr"), factory);
+        var layer = new Mock<Layer>();
+        layer.SetupGet(item => item.Descriptor).Returns(descriptor);
+        layer.Setup(item => item.OpenBackingFile()).Returns(() => new MemoryStream(bytes));
+        Task push = registry.PushLayerAsync(layer.Object, "app", TestContext.CancellationToken);
+        if (rejectChunks)
+        {
+            var error = await Assert.ThrowsExactlyAsync<ContainerHttpException>(() => push);
+            Assert.Contains(global::Microsoft.NET.Build.Containers.Resources.Strings.AmazonRegistryFailed, error.Message);
+        }
+        else await push;
+        Assert.AreEqual(forceChunked ? 1 : 2, sessions);
+        Assert.AreEqual(forceChunked ? 0 : 1, monolithicAttempts);
+        Assert.AreEqual(1, chunks);
+    }
+
     private sealed class MountTestHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

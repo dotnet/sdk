@@ -574,6 +574,10 @@ internal sealed class Registry
             await _repositoryFactory.Create(repositoryName).Manifests.ResolveAsync(reference, cancellationToken).ConfigureAwait(false);
             return true;
         }
+        catch (HttpRequestException error) when (IsEcrPrematureResponse(error))
+        {
+            throw new ContainerHttpException(Strings.AmazonRegistryFailed, BaseUri.ToString(), error.StatusCode);
+        }
         catch (NotFoundException)
         {
             return false;
@@ -596,6 +600,10 @@ internal sealed class Registry
         try
         {
             return await _repositoryFactory.Create(repositoryName).Manifests.FetchAsync(reference, cancellationToken).ConfigureAwait(false);
+        }
+        catch (HttpRequestException error) when (IsEcrPrematureResponse(error))
+        {
+            throw new ContainerHttpException(Strings.AmazonRegistryFailed, BaseUri.ToString(), error.StatusCode);
         }
         catch (NotFoundException)
         {
@@ -633,6 +641,10 @@ internal sealed class Registry
         {
             return await _repositoryFactory.Create(repositoryName).Blobs.FetchAsync(descriptor, cancellationToken).ConfigureAwait(false);
         }
+        catch (HttpRequestException error) when (IsEcrPrematureResponse(error))
+        {
+            throw new ContainerHttpException(Strings.AmazonRegistryFailed, BaseUri.ToString(), error.StatusCode);
+        }
         catch (ResponseException e) when (e.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
             throw new UnableToAccessRepositoryException(RegistryName, repositoryName);
@@ -650,6 +662,10 @@ internal sealed class Registry
         {
             return await _repositoryFactory.Create(repositoryName).Blobs.ExistsAsync(descriptor, cancellationToken).ConfigureAwait(false);
         }
+        catch (HttpRequestException error) when (IsEcrPrematureResponse(error))
+        {
+            throw new ContainerHttpException(Strings.AmazonRegistryFailed, BaseUri.ToString(), error.StatusCode);
+        }
         catch (ResponseException e) when (e.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
             throw new UnableToAccessRepositoryException(RegistryName, repositoryName);
@@ -666,6 +682,10 @@ internal sealed class Registry
         try
         {
             await _repositoryFactory.Create(repositoryName).Blobs.PushAsync(descriptor, content, cancellationToken).ConfigureAwait(false);
+        }
+        catch (HttpRequestException error) when (IsEcrPrematureResponse(error))
+        {
+            throw new ContainerHttpException(Strings.AmazonRegistryFailed, BaseUri.ToString(), error.StatusCode);
         }
         catch (ResponseException e) when (e.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
@@ -698,6 +718,10 @@ internal sealed class Registry
                 },
                 cancellationToken).ConfigureAwait(false);
         }
+        catch (HttpRequestException error) when (IsEcrPrematureResponse(error))
+        {
+            throw new ContainerHttpException(Strings.AmazonRegistryFailed, BaseUri.ToString(), error.StatusCode);
+        }
         catch (ResponseException) when (!contentRequested)
         {
             // Retry a denied/unsupported mount, but never a failed upload in ORAS's 202 fallback.
@@ -727,6 +751,10 @@ internal sealed class Registry
         {
             await _repositoryFactory.Create(repositoryName).Manifests.PushAsync(descriptor, content, reference, cancellationToken).ConfigureAwait(false);
         }
+        catch (HttpRequestException error) when (IsEcrPrematureResponse(error))
+        {
+            throw new ContainerHttpException(Strings.AmazonRegistryFailed, BaseUri.ToString(), error.StatusCode);
+        }
         catch (ResponseException e) when (e.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
             throw new UnableToAccessRepositoryException(RegistryName, repositoryName);
@@ -737,6 +765,10 @@ internal sealed class Registry
             throw CreateContainerHttpException(Resource.FormatString(nameof(Strings.RegistryPushFailed), e.StatusCode), e);
         }
     }
+
+    private bool IsEcrPrematureResponse(HttpRequestException error) =>
+        IsAmazonECRRegistry && error.InnerException is IOException io &&
+        io.Message.Equals("The response ended prematurely.", StringComparison.OrdinalIgnoreCase);
 
     private static ContainerHttpException CreateContainerHttpException(string message, ResponseException exception) =>
         new(message, exception.RequestUri?.ToString(), exception.StatusCode);
