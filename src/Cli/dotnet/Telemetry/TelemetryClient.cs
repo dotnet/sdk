@@ -19,8 +19,6 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 public class TelemetryClient : ITelemetryClient
 {
-    private const int LocalTracePersistenceTimeoutMilliseconds = 1_000;
-
     private static FrozenDictionary<string, string?> s_commonProperties = [];
     private Task? _trackEventTask;
 
@@ -55,6 +53,8 @@ public class TelemetryClient : ITelemetryClient
     private static readonly bool s_isCIEnvironment = new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
     private static readonly int s_shutdownTimeoutMs = GetShutdownTimeoutMs(
         Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS));
+    private static readonly int s_localTracePersistenceTimeoutMs = GetShutdownTimeoutMs(
+        Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS), defaultTimeoutMs: 100);
 
     /// <summary>
     /// Returns true if any of the standard OpenTelemetry OTLP exporter environment variables
@@ -64,13 +64,12 @@ public class TelemetryClient : ITelemetryClient
     private static bool IsOtlpExporterConfiguredByStandardEnvVars() => Env.AnyEnvironmentVariablesSet(EnvironmentVariableNames.OtlpExporterEnvVars);
 
     /// <summary>
-    /// Returns the shutdown timeout in milliseconds, defaulting to five seconds.
+    /// Returns the shutdown timeout in milliseconds, using the supplied default when no positive override is set.
     /// DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS can override the default with a positive value.
     /// Locally Azure Monitor persists pending telemetry at shutdown without waiting for its drain.
     /// </summary>
-    internal static int GetShutdownTimeoutMs(string? envValue)
+    internal static int GetShutdownTimeoutMs(string? envValue, int defaultTimeoutMs = 5_000)
     {
-        const int defaultTimeoutMs = 5_000;
         if (!string.IsNullOrEmpty(envValue) && int.TryParse(envValue, out var parsed) && parsed > 0)
         {
             return parsed;
@@ -284,7 +283,7 @@ public class TelemetryClient : ITelemetryClient
         {
             // This timeout includes batch serialization and the atomic storage write. Short timeouts can
             // interrupt the write before its temporary file is finalized, leaving nothing a later run can drain.
-            s_tracerProvider?.Shutdown(LocalTracePersistenceTimeoutMilliseconds);
+            s_tracerProvider?.Shutdown(s_localTracePersistenceTimeoutMs);
             s_metricsProvider?.Shutdown(timeoutMilliseconds: 10);
         }
     }
@@ -293,7 +292,7 @@ public class TelemetryClient : ITelemetryClient
     {
         int timeout = s_isCIEnvironment || s_enableOtlpExporter
             ? s_shutdownTimeoutMs
-            : LocalTracePersistenceTimeoutMilliseconds;
+            : s_localTracePersistenceTimeoutMs;
         long started = Stopwatch.GetTimestamp();
         s_tracerProvider?.ForceFlush(timeout);
         int remaining = Math.Max(0, timeout - (int)Stopwatch.GetElapsedTime(started).TotalMilliseconds);

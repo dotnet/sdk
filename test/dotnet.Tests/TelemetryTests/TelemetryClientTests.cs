@@ -34,6 +34,7 @@ public class TelemetryClientTests : SdkTest
         bool boundedExport = (bool)typeof(TelemetryClient).GetField("s_isCIEnvironment", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!
             || (bool)typeof(TelemetryClient).GetField("s_enableOtlpExporter", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
         int boundedTimeout = (int)typeof(TelemetryClient).GetField("s_shutdownTimeoutMs", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
+        int localTimeout = (int)typeof(TelemetryClient).GetField("s_localTracePersistenceTimeoutMs", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
         object? previousTracer = tracerField.GetValue(null);
         object? previousMeter = meterField.GetValue(null);
         object? previousBudget = AppContext.GetData(drainBudgetName);
@@ -46,7 +47,7 @@ public class TelemetryClientTests : SdkTest
             AppContext.SetData(drainBudgetName, 17);
             Action shutdown = () => TelemetryClient.FlushProviders(exitCode);
             shutdown.Should().NotThrow();
-            processor.Timeout.Should().Be(boundedExport ? boundedTimeout : exitCode == 0 ? 1_000 : 300);
+            processor.Timeout.Should().Be(boundedExport ? boundedTimeout : exitCode == 0 ? localTimeout : 300);
             processor.DrainBudget.Should().Be(boundedExport || exitCode == 0 ? 17 : 300);
             AppContext.GetData(drainBudgetName).Should().Be(17);
         }
@@ -90,6 +91,21 @@ public class TelemetryClientTests : SdkTest
     public void ShutdownTimeoutUsesPositiveOverrideOrFiveSecondDefault(string? value, int expected)
     {
         TelemetryClient.GetShutdownTimeoutMs(value).Should().Be(expected);
+    }
+
+    [TestMethod]
+    [DataRow(null, 100)]
+    [DataRow("", 100)]
+    [DataRow("invalid", 100)]
+    [DataRow("0", 100)]
+    [DataRow("-1", 100)]
+    [DataRow("1", 1)]
+    [DataRow("5000", 5_000)]
+    [DataRow("2147483647", int.MaxValue)]
+    [DataRow("2147483648", 100)]
+    public void LocalPersistenceTimeoutUsesPositiveOverrideOrHundredMillisecondDefault(string? value, int expected)
+    {
+        TelemetryClient.GetShutdownTimeoutMs(value, defaultTimeoutMs: 100).Should().Be(expected);
     }
 
     public static IEnumerable<object[]> CommandsWithExitCode =>
