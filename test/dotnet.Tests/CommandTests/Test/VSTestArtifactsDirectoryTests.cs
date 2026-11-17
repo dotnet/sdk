@@ -342,12 +342,25 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void ItDoesNotCreateAnArtifactsDirectoryForHelp()
         {
-            var environment = new VSTestForwardingApp(
-                new[] { "--help" },
-                useArtifactsDirectory: false).GetProcessStartInfo().Environment;
+            // ProcessStartInfo.Environment starts from this process' environment, which inherits the variable when
+            // the tests themselves run under `dotnet test` (as on Helix); only what the forwarding app adds is under test.
+            string? inherited = Environment.GetEnvironmentVariable(VSTestArtifactsDirectory.EnvironmentVariableName);
 
-            environment.Should().NotContainKey(VSTestArtifactsDirectory.EnvironmentVariableName);
-            VSTestArtifactsDirectory.Current.Should().BeNull();
+            try
+            {
+                Environment.SetEnvironmentVariable(VSTestArtifactsDirectory.EnvironmentVariableName, null);
+
+                var environment = new VSTestForwardingApp(
+                    new[] { "--help" },
+                    useArtifactsDirectory: false).GetProcessStartInfo().Environment;
+
+                environment.Should().NotContainKey(VSTestArtifactsDirectory.EnvironmentVariableName);
+                VSTestArtifactsDirectory.Current.Should().BeNull();
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(VSTestArtifactsDirectory.EnvironmentVariableName, inherited);
+            }
         }
 
         [Fact]
