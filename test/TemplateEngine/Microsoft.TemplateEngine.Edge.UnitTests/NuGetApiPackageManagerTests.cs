@@ -123,6 +123,31 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         }
 
         [TestMethod]
+        public async Task DownloadPackage_VirtualizedInstallPath_VerifiesPhysicalStagedPackage()
+        {
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = Path.Combine(engineEnvironmentSettings.Paths.GlobalSettingsDir, "packages");
+            engineEnvironmentSettings.Host.FileSystem.CreateDirectory(installPath);
+            var verifier = new RecordingNuGetPackageVerifier();
+
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings, verifier);
+            var result = await packageManager.DownloadPackageAsync(
+                installPath,
+                "Microsoft.DotNet.Common.ProjectTemplates.5.0",
+                "5.0.0",
+                additionalSources: _additionalSources,
+                cancellationToken: TestContext.CancellationToken);
+
+            verifier.VerifiedPackagePath.Should().NotBeNull();
+            verifier.VerifiedPackageLength.Should().BeGreaterThan(0);
+            File.Exists(verifier.VerifiedPackagePath).Should().BeFalse("the staged package is removed after it is copied");
+            Directory.Exists(Path.GetDirectoryName(verifier.VerifiedPackagePath)).Should().BeFalse("the staging directory is removed");
+            File.Exists(result.FullPath).Should().BeFalse("the install path is virtualized");
+            engineEnvironmentSettings.Host.FileSystem.FileExists(result.FullPath).Should().BeTrue();
+            engineEnvironmentSettings.Host.FileSystem.EnumerateFiles(installPath, "*.tmp", SearchOption.TopDirectoryOnly).Should().BeEmpty();
+        }
+
+        [TestMethod]
         public async Task DownloadPackage_LatestFromNugetOrgFeed()
         {
             string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
@@ -538,6 +563,22 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             public Task VerifyAsync(string packagePath, SourceRepository repository, ISettings settings, ILogger logger, CancellationToken cancellationToken)
             {
                 throw new InvalidDataException("Package validation failed.");
+            }
+        }
+
+        private sealed class RecordingNuGetPackageVerifier : INuGetPackageVerifier
+        {
+            public bool IsEnabled => true;
+
+            public string? VerifiedPackagePath { get; private set; }
+
+            public long VerifiedPackageLength { get; private set; }
+
+            public Task VerifyAsync(string packagePath, SourceRepository repository, ISettings settings, ILogger logger, CancellationToken cancellationToken)
+            {
+                VerifiedPackagePath = packagePath;
+                VerifiedPackageLength = new FileInfo(packagePath).Length;
+                return Task.CompletedTask;
             }
         }
     }
