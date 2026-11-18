@@ -31,9 +31,11 @@ Pass the lifecycle token through System.CommandLine invocation and command opera
 Process-launch and forwarding helpers must require callers to supply a cancellation
 token; do not add tokenless overloads or optional cancellation-token parameters.
 The first Ctrl+C requests cooperative cancellation and permits 200 milliseconds for
-cleanup; a second Ctrl+C, SIGTERM, or expiration of that deadline requests forceful
-cancellation and terminates with the signal-derived exit code. Transaction rollback and
-other critical operations may use `OverrideSoftCancellationTimeout` to extend or suspend
+cleanup; expiration of that deadline requests forceful cancellation, gives observers a
+bounded window to terminate and reap child processes, and then exits with the
+signal-derived exit code. A second Ctrl+C or SIGTERM exits immediately. Transaction
+rollback and other critical operations may use `OverrideSoftCancellationTimeout` to
+extend or suspend
 the automatic deadline, but the override must never suppress an explicit forceful signal.
 Child processes observe cooperative signals directly and are killed only when forceful
 cancellation is requested. System.CommandLine may wrap the lifecycle token before it
