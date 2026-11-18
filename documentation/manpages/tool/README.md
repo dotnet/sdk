@@ -6,6 +6,10 @@ Utility to update dotnet-cli documentation from https://github.com/dotnet/docs.
 
 If docker is installed, then simply execute `run_docker.sh` to update manpages.
 
+The container uses a Microsoft Container Registry base image to satisfy the official
+build's container-registry policy. It installs Pandoc 2.18 from the upstream release
+for the container's architecture and the distribution's `python3-pandocfilters` package.
+
 ## Prerequisites
 
 * Unix OS
