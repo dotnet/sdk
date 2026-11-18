@@ -50,10 +50,18 @@ public class TestCommand(
         // When we have settings, we want to exclude the '--' as it doesn't end up in unmatched tokens, so we pass settings.Length - 1
         if (ContainsBuiltTestSources(parseResult, GetSettingsCount(settings)))
         {
-            return ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId);
+            int exitCode = ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId);
+
+            // Reached only when the invocation completed, whether the tests passed or failed. An invocation that
+            // throws or is interrupted deliberately leaves the artifacts on disk for diagnosis.
+            VSTestArtifactsDirectory.Delete();
+            return exitCode;
         }
 
-        return ForwardToMsbuild(parseResult, settings, testSessionCorrelationId);
+        int msbuildExitCode = ForwardToMsbuild(parseResult, settings, testSessionCorrelationId);
+
+        VSTestArtifactsDirectory.Delete();
+        return msbuildExitCode;
     }
 
     internal /*internal for testing*/ static (string[] Args, string[] Settings) SeparateSettingsFromArgs(string[] args)
@@ -272,6 +280,15 @@ public class TestCommand(
             VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
         }
 
+        // vstest.console is started by the VSTest MSBuild task in this code path rather than by the SDK, so the
+        // artifacts directory is set on the MSBuild process and inherited from there. The variable is not one
+        // MSBuild itself acts on, so this has no effect on the build.
+        if (VSTestArtifactsDirectory.GetOrCreate() is { } artifactsDirectory)
+        {
+            testCommand.EnvironmentVariable(VSTestArtifactsDirectory.EnvironmentVariableName, artifactsDirectory);
+            VSTestTrace.SafeWriteTrace(() => $"Artifacts directory variable set {VSTestArtifactsDirectory.EnvironmentVariableName}:{artifactsDirectory}");
+        }
+
         VSTestTrace.SafeWriteTrace(() => $"Starting test using MSBuild with arguments '{testCommand.GetArgumentsToMSBuild()}' custom MSBuild path '{msbuildPath}' norestore '{noRestore}'");
         return testCommand;
     }
@@ -283,9 +300,9 @@ public class TestCommand(
             return 0;
         }
 
-        // VSTest runner will save artifacts inside a temp folder if needed.
-        string expectedArtifactDirectory = Path.Combine(Path.GetTempPath(), testSessionCorrelationId);
-        if (!Directory.Exists(expectedArtifactDirectory))
+        // vstest.console saves the artifacts of the session in a subdirectory of the artifacts directory the SDK
+        // gave it, named after the correlation id. Its absence means the session produced nothing to process.
+        if (!TryFindArtifactDirectory(testSessionCorrelationId, out string? expectedArtifactDirectory))
         {
             VSTestTrace.SafeWriteTrace(() => "No artifact found, post-processing won't run.");
             return 0;
@@ -300,25 +317,31 @@ public class TestCommand(
             artifactsPostProcessArgs.Add($"--diag:{diag}");
         }
 
-        try
+        // The post-processing run receives the same artifacts directory as the collecting run did, so it resolves
+        // the same session subdirectory. The whole directory is removed once the invocation completes, so there is
+        // nothing to clean up here.
+        return new VSTestForwardingApp(artifactsPostProcessArgs).Execute();
+    }
+
+    /// <summary>
+    /// Locates the subdirectory vstest.console saved the artifacts of the session in. Returns
+    /// <see langword="false"/> when the artifacts directory was never created, which is the case when no
+    /// vstest.console was started at all.
+    /// </summary>
+    internal /*internal for testing*/ static bool TryFindArtifactDirectory(string testSessionCorrelationId, [NotNullWhen(true)] out string? artifactDirectory)
+    {
+        if (VSTestArtifactsDirectory.Current is { } artifactsDirectory)
         {
-            return new VSTestForwardingApp(artifactsPostProcessArgs).Execute();
-        }
-        finally
-        {
-            if (Directory.Exists(expectedArtifactDirectory))
+            string candidate = Path.Combine(artifactsDirectory, testSessionCorrelationId);
+            if (Directory.Exists(candidate))
             {
-                VSTestTrace.SafeWriteTrace(() => $"Cleaning artifact directory '{expectedArtifactDirectory}'.");
-                try
-                {
-                    Directory.Delete(expectedArtifactDirectory, true);
-                }
-                catch (Exception ex)
-                {
-                    VSTestTrace.SafeWriteTrace(() => $"Exception during artifact cleanup: \n{ex}");
-                }
+                artifactDirectory = candidate;
+                return true;
             }
         }
+
+        artifactDirectory = null;
+        return false;
     }
 
     internal /*internal for testing*/ static bool ContainsBuiltTestSources(ParseResult parseResult, int settingsLength)
