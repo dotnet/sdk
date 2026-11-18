@@ -38,7 +38,7 @@ public class AotResourceCatalogTests
     [TestMethod]
     public void CatalogContainsUniqueResourceBaseNames()
     {
-        Assert.HasCount(11, AotResourceCatalog.All);
+        Assert.HasCount(10, AotResourceCatalog.All);
         Assert.HasCount(
             AotResourceCatalog.All.Count,
             AotResourceCatalog.All.Select(resource => resource.BaseName).Distinct(StringComparer.Ordinal));
