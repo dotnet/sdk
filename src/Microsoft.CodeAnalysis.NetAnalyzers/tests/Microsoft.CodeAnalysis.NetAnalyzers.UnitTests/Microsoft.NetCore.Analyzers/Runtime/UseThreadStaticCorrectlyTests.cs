@@ -288,6 +288,40 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [TestMethod]
+        public async Task SuppressGCTransition_LocalFunctionAndLambda_Diagnostic_CSharp()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp10,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                TestCode = """
+                    using System;
+                    using System.Runtime.InteropServices;
+
+                    class C
+                    {
+                        void M()
+                        {
+                            [DllImport("native")]
+                            [SuppressGCTransition]
+                            static extern int NativeLocal();
+
+                            [SuppressGCTransition]
+                            static int {|#0:ManagedLocal|}() => 0;
+
+                            Func<int> lambda = {|#1:[SuppressGCTransition] () => 0|};
+                        }
+                    }
+                    """,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(0).WithArguments("SuppressGCTransition", "ManagedLocal"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(1).WithArguments("SuppressGCTransition", "lambda expression"),
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
         public async Task SuppressGCTransition_NotPInvoke_Diagnostic_VB()
         {
             await new VerifyVB.Test

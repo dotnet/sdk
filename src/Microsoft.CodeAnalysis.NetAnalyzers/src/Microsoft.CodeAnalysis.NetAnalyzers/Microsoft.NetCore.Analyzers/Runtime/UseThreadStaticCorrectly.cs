@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -104,17 +105,34 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var libraryImportAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesLibraryImportAttribute);
                     var generatedComInterfaceAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesMarshallingGeneratedComInterfaceAttribute);
 
-                    context.RegisterSymbolAction(context =>
+                    context.RegisterSymbolAction(context => AnalyzeMethod((IMethodSymbol)context.Symbol, context.ReportDiagnostic), SymbolKind.Method);
+
+                    // Local functions and lambdas are not visited by symbol actions.
+                    context.RegisterOperationAction(context =>
                     {
-                        var method = (IMethodSymbol)context.Symbol;
+                        var method = context.Operation switch
+                        {
+                            ILocalFunctionOperation localFunction => localFunction.Symbol,
+                            IAnonymousFunctionOperation anonymousFunction => anonymousFunction.Symbol,
+                            _ => null,
+                        };
+
+                        if (method is not null)
+                        {
+                            AnalyzeMethod(method, context.ReportDiagnostic);
+                        }
+                    }, OperationKind.LocalFunction, OperationKind.AnonymousFunction);
+
+                    void AnalyzeMethod(IMethodSymbol method, Action<Diagnostic> reportDiagnostic)
+                    {
                         if (method.HasAnyAttribute(suppressGCTransitionAttributeType) &&
                             method.GetDllImportData() is null &&
                             !method.HasAnyAttribute(libraryImportAttributeType) &&
                             !(method is { IsStatic: false, IsAbstract: true } && method.ContainingType.HasAnyAttribute(generatedComInterfaceAttributeType)))
                         {
-                            context.ReportDiagnostic(method.CreateDiagnostic(AttributeHasNoEffectRule, "SuppressGCTransition", method.Name));
+                            reportDiagnostic(method.CreateDiagnostic(AttributeHasNoEffectRule, "SuppressGCTransition", method.MethodKind == MethodKind.AnonymousFunction ? method.ToDisplayString() : method.Name));
                         }
-                    }, SymbolKind.Method);
+                    }
                 }
 
                 // Warn on any [ThreadStatic] field inline initialization.
