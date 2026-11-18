@@ -77,6 +77,8 @@ internal sealed class ContainerRuntimeOperations
                 throw;
             }
 
+            // If output reached EOF before the process exited, cancellation returns a canceled status instead of throwing.
+            cancellationToken.ThrowIfCancellationRequested();
             if (output.ExitStatus.ExitCode != 0)
             {
                 throw new DockerLoadException(Resource.FormatString(nameof(Strings.ImageLoadFailed), output.StandardError));
