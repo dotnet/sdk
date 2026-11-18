@@ -105,34 +105,48 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
 
 #if NET
             psi.InheritedHandles ??= [];
+            Process? process = null;
 
             try
             {
-                if (!isLoggingEnabled)
+                if (isLoggingEnabled)
+                {
+                    process = Process.Start(psi)!;
+                    (stdOut, stdErr) = process.ReadAllText(timeout);
+                }
+                else
                 {
                     using SafeFileHandle nullHandle = File.OpenNullHandle();
                     psi.RedirectStandardOutput = false;
                     psi.RedirectStandardError = false;
                     psi.StandardOutputHandle = nullHandle;
                     psi.StandardErrorHandle = nullHandle;
-
-                    return Process.Run(psi, timeout).ExitCode == 0;
+                    process = Process.Start(psi)!;
                 }
 
-                ProcessTextOutput output = Process.RunAndCaptureText(psi, timeout);
-                if (output.ExitStatus.ExitCode == 0)
+                if (process.WaitForExit(timeout) && process.ExitCode == 0)
                 {
                     return true;
                 }
-
-                stdOut = output.StandardOutput;
-                stdErr = output.StandardError;
             }
             catch (Exception e)
             {
                 if (isLoggingEnabled)
                 {
                     Log.LogError(e.ToString());
+                }
+            }
+            finally
+            {
+                if (process is not null)
+                {
+                    if (!process.HasExited)
+                    {
+                        // The dotnet launcher runs the EF tool as a separate process.
+                        process.Kill(entireProcessTree: true);
+                        process.WaitForExitStatus();
+                    }
+                    process.Dispose();
                 }
             }
 #else
@@ -145,14 +159,20 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             {
                 if (e.Data is not null)
                 {
-                    outputBuilder?.AppendLine(e.Data);
+                    lock (process)
+                    {
+                        outputBuilder?.AppendLine(e.Data);
+                    }
                 }
             };
             process.ErrorDataReceived += (_, e) =>
             {
                 if (e.Data is not null)
                 {
-                    errorBuilder?.AppendLine(e.Data);
+                    lock (process)
+                    {
+                        errorBuilder?.AppendLine(e.Data);
+                    }
                 }
             };
 
@@ -183,21 +203,32 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 {
                     if (!process.HasExited)
                     {
-                        process.Kill();
+                        try
+                        {
+                            process.Kill();
+                        }
+                        catch (InvalidOperationException) when (process.HasExited)
+                        {
+                        }
                         // A finite wait does not join output callbacks on Framework.
                         process.WaitForExit(int.MaxValue);
                     }
                 }
             }
 
-            stdOut = outputBuilder?.ToString();
-            stdErr = errorBuilder?.ToString();
+            // Output callbacks can still be running, because the waits above don't join them.
+            lock (process)
+            {
+                stdOut = outputBuilder?.ToString();
+                stdErr = errorBuilder?.ToString();
+            }
 #endif
 
             if (isLoggingEnabled)
             {
-                Log.LogMessage(MessageImportance.High, stdOut);
-                Log.LogMessage(MessageImportance.High, stdErr);
+                // Output is unavailable when the process fails to start or times out.
+                Log.LogMessage(MessageImportance.High, stdOut ?? string.Empty);
+                Log.LogMessage(MessageImportance.High, stdErr ?? string.Empty);
                 Log.LogError(Resources.EFSCRIPT_GenerationFailed);
             }
 
