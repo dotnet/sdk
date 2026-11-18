@@ -1604,6 +1604,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(PublishItemsOutputGroupDependsOn);
       ResolveReferences;
       ComputeResolvedFilesToPublishList;
+      _ComputeIntermediateDepsFilePath;
       _ComputeFilesToBundle;
     </PublishItemsOutputGroupDependsOn>
   </PropertyGroup>
@@ -1621,6 +1622,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GetPublishItemsOutputGroupOutputs>
 
     <ItemGroup>
+      <!-- PublishItemsOutputGroup can run without GeneratePublishDependencyFile, especially during design-time builds.
+           Report the publish deps path even when the file has not been generated yet. -->
+      <PublishItemsOutputGroupOutputs Include="$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(IntermediateDepsFilePath)))"
+                                      Condition="'$(GenerateDependencyFile)' == 'true' and
+                                                 '$(_UseBuildDependencyFile)' != 'true' and
+                                                 '$(PublishSingleFile)' != 'true' and
+                                                 '$(PublishAot)' != 'true' and
+                                                 '@(PublishItemsOutputGroupOutputs->WithMetadataValue('TargetPath', '$(ProjectDepsFileName)'))' == ''"
+                                      TargetPath="$(ProjectDepsFileName)"
+                                      OutputPath="$(PublishDir)$(ProjectDepsFileName)"
+                                      OutputGroup="PublishItemsOutputGroup" />
+
       <PublishItemsOutputGroupOutputs Include="$(PublishedSingleFilePath)"
                                       TargetPath="$(PublishedSingleFileName)"
                                       IsKeyOutput="true"
