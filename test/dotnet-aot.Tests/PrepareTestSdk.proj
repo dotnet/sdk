@@ -54,6 +54,8 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(_SdkContentDirectory)dotnet.dll') or !Exists('$(_SdkContentDirectory)Sdks/Microsoft.NET.Sdk/Sdk/Sdk.props')"
            Text="The pre-crossgen SDK layout is missing from $(_SdkContentDirectory). Build the $(Configuration) SDK first." />
+    <Error Condition="!Exists('$(_SdkContentDirectory).version')"
+           Text="The SDK deployment identity file '$(_SdkContentDirectory).version' is missing." />
     <Error Condition="!Exists('$(HostPackRoot)runtimes/$(RuntimeIdentifier)/native')"
            Text="The host-native apphost pack is missing. Restore PrepareTestSdk.proj before preparing the test SDK." />
 
@@ -68,6 +70,7 @@
       <_HostPackFile Include="$(HostPackRoot)**/*" Exclude="$(HostPackRoot)*" />
     </ItemGroup>
     <Copy SourceFiles="@(_SdkFile)" DestinationFiles="@(_SdkFile->'$(_TestSdkDirectory)%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="$(_SdkContentDirectory).version" DestinationFiles="$(_TestSdkDirectory).version" />
     <Copy SourceFiles="@(_PackFile)" DestinationFiles="@(_PackFile->'$(TestSdkRoot)packs/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(_TemplateFile)" DestinationFiles="@(_TemplateFile->'$(TestSdkRoot)templates/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(_ManifestFile)" DestinationFiles="@(_ManifestFile->'$(TestSdkRoot)sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')" />
