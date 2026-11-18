@@ -8,6 +8,7 @@ internal static class ProcessLifecycle
     private const int SigIntExitCode = 130;
     private const int SigTermExitCode = 143;
     private static readonly TimeSpan s_defaultSoftCancellationTimeout = TimeSpan.FromMilliseconds(200);
+    private static readonly TimeSpan s_forcefulExitFallbackTimeout = TimeSpan.FromMilliseconds(500);
     private static readonly object s_lock = new();
     private static readonly CancellationTokenSource s_cancellationTokenSource = new();
     private static readonly CancellationTokenSource s_forcefulCancellationTokenSource = new();
@@ -16,6 +17,7 @@ internal static class ProcessLifecycle
     private static PosixSignalRegistration? s_sigTermRegistration;
 #endif
     private static Timer? s_forcefulCancellationTimer;
+    private static Timer? s_forcefulExitTimer;
     private static int s_initializationCount;
     private static int s_nextTimeoutOverrideId;
     private static int s_forcefulCancellationTimerVersion;
@@ -134,19 +136,31 @@ internal static class ProcessLifecycle
 
     private static void RequestForcefulCancellation(int exitCode, bool terminateProcess)
     {
-        bool cancel;
+        bool cancel = false;
+        bool exitImmediately = false;
         lock (s_lock)
         {
             if (s_forcefulCancellationRequested != 0)
             {
-                return;
+                if (terminateProcess)
+                {
+                    s_signalExitCode = exitCode;
+                    exitImmediately = true;
+                }
             }
+            else
+            {
+                s_cancellationRequested = 1;
+                s_forcefulCancellationRequested = 1;
+                s_signalExitCode = exitCode;
+                CancelForcefulCancellationTimer_NoLock();
+                cancel = true;
+            }
+        }
 
-            s_cancellationRequested = 1;
-            s_forcefulCancellationRequested = 1;
-            s_signalExitCode = exitCode;
-            CancelForcefulCancellationTimer_NoLock();
-            cancel = true;
+        if (exitImmediately)
+        {
+            Environment.Exit(exitCode);
         }
 
         if (cancel)
@@ -218,13 +232,19 @@ internal static class ProcessLifecycle
             s_forcefulCancellationRequested = 1;
             exitCode = s_signalExitCode;
             CancelForcefulCancellationTimer_NoLock();
+            // Give forceful-token observers a bounded chance to terminate and reap child processes.
+            s_forcefulExitTimer = new Timer(
+                static state => Environment.Exit((int)state!),
+                exitCode,
+                s_forcefulExitFallbackTimeout,
+                Timeout.InfiniteTimeSpan);
         }
 
         try
         {
             s_forcefulCancellationTokenSource.Cancel();
         }
-        finally
+        catch (AggregateException)
         {
             Environment.Exit(exitCode);
         }

@@ -81,6 +81,13 @@ public static partial class ProcessLifecycleTestApp
             Thread.Sleep(Timeout.Infinite);
         }
 
+        if (childMode == "forceful-cooperative")
+        {
+            ProcessLifecycle.ForcefulCancellationToken.WaitHandle.WaitOne();
+            WriteMarker(markerPath, "forceful-cancelled");
+            return GetSignalExitCode(cancellationToken);
+        }
+
         if (childMode == "extended-grace")
         {
             cancellationToken.WaitHandle.WaitOne();

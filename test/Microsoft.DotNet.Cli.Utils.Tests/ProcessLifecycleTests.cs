@@ -72,6 +72,20 @@ public class ProcessLifecycleTests : SdkTest
     }
 
     [TestMethod]
+    public void SoftCancellationTimeoutAllowsForcefulCancellationToComplete()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+        using Process child = StartChild("forceful-cooperative", testDirectory.Path);
+
+        WaitForMarker(testDirectory.Path, "ready");
+        SendSignal(child, testDirectory.Path, PosixSignal.SIGINT);
+        WaitForMarker(testDirectory.Path, "forceful-cancelled");
+        child.WaitForExit(s_waitTimeout).Should().BeTrue();
+
+        child.ExitCode.Should().Be(130);
+    }
+
+    [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void SoftCancellationTimeoutCanBeOverridden()
     {
