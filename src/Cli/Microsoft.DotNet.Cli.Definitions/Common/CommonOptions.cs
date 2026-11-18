@@ -24,7 +24,8 @@ internal static class CommonOptions
         // these are all of the forms that the property switch can be understood by in MSBuild
         new Option<ReadOnlyDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
         {
-            Hidden = true,
+            Description = CommandDefinitionStrings.PropertyOptionDescription,
+            HelpName = CommandDefinitionStrings.PropertyArgumentName,
             Arity = ArgumentArity.ZeroOrMore,
             CustomParser = ParseMSBuildTokensIntoDictionary
         }.ForwardAsMSBuildProperty()
