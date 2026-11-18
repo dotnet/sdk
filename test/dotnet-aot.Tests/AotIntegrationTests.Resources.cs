@@ -6,6 +6,27 @@ namespace Microsoft.DotNet.Cli.Tests;
 public partial class AotIntegrationTests
 {
     [TestMethod]
+    [DataRow("zh-CN", "build", ".NET \u751f\u6210\u5668")]
+    [DataRow("fr-CA", "sln", "Commande .NET Modifier un fichier solution")]
+    public void LocalizedHelp_MatchesManagedCli(string language, string command, string translatedDescription)
+    {
+        SkipIfDnUnavailable();
+        var environment = new Dictionary<string, string>
+        {
+            ["DOTNET_CLI_UI_LANGUAGE"] = language,
+            ["DOTNET_NOLOGO"] = "1",
+            ["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] = "0",
+        };
+        var native = RunDn([command, "--help"], enableAot: true, extraEnv: environment);
+        var managed = RunDn([command, "--help"], enableAot: false, extraEnv: environment);
+
+        Assert.AreEqual(0, native.exitCode, native.stderr);
+        Assert.AreEqual(managed.exitCode, native.exitCode);
+        native.stdout.Should().Contain(translatedDescription).And.Be(managed.stdout);
+        native.stderr.Should().Be(managed.stderr);
+    }
+
+    [TestMethod]
     public void LocalizedSlnHelp_UsesManagedSatelliteResources()
     {
         SkipIfDnUnavailable();

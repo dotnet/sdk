@@ -188,9 +188,9 @@ the bridge catches it (and any unexpected parse-time failure) and transparently
 falls through to the managed CLI.
 
 Before parsing or first-run setup, the bridge applies the same
-`UILanguageOverride` as the managed entry point. The Configurer satellite assemblies
-are supplied to ILC so localized first-run resources are available inside the native
-image. UI culture is not an AOT eligibility condition; only behavior unavailable in
+`UILanguageOverride` as the managed entry point. The Configurer translations
+come from the deployed satellites in `ExternalLocalized` and from the native image
+in `Embedded`. UI culture is not an AOT eligibility condition; only behavior unavailable in
 the native closure triggers managed fallback.
 
 **External command path** — When the parsed command is not a built-in
@@ -312,8 +312,8 @@ assembly loading, hot reload).
 
 | Mode | Native payload | Localized source |
 |---|---|---|
-| `Embedded` | Neutral resources and the satellites supplied to ILC | ILC-embedded satellites where available; existing managed satellites for referenced SDK projects |
-| `ExternalLocalized` | Neutral resources only | Existing managed SDK satellite assemblies |
+| `Embedded` | Neutral resources and the satellites supplied to ILC | ILC-embedded satellites |
+| `ExternalLocalized` | Neutral CLI resources and non-CLI satellites | Existing managed SDK satellite assemblies for CLI resource families |
 | `ExternalAll` | Package/runtime resources only; SDK-owned neutral CLI tables are substituted out | Existing managed owner assemblies and satellites |
 
 `ExternalLocalized` is the default. `ExternalAll` is retained for measurement
@@ -325,10 +325,10 @@ once per generated class. `NativeEntryPoint` registers that factory after the
 versioned SDK directory is resolved and before telemetry, first-run work,
 parser construction, or output:
 
-- `Embedded` uses the platform `ResourceManager` for the directly linked
-  `dotnet` and `System.CommandLine` families that ILC embeds. Referenced SDK
-  project satellites are read from the managed SDK layout because the current
-  ILC input graph does not embed those families.
+- `Embedded` uses the platform `ResourceManager`: reference satellites are
+  marked as resources and filtered by `SatelliteResourceLanguages` before ILC
+  sees them. The bootstrap build imports the same publish target until the
+  bootstrap SDK ships it.
 - `ExternalLocalized` reads culture satellites as PE data without loading or
   executing them. Missing, malformed, unreadable, unsupported, or
   identity-mismatched localized candidates continue through the parent chain

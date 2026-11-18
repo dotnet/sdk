@@ -64,10 +64,7 @@ internal static class AotResourceManagerProvider
                     ValidateSdkDirectory(fullSdkDirectory);
                     StringResourceManagerProvider.Register(
                         (baseName, generatedOwnerAssembly) =>
-                            CreateEmbeddedManager(
-                                baseName,
-                                generatedOwnerAssembly,
-                                fullSdkDirectory!));
+                            new EmbeddedStringResourceManager(baseName, generatedOwnerAssembly));
                     break;
 
                 case AotResourceMode.ExternalLocalized:
@@ -99,26 +96,6 @@ internal static class AotResourceManagerProvider
             s_sdkDirectory = fullSdkDirectory;
             s_configured = true;
         }
-    }
-
-    private static StringResourceManager CreateEmbeddedManager(
-        string baseName,
-        Assembly generatedOwnerAssembly,
-        string sdkDirectory)
-    {
-        AotResourceDescriptor descriptor = GetDescriptor(baseName, generatedOwnerAssembly);
-        if (string.Equals(descriptor.ManagedAssemblyName, "dotnet", StringComparison.Ordinal)
-            || string.Equals(descriptor.ManagedAssemblyName, "System.CommandLine", StringComparison.Ordinal))
-        {
-            return new EmbeddedStringResourceManager(baseName, generatedOwnerAssembly);
-        }
-
-        return SatelliteStringResourceManager.FromSatelliteDirectory(
-            baseName,
-            sdkDirectory,
-            generatedOwnerAssembly,
-            descriptor.ManagedAssemblyName,
-            SatelliteStringResourceProbeMode.FallbackOnFailure);
     }
 
     private static StringResourceManager CreateExternalLocalizedManager(
