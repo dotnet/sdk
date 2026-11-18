@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "xUnit 테스트 프로젝트",
   "description": "Windows, Linux 및 macOS의 .NET에서 실행할 수 있는 xUnit.net 테스트가 포함된 프로젝트입니다.",

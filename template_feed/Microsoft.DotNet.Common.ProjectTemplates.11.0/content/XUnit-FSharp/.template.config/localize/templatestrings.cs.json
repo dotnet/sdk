@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Projekt testů xUnit",
   "description": "Projekt obsahující testy xUnit.net, které je možné spustit na .NET ve Windows, Linuxu a macOS",
