@@ -478,6 +478,11 @@ internal static class SolutionAndProjectUtility
     /// The evaluation happens in the collection of <paramref name="buildSession"/>, which is the one
     /// every project of the run has to share; pass an <paramref name="evaluationContext"/> to reuse an
     /// existing one and avoid redundant evaluation.
+    /// When <paramref name="requireTestProject"/> is <see langword="true"/>, only target frameworks that
+    /// are test projects participate in device selection. Solutions use this so that non-test projects
+    /// (e.g. a MAUI app or library) that import <c>ComputeAvailableDevices</c> through their workload
+    /// are not asked for a device. It must only be used after restore, since test-project properties
+    /// typically come from NuGet package imports.
     /// </summary>
     internal static DeviceSelectionEvaluation? EvaluateProjectForDeviceSelection(
         string projectFilePath,
@@ -485,7 +490,8 @@ internal static class SolutionAndProjectUtility
         MSBuildSession buildSession,
         EvaluationContext? evaluationContext = null,
         string? configuration = null,
-        string? platform = null)
+        string? platform = null,
+        bool requireTestProject = false)
     {
         // --device is already handled by HandleDeviceWithTargetFrameworkSelection
         if (!string.IsNullOrWhiteSpace(buildOptions.Device))
@@ -565,7 +571,7 @@ internal static class SolutionAndProjectUtility
             evaluatedProjects[framework] = frameworkProject;
         }
 
-        return new DeviceSelectionEvaluation(evaluatedProjects, testTfmsInParallel);
+        return new DeviceSelectionEvaluation(evaluatedProjects, testTfmsInParallel, requireTestProject);
     }
 
     /// <summary>
@@ -590,7 +596,7 @@ internal static class SolutionAndProjectUtility
             // Workload-specific targets are imported only by inner builds, so probe the
             // TFM-specific evaluation before constructing the selector that executes the target.
             (string? Device, string? RuntimeIdentifier, bool RestoreWasPerformed) selection =
-                frameworkProject.Targets.ContainsKey(Constants.ComputeAvailableDevices)
+                evaluation.RequiresDeviceSelection(frameworkProject)
                     ? SelectDeviceForTfm(
                         projectFilePath,
                         buildOptions,
@@ -614,7 +620,8 @@ internal static class SolutionAndProjectUtility
 
     internal sealed record DeviceSelectionEvaluation(
         Dictionary<string, ProjectInstance> EvaluatedProjects,
-        bool TestTfmsInParallel)
+        bool TestTfmsInParallel,
+        bool RequireTestProject = false)
     {
         public IEnumerable<KeyValuePair<string, ProjectInstance>> ProjectsByFramework
             => EvaluatedProjects.Count == 1
@@ -622,7 +629,15 @@ internal static class SolutionAndProjectUtility
                 : EvaluatedProjects.Where(project => !string.IsNullOrEmpty(project.Key));
 
         public bool SupportsDeviceSelection
-            => ProjectsByFramework.Any(project => project.Value.Targets.ContainsKey(Constants.ComputeAvailableDevices));
+            => ProjectsByFramework.Any(project => RequiresDeviceSelection(project.Value));
+
+        public bool RequiresDeviceSelection(ProjectInstance project)
+            => project.Targets.ContainsKey(Constants.ComputeAvailableDevices)
+                && (!RequireTestProject
+                    || IsTrue(project.GetPropertyValue(ProjectProperties.IsTestProject))
+                    || IsTrue(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)));
+
+        private static bool IsTrue(string value) => bool.TryParse(value, out bool result) && result;
     }
 
     internal sealed record DeviceSelectionResult(
@@ -681,7 +696,9 @@ internal static class SolutionAndProjectUtility
                 out var restoreWasPerformed))
             {
                 throw new GracefulException(
-                    string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+                    string.IsNullOrEmpty(tfm)
+                        ? string.Format(CliCommandStrings.TestCommandDeviceSelectionFailed, projectFilePath)
+                        : string.Format(CliCommandStrings.TestCommandDeviceSelectionFailedForTargetFramework, projectFilePath, tfm));
             }
 
             return (selectedDevice, runtimeIdentifier, restoreWasPerformed);

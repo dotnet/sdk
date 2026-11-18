@@ -93,12 +93,21 @@ internal sealed partial class CSharpCompilerCommand
         // Ensure the compiler is launched with the correct dotnet.
         Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
 
+        List<string> arguments = ["/noconfig", "/nologo", $"@{EscapeSingleArg(rspPath)}"];
+
+        // Set PreferredUILang for csc-only fast path. In csc-after-msbuild, this is populated by the msbuild task.
+        if (CscArguments.IsDefaultOrEmpty && 
+            Environment.GetEnvironmentVariable("PreferredUILang") is { Length: > 0 } preferredUILang)
+        {
+            arguments.Add($"/preferreduilang:{preferredUILang}");
+        }
+
         // Create a request for the compiler server
         // (this is much faster than starting a csc.dll process, especially on Windows).
         var buildRequest = BuildServerConnection.CreateBuildRequest(
             requestId: EntryPointFileFullPath,
             language: RequestLanguage.CSharpCompile,
-            arguments: ["/noconfig", "/nologo", $"@{EscapeSingleArg(rspPath)}"],
+            arguments: arguments,
             workingDirectory: BaseDirectory,
             tempDirectory: Path.GetTempPath(),
             keepAlive: null,

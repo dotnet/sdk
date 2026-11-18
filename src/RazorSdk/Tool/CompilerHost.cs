@@ -25,10 +25,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 // This means that if a request tries to use a set of binaries that are inconsistent with what
                 // the server already has, then it will be rejected to try again on the client.
                 //
-                // We also check each set of extensions for missing depenencies individually, so that we can
+                // We also check each set of extensions for missing dependencies individually, so that we can
                 // consistently reject a request that doesn't specify everything it needs. Otherwise the request
                 // could succeed sometimes if it relies on transient state.
-                Loader = new DefaultExtensionAssemblyLoader(Path.Combine(Path.GetTempPath(), "Razor-Server"));
+                Loader = new DefaultExtensionAssemblyLoader(ShadowCopyManager.GetBaseDirectory("Razor-Server"));
 
                 AssemblyReferenceProvider = (path, properties) => new CachingMetadataReference(path, properties);
             }

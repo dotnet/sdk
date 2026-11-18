@@ -9,6 +9,8 @@ using Microsoft.TemplateEngine.Tests;
 namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 {
     [TestClass]
+    // Mitigates intermittent Windows cleanup failures under class-level parallelism; see https://github.com/dotnet/sdk/issues/56222.
+    [ResourceLock(nameof(DotnetCommand))]
     public class ValidateTemplatesTests : TestBase
     {
         public TestContext TestContext { get; set; } = null!;

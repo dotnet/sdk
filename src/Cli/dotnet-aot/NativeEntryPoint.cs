@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
@@ -18,10 +19,6 @@ namespace Microsoft.DotNet.Cli;
 
 static unsafe partial class NativeEntryPoint
 {
-    private const string SdkDirectoryCouldNotBeDetermined =
-        "warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate "
-        + "its own module; SDK-relative resolution may be incorrect.";
-
     /// <summary>
     ///  When set by the native entry point, AOT-capable commands use this instead of
     ///  discovering the dotnet root via PATH / environment probing.
@@ -30,7 +27,7 @@ static unsafe partial class NativeEntryPoint
 
     /// <summary>
     ///  The versioned SDK directory (the folder containing dotnet.dll, MSBuild.dll, Sdks\, ...),
-    ///  resolved from the host-provided sdk_dir or by self-locating the dotnet-aot module. Also
+    ///  taken from the host-provided sdk_dir. Also
     ///  published as the "Microsoft.DotNet.Sdk.Root" AppContext value (SdkPaths.DataName) so
     ///  compiled-in assemblies that probe AppContext.BaseDirectory can find the SDK. See
     ///  src/Cli/dotnet-aot/SdkRootResolution.md.
@@ -75,10 +72,12 @@ static unsafe partial class NativeEntryPoint
         string hostPath, string dotnetRoot, string sdkDir,
         string hostfxrPath, string[] args)
     {
+        ArgumentException.ThrowIfNullOrEmpty(sdkDir);
+
+        // Match the managed entry point before any localized resources are read. The AOT host does
+        // not run Program.Main, so it must apply DOTNET_CLI_UI_LANGUAGE/VSLANG itself.
+        using AutomaticEncodingRestorer _ = new();
         UILanguageOverride.Setup();
-        bool aotEnabled = EnvironmentVariableParser.ParseBool(
-            Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT),
-            defaultValue: true);
 
         // Publish the versioned SDK directory as the "Microsoft.DotNet.Sdk.Root" AppContext value
         // (SdkPaths.DataName) for the assemblies compiled into the AOT host (MSBuild, NuGet, the command
@@ -86,66 +85,22 @@ static unsafe partial class NativeEntryPoint
         // is the install root, not the versioned SDK directory. Unlike an environment variable an
         // AppContext value is process-local and is not inherited by child processes. See
         // src/Cli/dotnet-aot/SdkRootResolution.md.
-        //
-        // Honor a value a caller already provided (e.g. a runtimeconfig configProperties entry): it is
-        // authoritative, but it must point to a real directory - fail fast rather than handing the
-        // compiled-in assemblies a bogus SDK root. Otherwise resolve it from the host-provided sdk_dir
-        // (the muxer already resolved it to locate dotnet-aot), else self-locate the dotnet-aot module.
-        string? sdkDirectory = AppContext.GetData(SdkPaths.DataName) as string;
-        if (!string.IsNullOrEmpty(sdkDirectory))
-        {
-            if (!Directory.Exists(sdkDirectory))
-            {
-                Console.Error.WriteLine(
-                    $"The SDK root directory '{sdkDirectory}' provided via the '{SdkPaths.DataName}' setting does not exist.");
-                return 1;
-            }
-        }
-        else
-        {
-            sdkDirectory = SdkRootLocator.Resolve(sdkDir);
-            if (!string.IsNullOrEmpty(sdkDirectory))
-            {
-                AppContext.SetData(SdkPaths.DataName, sdkDirectory);
-            }
-            else
-            {
-                Console.Error.WriteLine(SdkDirectoryCouldNotBeDetermined);
-            }
-        }
-
-        SdkDirectory = string.IsNullOrEmpty(sdkDirectory) ? null : sdkDirectory;
-
-        // Make hostfxr discoverable for NativeWrapper P/Invokes (required on non-Windows).
-        if (!string.IsNullOrEmpty(hostfxrPath))
-        {
-            AppContext.SetData("HOSTFXR_PATH", hostfxrPath);
-        }
-
-        // Surface the host-provided dotnet root so AOT-capable commands (e.g. `sdk check`)
-        // can use it instead of re-probing PATH / environment for the dotnet installation.
-        DotnetRoot = string.IsNullOrEmpty(dotnetRoot) ? null : dotnetRoot;
+        AppContext.SetData(SdkPaths.DataName, sdkDir);
+        SdkDirectory = sdkDir;
 
 #if DOTNET_AOT_NATIVE_RUNTIME
-        if (aotEnabled
-            && !AotResourceManagerProvider.IsConfigured
-            && !AotResourceManagerProvider.TryConfigure(sdkDirectory, out Exception? resourceError))
+        if (!AotResourceManagerProvider.IsConfigured
+            && !AotResourceManagerProvider.TryConfigure(sdkDir, out Exception? resourceError))
         {
-            Debug.WriteLine(
-                $"NativeAOT external resource preflight failed; deferring to the managed CLI: {resourceError}");
+            Debug.WriteLine($"NativeAOT resource preflight failed; deferring to the managed CLI: {resourceError}");
             if (EnvironmentVariableParser.ParseBool(
                 Environment.GetEnvironmentVariable("DOTNET_AOT_RESOURCE_DIAGNOSTICS"),
                 defaultValue: false))
             {
                 Console.Error.WriteLine(resourceError);
             }
-            return RunManagedFallback(
-                hostPath,
-                dotnetRoot,
-                sdkDirectory,
-                hostfxrPath,
-                args,
-                out _);
+
+            return RunManagedFallback(hostPath, dotnetRoot, sdkDir, hostfxrPath, args, out _, resourcesAvailable: false);
         }
 #endif
 
@@ -211,12 +166,32 @@ static unsafe partial class NativeEntryPoint
 
         try
         {
-            if (aotEnabled)
+            // Make hostfxr discoverable for NativeWrapper P/Invokes (required on non-Windows)
+            if (!string.IsNullOrEmpty(hostfxrPath))
+            {
+                AppContext.SetData("HOSTFXR_PATH", hostfxrPath);
+            }
+
+            // Surface the host-provided dotnet root so AOT-capable commands (e.g. `sdk check`)
+            // can use it instead of re-probing PATH / environment for the dotnet installation.
+            DotnetRoot = string.IsNullOrEmpty(dotnetRoot) ? null : dotnetRoot;
+
+            if (ShouldAttemptAotExecution(args))
             {
                 ParseResult? parseResult = null;
+                bool genericCommandHelp = false;
                 using (var parse = Activities.Source.StartActivity("parse"))
                 {
-                    parseResult = Parser.Parse(args);
+                    if (Parser.TryParseGenericCommandHelp(args, out ParseResult? genericHelpParseResult))
+                    {
+                        genericCommandHelp = true;
+                        parseResult = genericHelpParseResult;
+                    }
+                    else
+                    {
+                        parseResult = Parser.Parse(args);
+                    }
+
                     mainActivity?.SetDisplayName(parseResult);
                 }
 
@@ -240,7 +215,7 @@ static unsafe partial class NativeEntryPoint
 
                 if (firstRunCompleted)
                 {
-                    if (parseResult.CanBeInvoked())
+                    if (genericCommandHelp || parseResult.CanBeInvoked())
                     {
                         // Parse errors here usually mean the command is contributed dynamically by the managed
                         // CLI (e.g. NuGet's `package update`/`why`) and absent from the static AOT tree, so defer.
@@ -264,7 +239,7 @@ static unsafe partial class NativeEntryPoint
                     // or local tool, a command on the PATH, ...) or an implicit file-based app (`dotnet app.cs`).
                     // Resolve and invoke external commands in AOT when possible; defer file-based apps, legacy
                     // project tools, and anything that does not resolve to the managed CLI.
-                    else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDirectory, mainActivity, globalJsonState, out exitCode, out success))
+                    else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, mainActivity, globalJsonState, out exitCode, out success))
                     {
                         aotHandledInProcess = true;
                         return exitCode;
@@ -282,13 +257,7 @@ static unsafe partial class NativeEntryPoint
                 mainActivity.SetTag("command.name", fallbackName);
             }
 
-            exitCode = RunManagedFallback(
-                hostPath,
-                dotnetRoot,
-                sdkDirectory,
-                hostfxrPath,
-                args,
-                out success);
+            exitCode = RunManagedFallback(hostPath, dotnetRoot, sdkDir, hostfxrPath, args, out success);
             return exitCode;
         }
         finally
@@ -304,7 +273,7 @@ static unsafe partial class NativeEntryPoint
             mainActivity?.SetEndTime(DateTime.UtcNow);
             Telemetry.TelemetryClient.WaitForInternalMicrosoftDetection();
             mainActivity?.Stop();
-            Telemetry.TelemetryClient.FlushProviders();
+            Telemetry.TelemetryClient.FlushProviders(exitCode);
 
             if (aotHandledInProcess)
             {
@@ -316,16 +285,11 @@ static unsafe partial class NativeEntryPoint
     }
 
     private static int RunManagedFallback(
-        string hostPath,
-        string dotnetRoot,
-        string? sdkDirectory,
-        string hostfxrPath,
-        string[] args,
-        out bool success)
+        string hostPath, string dotnetRoot, string sdkDir, string hostfxrPath, string[] args,
+        out bool success, bool resourcesAvailable = true)
     {
-        string dotnetDll = Path.Join(sdkDirectory, "dotnet.dll");
-        string runtimeConfig = Path.Join(sdkDirectory, "dotnet.runtimeconfig.json");
-
+        string dotnetDll = Path.Join(sdkDir, "dotnet.dll");
+        string runtimeConfig = Path.Join(sdkDir, "dotnet.runtimeconfig.json");
         if (File.Exists(dotnetDll) && File.Exists(runtimeConfig))
         {
             string[] appArgs = new string[args.Length + 1];
@@ -336,11 +300,18 @@ static unsafe partial class NativeEntryPoint
             return exitCode;
         }
 
-        Console.Error.WriteLine(
-            $"The managed fallback could not be located. Expected '{dotnetDll}' and '{runtimeConfig}'.");
+        Console.Error.WriteLine(resourcesAvailable
+            ? string.Format(CliStrings.ManagedFallbackCouldNotBeLocated, dotnetDll, runtimeConfig)
+            : $"The managed fallback could not be located. Expected '{dotnetDll}' and '{runtimeConfig}'.");
         success = false;
         return 1;
     }
+
+    internal static bool ShouldAttemptAotExecution(string[] args)
+        => EnvironmentVariableParser.ParseBool(
+            Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT),
+            defaultValue: true)
+        && !NewCommandDefinition.IsGenericHelpInvocation(args);
 
     /// <summary>
     ///  Attempts to resolve and invoke an external/tool command (e.g. <c>dotnet ef</c>, a global or

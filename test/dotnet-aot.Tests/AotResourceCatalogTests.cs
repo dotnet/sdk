@@ -47,7 +47,6 @@ public class AotResourceCatalogTests
     [TestMethod]
     [DataRow("Microsoft.DotNet.Cli.CliStrings", "dotnet")]
     [DataRow("Microsoft.DotNet.Cli.Commands.CliCommandStrings", "dotnet")]
-    [DataRow("Microsoft.NET.Build.Tasks.Strings", "dotnet")]
     [DataRow("Microsoft.DotNet.Cli.CommandDefinitionStrings", "Microsoft.DotNet.Cli.Definitions")]
     [DataRow("Microsoft.DotNet.Cli.Utils.LocalizableStrings", "Microsoft.DotNet.Cli.Utils")]
     [DataRow("Microsoft.DotNet.Configurer.LocalizableStrings", "Microsoft.DotNet.Configurer")]

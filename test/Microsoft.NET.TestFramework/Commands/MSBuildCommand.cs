@@ -24,6 +24,7 @@ namespace Microsoft.NET.TestFramework.Commands
             : base(log)
         {
             Target = target;
+            SupportsTestBinlogCapture = true;
 
             _projectRootPath = projectRootPath;
             _requiredArgs = requiredArgs.ToArray();

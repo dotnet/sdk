@@ -14,8 +14,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- NetTFMUpdate: Keep template installers on net11 until the bundled packs support targeting net12. -->
-    <TemplateFrameworkVersion>11.0</TemplateFrameworkVersion>
+    <!-- Installer group identity, not the target framework of every bundled template. -->
+    <TemplateFrameworkVersion>$(MajorMinorVersion)</TemplateFrameworkVersion>
   </PropertyGroup>
 
   <Import Project="$(RepositoryEngineeringDir)common\native\NativeAotSupported.props" />
@@ -65,7 +65,7 @@
          no arm64 sysroot, would try to cross-link and fail. -->
     <_DotnetAotIsCrossBuild Condition="'$(_DotnetAotIsSameOSBuild)' == 'true' and '$(TargetArchitecture)' != '$(BuildArchitecture)' and '$(OSName)' != 'linux-musl' and !('$(TargetOS)' == 'linux' and '$(CrossBuild)' != 'true')">true</_DotnetAotIsCrossBuild>
 
-    <_ShouldPublishDotnetAot Condition="'$(_ShouldPublishDotnetAot)' == '' and '$(_DotnetAotTargetOSSupported)' == 'true' and '$(NativeAotSupported)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true' and ('$(_DotnetAotIsNativeBuild)' == 'true' or '$(_DotnetAotIsCrossBuild)' == 'true')">true</_ShouldPublishDotnetAot>
+    <_ShouldPublishDotnetAot Condition="'$(_ShouldPublishDotnetAot)' == '' and '$(_DotnetAotTargetOSSupported)' == 'true' and '$(NativeAotSupported)' == 'true' and ('$(_DotnetAotIsNativeBuild)' == 'true' or '$(_DotnetAotIsCrossBuild)' == 'true')">true</_ShouldPublishDotnetAot>
     <_ShouldPublishDotnetAot Condition="'$(_ShouldPublishDotnetAot)' == ''">false</_ShouldPublishDotnetAot>
   </PropertyGroup>
 
@@ -108,13 +108,13 @@
   <PropertyGroup>
     <GenerateSdkBundleOnly Condition="'$(DotNetBuildPass)' == '3' and '$(OS)' == 'Windows_NT'">true</GenerateSdkBundleOnly>
     <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
-    <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true' and '$(NativeAotSupported)' == 'true'">true</BundleNativeAotCompiler>
+    <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(NativeAotSupported)' == 'true'">true</BundleNativeAotCompiler>
 
     <!-- Crossgen2 is not bundled by default on platforms where Microsoft provides a package on nuget.org,
          because it is large (100MB+). -->
     <_IsCommunityPlatform Condition="'$(OSName)' != 'win' and '$(OSName)' != 'osx'
       and !(('$(OSName)' == 'linux' or '$(OSName)' == 'linux-musl') and ('$(TargetArchitecture)' == 'x64' or '$(TargetArchitecture)' == 'x86' or '$(TargetArchitecture)' == 'arm' or '$(TargetArchitecture)' == 'arm64'))">true</_IsCommunityPlatform>
-    <BundleCrossgen2 Condition="'$(BundleCrossgen2)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true' and '$(_IsCommunityPlatform)' == 'true'">true</BundleCrossgen2>
+    <BundleCrossgen2 Condition="'$(BundleCrossgen2)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(_IsCommunityPlatform)' == 'true'">true</BundleCrossgen2>
 
     <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
     <UsePortableLinuxSharedFramework Condition="'$(UsePortableLinuxSharedFramework)' == '' and '$(IsLinux)' == 'true' and !$(TargetRid.StartsWith('linux-musl'))">true</UsePortableLinuxSharedFramework>
@@ -136,13 +136,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\csc.dll" />
-    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\vbc.dll" />
-    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\VBCSCompiler.dll" />
+    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\csc.dll" SigningIdentifier="com.microsoft.dotnet.csc" />
+    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\vbc.dll" SigningIdentifier="com.microsoft.dotnet.vbc" />
+    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\VBCSCompiler.dll" SigningIdentifier="com.microsoft.dotnet.vbcscompiler" />
   </ItemGroup>
 
   <ItemGroup>
-    <_MSBuildAppHost Include="$(OutputPath)MSBuild.dll" />
+    <_MSBuildAppHost Include="$(OutputPath)MSBuild.dll" SigningIdentifier="com.microsoft.dotnet.msbuild" />
   </ItemGroup>
 
 </Project>

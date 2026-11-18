@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -19,8 +20,9 @@ Arguments:
   <SLN_FILE>  The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
-  --solution-folders  Display solution folder paths.
-  -?, -h, --help      Show command line help.";
+  --solution-folders     Display solution folder paths.
+  --format <json|table>  The output format for the list of paths. JSON output is an array of paths. [default: table]
+  -?, -h, --help         Show command line help.";
 
 
         public GivenDotnetSlnList()
@@ -208,6 +210,108 @@ Options:
                 .Execute(solutionCommand, $"App{solutionExtension}", "list");
             cmd.Should().Pass();
             cmd.StdOut.Should().BeVisuallyEquivalentTo(expectedOutput);
+        }
+
+        [TestMethod]
+        [DataRow(".sln", "table")]
+        [DataRow(".slnx", "table")]
+        [DataRow(".sln", "json")]
+        [DataRow(".slnx", "json")]
+        public void WhenFormatIsSpecifiedItListsProjectsInThatFormat(string solutionExtension, string format)
+        {
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionExtension}-{format}")
+                .WithSource()
+                .Path;
+            string[] expectedPaths = [Path.Combine("App", "App.csproj"), Path.Combine("Lib", "Lib.csproj")];
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute("sln", $"App{solutionExtension}", "list", "--format", format);
+
+            cmd.Should().Pass();
+            if (format == "json")
+            {
+                JsonSerializer.Deserialize<string[]>(cmd.StdOut!).Should().Equal(expectedPaths);
+            }
+            else
+            {
+                cmd.StdOut.Should().BeVisuallyEquivalentTo(
+                    $"{CliCommandStrings.ProjectsHeader}\n{new string('-', CliCommandStrings.ProjectsHeader.Length)}\n{string.Join('\n', expectedPaths)}");
+            }
+        }
+
+        [TestMethod]
+        [DataRow(".sln", false)]
+        [DataRow(".slnx", false)]
+        [DataRow(".sln", true)]
+        [DataRow(".slnx", true)]
+        public void WhenSolutionIsEmptyJsonOutputIsAnEmptyArray(string solutionExtension, bool solutionFolders)
+        {
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset("TestAppWithEmptySln", identifier: $"{solutionExtension}-{solutionFolders}")
+                .WithSource()
+                .Path;
+            string[] args = ["sln", $"App{solutionExtension}", "list", "--format", "json"];
+            if (solutionFolders)
+            {
+                args = [.. args, "--solution-folders"];
+            }
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(args);
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be("[]");
+        }
+
+        [TestMethod]
+        [DataRow(".sln")]
+        [DataRow(".slnx")]
+        public void WhenJsonFormatIsSpecifiedItListsSolutionFolders(string solutionExtension)
+        {
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset("SlnFileWithSolutionItemsInNestedFolders", identifier: solutionExtension)
+                .WithSource()
+                .Path;
+            var table = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute("sln", $"App{solutionExtension}", "list", "--solution-folders");
+            var json = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute("sln", $"App{solutionExtension}", "list", "--solution-folders", "--format", "json");
+
+            table.Should().Pass();
+            json.Should().Pass();
+            JsonSerializer.Deserialize<string[]>(json.StdOut!).Should().Equal(
+                table.StdOut!.Split(Environment.NewLine).Skip(2));
+        }
+
+        [TestMethod]
+        public void WhenJsonFormatIsSpecifiedItListsFilteredProjects()
+        {
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset("TestAppWithSlnxAndSolutionFilters")
+                .WithSource()
+                .Path;
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute("sln", "App.slnf", "list", "--format", "json");
+
+            cmd.Should().Pass();
+            JsonSerializer.Deserialize<string[]>(cmd.StdOut!).Should().Equal(Path.Combine("src", "App", "App.csproj"));
+        }
+
+        [TestMethod]
+        [DataRow(new string[] { "--format" })]
+        [DataRow(new string[] { "--format", "xml" })]
+        public void WhenFormatIsMissingOrInvalidItPrintsError(string[] args)
+        {
+            var cmd = new DotnetCommand(Log).Execute(["sln", "list", .. args]);
+
+            cmd.Should().Fail();
+            cmd.StdErr.Should().NotBeNullOrEmpty();
         }
 
         [TestMethod]

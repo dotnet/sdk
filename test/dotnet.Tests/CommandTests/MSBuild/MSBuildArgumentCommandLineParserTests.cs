@@ -6,6 +6,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.MSBuild.Tests;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
 
@@ -27,8 +28,8 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         public void MSBuildArgumentsAreForwardedCorrectly(string[] arguments, bool buildCommand)
         {
             RestoringCommand command = buildCommand ?
-                (RestoringCommand)BuildCommand.FromArgs(arguments) :
-                (RestoringCommand)PublishCommand.FromArgs(arguments);
+                (RestoringCommand)BuildCommand.FromArgs(arguments, msbuildPath: null, services: TestCommandServices.CreateNonLLM()) :
+                (RestoringCommand)PublishCommand.FromArgs(arguments, msbuildPath: null, services: TestCommandServices.CreateNonLLM());
             var expectedArguments = arguments.Select(a => a.Replace("-property:", "--property:").Replace("-p:", "--property:"));
             var argString = command.MSBuildArguments;
 

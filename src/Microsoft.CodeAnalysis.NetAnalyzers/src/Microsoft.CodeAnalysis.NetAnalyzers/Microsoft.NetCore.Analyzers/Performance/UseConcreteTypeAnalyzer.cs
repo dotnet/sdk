@@ -124,7 +124,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
             context.RegisterCompilationStartAction(context =>
             {
                 var voidType = context.Compilation.GetSpecialType(SpecialType.System_Void);
-                var publicOrInternalColl = Collector.GetInstance(voidType, symbol => symbol.IsInSource() && context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
+                var objectType = context.Compilation.GetSpecialType(SpecialType.System_Object);
+                var publicOrInternalColl = Collector.GetInstance(voidType, objectType, symbol => symbol.IsInSource() && context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
 
                 context.RegisterSymbolStartAction(context =>
                 {
@@ -135,7 +136,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         return;
                     }
 
-                    var coll = Collector.GetInstance(voidType, symbol => symbol.IsInSource() && context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
+                    var coll = Collector.GetInstance(voidType, objectType, symbol => symbol.IsInSource() && context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
 
                     // we accumulate a bunch of info in the collector object
                     context.RegisterOperationAction(context => coll.HandleInvocation((IInvocationOperation)context.Operation), OperationKind.Invocation);
@@ -263,6 +264,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     toType = toType.WithNullableAnnotation(NullableAnnotation.Annotated);
                 }
 
+                if (ContainsAnonymousType(toType))
+                {
+                    // Anonymous types cannot be named in a declaration, including when nested in another type.
+                    return;
+                }
+
                 if (!toType.DerivesFrom(fromType.OriginalDefinition))
                 {
                     // can't readily replace fromType by toType
@@ -356,6 +363,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return;
                 }
 
+                if (affectedSymbol is not ILocalSymbol &&
+                    ContainsFileLocalType(toType) &&
+                    !IsWithinFileLocalType(affectedSymbol.ContainingType))
+                {
+                    // file-local types cannot be used in member signatures of non-file-local types
+                    return;
+                }
+
                 if (!HasEquivalentOrGreaterVisibilityToSymbol(compilation, toType, affectedSymbol))
                 {
                     // the suggested type must have equal or greater visibility than the affected symbol.
@@ -399,9 +414,48 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return compilation.IsSymbolAccessibleWithin(type, affectedSymbol.ContainingAssembly);
             }
 
+            static bool ContainsFileLocalType(ITypeSymbol type) => type switch
+            {
+                INamedTypeSymbol namedType =>
+                    namedType.IsFileLocal ||
+                    namedType.TypeArguments.Any(ContainsFileLocalType) ||
+                    (namedType.ContainingType is { } containingType && ContainsFileLocalType(containingType)),
+                IArrayTypeSymbol arrayType => ContainsFileLocalType(arrayType.ElementType),
+                IPointerTypeSymbol pointerType => ContainsFileLocalType(pointerType.PointedAtType),
+                _ => false,
+            };
+
+            static bool IsWithinFileLocalType(INamedTypeSymbol? type)
+            {
+                while (type != null)
+                {
+                    if (type.IsFileLocal)
+                    {
+                        return true;
+                    }
+
+                    type = type.ContainingType;
+                }
+
+                return false;
+            }
+
             bool CanUpgrade(IMethodSymbol methodSym) => !coll.MethodsAssignedToDelegate.ContainsKey(methodSym);
 
             static string GetTypeName(ITypeSymbol type) => type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
         }
+
+        internal static bool ContainsAnonymousType(ITypeSymbol type)
+            => type switch
+            {
+                IArrayTypeSymbol arrayType => ContainsAnonymousType(arrayType.ElementType),
+                IPointerTypeSymbol pointerType => ContainsAnonymousType(pointerType.PointedAtType),
+                IFunctionPointerTypeSymbol functionPointerType => ContainsAnonymousType(functionPointerType.Signature.ReturnType)
+                    || functionPointerType.Signature.Parameters.Any(parameter => ContainsAnonymousType(parameter.Type)),
+                INamedTypeSymbol namedType => namedType.IsAnonymousType
+                    || namedType.TypeArguments.Any(ContainsAnonymousType)
+                    || namedType.ContainingType is { } containingType && ContainsAnonymousType(containingType),
+                _ => false,
+            };
     }
 }

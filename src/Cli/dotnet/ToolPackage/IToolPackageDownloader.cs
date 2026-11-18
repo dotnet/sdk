@@ -22,14 +22,24 @@ internal interface IToolPackageDownloader
         RestoreActionConfig? restoreActionConfig = null
     );
 
-    (NuGetVersion version, PackageSource source) GetNuGetVersion(
+    Task<(NuGetVersion version, PackageSource source)> GetNuGetVersionAsync(
         PackageLocation packageLocation,
         PackageId packageId,
         VerbosityOptions verbosity,
         VersionRange? versionRange = null,
-        RestoreActionConfig? restoreActionConfig = null
-    );
+        RestoreActionConfig? restoreActionConfig = null,
+        CancellationToken cancellationToken = default);
 
+    /// <summary>Gets the best complete cached tool that matches the specified version range.</summary>
+    bool TryGetBestDownloadedTool(
+        PackageId packageId,
+        VersionRange versionRange,
+        string? targetFramework,
+        VerbosityOptions verbosity,
+        [NotNullWhen(true)]
+        out IToolPackage? toolPackage);
+
+    /// <summary>Gets the complete cached tool for the specified exact version.</summary>
     bool TryGetDownloadedTool(
         PackageId packageId,
         NuGetVersion packageVersion,

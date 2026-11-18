@@ -4,6 +4,8 @@
 #nullable disable
 
 using System.CommandLine;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
@@ -13,12 +15,14 @@ internal sealed class SolutionListCommand : CommandBase<SolutionListCommandDefin
 {
     private readonly string _fileOrDirectory;
     private readonly bool _displaySolutionFolders;
+    private readonly string _format;
 
     public SolutionListCommand(ParseResult parseResult)
         : base(parseResult)
     {
         _fileOrDirectory = parseResult.GetValue(Definition.Parent.SlnArgument);
         _displaySolutionFolders = parseResult.GetValue(Definition.SolutionFolderOption);
+        _format = parseResult.GetValue(Definition.FormatOption);
     }
 
     public override int Execute()
@@ -49,14 +53,18 @@ internal sealed class SolutionListCommand : CommandBase<SolutionListCommandDefin
         {
             paths = [.. solution.SolutionProjects.Select(project => project.FilePath)];
         }
-        if (paths.Length == 0)
+        Array.Sort(paths);
+
+        if (_format == "json")
+        {
+            Reporter.Output.WriteLine(JsonSerializer.Serialize(paths, SolutionListJsonSerializerContext.Default.StringArray));
+        }
+        else if (paths.Length == 0)
         {
             Reporter.Output.WriteLine(CliStrings.NoProjectsFound);
         }
         else
         {
-            Array.Sort(paths);
-
             string header = _displaySolutionFolders ? CliCommandStrings.SolutionFolderHeader : CliCommandStrings.ProjectsHeader;
             Reporter.Output.WriteLine(header);
             Reporter.Output.WriteLine(new string('-', header.Length));
@@ -68,3 +76,6 @@ internal sealed class SolutionListCommand : CommandBase<SolutionListCommandDefin
 
     }
 }
+
+[JsonSerializable(typeof(string[]))]
+internal partial class SolutionListJsonSerializerContext : JsonSerializerContext;

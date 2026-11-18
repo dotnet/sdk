@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SdkSrcRoot)Cli\dotnet\Installer\Windows\TrustedMachinePath.cs" LinkBase="Cli" />
     <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\SdkFeatureBand.cs" />
     <Compile Include="$(SdkSrcRoot)Common\WorkloadSetVersion.cs"/>
   </ItemGroup>

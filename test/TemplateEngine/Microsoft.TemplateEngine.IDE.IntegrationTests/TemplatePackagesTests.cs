@@ -225,17 +225,16 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var commonPackage = updatedPackages[0];
             Assert.AreEqual("5.0.0", commonPackage.Version);
             var commonPackageDetails = commonPackage.GetDetails();
-            // dotnet-public feed may not return Owners metadata
+            // The configured sources return Microsoft prefix reservation metadata.
             commonPackageDetails.TryGetValue("Owners", out var commonOwners);
-            // Owners may be empty or populated depending on feed behavior
-            Assert.IsFalse(bool.Parse(commonPackageDetails["Reserved"]));
+            Assert.IsTrue(bool.Parse(commonPackageDetails["Reserved"]));
 
             var webPackage = updatedPackages[1];
             Assert.AreEqual("10.0.0", webPackage.Version);
             var webPackageDetails = webPackage.GetDetails();
-            // dotnet-public feed may not return Owners metadata
+            // The configured sources return Microsoft prefix reservation metadata.
             webPackageDetails.TryGetValue("Owners", out var webOwners);
-            Assert.IsFalse(bool.Parse(webPackageDetails["Reserved"]));
+            Assert.IsTrue(bool.Parse(webPackageDetails["Reserved"]));
         }
 
         [TestMethod]
@@ -256,9 +255,9 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             // the specified package has updated metadata
             var webPackageDetails = updatedPackages[1].GetDetails();
-            // dotnet-public feed may not return Owners for Microsoft packages
+            // The configured sources return Microsoft prefix reservation metadata.
             webPackageDetails.TryGetValue("Owners", out var webOwners);
-            Assert.IsFalse(bool.Parse(webPackageDetails["Reserved"]));
+            Assert.IsTrue(bool.Parse(webPackageDetails["Reserved"]));
         }
 
         [TestMethod]

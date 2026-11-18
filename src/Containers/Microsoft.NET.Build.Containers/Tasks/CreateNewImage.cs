@@ -53,6 +53,10 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             Task.Run(() => ExecuteAsync(_cancellationTokenSource.Token)).GetAwaiter().GetResult();
         }
+        catch (InvalidAuthRealmConfigurationException ex)
+        {
+            Log.LogErrorWithCodeFromResources(ex.ResourceName, ex.EnvironmentVariableName, ex.InvalidValue);
+        }
         catch (TaskCanceledException ex)
         {
             Log.LogWarningFromException(ex);

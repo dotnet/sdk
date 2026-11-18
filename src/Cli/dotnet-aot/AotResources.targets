@@ -32,8 +32,16 @@
       <_DotnetAotSuppressedSatellite Remove="@(_DotnetAotSuppressedSatellite)" />
       <_DotnetAotResourceInventoryLine Remove="@(_DotnetAotResourceInventoryLine)" />
       <_DotnetAotExternalAllSubstitutionWithHash Remove="@(_DotnetAotExternalAllSubstitutionWithHash)" />
-      <_DotnetAotSuppressedSatellite Include="@(IlcSatelliteAssembly)" />
-      <IlcSatelliteAssembly Remove="@(IlcSatelliteAssembly)" />
+      <!-- Keep package satellites: their resource managers do not use the CLI provider. -->
+      <_DotnetAotSuppressedSatellite Include="@(IlcSatelliteAssembly)"
+                                    Condition="'%(IlcSatelliteAssembly.Filename)' == '$(MSBuildProjectName).resources'
+                                            Or '%(IlcSatelliteAssembly.Filename)' == 'Microsoft.DotNet.Cli.Definitions.resources'
+                                            Or '%(IlcSatelliteAssembly.Filename)' == 'Microsoft.DotNet.Cli.Utils.resources'
+                                            Or '%(IlcSatelliteAssembly.Filename)' == 'Microsoft.DotNet.Configurer.resources'
+                                            Or '%(IlcSatelliteAssembly.Filename)' == 'Microsoft.DotNet.ProjectTools.resources'
+                                            Or '%(IlcSatelliteAssembly.Filename)' == 'Microsoft.NET.Sdk.WorkloadManifestReader.resources'
+                                            Or '%(IlcSatelliteAssembly.Filename)' == 'System.CommandLine.StaticCompletions.resources'" />
+      <IlcSatelliteAssembly Remove="@(_DotnetAotSuppressedSatellite)" />
       <ResolvedFileToPublish Remove="@(_DotnetAotSuppressedSatellite)" />
       <_DotnetAotResourceInventoryLine Include="Mode=$(_DotnetAotResourceMode)" />
       <_DotnetAotResourceInventoryLine Include="@(_DotnetAotSuppressedSatellite->'SuppressedSatellite=%(FullPath)')" />

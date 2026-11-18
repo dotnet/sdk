@@ -10,13 +10,39 @@ using Microsoft.DotNet.MSBuildSdkResolver;
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
     [TestClass]
+    // Resolve() samples MSBuildEnableWorkloadResolver, which GivenACachingWorkloadResolver mutates.
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public class GivenAnMSBuildSdkResolver : SdkTest
     {
         private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
         private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
+        private readonly string _originalDirectory = Directory.GetCurrentDirectory();
+        private TestDirectory? _currentDirectory;
 
         public GivenAnMSBuildSdkResolver() : base()
         {
+        }
+
+        [TestInitialize]
+        public void InitializeCurrentDirectory()
+        {
+            // Resolution and enumeration must not inherit the repository or test harness global.json.
+            _currentDirectory = TestAssetsManager.CreateTestDirectory(
+                testName: TestContext.TestName,
+                identifier: Guid.NewGuid().ToString("N"),
+                baseDirectory: Path.GetTempPath());
+            Directory.SetCurrentDirectory(_currentDirectory.Path);
+        }
+
+        [TestCleanup]
+        public void RestoreCurrentDirectory()
+        {
+            Directory.SetCurrentDirectory(_originalDirectory);
+            if (_currentDirectory is not null)
+            {
+                Directory.Delete(_currentDirectory.Path, recursive: true);
+            }
         }
 
         [TestMethod]
@@ -109,6 +135,8 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 
             var environment = new TestEnvironment(TestAssetsManager, identifier: $"{solutionFilePath ?? "NULL"}-{projectFilePath ?? "NULL"}");
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", version);
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.0.1");
+            environment.CreateGlobalJson(new DirectoryInfo(Directory.GetCurrentDirectory()), version);
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
 
             var resolver = environment.CreateResolver();
@@ -641,7 +669,8 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     //  Add FrameworkDescription to identifier so that instances of tests running on different frameworks
                     //  (.NET Core vs .NET Framework) don't conflict
                     identifier: identifier + RuntimeInformation.FrameworkDescription,
-                    testName: callingMethod).Path);
+                    testName: callingMethod,
+                    baseDirectory: Directory.GetCurrentDirectory()).Path);
 
                 DeleteMinimumVSDefinedSDKVersionFile();
 
@@ -679,7 +708,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 //  hostfxr now checks for the existence of dotnet.dll in an SDK directory: https://github.com/dotnet/runtime/pull/89333
                 //  So create that file
                 var dotnetDllPath = Path.Combine(netSdkDirectory, "dotnet.dll");
-                new FileInfo(dotnetDllPath).Create();
+                new FileInfo(dotnetDllPath).Create().Dispose();
 
 
                 var sdkDir = new DirectoryInfo(Path.Combine(netSdkDirectory,
@@ -716,7 +745,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 //  hostfxr now checks for the existence of dotnet.dll in an SDK directory: https://github.com/dotnet/runtime/pull/89333
                 //  So create that file
                 var dotnetDllPath = Path.Combine(netSdkDirectory, "dotnet.dll");
-                new FileInfo(dotnetDllPath).Create();
+                new FileInfo(dotnetDllPath).Create().Dispose();
 
 
                 var sdkDir = new DirectoryInfo(Path.Combine(netSdkDirectory,
@@ -751,7 +780,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             {
                 var muxerDirectory = new DirectoryInfo(Path.Combine(TestDirectory.FullName, localRootWithinEnvironment, "dotnet"));
                 var dotnetPath = Path.Combine(muxerDirectory.FullName, Muxer);
-                new FileInfo(dotnetPath).Create();
+                new FileInfo(dotnetPath).Create().Dispose();
                 return dotnetPath;
             }
 

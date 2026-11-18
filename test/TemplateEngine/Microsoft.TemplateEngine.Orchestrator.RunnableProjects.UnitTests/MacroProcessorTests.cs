@@ -253,7 +253,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             Parallel.For(0, sortedMacros.Length, iteration => sortedMacros[iteration] = runConfig.SortedMacros);
 
-            Assert.IsTrue(sortedMacros.All(sorted => ReferenceEquals(sortedMacros[0], sorted)));
+            Assert.ContainsOnly(sorted => ReferenceEquals(sortedMacros[0], sorted), sortedMacros);
             Assert.AreEqual(1, macroConfig.ResolveCount);
         }
 

@@ -402,7 +402,15 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     bool.TrueString,
                     StringComparison.OrdinalIgnoreCase);
 
-                yield return new IncludedItem(item.ItemType, itemFullPath, itemRelativePath, fromIncludeDirective);
+                // Do not carry over SDK-inferred metadata such as Link when copying files.
+                var metadata = fromIncludeDirective
+                    ? item.GetMetadataValue(VirtualProjectBuilder.IncludeDirectiveMetadataNames)
+                        .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(name => (name, ProjectCollection.Escape(item.GetMetadataValue(name))))
+                        .ToImmutableArray()
+                    : [];
+
+                yield return new IncludedItem(item.ItemType, itemFullPath, itemRelativePath, fromIncludeDirective, metadata);
             }
         }
 
@@ -414,11 +422,10 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         {
             // The converted project is evaluated after files are copied so SDK defaults can pick up
             // items such as Compile/None/Content naturally. Explicitly write only copied items that are
-            // missing from that evaluation, plus the entry point when Compile defaults do not include it.
+            // missing from that evaluation, updating metadata on items already included by defaults.
             var candidateItems = includeItems
                 .Where(static item => item.FromIncludeDirective)
-                .Select(item => (item.ItemType, item.RelativePath, OutputFullPath: Path.GetFullPath(Path.Combine(outputDirectory, item.RelativePath))))
-                .Distinct()
+                .Select(item => (item.ItemType, item.RelativePath, item.Metadata, OutputFullPath: Path.GetFullPath(Path.Combine(outputDirectory, item.RelativePath))))
                 .ToArray();
 
             using var outputProjectCollection = new ProjectCollection();
@@ -441,25 +448,50 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 }
             }
 
-            var addedExplicitItems = new HashSet<ProjectItemKey>(ProjectItemComparer.Instance);
+            var processedItems = new Dictionary<ProjectItemKey, List<ImmutableArray<(string Name, string Value)>>>(ProjectItemComparer.Instance);
             var explicitProjectItems = ImmutableArray.CreateBuilder<VirtualProjectBuilder.ExplicitProjectItem>();
 
             var entryPointOutputFullPath = Path.GetFullPath(entryPointOutputPath);
-            AddExplicitProjectItem("Compile", entryPointOutputFullPath, Path.GetRelativePath(outputDirectory, entryPointOutputFullPath));
+            var entryPointKey = new ProjectItemKey("Compile", entryPointOutputFullPath);
+            var entryPointMetadata = candidateItems.FirstOrDefault(item =>
+                ProjectItemComparer.Instance.Equals(new ProjectItemKey(item.ItemType, item.OutputFullPath), entryPointKey)).Metadata;
+            AddExplicitProjectItem("Compile", entryPointOutputFullPath, Path.GetRelativePath(outputDirectory, entryPointOutputFullPath), entryPointMetadata);
 
             foreach (var item in candidateItems)
             {
-                AddExplicitProjectItem(item.ItemType, item.OutputFullPath, item.RelativePath);
+                AddExplicitProjectItem(item.ItemType, item.OutputFullPath, item.RelativePath, item.Metadata);
             }
 
             return explicitProjectItems.ToImmutable();
 
-            void AddExplicitProjectItem(string itemType, string fullPath, string include)
+            void AddExplicitProjectItem(string itemType, string fullPath, string include, ImmutableArray<(string Name, string Value)> metadata)
             {
                 var itemKey = new ProjectItemKey(itemType, fullPath);
-                if (!automaticallyIncludedItems.Contains(itemKey) && addedExplicitItems.Add(itemKey))
+                if (metadata.IsDefault)
                 {
-                    explicitProjectItems.Add(new VirtualProjectBuilder.ExplicitProjectItem(itemType, include));
+                    metadata = [];
+                }
+
+                if (!processedItems.TryGetValue(itemKey, out var previousMetadata))
+                {
+                    previousMetadata = [];
+                    processedItems.Add(itemKey, previousMetadata);
+                }
+
+                if (previousMetadata.Any(previous => previous.SequenceEqual(metadata)))
+                {
+                    return;
+                }
+
+                bool isUpdate = previousMetadata.Count == 0 && automaticallyIncludedItems.Contains(itemKey);
+                previousMetadata.Add(metadata);
+                if (!isUpdate || !metadata.IsEmpty)
+                {
+                    explicitProjectItems.Add(new VirtualProjectBuilder.ExplicitProjectItem(itemType, include)
+                    {
+                        IsUpdate = isUpdate,
+                        Metadata = metadata,
+                    });
                 }
             }
         }
@@ -572,7 +604,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         ImmutableArray<CSharpDirective> EvaluatedDirectives,
         ImmutableArray<IncludedItem> IncludeItems);
 
-    private readonly record struct IncludedItem(string ItemType, string FullPath, string RelativePath, bool FromIncludeDirective);
+    private readonly record struct IncludedItem(
+        string ItemType,
+        string FullPath,
+        string RelativePath,
+        bool FromIncludeDirective,
+        ImmutableArray<(string Name, string Value)> Metadata);
 
     private readonly record struct ProjectItemKey(string ItemType, string FullPath);
 

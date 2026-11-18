@@ -1,5 +1,5 @@
 ﻿Searching for the templates...
-Matches from template source: NuGet.org
+Matches from template source: .NET template catalog
 
 To instantiate the template with short name 'search', run:
    dotnet new create search

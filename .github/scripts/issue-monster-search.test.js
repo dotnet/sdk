@@ -181,6 +181,11 @@ for (const scoringCase of [
         expectedScore: 60,
     },
     {
+        name: "stale reference issues score with infrastructure labels",
+        labels: ["cookie", "stale-issue-detection"],
+        expectedScore: 60,
+    },
+    {
         name: "contributor labels score once as a group",
         labels: ["cookie", "good first issue", "help wanted"],
         expectedScore: 50,

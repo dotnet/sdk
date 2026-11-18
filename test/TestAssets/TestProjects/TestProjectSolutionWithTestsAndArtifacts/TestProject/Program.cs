@@ -77,15 +77,6 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 			Properties = new PropertyBag(new ErrorTestNodeStateProperty(new Exception("this is an exception"), "not OK")),
 		}));
 
-		await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
-		{
-			Uid = "Test5",
-			DisplayName = "Test5",
-#pragma warning disable CS0618, MTP0001 // Type or member is obsolete
-			Properties = new PropertyBag(new CancelledTestNodeStateProperty(new Exception("this is a cancelled exception"), "not OK")),
-#pragma warning restore CS0618, MTP0001 // Type or member is obsolete
-		}));
-
 		await context.MessageBus.PublishAsync(this, new FileArtifact(new FileInfo("file.txt"), "file", "file description"));
 
 		await context.MessageBus.PublishAsync(this, new SessionFileArtifact(context.Request.Session.SessionUid, new FileInfo("sessionFile.txt"), "sessionFile", "description"));

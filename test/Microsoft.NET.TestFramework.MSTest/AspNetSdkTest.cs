@@ -50,6 +50,11 @@ public abstract class AspNetSdkTest : SdkTest
                     targetFramework.Value = overrideTfm ?? DefaultTfm ?? string.Empty;
                     targetFramework.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
                     targetFramework.AddAfterSelf(new XElement("AttachWeakETagToCompressedAssetsDuringDevelopment", "false"));
+                    if (DefaultTfm is not null)
+                    {
+                        targetFramework.AddAfterSelf(new XElement("UseMonoRuntime",
+                            new XAttribute("Condition", $"'$(TargetFramework)' == '{DefaultTfm}'"), "false"));
+                    }
                 }
                 var targetFrameworks = project.Descendants()
                     .SingleOrDefault(e => e.Name.LocalName == "TargetFrameworks");
@@ -58,6 +63,11 @@ public abstract class AspNetSdkTest : SdkTest
                     targetFrameworks.Value = targetFrameworks.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm ?? string.Empty);
                     targetFrameworks.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
                     targetFrameworks.AddAfterSelf(new XElement("AttachWeakETagToCompressedAssetsDuringDevelopment", "false"));
+                    if (DefaultTfm is not null)
+                    {
+                        targetFrameworks.AddAfterSelf(new XElement("UseMonoRuntime",
+                            new XAttribute("Condition", $"'$(TargetFramework)' == '{DefaultTfm}'"), "false"));
+                    }
                 }
             });
 
@@ -83,6 +93,11 @@ public abstract class AspNetSdkTest : SdkTest
                 var targetFramework = project.Descendants()
                    .Single(e => e.Name.LocalName == "TargetFrameworks");
                 targetFramework.Value = targetFramework.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm ?? string.Empty);
+                if (DefaultTfm is not null)
+                {
+                    targetFramework.AddAfterSelf(new XElement("UseMonoRuntime",
+                        new XAttribute("Condition", $"'$(TargetFramework)' == '{DefaultTfm}'"), "false"));
+                }
             });
         return projectDirectory;
     }

@@ -2,7 +2,6 @@
   <assembly fullname="dotnet-aot">
     <resource name="Microsoft.DotNet.Cli.CliStrings.resources" action="remove" />
     <resource name="Microsoft.DotNet.Cli.Commands.CliCommandStrings.resources" action="remove" />
-    <resource name="Microsoft.NET.Build.Tasks.Strings.resources" action="remove" />
   </assembly>
   <assembly fullname="Microsoft.DotNet.Cli.Definitions">
     <resource name="Microsoft.DotNet.Cli.CommandDefinitionStrings.resources" action="remove" />

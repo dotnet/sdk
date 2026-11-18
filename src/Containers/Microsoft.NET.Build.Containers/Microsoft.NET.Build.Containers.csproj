@@ -54,6 +54,7 @@
 
   <ItemGroup>
     <PackageReference Include="Valleysoft.DockerCredsProvider" />
+    <PackageReference Include="Microsoft.Security.AntiSSRF" />
 
     <!-- References that are also carried in the SDK itself so don't need to be redistributed -->
     <PackageReference Include="Microsoft.Extensions.Logging" ExcludeAssets="runtime" />

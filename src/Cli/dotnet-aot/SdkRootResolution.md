@@ -37,28 +37,23 @@ Inside the AOT bubble:
 | `Environment.ProcessPath`, `GetCommandLineArgs()[0]`, `Process.MainModule.FileName` | muxer exe |
 | `RuntimeEnvironment.GetRuntimeDirectory()` | muxer dir |
 | `Assembly.Location` / `typeof(T).Assembly.Location` | `""` (and ILC fails the build with `IL3000`) |
-| self-locating the loaded module (`GetModuleFileName` / `dladdr`) | the real `dotnet-aot` directory |
 
-Only two mechanisms yield the versioned SDK directory: the host passes it in, or
-the module self-locates.
+So the host has to pass the versioned SDK directory in.
 
 ## Resolution
 
-- **Host argument (authoritative).** The muxer already resolves the versioned SDK
+- **Host argument (required).** The muxer already resolves the versioned SDK
   directory to find `dotnet-aot`, and passes it as the `sdk_dir` argument to
   `dotnet_execute`.
   > `sdk_dir` is the absolute path of the versioned SDK directory that contains the
   > invoked `dotnet-aot` binary.
-- **Self-locate (fallback).** When `sdk_dir` is missing or empty, `SdkRootLocator`
-  finds the `dotnet-aot` module from its own code address: Windows
-  `GetModuleHandleEx(FROM_ADDRESS | UNCHANGED_REFCOUNT, &export)` +
-  `GetModuleFileName`; Unix `dladdr`.
+
+  `dotnet_execute` throws when `sdk_dir` is null or empty.
 - **Publish once.** `NativeEntryPoint.ExecuteCore` publishes the resolved directory as
   the `Microsoft.DotNet.Sdk.Root` AppContext value so the compiled-in assemblies find
   it without threading a parameter through every call. An AppContext value is
   process-local - unlike an environment variable it is not inherited by child
-  processes. A caller-provided value (e.g. a `runtimeconfig.json` `configProperties`
-  entry) is honored, but must point to an existing directory or the bridge errors out.
+  processes.
 - **Read.** In-repo code reads `SdkPaths.SdkDirectory` (in
   `Microsoft.DotNet.Cli.Utils`), which resolves the `Microsoft.DotNet.Sdk.Root`
   AppContext value -> the SDK assembly directory -> `AppContext.BaseDirectory` (once,
@@ -95,8 +90,7 @@ without reflective plugin loading. Command handlers do not activate this evaluat
 the shipping Native AOT entry point yet.
 
 Resource-mode integration tests must use a layout containing the managed owner
-assemblies and culture directories, not only `dotnet-aot.dll`. They cover flat,
-separated, and self-located layouts. Real redist tests must run from outside the
+assemblies and culture directories, not only `dotnet-aot.dll`. Real redist tests must run from outside the
 repository tree; otherwise this repository's `global.json` can redirect SDK
 selection to `.dotnet` and make resource probes observe the bootstrap SDK
 instead of the redist under test.

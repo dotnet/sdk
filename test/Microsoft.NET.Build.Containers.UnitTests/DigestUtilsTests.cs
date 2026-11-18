@@ -7,6 +7,45 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 public class DigestUtilsTests
 {
     [TestMethod]
+    public void TryParseDigest_ParsesValidDigest()
+    {
+        const string encoded = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+
+        bool result = DigestUtils.TryParseDigest(
+            $"sha256:{encoded}",
+            out string algorithm,
+            out ReadOnlySpan<byte> encodedValue);
+
+        Assert.IsTrue(result);
+        Assert.AreEqual("sha256", algorithm);
+        Assert.AreEqual(encoded, Convert.ToHexStringLower(encodedValue));
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("latest")]
+    [DataRow("sha256:abc")]
+    [DataRow("sha512:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")]
+    public void TryParseDigest_RejectsInvalidDigest(string digest)
+    {
+        bool result = DigestUtils.TryParseDigest(digest, out _, out _);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    [DataRow("", "does not match expected pattern")]
+    [DataRow("md5:5b0bcabd1ed22e9fb1310cf6", "Unsupported digest algorithm 'md5'. Supported algorithms: sha256.")]
+    [DataRow("sha256:abc", "encoded value does not match expected pattern for algorithm 'sha256'")]
+    public void ValidateSupportedDigestFormat_ThrowsDetailedError(string digest, string expectedMessage)
+    {
+        InvalidDigestException exception = Assert.ThrowsExactly<InvalidDigestException>(() =>
+            DigestUtils.ValidateSupportedDigestFormat(digest, out _, out _));
+
+        Assert.Contains(expectedMessage, exception.Message);
+    }
+
+    [TestMethod]
     [DataRow("sha256:0000000000000000000000000000000000000000000000000000000000000000", "0000000000000000000000000000000000000000000000000000000000000000")]
     [DataRow("sha256:c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad", "c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad")]
     [DataRow("sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")]

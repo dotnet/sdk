@@ -25,7 +25,7 @@ internal sealed class PackCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.PackCmdOutputDirDescription,
         HelpName = CommandDefinitionStrings.PackCmdOutputDir
-    }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
+    }.ForwardAsPathProperty("PackageOutputPath");
 
     public readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {

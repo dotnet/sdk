@@ -29,8 +29,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var command = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(asset.Path);
 
-            // Launch dotnet run in a new process group so that GenerateConsoleCtrlEvent
-            // targets only the child group and does not propagate to the test host.
+            // Ctrl+Break can target the child group without signaling the test host.
             command.CreateNewProcessGroup = true;
 
             bool signaled = false;
@@ -58,22 +57,12 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
                 if (int.TryParse(line, out int pid))
                 {
-                    try
-                    {
-                        child = Process.GetProcessById(pid);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.WriteLine($"Error while getting child process Id: {e}");
-                        throw new InvalidOperationException($"Failed to get to child process Id: {line}", e);
-                    }
+                    child = GetChildProcess(pid);
                 }
                 else if (line == "Started" && child != null)
                 {
-                    // Window is now visible, send Ctrl+C to dotnet run process
-                    // dotnet run should detect it's a WinExe app and call CloseMainWindow() on the child
-                    Log.WriteLine($"Sending Ctrl+C to dotnet run process {testProcess.Id}");
-                    bool sent = GenerateConsoleCtrlEvent(0, (uint)testProcess.Id);
+                    Log.WriteLine($"Sending Ctrl+Break to dotnet run process {testProcess.Id}");
+                    bool sent = GenerateConsoleCtrlEvent(1, (uint)testProcess.Id);
                     Log.WriteLine($"GenerateConsoleCtrlEvent returned: {sent}");
                     signaled = true;
                 }
@@ -84,23 +73,40 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             };
 
             var result = command.Execute();
-            signaled.Should().BeTrue("Ctrl+C should have been sent to dotnet run");
+            signaled.Should().BeTrue("Ctrl+Break should have been sent to dotnet run");
             sawClosingGracefully.Should().BeTrue("WinExe app should report graceful close output");
 
-            // The app should exit with code 0 when closed gracefully via CloseMainWindow
-            result.ExitCode.Should().Be(0, "WinExe app should exit gracefully when dotnet run receives Ctrl+C and calls CloseMainWindow");
+            result.ExitCode.Should().Be(0, "WinExe app should exit gracefully when dotnet run receives Ctrl+Break and calls CloseMainWindow");
 
+            AssertChildExited(child);
+        }
+
+        private Process GetChildProcess(int pid)
+        {
+            try
+            {
+                return Process.GetProcessById(pid);
+            }
+            catch (Exception e)
+            {
+                Log.WriteLine($"Error while getting child process Id: {e}");
+                throw new InvalidOperationException($"Failed to get to child process Id: {pid}", e);
+            }
+        }
+
+        private static void AssertChildExited(Process child)
+        {
             Assert.IsNotNull(child);
             if (!child.WaitForExit(WaitTimeout))
             {
                 child.Kill();
                 Assert.Fail("child process failed to terminate.");
             }
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
         }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
 
         // This test is Unix only for the same reason that CoreFX does not test Console.CancelKeyPress on Windows
         // See https://github.com/dotnet/corefx/blob/a10890f4ffe0fadf090c922578ba0e606ebdd16c/src/System.Console/tests/CancelKeyPress.Unix.cs#L63-L67

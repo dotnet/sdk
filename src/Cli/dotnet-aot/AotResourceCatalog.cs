@@ -34,7 +34,6 @@ internal static class AotResourceCatalog
     [
         new("Microsoft.DotNet.Cli.CliStrings", "dotnet", typeof(AotResourceCatalog).Assembly),
         new("Microsoft.DotNet.Cli.Commands.CliCommandStrings", "dotnet", typeof(AotResourceCatalog).Assembly),
-        new("Microsoft.NET.Build.Tasks.Strings", "dotnet", typeof(AotResourceCatalog).Assembly),
         new(
             "Microsoft.DotNet.Cli.CommandDefinitionStrings",
             "Microsoft.DotNet.Cli.Definitions",

@@ -7,10 +7,15 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
     internal class PackageNotFoundException : Exception
     {
-        public PackageNotFoundException(string packageIdentifier, IEnumerable<string> attemptedSources) : base($"{packageIdentifier} was not found in NuGet feeds {string.Join(";", attemptedSources)}")
+        public PackageNotFoundException(
+            string packageIdentifier,
+            IEnumerable<string> attemptedSources,
+            bool packageSourceMappingMatchNotFound = false)
+            : base($"{packageIdentifier} was not found in NuGet feeds {string.Join(";", attemptedSources)}")
         {
             PackageIdentifier = packageIdentifier;
             SourcesList = attemptedSources;
+            PackageSourceMappingMatchNotFound = packageSourceMappingMatchNotFound;
         }
 
         public PackageNotFoundException(string packageIdentifier, NuGetVersion packageVersion, IEnumerable<string> attemptedSources) : base($"{packageIdentifier}@{packageVersion} was not found in NuGet feeds {string.Join(";", attemptedSources)}")
@@ -25,5 +30,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         public NuGetVersion? PackageVersion { get; private set; }
 
         public IEnumerable<string> SourcesList { get; private set; }
+
+        public bool PackageSourceMappingMatchNotFound { get; private set; }
     }
 }
