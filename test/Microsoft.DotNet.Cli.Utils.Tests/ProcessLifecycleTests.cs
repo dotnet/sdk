@@ -380,7 +380,14 @@ public class ProcessLifecycleTests : SdkTest
     {
         try
         {
-            return File.Exists(markerPath) && File.ReadAllText(markerPath) == expectedValue;
+            if (!File.Exists(markerPath))
+            {
+                return false;
+            }
+
+            using FileStream stream = new(markerPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using StreamReader reader = new(stream);
+            return reader.ReadToEnd() == expectedValue;
         }
         catch (IOException)
         {

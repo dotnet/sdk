@@ -64,10 +64,10 @@ public static partial class ProcessLifecycleTestApp
         using IDisposable processLifecycle = ProcessLifecycle.Initialize();
         CancellationToken cancellationToken = ProcessLifecycle.CancellationToken;
         using CancellationTokenRegistration registration = childMode is "uncooperative" or "repeated"
-            ? cancellationToken.Register(() => File.WriteAllText(markerPath, "signal-cancelled"))
+            ? cancellationToken.Register(() => WriteMarker(markerPath, "signal-cancelled"))
             : default;
 
-        File.WriteAllText(markerPath, "ready");
+        WriteMarker(markerPath, "ready");
 
         if (childMode == "repeated")
         {
@@ -86,17 +86,24 @@ public static partial class ProcessLifecycleTestApp
             cancellationToken.WaitHandle.WaitOne();
             using IDisposable softCancellationTimeout =
                 ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan);
-            File.WriteAllText(markerPath, "signal-cancelled");
+            WriteMarker(markerPath, "signal-cancelled");
             Thread.Sleep(TimeSpan.FromMilliseconds(750));
-            File.WriteAllText(markerPath, "override-completed");
+            WriteMarker(markerPath, "override-completed");
             return GetSignalExitCode(cancellationToken);
         }
 
         cancellationToken.WaitHandle.WaitOne();
-        File.WriteAllText(
+        WriteMarker(
             markerPath,
             ProcessLifecycle.IsSignalTerminationRequested ? "signal-cancelled" : "cancelled");
         return GetSignalExitCode(cancellationToken);
+    }
+
+    private static void WriteMarker(string path, string value)
+    {
+        using FileStream stream = new(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+        using StreamWriter writer = new(stream);
+        writer.Write(value);
     }
 
     private static void RunReaperParent(string[] args, string markerPath, string childMode)
