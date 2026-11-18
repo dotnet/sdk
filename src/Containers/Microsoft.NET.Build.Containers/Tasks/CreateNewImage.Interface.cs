@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
@@ -188,6 +188,9 @@ partial class CreateNewImage
     /// Mutable base image tags are resolved before cache lookup; digest-pinned base images can be reused without registry access.
     /// </summary>
     public bool EnableArchiveIncrementalCache { get; set; }
+
+    /// <summary>Reuse validated application layers when SOURCE_DATE_EPOCH is set.</summary>
+    public bool EnableLayerIncrementalCache { get; set; } = true;
 
     /// <summary>
     /// The file used to persist the incremental archive fingerprint and generated task outputs.
