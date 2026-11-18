@@ -70,6 +70,7 @@ Repository policy:
 | Redist composition and bundled-version flow | [`src/Layout/AGENTS.md`](../../src/Layout/AGENTS.md) |
 | Test infrastructure, assets, parallelism, snapshots, and Helix | [`test/AGENTS.md`](../../test/AGENTS.md) and [TESTING_STRATEGY.md](TESTING_STRATEGY.md) |
 | Repeatable task procedures | `.github/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md` |
+| AI artifact ownership, change requests, review, and retirement | [`ai-artifacts.md`](../../documentation/project-docs/ai-artifacts.md) |
 
 Prefer the nearest area guidance over general summaries, and cross-check it against the
 linked primary source before relying on it.
