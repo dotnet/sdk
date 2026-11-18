@@ -1964,7 +1964,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
-        <target state="needs-review-translation">Microsoft Testplatform 배너를 표시하지 않고 테스트 실행</target>
+        <target state="new">Run test(s), without displaying the Microsoft Test Platform banner</target>
         <note>{Locked="Microsoft Test Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">

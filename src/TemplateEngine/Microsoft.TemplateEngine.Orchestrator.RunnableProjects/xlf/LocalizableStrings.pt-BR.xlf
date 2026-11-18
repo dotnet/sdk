@@ -157,7 +157,7 @@ Detalhes: {1}</target>
       </trans-unit>
       <trans-unit id="JoinMacroConfig_Exception_ValuePropertyIsEmpty">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</source>
-        <target state="translated">Símbolo gerado '{0}': a matriz '{1}' deve conter objetos JSON com a propriedade '{2}' quando '{3}' é '{4}'.</target>
+        <target state="translated">Símbolo gerado '{0}': a matriz '{1}' deve conter objetos JSON com a propriedade não vazia '{2}' quando '{3}' é '{4}'.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name; {2}, {3}, {4} - the property names and values.</note>
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
