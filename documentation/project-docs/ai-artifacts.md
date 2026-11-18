@@ -88,6 +88,27 @@ artifact, plus an area owner for area-specific guidance. Reviewers check that:
 - **Behavior.** For a new or materially changed skill, agent, or workflow, try it on at
   least one representative task and summarize the result in the PR description.
 
+## Periodic review
+
+Most drift is caught when a change makes an artifact stale: the
+[`update-docs` checklist](../../AGENTS.md#keeping-ai-context-and-docs-in-sync), the
+[`code-review` skill](../../.github/skills/code-review/SKILL.md), and the Markdown link
+check. These checks do not catch artifacts that drift without a related change, or that
+gradually duplicate each other.
+
+> [!NOTE]
+> The following cadence is proposed. The AI artifact owners in
+> [`CODEOWNERS`](../../CODEOWNERS) have not committed to it yet.
+
+Proposed: once per quarter, the AI artifact owners review all AI artifacts for:
+
+- claims, commands, and paths that no longer match the repository
+- content that is duplicated across artifacts instead of linked
+- artifacts that meet a [retirement](#retiring-an-artifact) condition
+- a memory [`INDEX.md`](../../.github/memory/INDEX.md) that does not match the memory files
+
+Each finding becomes a fix PR or an `Area-AIEngineering` issue.
+
 ## Retiring an artifact
 
 Retire an artifact when it:
