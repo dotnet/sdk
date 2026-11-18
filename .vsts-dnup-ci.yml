@@ -77,23 +77,23 @@ extends:
   parameters:
     containers:
       azureLinux30Amd64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-4.0-net11.0-build-amd64
       # Cross-build containers for NAOT executables (link against older glibc/musl sysroots).
       # See: https://github.com/dotnet/runtime/blob/main/docs/workflow/using-docker.md
       crossBuildLinuxX64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-4.0-net11.0-cross-amd64
         env:
           ROOTFS_DIR: /crossrootfs/x64
       crossBuildLinuxArm64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-4.0-net11.0-cross-arm64
         env:
           ROOTFS_DIR: /crossrootfs/arm64
       crossBuildMuslX64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64-musl
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-4.0-net11.0-cross-amd64-musl
         env:
           ROOTFS_DIR: /crossrootfs/x64
       crossBuildMuslArm64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64-musl
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-4.0-net11.0-cross-arm64-musl
         env:
           ROOTFS_DIR: /crossrootfs/arm64
 
