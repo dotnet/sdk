@@ -1062,5 +1062,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1246: The crossgen2 pack is not available for the target framework.</value>
     <comment>{StrBegins="NETSDK1246: "}</comment>
   </data>
-  <!-- The latest message added is Crossgen2UnsupportedTargetFramework. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="PlatformTargetNotRecommendedForModernDotNet" xml:space="preserve">
+    <value>NETSDK1247: Setting the PlatformTarget property to '{0}' is not recommended for modern .NET applications. The PlatformTarget property is a legacy setting from .NET Framework and has no effect in modern .NET. Consider removing PlatformTarget or setting it to 'AnyCPU'.</value>
+    <comment>{StrBegins="NETSDK1247: "}{Locked="PlatformTarget"}{Locked="AnyCPU"}</comment>
+  </data>
+  <!-- The latest message added is PlatformTargetNotRecommendedForModernDotNet. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
