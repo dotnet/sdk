@@ -71,10 +71,10 @@ stages:
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+        demands: ImageOverride -equals build.azurelinux.3.amd64.open
         os: linux
         emoji: 🐧
-      helixTargetQueue: ubuntu.2204.amd64.open
+      helixTargetQueue: azurelinux.3.amd64.open
 
   ############### MACOS ###############
   - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml@self
