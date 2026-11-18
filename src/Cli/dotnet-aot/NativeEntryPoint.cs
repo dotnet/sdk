@@ -76,7 +76,7 @@ static unsafe partial class NativeEntryPoint
 
         // Match the managed entry point before any localized resources are read. The AOT host does
         // not run Program.Main, so it must apply DOTNET_CLI_UI_LANGUAGE/VSLANG itself.
-        using AutomaticEncodingRestorer _ = new();
+        using AutomaticEncodingRestorer encodingRestorer = new();
         UILanguageOverride.Setup();
 
         // Publish the versioned SDK directory as the "Microsoft.DotNet.Sdk.Root" AppContext value
