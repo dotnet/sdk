@@ -301,7 +301,7 @@ on `PATH`.)
 ```
 dotnetup environment:
   dotnet access    shell      managed dotnet is added to your shell profile
-  dotnetup on PATH   yes        via ~/.bashrc
+  add dotnetup to PATH   yes        via ~/.bashrc
 
 In sync.
 ```
@@ -311,7 +311,7 @@ In sync.
 ```
 dotnetup environment:
   dotnet access    shell
-  dotnetup on PATH   yes
+  add dotnetup to PATH   yes
   ⚠ drift:
     - shell profile is missing the managed dotnet lines
   Run 'dotnetup env set' to re-sync.

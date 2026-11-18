@@ -375,9 +375,13 @@ public class EnvCommandTests : IDisposable
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "show"]);
+        using var output = new ConsoleOutputCapture();
         int exitCode = new EnvShowCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
+        output.GetOutput().Should()
+            .Contain("add dotnetup to PATH")
+            .And.NotContain("dotnetup on PATH");
     }
 
     [TestMethod]
