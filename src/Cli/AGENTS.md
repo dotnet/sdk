@@ -90,6 +90,15 @@ Many CLI tests use Verify (`[UsesVerify]` / VerifyMSTest):
 - Volatile lines (paths, timings, versions) are scrubbed via
   `settings.ScrubLinesContaining(...)` — scrub rather than hard-code them.
 
+## MTP device selection
+
+In `--solution` runs,
+[`device selection`](dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs) applies only to
+MTP test applications (`IsTestingPlatformApplication`); `IsTestProject` is a VSTest concept and must not
+opt a project in. App and library projects, such as MAUI heads, can import `ComputeAvailableDevices` in
+their inner builds and must not prompt for a device. The single-project path evaluates before restore, so
+it must not apply this NuGet-dependent gate.
+
 ## MTP process completion
 
 [`TestApplicationHandler`](dotnet/Commands/Test/MTP/TestApplicationHandler.cs) distinguishes
