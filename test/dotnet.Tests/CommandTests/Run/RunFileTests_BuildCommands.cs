@@ -29,6 +29,35 @@ public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileT
             .And.HaveStdOutContaining("Program.cs.csproj : error NU1101");
     }
 
+    [LinuxOnlyTheory]
+    [InlineData("not-false", true)]
+    [InlineData("false", false)]
+    public void Run_RestoreConfiguresNuGetSignatureVerification(string configuredValue, bool expectedValue)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine(Environment.GetEnvironmentVariable("DOTNET_NUGET_SIGNATURE_VERIFICATION"));
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), $"""
+            <Project>
+              <Target Name="_VerifyNuGetSignatureVerification" BeforeTargets="Restore">
+                <Error
+                  Condition="'$(DOTNET_NUGET_SIGNATURE_VERIFICATION)' != '{expectedValue}'"
+                  Text="Expected DOTNET_NUGET_SIGNATURE_VERIFICATION to be '{expectedValue}', but it was '$(DOTNET_NUGET_SIGNATURE_VERIFICATION)'." />
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithEnvironmentVariable(
+                NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification,
+                configuredValue)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(configuredValue);
+    }
+
     [Fact]
     public void NoRestore_01()
     {

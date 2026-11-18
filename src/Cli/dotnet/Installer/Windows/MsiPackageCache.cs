@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Runtime.Versioning;
+using Microsoft.DotNet;
 using Microsoft.DotNet.Cli.Commands.Workload;
 
 #if !DOT_NET_BUILD_FROM_SOURCE
@@ -43,31 +44,31 @@ internal class MsiPackageCache(InstallElevationContextBase elevationContext, ISe
     {
         // Validate that packageId and packageVersion do not contain path traversal characters
         // to prevent an IPC client from constructing paths outside the package cache.
-        if (!WindowsUtils.ValidatePathComponent(packageId))
+        if (!PathComponentUtilities.IsValidPathComponent(packageId))
         {
             throw new ArgumentException($"Invalid package ID: {packageId}");
         }
 
-        if (!WindowsUtils.ValidatePathComponent(packageVersion))
+        if (!PathComponentUtilities.IsValidPathComponent(packageVersion))
         {
             throw new ArgumentException($"Invalid package version: {packageVersion}");
         }
 
-            // Validate that the manifest path resolves to a location under the elevated server's temp
-            // directory or the unelevated client's temp directory (when supplied at server launch via
-            // --client-temp). This prevents an IPC client from coercing the elevated server into reading
-            // or moving arbitrary files.
-            string fullManifestPath = Path.GetFullPath(manifestPath);
+        // Validate that the manifest path resolves to a location under the elevated server's temp
+        // directory or the unelevated client's temp directory (when supplied at server launch via
+        // --client-temp). This prevents an IPC client from coercing the elevated server into reading
+        // or moving arbitrary files.
+        string fullManifestPath = Path.GetFullPath(manifestPath);
 
-            if (!WindowsUtils.ValidateManifestPath(fullManifestPath))
-            {
-                throw new ArgumentException($"CachePayload: Manifest path is not under an allowed temp directory: {manifestPath}");
-            }
+        if (!WindowsUtils.ValidateManifestPath(fullManifestPath))
+        {
+            throw new ArgumentException($"CachePayload: Manifest path is not under an allowed temp directory: {manifestPath}");
+        }
 
-            if (!File.Exists(fullManifestPath))
-            {
-                throw new FileNotFoundException($"CachePayload: Manifest file not found: {fullManifestPath}");
-            }
+        if (!File.Exists(fullManifestPath))
+        {
+            throw new FileNotFoundException($"CachePayload: Manifest file not found: {fullManifestPath}");
+        }
 
         Elevate();
 
@@ -75,8 +76,13 @@ internal class MsiPackageCache(InstallElevationContextBase elevationContext, ISe
         {
             string packageDirectory = GetPackageDirectory(packageId, packageVersion);
 
-            // Delete the package directory and create a new one that's secure. If all the files were properly
-            // cached, the client would not request this action.
+            if (TrustedMachinePath.IsUnderRoot(packageDirectory, TrustedMachinePath.ProgramDataDotnetRoot))
+            {
+                // Establish the ProgramData trust anchor before recursively deleting a partial cache entry.
+                SecurityUtils.EnsureSecureProgramDataRoot();
+            }
+
+            // If all the files were properly cached, the client would not request this action.
             if (Directory.Exists(packageDirectory))
             {
                 Directory.Delete(packageDirectory, recursive: true);
