@@ -8,6 +8,7 @@ parameters:
     publishTaskPrefix: ''
   container: ''
   helixTargetContainer: ''
+  testArtifactSuffix: ''
   categoryName: dotnetup
   runTests: true
   publishRetryConfig: false
@@ -42,7 +43,7 @@ jobs:
         displayName: '🌐 Publish Test Artifacts'
         condition: always()
         targetPath: '$(Build.SourcesDirectory)/artifacts/dotnetupTestResults'
-        artifactName: 'dotnetupTestResults_${{ parameters.pool.os }}'
+        artifactName: 'dotnetupTestResults_${{ parameters.pool.os }}${{ parameters.testArtifactSuffix }}'
         publishLocation: Container
 
     steps:
