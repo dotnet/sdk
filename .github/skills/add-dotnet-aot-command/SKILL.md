@@ -83,9 +83,8 @@ So deriving an SDK-relative path (`MSBuild.dll`, `Sdks/`, `DotnetTools/`, target
 - **In-repo:** read `SdkPaths.SdkDirectory` (in `Microsoft.DotNet.Cli.CoreUtils`), which resolves the
   `Microsoft.DotNet.Sdk.Root` AppContext value -> SDK assembly directory -> `AppContext.BaseDirectory`
   (once, cached).
-- `NativeEntryPoint.ExecuteCore` resolves the SDK directory once (host `sdk_dir`, else self-locating the
-  `dotnet-aot` module via `SdkRootLocator`) and **publishes it as the `Microsoft.DotNet.Sdk.Root`
-  AppContext value** for the compiled-in assemblies.
+- `NativeEntryPoint.ExecuteCore` takes the SDK directory from the required host `sdk_dir` and
+  **publishes it as the `Microsoft.DotNet.Sdk.Root` AppContext value** for the compiled-in assemblies.
 - **Out-of-repo code** (MSBuild tasks, NuGet, runtime - no `Cli.Utils` reference) replicates the contract
   inline: read the `Microsoft.DotNet.Sdk.Root` AppContext value first, else the existing BCL logic.
 
@@ -156,6 +155,9 @@ Inspect each dependency for trim/AOT warnings, reflection/dynamic code, serializ
 resources/localization, build assets, static initialization, process-global state, native libraries,
 and binary-size contribution.
 
+Review the [size and trimming contracts](../../../src/Cli/dotnet-aot/DESIGN.md#size-and-trimming-contracts)
+when changing resources or platform providers.
+
 ### 5. Preserve both preprocessor views
 
 Condition the smallest incompatible block. Compare the managed and AOT views for lost comments,
@@ -200,13 +202,15 @@ and binary-size delta.
   focused managed iteration and use `run-aot-tests.ps1` for native execution.
 - **Existing tests may assert exclusions.** Search before enabling a command; an intentional
   `DoesNotContain` can need a carefully justified inversion.
+- **Completion eligibility is cursor-context-sensitive.** Root command and option labels can come from
+  shared definitions. Once the input selects a command, fall back before producing output so managed
+  parser configuration owns template, project, package, and other command-specific providers.
 - **A Roslyn pragma is not native-publish evidence.** ILC can report the same trim/AOT warning during
   publish. Use **dotnet-aot-compat**, keep suppression scope narrow, and reference an existing tracking
   issue for temporary dependency warnings. Ask the user before creating a new issue.
 - **A shared Native AOT library is not a standalone AOT app.** On each affected OS, check interaction
   with native libraries and process-global state already loaded by the host.
-- **Flat layouts can hide SDK-root defects.** Use `-Layout Separated`; add `-SelfLocate` to exercise the
-  native-module fallback.
+- **Flat layouts can hide SDK-root defects.** Use `-Layout Separated`.
 
 ## Reviewer workflow
 
@@ -308,8 +312,24 @@ on each affected OS rather than cross-publishing and assuming native execution.
 ```
 
 The script publishes the MTP test application, product `dotnet-aot` library, and `dn` host with Native
-AOT. It loads the test-built library while using a complete installed SDK for SDK-relative assets and
-managed fallback, then runs the suite and can emit a TRX. Report executed, passed, failed, and skipped
+AOT. Build the matching redist SDK first. Both runners use
+[`PrepareTestSdk.proj`](../../../test/dotnet-aot.Tests/PrepareTestSdk.proj) to copy its pre-crossgen SDK content
+into an isolated installation under `test/dotnet-aot.Tests/artifacts/test-sdk/<configuration>/<RID>`.
+The installation uses the host-native bootstrap muxer, hostfxr and CoreCLR from the runtime pack
+matching the native CLI's runtime version, the host-native apphost pack, host-RID SDK metadata, and
+the test-built native library. Copy managed SDK assemblies from the redist project's evaluated
+output directory, not the installer or test-host SDK directory: those contain target-architecture
+ReadyToRun images after `CrossgenLayout` and can fail to load in the host-native managed CLI.
+The pre-crossgen layout still contains target-native compiler and MSBuild apphosts; regenerate
+them for the host RID through the
+[redist targets](../../../src/Layout/redist/targets/GenerateLayout.targets), including their macOS code signing.
+Use `CreateRoslynAppHosts`, not `PublishRoslyn`: the existing SDK already has the compiler
+files, and the original Roslyn package need not be present when CI prepares the test layout.
+The bootstrap SDK is used for compilation, not managed setup or fallback. Do not execute a cross-built
+redist host (for example, arm64 redist on an x64 macOS agent) or overlay host-native binaries into that
+redist. Mixing bootstrap-managed setup with a newly built native CLI can invalidate run-file caches
+or produce apps targeting an unavailable runtime. The script runs the suite and can emit a TRX.
+Report executed, passed, failed, and skipped
 counts; required `dn` integration tests must not be skipped.
 
 ### 5. Real `dn` integration and parity
@@ -331,11 +351,10 @@ assembled harness.
 
 ```powershell
 .\src\Cli\dn\run-dn.ps1 -Command "<invocation>" -Mode Compare -Layout Separated
-.\src\Cli\dn\run-dn.ps1 -Command "<invocation>" -Mode Compare -Layout Separated -SelfLocate
 ```
 
-The first exercises the host-provided versioned SDK directory. The second makes `dn` pass an empty
-`sdk_dir` so `dotnet-aot` must self-locate its native module. Use this for every new SDK-relative path.
+This exercises the host-provided versioned SDK directory with `dotnet-aot` outside `dn`'s own
+directory. Use this for every new SDK-relative path.
 
 ### 7. Size and platform evidence
 

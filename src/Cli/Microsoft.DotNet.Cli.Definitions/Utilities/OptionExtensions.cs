@@ -27,15 +27,18 @@ public static class OptionExtensions
         return o;
     }
 
-
     /// <summary>
     /// Set up an option to be forwarded as an output path to MSBuild
     /// </summary>
     /// <param name="option">The command line option</param>
     /// <param name="outputPropertyName">The property name for the output path (such as OutputPath or PublishDir)</param>
     /// <param name="surroundWithDoubleQuotes">Whether the path should be surrounded with double quotes.  This may not be necessary but preserves the previous behavior of "dotnet test"</param>
+    /// <param name="escapePropertyValue">
+    /// Escapes the literal full path for MSBuild before any quoting. The managed CLI supplies MSBuild's escaping;
+    /// other consumers of these definitions (such as dotnet-watch) keep forwarding the unescaped path.
+    /// </param>
     /// <returns>The option</returns>
-    public static Option<string> ForwardAsOutputPath(this Option<string> option, string outputPropertyName, bool surroundWithDoubleQuotes = false)
+    public static Option<string> ForwardAsOutputPath(this Option<string> option, string outputPropertyName, bool surroundWithDoubleQuotes = false, Func<string, string>? escapePropertyValue = null)
     {
         return option.SetForwardingFunction((string? o) =>
         {
@@ -48,17 +51,37 @@ public static class OptionExtensions
             {
                 argVal += Path.DirectorySeparatorChar;
             }
-            if (surroundWithDoubleQuotes)
-            {
-                //  Not sure if this is necessary, but this is what "dotnet test" previously did and so we are
-                //  preserving the behavior here after refactoring
-                argVal = MSBuildPropertyParser.SurroundWithDoubleQuotes(argVal);
-            }
             return [
-                $"--property:{outputPropertyName}={argVal}",
+                $"--property:{outputPropertyName}={FormatPathPropertyValue(argVal, surroundWithDoubleQuotes, escapePropertyValue)}",
                 "--property:_CommandLineDefinedOutputPath=true"
             ];
         });
+    }
+
+    /// <summary>
+    /// Set up an option whose value is a file system path to be forwarded to MSBuild as the full path in <paramref name="propertyName"/>.
+    /// </summary>
+    /// <param name="option">The command line option</param>
+    /// <param name="propertyName">The MSBuild property that receives the full path</param>
+    /// <param name="surroundWithDoubleQuotes">Whether the path should be surrounded with double quotes</param>
+    /// <param name="escapePropertyValue">
+    /// Escapes the literal full path for MSBuild before any quoting. The managed CLI supplies MSBuild's escaping;
+    /// other consumers of these definitions (such as dotnet-watch) keep forwarding the unescaped path.
+    /// </param>
+    /// <returns>The option</returns>
+    public static Option<string> ForwardAsPathProperty(this Option<string> option, string propertyName, bool surroundWithDoubleQuotes = false, Func<string, string>? escapePropertyValue = null)
+    {
+        return option.SetForwardingFunction((string? o) =>
+            o is null
+                ? []
+                : [$"--property:{propertyName}={FormatPathPropertyValue(CommandDirectoryContext.GetFullPath(o), surroundWithDoubleQuotes, escapePropertyValue)}"]);
+    }
+
+    private static string FormatPathPropertyValue(string fullPath, bool surroundWithDoubleQuotes, Func<string, string>? escapePropertyValue)
+    {
+        string propertyValue = escapePropertyValue is null ? fullPath : escapePropertyValue(fullPath);
+        //  Quote after escaping so the quotes remain MSBuild command-line syntax rather than part of the literal path.
+        return surroundWithDoubleQuotes ? MSBuildPropertyParser.SurroundWithDoubleQuotes(propertyValue) : propertyValue;
     }
 
     /// <summary>

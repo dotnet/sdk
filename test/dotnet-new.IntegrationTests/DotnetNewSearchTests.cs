@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: 'console'")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
@@ -60,6 +60,30 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Execute()
                 .Should().Fail()
                 .And.HaveStdErrContaining("Search failed: template name is too short, minimum 2 characters are required.");
+        }
+
+        [TestMethod]
+        public void RejectsInsecureHttpSource()
+        {
+            string workingDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            string configPath = Path.Combine(workingDirectory, "NuGet.config");
+            File.WriteAllText(
+                configPath,
+                """
+                <?xml version="1.0" encoding="utf-8"?>
+                <configuration>
+                  <packageSources>
+                    <add key="insecure" value="http://example.test/v3/index.json" allowInsecureConnections="false" />
+                  </packageSources>
+                </configuration>
+                """);
+
+            new DotnetNewCommand(_log, "search", "console", "--configfile", configPath)
+                .WithCustomHive(_sharedHome.HomeDirectory)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining("allowInsecureConnections");
         }
 
         [TestMethod]
@@ -91,7 +115,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Author\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
@@ -120,7 +144,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
@@ -147,7 +171,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: 'console', --tag='Common'")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Tags\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
@@ -178,7 +202,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: --tag='Common'")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Tags\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
@@ -208,7 +232,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: 'func', --author='micro'")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Author\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
@@ -240,7 +264,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
                 .And.HaveStdOutContaining("These templates matched your input: --author='micro'")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Author\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
@@ -271,7 +295,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
                 .And.HaveStdOutContaining("These templates matched your input: 'console', --language='Q#'")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
@@ -304,7 +328,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
                 .And.HaveStdOutContaining($"These templates matched your input: {optionName}='Q#'")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
@@ -334,7 +358,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
                 .And.HaveStdOutContaining("These templates matched your input: 'console', --type='item'")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Type\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
@@ -365,7 +389,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
                 .And.HaveStdOutContaining("These templates matched your input: --type='item'")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Type\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
@@ -396,7 +420,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
                 .And.HaveStdOutContaining("These templates matched your input: 'console', --package='core'")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
@@ -427,7 +451,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
                 .And.HaveStdOutContaining("These templates matched your input: --package='core'")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
@@ -456,7 +480,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads");
 
             List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Language", "Package Name / Owners", "Trusted", "Downloads" });
@@ -505,7 +529,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             commandResult.Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: 'con', --framework")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
@@ -526,7 +550,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             commandResult.Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: 'con', -f")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
@@ -546,7 +570,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             commandResult.Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: -f")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
@@ -573,7 +597,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             commandResult.Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: 'con', --langVersion")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Author\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
@@ -594,7 +618,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             commandResult.Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: --langVersion")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Author\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
@@ -621,7 +645,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             commandResult.Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: 'con', --langVersion")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
@@ -642,7 +666,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             commandResult.Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: --langVersion")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
@@ -669,7 +693,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             commandResult.Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: 'con', -f='netcoreapp3.1'")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
@@ -690,7 +714,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             commandResult.Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining("Searching for the templates...")
-                .And.HaveStdOutContaining("Matches from template source: NuGet.org")
+                .And.HaveStdOutContaining("Matches from template source: .NET template catalog")
                 .And.HaveStdOutContaining("These templates matched your input: -f='net5.0'")
                 .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")

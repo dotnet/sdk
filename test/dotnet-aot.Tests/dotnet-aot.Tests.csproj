@@ -38,7 +38,6 @@
   <ItemGroup>
     <Compile Include="..\..\src\Cli\dotnet-aot\NativeEntryPoint.cs" Link="NativeEntryPoint.cs" />
     <Compile Include="..\..\src\Cli\dotnet-aot\MSBuildSdkResolverRegistration.cs" Link="MSBuildSdkResolverRegistration.cs" />
-    <Compile Include="..\..\src\Cli\dotnet-aot\SdkRootLocator.cs" Link="SdkRootLocator.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,6 +69,14 @@
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+  </ItemGroup>
+
+  <!-- Standalone AOT tests can use the bootstrap SDK without a repo redist layout. -->
+  <ItemGroup>
+    <Content Include="..\TestAssets\TestProjects\AotManagedFallback\ManagedFallback.proj"
+             Link="TestAssets\AotManagedFallback\ManagedFallback.proj"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- Azure Monitor dependencies aren't part of source build yet - see file://../../../Directory.Build.props#L85 for details -->

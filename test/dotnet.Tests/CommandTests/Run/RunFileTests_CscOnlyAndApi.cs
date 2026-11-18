@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Security;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
-using FluentAssertions.Execution;
+using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.NuGet;
@@ -2616,7 +2616,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
     /// even after being evicted from MSBuild's strong cache (LRU of size N).
     /// We force eviction via <c>MSBUILDPROJECTROOTELEMENTCACHESIZE=1</c>
     /// and trigger GC via an inline task during NuGet restore.
-    /// Without the fix (strong reference in <c>VirtualProjectBuilder._projectRootElement</c>),
+    /// Without the strong references held by the project collection wrapper,
     /// this fails with MSB4025 "The project file could not be loaded".
     /// </summary>
     [TestMethod]

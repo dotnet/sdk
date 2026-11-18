@@ -44,7 +44,9 @@ internal sealed class DotNetCommandDefinition : RootCommand
     // "System.CommandLine.ExecutableName" AppContext value (emitted by the System.CommandLine build
     // targets) and then to "app". Ensure the fallback is "dotnet" when the host provides neither,
     // so help usage lines and completion scripts never read "app <command>".
-    static DotNetCommandDefinition()
+    static DotNetCommandDefinition() => EnsureExecutableName();
+
+    internal static void EnsureExecutableName()
     {
         const string ExecutableNameKey = "System.CommandLine.ExecutableName";
         if (AppContext.GetData(ExecutableNameKey) is not string { Length: > 0 })

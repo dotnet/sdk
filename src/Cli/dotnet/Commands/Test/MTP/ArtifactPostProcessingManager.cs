@@ -39,22 +39,23 @@ internal sealed class ArtifactPostProcessingManager(bool enabled = true, Cancell
             .Select(extension => extension.ToLowerInvariant())
             .ToArray();
 
-        if (kinds.Length == 0
-            && extensions.Length == 0
-            && truncatedRunKinds.Length == 0
-            && truncatedRunExtensions.Length == 0)
-        {
-            return;
-        }
-
         lock (_lock)
         {
             if (!_applications.TryGetValue(module, out ApplicationState? application))
             {
+                if (kinds.Length == 0
+                    && extensions.Length == 0
+                    && truncatedRunKinds.Length == 0
+                    && truncatedRunExtensions.Length == 0)
+                {
+                    return;
+                }
+
                 application = new ApplicationState(module, targetFramework, architecture);
                 _applications.Add(module, application);
             }
 
+            application.TargetFramework ??= targetFramework;
             application.SupportedKinds.UnionWith(kinds);
             application.RequiredKinds.UnionWith(requiredKinds);
             application.SupportedExtensions.UnionWith(extensions);
@@ -517,7 +518,7 @@ internal sealed class ArtifactPostProcessingManager(bool enabled = true, Cancell
     private sealed class ApplicationState(TestModule module, string? targetFramework, string? architecture)
     {
         public TestModule Module { get; } = module;
-        public string? TargetFramework { get; } = targetFramework;
+        public string? TargetFramework { get; set; } = targetFramework;
         public string? Architecture { get; } = architecture;
         public string ProducingTestModule { get; set; } = module.TargetPath;
         public HashSet<string> SupportedKinds { get; } = new(StringComparer.Ordinal);

@@ -88,6 +88,8 @@ jobs:
         inputs:
           targetPath: $(Build.SourcesDirectory)/eng/BuildConfiguration
           artifactName: BuildConfiguration
+          ${{ if eq(parameters.oneESCompat.publishTaskPrefix, '1ES.') }}:
+            isProduction: false # BuildConfiguration is a non-production artifact
 
     - ${{ if eq(parameters.populateInternalRuntimeVariables, true) }}:
       - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-sources.yml

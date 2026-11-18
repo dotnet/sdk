@@ -2151,9 +2151,6 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
   <data name="ToolInstallManifestPathOptionName" xml:space="preserve">
     <value>PATH</value>
   </data>
-  <data name="ToolInstallNuGetConfigurationFileDoesNotExist" xml:space="preserve">
-    <value>NuGet configuration file '{0}' does not exist.</value>
-  </data>
   <data name="ToolInstallSourceOptionDescription" xml:space="preserve">
     <value>Replace all NuGet package sources to use during installation with these.</value>
   </data>
@@ -2223,6 +2220,12 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
   </data>
   <data name="ToolSearchCommandDescription" xml:space="preserve">
     <value>Search dotnet tools in nuget.org</value>
+  </data>
+  <data name="ToolSearchNoSourcesConfigured" xml:space="preserve">
+    <value>No NuGet package sources are configured or enabled.</value>
+  </data>
+  <data name="ToolSearchSourceDoesNotSupportPackageTypeFiltering" xml:space="preserve">
+    <value>The source '{0}' does not support searching by package type and cannot be used for .NET tool search.</value>
   </data>
   <data name="ToolSearchPrereleaseDescription" xml:space="preserve">
     <value>Include pre-release packages.</value>
@@ -2979,5 +2982,9 @@ Proceed?</value>
   </data>
   <data name="CmdAffectedTestsResponseFilesMustBeConsistent" xml:space="preserve">
     <value>Forwarded response files must select the same affected-test operation for every test application. Specify '--collect-test-map' or '--affected-tests' directly on 'dotnet test' instead.</value>
+  </data>
+  <data name="RuntimeFramework" xml:space="preserve">
+    <value>runtime: {0}</value>
+    <comment>Additional runtime information after the test assembly's target framework and process architecture. {0} is a compact runtime moniker such as net481 or net9.0.</comment>
   </data>
 </root>
