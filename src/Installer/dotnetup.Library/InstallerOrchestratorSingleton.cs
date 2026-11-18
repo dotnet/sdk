@@ -135,7 +135,7 @@ internal class InstallerOrchestratorSingleton
                         }
                         else if (existingResult is not null)
                         {
-                            results.Add(existingResult);
+                            results.Add(existingResult with { Request = request });
                         }
                     }
                 }
@@ -195,7 +195,7 @@ internal class InstallerOrchestratorSingleton
 
                 try
                 {
-                    results.Add(commit(prepared));
+                    results.Add(commit(prepared) with { Request = prepared.ResolvedRequest });
                 }
                 catch (DotnetInstallException ex)
                 {

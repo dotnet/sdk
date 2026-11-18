@@ -97,11 +97,29 @@ public class InstallSummaryTests
             $"Installed at {RootPath}.");
     }
 
+    [TestMethod]
+    public void Summary_AttributesOutcomesToOriginatingRequestsWhenVersionsMatch()
+    {
+        var firstRequest = Request(InstallComponent.SDK, "10.0.100");
+        var secondRequest = Request(InstallComponent.SDK, "10.0.100");
+
+        // The second request installs first; the first then finds it already installed.
+        var batch = new InstallBatchResult(
+            [Result(secondRequest, downloadedBytes: 31_200_000), Result(firstRequest, alreadyInstalled: true)],
+            []);
+
+        string sdk = InstallComponent.SDK.GetDisplayName();
+        CaptureLines(() => InstallExecutor.DisplaySummaryInRequestOrder([firstRequest, secondRequest], batch, RootPath)).Should().Equal(
+            $"  {sdk} 10.0.100  already installed, skipped",
+            $"  {sdk} 10.0.100  installed (29.8 MB)",
+            $"Installed at {RootPath}.");
+    }
+
     private static ResolvedInstallRequest Request(InstallComponent component, string version) =>
         new(new DotnetInstallRequest(s_root, new UpdateChannel(version), component, new InstallRequestOptions()), new ReleaseVersion(version));
 
     private static InstallResult Result(ResolvedInstallRequest request, bool alreadyInstalled = false, long? downloadedBytes = null, bool repaired = false, string? installedVersion = null) =>
-        new(new DotnetInstall(s_root, installedVersion is null ? request.ResolvedVersion : new ReleaseVersion(installedVersion), request.Request.Component), alreadyInstalled, repaired, downloadedBytes);
+        new(new DotnetInstall(s_root, installedVersion is null ? request.ResolvedVersion : new ReleaseVersion(installedVersion), request.Request.Component), alreadyInstalled, repaired, downloadedBytes, request);
 
     private static string[] CaptureLines(Action action)
     {

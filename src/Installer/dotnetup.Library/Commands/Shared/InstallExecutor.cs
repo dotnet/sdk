@@ -87,59 +87,18 @@ internal class InstallExecutor
     {
         var labels = requests.Select(r => $"{r.Request.Component.GetDisplayName()} {r.ResolvedVersion}").ToList();
         int labelWidth = labels.Max(label => label.Length);
-        var results = MatchResultsToRequests(requests, batchResult);
 
         for (int i = 0; i < requests.Count; i++)
         {
-            SpectreAnsiConsole.WriteLine($"  {labels[i].PadRight(labelWidth)}  {DescribeOutcome(requests[i], results[i], batchResult)}");
+            var request = requests[i];
+            InstallResult? result = batchResult.Successes.FirstOrDefault(r => ReferenceEquals(r.Request, request));
+            SpectreAnsiConsole.WriteLine($"  {labels[i].PadRight(labelWidth)}  {DescribeOutcome(request, result, batchResult)}");
         }
 
         if (batchResult.Successes.Count > 0)
         {
             SpectreAnsiConsole.WriteLine($"Installed at {installRootPath}.");
         }
-    }
-
-    /// <summary>
-    /// Pairs each request with its success, preferring an exact version match. A request satisfied by an existing
-    /// build of another version (for example a daily build for a global.json pin) takes a remaining result of its component.
-    /// </summary>
-    private static InstallResult?[] MatchResultsToRequests(IReadOnlyList<ResolvedInstallRequest> requests, InstallBatchResult batchResult)
-    {
-        var unclaimed = batchResult.Successes.ToList();
-        var matches = new InstallResult?[requests.Count];
-        InstallResult? Claim(Func<InstallResult, bool> predicate)
-        {
-            InstallResult? match = unclaimed.FirstOrDefault(predicate);
-            if (match is not null)
-            {
-                unclaimed.Remove(match);
-            }
-
-            return match;
-        }
-
-        bool[] failed = requests.Select(request => batchResult.Failures.Any(f => ReferenceEquals(f.Request, request))).ToArray();
-
-        for (int i = 0; i < requests.Count; i++)
-        {
-            var request = requests[i];
-            if (!failed[i])
-            {
-                matches[i] = Claim(r => r.Install.Component == request.Request.Component && r.Install.Version.Equals(request.ResolvedVersion));
-            }
-        }
-
-        for (int i = 0; i < requests.Count; i++)
-        {
-            var request = requests[i];
-            if (matches[i] is null && !failed[i])
-            {
-                matches[i] = Claim(r => r.Install.Component == request.Request.Component);
-            }
-        }
-
-        return matches;
     }
 
     private static string DescribeOutcome(ResolvedInstallRequest request, InstallResult? result, InstallBatchResult batchResult)

@@ -279,8 +279,9 @@ internal class InitWorkflows
         DotnetAccessMode accessMode = plan.AccessMode;
 
         // Start the predownload now that the install requests are known, so the cache populates
-        // while the config is written.
+        // while the config is written. Lines and JSON progress skip it so they report the real transfer.
         Task? predownloadTask = InstallRequestsOverride is null && effectiveRequests.Count > 0
+            && command.Progress is not (ProgressMode.Lines or ProgressMode.Json)
             ? InstallerOrchestratorSingleton.PredownloadToCacheAsync(effectiveRequests[0])
             : null;
 
