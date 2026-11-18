@@ -933,7 +933,7 @@ public partial class AotIntegrationTests
 
     [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-    public void AotExternalCommand_SigIntExitsQuietlyWithSignalExitCode()
+    public void AotExternalCommand_WaitsForSecondSigIntBeforeExitingQuietly()
     {
         SkipIfDnUnavailable();
 
@@ -974,9 +974,15 @@ public partial class AotIntegrationTests
                 .Should().BeTrue("the external command should start");
 
             process.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
+            Thread.Sleep(TimeSpan.FromMilliseconds(750));
+            process.HasExited.Should().BeFalse("the first SIGINT should allow the external command to finish");
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            process.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
             process.WaitForExit(10_000).Should().BeTrue();
 
             process.ExitCode.Should().Be(130);
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
             string standardError = stderrTask.GetAwaiter().GetResult();
             standardError.Should().NotContain("Unhandled exception");
             standardError.Should().NotContain("The operation was canceled");
