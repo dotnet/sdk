@@ -429,7 +429,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             {
                 throw new NuGetPackageInstallerException(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, packageId));
             }
-            defaultSources = [.. defaultSources.Where(source => sources.Contains(source.Name))];
+            defaultSources = [.. defaultSources.Where(source => sources.Contains(source.Name, StringComparer.OrdinalIgnoreCase))];
             if (defaultSources.Count == 0)
             {
                 throw new NuGetPackageInstallerException(string.Format(CliStrings.FailedToMapSourceUnderPackageSourceMapping, packageId));

@@ -274,7 +274,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         try
         {
             // Set environment variables.
-            foreach (var (key, value) in MSBuildForwardingAppWithoutLogging.GetMSBuildRequiredEnvironmentVariables())
+            Dictionary<string, string?> environmentVariables = MSBuildForwardingAppWithoutLogging.GetMSBuildRequiredEnvironmentVariables();
+            if (!NoRestore && !evalOnly)
+            {
+                NuGetSignatureVerificationEnabler.ConditionallyEnable(environmentVariables);
+            }
+            foreach (var (key, value) in environmentVariables)
             {
                 savedEnvironmentVariables[key] = Environment.GetEnvironmentVariable(key);
                 Environment.SetEnvironmentVariable(key, value);
