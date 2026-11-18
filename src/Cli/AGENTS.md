@@ -42,6 +42,16 @@ to `dotnet` and `Microsoft.DotNet.Cli.Utils`. Internal parser APIs are accessibl
 signed `dotnet` assembly through MSBuild's `InternalsVisibleTo`; keep those calls
 managed-only rather than introducing MSBuild dependencies into `Definitions`.
 
+CLI-owned path options (such as `--output`, `--artifacts-path`, `--packages`, and VSTest
+`--settings`) keep their default, unescaped forwarding in the definitions for consumers such as
+`dotnet-watch`. The managed command parsers replace it through
+[`MSBuildOptionExtensions`](dotnet/Extensions/MSBuildOptionExtensions.cs), which uses
+[`MSBuildPropertyEscaping`](../Microsoft.DotNet.ProjectTools/MSBuildPropertyEscaping.cs)
+to escape literal paths with MSBuild's API before adding command-line quotes. When adding a path
+option, forward it with `ForwardAsPathProperty`/`ForwardAsOutputPath` in the definition and wire
+the `ForwardAsLiteral*` override in the managed parser. Keep explicit `-p:` values on their
+existing MSBuild-syntax path; they are not literals.
+
 When changing AOT-linked commands, resources, dependencies, or first-run behavior,
 follow the [size and trimming contracts](dotnet-aot/DESIGN.md#size-and-trimming-contracts).
 
@@ -123,6 +133,12 @@ builds and restores out-of-process through
 directory so relative arguments and logs retain their meaning. Keep one coherent preparation binlog,
 target-produced project state, and the session's success/failure cleanup. Cover these boundaries in
 [`GivenDotnetTestProducesBinaryLog`](../../test/dotnet.Tests/CommandTests/Test/GivenDotnetTestProducesBinaryLog.cs).
+
+In `--solution` runs,
+[`device selection`](dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs) applies only to
+test projects (`IsTestProject` or `IsTestingPlatformApplication`). App and library projects, such as
+MAUI heads, can import `ComputeAvailableDevices` in their inner builds and must not prompt for a device. The single-project
+path evaluates before restore, so it must not apply this NuGet-dependent gate.
 
 Parent-process operations must also use the captured invocation directory: pass it through background
 workload updates to both `global.json` discovery and NuGet configuration, and initialize absolute MTP

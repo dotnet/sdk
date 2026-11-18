@@ -723,16 +723,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Habilita la salida de diagnóstico.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SdkDirectoryCouldNotBeDetermined">
-        <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
-        <target state="translated">advertencia: no se pudo determinar el directorio del SDK; no se proporcionó sdk_dir y dotnet-aot no pudo localizar su propio módulo; la resolución relativa al SDK puede ser incorrecta.</target>
-        <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
-      </trans-unit>
-      <trans-unit id="SdkRootDirectoryDoesNotExist">
-        <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="translated">El directorio raíz del SDK "{0}" proporcionado a través de la configuración "{1}" no existe.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="translated">Las opciones '--self-contained' y '--no-self-contained' no se pueden usar juntas.</target>

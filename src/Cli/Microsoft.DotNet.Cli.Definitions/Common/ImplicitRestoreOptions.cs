@@ -30,7 +30,7 @@ internal sealed class ImplicitRestoreOptions
             Description = showHelp ? CommandDefinitionStrings.CmdPackagesOptionDescription : string.Empty,
             HelpName = CommandDefinitionStrings.CmdPackagesOption,
             Hidden = !showHelp
-        }.ForwardAsSingle(o => $"-property:RestorePackagesPath={CommandDirectoryContext.GetFullPath(o)}");
+        }.ForwardAsPathProperty("RestorePackagesPath");
 
         CurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CommandDefinitionStrings.CmdCurrentRuntimeOptionDescription);
 
@@ -46,7 +46,7 @@ internal sealed class ImplicitRestoreOptions
             Description = showHelp ? CommandDefinitionStrings.CmdConfigFileOptionDescription : string.Empty,
             HelpName = CommandDefinitionStrings.CmdConfigFileOption,
             Hidden = !showHelp
-        }.ForwardAsSingle(o => $"-property:RestoreConfigFile={CommandDirectoryContext.GetFullPath(o)}");
+        }.ForwardAsPathProperty("RestoreConfigFile");
 
         NoCacheOption = new Option<bool>("--no-cache")
         {

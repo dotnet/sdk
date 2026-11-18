@@ -42,9 +42,9 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.cs",
-          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
-          "baseline_blob_sha": "43cd96f0185cb68aac1da5120ccee203ca567de8",
-          "scope": "reporter partial"
+          "baseline_ref_sha": "74be6a61c1324c7b4810841ba2716040b47230f4",
+          "baseline_blob_sha": "92bcacf2733f37cd258b18d1977d96b0f7d9a9cc",
+          "scope": "reporter partial; upstream NoAnsi comment change has no SDK counterpart"
         },
         {
           "repo": "microsoft/testfx",
@@ -66,9 +66,9 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Formatting.cs",
-          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
-          "baseline_blob_sha": "422663f28daf6e53d6d8236c4781897728658e54",
-          "scope": "reporter partial"
+          "baseline_ref_sha": "74be6a61c1324c7b4810841ba2716040b47230f4",
+          "baseline_blob_sha": "e1147927db88fd3175a7100e942483c5801e884b",
+          "scope": "reporter partial; SDK retains equivalent string.Contains(char) instead of IndexOf(char)"
         },
         {
           "repo": "microsoft/testfx",
@@ -517,14 +517,14 @@
     {
       "id": "dotnet-test-terminal-targetframeworkparser",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TargetFrameworkParser.cs",
-      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder. Reconciled at 005e8f82: the SDK already guards short descriptions, missing major versions, and trailing dots using an early length check rather than upstream's clamped IndexOf start index. Upstream's genuine assembly-target metadata parser is producer-owned and intentionally not copied: the SDK gets targets from evaluated projects or optional handshake field 21, never from runtime fallback.",
+      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder. Reconciled at 005e8f82: the SDK already guards short descriptions, missing major versions, and trailing dots using an early length check rather than upstream's clamped IndexOf start index. Reconciled at 74be6a61: two-component .NET Framework descriptions such as '.NET Framework 4.8' normalize to net48, matching descriptions with a zero patch. Upstream's genuine assembly-target metadata parser is producer-owned and intentionally not copied: the SDK gets targets from evaluated projects or optional handshake field 21, never from runtime fallback.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs",
-          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
-          "baseline_blob_sha": "749841e7c0ac661df54aff1f0020107e71a6970a",
+          "baseline_ref_sha": "74be6a61c1324c7b4810841ba2716040b47230f4",
+          "baseline_blob_sha": "c58e1f65cb1f831c95bb1e2d4c7626b3bd6ea9a9",
           "scope": "entire file"
         }
       ]
@@ -667,14 +667,14 @@
     {
       "id": "dotnet-test-terminal-progress-resources",
       "local_path": "src/Cli/dotnet/Commands/CliCommandStrings.resx",
-      "notes": "TerminalProgressHeartbeat*, TerminalProgressSlowTest, ErroredAssembliesHeader and RuntimeFramework are adapted into the managed CLI resource owner. Captured-output help descriptions are adapted into CommandDefinitionStrings.resx so the SDK advertises its Failed default even when an older test application supplies help metadata. SDK-only collection and reporting-completeness messages have no upstream equivalent.",
+      "notes": "TerminalProgressHeartbeat*, TerminalProgressSlowTest, ErroredAssembliesHeader and RuntimeFramework are adapted into the managed CLI resource owner. Captured-output help descriptions are adapted into CommandDefinitionStrings.resx so the SDK advertises its Failed default even when an older test application supplies help metadata. SDK-only collection and reporting-completeness messages have no upstream equivalent. Upstream ANSI/progress option descriptions are not vendored; their removal/renaming at 74be6a61 needs no resource port. The SDK retains its own --no-ansi and --no-progress options and descriptions.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalResources.resx",
-          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
-          "baseline_blob_sha": "9c1a54cce452de8017042f3143aa372902823b2a",
+          "baseline_ref_sha": "74be6a61c1324c7b4810841ba2716040b47230f4",
+          "baseline_blob_sha": "20e315aa03638c4ef94fc1e0cd801d52454c2592",
           "scope": "progress, errored-assembly and runtime-annotation strings; captured-output help in Definitions"
         }
       ]

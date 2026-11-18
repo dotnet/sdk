@@ -41,6 +41,26 @@ namespace dotnet.Tests
         }
 
         [TestMethod]
+        [DataRow("build", "false")]
+        [DataRow("build", "true")]
+        [DataRow("pack", "false")]
+        [DataRow("publish", "false")]
+        [DataRow("restore", "false")]
+        [DataRow("run", "false")]
+        public void HelpShowsPropertyOption(string command, string enableAot)
+        {
+            new DotnetCommand(Log)
+                .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", enableAot)
+                .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en")
+                .Execute(command, "--help")
+                .Should().Pass()
+                .And.HaveStdOutContaining("-p, -property <NAME=VALUE>")
+                .And.HaveStdOutContaining("Set one or more MSBuild properties.")
+                .And.NotHaveStdOutContaining("--restoreProperty")
+                .And.NotHaveStdOutContaining("--getProperty");
+        }
+
+        [TestMethod]
         [DataRow("faketool -h")]
         public void TheResponseIsAnError(string commandLine)
         {

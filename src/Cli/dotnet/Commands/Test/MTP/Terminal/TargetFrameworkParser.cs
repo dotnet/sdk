@@ -18,14 +18,21 @@ internal static class TargetFrameworkParser
         string netFramework = ".NET Framework";
         if (frameworkDescription.StartsWith(netFramework, ignoreCase: false, CultureInfo.InvariantCulture))
         {
-            // .NET Framework 4.7.2
-            if (frameworkDescription.Length < netFramework.Length + 6)
+            // .NET Framework 4.8 or .NET Framework 4.7.2
+            if (frameworkDescription.Length < netFramework.Length + 4)
             {
                 return frameworkDescription;
             }
 
             char major = frameworkDescription[netFramework.Length + 1];
             char minor = frameworkDescription[netFramework.Length + 3];
+
+            // Framework display names can omit a zero patch.
+            if (frameworkDescription.Length < netFramework.Length + 6)
+            {
+                return $"net{major}{minor}";
+            }
+
             char patch = frameworkDescription[netFramework.Length + 5];
 
             if (major == '4' && minor == '6' && patch == '2')

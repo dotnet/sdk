@@ -16,10 +16,16 @@ internal static class TestCommandParser
         switch (command)
         {
             case TestCommandDefinition.VSTest vs:
+                vs.OutputOption.ForwardAsLiteralOutputPath("OutputPath", surroundWithDoubleQuotes: true);
+                vs.ArtifactsPathOption.ForwardAsLiteralPathProperty("ArtifactsPath");
+                vs.SettingsOption.ForwardAsLiteralPathProperty("VSTestSetting", surroundWithDoubleQuotes: true);
+                vs.DiagOption.ForwardAsLiteralPathProperty("VSTestDiag", surroundWithDoubleQuotes: true);
+                vs.ResultsOption.ForwardAsLiteralPathProperty("VSTestResultsDirectory", surroundWithDoubleQuotes: true);
                 vs.SetAction(TestCommand.Run);
                 break;
 
             case TestCommandDefinition.MicrosoftTestingPlatform mtp:
+                mtp.ArtifactsPathOption.ForwardAsLiteralPathProperty("ArtifactsPath");
                 var impl = new MicrosoftTestingPlatformTestCommand();
                 mtp.SetAction(parseResult => impl.Run(parseResult, isHelp: false));
                 mtp.CustomHelpLayoutProvider = impl;
