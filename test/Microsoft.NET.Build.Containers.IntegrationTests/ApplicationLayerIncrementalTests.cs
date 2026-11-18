@@ -24,7 +24,7 @@ public class ApplicationLayerIncrementalTests : SdkTest
         await using EmptyBaseRegistry registry = new();
         var asset = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: useMultithreading.ToString()).WithSource();
         string archive = Path.Combine(asset.TestRoot, "image.tar");
-        string cache = Path.Combine(asset.TestRoot, "cache");
+        string cache = Directory.CreateDirectory(Path.Combine(asset.TestRoot, "cache")).FullName;
         string[] arguments = [
             "publish", "-t:PublishContainer", "-r", "linux-x64", "-v:normal", $"-mt:{useMultithreading}",
             "-p:EnableSdkContainerSupport=true", "-p:UseAppHost=false", "-p:SelfContained=false",
