@@ -98,7 +98,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }, SymbolKind.Field, SymbolKind.Property);
 
                 // Warn on [SuppressGCTransition] on a method that is not a P/Invoke. The interop source generators
-                // also forward it from [LibraryImport] methods and [GeneratedComInterface] interface methods.
+                // also forward it from [LibraryImport] methods and the abstract instance methods of [GeneratedComInterface] interfaces.
                 if (context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesSuppressGCTransitionAttribute, out var suppressGCTransitionAttributeType))
                 {
                     var libraryImportAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesLibraryImportAttribute);
@@ -110,7 +110,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         if (method.HasAnyAttribute(suppressGCTransitionAttributeType) &&
                             method.GetDllImportData() is null &&
                             !method.HasAnyAttribute(libraryImportAttributeType) &&
-                            !method.ContainingType.HasAnyAttribute(generatedComInterfaceAttributeType))
+                            !(method is { IsStatic: false, IsAbstract: true } && method.ContainingType.HasAnyAttribute(generatedComInterfaceAttributeType)))
                         {
                             context.ReportDiagnostic(method.CreateDiagnostic(AttributeHasNoEffectRule, "SuppressGCTransition", method.Name));
                         }

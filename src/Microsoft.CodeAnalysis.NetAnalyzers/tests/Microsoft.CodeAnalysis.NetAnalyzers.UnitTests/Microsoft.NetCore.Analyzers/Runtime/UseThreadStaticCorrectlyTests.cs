@@ -254,6 +254,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     {
                         [SuppressGCTransition]
                         void ComMethod();
+
+                        [SuppressGCTransition]
+                        void {|#1:DefaultMethod|}() { }
+
+                        [SuppressGCTransition]
+                        static void {|#2:StaticHelper|}() { }
                     }
 
                     partial class C
@@ -275,6 +281,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 ExpectedDiagnostics =
                 {
                     VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(0).WithArguments("SuppressGCTransition", "Managed"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(1).WithArguments("SuppressGCTransition", "DefaultMethod"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(2).WithArguments("SuppressGCTransition", "StaticHelper"),
                 },
             }.RunAsync(CancellationToken.None);
         }
