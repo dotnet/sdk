@@ -90,15 +90,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                                     class C
                                     {
                                         [ThreadStatic]
-                                        {{visibility}} {{type}} {|CA2259:t_value|};
+                                        {{visibility}} {{type}} {|#0:t_value|};
 
                                         [field: ThreadStatic]
-                                        string {|CA2259:Prop|} { get; set; }
+                                        string {|#1:Prop|} { get; set; }
                                     }
 
-                                    record R([field: ThreadStatic] string {|CA2259:Value|});
+                                    record R([field: ThreadStatic] string {|#2:Value|});
 
-                    """
+                    """,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(0).WithArguments("ThreadStatic", "t_value"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(1).WithArguments("ThreadStatic", "Prop"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(2).WithArguments("ThreadStatic", "Value"),
+                },
             }.RunAsync(CancellationToken.None);
         }
 
@@ -117,10 +123,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                                     Class C
                                         <ThreadStatic>
-                                        {{visibility}} {|CA2259:t_value|} As {{type}}
+                                        {{visibility}} {|#0:t_value|} As {{type}}
                                     End Class
 
-                    """);
+                    """,
+                VerifyVB.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(0).WithArguments("ThreadStatic", "t_value"));
         }
 
         [TestMethod]
@@ -197,10 +204,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     """,
                 ExpectedDiagnostics =
                 {
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(0).WithArguments("ContextStatic", "_context"),
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(1).WithArguments("FixedAddressValueType", "_fixed"),
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(2).WithArguments("ContextStatic", "Prop"),
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(3).WithArguments("ThreadStatic", "_thread"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(0).WithArguments("ContextStatic", "_context"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(1).WithArguments("FixedAddressValueType", "_fixed"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(2).WithArguments("ContextStatic", "Prop"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(3).WithArguments("ThreadStatic", "_thread"),
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -231,8 +238,121 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     """,
                 ExpectedDiagnostics =
                 {
-                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(0).WithArguments("ContextStatic", "_context"),
-                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(1).WithArguments("FixedAddressValueType", "_fixed"),
+                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(0).WithArguments("ContextStatic", "_context"),
+                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(1).WithArguments("FixedAddressValueType", "_fixed"),
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task FixedAddressValueTypeOnReferenceTypeStaticField_Diagnostic_CSharp()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                TestCode = """
+                    using System;
+                    using System.Runtime.CompilerServices;
+
+                    class C<TClass, TAny, TStruct>
+                        where TClass : class
+                        where TStruct : struct
+                    {
+                        [FixedAddressValueType]
+                        static object {|#0:s_object|};
+
+                        [FixedAddressValueType]
+                        static string {|#1:s_string|};
+
+                        [FixedAddressValueType]
+                        static int[] {|#2:s_array|};
+
+                        [FixedAddressValueType]
+                        static TClass {|#3:s_class|};
+
+                        [field: FixedAddressValueType]
+                        static object {|#4:Prop|} { get; set; }
+
+                        [FixedAddressValueType]
+                        static Int128 s_int128;
+
+                        [FixedAddressValueType]
+                        static int s_int;
+
+                        [FixedAddressValueType]
+                        static DayOfWeek s_enum;
+
+                        [FixedAddressValueType]
+                        static TAny s_any;
+
+                        [FixedAddressValueType]
+                        static TStruct s_struct;
+
+                        [FixedAddressValueType]
+                        static int? s_nullable;
+                    }
+                    """,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(0).WithArguments("FixedAddressValueType", "s_object"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(1).WithArguments("FixedAddressValueType", "s_string"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(2).WithArguments("FixedAddressValueType", "s_array"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(3).WithArguments("FixedAddressValueType", "s_class"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(4).WithArguments("FixedAddressValueType", "Prop"),
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task FixedAddressValueTypeOnReferenceTypeInstanceField_ReportsOnlyNonStatic_CSharp()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                TestCode = """
+                    using System.Runtime.CompilerServices;
+
+                    class C
+                    {
+                        [FixedAddressValueType]
+                        object {|#0:_object|};
+                    }
+                    """,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(0).WithArguments("FixedAddressValueType", "_object"),
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task FixedAddressValueTypeOnReferenceTypeStaticField_Diagnostic_VB()
+        {
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                TestCode = """
+                    Imports System
+                    Imports System.Runtime.CompilerServices
+
+                    Class C
+                        <FixedAddressValueType>
+                        Private Shared {|#0:s_object|} As Object
+
+                        <FixedAddressValueType>
+                        Private Shared {|#1:s_string|} As String
+
+                        <FixedAddressValueType>
+                        Private Shared s_int128 As Int128
+
+                        <FixedAddressValueType>
+                        Private Shared s_int As Integer
+                    End Class
+                    """,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(0).WithArguments("FixedAddressValueType", "s_object"),
+                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(1).WithArguments("FixedAddressValueType", "s_string"),
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -280,9 +400,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     """,
                 ExpectedDiagnostics =
                 {
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(0).WithArguments("SuppressGCTransition", "Managed"),
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(1).WithArguments("SuppressGCTransition", "DefaultMethod"),
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(2).WithArguments("SuppressGCTransition", "StaticHelper"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NotPInvokeRule).WithLocation(0).WithArguments("SuppressGCTransition", "Managed"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NotPInvokeRule).WithLocation(1).WithArguments("SuppressGCTransition", "DefaultMethod"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NotPInvokeRule).WithLocation(2).WithArguments("SuppressGCTransition", "StaticHelper"),
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -315,8 +435,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     """,
                 ExpectedDiagnostics =
                 {
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(0).WithArguments("SuppressGCTransition", "ManagedLocal"),
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(1).WithArguments("SuppressGCTransition", "lambda expression"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NotPInvokeRule).WithLocation(0).WithArguments("SuppressGCTransition", "ManagedLocal"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NotPInvokeRule).WithLocation(1).WithArguments("SuppressGCTransition", "lambda expression"),
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -347,7 +467,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     """,
                 ExpectedDiagnostics =
                 {
-                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.AttributeHasNoEffectRule).WithLocation(0).WithArguments("SuppressGCTransition", "Managed"),
+                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.NotPInvokeRule).WithLocation(0).WithArguments("SuppressGCTransition", "Managed"),
                 },
             }.RunAsync(CancellationToken.None);
         }

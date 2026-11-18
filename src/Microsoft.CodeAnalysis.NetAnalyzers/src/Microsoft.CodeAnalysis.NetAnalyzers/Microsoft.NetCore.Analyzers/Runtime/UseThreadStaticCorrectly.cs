@@ -23,12 +23,34 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string ThreadStaticNonStaticFieldRuleId = "CA2259";
         internal const string ThreadStaticInitializedInlineRuleId = "CA2019";
 
+        // CA2259 has one message per reason the attribute has no effect.
+
         // [ThreadStatic], [ContextStatic] or [FixedAddressValueType]
         // private object t_nonStaticField;
-        // [SuppressGCTransition] on a method that is not a P/Invoke
-        internal static readonly DiagnosticDescriptor AttributeHasNoEffectRule = DiagnosticDescriptorHelper.Create(ThreadStaticNonStaticFieldRuleId,
+        internal static readonly DiagnosticDescriptor NonStaticFieldRule = DiagnosticDescriptorHelper.Create(ThreadStaticNonStaticFieldRuleId,
             CreateLocalizableResourceString(nameof(AttributeHasNoEffectTitle)),
-            CreateLocalizableResourceString(nameof(AttributeHasNoEffectMessage)),
+            CreateLocalizableResourceString(nameof(AttributeHasNoEffectNonStaticFieldMessage)),
+            DiagnosticCategory.Usage,
+            RuleLevel.BuildWarning,
+            CreateLocalizableResourceString(nameof(AttributeHasNoEffectDescription)),
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
+
+        // [FixedAddressValueType]
+        // private static object s_field;
+        internal static readonly DiagnosticDescriptor NonValueTypeFieldRule = DiagnosticDescriptorHelper.Create(ThreadStaticNonStaticFieldRuleId,
+            CreateLocalizableResourceString(nameof(AttributeHasNoEffectTitle)),
+            CreateLocalizableResourceString(nameof(AttributeHasNoEffectNonValueTypeFieldMessage)),
+            DiagnosticCategory.Usage,
+            RuleLevel.BuildWarning,
+            CreateLocalizableResourceString(nameof(AttributeHasNoEffectDescription)),
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
+
+        // [SuppressGCTransition] on a method that is not a P/Invoke
+        internal static readonly DiagnosticDescriptor NotPInvokeRule = DiagnosticDescriptorHelper.Create(ThreadStaticNonStaticFieldRuleId,
+            CreateLocalizableResourceString(nameof(AttributeHasNoEffectTitle)),
+            CreateLocalizableResourceString(nameof(AttributeHasNoEffectNotPInvokeMessage)),
             DiagnosticCategory.Usage,
             RuleLevel.BuildWarning,
             CreateLocalizableResourceString(nameof(AttributeHasNoEffectDescription)),
@@ -46,7 +68,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(AttributeHasNoEffectRule, ThreadStaticInitializedInlineRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(NonStaticFieldRule, NonValueTypeFieldRule, NotPInvokeRule, ThreadStaticInitializedInlineRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -63,16 +85,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var contextStaticAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemContextStaticAttribute);
                 var fixedAddressValueTypeAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesFixedAddressValueTypeAttribute);
 
-                // Warn on any [ThreadStatic], [ContextStatic] or [FixedAddressValueType] instance field.
+                // Warn on any [ThreadStatic], [ContextStatic] or [FixedAddressValueType] instance field,
+                // and on [FixedAddressValueType] on a static field whose type is a reference type.
                 context.RegisterSymbolAction(context =>
                 {
                     ISymbol symbol = context.Symbol;
-
-                    // If it's a static symbol, nothing to see here.
-                    if (symbol.IsStatic)
-                    {
-                        return;
-                    }
 
                     // If it's an auto-prop, find its backing field if there is one.
                     // If it's a field, it's the symbol we'll check.
@@ -81,20 +98,32 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         fieldSymbol = symbol as IFieldSymbol;
                     }
 
-                    // Once we have the field, see if it's attributed with [ThreadStatic].
-                    if (fieldSymbol?.HasAnyAttribute(threadStaticAttributeType) == true)
+                    if (fieldSymbol is null)
                     {
-                        context.ReportDiagnostic(symbol.CreateDiagnostic(AttributeHasNoEffectRule, "ThreadStatic", symbol.Name));
+                        return;
                     }
 
-                    if (fieldSymbol?.HasAnyAttribute(contextStaticAttributeType) == true)
+                    if (!symbol.IsStatic)
                     {
-                        context.ReportDiagnostic(symbol.CreateDiagnostic(AttributeHasNoEffectRule, "ContextStatic", symbol.Name));
-                    }
+                        if (fieldSymbol.HasAnyAttribute(threadStaticAttributeType))
+                        {
+                            context.ReportDiagnostic(symbol.CreateDiagnostic(NonStaticFieldRule, "ThreadStatic", symbol.Name));
+                        }
 
-                    if (fieldSymbol?.HasAnyAttribute(fixedAddressValueTypeAttributeType) == true)
+                        if (fieldSymbol.HasAnyAttribute(contextStaticAttributeType))
+                        {
+                            context.ReportDiagnostic(symbol.CreateDiagnostic(NonStaticFieldRule, "ContextStatic", symbol.Name));
+                        }
+
+                        if (fieldSymbol.HasAnyAttribute(fixedAddressValueTypeAttributeType))
+                        {
+                            context.ReportDiagnostic(symbol.CreateDiagnostic(NonStaticFieldRule, "FixedAddressValueType", symbol.Name));
+                        }
+                    }
+                    else if (fieldSymbol.Type.IsReferenceType && fieldSymbol.HasAnyAttribute(fixedAddressValueTypeAttributeType))
                     {
-                        context.ReportDiagnostic(symbol.CreateDiagnostic(AttributeHasNoEffectRule, "FixedAddressValueType", symbol.Name));
+                        // A type parameter only counts when it is constrained to a reference type, since it may be a struct otherwise.
+                        context.ReportDiagnostic(symbol.CreateDiagnostic(NonValueTypeFieldRule, "FixedAddressValueType", symbol.Name));
                     }
                 }, SymbolKind.Field, SymbolKind.Property);
 
@@ -130,7 +159,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             !method.HasAnyAttribute(libraryImportAttributeType) &&
                             !(method is { IsStatic: false, IsAbstract: true } && method.ContainingType.HasAnyAttribute(generatedComInterfaceAttributeType)))
                         {
-                            reportDiagnostic(method.CreateDiagnostic(AttributeHasNoEffectRule, "SuppressGCTransition", method.MethodKind == MethodKind.AnonymousFunction ? method.ToDisplayString() : method.Name));
+                            reportDiagnostic(method.CreateDiagnostic(NotPInvokeRule, "SuppressGCTransition", method.MethodKind == MethodKind.AnonymousFunction ? method.ToDisplayString() : method.Name));
                         }
                     }
                 }

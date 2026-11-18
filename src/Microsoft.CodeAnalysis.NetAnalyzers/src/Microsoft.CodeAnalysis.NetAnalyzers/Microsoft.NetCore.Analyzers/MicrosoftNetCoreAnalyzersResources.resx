@@ -1413,10 +1413,16 @@
     <value>Use 'Regex.IsMatch'</value>
   </data>
   <data name="AttributeHasNoEffectDescription" xml:space="preserve">
-    <value>Some attributes only take effect in certain places. 'ThreadStatic', 'ContextStatic' and 'FixedAddressValueType' only affect static fields, and 'SuppressGCTransition' only affects P/Invoke methods. Anywhere else they have no impact on behavior.</value>
+    <value>Some attributes only take effect in certain places. 'ThreadStatic', 'ContextStatic' and 'FixedAddressValueType' only affect static fields, 'FixedAddressValueType' also needs the field to be of a value type, and 'SuppressGCTransition' only affects P/Invoke methods. Anywhere else they have no impact on behavior.</value>
   </data>
-  <data name="AttributeHasNoEffectMessage" xml:space="preserve">
-    <value>The '[{0}]' attribute has no effect on member '{1}'</value>
+  <data name="AttributeHasNoEffectNonStaticFieldMessage" xml:space="preserve">
+    <value>The '[{0}]' attribute has no effect on member '{1}' because it only applies to static fields</value>
+  </data>
+  <data name="AttributeHasNoEffectNonValueTypeFieldMessage" xml:space="preserve">
+    <value>The '[{0}]' attribute has no effect on member '{1}' because it only applies to fields of a value type</value>
+  </data>
+  <data name="AttributeHasNoEffectNotPInvokeMessage" xml:space="preserve">
+    <value>The '[{0}]' attribute has no effect on member '{1}' because it only applies to P/Invoke methods</value>
   </data>
   <data name="AttributeHasNoEffectTitle" xml:space="preserve">
     <value>Attribute has no effect</value>
