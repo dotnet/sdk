@@ -13,5 +13,7 @@ The development documentation is available [here](https://github.com/dotnet/sdk-
 When `SOURCE_DATE_EPOCH` is set, container publishing can reuse a deterministic application
 layer after validating the source tar fingerprint and the cached compressed and uncompressed
 digests. Registry pushes, daemon loads and archives use the same cache. Set
-`ContainerLayerNoIncremental=true` to regenerate the application layer. Changed source
+`ContainerLayerNoIncremental=true` to disable application-layer reuse when an image is built.
+The separate archive cache can still reuse a complete image archive; disable that with
+`ContainerArchiveNoIncremental=true`. Changed source
 content, permissions, ownership, container paths, image format or epoch invalidate reuse.

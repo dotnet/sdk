@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.Formats.Tar;
-using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Net;
 using System.Net.Sockets;
@@ -15,6 +14,9 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests;
 public class ApplicationLayerIncrementalTests : SdkTest
 {
     [TestMethod]
+    // Windows resolves Local AppData through the known folder API before LOCALAPPDATA.
+    // Keep this test's publishes away from the shared user cache.
+    [OSCondition(ConditionMode.Include, OperatingSystems.Linux | OperatingSystems.OSX)]
     [DataRow(false)]
     [DataRow(true)]
     public async Task Deterministic_layer_reuse_still_resolves_mutable_bases_and_can_be_disabled(bool useMultithreading)
@@ -95,17 +97,12 @@ public class ApplicationLayerIncrementalTests : SdkTest
         private readonly List<Task> _connections = [];
         private readonly Task _server;
         private int _configurationRequests;
-        private int _layerRequests;
-        private readonly bool _includeLayer;
-        internal string? LayerDigest { get; private set; }
-        internal int LayerRequests => _layerRequests;
 
         internal int ConfigurationRequests => _configurationRequests;
         internal string Address { get; }
 
-        internal EmptyBaseRegistry(bool includeLayer = false)
+        internal EmptyBaseRegistry()
         {
-            _includeLayer = includeLayer;
             ChangeBaseManifests("first");
             _listener.Start();
             Address = $"127.0.0.1:{((IPEndPoint)_listener.LocalEndpoint).Port}";
@@ -117,17 +114,6 @@ public class ApplicationLayerIncrementalTests : SdkTest
             List<object> manifests = [];
             object[] layers = [];
             string[] diffIds = [];
-            if (_includeLayer)
-            {
-                byte[] tar = new byte[1024];
-                using MemoryStream compressed = new();
-                using (GZipStream gzip = new(compressed, CompressionMode.Compress, leaveOpen: true)) gzip.Write(tar);
-                byte[] bytes = compressed.ToArray();
-                LayerDigest = DigestUtils.FormatSha256Digest(Convert.ToHexStringLower(SHA256.HashData(bytes)));
-                _responses[$"/v2/empty/blobs/{LayerDigest}"] = (SchemaTypes.OciLayerGzipV1, bytes);
-                layers = [new { mediaType = SchemaTypes.OciLayerGzipV1, digest = LayerDigest, size = bytes.Length }];
-                diffIds = [DigestUtils.FormatSha256Digest(Convert.ToHexStringLower(SHA256.HashData(tar)))];
-            }
             foreach (string architecture in new[] { "amd64", "arm64" })
             {
                 var config = Add(new { architecture, os = "linux", config = changeConfiguration ? new Dictionary<string, object> { ["Env"] = new[] { "CONFIG_VARIANT=" + variant } } : new Dictionary<string, object>(), rootfs = new { type = "layers", diff_ids = diffIds } }, SchemaTypes.OciImageConfigV1, "blobs");
@@ -183,11 +169,6 @@ public class ApplicationLayerIncrementalTests : SdkTest
                 if (found && response.MediaType == SchemaTypes.OciImageConfigV1)
                 {
                     Interlocked.Increment(ref _configurationRequests);
-                }
-                if (found && path == $"/v2/empty/blobs/{LayerDigest}")
-                {
-                    Interlocked.Increment(ref _layerRequests);
-                    await Task.Delay(TimeSpan.FromSeconds(2), _stop.Token);
                 }
                 byte[] bytes = found ? response.Bytes : [];
                 string headers = $"HTTP/1.1 {(found ? "200 OK" : "404 Not Found")}\r\nContent-Type: {(found ? response.MediaType : "application/json")}\r\nContent-Length: {bytes.Length}\r\nConnection: close\r\n\r\n";

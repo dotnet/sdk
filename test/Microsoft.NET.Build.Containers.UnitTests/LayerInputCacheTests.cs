@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
@@ -54,6 +56,7 @@ public class LayerInputCacheTests
     [TestMethod]
     [DataRow("compressed-bytes")]
     [DataRow("diff-id")]
+    [DataRow("fingerprint")]
     [DataRow("media-type")]
     [DataRow("size")]
     [DataRow("json")]
@@ -66,20 +69,71 @@ public class LayerInputCacheTests
             string metadata = Directory.GetFiles(store, "layer-input-*.json").Single();
             JsonObject entry = JsonNode.Parse(File.ReadAllText(metadata))!.AsObject();
             DateTime sentinel = new(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            File.SetLastWriteTimeUtc(original.BackingFile, sentinel);
             switch (corruption)
             {
-                case "compressed-bytes": File.WriteAllBytes(original.BackingFile, new byte[original.Descriptor.Size]); break;
-                case "diff-id": entry["UncompressedDigest"] = "sha256:" + new string('a', 64); break;
+                case "compressed-bytes":
+                    byte[] headerChanged = File.ReadAllBytes(original.BackingFile);
+                    headerChanged[9] ^= 1; // The gzip OS byte does not affect the inflated tar.
+                    using (GZipStream gzip = new(new MemoryStream(headerChanged), CompressionMode.Decompress))
+                    {
+                        Assert.AreEqual(original.Descriptor.UncompressedDigest,
+                            "sha256:" + Convert.ToHexStringLower(SHA256.HashData(gzip)));
+                    }
+                    File.WriteAllBytes(original.BackingFile, headerChanged);
+                    break;
+                case "diff-id":
+                    using (MemoryStream compressed = new())
+                    {
+                        using (GZipStream gzip = new(compressed, CompressionMode.Compress, leaveOpen: true))
+                        {
+                            gzip.Write("different inflated bytes"u8);
+                        }
+                        byte[] bytes = compressed.ToArray();
+                        string digest = "sha256:" + Convert.ToHexStringLower(SHA256.HashData(bytes));
+                        Descriptor replacement = new(original.Descriptor.MediaType, digest, bytes.Length);
+                        File.WriteAllBytes(ContentStore.PathForDescriptor(replacement, store), bytes);
+                        entry["Digest"] = digest;
+                        entry["Size"] = bytes.Length;
+                    }
+                    break;
+                case "fingerprint": entry["UncompressedDigest"] = "sha256:" + new string('a', 64); break;
                 case "media-type": entry["MediaType"] = SchemaTypes.DockerLayerGzip; break;
                 case "size": entry["Size"] = 1; break;
                 case "missing": File.Delete(original.BackingFile); break;
             }
             File.WriteAllText(metadata, corruption == "json" ? "invalid" : entry.ToJsonString());
+            if (File.Exists(original.BackingFile)) File.SetLastWriteTimeUtc(original.BackingFile, sentinel);
             Layer restored = Create(source, store);
             Assert.AreEqual(original.Descriptor, restored.Descriptor);
             Assert.AreNotEqual(sentinel, File.GetLastWriteTimeUtc(restored.BackingFile));
             Assert.IsEmpty(Directory.GetFiles(store, "*.tmp"));
+        });
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Optional_metadata_setup_failure_preserves_cancellation(bool cancelled)
+    {
+        WithDirectory((source, store) =>
+        {
+            Layer layer = Create(source, store);
+            string fingerprint = LayerInputCache.Fingerprint(layer.Descriptor.UncompressedDigest!, SchemaTypes.OciManifestV1);
+            string unavailableRoot = Path.Combine(store, "not-a-directory");
+            File.WriteAllText(unavailableRoot, "block metadata directory creation");
+            using CancellationTokenSource cancellation = new();
+            if (cancelled)
+            {
+                cancellation.Cancel();
+                Assert.ThrowsExactly<OperationCanceledException>(() => LayerInputCache.Save(fingerprint, layer, unavailableRoot, cancellation.Token));
+                Assert.ThrowsExactly<OperationCanceledException>(() => LayerInputCache.SaveCandidate(fingerprint, fingerprint, unavailableRoot, cancellation.Token));
+            }
+            else
+            {
+                LayerInputCache.Save(fingerprint, layer, unavailableRoot, cancellation.Token);
+                LayerInputCache.SaveCandidate(fingerprint, fingerprint, unavailableRoot, cancellation.Token);
+            }
+            Assert.IsTrue(File.Exists(layer.BackingFile));
         });
     }
 

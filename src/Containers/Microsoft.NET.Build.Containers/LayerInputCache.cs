@@ -168,9 +168,11 @@ internal static partial class LayerInputCache
 
     private static void SaveText(string path, string content, string contentRoot, CancellationToken cancellationToken)
     {
-        string temporary = ContentStore.GetBlobTemporaryPath(contentRoot);
+        cancellationToken.ThrowIfCancellationRequested();
+        string? temporary = null;
         try
         {
+            temporary = ContentStore.GetBlobTemporaryPath(contentRoot);
             File.WriteAllText(temporary, content);
             cancellationToken.ThrowIfCancellationRequested();
             File.Move(temporary, path, overwrite: true);
@@ -182,7 +184,17 @@ internal static partial class LayerInputCache
         }
         finally
         {
-            File.Delete(temporary);
+            if (temporary is not null)
+            {
+                try
+                {
+                    File.Delete(temporary);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Failure to remove optional metadata must not fail the image build.
+                }
+            }
         }
     }
 
