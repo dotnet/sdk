@@ -67,6 +67,9 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
         }
 
         using (var reaper = ProcessReaper.Create(_process))
+        using (ProcessLifecycle.IsInitialized
+            ? ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan)
+            : null)
         {
             _process.Start();
             processStarted?.Invoke(_process);

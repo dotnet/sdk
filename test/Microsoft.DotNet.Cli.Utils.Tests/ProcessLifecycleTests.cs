@@ -135,7 +135,7 @@ public class ProcessLifecycleTests : SdkTest
 
     [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-    public void ManagedCliReportsSigIntWithoutCancellationError()
+    public void ManagedCliWaitsForSecondSigIntBeforeTerminatingExternalCommand()
     {
         var testDirectory = TestAssetsManager.CreateTestDirectory();
         string markerPath = GetMarkerPath(testDirectory.Path);
@@ -201,9 +201,15 @@ public class ProcessLifecycleTests : SdkTest
             }
 
             child.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
+            Thread.Sleep(TimeSpan.FromMilliseconds(750));
+            child.HasExited.Should().BeFalse("the first SIGINT should allow the external command to finish");
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            child.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
             child.WaitForExit(s_waitTimeout).Should().BeTrue();
 
             child.ExitCode.Should().Be(130);
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
             string standardError = stderrTask.GetAwaiter().GetResult();
             standardError.Should().NotContain("Unhandled exception");
             standardError.Should().NotContain("The operation was canceled");
