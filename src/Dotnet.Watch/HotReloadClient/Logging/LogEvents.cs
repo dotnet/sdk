@@ -81,7 +81,7 @@ internal static class LogEvents
     public static readonly LogEvent<(Version, string)> UsingCapabilitiesBasedOnTargetFrameworkVersion = Create<(Version, string)>(LogLevel.Debug, "Using capabilities based on project target framework version: '{0}': {1}.");
     public static readonly LogEvent<None> StaticWebAssetManifestNotFound = Create(LogLevel.Warning, "Static web asset manifest not found.");
     public static readonly LogEvent<string> ScopedCssBundleFileNotFound = Create<string>(LogLevel.Warning, "Scoped CSS bundle file '{0}' not found.");
-    public static readonly LogEvent<string> BrowserToolsNotSupportedByProjectSettings = Create<string>(LogLevel.Warning, "Hot Reload in the browser is not supported due to project settings: {0}");
+    public static readonly LogEvent<None> BrowserToolsNotSupportedByProjectSettings = Create<None>(LogLevel.Warning, "Hot Reload in the browser is not supported due to project settings");
     public static readonly LogEvent<None> BrowserToolsUsingKeyFromBuild = Create(LogLevel.Debug, "Using the browser tools key produced by the build.");
 }
 

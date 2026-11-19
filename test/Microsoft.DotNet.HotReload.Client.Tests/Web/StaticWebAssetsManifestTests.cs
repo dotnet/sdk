@@ -27,6 +27,18 @@ public class StaticWebAssetsManifestTests
     }
 
     [TestMethod]
+    [DataRow("""{"ContentRoots":null,"Root":{}}""")]
+    [DataRow("""{"ContentRoots":[],"Root":null}""")]
+    public void TryParse_NullRequiredProperty(string json)
+    {
+        using var stream = CreateStream(json);
+        var logger = new TestLogger(TestContext);
+
+        Assert.IsNull(StaticWebAssetsManifest.TryParse(stream, "file.json", logger));
+        Assert.IsTrue(logger.HasError);
+    }
+
+    [TestMethod]
     public void TryParse_MissingContentRoots()
     {
         using var stream = CreateStream("""

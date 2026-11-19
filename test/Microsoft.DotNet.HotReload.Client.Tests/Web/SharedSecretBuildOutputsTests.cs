@@ -16,18 +16,18 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 /// browser tools, because a browser that pinned a key can never be told that the tools are off.
 /// </summary>
 [TestClass]
-public class BrowserToolsBuildOutputsTests : IDisposable
+public class SharedSecretBuildOutputsTests : IDisposable
 {
     private readonly string _directory;
     private readonly string _publicKeyPath;
     private readonly string _privateKeyPath;
 
-    public BrowserToolsBuildOutputsTests()
+    public SharedSecretBuildOutputsTests()
     {
         _directory = Path.Combine(Path.GetTempPath(), "hot-reload-browser-tools", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_directory);
-        _publicKeyPath = Path.Combine(_directory, BrowserToolsBuildOutputs.PublicKeyFileName);
-        _privateKeyPath = Path.Combine(_directory, BrowserToolsBuildOutputs.PrivateKeyFileName);
+        _publicKeyPath = Path.Combine(_directory, SharedSecretBuildOutputs.PublicKeyFileName);
+        _privateKeyPath = Path.Combine(_directory, SharedSecretBuildOutputs.PrivateKeyFileName);
     }
 
     public void Dispose()
@@ -38,8 +38,23 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         }
     }
 
-    private BrowserToolsBuildOutputs CreateOutputs()
-        => BrowserToolsBuildOutputs.CreateForTesting(_directory);
+    private SharedSecretBuildOutputs CreateOutputs()
+        => new(_directory, SharedSecretBuildOutputs.PublicKeyFileName, SharedSecretBuildOutputs.PrivateKeyFileName);
+
+    [TestMethod]
+    public void FromProjectSettings_UsesBrowserKeyFiles()
+    {
+        using var provider = WriteValidKeyPair();
+        var keyDirectory = Path.Combine(_directory, SharedSecretBuildOutputs.DirectoryName);
+        Directory.CreateDirectory(keyDirectory);
+        File.Move(_publicKeyPath, Path.Combine(keyDirectory, SharedSecretBuildOutputs.PublicKeyFileName));
+        File.Move(_privateKeyPath, Path.Combine(keyDirectory, SharedSecretBuildOutputs.PrivateKeyFileName));
+
+        using var sessionKey = SharedSecretBuildOutputs.FromProjectSettings(_directory)!.TryCreateSessionKey(NullLogger.Instance);
+
+        Assert.IsNotNull(sessionKey);
+        Assert.AreEqual(provider.GetPublicKey(), sessionKey.GetPublicKey());
+    }
 
     private SharedSecretProvider WriteValidKeyPair()
     {

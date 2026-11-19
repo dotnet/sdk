@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -27,6 +28,11 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         where TAnalysisResult : class, IDataFlowAnalysisResult<TAbstractAnalysisValue>
         where TAbstractAnalysisValue : IEquatable<TAbstractAnalysisValue>
     {
+        private ImmutableHashSet<ISymbol>? _referencedStaticMembers;
+        private bool _hasPotentialCallerAliases;
+        private Dictionary<ControlFlowGraph, (ImmutableHashSet<ISymbol> Members, bool HasArrayAccess)>? _referencedMembersByCfg;
+        private HashSet<(ControlFlowGraph Cfg, bool CheckReturnedAliases, bool HasStaticState)>? _safeIndirectCapturePaths;
+
         protected AnalysisEntityDataFlowOperationVisitor(TAnalysisContext analysisContext)
             : base(analysisContext)
         {
@@ -460,65 +466,118 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         #endregion
 
         #region Interprocedural analysis
-        protected override TAnalysisData GetInitialInterproceduralAnalysisData(
+        protected override (TAnalysisData Data, bool IsTrimmed) GetInitialInterproceduralAnalysisData(
             IMethodSymbol invokedMethod,
+            ControlFlowGraph invokedCfg,
             (AnalysisEntity? Instance, PointsToAbstractValue PointsToValue)? invocationInstance,
             (AnalysisEntity Instance, PointsToAbstractValue PointsToValue)? thisOrMeInstanceForCaller,
             ImmutableDictionary<IParameterSymbol, ArgumentInfo<TAbstractAnalysisValue>> argumentValuesMap,
+            ImmutableDictionary<ISymbol, PointsToAbstractValue> capturedVariablesMap,
             IDictionary<AnalysisEntity, PointsToAbstractValue>? pointsToValues,
             IDictionary<AnalysisEntity, CopyAbstractValue>? copyValues,
             IDictionary<AnalysisEntity, ValueContentAbstractValue>? valueContentValues,
             bool isLambdaOrLocalFunction,
             bool hasParameterWithDelegateType)
         {
-            // PERF: For non-lambda and local functions + presence of points to values, we trim down
-            // the initial analysis data passed as input to interprocedural analysis.
-            // We retain the analysis entities for the invocation instance, arguments and this or me instance.
+            // Retain analysis entities reachable from the invocation instance, arguments, this or me instance,
+            // and any variables captured by a local function. A lambda or local function invoked
+            // from a different method can have captured caller state not reachable from that
+            // method's immediate invocation context.
             // Additionally, we also retain the transitive closure of analysis entities reachable from these
             // entities via the PointsTo values chain (i.e., recursively compute child analysis entities).
-            // All the remaining entities are not accessible in the callee and are excluded from the initial
-            // interprocedural analysis data.
+            // Static state and members reachable through untracked references are also retained.
+            // Unrelated local state is excluded.
 
-            if (isLambdaOrLocalFunction || hasParameterWithDelegateType || pointsToValues == null)
+            if (hasParameterWithDelegateType ||
+                pointsToValues is null ||
+                (isLambdaOrLocalFunction &&
+                 (invokedMethod.MethodKind != MethodKind.LocalFunction ||
+                  !SymbolEqualityComparer.Default.Equals(invokedMethod.ContainingSymbol, DataFlowAnalysisContext.OwningSymbol) ||
+                  CurrentAnalysisData is AnalysisEntityBasedPredicateAnalysisData<TAbstractAnalysisValue> { HasPredicatedData: true } ||
+                  HasIndirectCapturePaths(invokedCfg, pointsToValues))))
             {
-                return base.GetInitialInterproceduralAnalysisData(invokedMethod, invocationInstance,
-                    thisOrMeInstanceForCaller, argumentValuesMap, pointsToValues, copyValues, valueContentValues,
+                return base.GetInitialInterproceduralAnalysisData(invokedMethod, invokedCfg, invocationInstance,
+                    thisOrMeInstanceForCaller, argumentValuesMap, capturedVariablesMap, pointsToValues, copyValues, valueContentValues,
                     isLambdaOrLocalFunction, hasParameterWithDelegateType);
             }
 
             using var candidateEntitiesBuilder = PooledHashSet<AnalysisEntity>.GetInstance();
             using var interproceduralEntitiesToRetainBuilder = PooledHashSet<AnalysisEntity>.GetInstance();
             using var worklistEntities = PooledHashSet<AnalysisEntity>.GetInstance();
+            using var processedEntities = PooledHashSet<AnalysisEntity>.GetInstance();
             using var worklistPointsToValues = PooledHashSet<PointsToAbstractValue>.GetInstance();
             using var processedPointsToValues = PooledHashSet<PointsToAbstractValue>.GetInstance();
             using var childWorklistEntities = PooledHashSet<AnalysisEntity>.GetInstance();
+            using var intermediateEntities = PooledHashSet<AnalysisEntity>.GetInstance();
 
             // All tracked entities are candidates to be retained for initial interprocedural
             // analysis data.
             AddTrackedEntities(candidateEntitiesBuilder, forInterproceduralAnalysis: true);
             var candidateEntitiesCount = candidateEntitiesBuilder.Count;
 
+            var (referencedMembers, hasArrayAccess) = GetReferencedMembers(invokedCfg);
+
+            // Members without values in this analysis can still lead to tracked members
+            // through points-to values when they are referenced by the callee.
+            foreach (var (entity, pointsToValue) in pointsToValues)
+            {
+                if (!candidateEntitiesBuilder.Contains(entity) &&
+                    entity.IsChildOrInstanceMember &&
+                    ShouldProcessPointsToValue(pointsToValue) &&
+                    (entity.Symbol is not null ? referencedMembers.Contains(entity.Symbol) : hasArrayAccess))
+                {
+                    intermediateEntities.Add(entity);
+                }
+            }
+
             // Add entities and PointsTo values for invocation instance, this or me instance
             // and argument values to the initial worklist
 
             if (invocationInstance.HasValue)
             {
-                AddWorklistEntityAndPointsToValue(invocationInstance.Value.Instance);
+                AddWorklistEntityAndPointsToValue(invocationInstance.Value.Instance, isRoot: true);
                 AddWorklistPointsToValue(invocationInstance.Value.PointsToValue);
             }
 
             if (thisOrMeInstanceForCaller.HasValue)
             {
-                AddWorklistEntityAndPointsToValue(thisOrMeInstanceForCaller.Value.Instance);
+                AddWorklistEntityAndPointsToValue(thisOrMeInstanceForCaller.Value.Instance, isRoot: true);
                 AddWorklistPointsToValue(thisOrMeInstanceForCaller.Value.PointsToValue);
             }
 
             foreach (var argument in argumentValuesMap.Values)
             {
-                if (!AddWorklistEntityAndPointsToValue(argument.AnalysisEntity))
+                if (!AddWorklistEntityAndPointsToValue(argument.AnalysisEntity, isRoot: true))
                 {
                     // For allocations passed as arguments.
                     AddWorklistPointsToValue(argument.InstanceLocation);
+                }
+            }
+
+            if (invokedMethod.MethodKind == MethodKind.LocalFunction)
+            {
+                foreach (var capturedVariable in capturedVariablesMap.Keys)
+                {
+                    if (AnalysisEntityFactory.TryCreateForSymbolDeclaration(capturedVariable, out var capturedEntity))
+                    {
+                        AddWorklistEntityAndPointsToValue(capturedEntity, isRoot: true);
+                    }
+                }
+            }
+
+            foreach (var entity in candidateEntitiesBuilder)
+            {
+                if (entity.Symbol?.IsStatic == true)
+                {
+                    AddWorklistEntityAndPointsToValue(entity);
+                }
+            }
+
+            foreach (var entity in pointsToValues.Keys)
+            {
+                if (entity.Symbol?.IsStatic == true)
+                {
+                    AddWorklistEntityAndPointsToValue(entity, isRoot: true);
                 }
             }
 
@@ -528,9 +587,13 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             {
                 if (worklistEntities.Count > 0)
                 {
-                    // Add all the worklistEntities to interproceduralEntitiesBuilder
-                    // to ensure these entities are retained.
-                    interproceduralEntitiesToRetainBuilder.AddRange(worklistEntities);
+                    foreach (var entity in worklistEntities)
+                    {
+                        if (candidateEntitiesBuilder.Contains(entity))
+                        {
+                            interproceduralEntitiesToRetainBuilder.Add(entity);
+                        }
+                    }
 
                     // Remove the worklistEntities from tracked candidate entities.
                     candidateEntitiesBuilder.ExceptWith(worklistEntities);
@@ -547,6 +610,23 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                                 if (IsChildAnalysisEntity(candidateEntity, ancestorEntity))
                                 {
                                     childWorklistEntities.Add(candidateEntity);
+                                    break;
+                                }
+                            }
+                        }
+
+                        foreach (var intermediateEntity in intermediateEntities)
+                        {
+                            if (processedEntities.Contains(intermediateEntity))
+                            {
+                                continue;
+                            }
+
+                            foreach (var ancestorEntity in worklistEntities)
+                            {
+                                if (IsChildAnalysisEntity(intermediateEntity, ancestorEntity))
+                                {
+                                    childWorklistEntities.Add(intermediateEntity);
                                     break;
                                 }
                             }
@@ -575,6 +655,23 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                                 }
                             }
                         }
+
+                        foreach (var intermediateEntity in intermediateEntities)
+                        {
+                            if (processedEntities.Contains(intermediateEntity))
+                            {
+                                continue;
+                            }
+
+                            foreach (var pointsToValue in worklistPointsToValues)
+                            {
+                                if (IsChildAnalysisEntity(intermediateEntity, pointsToValue))
+                                {
+                                    childWorklistEntities.Add(intermediateEntity);
+                                    break;
+                                }
+                            }
+                        }
                     }
 
                     worklistPointsToValues.Clear();
@@ -583,7 +680,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 // Move all the child work list entities and their PointsTo values to the worklist.
                 foreach (var childEntity in childWorklistEntities)
                 {
-                    AddWorklistEntityAndPointsToValue(childEntity);
+                    AddWorklistEntityAndPointsToValue(childEntity, isRoot: true);
                 }
 
                 childWorklistEntities.Clear();
@@ -592,18 +689,19 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             // If all candidates being retained, just retain the cloned current analysis data.
             if (interproceduralEntitiesToRetainBuilder.Count == candidateEntitiesCount)
             {
-                return GetClonedCurrentAnalysisData();
+                return (GetClonedCurrentAnalysisData(), false);
             }
 
             // Otherwise, return cloned current analysis data with trimmed keys.
-            return GetTrimmedCurrentAnalysisData(interproceduralEntitiesToRetainBuilder);
+            return (GetTrimmedCurrentAnalysisData(interproceduralEntitiesToRetainBuilder), true);
 
             // Local functions.
-            bool AddWorklistEntityAndPointsToValue(AnalysisEntity? analysisEntity)
+            bool AddWorklistEntityAndPointsToValue(AnalysisEntity? analysisEntity, bool isRoot = false)
             {
                 RoslynDebug.Assert(pointsToValues != null);
 
-                if (analysisEntity != null && candidateEntitiesBuilder.Contains(analysisEntity))
+                var isCandidate = analysisEntity is not null && candidateEntitiesBuilder.Contains(analysisEntity);
+                if (analysisEntity is not null && (isCandidate || isRoot) && processedEntities.Add(analysisEntity))
                 {
                     worklistEntities.Add(analysisEntity);
 
@@ -611,11 +709,9 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                     {
                         AddWorklistPointsToValue(pointsToValue);
                     }
-
-                    return true;
                 }
 
-                return false;
+                return isCandidate;
             }
 
             void AddWorklistPointsToValue(PointsToAbstractValue pointsToValue)
@@ -630,6 +726,274 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             static bool ShouldProcessPointsToValue(PointsToAbstractValue pointsToValue)
                 => pointsToValue.Kind == PointsToAbstractValueKind.KnownLocations &&
                    pointsToValue != PointsToAbstractValue.NoLocation;
+        }
+
+        private bool HasIndirectCapturePaths(
+            ControlFlowGraph invokedCfg,
+            IDictionary<AnalysisEntity, PointsToAbstractValue> pointsToValues)
+        {
+            var hasStaticState = pointsToValues.Keys.Any(entity => entity.Symbol?.IsStatic == true);
+            var referencedStaticMembers = GetReferencedStaticMembers();
+            var key = (Cfg: invokedCfg, CheckReturnedAliases: true, HasStaticState: hasStaticState);
+            if (_safeIndirectCapturePaths?.Contains(key) == true)
+            {
+                return false;
+            }
+
+            using var activeMethods = PooledHashSet<IMethodSymbol>.GetInstance();
+            if (HasIndirectCapturePaths(invokedCfg, activeMethods, referencedStaticMembers,
+                checkReturnedAliases: true, hasStaticState))
+            {
+                return true;
+            }
+
+            (_safeIndirectCapturePaths ??= new()).Add(key);
+            return false;
+        }
+
+        private (ImmutableHashSet<ISymbol> Members, bool HasArrayAccess) GetReferencedMembers(ControlFlowGraph invokedCfg)
+        {
+            using var activeCfgs = PooledHashSet<ControlFlowGraph>.GetInstance();
+            return GetReferencedMembers(invokedCfg, activeCfgs, out _);
+        }
+
+        private (ImmutableHashSet<ISymbol> Members, bool HasArrayAccess) GetReferencedMembers(
+            ControlFlowGraph invokedCfg,
+            PooledHashSet<ControlFlowGraph> activeCfgs,
+            out bool isComplete)
+        {
+            if (_referencedMembersByCfg?.TryGetValue(invokedCfg, out var cached) == true)
+            {
+                isComplete = true;
+                return cached;
+            }
+
+            if (!activeCfgs.Add(invokedCfg))
+            {
+                isComplete = false;
+                return (ImmutableHashSet<ISymbol>.Empty, false);
+            }
+
+            using var members = PooledHashSet<ISymbol>.GetInstance();
+            var hasArrayAccess = false;
+            isComplete = CollectReferencedMembers(invokedCfg, members, activeCfgs, ref hasArrayAccess);
+            activeCfgs.Remove(invokedCfg);
+
+            var result = (ImmutableHashSet.CreateRange(SymbolEqualityComparer.Default, members), hasArrayAccess);
+            if (isComplete)
+            {
+                (_referencedMembersByCfg ??= new()).Add(invokedCfg, result);
+            }
+
+            return result;
+        }
+
+        private ImmutableHashSet<ISymbol> GetReferencedStaticMembers()
+        {
+            if (_referencedStaticMembers is not null)
+            {
+                return _referencedStaticMembers;
+            }
+
+            var builder = ImmutableHashSet.CreateBuilder<ISymbol>(SymbolEqualityComparer.Default);
+            var root = DataFlowAnalysisContext.ControlFlowGraph.OriginalOperation;
+            if (DataFlowAnalysisContext.OwningSymbol is IMethodSymbol owningMethod)
+            {
+                // The caller can reach a static root without referring to its symbol through a
+                // receiver, parameter, or alias returned by an ordinary method.
+                _hasPotentialCallerAliases = !owningMethod.IsStatic ||
+                    owningMethod.Parameters.Any(parameter => parameter.Type.IsReferenceType && !parameter.Type.IsPrimitiveType());
+            }
+
+            foreach (var operation in GetOperationsExcludingNestedFunctions(root))
+            {
+                switch (operation)
+                {
+                    case IInvocationOperation invocation:
+                        if (!invocation.TargetMethod.ReturnsVoid &&
+                                !invocation.TargetMethod.ReturnType.IsPrimitiveType() &&
+                                (invocation.TargetMethod.MethodKind != MethodKind.LocalFunction ||
+                                 invocation.TargetMethod.ReturnType.IsReferenceType) ||
+                            invocation.Arguments.Any(argument =>
+                                argument.Parameter is { RefKind: RefKind.Ref or RefKind.Out } parameter &&
+                                parameter.Type.IsReferenceType && !parameter.Type.IsPrimitiveType()))
+                        {
+                            _hasPotentialCallerAliases = true;
+                        }
+
+                        break;
+
+                    case IObjectCreationOperation { Type: { IsReferenceType: true } }:
+                        // A constructor can expose existing static state through a member of the new object.
+                        _hasPotentialCallerAliases = true;
+                        break;
+
+                    case IFieldReferenceOperation { Field: { IsStatic: true } field }:
+                        builder.Add(field);
+                        break;
+
+                    case IPropertyReferenceOperation { Property: { IsStatic: true } property }:
+                        builder.Add(property);
+                        break;
+                }
+            }
+
+            return _referencedStaticMembers = builder.ToImmutable();
+        }
+
+        private static IEnumerable<IOperation> GetOperationsExcludingNestedFunctions(IOperation root)
+        {
+            var worklist = new Stack<IOperation>();
+            worklist.Push(root);
+            while (worklist.Count > 0)
+            {
+                var operation = worklist.Pop();
+                if (operation != root && operation is ILocalFunctionOperation or IAnonymousFunctionOperation)
+                {
+                    continue;
+                }
+
+                yield return operation;
+                foreach (var child in operation.ChildOperations)
+                {
+                    if (child is not null)
+                    {
+                        worklist.Push(child);
+                    }
+                }
+            }
+        }
+
+        private bool HasIndirectCapturePaths(
+            ControlFlowGraph invokedCfg,
+            PooledHashSet<IMethodSymbol> activeMethods,
+            ImmutableHashSet<ISymbol> referencedStaticMembers,
+            bool checkReturnedAliases,
+            bool hasStaticState)
+        {
+            // GetCaptures includes lexical captures, but not captures of other local functions
+            // or delegates invoked from this function. Passing a delegate can invoke one too.
+            var observer = AnalysisEntityDataFlowScanTestHook.Observer.Value;
+            foreach (var operation in GetOperationsExcludingNestedFunctions(invokedCfg.OriginalOperation))
+            {
+                observer?.Invoke(this, AnalysisEntityDataFlowScanKind.IndirectCapture, operation);
+                if (operation is IInvocationOperation invocation)
+                {
+                    var target = invocation.TargetMethod;
+                    if (target.MethodKind == MethodKind.DelegateInvoke ||
+                        target.Parameters.Any(parameter => !parameter.Type.IsPrimitiveType() && parameter.Type.TypeKind != TypeKind.Enum) ||
+                        checkReturnedAliases && target.MethodKind != MethodKind.LocalFunction &&
+                            !target.ReturnsVoid && !target.ReturnType.IsPrimitiveType() && target.ReturnType.TypeKind != TypeKind.Enum ||
+                        target.MethodKind != MethodKind.LocalFunction &&
+                            invocation.Instance is { } receiver &&
+                            (checkReturnedAliases && receiver is not IPropertyReferenceOperation { Property: { IsStatic: true } } ||
+                             receiver is IFieldReferenceOperation { Field: { IsStatic: true } }))
+                    {
+                        return true;
+                    }
+
+                    if (target.MethodKind == MethodKind.LocalFunction)
+                    {
+                        // Static locals can still invoke captured delegates passed through a container.
+                        if (!target.IsStatic ||
+                            !activeMethods.Add(target))
+                        {
+                            return true;
+                        }
+
+                        var targetCfg = DataFlowAnalysisContext.GetLocalFunctionControlFlowGraph(target);
+                        if (targetCfg is null)
+                        {
+                            return true;
+                        }
+
+                        var targetCheckReturnedAliases = hasStaticState || _hasPotentialCallerAliases ||
+                            target.ReturnType.IsReferenceType && !target.ReturnType.IsPrimitiveType();
+                        var key = (Cfg: targetCfg, CheckReturnedAliases: targetCheckReturnedAliases, HasStaticState: hasStaticState);
+                        if (_safeIndirectCapturePaths?.Contains(key) != true)
+                        {
+                            if (HasIndirectCapturePaths(targetCfg, activeMethods, referencedStaticMembers,
+                                targetCheckReturnedAliases, hasStaticState))
+                            {
+                                return true;
+                            }
+
+                            // Safe scans depend on the caller's static-state condition and the
+                            // returned-alias check, not just the local function's symbol.
+                            (_safeIndirectCapturePaths ??= new()).Add(key);
+                        }
+
+                        activeMethods.Remove(target);
+                    }
+                }
+                else if (operation is IObjectCreationOperation { Constructor: IMethodSymbol constructor } &&
+                         constructor.Parameters.Any(parameter => !parameter.Type.IsPrimitiveType() && parameter.Type.TypeKind != TypeKind.Enum))
+                {
+                    return true;
+                }
+
+                // Unknown static roots can be absent from points-to data even when the caller
+                // tracks their members. A non-primitive root can also have caller aliases
+                // obtained through an ordinary method without a direct reference to its symbol.
+                if (operation is IFieldReferenceOperation { Field: { IsStatic: true } field } &&
+                    (referencedStaticMembers.Contains(field) ||
+                     _hasPotentialCallerAliases && !field.Type.IsPrimitiveType() && field.Type.TypeKind != TypeKind.Enum) ||
+                    operation is IPropertyReferenceOperation { Property: { IsStatic: true } property } &&
+                    (referencedStaticMembers.Contains(property) ||
+                     _hasPotentialCallerAliases && !property.Type.IsPrimitiveType() && property.Type.TypeKind != TypeKind.Enum))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool CollectReferencedMembers(
+            ControlFlowGraph invokedCfg,
+            PooledHashSet<ISymbol> referencedMembers,
+            PooledHashSet<ControlFlowGraph> activeCfgs,
+            ref bool hasArrayAccess)
+        {
+            var isComplete = true;
+            var observer = AnalysisEntityDataFlowScanTestHook.Observer.Value;
+            foreach (var operation in GetOperationsExcludingNestedFunctions(invokedCfg.OriginalOperation))
+            {
+                observer?.Invoke(this, AnalysisEntityDataFlowScanKind.ReferencedMembers, operation);
+                switch (operation)
+                {
+                    case IFieldReferenceOperation fieldReference:
+                        referencedMembers.Add(fieldReference.Field);
+                        break;
+
+                    case IPropertyReferenceOperation propertyReference:
+                        referencedMembers.Add(propertyReference.Property);
+                        break;
+
+                    case IEventReferenceOperation eventReference:
+                        referencedMembers.Add(eventReference.Event);
+                        break;
+
+                    case IArrayElementReferenceOperation:
+                        hasArrayAccess = true;
+                        break;
+
+                    case IInvocationOperation { TargetMethod: { MethodKind: MethodKind.LocalFunction, IsStatic: true } target }:
+                        var targetCfg = DataFlowAnalysisContext.GetLocalFunctionControlFlowGraph(target);
+                        if (targetCfg is not null)
+                        {
+                            var (members, targetHasArrayAccess) = GetReferencedMembers(targetCfg, activeCfgs, out var targetIsComplete);
+                            referencedMembers.UnionWith(members);
+                            hasArrayAccess |= targetHasArrayAccess;
+                            // A summary cut short by a recursive call cannot be reused for other callers.
+                            isComplete &= targetIsComplete;
+                        }
+
+                        break;
+                }
+            }
+
+            return isComplete;
         }
 
         /// <summary>
@@ -657,11 +1021,12 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             TAnalysisData resultData,
             bool isLambdaOrLocalFunction,
             bool hasDelegateTypeArgument,
-            TAnalysisResult analysisResult)
+            TAnalysisResult analysisResult,
+            bool initialDataIsTrimmed)
         {
-            if (isLambdaOrLocalFunction || hasDelegateTypeArgument)
+            if (isLambdaOrLocalFunction && !initialDataIsTrimmed || hasDelegateTypeArgument)
             {
-                base.ApplyInterproceduralAnalysisResult(resultData, isLambdaOrLocalFunction, hasDelegateTypeArgument, analysisResult);
+                base.ApplyInterproceduralAnalysisResult(resultData, isLambdaOrLocalFunction, hasDelegateTypeArgument, analysisResult, initialDataIsTrimmed);
                 return;
             }
 
@@ -810,5 +1175,17 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         }
 
         #endregion
+    }
+
+    internal enum AnalysisEntityDataFlowScanKind
+    {
+        IndirectCapture,
+        ReferencedMembers,
+    }
+
+    internal static class AnalysisEntityDataFlowScanTestHook
+    {
+        // Keep parallel analyzer tests' observations in their own async flows.
+        internal static readonly AsyncLocal<Action<object, AnalysisEntityDataFlowScanKind, IOperation>?> Observer = new();
     }
 }
