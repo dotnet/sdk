@@ -26,6 +26,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 {
                     var properties = new XElement("PropertyGroup",
                         new XElement("UseMonoRuntime", useMonoRuntime),
+                        // Native relinking independently requests crossgen2; isolate the ReadyToRun default.
+                        new XElement("WasmBuildNative", "false"),
                         new XElement("PrunePackageTargetingPackRoots", "$(NetCoreTargetingPackRoot)"),
                         new XElement("NetCoreTargetingPackRoot", "$(MSBuildProjectDirectory)/empty-packs"));
                     if (readyToRun is not null)
@@ -35,6 +37,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var restore = CreateRestoreCommand(testInstance);
             restore.WithEnvironmentVariable("DOTNETSDK_WORKLOAD_PACK_ROOTS", string.Empty);
+            if (useMonoRuntime == "true")
+            {
+                ExecuteCommand(restore).Should().Fail().And.HaveStdOutContaining("NETSDK1242");
+                return;
+            }
+
             ExecuteCommand(restore).Should().Pass();
 
             using var assets = JsonDocument.Parse(File.ReadAllText(Path.Combine(testInstance.Path, "obj", "project.assets.json")));

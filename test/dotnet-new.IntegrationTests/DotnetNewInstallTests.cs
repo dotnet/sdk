@@ -303,13 +303,74 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CannotInstallUnknownRemotePackage(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+            string feed = Directory.CreateDirectory(Path.Combine(workingDirectory, "feed")).FullName;
+            File.WriteAllText(
+               Path.Combine(workingDirectory, "NuGet.Config"),
+               $"""
+               <configuration>
+                 <packageSources>
+                   <clear />
+                   <add key="testFeed" value="{feed}" />
+                 </packageSources>
+                 <packageSourceMapping>
+                   <clear />
+                 </packageSourceMapping>
+               </configuration>
+               """);
 
             new DotnetNewCommand(_log, commandName, "BlaBlaBla")
                .WithCustomHive(home)
-               .WithWorkingDirectory(CreateTemporaryFolder())
+               .WithWorkingDirectory(workingDirectory)
                .Execute()
-               .Should().Fail()
-               .And.HaveStdErrContaining("BlaBlaBla could not be installed, the package does not exist");
+               .Should().ExitWith(103)
+               .And.HaveStdErrContaining("BlaBlaBla could not be installed.")
+               .And.HaveStdErrContaining($"BlaBlaBla was not found in NuGet feeds {feed}.");
+        }
+
+        [TestMethod]
+        [DataRow]
+        [DataRow("-d")]
+        [DataRow("--verbosity", "quiet")]
+        [DataRow("--verbosity", "minimal")]
+        [DataRow("--verbosity", "diagnostic")]
+        public void CannotInstallPackageWithoutMatchingSourceMapping(params string[] verbosityArgs)
+        {
+            string workingDirectory = CreateTemporaryFolder();
+            File.WriteAllText(
+               Path.Combine(workingDirectory, "NuGet.Config"),
+               """
+               <configuration>
+                 <packageSources>
+                   <clear />
+                   <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+                 </packageSources>
+                 <packageSourceMapping>
+                   <clear />
+                   <packageSource key="nuget.org">
+                     <package pattern="Microsoft.*" />
+                   </packageSource>
+                 </packageSourceMapping>
+               </configuration>
+               """);
+
+            CommandResult result = new DotnetNewCommand(_log, ["install", "Avalonia.Templates", .. verbosityArgs])
+               .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
+               .WithWorkingDirectory(workingDirectory)
+               .Execute();
+
+            result.Should().ExitWith(103).And.NotHaveStdOutContaining("Success:");
+            if (verbosityArgs.Contains("quiet"))
+            {
+                result.Should().NotHaveStdErr().And.NotHaveStdOut();
+            }
+            else
+            {
+                result.Should()
+                    .HaveStdErrContaining("Avalonia.Templates could not be installed.")
+                    .And.HaveStdErrContaining("Package source mapping is enabled, but no source was found for package Avalonia.Templates.")
+                    .And.NotHaveStdErrContaining("the package does not exist");
+            }
         }
 
         [TestMethod]
@@ -324,7 +385,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                .WithWorkingDirectory(CreateTemporaryFolder())
                .Execute()
                .Should().Fail()
-               .And.HaveStdErrContaining("Microsoft.DotNet.Web.ProjectTemplates.5.0@16.0.0 could not be installed, the package does not exist");
+               .And.HaveStdErrContaining("Microsoft.DotNet.Web.ProjectTemplates.5.0@16.0.0 could not be installed.")
+               .And.HaveStdErrContaining("Microsoft.DotNet.Web.ProjectTemplates.5.0 was not found in NuGet feeds");
         }
 
         [TestMethod]

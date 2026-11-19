@@ -1004,6 +1004,12 @@ Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</value>
   <data name="ProjectManifestDescription" xml:space="preserve">
     <value>The XML file that contains the list of packages to be stored.</value>
   </data>
+  <data name="PropertyArgumentName" xml:space="preserve">
+    <value>NAME=VALUE</value>
+  </data>
+  <data name="PropertyOptionDescription" xml:space="preserve">
+    <value>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</value>
+  </data>
   <data name="PublishAppDescription" xml:space="preserve">
     <value>Publisher for the .NET Platform</value>
   </data>

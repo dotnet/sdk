@@ -211,6 +211,15 @@ and binary-size delta.
 - **A shared Native AOT library is not a standalone AOT app.** On each affected OS, check interaction
   with native libraries and process-global state already loaded by the host.
 - **Flat layouts can hide SDK-root defects.** Use `-Layout Separated`.
+- **External resources are SDK-root inputs.** A resource-mode test layout must contain the managed
+  owner assemblies and culture directories under the versioned SDK directory. Copying only
+  `dotnet-aot` and `dotnet.dll` can silently force neutral fallback.
+- **Run real redist checks outside the repository tree.** The repository `global.json` names `.dotnet`
+  as an SDK search path, so invoking a redist muxer from below the checkout can select the bootstrap
+  SDK and invalidate SDK-root and external-resource evidence.
+- **ExternalAll preflight is an eligibility predicate.** Validate every neutral owner and table before
+  provider registration, telemetry, parser construction, or output. Localized candidate failures may
+  continue parent fallback; neutral failures must enter managed fallback before the commit point.
 
 ## Reviewer workflow
 

@@ -694,6 +694,7 @@ public partial class NativeEntryPointTests
 
     [TestMethod]
     [DataRow("de-DE", "Willkommen bei .NET")]
+    [DataRow("fr-CA", "Bienvenue dans .NET")]
     [DataRow("zh-Hans", "欢迎使用 .NET")]
     public void ExecuteCore_AotEnabled_LocalizedFirstRun_StaysOnAotPath(string uiLanguage, string expectedWelcome)
     {

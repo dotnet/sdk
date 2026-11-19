@@ -42,6 +42,16 @@ to `dotnet` and `Microsoft.DotNet.Cli.Utils`. Internal parser APIs are accessibl
 signed `dotnet` assembly through MSBuild's `InternalsVisibleTo`; keep those calls
 managed-only rather than introducing MSBuild dependencies into `Definitions`.
 
+CLI-owned path options (such as `--output`, `--artifacts-path`, `--packages`, and VSTest
+`--settings`) keep their default, unescaped forwarding in the definitions for consumers such as
+`dotnet-watch`. The managed command parsers replace it through
+[`MSBuildOptionExtensions`](dotnet/Extensions/MSBuildOptionExtensions.cs), which uses
+[`MSBuildPropertyEscaping`](../Microsoft.DotNet.ProjectTools/MSBuildPropertyEscaping.cs)
+to escape literal paths with MSBuild's API before adding command-line quotes. When adding a path
+option, forward it with `ForwardAsPathProperty`/`ForwardAsOutputPath` in the definition and wire
+the `ForwardAsLiteral*` override in the managed parser. Keep explicit `-p:` values on their
+existing MSBuild-syntax path; they are not literals.
+
 When changing AOT-linked commands, resources, dependencies, or first-run behavior,
 follow the [size and trimming contracts](dotnet-aot/DESIGN.md#size-and-trimming-contracts).
 
@@ -57,7 +67,8 @@ rest are supporting libraries:
 | `Microsoft.DotNet.Cli.InternalMicrosoft` | AOT-safe Microsoft-internal classification, probes, and cache. It does not emit telemetry. |
 | `dotnet-aot` + `dn` | NativeAOT shared library + native host exe. |
 | `Microsoft.DotNet.Cli.Utils` | MSBuild/NuGet/process/system abstractions used across the CLI. |
-| `Microsoft.DotNet.Cli.CoreUtils` | Low-level version/file/env-variable parsing. |
+| `Microsoft.DotNet.Cli.CoreUtils` | Low-level version/file/env-variable parsing and the shared string-resource runtime used by generated CLI accessors. |
+| `Microsoft.DotNet.Cli.Resources.Generator` | Analyzer-only RESX generator; emits cached accessors against the CoreUtils resource runtime. |
 | `Microsoft.DotNet.Cli.CommandLine` | Local extensions over `System.CommandLine`. |
 | `Microsoft.DotNet.Configurer` | First-run experience and NuGet/config setup. |
 | `Microsoft.DotNet.InternalAbstractions` | File-system/env abstractions for testability. |
@@ -80,6 +91,16 @@ rest are supporting libraries:
   registry that imports them all.
 - `Common/` — shared option/argument factories.
 - `Help/` — help builder and localization.
+
+### String resources
+
+CLI resource owners select `Generator="Microsoft.DotNet.Cli.Resources"` and
+reference the analyzer-only `Microsoft.DotNet.Cli.Resources.Generator` project.
+The generated accessors use the runtime under
+`Microsoft.DotNet.Cli.CoreUtils/Resources`; do not add another runtime assembly
+or a package/buildTransitive dependency. Current-SDK builds use the CLI
+generator, while multi-targeted owners retain the existing Microsoft generator
+for .NET Framework targets.
 
 ## Per-command services
 

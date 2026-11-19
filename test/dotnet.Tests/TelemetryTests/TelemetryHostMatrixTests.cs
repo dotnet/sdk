@@ -18,6 +18,7 @@ public class TelemetryHostMatrixTests : SdkTest
     [DataRow(TelemetryHost.OptOut)]
     public async Task BuildTelemetryIsExportedForEachHost(TelemetryHost host)
     {
+        const string copilotSessionId = "aBCDEfAB-1234-4567-8ABC-DEFaBCDEF012";
         var testAsset = TestAssetsManager
             .CopyTestAsset("HelloWorld", identifier: host.ToString())
             .WithSource();
@@ -35,11 +36,16 @@ public class TelemetryHostMatrixTests : SdkTest
         {
             if (host == TelemetryHost.MSBuildServerHot)
             {
-                RunBuild(testAsset.Path, collector, host).Should().Pass();
-                await AssertBuildEventsAsync(collector, expectedBuildEventCount: 1, expectedServerState: "cold");
+                const string firstCopilotSessionId = "build-investigation-42";
+                RunBuild(testAsset.Path, collector, host, firstCopilotSessionId).Should().Pass();
+                IReadOnlyList<CollectedEvent> warmupEvents = await AssertBuildEventsAsync(
+                    collector, expectedBuildEventCount: 1, expectedServerState: "cold");
+                warmupEvents.Single(e => e.Name == "dotnet/cli/msbuild/build")
+                    .Attributes["CopilotAgentSessionId"].Should().Be(
+                        "a5b5273cea99d1a7df8e81f234369666daf7d810c64d852df129ae276d5167b2");
             }
 
-            RunBuild(testAsset.Path, collector, host).Should().Pass();
+            RunBuild(testAsset.Path, collector, host, copilotSessionId).Should().Pass();
 
             if (host == TelemetryHost.OptOut)
             {
@@ -64,6 +70,7 @@ public class TelemetryHostMatrixTests : SdkTest
             CollectedEvent buildEvent = events
                 .Where(e => e.Name == "dotnet/cli/msbuild/build")
                 .Last();
+            buildEvent.Attributes["CopilotAgentSessionId"].Should().Be(copilotSessionId);
 
             if (host == TelemetryHost.ServerFallback)
             {
@@ -73,6 +80,15 @@ public class TelemetryHostMatrixTests : SdkTest
             {
                 buildEvent.Attributes.Should().NotContainKey("ServerFallbackReason");
             }
+
+            if (host == TelemetryHost.MSBuildServerHot)
+            {
+                RunBuild(testAsset.Path, collector, host, copilotSessionId: null).Should().Pass();
+                IReadOnlyList<CollectedEvent> manualBuildEvents = await AssertBuildEventsAsync(
+                    collector, expectedBuildEventCount: 3, expectedServerState: "hot");
+                manualBuildEvents.Last(e => e.Name == "dotnet/cli/msbuild/build")
+                    .Attributes["CopilotAgentSessionId"].Should().Be("not_present");
+            }
         }
         finally
         {
@@ -80,7 +96,11 @@ public class TelemetryHostMatrixTests : SdkTest
         }
     }
 
-    private CommandResult RunBuild(string projectPath, TelemetryCollectorFixture collector, TelemetryHost host)
+    private CommandResult RunBuild(
+        string projectPath,
+        TelemetryCollectorFixture collector,
+        TelemetryHost host,
+        string? copilotSessionId)
     {
         var command = new DotnetCommand(
                 Log,
@@ -94,6 +114,15 @@ public class TelemetryHostMatrixTests : SdkTest
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS", "15000")
             .WithEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT", collector.Endpoint.ToString())
             .WithEnvironmentVariable("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
+
+        if (copilotSessionId is null)
+        {
+            command.EnvironmentToRemove.Add("COPILOT_AGENT_SESSION_ID");
+        }
+        else
+        {
+            command.WithEnvironmentVariable("COPILOT_AGENT_SESSION_ID", copilotSessionId);
+        }
 
         // The shared test environment disables node reuse to prevent cross-test interference.
         // The MSBuild server requires node reuse, and each matrix row shuts down its own server.
