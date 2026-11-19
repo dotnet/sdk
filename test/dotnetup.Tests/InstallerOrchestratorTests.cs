@@ -11,7 +11,6 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
-using Microsoft.DotNet.Tools.Bootstrapper.Tests;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
@@ -21,10 +20,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class InstallerOrchestratorTests
 {
     [TestInitialize]
-    public void IgnoreMachineRegistrations() => InstallerOrchestratorSingleton.SetInstalledBundlesOverride(_ => []);
+    public void IgnoreMachineInstalls() => InstallerOrchestratorSingleton.SetSystemInstallsOverride(() => []);
 
     [TestCleanup]
-    public void ClearRegistrationsOverride() => InstallerOrchestratorSingleton.SetInstalledBundlesOverride(null);
+    public void ClearSystemInstallsOverride() => InstallerOrchestratorSingleton.SetSystemInstallsOverride(null);
 
     #region InstallAlreadyExists
 
@@ -367,12 +366,12 @@ public class InstallerOrchestratorTests
     }
 
     [TestMethod]
-    public void CommitPreparedInstall_NewerVersionRegisteredAfterPrepare_ThrowsBeforeRunningInstaller()
+    public void CommitPreparedInstall_NewerVersionInstalledAfterPrepare_ThrowsBeforeRunningInstaller()
     {
         using var testEnv = new TestEnvironment();
         var artifact = new FakeArtifact();
         using var prepared = PrepareFakeBundle(testEnv, artifact);
-        RegisterSystemSdk("10.0.114");
+        InstallSystemSdk("10.0.114");
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
 
@@ -381,10 +380,10 @@ public class InstallerOrchestratorTests
     }
 
     [TestMethod]
-    public void CommitPreparedInstall_NewerVersionRegisteredDuringInstall_ThrowsWithoutRepairing()
+    public void CommitPreparedInstall_NewerVersionInstalledDuringInstall_ThrowsWithoutRepairing()
     {
         using var testEnv = new TestEnvironment();
-        var artifact = new FakeArtifact { OnCommit = () => RegisterSystemSdk("10.0.114"), OnRepair = () => true };
+        var artifact = new FakeArtifact { OnCommit = () => InstallSystemSdk("10.0.114"), OnRepair = () => true };
         using var prepared = PrepareFakeBundle(testEnv, artifact);
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
@@ -562,18 +561,18 @@ public class InstallerOrchestratorTests
         File.WriteAllText(Path.Combine(install.ComponentDirectory, "dotnet.dll"), string.Empty);
     }
 
-    private static InstalledBundle MakeBundle(InstallComponent component, string version, InstallArchitecture architecture = InstallArchitecture.x64) =>
-        new(new DotnetInstall(new DotnetInstallRoot(string.Empty, architecture), new ReleaseVersion(version), component), $"Bundle {component} {version} ({architecture})");
+    private static DotnetInstall MakeSystemInstall(InstallComponent component, string version, InstallArchitecture architecture = InstallArchitecture.x64) =>
+        new(new DotnetInstallRoot(@"C:\Program Files\dotnet", architecture), new ReleaseVersion(version), component);
 
-    private static void RegisterSystemSdk(string version) =>
-        InstallerOrchestratorSingleton.SetInstalledBundlesOverride(requested => [MakeBundle(InstallComponent.SDK, version, requested.InstallRoot.Architecture)]);
+    private static void InstallSystemSdk(string version) =>
+        InstallerOrchestratorSingleton.SetSystemInstallsOverride(() => [MakeSystemInstall(InstallComponent.SDK, version)]);
 
     [TestMethod]
     public void PrepareInstall_BundleWithNewerSdkInSameFeatureBand_ThrowsBeforeDownloading()
     {
         using var testEnv = new TestEnvironment();
         using var reporter = new LazyProgressReporter(new NullProgressTarget());
-        RegisterSystemSdk("10.0.114");
+        InstallSystemSdk("10.0.114");
 
         var prepare = () => InstallerOrchestratorSingleton.Instance.PrepareInstall(
             MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true),
@@ -602,7 +601,7 @@ public class InstallerOrchestratorTests
         InstallComponent requestedComponent, string requestedVersion, InstallComponent installedComponent, string installedVersion, bool expectThrow)
     {
         var requested = new DotnetInstall(new DotnetInstallRoot(@"C:\Program Files\dotnet", InstallArchitecture.x64), new ReleaseVersion(requestedVersion), requestedComponent);
-        var installed = MakeBundle(installedComponent, installedVersion);
+        var installed = MakeSystemInstall(installedComponent, installedVersion);
 
         var check = () => InstallerOrchestratorSingleton.ThrowIfNewerVersionInstalled(requested, [installed]);
 
@@ -610,7 +609,7 @@ public class InstallerOrchestratorTests
         {
             var ex = check.Should().Throw<DotnetInstallException>().Which;
             ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
-            ex.Message.Should().Contain(installedVersion).And.Contain(requestedVersion).And.Contain(installed.DisplayName);
+            ex.Message.Should().Contain(installedVersion).And.Contain(requestedVersion);
         }
         else
         {
@@ -623,7 +622,7 @@ public class InstallerOrchestratorTests
     {
         var requested = new DotnetInstall(new DotnetInstallRoot(@"C:\Program Files\dotnet", InstallArchitecture.x64), new ReleaseVersion("10.0.100"), InstallComponent.SDK);
 
-        var check = () => InstallerOrchestratorSingleton.ThrowIfNewerVersionInstalled(requested, [MakeBundle(InstallComponent.SDK, "10.0.114", InstallArchitecture.arm64)]);
+        var check = () => InstallerOrchestratorSingleton.ThrowIfNewerVersionInstalled(requested, [MakeSystemInstall(InstallComponent.SDK, "10.0.114", InstallArchitecture.arm64)]);
 
         check.Should().NotThrow();
     }
@@ -653,32 +652,6 @@ public class InstallerOrchestratorTests
         var newer = MakeBatchRequest(InstallComponent.SDK, "10.0.114", mechanism: InstallMechanism.Archive);
 
         InstallerOrchestratorSingleton.FindSupersededBundleRequests([older, newer]).Should().BeEmpty();
-    }
-
-    [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
-    public void CheckSupersededRequest_ReportsSupersessionOnlyWhenNotAlreadyInstalled(bool alreadyInstalled)
-    {
-        var older = MakeBatchRequest(InstallComponent.Runtime, "10.0.1");
-        var newer = MakeBatchRequest(InstallComponent.Runtime, "10.0.5");
-        var validator = new MockInstallationValidator(validateResult: alreadyInstalled);
-
-        var check = () => InstallerOrchestratorSingleton.CheckSupersededRequest(older, newer, validator);
-
-        if (alreadyInstalled)
-        {
-            var result = check();
-            result.WasAlreadyInstalled.Should().BeTrue();
-            result.Install.Version.ToString().Should().Be("10.0.1");
-        }
-        else
-        {
-            check.Should().Throw<DotnetInstallException>()
-                .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.SupersededInBatch);
-        }
-
-        validator.ValidateCalls.Should().Be(1);
     }
 
     private static ResolvedInstallRequest MakeBatchRequest(

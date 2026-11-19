@@ -19,14 +19,14 @@ internal class InstallerOrchestratorSingleton
     private static ScopedMutex ModifyInstallStateMutex() => new(Constants.MutexNames.ModifyInstallationStates);
 
     [ThreadStatic]
-    private static Func<DotnetInstall, IEnumerable<InstalledBundle>>? s_installedBundlesOverride;
+    private static Func<IEnumerable<DotnetInstall>>? s_systemInstallsOverride;
 
     /// <summary>
-    /// Sets a thread-local replacement for the bundle registrations read by <see cref="DotnetEnvironmentManager.GetInstalledBundles"/>, for testing.
+    /// Sets a thread-local replacement for the installs read by <see cref="DotnetEnvironmentManager.GetExistingSystemInstalls"/>, for testing.
     /// Pass null to clear it.
     /// </summary>
-    internal static void SetInstalledBundlesOverride(Func<DotnetInstall, IEnumerable<InstalledBundle>>? getInstalledBundles) =>
-        s_installedBundlesOverride = getInstalledBundles;
+    internal static void SetSystemInstallsOverride(Func<IEnumerable<DotnetInstall>>? getSystemInstalls) =>
+        s_systemInstallsOverride = getSystemInstalls;
 
     /// <summary>
     /// Downloads the archive for an already-resolved install request into the download cache
@@ -144,7 +144,12 @@ internal class InstallerOrchestratorSingleton
                 {
                     if (supersededBy.TryGetValue(request, out var newer))
                     {
-                        var existing = CheckSupersededRequest(request, newer, CreateInstallationValidator());
+                        var install = request.ToInstall();
+                        var existing = CheckExistingInstallState(request.Request, install, CreateInstallationValidator())
+                            ?? throw CreateInstallException(
+                                DotnetInstallErrorCode.SupersededInBatch,
+                                install,
+                                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerSupersededInBatch, install.Component.GetDisplayName(), install.Version, newer.ResolvedVersion));
                         lock (installResultCollectionLock) { results.Add(existing); }
                         return;
                     }
@@ -259,7 +264,7 @@ internal class InstallerOrchestratorSingleton
         foreach (var (request, install) in bundleRequests)
         {
             var newer = bundleRequests
-                .Where(other => BundleUpgradeCodes.UpgradeRelated(other.Install, install) && other.Install.Version.CompareTo(install.Version) > 0)
+                .Where(other => IsSameInstallerFamily(other.Install, install) && other.Install.Version.CompareTo(install.Version) > 0)
                 .Select(other => other.Request)
                 .MaxBy(other => other.ResolvedVersion);
             if (newer is not null)
@@ -269,19 +274,6 @@ internal class InstallerOrchestratorSingleton
         }
 
         return superseded;
-    }
-
-    /// <summary>
-    /// Returns the already-installed result for a superseded request, or throws <see cref="DotnetInstallErrorCode.SupersededInBatch"/> when it would need installing.
-    /// </summary>
-    internal static InstallResult CheckSupersededRequest(ResolvedInstallRequest request, ResolvedInstallRequest newer, IInstallationValidator installationValidator)
-    {
-        var install = request.ToInstall();
-        return CheckExistingInstallState(request.Request, install, installationValidator)
-            ?? throw CreateInstallException(
-                DotnetInstallErrorCode.SupersededInBatch,
-                install,
-                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerSupersededInBatch, install.Component.GetDisplayName(), install.Version, newer.ResolvedVersion));
     }
 
     /// <summary>
@@ -335,7 +327,7 @@ internal class InstallerOrchestratorSingleton
             return null;
         }
 
-        ThrowIfNewerVersionRegistered(installRequest, install);
+        ThrowIfNewerSystemVersionInstalled(installRequest, install);
 
         IInstallArtifact artifact = CreateInstallArtifact(resolvedRequest, ReleaseManifest.Default, batchContext);
         try
@@ -356,13 +348,15 @@ internal class InstallerOrchestratorSingleton
     /// Windows installer bundles report success without installing anything when a newer build of the same
     /// SDK feature band, or of the same runtime major.minor, is installed. Refuse such a downgrade up front.
     /// </summary>
-    internal static void ThrowIfNewerVersionInstalled(DotnetInstall requested, IEnumerable<InstalledBundle> installedBundles)
+    internal static void ThrowIfNewerVersionInstalled(DotnetInstall requested, IEnumerable<DotnetInstall> systemInstalls)
     {
         ReleaseVersion version = requested.Version;
 
-        InstalledBundle? newer = installedBundles
-            .Where(b => BundleUpgradeCodes.UpgradeRelated(b.Install, requested) && b.IsNewerThan(version))
-            .MaxBy(b => b.Install.Version);
+        // Conservative: installs without a blocking bundle, such as an SDK from Visual Studio or runtime folders
+        // that an SDK bundle laid down, also count even though the bundle might install alongside them.
+        DotnetInstall? newer = systemInstalls
+            .Where(i => IsSameInstallerFamily(i, requested) && i.Version.CompareTo(version) > 0)
+            .MaxBy(i => i.Version);
 
         if (newer is not null)
         {
@@ -370,19 +364,30 @@ internal class InstallerOrchestratorSingleton
             throw CreateInstallException(
                 DotnetInstallErrorCode.NewerVersionInstalled,
                 requested,
-                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerNewerVersionInstalled, displayName, newer.Install.Version, version, newer.DisplayName));
+                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerNewerVersionInstalled, displayName, newer.Version, version));
         }
     }
 
     // Installs outside dotnetup (other bundles, winget, Windows Update) don't take our mutex, so recheck before each bundle run.
-    private static void ThrowIfNewerVersionRegistered(DotnetInstallRequest request, DotnetInstall install)
+    private static void ThrowIfNewerSystemVersionInstalled(DotnetInstallRequest request, DotnetInstall install)
     {
         if (request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle)
         {
-            var getInstalledBundles = s_installedBundlesOverride ?? DotnetEnvironmentManager.GetInstalledBundles;
-            ThrowIfNewerVersionInstalled(install, getInstalledBundles(install));
+            var systemInstalls = s_systemInstallsOverride?.Invoke() ?? new DotnetEnvironmentManager().GetExistingSystemInstalls();
+            ThrowIfNewerVersionInstalled(install, systemInstalls);
         }
     }
+
+    /// <summary>
+    /// Whether two installs share a Windows installer upgrade family: the same component and architecture, and the same
+    /// SDK feature band or runtime major.minor. The installer keeps only the newest build in a family.
+    /// </summary>
+    private static bool IsSameInstallerFamily(DotnetInstall a, DotnetInstall b) =>
+        a.Component == b.Component
+        && a.InstallRoot.Architecture == b.InstallRoot.Architecture
+        && a.Version.Major == b.Version.Major
+        && a.Version.Minor == b.Version.Minor
+        && (a.Component != InstallComponent.SDK || a.Version.SdkFeatureBand == b.Version.SdkFeatureBand);
 
     /// <summary>
     /// Under the install-state mutex, returns an already-installed result when the install exists,
@@ -516,7 +521,7 @@ internal class InstallerOrchestratorSingleton
                 return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
             }
 
-            ThrowIfNewerVersionRegistered(prepared.Request, prepared.Install);
+            ThrowIfNewerSystemVersionInstalled(prepared.Request, prepared.Install);
             prepared.Artifact.Commit();
 
             repaired = prepared.Artifact.RequiresPostInstallValidation
@@ -596,7 +601,7 @@ internal class InstallerOrchestratorSingleton
     private static bool RepairOrThrow(PreparedInstall prepared, IInstallationValidator validator, string? validationFailure)
     {
         // A bundle that found a newer build reports success without installing; repairing it cannot help.
-        ThrowIfNewerVersionRegistered(prepared.Request, prepared.Install);
+        ThrowIfNewerSystemVersionInstalled(prepared.Request, prepared.Install);
 
         bool repairAttempted;
         try
