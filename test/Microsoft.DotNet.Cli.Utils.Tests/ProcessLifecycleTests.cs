@@ -227,6 +227,43 @@ public class ProcessLifecycleTests : SdkTest
 
     [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void ForwardedMSBuildUsesTheBuildSoftCancellationTimeout()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+        string markerPath = GetMarkerPath(testDirectory.Path);
+        string msbuildPath = Path.Combine(testDirectory.Path, "fake-msbuild");
+        File.WriteAllText(
+            msbuildPath,
+            $"#!/bin/sh{Environment.NewLine}printf ready > \"$TEST_MARKER_PATH\"{Environment.NewLine}sleep 30{Environment.NewLine}");
+        if (!OperatingSystem.IsWindows())
+        {
+            File.SetUnixFileMode(
+                msbuildPath,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        }
+
+        using Process child = StartChild("msbuild-external", testDirectory.Path, msbuildPath);
+        try
+        {
+            WaitForMarker(testDirectory.Path, "ready");
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            child.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
+            child.WaitForExit(TimeSpan.FromSeconds(5)).Should().BeTrue();
+
+            child.ExitCode.Should().Be(130);
+            stopwatch.Elapsed.Should().BeGreaterThan(TimeSpan.FromSeconds(1.5));
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(4));
+        }
+        finally
+        {
+            StopChild(child);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void SigTermIsForwardedToReapedChild()
     {
         var testDirectory = TestAssetsManager.CreateTestDirectory();
@@ -327,13 +364,13 @@ public class ProcessLifecycleTests : SdkTest
         }
     }
 
-    private static Process StartChild(string childMode, string testDirectory)
+    private static Process StartChild(string childMode, string testDirectory, params string[] additionalArguments)
     {
         string markerPath = GetMarkerPath(testDirectory);
         File.Delete(markerPath);
         File.Delete(markerPath + ".signal-1");
         File.Delete(markerPath + ".signal-2");
-        Process process = CreateChildProcess(childMode, testDirectory);
+        Process process = CreateChildProcess(childMode, testDirectory, additionalArguments);
         process.Start();
         return process;
     }
@@ -359,7 +396,10 @@ public class ProcessLifecycleTests : SdkTest
         }
     }
 
-    private static Process CreateChildProcess(string childMode, string testDirectory)
+    private static Process CreateChildProcess(
+        string childMode,
+        string testDirectory,
+        params string[] additionalArguments)
     {
         string markerPath = GetMarkerPath(testDirectory);
         string testAssemblyPath = typeof(ProcessLifecycleTests).Assembly.Location;
@@ -382,6 +422,10 @@ public class ProcessLifecycleTests : SdkTest
         startInfo.ArgumentList.Add(helperAssemblyPath);
         startInfo.ArgumentList.Add(Path.ChangeExtension(testAssemblyPath, ".runtimeconfig.json"));
         startInfo.ArgumentList.Add(Path.ChangeExtension(testAssemblyPath, ".deps.json"));
+        foreach (string argument in additionalArguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
 
         return new Process { StartInfo = startInfo };
     }

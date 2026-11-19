@@ -8,6 +8,12 @@ namespace Microsoft.DotNet.Cli.Utils.Extensions;
 internal static class ProcessStartInfoExtensions
 {
     public static int Execute(this ProcessStartInfo startInfo, CancellationToken cancellationToken)
+        => Execute(startInfo, suspendSoftCancellationTimeout: true, cancellationToken);
+
+    internal static int Execute(
+        this ProcessStartInfo startInfo,
+        bool suspendSoftCancellationTimeout,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(startInfo);
 
@@ -16,7 +22,13 @@ internal static class ProcessStartInfoExtensions
             StartInfo = startInfo
         };
 
-        return new Command(process).WithoutProcessLogging().Execute(cancellationToken).ExitCode;
+        Command command = new Command(process).WithoutProcessLogging();
+        if (!suspendSoftCancellationTimeout)
+        {
+            command.WithoutSoftCancellationTimeoutOverride();
+        }
+
+        return command.Execute(cancellationToken).ExitCode;
     }
 
     public static int ExecuteAndCaptureOutput(

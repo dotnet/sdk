@@ -4,6 +4,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Utils.TestApp;
@@ -63,6 +64,21 @@ public static partial class ProcessLifecycleTestApp
 
         using IDisposable processLifecycle = ProcessLifecycle.Initialize();
         CancellationToken cancellationToken = ProcessLifecycle.CancellationToken;
+        if (childMode == "msbuild-external")
+        {
+            var forwardingApp = new MSBuildForwardingApp([], args[6]);
+            forwardingApp.EnvironmentVariable("TEST_MARKER_PATH", markerPath);
+            try
+            {
+                return forwardingApp.Execute(cancellationToken);
+            }
+            catch (OperationCanceledException) when (
+                ProcessLifecycle.TryGetSignalExitCode(cancellationToken, out int exitCode))
+            {
+                return exitCode;
+            }
+        }
+
         using CancellationTokenRegistration registration = childMode is "uncooperative" or "repeated"
             ? cancellationToken.Register(() => WriteMarker(markerPath, "signal-cancelled"))
             : default;
