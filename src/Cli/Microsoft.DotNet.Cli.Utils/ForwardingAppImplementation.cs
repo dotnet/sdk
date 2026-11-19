@@ -64,9 +64,9 @@ internal class ForwardingAppImplementation
         _allArgs = allArgs.ToArray();
     }
 
-    public int Execute()
+    public int Execute(CancellationToken cancellationToken)
     {
-        return GetProcessStartInfo().Execute();
+        return GetProcessStartInfo().Execute(cancellationToken);
     }
 
     public ProcessStartInfo GetProcessStartInfo()

@@ -105,15 +105,15 @@ internal sealed class ProjectLauncher(
             arguments.Add(projectOptions.TargetFramework);
         }
 
-        if (projectOptions.Device != null)
+        if (projectOptions.Device is { } device)
         {
             arguments.Add("--device");
-            arguments.Add(projectOptions.Device);
+            arguments.Add(device.Name);
 
-            if (projectOptions.DeviceRuntimeIdentifier != null)
+            if (device.RuntimeIdentifier != null)
             {
                 arguments.Add("--runtime");
-                arguments.Add(projectOptions.DeviceRuntimeIdentifier);
+                arguments.Add(device.RuntimeIdentifier);
             }
         }
 

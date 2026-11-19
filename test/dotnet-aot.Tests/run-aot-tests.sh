@@ -11,6 +11,7 @@
 #
 # Usage:
 #   ./run-aot-tests.sh [--configuration Debug|Release] [--rid <RID>] [--no-build] \
+#                      [--resource-mode Embedded|ExternalLocalized|ExternalAll] \
 #                      [--trx] [--results-directory <DIR>]
 
 set -euo pipefail
@@ -24,6 +25,7 @@ DN_PROJECT="$REPO_ROOT/src/Cli/dn/dn.csproj"
 LAYOUT_PROJECT="$SCRIPT_DIR/PrepareTestSdk.proj"
 
 CONFIGURATION="Debug"
+RESOURCE_MODE="ExternalLocalized"
 RID=""
 NO_BUILD=false
 TRX=false
@@ -33,12 +35,18 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --configuration|-c) CONFIGURATION="$2"; shift 2 ;;
         --rid|-r) RID="$2"; shift 2 ;;
+        --resource-mode) RESOURCE_MODE="$2"; shift 2 ;;
         --no-build) NO_BUILD=true; shift ;;
         --trx) TRX=true; shift ;;
         --results-directory) RESULTS_DIRECTORY="$2"; shift 2 ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
 done
+
+case "$RESOURCE_MODE" in
+    Embedded|ExternalLocalized|ExternalAll) ;;
+    *) echo "Invalid resource mode: $RESOURCE_MODE"; exit 1 ;;
+esac
 
 # Auto-detect RID
 if [[ -z "$RID" ]]; then
@@ -59,9 +67,9 @@ if [[ -z "$RID" ]]; then
     fi
 fi
 
-PUBLISH_DIR="$SCRIPT_DIR/artifacts/aot-tests/$CONFIGURATION/$RID"
+PUBLISH_DIR="$SCRIPT_DIR/artifacts/aot-tests/$CONFIGURATION/$RID/$RESOURCE_MODE"
 EXE_PATH="$PUBLISH_DIR/dotnet-aot.Tests"
-AOT_PUBLISH_DIR="$SCRIPT_DIR/artifacts/dotnet-aot/$CONFIGURATION/$RID"
+AOT_PUBLISH_DIR="$SCRIPT_DIR/artifacts/dotnet-aot/$CONFIGURATION/$RID/$RESOURCE_MODE"
 DN_PUBLISH_DIR="$SCRIPT_DIR/artifacts/dn/$CONFIGURATION/$RID"
 case "$RID" in
     win-*) AOT_LIBRARY_NAME="dotnet-aot.dll"; DN_NAME="dn.exe" ;;
@@ -76,6 +84,7 @@ TEST_DOTNET="$TEST_DOTNET_ROOT/dotnet"
 echo "=== dotnet-aot NativeAOT Test Runner ==="
 echo "  Configuration: $CONFIGURATION"
 echo "  RID:           $RID"
+echo "  Resources:     $RESOURCE_MODE"
 echo "  Publish dir:   $PUBLISH_DIR"
 echo ""
 
@@ -89,6 +98,7 @@ if [[ "$NO_BUILD" == false ]]; then
         -r "$RID" \
         -p:PublishAotTests=true \
         -p:UseOptimizedPublish=false \
+        -p:_DotnetAotResourceMode="$RESOURCE_MODE" \
         -p:PublishDir="$PUBLISH_DIR"
 
     # AotTestModules_RunsManagedTestModule runs the managed (JIT) build of this test module
@@ -101,6 +111,7 @@ if [[ "$NO_BUILD" == false ]]; then
     "$DOTNET" publish "$PRODUCT_PROJECT" \
         -c "$CONFIGURATION" \
         -r "$RID" \
+        -p:_DotnetAotResourceMode="$RESOURCE_MODE" \
         -p:PublishDir="$AOT_PUBLISH_DIR"
 
     "$DOTNET" publish "$DN_PROJECT" \
@@ -150,6 +161,7 @@ echo ""
 cp "$AOT_LIBRARY_PATH" "$SDK_DIRECTORY/$AOT_LIBRARY_NAME"
 
 export DOTNET_AOT_TEST_SDK_DIRECTORY="$SDK_DIRECTORY"
+export DOTNET_AOT_TEST_RESOURCE_MODE="$RESOURCE_MODE"
 export DOTNET_AOT_TEST_DN_PATH="$DN_PATH"
 MANAGED_TEST_MODULE=$("$DOTNET" msbuild "$TEST_PROJECT" \
     -p:Configuration="$CONFIGURATION" \

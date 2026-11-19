@@ -20,6 +20,8 @@ public class WorkloadUpdateTests
     private const string ManifestId = "microsoft.net.sdk.test";
     private static readonly SdkFeatureBand s_featureBand = new("11.0.100");
 
+    public TestContext TestContext { get; set; } = null!;
+
     [TestMethod]
     public async Task DisabledBackgroundUpdateDoesNotQueryNuGet()
     {
@@ -27,7 +29,7 @@ public class WorkloadUpdateTests
         var downloader = CreateUpdater(testDirectory.Path, out WorkloadAdvertisingManifestUpdater updater,
             name => name == EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE ? "true" : null);
 
-        await updater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+        await updater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(0, downloader.LatestVersionQueries);
         Assert.AreEqual(0, downloader.Downloads);
@@ -45,7 +47,7 @@ public class WorkloadUpdateTests
             _ => null,
             userProfileDir);
 
-        await updater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+        await updater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(1, downloader.LatestVersionQueries);
         Assert.AreEqual(1, downloader.Downloads);
@@ -80,7 +82,7 @@ public class WorkloadUpdateTests
             WindowsMsiManifestInstaller.CreateForAdvertisingManifestUpdates(downloader, out var records);
         string targetPath = Path.Combine(testDirectory.Path, "target", ManifestId);
 
-        await installer.ExtractManifestAsync("manifest.nupkg", targetPath);
+        await installer.ExtractManifestAsync("manifest.nupkg", targetPath, TestContext.CancellationToken);
 
         Assert.IsInstanceOfType<ReadOnlyWindowsWorkloadInstallationRecordRepository>(records);
         Assert.AreEqual(
@@ -226,6 +228,7 @@ public class WorkloadUpdateTests
 
         public Task<string> DownloadPackageAsync(
             PackageId packageId,
+            CancellationToken cancellationToken,
             NuGetVersion? packageVersion = null,
             PackageSourceLocation? packageSourceLocation = null,
             bool includePreview = false,
@@ -240,7 +243,7 @@ public class WorkloadUpdateTests
             return Task.FromResult(path);
         }
 
-        public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
+        public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder, CancellationToken cancellationToken)
         {
             Extractions++;
             string dataDirectory = useMsiLayout
@@ -254,6 +257,7 @@ public class WorkloadUpdateTests
 
         public Task<NuGetVersion> GetLatestPackageVersion(
             PackageId packageId,
+            CancellationToken cancellationToken,
             PackageSourceLocation? packageSourceLocation = null,
             bool includePreview = false)
         {
@@ -264,6 +268,7 @@ public class WorkloadUpdateTests
 
         public Task<string> GetPackageUrl(
             PackageId packageId,
+            CancellationToken cancellationToken,
             NuGetVersion? packageVersion = null,
             PackageSourceLocation? packageSourceLocation = null,
             bool includePreview = false) => throw new NotSupportedException();
@@ -271,18 +276,20 @@ public class WorkloadUpdateTests
         public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(
             PackageId packageId,
             int numberOfResults,
+            CancellationToken cancellationToken,
             PackageSourceLocation? packageSourceLocation = null,
             bool includePreview = false) => throw new NotSupportedException();
 
         public Task<NuGetVersion> GetBestPackageVersionAsync(
             PackageId packageId,
             VersionRange versionRange,
+            CancellationToken cancellationToken,
             PackageSourceLocation? packageSourceLocation = null) => throw new NotSupportedException();
 
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
             PackageId packageId,
             VersionRange versionRange,
-            PackageSourceLocation? packageSourceLocation = null,
-            CancellationToken cancellationToken = default) => throw new NotSupportedException();
+            CancellationToken cancellationToken,
+            PackageSourceLocation? packageSourceLocation = null) => throw new NotSupportedException();
     }
 }

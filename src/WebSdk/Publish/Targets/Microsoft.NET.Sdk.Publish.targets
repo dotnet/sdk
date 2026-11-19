@@ -173,7 +173,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
   <Target Name="DotNetPublish"
           DependsOnTargets="$(DotNetPublishDependsOn)"
           AfterTargets="Build"
-          Condition=" '$(DeployOnBuild)' == 'true' " >
+          Condition=" '$(IsPublishable)' == 'true' And '$(DeployOnBuild)' == 'true' " >
   </Target>
 
   <PropertyGroup>

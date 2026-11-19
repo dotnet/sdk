@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
@@ -903,6 +904,59 @@ public partial class AotIntegrationTests
     }
 
     [TestMethod]
+    public void BuildHelp_ShowsPropertyOptionInNativeAot()
+    {
+        SkipIfDnUnavailable();
+
+        var (aotExitCode, aotOutput, aotError) = RunDn(["build", "--help"], enableAot: true);
+
+        Assert.AreEqual(0, aotExitCode, aotError);
+        aotOutput.Should().Contain($"-p, -property <{CommandDefinitionStrings.PropertyArgumentName}>");
+        Regex.Replace(aotOutput, @"\s+", " ").Should().Contain(CommandDefinitionStrings.PropertyOptionDescription);
+    }
+
+    [TestMethod]
+    [DataRow("--property")]
+    [DataRow("-property")]
+    [DataRow("/property")]
+    [DataRow("/p")]
+    [DataRow("-p")]
+    [DataRow("--p")]
+    public void BuildPropertyAliases_PreserveManagedInvocationFromNativeAot(string alias)
+    {
+        SkipIfDnUnavailable();
+
+        string directory = Path.Combine(Path.GetTempPath(), $"aot-build-properties-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            string projectPath = Path.Combine(directory, "Properties.proj");
+            File.WriteAllText(projectPath, "<Project />");
+            string[] args =
+            [
+                "build", projectPath, "--no-restore", "--nologo",
+                "--getProperty:First,Second",
+                alias, "First=original;Second=two", $"{alias}:First=updated"
+            ];
+
+            var (managedExitCode, managedOutput, managedError) = RunDn(args, enableAot: false, workingDirectory: directory);
+            var (aotExitCode, aotOutput, aotError) = RunDn(args, enableAot: true, workingDirectory: directory);
+
+            Assert.AreEqual(0, managedExitCode, managedError);
+            Assert.AreEqual(0, aotExitCode, aotError);
+            Assert.AreEqual(managedOutput, aotOutput);
+            using var output = JsonDocument.Parse(aotOutput);
+            var properties = output.RootElement.GetProperty("Properties");
+            Assert.AreEqual("updated", properties.GetProperty("First").GetString());
+            Assert.AreEqual("two", properties.GetProperty("Second").GetString());
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void AotBuild_WithEnableAot_FallsBackToManaged()
     {
         SkipIfDnUnavailable();
@@ -928,6 +982,74 @@ public partial class AotIntegrationTests
         finally
         {
             Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void AotExternalCommand_WaitsForSecondSigIntBeforeExitingQuietly()
+    {
+        SkipIfDnUnavailable();
+
+        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-cancellation-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDirectory);
+        string markerPath = Path.Join(testDirectory, "ready");
+        string commandPath = Path.Join(testDirectory, "dotnet-aot-cancellation-test");
+        File.WriteAllText(
+            commandPath,
+            $"#!/bin/sh{Environment.NewLine}echo ready > '{markerPath}'{Environment.NewLine}sleep 30{Environment.NewLine}");
+        File.SetUnixFileMode(
+            commandPath,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+            UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+            UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+
+        ProcessStartInfo startInfo = new(FindDnPath()!)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        startInfo.ArgumentList.Add("aot-cancellation-test");
+        startInfo.Environment["DOTNET_CLI_ENABLEAOT"] = "true";
+        startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
+        startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
+        startInfo.Environment["PATH"] =
+            testDirectory + Path.PathSeparator + startInfo.Environment["PATH"];
+
+        using Process process = new() { StartInfo = startInfo };
+        try
+        {
+            process.Start();
+            Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
+            Task<string> stderrTask = process.StandardError.ReadToEndAsync(TestContext.CancellationToken);
+            SpinWait.SpinUntil(() => File.Exists(markerPath), TimeSpan.FromSeconds(10))
+                .Should().BeTrue("the external command should start");
+
+            process.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
+            Thread.Sleep(TimeSpan.FromMilliseconds(750));
+            process.HasExited.Should().BeFalse("the first SIGINT should allow the external command to finish");
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            process.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
+            process.WaitForExit(10_000).Should().BeTrue();
+
+            process.ExitCode.Should().Be(130);
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
+            string standardError = stderrTask.GetAwaiter().GetResult();
+            standardError.Should().NotContain("Unhandled exception");
+            standardError.Should().NotContain("The operation was canceled");
+            _ = stdoutTask.GetAwaiter().GetResult();
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+
+            try { Directory.Delete(testDirectory, recursive: true); } catch { }
         }
     }
 

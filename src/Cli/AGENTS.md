@@ -20,6 +20,58 @@ MSBuild emits final telemetry after `BuildFinished`. `Shutdown` completes one lo
 instance. It does not necessarily end the process. Refresh the environment and trace
 context for each persistent-server request.
 
+Managed and Native AOT command execution use
+`Microsoft.DotNet.Cli.Utils/ProcessLifecycle.cs` as the shared owner of Ctrl+C,
+SIGTERM, and process-exit cancellation. The managed entry point initializes it for the
+process lifetime; the Native AOT entry point initializes it only while handling a command
+in-process and unregisters it before managed fallback. Merely launching a child through
+`ProcessReaper.cs` must not initialize CLI lifecycle handling in library hosts.
+
+Pass the lifecycle token through System.CommandLine invocation and command operations.
+Process-launch and forwarding helpers must require callers to supply a cancellation
+token; do not add tokenless overloads or optional cancellation-token parameters.
+The first Ctrl+C requests cooperative cancellation and permits 200 milliseconds for
+cleanup; expiration of that deadline requests forceful cancellation, gives observers a
+bounded window to terminate and reap child processes, and then exits with the
+signal-derived exit code. A second Ctrl+C or SIGTERM exits immediately. Transaction
+rollback and other critical operations may use `OverrideSoftCancellationTimeout` to
+extend or suspend
+the automatic deadline, but the override must never suppress an explicit forceful signal.
+Child processes observe cooperative signals directly and are killed only when forceful
+cancellation is requested. While a lifecycle-managed external process is running,
+`Command` suspends the automatic soft-cancellation deadline so the child can finish
+gracefully; a second Ctrl+C or SIGTERM still forces termination. System.CommandLine may
+wrap the lifecycle token before it reaches a command action, so process termination must
+use lifecycle initialization state rather than token identity to distinguish lifecycle
+cancellation from standalone library callers. On Unix, forward SIGTERM to the child
+before bounded forceful termination.
+`ProcessReaper.cs` owns child-process signal forwarding and cleanup; do not add a
+competing command-line termination handler for those signals. MSBuild operations use a
+two-second soft-cancellation override so submissions and loggers, including binary
+loggers, can finish cancellation cleanup; a second Ctrl+C or SIGTERM still bypasses it.
+
+### Cancellation and cleanup
+
+Forward-operation cancellation must not prevent transaction rollback. MSI manifest and
+pack rollback create a distinct cancellation scope inside each rollback callback, never
+linked to the cancelled forward token; keep the original cancellation exception after
+cleanup. The deterministic installer seams are exercised by
+[`GivenMsiCancellation`](../../test/dotnet.Tests/CommandTests/Workload/Install/GivenMsiCancellation.cs).
+Only roll back MSIs whose installation this transaction actually attempted; mark the
+attempt before native execution so partial installs still roll back, but cancellation
+before installation and already-installed no-ops cannot remove existing manifests.
+
+`Console.In` synchronizes `ReadLineAsync` as well as `ReadLine`. The
+[`run-api` command](dotnet/Commands/Run/Api/RunApiCommand.cs) uses
+`Console.OpenStandardInputHandle()` with `FileStream`/`StreamReader` instead. Keep the
+cancellable wait: Unix file I/O cannot interrupt an already blocked read, so at most one
+runtime worker can remain until process exit. Keep its regression out of process with a
+real open stdin pipe; see
+[`RunApiCancellationTests`](../../test/dotnet.Tests/CommandTests/Run/RunApiCancellationTests.cs).
+On Linux, its helper waits for `/proc/self/task/*/syscall` to report a blocked
+`read(0, ...)` before cancelling; an incomplete task alone does not establish that the
+runtime worker has started the read.
+
 ## Three-project command split
 
 A `dotnet` command or option spans three cooperating projects:
@@ -42,6 +94,16 @@ to `dotnet` and `Microsoft.DotNet.Cli.Utils`. Internal parser APIs are accessibl
 signed `dotnet` assembly through MSBuild's `InternalsVisibleTo`; keep those calls
 managed-only rather than introducing MSBuild dependencies into `Definitions`.
 
+CLI-owned path options (such as `--output`, `--artifacts-path`, `--packages`, and VSTest
+`--settings`) keep their default, unescaped forwarding in the definitions for consumers such as
+`dotnet-watch`. The managed command parsers replace it through
+[`MSBuildOptionExtensions`](dotnet/Extensions/MSBuildOptionExtensions.cs), which uses
+[`MSBuildPropertyEscaping`](../Microsoft.DotNet.ProjectTools/MSBuildPropertyEscaping.cs)
+to escape literal paths with MSBuild's API before adding command-line quotes. When adding a path
+option, forward it with `ForwardAsPathProperty`/`ForwardAsOutputPath` in the definition and wire
+the `ForwardAsLiteral*` override in the managed parser. Keep explicit `-p:` values on their
+existing MSBuild-syntax path; they are not literals.
+
 When changing AOT-linked commands, resources, dependencies, or first-run behavior,
 follow the [size and trimming contracts](dotnet-aot/DESIGN.md#size-and-trimming-contracts).
 
@@ -57,7 +119,8 @@ rest are supporting libraries:
 | `Microsoft.DotNet.Cli.InternalMicrosoft` | AOT-safe Microsoft-internal classification, probes, and cache. It does not emit telemetry. |
 | `dotnet-aot` + `dn` | NativeAOT shared library + native host exe. |
 | `Microsoft.DotNet.Cli.Utils` | MSBuild/NuGet/process/system abstractions used across the CLI. |
-| `Microsoft.DotNet.Cli.CoreUtils` | Low-level version/file/env-variable parsing. |
+| `Microsoft.DotNet.Cli.CoreUtils` | Low-level version/file/env-variable parsing and the shared string-resource runtime used by generated CLI accessors. |
+| `Microsoft.DotNet.Cli.Resources.Generator` | Analyzer-only RESX generator; emits cached accessors against the CoreUtils resource runtime. |
 | `Microsoft.DotNet.Cli.CommandLine` | Local extensions over `System.CommandLine`. |
 | `Microsoft.DotNet.Configurer` | First-run experience and NuGet/config setup. |
 | `Microsoft.DotNet.InternalAbstractions` | File-system/env abstractions for testability. |
@@ -80,6 +143,16 @@ rest are supporting libraries:
   registry that imports them all.
 - `Common/` — shared option/argument factories.
 - `Help/` — help builder and localization.
+
+### String resources
+
+CLI resource owners select `Generator="Microsoft.DotNet.Cli.Resources"` and
+reference the analyzer-only `Microsoft.DotNet.Cli.Resources.Generator` project.
+The generated accessors use the runtime under
+`Microsoft.DotNet.Cli.CoreUtils/Resources`; do not add another runtime assembly
+or a package/buildTransitive dependency. Current-SDK builds use the CLI
+generator, while multi-targeted owners retain the existing Microsoft generator
+for .NET Framework targets.
 
 ## Per-command services
 
