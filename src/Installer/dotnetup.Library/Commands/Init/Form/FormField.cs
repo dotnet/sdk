@@ -86,7 +86,7 @@ internal sealed class FormField
     /// <summary>The values this field can take.</summary>
     public IReadOnlyList<FieldChoice> Choices { get; }
 
-    /// <summary>The index of the recommended default value.</summary>
+    /// <summary>The index of the value initially selected in the form.</summary>
     public int DefaultIndex { get; }
 
     /// <summary>
@@ -117,7 +117,7 @@ internal sealed class FormField
     /// </summary>
     public string DisplayValue => LockedValue ?? CustomValue ?? Selected.Title;
 
-    /// <summary>True when the selection differs from the recommended default (drives coloring).</summary>
+    /// <summary>True when the selection differs from the initially selected value (drives coloring).</summary>
     public bool IsChangedFromDefault => CustomValue is not null || SelectedIndex != DefaultIndex;
 
     /// <summary>Selects a fixed (non-custom) value, clearing any previously typed custom value.</summary>

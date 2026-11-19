@@ -20,7 +20,7 @@ internal static class InitFormRenderer
     private const int FieldDetailIndent = 4;
     private const int ChoiceDetailIndent = 6;
 
-    // Marker appended to the recommended default choice.
+    // Marker appended to a field's default choice when it does not supply explicit suffixes.
     private const string DefaultSuffix = "  (default)";
 
     private const string WelcomeMessage = "Welcome to dotnetup!";
@@ -277,7 +277,7 @@ internal static class InitFormRenderer
     {
         bool showHelpInline = field.InlineHelp || compression >= FormCompressionLevel.InlineChoiceHelp;
         int maxChoiceWidth = field.Choices.Select((choice, index) => choice.Title.Length +
-            (index == field.DefaultIndex ? DefaultSuffix.Length : 0)).Max();
+            ChoiceSuffix(field, index).Length).Max();
         int choiceColumnWidth = showHelpInline ? maxChoiceWidth : 0;
 
         for (int index = 0; index < field.Choices.Count; index++)
@@ -343,7 +343,7 @@ internal static class InitFormRenderer
         string? trailing, int choiceColumnWidth, bool showDefaultSuffix, ThemeColors theme)
     {
         FieldChoice choice = field.Choices[index];
-        string suffix = showDefaultSuffix && index == field.DefaultIndex ? DefaultSuffix : string.Empty;
+        string suffix = showDefaultSuffix ? ChoiceSuffix(field, index) : string.Empty;
         // Green marks the highlighted choice, consistent with the focused row and the Accept action.
         string titleStyle = selected ? $"{theme.Success} bold" : "white";
         string arrow = selected && showArrow ? "> " : "  ";
@@ -361,6 +361,10 @@ internal static class InitFormRenderer
             $"[{theme.Dim}]{suffix.EscapeMarkup()}[/]" +
             tail);
     }
+
+    private static string ChoiceSuffix(FormField field, int index) =>
+        field.Choices[index].Suffix
+        ?? (index == field.DefaultIndex ? DefaultSuffix : string.Empty);
 
     // The live custom editor: "> <buffer>▏" (or a placeholder).
     private static string BuildCustomInputMarkup(string buffer, bool showArrow, ThemeColors theme)
