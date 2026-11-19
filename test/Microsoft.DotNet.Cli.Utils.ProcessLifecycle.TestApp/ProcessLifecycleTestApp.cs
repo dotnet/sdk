@@ -170,11 +170,11 @@ public static partial class ProcessLifecycleTestApp
             context =>
             {
                 context.Cancel = true;
-                File.WriteAllText(markerPath, "forwarded");
+                WriteMarker(markerPath, "forwarded");
                 Environment.Exit(43);
             });
 
-        File.WriteAllText(markerPath, "grandchild-ready");
+        WriteMarker(markerPath, "grandchild-ready");
         Thread.Sleep(Timeout.Infinite);
     }
 

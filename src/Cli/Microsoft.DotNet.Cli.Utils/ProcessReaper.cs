@@ -146,7 +146,8 @@ internal class ProcessReaper : IDisposable
 #if !TARGET_WINDOWS && NET
     private sealed class UnixProcessReaper : ProcessReaper
     {
-        private static readonly TimeSpan s_forcefulSigTermGracePeriod = TimeSpan.FromMilliseconds(200);
+        // Allow the child enough time to run its SIGTERM handler before escalating under load.
+        private static readonly TimeSpan s_forcefulSigTermGracePeriod = TimeSpan.FromSeconds(1);
         private readonly PosixSignalRegistration _sigTermRegistration;
 
         // Coordinates Dispose (typically the main thread) with HandleProcessExit,

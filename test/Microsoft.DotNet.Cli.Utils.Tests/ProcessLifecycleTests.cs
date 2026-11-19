@@ -246,9 +246,11 @@ public class ProcessLifecycleTests : SdkTest
             testDirectory.Path);
 
         WaitForMarker(testDirectory.Path, "reaper-ready");
+        Stopwatch stopwatch = Stopwatch.StartNew();
         uncooperativeReaperParent.SafeHandle.Signal(PosixSignal.SIGTERM).Should().BeTrue();
         uncooperativeReaperParent.WaitForExit(s_waitTimeout).Should().BeTrue();
         uncooperativeReaperParent.ExitCode.Should().NotBe(0);
+        stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(2));
     }
 
     [TestMethod]
