@@ -10,6 +10,9 @@
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
     <!-- https://github.com/dotnet/sdk/issues/14801 -->
     <AssemblyVersion Condition="'$(TargetFramework)' == 'net472'">5.0.100.0</AssemblyVersion>
+    <PublishWindowsPdb Condition="'$(TargetFramework)' == 'net472' and
+                                 '$(OS)' == 'Windows_NT' and
+                                 '$(DotNetBuildSourceOnly)' != 'true'">true</PublishWindowsPdb>
   </PropertyGroup>
 
   <Target Name="LinkVSEmbeddableAssemblies" DependsOnTargets="ResolveReferences" AfterTargets="ResolveReferences">

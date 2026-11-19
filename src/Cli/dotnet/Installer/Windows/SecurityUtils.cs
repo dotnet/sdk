@@ -122,28 +122,26 @@ internal static class SecurityUtils
     }
 
     /// <summary>
-    /// Moves a file from one location to another and configures its permissions.
+    /// Moves a file from one location to another if the destination file does not already exist and
+    /// configures its permissions.
     /// </summary>
     /// <param name="sourceFile">The source file to move.</param>
     /// <param name="destinationFile">The destination where the source file will be moved.</param>
     /// <param name="log">The underlying setup log to use.</param>
-    /// <param name="overwrite">Replaces an existing destination file instead of leaving it in place.</param>
-    public static void MoveAndSecureFile(string sourceFile, string destinationFile, ISetupLogger log = null, bool overwrite = false)
+    public static void MoveAndSecureFile(string sourceFile, string destinationFile, ISetupLogger log = null)
     {
-        if (File.Exists(destinationFile) && !overwrite)
+        if (!File.Exists(destinationFile))
         {
-            return;
+            FileAccessRetrier.RetryOnMoveAccessFailure(() =>
+            {
+                // Moving the file preserves the owner SID and fails to inherit the WD ACE.
+                File.Copy(sourceFile, destinationFile, overwrite: true);
+                File.Delete(sourceFile);
+            });
+            log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
+
+            SecureFile(destinationFile);
         }
-
-        FileAccessRetrier.RetryOnMoveAccessFailure(() =>
-        {
-            // Moving the file preserves the owner SID and fails to inherit the WD ACE.
-            File.Copy(sourceFile, destinationFile, overwrite: true);
-            File.Delete(sourceFile);
-        });
-        log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
-
-        SecureFile(destinationFile);
     }
 
     /// <summary>

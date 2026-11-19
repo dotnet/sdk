@@ -268,7 +268,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var workloadId = ParsePathBasedId(ref reader, reader.GetString() ?? string.Empty, id => new WorkloadId(id));
+                        var workloadId = ParsePathBasedId(ref reader, reader.GetString() ?? string.Empty, idValue => new WorkloadId(idValue));
                         var workload = ReadWorkloadDefinition(workloadId, ref reader, localizationCatalog);
                         if (workloads.ContainsKey(workloadId)) ThrowDuplicateKeyException(ref reader, workloadId);
                         workloads.Add(workloadId, workload);
@@ -294,7 +294,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var packId = ParsePathBasedId(ref reader, reader.GetString() ?? string.Empty, id => new WorkloadPackId(id));
+                        var packId = ParsePathBasedId(ref reader, reader.GetString() ?? string.Empty, idValue => new WorkloadPackId(idValue));
                         var pack = ReadWorkloadPack(packId, ref reader);
                         if (packs.ContainsKey(packId)) ThrowDuplicateKeyException(ref reader, packId);
                         packs[packId] = pack;
@@ -480,7 +480,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         if (string.Equals("replace-with", propName, StringComparison.OrdinalIgnoreCase))
                         {
                             if (replaceWith != null) ThrowDuplicateKeyException(ref reader, propName);
-                            replaceWith = ParsePathBasedId(ref reader, ReadString(ref reader) ?? string.Empty, id => new WorkloadId(id));
+                            replaceWith = ParsePathBasedId(ref reader, ReadString(ref reader) ?? string.Empty, idValue => new WorkloadId(idValue));
                             continue;
                         }
 

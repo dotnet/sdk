@@ -34,7 +34,7 @@ internal static class TrustedMachinePath
     private static readonly SecurityIdentifier s_administratorsSid = new(WellKnownSidType.BuiltinAdministratorsSid, null);
     private static readonly SecurityIdentifier s_localSystemSid = new(WellKnownSidType.LocalSystemSid, null);
 
-    private static readonly HashSet<SecurityIdentifier> s_trustedSids = [s_administratorsSid, s_localSystemSid];
+    private static readonly HashSet<SecurityIdentifier> s_trustedSids = new() { s_administratorsSid, s_localSystemSid };
 
     /// <summary>
     ///  Rights that let a principal alter an object, its children, or its security descriptor.

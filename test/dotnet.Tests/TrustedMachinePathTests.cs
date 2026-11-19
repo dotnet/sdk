@@ -11,11 +11,11 @@ using Microsoft.DotNet.Cli.Installer.Windows;
 namespace Microsoft.DotNet.Tests
 {
     [SupportedOSPlatform("windows5.1.2600")]
-    public class TrustedMachinePathTests(ITestOutputHelper log) : SdkTest(log)
+    public class TrustedMachinePathTests
     {
         private const string TestPath = @"C:\ProgramData\dotnet";
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)]
+        [WindowsOnlyTheory]
         [InlineData(@"C:\ProgramData\dotnet\workloads\pack", @"C:\ProgramData\dotnet", true)]
         [InlineData(@"C:\ProgramData\dotnet", @"C:\ProgramData\dotnet", true)]
         [InlineData(@"C:\ProgramData\dotnet", @"C:\ProgramData\dotnet\", true)]
@@ -26,13 +26,13 @@ namespace Microsoft.DotNet.Tests
             Assert.Equal(expected, TrustedMachinePath.IsUnderRoot(path, root));
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [WindowsOnlyFact]
         public void Validate_AcceptsTrustedDescriptor()
         {
             TrustedMachinePath.Validate(CreateTrustedDescriptor(), TestPath);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [WindowsOnlyFact]
         public void Validate_AllowsAdditionalReadOnlyAndDenyRules()
         {
             DirectorySecurity security = CreateTrustedDescriptor();
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Tests
             TrustedMachinePath.Validate(security, TestPath);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [WindowsOnlyFact]
         public void Validate_RejectsUntrustedOwner()
         {
             DirectorySecurity security = CreateTrustedDescriptor();
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Tests
             Assert.Throws<InvalidDataException>(() => TrustedMachinePath.Validate(security, TestPath));
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)]
+        [WindowsOnlyTheory]
         [InlineData(FileSystemRights.WriteData)]
         [InlineData(FileSystemRights.AppendData)]
         [InlineData(FileSystemRights.Delete)]
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Tests
             Assert.Throws<InvalidDataException>(() => TrustedMachinePath.Validate(security, TestPath));
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [WindowsOnlyFact]
         public void Validate_RejectsInheritOnlyModificationRights()
         {
             DirectorySecurity security = CreateTrustedDescriptor();
@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Tests
             Assert.Throws<InvalidDataException>(() => TrustedMachinePath.Validate(security, TestPath));
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [WindowsOnlyFact]
         public void Validate_RejectsMissingTrustedFullControl()
         {
             DirectorySecurity security = new();
@@ -100,15 +100,23 @@ namespace Microsoft.DotNet.Tests
             Assert.Throws<InvalidDataException>(() => TrustedMachinePath.Validate(security, TestPath));
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [WindowsOnlyFact]
         public void ValidateDirectory_RejectsCallerWritableDirectory()
         {
-            string directory = _testAssetsManager.CreateTestDirectory().Path;
+            string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(directory);
 
-            Assert.Throws<InvalidDataException>(() => TrustedMachinePath.ValidateDirectory(directory));
+            try
+            {
+                Assert.Throws<InvalidDataException>(() => TrustedMachinePath.ValidateDirectory(directory));
+            }
+            finally
+            {
+                Directory.Delete(directory, recursive: true);
+            }
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)]
+        [WindowsOnlyTheory]
         [InlineData("C:")]
         [InlineData(".")]
         [InlineData("trailingdot.")]
@@ -118,31 +126,44 @@ namespace Microsoft.DotNet.Tests
             Assert.False(PathComponentUtilities.IsValidPathComponent(input));
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [WindowsOnlyFact]
         public void InstallStateContents_RejectsReadUnderUntrustedMachineRoot()
         {
-            string testRoot = _testAssetsManager.CreateTestDirectory().Path;
+            string testRoot = CreateTemporaryDirectory();
             string installStatePath = Path.Combine(testRoot, "workloads", "x64", "10.0.100", "InstallState", "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(installStatePath)!);
             File.WriteAllText(installStatePath, "{}");
 
-            Assert.Throws<InvalidDataException>(
-                () => InstallStateContents.FromPath(installStatePath, testRoot));
+            try
+            {
+                Assert.Throws<InvalidDataException>(() => InstallStateContents.FromPath(installStatePath, testRoot));
+            }
+            finally
+            {
+                Directory.Delete(testRoot, recursive: true);
+            }
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [WindowsOnlyFact]
         public void InstallStateContents_AllowsReadOutsideMachineRoot()
         {
-            string testRoot = _testAssetsManager.CreateTestDirectory().Path;
+            string testRoot = CreateTemporaryDirectory();
             string machineRoot = Path.Combine(testRoot, "machine");
             string installStatePath = Path.Combine(testRoot, "file-based", "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(installStatePath)!);
-            File.WriteAllText(installStatePath, """{"useWorkloadSets":false}""");
+            File.WriteAllText(installStatePath, "{\"useWorkloadSets\":false}");
 
-            InstallStateContents.FromPath(installStatePath, machineRoot).UseWorkloadSets.Should().BeFalse();
+            try
+            {
+                Assert.Equal(false, InstallStateContents.FromPath(installStatePath, machineRoot).UseWorkloadSets);
+            }
+            finally
+            {
+                Directory.Delete(testRoot, recursive: true);
+            }
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [WindowsOnlyFact]
         public void Validate_AcceptsDescriptorWrittenByShippedSdks()
         {
             SecurityIdentifier administrators = new(WellKnownSidType.BuiltinAdministratorsSid, null);
@@ -150,15 +171,15 @@ namespace Microsoft.DotNet.Tests
             DirectorySecurity security = new();
             security.SetOwner(administrators);
             security.SetGroup(administrators);
-            security.AddAccessRule(new FileSystemAccessRule(administrators, FileSystemRights.FullControl, inheritance, PropagationFlags.None, AccessControlType.Allow));
-            security.AddAccessRule(new FileSystemAccessRule(new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null), FileSystemRights.FullControl, inheritance, PropagationFlags.None, AccessControlType.Allow));
-            security.AddAccessRule(new FileSystemAccessRule(new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null), FileSystemRights.ReadAndExecute, inheritance, PropagationFlags.None, AccessControlType.Allow));
-            security.AddAccessRule(new FileSystemAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null), FileSystemRights.ReadAndExecute, inheritance, PropagationFlags.None, AccessControlType.Allow));
+            security.SetAccessRule(new FileSystemAccessRule(administrators, FileSystemRights.FullControl, inheritance, PropagationFlags.None, AccessControlType.Allow));
+            security.SetAccessRule(new FileSystemAccessRule(new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null), FileSystemRights.FullControl, inheritance, PropagationFlags.None, AccessControlType.Allow));
+            security.SetAccessRule(new FileSystemAccessRule(new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null), FileSystemRights.ReadAndExecute, inheritance, PropagationFlags.None, AccessControlType.Allow));
+            security.SetAccessRule(new FileSystemAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null), FileSystemRights.ReadAndExecute, inheritance, PropagationFlags.None, AccessControlType.Allow));
 
             TrustedMachinePath.Validate(security, TestPath);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [WindowsOnlyFact]
         public void Validate_RejectsProgramDataInheritedUserWriteGrant()
         {
             DirectorySecurity security = CreateTrustedDescriptor();
@@ -184,6 +205,13 @@ namespace Microsoft.DotNet.Tests
                 AccessControlType.Allow));
 
             return security;
+        }
+
+        private static string CreateTemporaryDirectory()
+        {
+            string path = Path.Combine(Path.GetTempPath(), nameof(TrustedMachinePathTests), Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(path);
+            return path;
         }
     }
 }

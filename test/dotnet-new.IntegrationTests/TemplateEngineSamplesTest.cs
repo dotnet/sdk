@@ -18,7 +18,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             _log = new TestLoggerFactory(log).CreateLogger(nameof(CommonTemplatesTests));
             _sharedHome = sharedHome;
-            _sharedHome.InstallPackage("Microsoft.TemplateEngine.Samples");
+            // Pinned so a newly published package cannot change generated output underneath the checked-in snapshots.
+            _sharedHome.InstallPackage("Microsoft.TemplateEngine.Samples::10.0.404");
         }
 
         [Theory]

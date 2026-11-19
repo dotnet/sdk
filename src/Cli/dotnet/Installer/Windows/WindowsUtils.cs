@@ -9,7 +9,6 @@ using System.Runtime.Versioning;
 using System.Security;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using Microsoft.DotNet;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Utilities;
@@ -255,15 +254,6 @@ public static class WindowsUtils
     {
         return ValidatePathUnderRoot(packagePath, cacheRoot);
     }
-
-    /// <summary>
-    /// Validates that a path component (such as a package ID or version) does not contain
-    /// directory separator characters or parent-directory traversal sequences.
-    /// </summary>
-    /// <param name="component">The path component to validate.</param>
-    /// <returns><see langword="true"/> if the component is safe to use in <see cref="Path.Combine"/>; otherwise <see langword="false"/>.</returns>
-    public static bool ValidatePathComponent(string component)
-        => PathComponentUtilities.IsValidPathComponent(component);
 
     /// <summary>
     /// Validates that the specified path, after canonicalization, is under the expected root directory.

@@ -47,7 +47,7 @@ internal class InstallStateContents
         return FromPath(path, programDataDotnetRoot: null);
     }
 
-    internal static InstallStateContents FromPath(string path, string? programDataDotnetRoot)
+    internal static InstallStateContents FromPath(string path, string programDataDotnetRoot)
     {
         if (!File.Exists(path))
         {
