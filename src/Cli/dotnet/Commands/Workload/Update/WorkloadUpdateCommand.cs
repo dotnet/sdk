@@ -76,7 +76,7 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
         _isRestoring = isRestoring;
     }
 
-    public override int Execute()
+    protected override int ExecuteCore()
     {
         if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
         {

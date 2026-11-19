@@ -46,12 +46,12 @@ internal sealed class WorkloadUninstallCommand : WorkloadCommandBase<WorkloadUni
         _userProfileDir = creationResult.UserProfileDir;
 
         var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
-        _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, creationResult.WorkloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath);
+        _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, creationResult.WorkloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath, TempDirectoryPath);
         _recorder = new(_workloadResolverFactory.Create().WorkloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
         _recorder.HistoryRecord.CommandName = "uninstall";
     }
 
-    public override int Execute()
+    protected override int ExecuteCore()
     {
         try
         {

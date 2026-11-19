@@ -98,6 +98,13 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
     protected bool IsPackageDownloaderProvided { get; }
 
     /// <summary>
+    /// The temporary directory this command created for <see cref="TempDirectoryPath"/>, or <see langword="null"/> when the
+    /// directory was supplied by the caller or by the <c>--temp-dir</c> option. Only a directory the command created is
+    /// deleted when it completes.
+    /// </summary>
+    private readonly TemporaryDirectory? _ownedTempDirectory;
+
+    /// <summary>
     /// Initializes a new <see cref="WorkloadCommandBase"/> instance.
     /// </summary>
     /// <param name="parseResult">The results of parsing the command line.</param>
@@ -124,11 +131,20 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
 
         Reporter = reporter ?? Utils.Reporter.Output;
 
-        TempDirectoryPath = !string.IsNullOrWhiteSpace(tempDirPath)
-            ? tempDirPath
-            : Definition.TempDirOption != null && !string.IsNullOrWhiteSpace(parseResult.GetValue(Definition.TempDirOption))
-                ? parseResult.GetValue(Definition.TempDirOption)!
-                : TemporaryDirectory.CreateSubdirectory();
+        if (!string.IsNullOrWhiteSpace(tempDirPath))
+        {
+            TempDirectoryPath = tempDirPath;
+        }
+        else if (Definition.TempDirOption != null && !string.IsNullOrWhiteSpace(parseResult.GetValue(Definition.TempDirOption)))
+        {
+            TempDirectoryPath = parseResult.GetValue(Definition.TempDirOption)!;
+        }
+        else
+        {
+            _ownedTempDirectory = new TemporaryDirectory();
+            UnfinishedTempDirectories.Add(_ownedTempDirectory);
+            TempDirectoryPath = _ownedTempDirectory.DirectoryPath;
+        }
 
         TempPackagesDirectory = new DirectoryPath(Path.Combine(TempDirectoryPath, "dotnet-sdk-advertising-temp"));
 
@@ -146,6 +162,80 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
                 nugetLogger,
                 Reporter,
                 RestoreActionConfiguration);
+        }
+    }
+
+    /// <summary>
+    /// Runs the command, then deletes the temporary directory if the command created it, so downloaded packages and
+    /// extracted manifests don't accumulate in the user's temp folder.
+    /// </summary>
+    public sealed override int Execute()
+    {
+        try
+        {
+            return ExecuteCore();
+        }
+        finally
+        {
+            if (_ownedTempDirectory is not null)
+            {
+                _ownedTempDirectory.Dispose();
+                UnfinishedTempDirectories.Remove(_ownedTempDirectory);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Runs the command. When the command created <see cref="TempDirectoryPath"/>, it is deleted once this call returns,
+    /// so nothing written there may be relied on afterwards.
+    /// </summary>
+    protected abstract int ExecuteCore();
+}
+
+/// <summary>
+/// Temporary directories created by workload commands that haven't finished <c>Execute</c>. The base constructor creates
+/// the directory, so a command whose own constructor then throws (an unsupported option, a dotnet root the user can't
+/// write to) never reaches <c>Execute</c> to delete it. Those directories are deleted when the process exits instead.
+/// </summary>
+file static class UnfinishedTempDirectories
+{
+    private static readonly HashSet<TemporaryDirectory> s_directories = [];
+    private static bool s_deleteOnProcessExit;
+
+    public static void Add(TemporaryDirectory directory)
+    {
+        lock (s_directories)
+        {
+            if (!s_deleteOnProcessExit)
+            {
+                AppDomain.CurrentDomain.ProcessExit += (_, _) => DeleteAll();
+                s_deleteOnProcessExit = true;
+            }
+
+            s_directories.Add(directory);
+        }
+    }
+
+    public static void Remove(TemporaryDirectory directory)
+    {
+        lock (s_directories)
+        {
+            s_directories.Remove(directory);
+        }
+    }
+
+    private static void DeleteAll()
+    {
+        TemporaryDirectory[] directories;
+        lock (s_directories)
+        {
+            directories = [.. s_directories];
+            s_directories.Clear();
+        }
+
+        foreach (var directory in directories)
+        {
+            directory.Dispose();
         }
     }
 }

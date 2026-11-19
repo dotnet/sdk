@@ -3,10 +3,14 @@
 
 #nullable disable
 
+using System.IO.Compression;
+using System.Reflection;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
 
@@ -130,6 +134,53 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             packageSourceLocation.Should().NotBeNull();
             packageSourceLocation.SourceFeedOverrides.Should().ContainSingle().Which.Should().EndWith("myfeed");
             packageSourceLocation.NugetConfig.Value.Value.Should().Contain("mynuget.config");
+        }
+
+        [TestMethod]
+        public void GivenWorkloadSearchVersionForASpecificVersionItDeletesTheDownloadedWorkloadSet()
+        {
+            var feedDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            CreateWorkloadSetPackage(feedDirectory, featureBand: "9.0.100", packageVersion: "9.100.0", workloadSetJson: """{ "Microsoft.NET.Sdk.Android": "35.0.7/9.0.100" }""");
+            var parseResult = Parser.Parse(["dotnet", "workload", "search", "version", "9.0.100", "--source", feedDirectory]);
+            MockWorkloadResolver resolver = new(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
+
+            // No installer is passed, so the command uses a real FileBasedInstaller, which downloads and extracts the
+            // workload set package into its temp directory.
+            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, resolver: resolver, sdkVersion: new ReleaseVersion(9, 0, 100));
+            const BindingFlags InstanceFields = BindingFlags.Instance | BindingFlags.NonPublic;
+            var installer = (FileBasedInstaller)typeof(WorkloadSearchVersionsCommand).GetField("_installer", InstanceFields).GetValue(command);
+            var installerTempDirectory = ((DirectoryPath)typeof(FileBasedInstaller).GetField("_tempPackagesDir", InstanceFields).GetValue(installer)).Value;
+            _reporter.Clear();
+
+            command.Execute().Should().Be(0);
+
+            _reporter.Lines.Should().Contain(line => line.Contains("Microsoft.NET.Sdk.Android", StringComparison.OrdinalIgnoreCase) && line.Contains("35.0.7"));
+            Directory.Exists(installerTempDirectory).Should().BeFalse();
+        }
+
+        private static void CreateWorkloadSetPackage(string feedDirectory, string featureBand, string packageVersion, string workloadSetJson)
+        {
+            var packageId = $"Microsoft.NET.Workloads.{featureBand}";
+            using var archive = ZipFile.Open(Path.Combine(feedDirectory, $"{packageId}.{packageVersion}.nupkg"), ZipArchiveMode.Create);
+            using (var writer = new StreamWriter(archive.CreateEntry($"{packageId}.nuspec").Open()))
+            {
+                writer.Write($"""
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <package>
+                      <metadata>
+                        <id>{packageId}</id>
+                        <version>{packageVersion}</version>
+                        <authors>Test</authors>
+                        <description>Test workload set</description>
+                      </metadata>
+                    </package>
+                    """);
+            }
+
+            using (var writer = new StreamWriter(archive.CreateEntry("data/microsoft.net.workloads.workloadset.json").Open()))
+            {
+                writer.Write(workloadSetJson);
+            }
         }
 
         [TestMethod]

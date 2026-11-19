@@ -58,7 +58,7 @@ internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepair
         _recorder.HistoryRecord.CommandName = "repair";
     }
 
-    public override int Execute()
+    protected override int ExecuteCore()
     {
         try
         {

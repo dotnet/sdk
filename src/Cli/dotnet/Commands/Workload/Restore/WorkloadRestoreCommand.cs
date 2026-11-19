@@ -26,7 +26,7 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
         _slnOrProjectArgument = result.GetValue(Definition.SlnOrProjectArgument);
     }
 
-    public override int Execute()
+    protected override int ExecuteCore()
     {
         var workloadResolverFactory = new WorkloadResolverFactory();
         var creationResult = workloadResolverFactory.Create();

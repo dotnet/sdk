@@ -40,7 +40,8 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         string? currentSdkVersion = null,
         string? dotnetDir = null,
         string? userProfileDir = null,
-        IWorkloadResolver? workloadResolver = null)
+        IWorkloadResolver? workloadResolver = null,
+        string? tempDirPath = null)
     {
         DotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath)!;
         ReleaseVersion currentSdkReleaseVersion = new(currentSdkVersion ?? Product.Version);
@@ -58,50 +59,53 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
             ManifestProvider, DotnetPath,
             currentSdkReleaseVersion.ToString(), userProfileDir);
 
-#if CLI_AOT
-        // The NativeAOT build does not compile in the workload installer (NuGet/MSI machinery). The info
-        // path only needs the installation-record repository, so build it directly here - mirroring the
-        // read-only construction in WorkloadInstallDetector.
+        // Reading installation records doesn't need the workload installer (NuGet/MSI machinery), so build the
+        // repository directly here - mirroring the read-only construction in WorkloadInstallDetector.
         WorkloadRecordRepo = workloadRecordRepo ?? CreateInstallationRecordRepository(DotnetPath, _currentSdkFeatureBand, userProfileDir);
 
+#if CLI_AOT
         UserLocalPath = dotnetDir ?? (FileBasedWorkloadInstallationRecordRepositoryFactory.IsUserLocal(DotnetPath, _currentSdkFeatureBand) ? userProfileDir : DotnetPath);
 #else
         var restoreConfig = new RestoreActionConfig(Interactive: isInteractive);
 
+        // Only `dotnet workload list` uses the installer, so create it on first use. Without a tempDirPath the
+        // installer creates a temp directory that nothing deletes, and the read-only callers (`dotnet --info`,
+        // `dotnet workload --info` and `--version`, and `dotnet new`) have no lifetime to delete it in.
         // When verifyMsiSignature is not specified by the caller, we delegate to
         // WorkloadUtilities.ShouldVerifySignatures() which respects the registry policy
         // and dotnet host signing status.
-        Installer = WorkloadInstallerFactory.GetWorkloadInstaller(
+        _installer = new Lazy<IInstaller>(() => WorkloadInstallerFactory.GetWorkloadInstaller(
             reporter,
             _currentSdkFeatureBand,
             WorkloadResolver,
             verbosity,
             userProfileDir,
             verifyMsiSignature: verifyMsiSignature ?? WorkloadUtilities.ShouldVerifySignatures(),
+            tempDirPath: tempDirPath,
             restoreActionConfig: restoreConfig,
             elevationRequired: false,
-            shouldLog: false);
-
-        WorkloadRecordRepo = workloadRecordRepo ?? Installer.GetWorkloadInstallationRecordRepository();
+            shouldLog: false));
 
         UserLocalPath = dotnetDir ?? (WorkloadFileBasedInstall.IsUserLocal(DotnetPath, _currentSdkFeatureBand.ToString()) ? userProfileDir : DotnetPath);
 #endif
     }
 
-#if CLI_AOT
-    // Build the installation-record repository without the workload installer (not compiled into the
-    // AOT build). Mirrors WorkloadInstallDetector: registry-backed for MSI installs on Windows,
-    // file-based otherwise.
+    // Registry-backed for MSI installs on Windows, file-based otherwise, matching the repository the workload
+    // installer would provide.
     private static IWorkloadInstallationRecordRepository CreateInstallationRecordRepository(string dotnetDir, SdkFeatureBand sdkFeatureBand, string userProfileDir)
-        => WorkloadInstallType.GetWorkloadInstallType(sdkFeatureBand, dotnetDir) switch
+    {
+        if (OperatingSystem.IsWindows() && WorkloadInstallType.GetWorkloadInstallType(sdkFeatureBand, dotnetDir) == InstallType.Msi)
         {
-            InstallType.Msi => new ReadOnlyWindowsWorkloadInstallationRecordRepository(),
-            _ => FileBasedWorkloadInstallationRecordRepositoryFactory.Create(dotnetDir, sdkFeatureBand, userProfileDir),
-        };
-#endif
+            return new ReadOnlyWindowsWorkloadInstallationRecordRepository();
+        }
+
+        return FileBasedWorkloadInstallationRecordRepositoryFactory.Create(dotnetDir, sdkFeatureBand, userProfileDir);
+    }
 
 #if !CLI_AOT
-    public IInstaller Installer { get; private init; }
+    private readonly Lazy<IInstaller> _installer;
+
+    public IInstaller Installer => _installer.Value;
 #endif
     public SdkDirectoryWorkloadManifestProvider ManifestProvider { get; }
     public IWorkloadInstallationRecordRepository WorkloadRecordRepo { get; private init; }

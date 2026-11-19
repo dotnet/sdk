@@ -43,10 +43,10 @@ internal sealed class WorkloadCleanCommand : WorkloadCommandBase<WorkloadCleanCo
         _sdkVersion = creationResult.SdkVersion;
 
         var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
-        _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, creationResult.WorkloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath);
+        _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, creationResult.WorkloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath, TempDirectoryPath);
     }
 
-    public override int Execute()
+    protected override int ExecuteCore()
     {
         ExecuteGarbageCollection();
         return 0;
