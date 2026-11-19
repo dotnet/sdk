@@ -325,7 +325,7 @@ public static class Parser
             }
             else if (command is VSTestCommandDefinition)
             {
-                new VSTestForwardingApp(helpArgs).Execute();
+                new VSTestForwardingApp(helpArgs, useArtifactsDirectory: false).Execute();
             }
             else if (command is FormatCommandDefinition format)
             {
