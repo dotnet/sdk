@@ -35,7 +35,8 @@ internal static class MSBuildUtility
     {
         using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
 
-        int buildExitCode = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
+        solutionFilePath = Path.GetFullPath(solutionFilePath, buildSession.WorkingDirectory);
+        int buildExitCode = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions, buildSession);
 
         if (buildExitCode != 0)
         {
@@ -87,6 +88,8 @@ internal static class MSBuildUtility
     {
         using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
 
+        projectFilePath = Path.GetFullPath(projectFilePath, buildSession.WorkingDirectory);
+
         // Pre-build device selection: evaluate the project to select devices BEFORE building,
         // so that device-provided RuntimeIdentifiers are included in the build.
         var deviceEvaluation = SolutionAndProjectUtility.EvaluateProjectForDeviceSelection(
@@ -106,7 +109,7 @@ internal static class MSBuildUtility
             return BuildPerTfmWithDevices(projectFilePath, buildOptions, deviceSelection, buildSession);
         }
 
-        int buildExitCode = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
+        int buildExitCode = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions, buildSession);
 
         if (buildExitCode != 0)
         {
@@ -175,7 +178,7 @@ internal static class MSBuildUtility
                 Device = device,
             };
 
-            int exitCode = BuildOrRestoreProjectOrSolution(projectFilePath, perTfmBuildOptions);
+            int exitCode = BuildOrRestoreProjectOrSolution(projectFilePath, perTfmBuildOptions, buildSession);
             if (exitCode != 0)
             {
                 return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), exitCode);
@@ -394,7 +397,7 @@ internal static class MSBuildUtility
     }
 
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
+    private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions, MSBuildSession buildSession)
     {
         if (buildOptions.HasNoBuild)
         {
@@ -442,7 +445,17 @@ internal static class MSBuildUtility
                 }
             }
 
-            return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
+            var command = new RestoringCommand(
+                parsedMSBuildArgs,
+                buildOptions.HasNoRestore,
+                msbuildPath: null,
+                userProfileDir: null,
+                advertiseWorkloadUpdates: null,
+                workingDirectory: buildSession.WorkingDirectory);
+
+            return buildSession.RequiresOutOfProcessBuild
+                ? command.ExecuteOutOfProc(buildSession.WorkingDirectory)
+                : command.Execute();
         }
         finally
         {

@@ -6,10 +6,10 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
+namespace Microsoft.DotNet.HotReload;
 
 /// <summary>
-/// Reads and writes the two JSON documents that describe the <c>dotnet watch</c> browser tools key
+/// Creates, validates, and reuses the two JSON documents that describe the <c>dotnet watch</c> key
 /// pair. The public document is the only half that is ever pinned into the application build output;
 /// the private document is consumed exclusively by <c>dotnet watch</c> to key its provider.
 ///
@@ -21,8 +21,75 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 /// than PKCS#8 because the task runs on .NET Framework as well, where the PKCS#8 import and export
 /// APIs are not available.
 /// </summary>
-internal static class BrowserToolsKeyPair
+internal static class HotReloadKeyPair
 {
+    public static (string publicKey, bool isNewKey) GetOrCreate(string publicKeyPath, string privateKeyPath, Action<string> log)
+    {
+        if (TryReuseExistingKeyPair(publicKeyPath, privateKeyPath, log, out var existingPublicKey))
+        {
+            log("Reusing the existing Hot Reload key pair.");
+            return (existingPublicKey, false);
+        }
+
+        var (publicKey, parameters) = Create();
+
+        var directory = Path.GetDirectoryName(privateKeyPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        directory = Path.GetDirectoryName(publicKeyPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        // Write the private half first so an interrupted write cannot leave a usable public
+        // document without a matching private key.
+        File.WriteAllBytes(privateKeyPath, CreatePrivateKeyDocument(publicKey, parameters));
+        File.WriteAllBytes(publicKeyPath, CreatePublicKeyDocument(publicKey));
+
+        log("Generated a new Hot Reload key pair.");
+        return (publicKey, true);
+    }
+
+    private static bool TryReuseExistingKeyPair(string publicKeyPath, string privateKeyPath, Action<string> log, out string publicKey)
+    {
+        publicKey = null;
+
+        var publicDocument = TryReadPublicKeyFile(publicKeyPath);
+        if (!publicDocument.IsValid)
+        {
+            log($"Regenerating the Hot Reload key pair because the public key document is not usable: {publicDocument.Reason}.");
+            return false;
+        }
+
+        var privateDocument = TryReadPrivateKeyFile(privateKeyPath);
+        if (!privateDocument.IsValid)
+        {
+            log($"Regenerating the Hot Reload key pair because the private key document is not usable: {privateDocument.Reason}.");
+            return false;
+        }
+
+        if (!string.Equals(publicDocument.PublicKey, privateDocument.PublicKey, StringComparison.Ordinal))
+        {
+            log("Regenerating the Hot Reload key pair because the two documents describe different keys.");
+            return false;
+        }
+
+        // Validate the actual private key, not just the public value recorded alongside it.
+        if (!TryDerivePublicKey(privateDocument.Parameters, out var derivedPublicKey) ||
+            !string.Equals(derivedPublicKey, publicDocument.PublicKey, StringComparison.Ordinal))
+        {
+            log("Regenerating the Hot Reload key pair because the private key does not match the public key.");
+            return false;
+        }
+
+        publicKey = publicDocument.PublicKey;
+        return true;
+    }
+
     public const int CurrentVersion = 1;
 
     /// <summary>

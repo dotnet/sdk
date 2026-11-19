@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -40,6 +41,8 @@ namespace Microsoft.NetCore.Analyzers.Security
         /// SharedAccessProtocol.HttpsOnly = 1, SharedAccessProtocol.HttpsOrHttp = 2.
         /// </summary>
         private const int SharedAccessProtocolHttpsOnly = 1;
+
+        internal Action? ValueContentAnalysisStarted { get; set; }
 
         public override void Initialize(AnalysisContext context)
         {
@@ -128,6 +131,20 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                             if (protocolsArgumentOperation != null)
                             {
+                                IOperation protocolValue = protocolsArgumentOperation.Value.WalkDownConversion(
+                                    conversion => conversion.OperatorMethod is null);
+                                if (protocolValue.Type?.Equals(sharedAccessProtocolTypeSymbol) == true &&
+                                    protocolValue.ConstantValue.HasValue &&
+                                    protocolValue.ConstantValue.Value is int protocol)
+                                {
+                                    if (protocol != SharedAccessProtocolHttpsOnly)
+                                    {
+                                        operationAnalysisContext.ReportDiagnostic(invocationOperation.CreateDiagnostic(Rule));
+                                    }
+
+                                    return;
+                                }
+
                                 if (invocationOperation.TryGetEnclosingControlFlowGraph(out var cfg))
                                 {
                                     var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
@@ -137,6 +154,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                         operationAnalysisContext.Compilation,
                                                                         defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.None,
                                                                         defaultMaxInterproceduralMethodCallChain: 1);
+                                    ValueContentAnalysisStarted?.Invoke();
                                     var valueContentAnalysisResult = ValueContentAnalysis.TryGetOrComputeResult(
                                                                                                 cfg,
                                                                                                 owningSymbol,

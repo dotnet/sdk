@@ -46,6 +46,59 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             // The example hint in the error output should reference 'dotnet test' (not 'dotnet run').
             .And.HaveStdErrContaining("dotnet test --device")
             .And.NotHaveStdErrContaining("dotnet run --device");
+
+        result.StdErr?.Split(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
+            .Should().HaveCount(2, "the multiple-device diagnostic should be reported only once");
+    }
+
+    [TestMethod]
+    public void ItReportsNoDevicesForExplicitFrameworkWithoutClaimingMultipleDevices()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "-p:NoDevices=true");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.RunCommandNoDevicesAvailable)
+            .And.HaveStdErrContaining($"target framework '{ToolsetInfo.CurrentTargetFramework}'")
+            .And.HaveStdErrContaining(Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"))
+            .And.NotHaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ItIdentifiesFrameworkWithNoDevicesDuringMultiTargetSelection(bool failAfterFirstSelection)
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: failAfterFirstSelection.ToString())
+            .WithSource();
+        string frameworkWithNoDevices = failAfterFirstSelection ? ToolsetInfo.CurrentTargetFramework : "net9.0";
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("-p:SingleDevice=true", $"-p:NoDevicesTargetFramework={frameworkWithNoDevices}", "-bl");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.RunCommandNoDevicesAvailable)
+            .And.HaveStdErrContaining($"target framework '{frameworkWithNoDevices}'")
+            .And.HaveStdErrContaining(Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"))
+            .And.NotHaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
+            .And.NotHaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+
+        string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog");
+        AssertTargetInBinlog(
+            binlogPath,
+            "ComputeAvailableDevices",
+            targets => targets.Should().HaveCount(failAfterFirstSelection ? 2 : 1));
+        AssertTargetInBinlog(
+            binlogPath,
+            "DeployToDevice",
+            targets => targets.Should().BeEmpty("device selection must succeed for all frameworks before deployment"));
     }
 
     [TestMethod]
@@ -244,7 +297,9 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             .Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
             .And.HaveStdErrContaining("test-device-1")
-            .And.HaveStdErrContaining("test-device-2");
+            .And.HaveStdErrContaining("test-device-2")
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.TestCommandDeviceSelectionFailed, projectPath))
+            .And.NotHaveStdErrContaining("target framework ''");
     }
 
     [TestMethod]
@@ -765,20 +820,26 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
-    public void ItFailsWhenDeployToDeviceTargetFails()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ItFailsWhenDeployToDeviceTargetFails(bool multiThreaded)
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "DeployFailure")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: $"DeployFailure-{multiThreaded}")
             .WithSource();
 
         var result = new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(testInstance.Path)
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDDISABLEFEATURESFROMVERSION", "")
             .Execute(
                 "--framework",
                 ToolsetInfo.CurrentTargetFramework,
                 "--device",
                 "test-device-1",
-                "-p:FailDeployToDevice=true");
+                "-p:FailDeployToDevice=true",
+                $"-mt:{multiThreaded}");
 
         result.Should().Fail()
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandDeployFailed)
@@ -788,20 +849,26 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
-    public void ItFailsWhenComputeRunArgumentsTargetFails()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ItFailsWhenComputeRunArgumentsTargetFails(bool multiThreaded)
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "ComputeRunArgumentsFailure")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: $"ComputeRunArgumentsFailure-{multiThreaded}")
             .WithSource();
 
         var result = new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(testInstance.Path)
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDDISABLEFEATURESFROMVERSION", "")
             .Execute(
                 "--framework",
                 ToolsetInfo.CurrentTargetFramework,
                 "--device",
                 "test-device-1",
-                "-p:FailComputeRunArguments=true");
+                "-p:FailComputeRunArguments=true",
+                $"-mt:{multiThreaded}");
 
         result.Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, "ComputeRunArguments"))

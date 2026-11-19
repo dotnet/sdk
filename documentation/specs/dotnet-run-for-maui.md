@@ -124,8 +124,16 @@ device selection:
   device. This means a project targeting both Android and iOS may
   prompt twice.
 
-  * In non-interactive mode, this will error with a friendly message
-    suggesting the `--device` switch, same as `dotnet run`.
+  * A single available device is selected automatically. Multiple devices
+    in non-interactive mode produce an error suggesting the `--device`
+    switch, same as `dotnet run`.
+
+  * If no devices are available, the command fails and identifies the
+    project and target framework that failed device selection. Selecting
+    an Android device does not limit the run to Android: device selection
+    must succeed for every requested device-capable framework before any
+    per-framework build or deployment starts. Use `-f` to limit the run
+    to a framework supported by the current environment.
 
 * **`--device` forces a `$(TargetFramework)` prompt** — if `--device`
   is passed, the user _must_ be prompted to select a single

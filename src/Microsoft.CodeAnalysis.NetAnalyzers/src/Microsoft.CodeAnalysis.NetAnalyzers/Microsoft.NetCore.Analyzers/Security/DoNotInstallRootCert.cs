@@ -117,7 +117,10 @@ namespace Microsoft.NetCore.Analyzers.Security
                             }
 
                             return PropertySetAbstractValue.GetInstance(kind);
-                        });
+                        },
+                        constructorMethod => constructorMethod.Parameters.IsEmpty
+                            ? PropertySetAbstractValue.GetInstance(PropertySetAbstractValueKind.Unflagged)
+                            : null);
 
                     var rootOperationsNeedingAnalysis = PooledHashSet<(IOperation, ISymbol)>.GetInstance();
 
