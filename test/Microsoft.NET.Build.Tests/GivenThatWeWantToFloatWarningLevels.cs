@@ -555,7 +555,8 @@ namespace Microsoft.NET.Build.Tests
             // than the generators in the SDK reference. We aren't testing the generators here
             // and this failure will occur more clearly in other places when it's
             // actually an important failure, so don't error out here.
-            testProject.AdditionalProperties.Add("NoWarn", "CS9057");
+            // The VS compatibility warning is also unrelated to analyzer configuration.
+            testProject.AdditionalProperties.Add("NoWarn", "CS9057;NETSDK1245");
 
             var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "analysisLevelConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel + $"Warnaserror:{codeAnalysisTreatWarningsAsErrors}");

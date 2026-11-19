@@ -153,6 +153,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NetSdkWarning ResourceName="Net10NotCompatibleWithVS17"/>
   </Target>
 
+  <Target Name="_WarnWhenUsingNET11AndVSPriorTo1812"
+        BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+        Condition="$([MSBuild]::VersionLessThan($(MSBuildVersion), '18.12.0')) and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '11.0'))">
+    <NetSdkWarning ResourceName="Net11NotCompatibleWithVS1811"/>
+  </Target>
+
   <Target Name="_CheckForInvalidWindowsDesktopTargetingConfiguration"
         BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
         Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '5.0')) and ('$(UseWindowsForms)' == 'true' or '$(UseWPF)' == 'true')">
