@@ -121,7 +121,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         }
                     }
                     else if (fieldSymbol.HasAnyAttribute(fixedAddressValueTypeAttributeType) &&
-                        (fieldSymbol.Type.IsReferenceType || fieldSymbol.Type.IsPrimitiveType() || fieldSymbol.Type.SpecialType is SpecialType.System_IntPtr or SpecialType.System_UIntPtr || fieldSymbol.Type.TypeKind == TypeKind.Enum))
+                        (fieldSymbol.Type.IsReferenceType || fieldSymbol.Type.IsPrimitiveType() || fieldSymbol.Type.SpecialType is SpecialType.System_IntPtr or SpecialType.System_UIntPtr || fieldSymbol.Type.TypeKind is TypeKind.Enum or TypeKind.Pointer or TypeKind.FunctionPointer))
                     {
                         // A type parameter only counts when it is constrained to a reference type, since it may be a struct otherwise.
                         context.ReportDiagnostic(symbol.CreateDiagnostic(UnsupportedTypeFieldRule, "FixedAddressValueType", symbol.Name));

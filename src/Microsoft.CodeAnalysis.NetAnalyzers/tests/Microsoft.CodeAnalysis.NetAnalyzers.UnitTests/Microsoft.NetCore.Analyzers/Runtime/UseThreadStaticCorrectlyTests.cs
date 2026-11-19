@@ -313,6 +313,38 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [TestMethod]
+        public async Task FixedAddressValueTypeOnPointerStaticField_Diagnostic_CSharp()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp10,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                TestCode = """
+                    using System.Runtime.CompilerServices;
+
+                    unsafe class C
+                    {
+                        [FixedAddressValueType]
+                        static int* {|#0:s_pointer|};
+
+                        [FixedAddressValueType]
+                        static delegate*<void> {|#1:s_functionPointer|};
+                    }
+                    """,
+                SolutionTransforms =
+                {
+                    (solution, projectId) => solution.WithProjectCompilationOptions(projectId,
+                        ((CSharpCompilationOptions)solution.GetProject(projectId)!.CompilationOptions!).WithAllowUnsafe(true))
+                },
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(0).WithArguments("FixedAddressValueType", "s_pointer"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(1).WithArguments("FixedAddressValueType", "s_functionPointer"),
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
         public async Task FixedAddressValueTypeOnReferenceTypeInstanceField_ReportsOnlyNonStatic_CSharp()
         {
             await new VerifyCS.Test
