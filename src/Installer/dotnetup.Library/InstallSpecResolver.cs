@@ -77,9 +77,24 @@ internal static class InstallSpecResolver
             {
                 Spec = spec.MinimumVersion is { } minimum && spec.AllowPrerelease is { } previews
                     ? new UpdateChannel(spec.VersionOrChannel, new ReleaseVersion(minimum), previews) : null,
-                Error = string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError,
-                    spec.GlobalJsonPath, ex.Message)
+                Failure = ex is JsonException json && !string.IsNullOrEmpty(spec.GlobalJsonPath)
+                    ? GlobalJsonHelper.CreateMalformedGlobalJsonException(spec.GlobalJsonPath, json)
+                    : GlobalJsonHelper.CreateUnreadableGlobalJsonException(spec.GlobalJsonPath, ex)
             };
         }
+    }
+
+    /// <summary>
+    /// Evaluates the SDK requirement of the global.json file a command relies on, using
+    /// <paramref name="contents"/> when already parsed. Returns null when the file has no SDK version.
+    /// </summary>
+    /// <exception cref="DotnetInstallException">The file cannot be read or is malformed.</exception>
+    public static UpdateChannel? EvaluateGlobalJsonForCommand(string globalJsonPath, GlobalJsonContents? contents)
+    {
+        var evaluation = Evaluate(new InstallSpec
+        {
+            Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson, GlobalJsonPath = globalJsonPath
+        }, contents);
+        return evaluation.Failure is { } failure ? throw failure : evaluation.Spec;
     }
 }

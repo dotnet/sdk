@@ -68,6 +68,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.ReleaseLookupFailed => ErrorCategory.Product,
             DotnetInstallErrorCode.AdminPathBlocked => ErrorCategory.User,
             DotnetInstallErrorCode.ContextResolutionFailed => ErrorCategory.User,
+            DotnetInstallErrorCode.MalformedGlobalJson => ErrorCategory.User,
             DotnetInstallErrorCode.InstallFailed => ErrorCategory.Product,
             DotnetInstallErrorCode.PlatformNotSupported => ErrorCategory.User,
             DotnetInstallErrorCode.UninstallTargetNotFound => ErrorCategory.User,

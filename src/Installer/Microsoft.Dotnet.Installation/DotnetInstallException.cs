@@ -193,6 +193,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>The install would overwrite a different build of the same component that uses the same on-disk version folder.</summary>
     InstallLayoutConflict,
+
+    /// <summary>A global.json file that the command needs to read is not valid JSON or has invalid SDK settings.</summary>
+    MalformedGlobalJson,
 }
 
 /// <summary>

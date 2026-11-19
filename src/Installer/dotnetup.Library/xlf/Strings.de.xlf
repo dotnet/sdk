@@ -661,6 +661,11 @@ Or open a new terminal.</target>
         <target state="new">Warning: {0} {1} is invalid: {2}</target>
         <note>0: component, 1: version, 2: validation failure.</note>
       </trans-unit>
+      <trans-unit id="MalformedGlobalJson">
+        <source>The global.json file '{0}' is malformed: {1}</source>
+        <target state="new">The global.json file '{0}' is malformed: {1}</target>
+        <note>{Locked="global.json"} {0} is the path to the global.json file. {1} is a short description of the parse or validation failure.</note>
+      </trans-unit>
       <trans-unit id="ManifestSchemaVersionTooNew">
         <source>The dotnetup manifest at '{0}' uses schema version {1}, but this version of dotnetup supports up to version {2}. Update dotnetup to read this manifest.</source>
         <target state="new">The dotnetup manifest at '{0}' uses schema version {1}, but this version of dotnetup supports up to version {2}. Update dotnetup to read this manifest.</target>

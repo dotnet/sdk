@@ -401,7 +401,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         rows.Count(r => r.Spec is null).Should().Be(2);
 
         InstallationListRenderer.Write(Output, new ListData { InstallSpecs = [spec], Installations = installations }, width: 200);
-        Output.ToString().Should().Contain("Unknown").And.Contain("Warning: Cannot read");
+        Output.ToString().Should().Contain("Unknown").And.Contain("is malformed");
     }
 
     [TestMethod]
@@ -514,7 +514,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         row.Installation!.Version.Should().Be("10.0.105");
         row.Error.Should().Contain(path);
         InstallationListRenderer.Write(Output, data, width: 250);
-        Output.ToString().Should().Contain("last known").And.Contain("Warning: Cannot read");
+        Output.ToString().Should().Contain("last known").And.Contain("is malformed");
         File.ReadAllText(manifestPath).Should().Be(before);
 
         using var jsonOutput = new StringWriter();

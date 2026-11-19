@@ -233,13 +233,13 @@ internal class UpdateWorkflow
     {
         var evaluation = InstallSpecResolver.Evaluate(spec);
         usesLastKnownRequirement = evaluation.UsesLastKnownRequirement;
-        if (evaluation.Error is not null)
+        if (evaluation.Failure is { } failure)
         {
             if (!usesLastKnownRequirement)
             {
-                throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error);
+                throw failure;
             }
-            AnsiConsole.MarkupLine(DotnetupTheme.Warning(evaluation.Error.EscapeMarkup()));
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(failure.Message.EscapeMarkup()));
             AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
                 Strings.RepositoryUsingLastKnownRequirement, spec.GlobalJsonPath).EscapeMarkup()));
         }
@@ -260,7 +260,11 @@ internal class UpdateWorkflow
             }
             return false;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        catch (JsonException ex)
+        {
+            throw GlobalJsonHelper.CreateMalformedGlobalJsonException(globalJsonPath, ex);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed,
                 $"Failed to update '{globalJsonPath}': {ex.Message}", ex);

@@ -54,7 +54,7 @@ public class InstallWorkflowTests : IDisposable
         File.WriteAllText(path, $$$"""{"sdk":{"version":"10.0.103","allowPrerelease":false{{{policyProperty}}}}}""");
 
         var (channel, fromFile) = InstallWorkflow.ResolveChannel(
-            InstallComponent.SDK, null, GlobalJsonHelper.GetGlobalJsonInfo(_tempDir));
+            InstallComponent.SDK, null, GlobalJsonHelper.GetGlobalJsonInfo(_tempDir, parseContents: true));
 
         fromFile.Should().BeTrue();
         channel.Name.Should().Be(expectedChannel);
@@ -70,7 +70,7 @@ public class InstallWorkflowTests : IDisposable
     {
         var path = Path.Combine(_tempDir, "global.json");
         File.WriteAllText(path, """{"sdk":{"version":"10.0.103","allowPrerelease":false}}""");
-        var globalJson = GlobalJsonHelper.GetGlobalJsonInfo(_tempDir);
+        var globalJson = GlobalJsonHelper.GetGlobalJsonInfo(_tempDir, parseContents: true);
         if (replacement is null)
         {
             File.Delete(path);
@@ -92,16 +92,16 @@ public class InstallWorkflowTests : IDisposable
     [DataRow("{broken")]
     [DataRow("""{"sdk":{"version":"invalid"}}""")]
     [DataRow("""{"sdk":{"version":"10.0.103","rollForward":"invalid"}}""")]
-    public void ResolveChannel_MalformedGlobalJsonReportsContextResolutionFailure(string contents)
+    public void ResolveChannel_ReportsMalformedGlobalJson(string contents)
     {
         var path = Path.Combine(_tempDir, "global.json");
         File.WriteAllText(path, contents);
 
         var resolve = () => InstallWorkflow.ResolveChannel(
-            InstallComponent.SDK, null, GlobalJsonHelper.GetGlobalJsonInfo(_tempDir));
+            InstallComponent.SDK, null, GlobalJsonHelper.GetGlobalJsonInfo(_tempDir, parseContents: true));
 
         var error = resolve.Should().Throw<DotnetInstallException>().Which;
-        error.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        error.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         error.Message.Should().Contain(path);
     }
 
@@ -135,6 +135,45 @@ public class InstallWorkflowTests : IDisposable
             requests[0].ResolvedVersion.ToString().Should().Be("10.0.103");
             requests[0].Request.Options.GlobalJsonPath.Should().Be(expectedGlobalJsonPath);
             requests[0].Request.Options.InstallSource.Should().Be(InstallSource.GlobalJson);
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDirectory;
+        }
+    }
+
+    [TestMethod]
+    [DataRow(InstallComponent.SDK, "10.0.103", true, false)]
+    [DataRow(InstallComponent.Runtime, null, true, false)]
+    [DataRow(InstallComponent.SDK, null, true, true)]
+    [DataRow(InstallComponent.SDK, "10.0.103", false, true)]
+    public void NeedsGlobalJsonContents_OnlyWhenPathOrSdkChannelComesFromGlobalJson(
+        InstallComponent component, string? channel, bool explicitInstallPath, bool expected)
+    {
+        InstallWorkflow.NeedsGlobalJsonContents(
+            [new MinimalInstallSpec(component, channel)],
+            explicitInstallPath ? _tempDir : null).Should().Be(expected);
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_IgnoresMalformedGlobalJson_WhenContentsAreUnused()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "global.json"), "{ malformed");
+        using var testEnv = new TestEnvironment();
+        var command = new SdkInstallCommand(Parser.Parse(
+            ["sdk", "install", "10.0.103", "--install-path", testEnv.InstallPath, "--manifest-path", testEnv.ManifestPath]));
+        string originalDirectory = Environment.CurrentDirectory;
+        try
+        {
+            Environment.CurrentDirectory = _tempDir;
+
+            var requests = new InstallWorkflow(command).GenerateInstallRequests([new(InstallComponent.SDK, "10.0.103")]);
+
+            requests.Should().ContainSingle();
+            requests[0].ResolvedVersion.ToString().Should().Be("10.0.103");
+            requests[0].Request.Options.InstallSource.Should().Be(InstallSource.Explicit);
+            requests[0].Request.Options.GlobalJsonPath.Should().BeNull();
         }
         finally
         {

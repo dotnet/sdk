@@ -255,6 +255,45 @@ public class GlobalJsonUpdateTests : IDisposable
         File.ReadAllText(path).Should().Contain(expected);
     }
 
+    [TestMethod]
+    public void ApplyGlobalJsonModifications_ReportsMalformedGlobalJson()
+    {
+        var installRoot = new DotnetInstallRoot(Path.Combine(_testDir, "dotnet"), InstallerUtilities.GetDefaultInstallArchitecture());
+        var version = new ReleaseVersion("10.0.103");
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, "{ malformed");
+        var request = new DotnetInstallRequest(installRoot, new UpdateChannel("10.0.103"), InstallComponent.SDK,
+            new InstallRequestOptions { GlobalJsonPath = path });
+
+        var apply = () => new DotnetEnvironmentManager().ApplyGlobalJsonModifications(
+            [new ResolvedInstallRequest(request, version)], []);
+
+        var error = apply.Should().Throw<DotnetInstallException>().Which;
+        error.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
+        error.Message.Should().Contain(path);
+        File.ReadAllText(path).Should().Be("{ malformed");
+    }
+
+    [TestMethod]
+    public void ApplyGlobalJsonModifications_ReportsUnreadableGlobalJson()
+    {
+        var installRoot = new DotnetInstallRoot(Path.Combine(_testDir, "dotnet"), InstallerUtilities.GetDefaultInstallArchitecture());
+        var version = new ReleaseVersion("10.0.103");
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, """{"sdk":{"version":"10.0.100"}}""");
+        var request = new DotnetInstallRequest(installRoot, new UpdateChannel("10.0.103"), InstallComponent.SDK,
+            new InstallRequestOptions { GlobalJsonPath = path });
+        using var exclusiveLock = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+        var apply = () => new DotnetEnvironmentManager().ApplyGlobalJsonModifications(
+            [new ResolvedInstallRequest(request, version)], []);
+
+        var error = apply.Should().Throw<DotnetInstallException>().Which;
+        error.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        error.Message.Should().Contain(path);
+        error.InnerException.Should().BeAssignableTo<IOException>();
+    }
+
     // ──────────────────────────────────────────────────────────────
     //  Default behavior: --update-global-json is NOT on by default
     // ──────────────────────────────────────────────────────────────
@@ -307,7 +346,7 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, json, encoding);
 
-        var info = GlobalJsonHelper.GetGlobalJsonInfo(_testDir);
+        var info = GlobalJsonHelper.GetGlobalJsonInfo(_testDir, parseContents: true);
 
         info.GlobalJsonContents.Should().NotBeNull();
         info.GlobalJsonContents!.Sdk.Should().NotBeNull();
@@ -334,7 +373,7 @@ public class GlobalJsonUpdateTests : IDisposable
         File.WriteAllText(path, json, new UTF8Encoding(encoderShouldEmitUTF8Identifier: emitBom));
         var childDirectory = Directory.CreateDirectory(Path.Combine(_testDir, "child"));
 
-        var info = GlobalJsonHelper.GetGlobalJsonInfo(childDirectory.FullName);
+        var info = GlobalJsonHelper.GetGlobalJsonInfo(childDirectory.FullName, parseContents: true);
         var sdk = GlobalJsonChannelResolver.ReadSdkSection(path);
 
         info.GlobalJsonPath.Should().Be(path);
@@ -356,17 +395,48 @@ public class GlobalJsonUpdateTests : IDisposable
     [DataRow("null")]
     [DataRow("""{"sdk":[]}""")]
     [DataRow("""{"sdk":{"allowPrerelease":"false"}}""")]
-    public void GetGlobalJsonInfo_ReportsMalformedContentsAsContextResolutionFailure(string contents)
+    public void GetGlobalJsonInfo_ReportsMalformedContents(string contents)
     {
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, contents);
 
-        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir);
+        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir, parseContents: true);
 
         var error = read.Should().Throw<DotnetInstallException>().Which;
-        error.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        error.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         error.Message.Should().Contain(path);
         error.InnerException.Should().BeAssignableTo<JsonException>();
+    }
+
+    [TestMethod]
+    public void GetGlobalJsonInfo_ReturnsPathWithoutParsing_WhenContentsAreNotRequested()
+    {
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, "{ malformed");
+        var childDirectory = Directory.CreateDirectory(Path.Combine(_testDir, "child"));
+
+        var info = GlobalJsonHelper.GetGlobalJsonInfo(childDirectory.FullName, parseContents: false);
+
+        info.GlobalJsonPath.Should().Be(path);
+        info.GlobalJsonContents.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetGlobalJsonInfo_AcceptsCommentedOutSdkSettings()
+    {
+        // https://github.com/dotnet/sdk/issues/54961
+        File.WriteAllText(Path.Combine(_testDir, "global.json"), """
+            {
+                "sdk": {
+                    // "version": "10.0.100"
+                }
+            }
+            """);
+
+        var info = GlobalJsonHelper.GetGlobalJsonInfo(_testDir, parseContents: true);
+
+        info.GlobalJsonContents!.Sdk.Should().NotBeNull();
+        info.SdkVersion.Should().BeNull();
     }
 
     [TestMethod]
@@ -462,13 +532,13 @@ public class GlobalJsonUpdateTests : IDisposable
         byte[] contents = [..(emitBom ? encoding.GetPreamble() : []), ..encoding.GetBytes("""{"sdk":{"version":"10.0.103"}}""")];
         File.WriteAllBytes(path, contents);
 
-        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir);
+        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir, parseContents: true);
         var readSdk = () => GlobalJsonChannelResolver.ReadSdkSection(path);
         var update = () => GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
         var updateIfNewer = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
 
         read.Should().Throw<DotnetInstallException>()
-            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         readSdk.Should().Throw<JsonException>();
         update.Should().Throw<JsonException>();
         updateIfNewer.Should().Throw<JsonException>();
@@ -485,14 +555,14 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, contents);
 
-        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir);
+        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir, parseContents: true);
         var readSdk = () => GlobalJsonChannelResolver.ReadSdkSection(path);
         var update = () => GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
         var updateIfNewer = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
         var replace = () => GlobalJsonHelper.ReplaceGlobalJsonSdkVersion(contents, "10.0.105");
 
         read.Should().Throw<DotnetInstallException>()
-            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         readSdk.Should().Throw<JsonException>();
         update.Should().Throw<JsonException>();
         updateIfNewer.Should().Throw<JsonException>();
@@ -529,14 +599,14 @@ public class GlobalJsonUpdateTests : IDisposable
         File.WriteAllBytes(path, contents);
 
         var readFile = () => GlobalJsonHelper.ReadGlobalJson(path);
-        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir);
+        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir, parseContents: true);
         var readSdk = () => GlobalJsonChannelResolver.ReadSdkSection(path);
         var update = () => GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
         var updateIfNewer = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
 
         readFile.Should().Throw<JsonException>().Which.InnerException.Should().BeOfType<DecoderFallbackException>();
         read.Should().Throw<DotnetInstallException>()
-            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         readSdk.Should().Throw<JsonException>();
         update.Should().Throw<JsonException>();
         updateIfNewer.Should().Throw<JsonException>();
