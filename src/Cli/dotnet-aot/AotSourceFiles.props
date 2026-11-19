@@ -175,7 +175,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\CliConstants.cs" Link="Commands\Test\CliConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\TestCommand.cs" Link="Commands\Test\VSTest\TestCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\VSTestArgumentConverter.cs" Link="Commands\Test\VSTest\VSTestArgumentConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\VSTestFeatureFlag.cs" Link="Commands\Test\VSTest\VSTestFeatureFlag.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\**\*.cs"
              Exclude="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\MSBuildHandler.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\MSBuildUtility.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\SolutionAndProjectUtility.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\ValidationUtility.cs"
              LinkBase="Commands\Test\MTP" />
