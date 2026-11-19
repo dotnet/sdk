@@ -160,7 +160,6 @@ extends:
               image: windows.vs2026.amd64
               os: windows
               emoji: 🪟
-            helixTargetQueue: windows.amd64.vs2026.pre.scout
             oneESCompat:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
@@ -234,7 +233,7 @@ extends:
           parameters:
             pool:
               name: $(DncEngInternalBuildPool)
-              image: 1es-ubuntu-2204
+              image: build.azurelinux.3.amd64
               os: linux
             oneESCompat:
               templateFolderName: templates-official

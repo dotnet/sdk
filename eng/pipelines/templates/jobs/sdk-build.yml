@@ -296,7 +296,7 @@ jobs:
           condition: always()
 
     ############### POST ###############
-    - ${{ if eq(parameters.categoryName, 'Dotnetup') }}:
+    - ${{ if or(eq(parameters.categoryName, 'Dotnetup'), eq(parameters.categoryName, 'DotnetupMusl')) }}:
       - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
         displayName: Publish dotnetup daily, preview, and GA candidates
         inputs:

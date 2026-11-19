@@ -10,10 +10,11 @@ This proposal aims to improve this by improving the behavior of the uninstall co
 
 ## Implementation status
 
-The relationship-based text list layout is implemented, matching recorded
-channels and versions to installations. Full repository-policy resolution,
-last-known requirement fallback, migration provenance, and the uninstall changes
-described below remain proposed.
+The relationship-based text list layout, full repository-policy resolution,
+last-known requirement fallback, and migration provenance are implemented.
+Matching-spec uninstall and removal of `--source` are also implemented.
+Targeting an installed version without a matching standalone spec and the
+associated spec-removal prompts remain proposed.
 
 ## Proposed behavior
 
