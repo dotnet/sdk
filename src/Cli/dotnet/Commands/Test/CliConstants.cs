@@ -111,6 +111,9 @@ internal static class HandshakeMessagePropertyNames
 
     // Independently negotiated so coverage does not enable the 1.4 server-control protocol.
     internal const byte CoverageSummaryVersion = 20;
+
+    // Optional assembly target metadata, independent of the runtime in Framework.
+    internal const byte TargetFramework = 21;
 }
 
 internal static class HandshakeMessageExecutionModes

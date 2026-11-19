@@ -1,0 +1,23 @@
+<Project>
+  <ItemGroup>
+    <CompilerVisibleProperty Include="RootNamespace" />
+
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Generator" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="CliResourceGenerateSource" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="CliResourceFamily" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="WithCulture" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateSource" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RelativeDir" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ClassName" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ManifestResourceName" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Culture" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Link" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="TargetPath" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="OmitGetResourceString" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="AsConstants" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IncludeDefaultValues" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="EmitFormatMethods" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Public" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="NoWarn" />
+  </ItemGroup>
+</Project>

@@ -6,7 +6,6 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using Microsoft.Security.AntiSSRF;
 
@@ -19,8 +18,9 @@ namespace Microsoft.NET.Build.Containers;
 /// <remarks>
 /// The realm is supplied by the registry, so it is untrusted. Token requests are sent through an
 /// <see cref="AntiSSRFHandler"/>, which resolves the host when each connection is opened (including
-/// connections made for redirects and connections to a proxy) and refuses the connection if any resolved
-/// address is disallowed by the policy. The policy is configured only by
+/// connections to a proxy) and refuses the connection if any resolved address is disallowed by the policy.
+/// Authentication requests do not follow redirects because credentials can be carried in request bodies.
+/// The policy is configured only by
 /// <see cref="RegistrySettings.EnvVariables.AuthRealmPolicy"/> and
 /// <see cref="RegistrySettings.EnvVariables.AuthRealmAllowedAddresses"/>.
 /// </remarks>
@@ -31,15 +31,13 @@ internal sealed class AuthRealmHandlerFactory
     private readonly string _registryName;
     private readonly Uri _registryUri;
     private readonly bool _isInsecureRegistry;
-    private readonly ILogger _logger;
     private readonly IEnvironmentProvider _environment;
 
-    public AuthRealmHandlerFactory(string registryName, Uri registryUri, bool isInsecureRegistry, ILogger logger, IEnvironmentProvider? environment = null)
+    public AuthRealmHandlerFactory(string registryName, Uri registryUri, bool isInsecureRegistry, IEnvironmentProvider? environment = null)
     {
         _registryName = registryName;
         _registryUri = registryUri;
         _isInsecureRegistry = isInsecureRegistry;
-        _logger = logger;
         _environment = environment ?? new EnvironmentProvider();
     }
 
@@ -52,25 +50,24 @@ internal sealed class AuthRealmHandlerFactory
         AntiSSRFHandler antiSsrfHandler = CreatePolicy().GetHandler();
         antiSsrfHandler.UseCookies = false;
         antiSsrfHandler.ConnectTimeout = ConnectTimeout;
-        // RedirectHandler follows redirects instead, and each hop still passes through AntiSSRFHandler's
-        // address checks. Do not use FallbackToHttpMessageHandler here: an insecure registry may use HTTP
-        // for its realm explicitly, but an HTTPS realm must never be retried over plaintext.
+        // Authentication requests can carry credentials in their bodies, which automatic redirect handling
+        // can forward even after stripping the Authorization header. Do not follow any redirects.
+        // Do not use FallbackToHttpMessageHandler here: an insecure registry may use HTTP for its realm
+        // explicitly, but an HTTPS realm must never be retried over plaintext.
         antiSsrfHandler.AllowAutoRedirect = false;
 
-        HttpMessageHandler handler = new RedirectHandler(new ExceptionTranslationHandler(antiSsrfHandler, _registryName, realmUri), _logger);
-        if (!_isInsecureRegistry)
+        if (_isInsecureRegistry)
         {
-            return handler;
+            // Match the registry transport for insecure registries by tolerating certificate errors from
+            // the registry host. Unlike the registry transport, this never falls back from https to http:
+            // http is only used when the realm URI itself is http (AllowPlainTextHttp above).
+            antiSsrfHandler.SslOptions = new SslClientAuthenticationOptions
+            {
+                RemoteCertificateValidationCallback = DefaultRegistryAPI.IgnoreCertificateErrorsForSpecificHost(_registryUri.Host)
+            };
         }
 
-        // Match the registry transport for insecure registries by tolerating certificate errors from
-        // the registry host. Unlike the registry transport, this never falls back from https to http:
-        // http is only used when the realm URI itself is http (AllowPlainTextHttp above).
-        antiSsrfHandler.SslOptions = new SslClientAuthenticationOptions
-        {
-            RemoteCertificateValidationCallback = DefaultRegistryAPI.IgnoreCertificateErrorsForSpecificHost(_registryUri.Host)
-        };
-        return handler;
+        return new ExceptionTranslationHandler(antiSsrfHandler, _registryName, realmUri);
     }
 
     /// <summary>
@@ -129,75 +126,6 @@ internal sealed class AuthRealmHandlerFactory
             nameof(Strings.InvalidAuthRealmPolicy),
             RegistrySettings.EnvVariables.AuthRealmPolicy,
             value);
-    }
-
-    /// <summary>
-    /// Follows redirects like <see cref="SocketsHttpHandler"/> does, including never following a redirect
-    /// from https to http, which would send the token request (and any credentials in its body) in clear text.
-    /// </summary>
-    internal sealed class RedirectHandler(HttpMessageHandler innerHandler, ILogger logger) : DelegatingHandler(innerHandler)
-    {
-        private const int MaxRedirects = 50;
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            for (int redirectCount = 0; redirectCount < MaxRedirects; redirectCount++)
-            {
-                Uri requestUri = request.RequestUri!;
-                if (GetRedirectUri(requestUri, response) is not Uri redirectUri)
-                {
-                    break;
-                }
-
-                if (requestUri.Scheme == Uri.UriSchemeHttps && redirectUri.Scheme != Uri.UriSchemeHttps)
-                {
-                    logger.LogTrace("Not following insecure redirect from {from} to {to}.", requestUri, redirectUri);
-                    break;
-                }
-
-                HttpStatusCode statusCode = response.StatusCode;
-                response.Dispose();
-
-                request.RequestUri = redirectUri;
-                request.Headers.Authorization = null;
-                if (RedirectChangesMethodToGet(request.Method, statusCode))
-                {
-                    request.Method = HttpMethod.Get;
-                    request.Content = null;
-                    request.Headers.TransferEncodingChunked = false;
-                }
-
-                response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            }
-
-            return response;
-        }
-
-        private static Uri? GetRedirectUri(Uri requestUri, HttpResponseMessage response)
-        {
-            if (response.StatusCode is not (HttpStatusCode.MultipleChoices or HttpStatusCode.MovedPermanently or HttpStatusCode.Found
-                    or HttpStatusCode.SeeOther or HttpStatusCode.TemporaryRedirect or HttpStatusCode.PermanentRedirect)
-                || response.Headers.Location is not Uri location)
-            {
-                return null;
-            }
-
-            if (!location.IsAbsoluteUri)
-            {
-                location = new Uri(requestUri, location);
-            }
-
-            return location.Scheme == Uri.UriSchemeHttps || location.Scheme == Uri.UriSchemeHttp ? location : null;
-        }
-
-        private static bool RedirectChangesMethodToGet(HttpMethod method, HttpStatusCode statusCode) =>
-            statusCode switch
-            {
-                HttpStatusCode.MultipleChoices or HttpStatusCode.MovedPermanently or HttpStatusCode.Found => method == HttpMethod.Post,
-                HttpStatusCode.SeeOther => method != HttpMethod.Get && method != HttpMethod.Head,
-                _ => false,
-            };
     }
 
     /// <summary>

@@ -18,7 +18,8 @@ internal static class LockFileTargetExtensions
 
     public static LockFileTargetLibrary GetPlatformLibrary(this LockFileTarget lockFileTarget)
     {
-        // TODO: https://github.com/dotnet/sdk/issues/17 get this from the lock file
+        // Legacy project tool lock files do not identify their platform library. Modern projects
+        // get this value from evaluated MSBuild metadata instead.
         var platformPackageName = "Microsoft.NETCore.App";
         var platformLibrary = lockFileTarget
             .Libraries

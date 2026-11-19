@@ -12,6 +12,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <Import Project="Microsoft.NET.Sdk.Common.targets"/>
+  <Import Project="Microsoft.NET.Sdk.ProjectAssetsFile.props" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.SourceLink.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'"/>
   <!-- Importing the PackTool targets because tools that have TargetFrameworks set still need a couple key targets
        in order to package correctly, like the ones that add the DotnetTool PackageType. -->

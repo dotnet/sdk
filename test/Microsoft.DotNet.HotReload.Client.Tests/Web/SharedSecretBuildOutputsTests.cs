@@ -101,6 +101,23 @@ public class SharedSecretBuildOutputsTests : IDisposable
     }
 
     [TestMethod]
+    public void FromProjectSettings_UsesBrowserKeyFilesUnderIntermediateOutput()
+    {
+        using var provider = WriteValidKeyPair();
+        var keyDirectory = Path.Combine(_directory, SharedSecretBuildOutputs.DirectoryName);
+        Directory.CreateDirectory(keyDirectory);
+        File.Move(_publicKeyPath, Path.Combine(keyDirectory, SharedSecretBuildOutputs.PublicKeyFileName));
+        File.Move(_privateKeyPath, Path.Combine(keyDirectory, SharedSecretBuildOutputs.PrivateKeyFileName));
+
+        var outputs = SharedSecretBuildOutputs.FromProjectSettings(_directory);
+        Assert.IsNotNull(outputs);
+
+        using var sessionKey = outputs.TryCreateSessionKey(NullLogger.Instance);
+        Assert.IsNotNull(sessionKey);
+        Assert.AreEqual(provider.GetPublicKey(), sessionKey.GetPublicKey());
+    }
+
+    [TestMethod]
     [DataRow(true, false, DisplayName = "Public key document missing")]
     [DataRow(false, true, DisplayName = "Private key document missing")]
     [DataRow(true, true, DisplayName = "Both missing, as after a clean")]

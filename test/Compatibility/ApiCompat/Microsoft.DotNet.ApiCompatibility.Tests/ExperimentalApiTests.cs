@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             CompatDifference[] differences = GetDifferences(leftSyntax, rightSyntax);
 
             Assert.IsNotEmpty(differences);
-            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Informational));
+            Assert.ContainsOnly(difference => difference.Severity == DifferenceSeverity.Informational, differences);
         }
 
         [TestMethod]
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             Assert.HasCount(2, differences);
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.get_Removed"));
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.set_Removed(System.Int32)"));
-            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Informational));
+            Assert.ContainsOnly(difference => difference.Severity == DifferenceSeverity.Informational, differences);
         }
 
         [TestMethod]
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             Assert.HasCount(2, differences);
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.add_Removed(CompatTests.Handler)"));
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.remove_Removed(CompatTests.Handler)"));
-            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Informational));
+            Assert.ContainsOnly(difference => difference.Severity == DifferenceSeverity.Informational, differences);
         }
 
         [TestMethod]
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.add_Changed(CompatTests.Handler)"));
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.remove_Changed(CompatTests.Handler)"));
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "E:CompatTests.Api.Changed"));
-            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Informational));
+            Assert.ContainsOnly(difference => difference.Severity == DifferenceSeverity.Informational, differences);
         }
 
         [TestMethod]
@@ -153,7 +153,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             CompatDifference[] differences = GetDifferences(leftSyntax, rightSyntax, strictMode: true);
 
             Assert.IsNotEmpty(differences);
-            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Informational));
+            Assert.ContainsOnly(difference => difference.Severity == DifferenceSeverity.Informational, differences);
         }
 
         [TestMethod]
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             CompatDifference[] differences = GetDifferences(leftSyntax, rightSyntax, strictMode: true);
 
             Assert.IsNotEmpty(differences);
-            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Error));
+            Assert.ContainsOnly(difference => difference.Severity == DifferenceSeverity.Error, differences);
         }
 
         [TestMethod]
@@ -318,7 +318,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             CompatDifference[] differences = GetDifferences(leftSyntax, rightSyntax);
 
             Assert.IsNotEmpty(differences);
-            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Error));
+            Assert.ContainsOnly(difference => difference.Severity == DifferenceSeverity.Error, differences);
         }
 
         [TestMethod]
@@ -442,8 +442,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             Assert.HasCount(1, differences);
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "T:CompatTests.Api"));
-            Assert.IsTrue(differences.All(difference => difference.DiagnosticId == DiagnosticIds.StableApiBecomesExperimental));
-            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Error));
+            Assert.ContainsOnly(difference => difference.DiagnosticId == DiagnosticIds.StableApiBecomesExperimental, differences);
+            Assert.ContainsOnly(difference => difference.Severity == DifferenceSeverity.Error, differences);
         }
 
         [TestMethod]
@@ -479,8 +479,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "E:CompatTests.Api.Event"));
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.add_Event(CompatTests.Handler)"));
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.remove_Event(CompatTests.Handler)"));
-            Assert.IsTrue(differences.All(difference => difference.DiagnosticId == DiagnosticIds.StableApiBecomesExperimental));
-            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Error));
+            Assert.ContainsOnly(difference => difference.DiagnosticId == DiagnosticIds.StableApiBecomesExperimental, differences);
+            Assert.ContainsOnly(difference => difference.Severity == DifferenceSeverity.Error, differences);
         }
 
         [TestMethod]
@@ -542,7 +542,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             CompatDifference[] differences = GetDifferences(leftSyntax, rightSyntax, includeAttributesRule: true);
 
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.Changed"));
-            Assert.IsTrue(differences.All(difference => difference.DiagnosticId == DiagnosticIds.ExperimentalApiBecomesStable));
+            Assert.ContainsOnly(difference => difference.DiagnosticId == DiagnosticIds.ExperimentalApiBecomesStable, differences);
         }
 
         [TestMethod]

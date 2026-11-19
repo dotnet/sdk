@@ -39,8 +39,8 @@ public class GivenDotnetTestRunsRequiredArtifactProcessing : SdkTest
             {
                 input.GetProperty("producingTestModule").GetString().Should().EndWith(".dll",
                     "the managed producer behind an apphost is not the selected executable");
-                input.GetProperty("targetFramework").ValueKind.Should().Be(JsonValueKind.Null,
-                    "test-module selection does not establish a compilation target framework");
+                input.GetProperty("targetFramework").GetString().Should().Be(ToolsetInfo.CurrentTargetFramework,
+                    "MTP reports the assembly target framework in its handshake even for test-module selection");
             }
         }
     }

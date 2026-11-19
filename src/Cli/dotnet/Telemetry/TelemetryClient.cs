@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 public class TelemetryClient : ITelemetryClient
 {
     private static FrozenDictionary<string, string?> s_commonProperties = [];
+    private readonly TelemetryCommonProperties _commonPropertiesCollector;
     private Task? _trackEventTask;
 
     private static readonly MeterProviderBuilder s_metricsProviderBuilder;
@@ -162,6 +163,9 @@ public class TelemetryClient : ITelemetryClient
 
     public TelemetryClient(string? sessionId, IEnvironmentProvider? environmentProvider = null)
     {
+        environmentProvider ??= new EnvironmentProvider();
+        _commonPropertiesCollector = new TelemetryCommonProperties(environmentProvider: environmentProvider);
+
         // This is some kind of special condition for MSBuild-related tests.
         if (DisabledForTests)
         {
@@ -171,7 +175,6 @@ public class TelemetryClient : ITelemetryClient
         Instance = this;
         IsInitialized = true;
 
-        environmentProvider ??= new EnvironmentProvider();
         Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT,
             // When building in the official CI pipeline, this makes the complier enable telemetry by default. Otherwise, it is disabled.
             // It is the reason tests don't send telemetry, because we don't run tests in the official CI pipeline.
@@ -201,7 +204,7 @@ public class TelemetryClient : ITelemetryClient
             : environmentProvider.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
 
         CurrentSessionId ??= !string.IsNullOrEmpty(initialSessionId) ? initialSessionId : Guid.NewGuid().ToString();
-        s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
+        s_commonProperties = _commonPropertiesCollector.GetTelemetryCommonProperties(CurrentSessionId);
     }
 
     /// <summary>
@@ -350,10 +353,12 @@ public class TelemetryClient : ITelemetryClient
             return;
         }
 
+        var tags = MakeTags(properties); // Capture before queueing: a later request can change the environment.
+
         // Continue the task in different threads.
         _trackEventTask = _trackEventTask == null
-            ? Task.Run(() => TrackEventTask(eventName, properties))
-            : _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, properties));
+            ? Task.Run(() => TrackEventTask(eventName, tags))
+            : _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, tags));
     }
 
     public void ThreadBlockingTrackEvent(string eventName, IDictionary<string, string?>? properties)
@@ -363,7 +368,7 @@ public class TelemetryClient : ITelemetryClient
             return;
         }
 
-        TrackEventTask(eventName, properties);
+        TrackEventTask(eventName, MakeTags(properties));
     }
 
     internal void WaitForPendingEvents()
@@ -374,29 +379,38 @@ public class TelemetryClient : ITelemetryClient
     internal static void WaitForInternalMicrosoftDetection() =>
         s_internalMicrosoftTelemetry.WaitForCompletion();
 
-    private static void TrackEventTask(string eventName, IDictionary<string, string?>? properties)
+    private static void TrackEventTask(string eventName, ActivityTagsCollection? tags)
+    {
+        if (tags is not null)
+        {
+            var @event = new ActivityEvent($"dotnet/cli/{eventName}", tags: tags);
+            Activity.Current?.AddEvent(@event);
+        }
+    }
+
+    private ActivityTagsCollection? MakeTags(IDictionary<string, string?>? eventProperties)
     {
         try
         {
-            properties ??= new Dictionary<string, string?>();
-            properties.Add("event id", Guid.NewGuid().ToString());
-            var @event = new ActivityEvent($"dotnet/cli/{eventName}", tags: MakeTags(properties));
-            Activity.Current?.AddEvent(@event);
+            // Snapshot before queueing: callers and reused MSBuild hosts can change their properties or environment.
+            var contextProperties = _commonPropertiesCollector.GetTelemetryContextProperties();
+            var common = s_commonProperties
+                .Where(p => !contextProperties.ContainsKey(p.Key))
+                .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value));
+            var properties = (eventProperties ?? new Dictionary<string, string?>())
+                .Where(p => p.Value is not null && !contextProperties.ContainsKey(p.Key))
+                .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value))
+                .OrderBy(p => p.Key);
+            var context = contextProperties
+                .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value));
+            ActivityTagsCollection tags = [.. common, .. properties, .. context];
+            tags.Add("event id", Guid.NewGuid().ToString());
+            return tags;
         }
         catch (Exception e)
         {
             Debug.Fail(e.ToString());
+            return null;
         }
-    }
-
-    private static ActivityTagsCollection MakeTags(IDictionary<string, string?> eventProperties)
-    {
-        var common = s_commonProperties
-            .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value));
-        var properties = eventProperties
-            .Where(p => p.Value is not null)
-            .Select(p => new KeyValuePair<string, object?>(p.Key, p.Value))
-            .OrderBy(p => p.Key);
-        return [.. common, .. properties];
     }
 }

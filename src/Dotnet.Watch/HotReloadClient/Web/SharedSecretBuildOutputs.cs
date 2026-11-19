@@ -52,12 +52,20 @@ internal sealed class SharedSecretBuildOutputs
     }
 
     /// <summary>
+    /// Returns the build outputs of the given project.
+    /// </summary>
+    public static SharedSecretBuildOutputs? FromProjectSettings(string intermediateOutputDirectory)
+        => new(Path.Combine(intermediateOutputDirectory, DirectoryName), PublicKeyFileName, PrivateKeyFileName);
+
+    /// <summary>
     /// Returns the build outputs of the given project, or null when the project does
     /// not produce browser tools assets at all.
     ///
     /// Whether it does is decided by evaluated properties that mirror the condition on the target that produces them,
     /// so a project that opted out - or an SDK that has no browser tools initializer - is recognized without touching the file
     /// system.
+    ///
+    /// Used by tools for SDK 11.0.1xx and earlier.
     /// </summary>
     public static SharedSecretBuildOutputs? FromProjectSettings(
         string configuration,

@@ -222,28 +222,14 @@ namespace Microsoft.NET.Build.Tasks
                     ["linux", "android", "osx", "win", "ios", "iossimulator", "tvos", "tvossimulator", "maccatalyst", "freebsd", "openbsd", "illumos", "solaris", "haiku", "browser", "wasi", "openharmony"],
                     out _);
 
+            // Older versions of crossgen2 do not recognize `win` as a valid OS name.
+            // The openharmony RID is standalone in the RID graph; crossgen2/ILC only accept
+            // the linux token, so map it like the other portable platforms.
             targetOS = portablePlatform switch
             {
-                "linux" => "linux",
-                // The openharmony RID is standalone in the RID graph; map it to the linux token
-                // that crossgen2/ILC accept.
-                "openharmony" => "linux",
-                "android" => "android",
-                "osx" => "osx",
                 "win" => "windows",
-                "ios" => "ios",
-                "iossimulator" => "iossimulator",
-                "tvos" => "tvos",
-                "tvossimulator" => "tvossimulator",
-                "maccatalyst" => "maccatalyst",
-                "freebsd" => "freebsd",
-                "openbsd" => "openbsd",
-                "illumos" => "illumos",
-                "solaris" => "solaris",
-                "haiku" => "haiku",
-                "browser" => "browser",
-                "wasi" => "wasi",
-                _ => null
+                "openharmony" => "linux",
+                _ => portablePlatform
             };
 
             return targetOS != null;

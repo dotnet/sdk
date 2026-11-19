@@ -128,6 +128,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 environmentProvider
                     .Setup(p => p.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID))
                     .Returns(sessionId);
+                environmentProvider
+                    .Setup(p => p.GetEnvironmentVariable(EnvironmentVariableNames.COPILOT_AGENT_SESSION_ID))
+                    .Returns((string)null);
 
                 _ = new TelemetryClient(sessionId: null, environmentProvider: environmentProvider.Object);
 

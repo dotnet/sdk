@@ -1692,6 +1692,16 @@ Si la commande est spécifiée sans l’argument, elle répertorie tous les pack
         <target state="translated">FICHIER | PROJET</target>
         <note />
       </trans-unit>
+      <trans-unit id="PropertyArgumentName">
+        <source>NAME=VALUE</source>
+        <target state="new">NAME=VALUE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyOptionDescription">
+        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
+        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Éditeur pour la plateforme .NET</target>
@@ -1747,6 +1757,11 @@ La valeur par défaut est de publier une application dépendante du framework.</
       <trans-unit id="ReferenceAddProjectPathArgumentName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceCommandDescription">
+        <source>Add, remove, or list ProjectReferences for a .NET project.</source>
+        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceListAppFullName">
@@ -1937,8 +1952,10 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 o
         <note />
       </trans-unit>
       <trans-unit id="StoreAppDescription">
-        <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
-        <target state="translated">Stocke les assemblys spécifiés pour la plateforme .NET. Par défaut, ceux-ci sont optimisés pour le runtime et le framework cible.</target>
+        <source>Warning: The dotnet store command and the runtime package store feature are deprecated and no longer supported.
+
+Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
+        <target state="needs-review-translation">Stocke les assemblys spécifiés pour la plateforme .NET. Par défaut, ceux-ci sont optimisés pour le runtime et le framework cible.</target>
         <note />
       </trans-unit>
       <trans-unit id="StoreFrameworkOptionDescription">

@@ -788,21 +788,25 @@ test("caller grants the compiler-required permissions and interpreter jobs remai
     assert.doesNotMatch(caller, /secrets: inherit/);
     assert.match(caller, /input_artifact_id: \$\{\{ steps\.upload\.outputs\.artifact-id \}\}/);
     assert.match(caller, /name: stale-reference-interpretations-\$\{\{ needs\.collect\.outputs\.input_artifact_id \}\}/);
-    const ceiling = { actions: 2, contents: 1, "copilot-requests": 2, issues: 2, "pull-requests": 1 };
     const rank = { none: 0, read: 1, write: 2 };
+    function permissions(body)
+    {
+        const block = body.match(/^    permissions:\r?\n((?:      [^\r\n]*\r?\n)+)/m)?.[1] ?? "";
+        assert.ok(!/^    permissions:/m.test(body) || block, "Declared permissions must be inspected.");
+        return Object.fromEntries([...block.matchAll(/^      ([\w-]+): (none|read|write)\b/gm)]
+            .map(([, scope, permission]) => [scope, permission]));
+    }
+    const interpret = caller.match(/^  interpret:\r?\n([\s\S]*?)(?=^  \S)/m)?.[1] ?? "";
+    const ceiling = permissions(interpret);
+    assert.equal(ceiling.actions, "read");
     const jobs = [...generated.matchAll(/^  ([a-z_]+):\r?\n([\s\S]*?)(?=^  [a-z_]+:\r?\n|$(?![\s\S]))/gm)];
     assert.ok(jobs.some(job => job[1] === "agent"));
     for (const [, name, body] of jobs)
     {
-        const permissions = body.match(/^    permissions:\r?\n((?:      [\w-]+: \w+\r?\n)+)/m)?.[1] ?? "";
-        for (const [, scope, permission] of permissions.matchAll(/      ([\w-]+): (\w+)/g))
+        for (const [scope, permission] of Object.entries(permissions(body)))
         {
-            assert.ok(rank[permission] <= (ceiling[scope] ?? 0),
+            assert.ok(rank[permission] <= (rank[ceiling[scope]] ?? 0),
                 `${name} elevates ${scope} to ${permission}`);
-            if (name !== "conclusion")
-            {
-                assert.ok(scope !== "actions" || permission !== "write", `${name} unexpectedly writes Actions data`);
-            }
         }
     }
     const conclusion = jobs.find(job => job[1] === "conclusion")?.[2];
@@ -811,7 +815,6 @@ test("caller grants the compiler-required permissions and interpreter jobs remai
     const safeOutputs = jobs.find(job => job[1] === "safe_outputs")?.[2];
     assert.doesNotMatch(safeOutputs, /issues: write/);
     assert.match(caller, /issues: write/);
-    const interpret = caller.match(/^  interpret:\r?\n([\s\S]*?)(?=^  \S)/m)?.[1] ?? "";
     assert.match(interpret, /pull-requests: read/);
     const agent = jobs.find(job => job[1] === "agent")?.[2];
     assert.doesNotMatch(agent, /name: Checkout repository|--allow-tool write|shell\(node\)|--allow-tool github/);

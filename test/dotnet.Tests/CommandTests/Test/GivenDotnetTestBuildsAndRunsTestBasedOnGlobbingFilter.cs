@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Test;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
@@ -37,7 +38,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
+                Assert.MatchesRegex(GenerateModuleResultPattern("TestProject", TestingConstants.Passed), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Passed!")
@@ -78,8 +79,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, TestingConstants.Debug), result.StdOut);
-                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
+                Assert.MatchesRegex(GenerateModuleResultPattern("TestProject", TestingConstants.Failed), result.StdOut);
+                Assert.MatchesRegex(GenerateModuleResultPattern("OtherTestProject", TestingConstants.Passed), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
@@ -114,7 +115,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
+                Assert.MatchesRegex(GenerateModuleResultPattern("TestProject", TestingConstants.Passed), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Passed!")
@@ -125,6 +126,20 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        private static string GenerateModuleResultPattern(string projectName, string result)
+        {
+            // Only newer platform peers can supply target metadata for module-only runs.
+            string framework = Regex.Escape(ToolsetInfo.CurrentTargetFramework);
+            const string architecture = "[a-z0-9]+";
+            return RegexPatternHelper.GenerateProjectRegexPattern(
+                projectName,
+                useCurrentVersion: true,
+                TestingConstants.Debug,
+                prefix: string.Empty,
+                suffix: [$@"\((?:{framework}\|{architecture}|{architecture}, runtime: {framework})\)", result],
+                addVersionAndArchPattern: false);
         }
     }
 }

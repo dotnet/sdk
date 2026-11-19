@@ -339,7 +339,7 @@ public class CliSchemaTests : SdkTest
 {
   "name": "reference",
   "version": "{{Product.Version}}",
-  "description": ".NET Remove Command",
+  "description": "Add, remove, or list ProjectReferences for a .NET project.",
   "hidden": false,
   "options": {
     "--project": {
@@ -1096,7 +1096,8 @@ public class CliSchemaTests : SdkTest
       "recursive": false
     },
     "--property": {
-      "hidden": true,
+      "description": "Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.",
+      "hidden": false,
       "aliases": [
         "--p",
         "-p",
@@ -1104,6 +1105,7 @@ public class CliSchemaTests : SdkTest
         "/p",
         "/property"
       ],
+      "helpName": "NAME=VALUE",
       "valueType": "System.Collections.ObjectModel.ReadOnlyDictionary<System.String, System.String>",
       "hasDefaultValue": false,
       "arity": {
