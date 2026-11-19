@@ -14,6 +14,13 @@ public static partial class ProcessLifecycleTestApp
 {
     public static int Main(string[] args)
     {
+        if (Environment.GetEnvironmentVariable("PROCESS_LIFECYCLE_TEST_FAKE_MSBUILD") == "1")
+        {
+            File.WriteAllText(Environment.GetEnvironmentVariable("TEST_MARKER_PATH")!, "ready");
+            Thread.Sleep(Timeout.Infinite);
+            return 0;
+        }
+
         string childMode = args[0];
         string markerPath = args[1];
 
@@ -93,6 +100,7 @@ public static partial class ProcessLifecycleTestApp
         {
             var forwardingApp = new MSBuildForwardingApp([], args[6]);
             forwardingApp.EnvironmentVariable("TEST_MARKER_PATH", markerPath);
+            forwardingApp.EnvironmentVariable("PROCESS_LIFECYCLE_TEST_FAKE_MSBUILD", "1");
             try
             {
                 return forwardingApp.Execute(cancellationToken);

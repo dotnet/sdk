@@ -230,19 +230,7 @@ public class ProcessLifecycleTests : SdkTest
     public void ForwardedMSBuildUsesTheBuildSoftCancellationTimeout()
     {
         var testDirectory = TestAssetsManager.CreateTestDirectory();
-        string markerPath = GetMarkerPath(testDirectory.Path);
-        string msbuildPath = Path.Combine(testDirectory.Path, "fake-msbuild");
-        File.WriteAllText(
-            msbuildPath,
-            $"#!/bin/sh{Environment.NewLine}printf ready > \"$TEST_MARKER_PATH\"{Environment.NewLine}sleep 30{Environment.NewLine}");
-        if (!OperatingSystem.IsWindows())
-        {
-            File.SetUnixFileMode(
-                msbuildPath,
-                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-                UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
-        }
+        string msbuildPath = typeof(ProcessLifecycleTestApp).Assembly.Location;
 
         using Process child = StartChild("msbuild-external", testDirectory.Path, msbuildPath);
         try
