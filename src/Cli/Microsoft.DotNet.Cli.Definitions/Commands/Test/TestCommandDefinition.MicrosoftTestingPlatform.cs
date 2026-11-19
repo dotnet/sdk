@@ -119,7 +119,7 @@ internal abstract partial class TestCommandDefinition
         public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption(
             defaultValue: false,
             forwardAs: null,
-            description: CommandDefinitionStrings.TestCmdNoLogo);
+            description: CommandDefinitionStrings.TestCmdMTPNoLogo);
 
         public readonly Option<bool> UseCurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CommandDefinitionStrings.CmdCurrentRuntimeOptionDescription);
 

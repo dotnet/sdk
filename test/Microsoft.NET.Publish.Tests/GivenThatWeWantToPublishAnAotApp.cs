@@ -1415,6 +1415,7 @@ public class NativeLibraryClass
         {
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "NativeAotCleanIntermediates", true);
             testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
             testProject.AdditionalProperties["RuntimeIdentifier"] = RuntimeInformation.RuntimeIdentifier;
             testProject.AdditionalProperties["GenerateDocumentationFile"] = "true";
             // Exercise compiler documentation tracking independently of publishing documentation.
@@ -1463,6 +1464,7 @@ public class NativeLibraryClass
         {
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "NativeAotFailedClean", true);
             testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
             testProject.AdditionalProperties["RuntimeIdentifier"] = RuntimeInformation.RuntimeIdentifier;
             testProject.AdditionalProperties["GenerateDocumentationFile"] = "true";
             testProject.AdditionalProperties["PublishDocumentationFile"] = "false";
@@ -1506,6 +1508,7 @@ public class NativeLibraryClass
         {
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "CoreBuildDependsOn", true);
             testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
             var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var getValuesCommand = new GetValuesCommand(testAsset, "CoreBuildDependsOn")
@@ -1550,6 +1553,7 @@ public class NativeLibraryClass
                 .Should().Pass();
 
             optimizedPublishTargetsCommand.GetValues().Should().Equal([
+                "_CheckForInvalidConfigurationAndPlatform",
                 "BuildOnlySettings",
                 "PrepareForBuild",
                 "PreBuildEvent",
@@ -1651,31 +1655,67 @@ public class NativeLibraryClass
 
         [TestMethod]
         [RequiresMSBuildVersion("17.0.0.32901")]
-        public void NativeAot_publish_does_not_produce_managed_build_output()
+        [DataRow(null, false)]
+        [DataRow("false", false)]
+        [DataRow("true", false)]
+        [DataRow(null, true)]
+        [DataRow("false", true)]
+        [DataRow("true", true)]
+        public void NativeAot_publish_respects_optimized_publish_and_no_build(string useOptimizedPublish, bool noBuild)
         {
-            // AOT publish should not create managed build artifacts (apphost, .dll, .deps.json,
-            // .runtimeconfig.json, runtime pack files) in the output directory (bin\<config>\<tfm>\<rid>\).
-            // The ILC pipeline reads from obj\, so full Build output in bin\ is unnecessary and confusing.
             var projectName = "NativeAotCleanOutput";
+            bool optimized = useOptimizedPublish == "true";
 
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, projectName, true);
-            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
-            // Record properties before Publish since Build is skipped for AOT
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier", "UseOptimizedPublish");
             testProject.RecordPropertiesBeforeTarget("Publish");
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["GenerateDocumentationFile"] = "true";
+            if (useOptimizedPublish != null)
+            {
+                testProject.AdditionalProperties["UseOptimizedPublish"] = useOptimizedPublish;
+            }
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
-            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{useOptimizedPublish ?? "default"}_{noBuild}")
+                .WithProjectChanges(project =>
+                {
+                    project.Root.Add(XElement.Parse("""
+                        <Target Name="ConfirmBeforeBuildExecuted" BeforeTargets="BeforeBuild">
+                          <Message Importance="High" Text="BeforeBuild hook executed" />
+                        </Target>
+                        """));
+                    project.Root.Add(XElement.Parse("""
+                        <Target Name="ConfirmAfterBuildExecuted" AfterTargets="AfterBuild">
+                          <Message Importance="High" Text="AfterBuild hook executed" />
+                        </Target>
+                        """));
+                });
+
+            if (noBuild)
+            {
+                new BuildCommand(testAsset).Execute("/p:UseCurrentRuntimeIdentifier=true")
+                    .Should().Pass();
+            }
 
             var publishCommand = new PublishCommand(testAsset);
-            publishCommand
-                .Execute()
-                .Should().Pass();
+            var result = publishCommand.Execute($"/p:NoBuild={noBuild}");
+            result.Should().Pass();
+            if (optimized || noBuild)
+            {
+                result.Should().NotHaveStdOutContaining("BeforeBuild hook executed")
+                    .And.NotHaveStdOutContaining("AfterBuild hook executed");
+            }
+            else
+            {
+                result.Should().HaveStdOutContaining("BeforeBuild hook executed")
+                    .And.HaveStdOutContaining("AfterBuild hook executed");
+            }
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, ToolsetInfo.CurrentTargetFramework);
+            buildProperties["UseOptimizedPublish"].Should().Be(useOptimizedPublish ?? "false");
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: rid).FullName;
             var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
@@ -1686,10 +1726,24 @@ public class NativeLibraryClass
             File.Exists(Path.Combine(publishDirectory, $"{testProject.Name}.xml"))
                 .Should().BeTrue("the generated XML documentation file should be published");
 
-            // The output directory (parent of publish\) should only contain subdirectories.
             var outputDirectory = Path.GetDirectoryName(publishDirectory);
-            Directory.GetFiles(outputDirectory).Should().BeEmpty(
-                "the AOT-optimized publish should not produce Build output files");
+            if (optimized && !noBuild)
+            {
+                Directory.GetFiles(outputDirectory).Should().BeEmpty(
+                    "the AOT-optimized publish should not produce Build output files");
+            }
+            else
+            {
+                foreach (var file in new[] { $"{projectName}.dll",
+                    $"{projectName}.deps.json", $"{projectName}.runtimeconfig.json" })
+                {
+                    File.Exists(Path.Combine(outputDirectory, file)).Should().BeTrue(
+                        "{0} should be preserved when Build runs", file);
+                }
+            }
+
+            new RunExeCommand(Log, publishedExe).Execute().Should().Pass()
+                .And.HaveStdOutContaining("Hello World");
         }
 
         [TestMethod]
@@ -1719,6 +1773,7 @@ namespace AotRefLib
                 IsExe = true,
             };
             testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";

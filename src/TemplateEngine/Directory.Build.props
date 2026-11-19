@@ -6,7 +6,8 @@
     TemplateEngine-specific build properties.
   -->
   <PropertyGroup>
-    <NoWarn>$(NoWarn);NU5105;NU5128;NU5100;NU5118;0419;0649</NoWarn>
+    <!-- NuGet stabilizes these dependencies separately from the SDK and will remove the prerelease suffix. -->
+    <NoWarn>$(NoWarn);NU5105;NU5128;NU5100;NU5118;NU5104;0419;0649</NoWarn>
 
     <!-- TemplateEngine assembly signing -->
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>

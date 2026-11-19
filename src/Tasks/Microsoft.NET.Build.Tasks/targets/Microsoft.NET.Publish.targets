@@ -153,8 +153,8 @@ Copyright (c) .NET Foundation. All rights reserved.
          @(IntermediateAssembly) in obj\, not from bin\ output. Skipping Build avoids producing
          unnecessary self-contained managed output (apphost, deps.json, runtimeconfig, runtime
          pack files) in the output directory that would confuse users and automation.
-         Set UseOptimizedPublish=false to restore the previous behavior of running full Build. -->
-    <UseOptimizedPublish Condition="'$(UseOptimizedPublish)' == '' and '$(PublishAot)' == 'true'">true</UseOptimizedPublish>
+         This optimization is opt-in in .NET 11. Set UseOptimizedPublish=true to enable it. -->
+    <UseOptimizedPublish Condition="'$(UseOptimizedPublish)' == '' and '$(PublishAot)' == 'true'">false</UseOptimizedPublish>
     <!-- Native AOT is currently the only publish mode that supports optimized publish. -->
     <_UseOptimizedPublish Condition="'$(PublishAot)' == 'true' and '$(UseOptimizedPublish)' == 'true'">true</_UseOptimizedPublish>
     <_BeforeOptimizedPublishTargets Condition="'$(_UseOptimizedPublish)' == 'true'">

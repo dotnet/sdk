@@ -39,6 +39,14 @@ never reach publish output. Its generated watch initializer also initializes the
 Reload agent on .NET 10+; older target frameworks use the runtime's apply API. Do not add a
 second Hot Reload agent initializer—the shared browser-tools rendezvous carries the SDK
 agent's apply functions directly.
+
+Web SDK browser-tools assets stay local even when the project is referenced by another
+Web SDK project. `_RemoveHotReloadBrowserToolsAssetsFromReference` filters the export-only
+candidate list after `_ReadCurrentProjectBuildStaticWebAssetItems` in
+[`References.targets`](Targets/Microsoft.NET.Sdk.StaticWebAssets.References.targets),
+preserving the cached build manifest and local endpoints. Include compressed variants in this
+filtering, and keep WebAssembly browser-tools assets exportable for hosted applications.
+
 For client-owned early Web activation, the initializer creates `pendingUpdates` on that
 rendezvous. Retain both replayed and live updates there until the runtime publishes
 readiness, without blocking SSR refresh; do not create this queue for server-only apps.

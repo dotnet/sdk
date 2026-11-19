@@ -16,6 +16,14 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
     public class TemplatePackagesTests : BootstrapperTestBase
     {
         private static PackageManager s_packageManager = null!;
+        private const string NuGetConfig = /*lang=xml,strict*/ """
+<configuration>
+    <packageSources>
+        <clear />
+        <add key="dotnet-public" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json" />
+    </packageSources>
+</configuration>
+""";
         private const string ValidPackageJsonFile = /*lang=json,strict*/ """
 {
     "Packages": [
@@ -211,13 +219,14 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.CurrentDirectory)]
         public async Task CanUpdateAllPackagesMetadataOnGetLatestVersion()
         {
             using Bootstrapper bootstrapper = GetBootstrapper(packageJsonContent: ValidPackageJsonFile);
             var installedPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None);
 
             // implicitly populates packages metadata
-            await bootstrapper.GetLatestVersionsAsync(installedPackages, CancellationToken.None);
+            await WithNuGetConfigAsync(() => bootstrapper.GetLatestVersionsAsync(installedPackages, CancellationToken.None));
 
             var updatedPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None);
 
@@ -239,6 +248,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.CurrentDirectory)]
         public async Task CanUpdateSpecifiedPackageMetadataOnGetLatestVersion()
         {
             using Bootstrapper bootstrapper = GetBootstrapper(packageJsonContent: ValidPackageJsonFile);
@@ -246,7 +256,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var webTemplatePackage = installedPackages.FirstOrDefault(ip => ip.Identifier == "Microsoft.DotNet.Web.ProjectTemplates.10.0");
 
             // implicitly populates package metadata
-            await bootstrapper.GetLatestVersionsAsync(new[] { webTemplatePackage! }, CancellationToken.None);
+            await WithNuGetConfigAsync(() => bootstrapper.GetLatestVersionsAsync(new[] { webTemplatePackage! }, CancellationToken.None));
 
             var updatedPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None);
             Assert.HasCount(2, updatedPackages);
@@ -259,6 +269,25 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             // dotnet-public feed may not return Owners for Microsoft packages
             webPackageDetails.TryGetValue("Owners", out var webOwners);
             Assert.IsFalse(bool.Parse(webPackageDetails["Reserved"]));
+        }
+
+        private static async Task WithNuGetConfigAsync(Func<Task> action)
+        {
+            string originalDirectory = Directory.GetCurrentDirectory();
+            string configDirectory = Path.Combine(Path.GetTempPath(), $"TemplatePackagesTests-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(configDirectory);
+            File.WriteAllText(Path.Combine(configDirectory, "NuGet.Config"), NuGetConfig);
+
+            try
+            {
+                Directory.SetCurrentDirectory(configDirectory);
+                await action();
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalDirectory);
+                Directory.Delete(configDirectory, recursive: true);
+            }
         }
 
         [TestMethod]

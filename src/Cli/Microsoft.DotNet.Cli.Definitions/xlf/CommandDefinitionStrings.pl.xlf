@@ -1957,10 +1957,15 @@ Wartość domyślna to „false”. Jednak w przypadku, gdy docelową jest platf
         <target state="translated">Wyłącza sprawdzanie aktualizacji pakietu szablonów podczas tworzenia wystąpienia szablonu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCmdMTPNoLogo">
+        <source>Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</source>
+        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</target>
+        <note>{Locked="Microsoft.Testing.Platform"}{Locked="MTP"}</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
-        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
-        <target state="translated">Uruchom testy bez wyświetlania baneru platformy testowej firmy Microsoft</target>
-        <note />
+        <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
+        <target state="needs-review-translation">Uruchom testy bez wyświetlania baneru platformy testowej firmy Microsoft</target>
+        <note>{Locked="Microsoft Test Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>
