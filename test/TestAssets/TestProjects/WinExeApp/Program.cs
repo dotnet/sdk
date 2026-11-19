@@ -43,6 +43,11 @@ class MainForm : Form
 
     private void OnFormClosing(object sender, FormClosingEventArgs e)
     {
+        if (int.TryParse(Environment.GetEnvironmentVariable("DOTNET_TEST_WINEXE_CLOSE_DELAY_MS"), out int delayMilliseconds))
+        {
+            Thread.Sleep(delayMilliseconds);
+        }
+
         // Mark that we were closed gracefully (via CloseMainWindow)
         ClosedGracefully = e.CloseReason == CloseReason.UserClosing ||
                           e.CloseReason == CloseReason.WindowsShutDown ||

@@ -27,13 +27,13 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 
             CreateDotnetCommand("add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             CreateDotnetCommand("build")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
@@ -55,13 +55,13 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 
             CreateDotnetCommand("add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             CreateDotnetCommand("build")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
@@ -84,13 +84,13 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 
             CreateDotnetCommand("add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             CreateDotnetCommand("build")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
@@ -114,13 +114,13 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 
             CreateDotnetCommand("add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             CreateDotnetCommand("build")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Fail()
                 .And.HaveStdOutContaining("Build FAILED.")

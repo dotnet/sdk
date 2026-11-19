@@ -27,7 +27,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")
-                .WithWorkingDirectory(asset.Path);
+                .WithWorkingDirectory(asset.Path)
+                .WithEnvironmentVariable("DOTNET_TEST_WINEXE_CLOSE_DELAY_MS", "1000");
 
             // Ctrl+Break can target the child group without signaling the test host.
             command.CreateNewProcessGroup = true;
