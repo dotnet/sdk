@@ -49,6 +49,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             processStartInfo.RedirectStandardInput = true;
             processStartInfo.StandardOutputEncoding = Encoding.UTF8;
             processStartInfo.StandardErrorEncoding = Encoding.UTF8;
+            processStartInfo.InheritedHandles ??= [];
 
             Process = new Process
             {
@@ -83,33 +84,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public async Task WaitForProcessExitAsync()
         {
-            while (true)
-            {
-                try
-                {
-                    if (Process.HasExited)
-                    {
-                        break;
-                    }
-                }
-                catch
-                {
-                    break;
-                }
-
-                using var iterationCancellationSource = new CancellationTokenSource();
-                iterationCancellationSource.CancelAfter(TimeSpan.FromSeconds(1));
-
-                try
-                {
-                    await Process.WaitForExitAsync(iterationCancellationSource.Token);
-                    break;
-                }
-                catch 
-                {
-                }
-            }
-
+            await Process.WaitForExitStatusAsync();
             Logger.Log($"Process {Id} exited");
         }
 

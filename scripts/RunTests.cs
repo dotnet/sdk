@@ -654,7 +654,7 @@ static ProcessStartInfo CreateProcessStartInfo(
     var startInfo = new ProcessStartInfo(executable)
     {
         WorkingDirectory = workingDirectory,
-        UseShellExecute = false
+        InheritedHandles = []
     };
     startInfo.Environment.Remove("DOTNET_SDK_TEST_BINLOG_DIRECTORY");
 

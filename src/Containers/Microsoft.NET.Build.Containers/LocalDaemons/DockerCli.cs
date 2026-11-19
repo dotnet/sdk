@@ -31,6 +31,7 @@ internal sealed class DockerCli
 
 #if NET
     private string? _fullCommandPath;
+    private readonly ContainerRuntimeOperations _operations;
 #endif
 
     private const string _blobsPath = "blobs/sha256";
@@ -46,6 +47,9 @@ internal sealed class DockerCli
 
         _command = command;
         _logger = loggerFactory.CreateLogger<DockerCli>();
+#if NET
+        _operations = new(_logger, ContainerRuntimeOperations.TryRunCommandAsync);
+#endif
     }
 
     public DockerCli(ILoggerFactory loggerFactory) : this(null, loggerFactory)
@@ -101,33 +105,9 @@ internal sealed class DockerCli
 
         string commandPath = await FindFullCommandPath(cancellationToken);
 
-        // call `docker load` and get it ready to receive input
-        ProcessStartInfo loadInfo = new(commandPath, $"load")
-        {
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-
-        using Process? loadProcess = Process.Start(loadInfo) ??
-            throw new NotImplementedException(Resource.FormatString(Strings.ContainerRuntimeProcessCreationFailed, commandPath));
-
-        // Call the delegate to write the image to the stream
-        await writeStreamFunc(image, sourceReference, destinationReference, loadProcess.StandardInput.BaseStream, cancellationToken)
+        await _operations.LoadFromStandardInputAsync(
+            commandPath, ["load"], image, sourceReference, destinationReference, writeStreamFunc, cancellationToken)
             .ConfigureAwait(false);
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        loadProcess.StandardInput.Close();
-
-        await loadProcess.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (loadProcess.ExitCode != 0)
-        {
-            throw new DockerLoadException(Resource.FormatString(nameof(Strings.ImageLoadFailed), await loadProcess.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false)));
-        }
     }
 
     public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
@@ -200,9 +180,12 @@ internal sealed class DockerCli
     internal static JsonDocument GetDockerConfig()
     {
         string dockerPath = FindFullPathFromPath("docker");
-        Process proc = new()
+        using Process proc = new()
         {
-            StartInfo = new ProcessStartInfo(dockerPath, "info --format=\"{{json .}}\"")
+            StartInfo = new ProcessStartInfo(dockerPath, ["info", "--format={{json .}}"])
+            {
+                InheritedHandles = []
+            }
         };
 
         try
@@ -657,25 +640,27 @@ internal sealed class DockerCli
 
     private async Task<bool> TryRunVersionCommandAsync(string command, CancellationToken cancellationToken)
     {
+        using var nullHandle = File.OpenNullHandle();
+        ProcessStartInfo startInfo = new(command, ["version"])
+        {
+            StandardInputHandle = nullHandle,
+            StandardOutputHandle = nullHandle,
+            StandardErrorHandle = nullHandle,
+            InheritedHandles = []
+        };
+        ProcessExitStatus status;
+
         try
         {
-            ProcessStartInfo psi = new(command, "version")
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-            using var process = Process.Start(psi)!;
-            await process.WaitForExitAsync(cancellationToken);
-            return process.ExitCode == 0;
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
+            status = await Process.RunAsync(startInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch
         {
             return false;
         }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return status.ExitCode == 0;
     }
 #endif
 

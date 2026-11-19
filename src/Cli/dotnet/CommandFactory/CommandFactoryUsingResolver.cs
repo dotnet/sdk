@@ -104,7 +104,7 @@ public static class CommandFactoryUsingResolver
         {
             FileName = commandSpec.Path,
             Arguments = commandSpec.Args,
-            UseShellExecute = false
+            InheritedHandles = []
         };
 
         foreach (var environmentVariable in commandSpec.EnvironmentVariables)

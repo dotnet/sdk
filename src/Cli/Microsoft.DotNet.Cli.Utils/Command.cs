@@ -38,6 +38,13 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
 
         _process.EnableRaisingEvents = true;
 
+#if NET
+        if (!_process.StartInfo.UseShellExecute)
+        {
+            _process.StartInfo.InheritedHandles ??= [];
+        }
+#endif
+
         Stopwatch? sw = null;
         if (CommandLoggingContext.IsVerbose)
         {
@@ -58,7 +65,11 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
 
             var taskOut = _stdOut?.BeginRead(_process.StandardOutput);
             var taskErr = _stdErr?.BeginRead(_process.StandardError);
+#if NET
+            _process.WaitForExitStatus();
+#else
             _process.WaitForExit();
+#endif
 
             taskOut?.Wait();
             taskErr?.Wait();

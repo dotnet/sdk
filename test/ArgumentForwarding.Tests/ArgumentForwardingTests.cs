@@ -249,23 +249,23 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         /// <returns>A string[] representing string[] args with the provided testUserArgument</returns>
         private string[] RawEvaluateArgumentString(string testUserArgument)
         {
-            var proc = new Process
+            using Process proc = new()
             {
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath,
                     Arguments = $"{ReflectorPath} {testUserArgument}",
-                    UseShellExecute = false,
+                    InheritedHandles = [],
                     RedirectStandardOutput = true,
                     CreateNoWindow = true
                 }
             };
 
             proc.Start();
-            proc.WaitForExit();
             var stdOut = proc.StandardOutput.ReadToEnd();
+            ProcessExitStatus status = proc.WaitForExitStatus();
 
-            Assert.AreEqual(0, proc.ExitCode);
+            Assert.AreEqual(0, status.ExitCode);
 
             return ParseReflectorOutput(stdOut);
         }

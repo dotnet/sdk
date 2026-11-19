@@ -89,10 +89,27 @@ internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> 
 
         try
         {
-            using var process = Process.Start(dotnetPath, "dev-certs https --check --quiet");
-            await process
-                .WaitForExitAsync(cancellationToken)
-                .WaitAsync(suppressTimeouts ? TimeSpan.MaxValue : TimeSpan.FromSeconds(10), cancellationToken);
+            using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            if (!suppressTimeouts)
+            {
+                timeout.CancelAfter(TimeSpan.FromSeconds(10));
+            }
+            ProcessStartInfo startInfo = new(dotnetPath, ["dev-certs", "https", "--check", "--quiet"]);
+#if NET11_0_OR_GREATER
+            startInfo.InheritedHandles = [];
+#endif
+            using Process process = Process.Start(startInfo)!;
+            try
+            {
+                await process.WaitForExitAsync(timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // The dotnet launcher runs dev-certs as a separate process.
+                process.Kill(entireProcessTree: true);
+                await process.WaitForExitAsync();
+                throw;
+            }
 
             result = process.ExitCode == 0;
         }

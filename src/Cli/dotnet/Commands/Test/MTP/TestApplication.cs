@@ -146,12 +146,13 @@ internal sealed class TestApplication(
                 }
             }, TaskCreationOptions.LongRunning);
 
-            // WaitForExitAsync only waits for process exit (and doesn't wait for output) for our usage here.
-            // If we use BeginOutputReadLine/BeginErrorReadLine, it will also wait for output which can deadlock.
+            // WaitForExitStatusAsync waits only for process exit, not stdout/stderr EOF.
+            // WaitForExitAsync also waits for output when using BeginOutputReadLine/BeginErrorReadLine,
+            // which can deadlock if a child process keeps the output pipes open.
             bool artifactPostProcessingTimedOut = false;
             if (_artifactPostProcessingInvocation is null)
             {
-                Task processExitTask = process.WaitForExitAsync();
+                Task processExitTask = process.WaitForExitStatusAsync();
                 if (_testRunPolicy is { } testRunPolicy)
                 {
                     Task firstCompletedTask = await Task.WhenAny(processExitTask, testRunPolicy.Cancellation);
@@ -194,7 +195,7 @@ internal sealed class TestApplication(
             {
                 try
                 {
-                    await process.WaitForExitAsync().WaitAsync(ArtifactPostProcessingTimeout, ctrlC.Token);
+                    await process.WaitForExitStatusAsync().WaitAsync(ArtifactPostProcessingTimeout, ctrlC.Token);
                 }
                 catch (Exception ex) when (ex is TimeoutException || (ex is OperationCanceledException && ctrlC.Token.IsCancellationRequested))
                 {
@@ -211,7 +212,7 @@ internal sealed class TestApplication(
                         Logger.LogTrace($"Artifact worker exited before it could be killed:\n{killException}");
                     }
 
-                    await process.WaitForExitAsync();
+                    await process.WaitForExitStatusAsync();
                     artifactPostProcessingTimedOut = ex is TimeoutException;
                 }
             }
@@ -296,8 +297,7 @@ internal sealed class TestApplication(
             Arguments = GetArguments(),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            // False is already the default on .NET Core, but prefer to be explicit.
-            UseShellExecute = false,
+            InheritedHandles = [],
         };
 
         if (!string.IsNullOrEmpty(Module.RunProperties.WorkingDirectory))

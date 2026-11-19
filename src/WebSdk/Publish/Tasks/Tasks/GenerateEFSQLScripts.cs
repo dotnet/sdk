@@ -76,15 +76,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         }
 
         private object _sync = new();
-        private Process? _runningProcess;
-        private int _processExitCode;
         private StringBuilder _standardOut = new();
         private StringBuilder _standardError = new();
         private const string AspNetCoreEnvironment = "ASPNETCORE_ENVIRONMENT";
         private bool GenerateSQLScript(string sqlFileFullPath, string dbContextName, bool isLoggingEnabled = true)
         {
-            string? previousAspNetCoreEnvironment = Environment.GetEnvironmentVariable(AspNetCoreEnvironment);
-            Environment.SetEnvironmentVariable(AspNetCoreEnvironment, "Development");
             ProcessStartInfo psi = new("dotnet", $@"ef migrations script --no-build --idempotent --configuration {Configuration} --output ""{sqlFileFullPath}"" --context {dbContextName} {EFMigrationsAdditionalArgs}")
             {
                 WorkingDirectory = ProjectDirectory,
@@ -93,8 +89,15 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 RedirectStandardError = true,
                 UseShellExecute = false
             };
+            psi.Environment[AspNetCoreEnvironment] = "Development";
+#if NET
+            psi.InheritedHandles = [];
+#endif
 
-            Process? proc = null;
+            using Process proc = new() { StartInfo = psi };
+            proc.OutputDataReceived += Proc_OutputDataReceived;
+            proc.ErrorDataReceived += Proc_ErrorDataReceived;
+            bool started = false;
 
             try
             {
@@ -103,18 +106,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                     Log.LogMessage(MessageImportance.High, string.Format("Executing command: {0} {1}", psi.FileName, psi.Arguments));
                 }
 
-                proc = new Process
-                {
-                    StartInfo = psi,
-                    EnableRaisingEvents = true
-                };
-                proc.OutputDataReceived += Proc_OutputDataReceived;
-                proc.ErrorDataReceived += Proc_ErrorDataReceived;
-                proc.Exited += Proc_Exited;
                 proc.Start();
+                started = true;
                 proc.BeginErrorReadLine();
                 proc.BeginOutputReadLine();
-                _runningProcess = proc;
             }
             catch (Exception e)
             {
@@ -122,49 +117,48 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 {
                     Log.LogError(e.ToString());
                 }
-                proc = null;
             }
 
             bool isProcessExited = false;
-            if (proc != null)
+            if (started)
             {
                 isProcessExited = proc.WaitForExit(300000);
+                if (!isProcessExited)
+                {
+#if NET
+                    // The dotnet launcher runs the EF tool as a separate process.
+                    proc.Kill(entireProcessTree: true);
+#else
+                    try
+                    {
+                        proc.Kill();
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // The process exited before it could be killed.
+                    }
+#endif
+                }
             }
 
-            Environment.SetEnvironmentVariable(AspNetCoreEnvironment, previousAspNetCoreEnvironment);
-            if (!isProcessExited || _processExitCode != 0)
+            // Descendants can keep the output pipes open after the process exits; stop collecting their output.
+            proc.OutputDataReceived -= Proc_OutputDataReceived;
+            proc.ErrorDataReceived -= Proc_ErrorDataReceived;
+
+            if (!isProcessExited || proc.ExitCode != 0)
             {
                 if (isLoggingEnabled)
                 {
-                    Log.LogMessage(MessageImportance.High, _standardOut.ToString());
+                    lock (_sync)
+                    {
+                        Log.LogMessage(MessageImportance.High, _standardOut.ToString());
+                    }
                     Log.LogError(Resources.EFSCRIPT_GenerationFailed);
                 }
                 return false;
             }
 
             return true;
-        }
-
-        private void Proc_Exited(object? sender, EventArgs e)
-        {
-            if (_runningProcess != null)
-            {
-                try
-                {
-                    _processExitCode = _runningProcess.ExitCode;
-                    _runningProcess.Exited -= Proc_Exited;
-                    _runningProcess.ErrorDataReceived -= Proc_ErrorDataReceived;
-                    _runningProcess.OutputDataReceived -= Proc_OutputDataReceived;
-                }
-                catch
-                {
-                }
-                finally
-                {
-                    _runningProcess.Dispose();
-                    _runningProcess = null;
-                }
-            }
         }
 
         private void Proc_ErrorDataReceived(object sender, DataReceivedEventArgs e)

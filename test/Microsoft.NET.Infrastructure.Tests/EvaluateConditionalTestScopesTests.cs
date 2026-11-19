@@ -713,17 +713,19 @@ public class EvaluateConditionalTestScopesTests : SdkTest
                 WorkingDirectory = Root,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                UseShellExecute = false,
+                InheritedHandles = [],
                 CreateNoWindow = true,
             };
 
-            using var process = Process.Start(psi)!;
-            process.WaitForExit(30_000);
+            ProcessTextOutput output = Process.RunAndCaptureText(psi, TimeSpan.FromSeconds(30));
 
-            if (process.ExitCode != 0)
+            if (output.ExitStatus.Canceled)
             {
-                var stderr = process.StandardError.ReadToEnd();
-                throw new InvalidOperationException($"git {args} failed (exit {process.ExitCode}): {stderr}");
+                throw new TimeoutException($"git {args} timed out.");
+            }
+            if (output.ExitStatus.ExitCode != 0)
+            {
+                throw new InvalidOperationException($"git {args} failed (exit {output.ExitStatus.ExitCode}): {output.StandardError}");
             }
         }
 

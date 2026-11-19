@@ -236,7 +236,8 @@ static List<string> GetChangedFiles(string? targetBranch, string repoRoot)
         {
             WorkingDirectory = repoRoot,
             RedirectStandardOutput = true,
-            RedirectStandardError = true
+            RedirectStandardError = true,
+            InheritedHandles = []
         };
         var result = Process.RunAndCaptureText(psi);
 

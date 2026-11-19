@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
@@ -147,6 +146,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         [TestMethod]
         [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [UnsupportedOSPlatform("windows")]
         public void NuGetConfigPermissions()
         {
             string templateShortName = "nugetconfig";
@@ -162,21 +162,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining($@"The template ""{expectedTemplateName}"" was created successfully.");
 
-            var process = Process.Start(new ProcessStartInfo()
-            {
-                FileName = "/bin/sh",
-                Arguments = "-c \"ls -la\"",
-                WorkingDirectory = workingDir
-            });
-
-            new Command(process)
-                .WorkingDirectory(workingDir)
-                .CaptureStdOut()
-                .CaptureStdErr()
-                .Execute()
-                .Should()
-                .ExitWith(0)
-                .And.HaveStdOutMatching("^-rw-------.*nuget.config$", RegexOptions.Multiline);
+            File.GetUnixFileMode(Path.Combine(workingDir, "nuget.config")).Should().Be(
+                UnixFileMode.UserRead | UnixFileMode.UserWrite);
 
             Directory.Delete(workingDir, true);
         }

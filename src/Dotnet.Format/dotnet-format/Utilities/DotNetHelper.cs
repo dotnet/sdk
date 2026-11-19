@@ -7,14 +7,10 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
 {
     internal static class DotNetHelper
     {
-        public static async Task<int> PerformRestoreAsync(string workspaceFilePath, ILogger logger)
-        {
-            var processInfo = ProcessRunner.CreateProcess("dotnet", $"restore \"{workspaceFilePath}\"", captureOutput: true, displayWindow: false);
-            var restoreResult = await processInfo.Result;
-
-            logger.LogDebug(string.Join(Environment.NewLine, restoreResult.OutputLines));
-
-            return restoreResult.ExitCode;
-        }
+        public static Task<int> PerformRestoreAsync(string workspaceFilePath, ILogger logger)
+            => ProcessRunner.RunAsync(
+                "dotnet",
+                ["restore", workspaceFilePath],
+                logger.IsEnabled(LogLevel.Debug) ? output => logger.LogDebug(output) : null);
     }
 }

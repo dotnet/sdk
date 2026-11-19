@@ -65,12 +65,13 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <Compile Include="..\Tool\CommandLine\ArgumentEscaper.cs">
+    <Compile Include="..\Tool\CommandLine\ArgumentEscaper.cs" Condition="$([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)')) == '.NETFramework'">
       <Link>Shared\CommandLine\%(FileName)</Link>
     </Compile>
     <Compile Include="..\Tool\ServerProtocol\*.cs">
       <Link>Shared\ServerProtocol\%(FileName)</Link>
     </Compile>
+    <Compile Remove="..\Tool\ServerProtocol\NativeMethods.cs" Condition="$([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)')) != '.NETFramework'" />
     <Compile Include="..\Tool\PipeName.cs">
       <Link>Shared\PipeName.cs</Link>
     </Compile>
