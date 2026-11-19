@@ -119,7 +119,7 @@ internal sealed class AdminInstallRootResolver
     }
 
     private static string? CombineWithFolder(string folder, params string[] relativePath) =>
-        string.IsNullOrEmpty(folder) ? null : Path.Combine([folder, .. relativePath]);
+        string.IsNullOrEmpty(folder) ? null : Path.Join([folder, .. relativePath]);
 
     private static DotnetInstallException Unsupported(string message) =>
         new(DotnetInstallErrorCode.PlatformNotSupported, message);

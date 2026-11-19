@@ -58,6 +58,21 @@ public class WindowsPathHelperTests
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
+    public void MissingInstalledVersionsKeys_UseOnlyExistingDefaultRoots()
+    {
+        var sharedHostPaths = WindowsPathHelper.ReadArchitectureValues(null, subKeyName: "sharedhost", valueName: "Path");
+        var installLocations = WindowsPathHelper.ReadArchitectureValues(null, subKeyName: null, valueName: "InstallLocation");
+
+        WindowsPathHelper.SelectRegisteredDotnetPaths(sharedHostPaths, installLocations,
+                defaultPaths: [new(s_missingDirectory, InstallArchitecture.x64)])
+            .Should().BeEmpty();
+        WindowsPathHelper.SelectRegisteredDotnetPaths(sharedHostPaths, installLocations,
+                defaultPaths: [new(s_existingDirectory, InstallArchitecture.x64)])
+            .Should().Equal(s_existingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void SelectRegisteredDotnetPaths_PrefersSharedHostPathOverInstallLocation()
     {
         WindowsPathHelper.SelectRegisteredDotnetPaths(
