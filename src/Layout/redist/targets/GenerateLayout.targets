@@ -88,11 +88,14 @@
                       WriteOnlyWhenDifferent="true" />
   </Target>
 
-  <Target Name="_PublishRoslynFiles">
+  <Target Name="_PrepareRoslynPackagePath">
     <PropertyGroup>
       <RoslynPackagePath>$(NuGetPackageRoot)microsoft.net.compilers.toolset\$(MicrosoftNetCompilersToolsetVersion)\tasks\netcore\</RoslynPackagePath>
     </PropertyGroup>
+  </Target>
 
+  <Target Name="_PublishRoslynFiles"
+          DependsOnTargets="_PrepareRoslynPackagePath">
     <ItemGroup>
       <RoslynFrameworkAssembly Include="$(RoslynPackagePath)System.*.dll;
                                         $(RoslynPackagePath)runtimes\**\System.*.dll"
@@ -121,26 +124,106 @@
 
   </Target>
 
+  <!-- Property-based inputs are captured per host; MSBuild's Inputs/Outputs handling
+       decides whether each host needs regeneration. -->
+  <Target Name="_PrepareAppHostGeneration">
+    <PropertyGroup>
+      <_AppHostTemplatePath>$(NuGetPackageRoot)\microsoft.netcore.app.host.$(SharedFrameworkRid)\$(MicrosoftNETCoreAppHostPackageVersion)\runtimes\$(SharedFrameworkRid)\native\apphost$(ExeExtension)</_AppHostTemplatePath>
+      <_AppHostStateDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'incremental-layout'))</_AppHostStateDirectory>
+      <_AppHostHostModelAssembly>$(MSBuildToolsPath)\Microsoft.NET.HostModel.dll</_AppHostHostModelAssembly>
+      <_AppHostHostModelAssembly Condition="Exists('$(MicrosoftNETBuildTasksDirectory)Microsoft.NET.HostModel.dll')">$(MicrosoftNETBuildTasksDirectory)Microsoft.NET.HostModel.dll</_AppHostHostModelAssembly>
+      <_AppHostWriterFileInputs>$(MicrosoftNETBuildTasksAssembly);$(_AppHostHostModelAssembly)</_AppHostWriterFileInputs>
+      <_AppHostCommonInputs>Template=$(_AppHostTemplatePath);RuntimeIdentifier=$(SharedFrameworkRid);PackageVersion=$(MicrosoftNETCoreAppHostPackageVersion);TaskAssembly=$(MicrosoftNETBuildTasksAssembly);HostModel=$(_AppHostHostModelAssembly);Targets=$(_GenerateLayoutTargetsFile)</_AppHostCommonInputs>
+    </PropertyGroup>
+
+    <Error Condition="!Exists('$(_AppHostTemplatePath)')"
+           Text="Apphost template '$(_AppHostTemplatePath)' was not found." />
+  </Target>
+
+  <Target Name="_PrepareRoslynAppHostInputs"
+          DependsOnTargets="_PrepareRoslynPackagePath;_PrepareAppHostGeneration">
+    <PropertyGroup>
+      <_RoslynEntitlements>$(MSBuildProjectDirectory)/roslyn-entitlements.plist</_RoslynEntitlements>
+      <_RoslynEntitlementInput />
+      <_RoslynEntitlementInput Condition="$(SharedFrameworkRid.StartsWith('osx'))">;Entitlements=$(_RoslynEntitlements)</_RoslynEntitlementInput>
+      <_RoslynAppHostFileInputs>$(_AppHostTemplatePath);$(_AppHostWriterFileInputs);$(_GenerateLayoutTargetsFile)</_RoslynAppHostFileInputs>
+      <_RoslynAppHostFileInputs Condition="$(SharedFrameworkRid.StartsWith('osx'))">$(_RoslynAppHostFileInputs);$(_RoslynEntitlements)</_RoslynAppHostFileInputs>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(_AppHostStateDirectory)roslyn-%(_RoslynAppHost.Filename).inputs"
+                      Lines="$(_AppHostCommonInputs);Assembly=%(_RoslynAppHost.FullPath);CompilerPackage=$(RoslynPackagePath);SigningIdentifier=%(_RoslynAppHost.SigningIdentifier)$(_RoslynEntitlementInput)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+
+  </Target>
+
+  <Target Name="_GenerateRoslynAppHosts"
+          DependsOnTargets="_PrepareRoslynAppHostInputs"
+          Inputs="$(_AppHostStateDirectory)roslyn-%(_RoslynAppHost.Filename).inputs;$(_RoslynAppHostFileInputs);%(_RoslynAppHost.FullPath)"
+          Outputs="%(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)">
+    <!-- Capture this batch's destination so unbatched failure cleanup deletes only that host. -->
+    <PropertyGroup>
+      <_RoslynHostToDelete>%(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)</_RoslynHostToDelete>
+    </PropertyGroup>
+    <CreateAppHost AppHostSourcePath="$(_AppHostTemplatePath)"
+                   AppHostDestinationPath="$(_RoslynHostToDelete)"
+                   AppBinaryName="%(_RoslynAppHost.Filename)%(_RoslynAppHost.Extension)"
+                   IntermediateAssembly="%(_RoslynAppHost.FullPath)"
+                   EnableMacOSCodeSign="false" />
+    <!-- Pass paths as environment values so sh does not interpret shell syntax within them. -->
+    <Exec Command="codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints --identifier &quot;$_SDK_APPHOST_IDENTIFIER&quot; --entitlements &quot;$_SDK_APPHOST_ENTITLEMENTS&quot; &quot;$_SDK_APPHOST_PATH&quot;"
+          EnvironmentVariables="_SDK_APPHOST_ENTITLEMENTS=$(_RoslynEntitlements);_SDK_APPHOST_PATH=$(_RoslynHostToDelete);_SDK_APPHOST_IDENTIFIER=%(_RoslynAppHost.SigningIdentifier)"
+          Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
+    <OnError ExecuteTargets="_DeleteRoslynAppHost" />
+  </Target>
+
+  <Target Name="_DeleteRoslynAppHost" Condition="'$(_RoslynHostToDelete)' != ''">
+    <Delete Files="$(_RoslynHostToDelete)" />
+  </Target>
+
+  <Target Name="CreateRoslynAppHosts"
+          DependsOnTargets="_GenerateRoslynAppHosts" />
+
   <Target Name="PublishRoslyn"
           DependsOnTargets="_PublishRoslynFiles;CreateRoslynAppHosts" />
 
-  <Target Name="CreateRoslynAppHosts">
-    <CreateAppHost AppHostSourcePath="$(NuGetPackageRoot)\microsoft.netcore.app.host.$(SharedFrameworkRid)\$(MicrosoftNETCoreAppHostPackageVersion)\runtimes\$(SharedFrameworkRid)\native\apphost$(ExeExtension)"
-                   AppHostDestinationPath="%(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
-                   AppBinaryName="%(_RoslynAppHost.Filename)%(_RoslynAppHost.Extension)"
-                   IntermediateAssembly="%(_RoslynAppHost.FullPath)"
-                   EnableMacOSCodeSign="$(SharedFrameworkRid.StartsWith('osx'))" />
+  <Target Name="_PrepareMSBuildAppHostInput"
+          DependsOnTargets="_PrepareAppHostGeneration">
+    <PropertyGroup>
+      <_MSBuildEntitlements>$(MSBuildProjectDirectory)/msbuild-entitlements.plist</_MSBuildEntitlements>
+      <_MSBuildEntitlementInput />
+      <_MSBuildEntitlementInput Condition="$(SharedFrameworkRid.StartsWith('osx'))">;Entitlements=$(_MSBuildEntitlements)</_MSBuildEntitlementInput>
+      <_MSBuildAppHostFileInputs>$(_AppHostTemplatePath);$(_AppHostWriterFileInputs);$(_GenerateLayoutTargetsFile)</_MSBuildAppHostFileInputs>
+      <_MSBuildAppHostFileInputs Condition="$(SharedFrameworkRid.StartsWith('osx'))">$(_MSBuildAppHostFileInputs);$(_MSBuildEntitlements)</_MSBuildAppHostFileInputs>
+    </PropertyGroup>
 
-    <Exec Command="codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints --identifier '%(_RoslynAppHost.SigningIdentifier)' --entitlements '$(MSBuildProjectDirectory)/roslyn-entitlements.plist' &quot;%(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)&quot;"
-          Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
+    <WriteLinesToFile File="$(_AppHostStateDirectory)msbuild-%(_MSBuildAppHost.Filename).inputs"
+                      Lines="$(_AppHostCommonInputs);Assembly=%(_MSBuildAppHost.FullPath);MSBuildVersion=$(MicrosoftBuildVersion);SigningIdentifier=%(_MSBuildAppHost.SigningIdentifier)$(_MSBuildEntitlementInput)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+
   </Target>
 
-  <Target Name="CreateMSBuildAppHost">
-    <CreateAppHost AppHostSourcePath="$(NuGetPackageRoot)\microsoft.netcore.app.host.$(SharedFrameworkRid)\$(MicrosoftNETCoreAppHostPackageVersion)\runtimes\$(SharedFrameworkRid)\native\apphost$(ExeExtension)"
-                   AppHostDestinationPath="%(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)%(_MSBuildAppHost.Filename)$(ExeExtension)"
-                   AppBinaryName="%(_MSBuildAppHost.Filename)%(_MSBuildAppHost.Extension)"
-                   IntermediateAssembly="%(_MSBuildAppHost.FullPath)"
-                   EnableMacOSCodeSign="$(SharedFrameworkRid.StartsWith('osx'))" />
+  <Target Name="_GenerateMSBuildAppHost"
+          DependsOnTargets="_PrepareMSBuildAppHostInput"
+          Inputs="$(_AppHostStateDirectory)msbuild-MSBuild.inputs;$(_MSBuildAppHostFileInputs);$(OutputPath)MSBuild.dll"
+          Outputs="$(OutputPath)MSBuild$(ExeExtension)">
+    <CreateAppHost AppHostSourcePath="$(_AppHostTemplatePath)"
+                   AppHostDestinationPath="$(OutputPath)MSBuild$(ExeExtension)"
+                   AppBinaryName="MSBuild.dll"
+                   IntermediateAssembly="$(OutputPath)MSBuild.dll"
+                   EnableMacOSCodeSign="false" />
+    <Exec Command="codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints --identifier &quot;$_SDK_APPHOST_IDENTIFIER&quot; --entitlements &quot;$_SDK_APPHOST_ENTITLEMENTS&quot; &quot;$_SDK_APPHOST_PATH&quot;"
+          EnvironmentVariables="_SDK_APPHOST_ENTITLEMENTS=$(_MSBuildEntitlements);_SDK_APPHOST_PATH=$(OutputPath)MSBuild$(ExeExtension);_SDK_APPHOST_IDENTIFIER=%(_MSBuildAppHost.SigningIdentifier)"
+          Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
+    <OnError ExecuteTargets="_DeleteMSBuildAppHost" />
+  </Target>
+
+  <Target Name="_DeleteMSBuildAppHost">
+    <Delete Files="$(OutputPath)MSBuild$(ExeExtension)" />
+  </Target>
+
+  <Target Name="CreateMSBuildAppHost" DependsOnTargets="_GenerateMSBuildAppHost">
 
     <!-- Copy the COM type library next to the apphost on Windows (needed for ITaskHost marshaling).
          The .tlb is generated by the MSBuild build (CreateTypeLib target) and included in the
@@ -153,8 +236,6 @@
           SkipUnchangedFiles="true"
           Condition="$(SharedFrameworkRid.StartsWith('win')) AND Exists('$(_FrameworkTlbPath)')" />
 
-    <Exec Command="codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints --identifier '%(_MSBuildAppHost.SigningIdentifier)' --entitlements '$(MSBuildProjectDirectory)/msbuild-entitlements.plist' &quot;%(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)%(_MSBuildAppHost.Filename)$(ExeExtension)&quot;"
-          Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
   </Target>
 
   <Target Name="PublishNETAnalyzers">
@@ -429,7 +510,7 @@
       <BuildFiles Include="$(RepoRoot)/src/Containers/packaging/build/Microsoft.NET.Build.Containers.targets" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(OutputPath)/Containers/build" />
+    <Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(OutputPath)/Containers/build" SkipUnchangedFiles="true" />
 
     <MSBuild
       Targets="Publish"

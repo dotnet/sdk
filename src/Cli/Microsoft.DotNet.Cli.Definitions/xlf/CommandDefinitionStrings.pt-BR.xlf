@@ -1692,6 +1692,16 @@ Se o comando for especificado sem o argumento, ele listará todos os pacotes de 
         <target state="translated">PROJETO | ARQUIVO</target>
         <note />
       </trans-unit>
+      <trans-unit id="PropertyArgumentName">
+        <source>NAME=VALUE</source>
+        <target state="new">NAME=VALUE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyOptionDescription">
+        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
+        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Editor para a Plataforma .NET</target>

@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
@@ -252,26 +253,14 @@ public partial class AotIntegrationTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(stdout), "Expected version output");
     }
 
+    // Emulates the deployed muxer layout: dotnet-aot lives in a directory other than dn's own, so
+    // AppContext.BaseDirectory is no longer the SDK directory. Verifies that --info's Base Path still
+    // reports the sdk_dir passed in by the host.
     [TestMethod]
     public void AotInfo_SeparatedLayout_BasePathIsResolvedSdkDirectory()
     {
         SkipIfDnUnavailable();
-        RunSeparatedLayoutBasePathTest(selfLocate: false);
-    }
 
-    [TestMethod]
-    public void AotInfo_SeparatedLayout_SelfLocate_BasePathIsResolvedSdkDirectory()
-    {
-        SkipIfDnUnavailable();
-        RunSeparatedLayoutBasePathTest(selfLocate: true);
-    }
-
-    // Emulates the deployed muxer layout: dotnet-aot lives in a directory other than dn's own, so
-    // AppContext.BaseDirectory is no longer the SDK directory. Verifies that --info's Base Path still
-    // reports the resolved SDK directory - whether it was passed in as sdk_dir (selfLocate: false) or
-    // self-located from the loaded module (selfLocate: true).
-    private void RunSeparatedLayoutBasePathTest(bool selfLocate)
-    {
         string dnPath = FindDnPath()!;
         string sdkLayoutDir = Path.GetDirectoryName(dnPath)!;
         string aotLib = OperatingSystem.IsWindows() ? "dotnet-aot.dll"
@@ -302,10 +291,6 @@ public partial class AotIntegrationTests
                 // Telemetry's SDK-resolution probe can print installed SDKs to stdout on Windows.
                 ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1",
             };
-            if (selfLocate)
-            {
-                env["DOTNET_AOT_BLANK_SDKDIR"] = "1";
-            }
 
             var (exitCode, stdout, _) = RunDn(["--info"], enableAot: true, extraEnv: env);
 
@@ -916,6 +901,59 @@ public partial class AotIntegrationTests
 
         writer.WriteEndObject();
         writer.WriteEndObject();
+    }
+
+    [TestMethod]
+    public void BuildHelp_ShowsPropertyOptionInNativeAot()
+    {
+        SkipIfDnUnavailable();
+
+        var (aotExitCode, aotOutput, aotError) = RunDn(["build", "--help"], enableAot: true);
+
+        Assert.AreEqual(0, aotExitCode, aotError);
+        aotOutput.Should().Contain($"-p, -property <{CommandDefinitionStrings.PropertyArgumentName}>");
+        Regex.Replace(aotOutput, @"\s+", " ").Should().Contain(CommandDefinitionStrings.PropertyOptionDescription);
+    }
+
+    [TestMethod]
+    [DataRow("--property")]
+    [DataRow("-property")]
+    [DataRow("/property")]
+    [DataRow("/p")]
+    [DataRow("-p")]
+    [DataRow("--p")]
+    public void BuildPropertyAliases_PreserveManagedInvocationFromNativeAot(string alias)
+    {
+        SkipIfDnUnavailable();
+
+        string directory = Path.Combine(Path.GetTempPath(), $"aot-build-properties-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            string projectPath = Path.Combine(directory, "Properties.proj");
+            File.WriteAllText(projectPath, "<Project />");
+            string[] args =
+            [
+                "build", projectPath, "--no-restore", "--nologo",
+                "--getProperty:First,Second",
+                alias, "First=original;Second=two", $"{alias}:First=updated"
+            ];
+
+            var (managedExitCode, managedOutput, managedError) = RunDn(args, enableAot: false, workingDirectory: directory);
+            var (aotExitCode, aotOutput, aotError) = RunDn(args, enableAot: true, workingDirectory: directory);
+
+            Assert.AreEqual(0, managedExitCode, managedError);
+            Assert.AreEqual(0, aotExitCode, aotError);
+            Assert.AreEqual(managedOutput, aotOutput);
+            using var output = JsonDocument.Parse(aotOutput);
+            var properties = output.RootElement.GetProperty("Properties");
+            Assert.AreEqual("updated", properties.GetProperty("First").GetString());
+            Assert.AreEqual("two", properties.GetProperty("Second").GetString());
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
     }
 
     [TestMethod]

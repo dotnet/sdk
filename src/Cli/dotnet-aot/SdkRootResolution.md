@@ -37,28 +37,23 @@ Inside the AOT bubble:
 | `Environment.ProcessPath`, `GetCommandLineArgs()[0]`, `Process.MainModule.FileName` | muxer exe |
 | `RuntimeEnvironment.GetRuntimeDirectory()` | muxer dir |
 | `Assembly.Location` / `typeof(T).Assembly.Location` | `""` (and ILC fails the build with `IL3000`) |
-| self-locating the loaded module (`GetModuleFileName` / `dladdr`) | the real `dotnet-aot` directory |
 
-Only two mechanisms yield the versioned SDK directory: the host passes it in, or
-the module self-locates.
+So the host has to pass the versioned SDK directory in.
 
 ## Resolution
 
-- **Host argument (authoritative).** The muxer already resolves the versioned SDK
+- **Host argument (required).** The muxer already resolves the versioned SDK
   directory to find `dotnet-aot`, and passes it as the `sdk_dir` argument to
   `dotnet_execute`.
   > `sdk_dir` is the absolute path of the versioned SDK directory that contains the
   > invoked `dotnet-aot` binary.
-- **Self-locate (fallback).** When `sdk_dir` is missing or empty, `SdkRootLocator`
-  finds the `dotnet-aot` module from its own code address: Windows
-  `GetModuleHandleEx(FROM_ADDRESS | UNCHANGED_REFCOUNT, &export)` +
-  `GetModuleFileName`; Unix `dladdr`.
+
+  `dotnet_execute` throws when `sdk_dir` is null or empty.
 - **Publish once.** `NativeEntryPoint.ExecuteCore` publishes the resolved directory as
   the `Microsoft.DotNet.Sdk.Root` AppContext value so the compiled-in assemblies find
   it without threading a parameter through every call. An AppContext value is
   process-local - unlike an environment variable it is not inherited by child
-  processes. A caller-provided value (e.g. a `runtimeconfig.json` `configProperties`
-  entry) is honored, but must point to an existing directory or the bridge errors out.
+  processes.
 - **Read.** In-repo code reads `SdkPaths.SdkDirectory` (in
   `Microsoft.DotNet.Cli.Utils`), which resolves the `Microsoft.DotNet.Sdk.Root`
   AppContext value -> the SDK assembly directory -> `AppContext.BaseDirectory` (once,
@@ -66,6 +61,13 @@ the module self-locates.
   `Microsoft.DotNet.Sdk.Root` AppContext value first, else its existing BCL logic. The
   workload MSBuild SDK resolver follows this contract so it can be constructed and
   registered directly in the AOT host without relying on `Assembly.Location`.
+- **External resources.** NativeAOT resource modes resolve managed owner
+  assemblies as `<sdk_dir>\<owner>.dll` and localized satellites as
+  `<sdk_dir>\<culture>\<owner>.resources.dll`. Culture and owner names are
+  validated as single path segments, and the resource directory factories capture a
+  fully qualified root. `ExternalAll` validates every neutral owner before the
+  AOT path commits; `ExternalLocalized` probes localized files lazily and falls
+  back through parent cultures to its embedded neutral table.
 
 The same forwarding code is shared by both CLIs and therefore consistently uses
 `SdkPaths.SdkDirectory`; this remains equivalent to `AppContext.BaseDirectory` in
@@ -86,3 +88,9 @@ stock `Microsoft.NET.Sdk` project against the bootstrap SDK, proving that the wo
 resolver handles the SDK's workload-locator imports through `SdkResolver.Register`
 without reflective plugin loading. Command handlers do not activate this evaluator in
 the shipping Native AOT entry point yet.
+
+Resource-mode integration tests must use a layout containing the managed owner
+assemblies and culture directories, not only `dotnet-aot.dll`. Real redist tests must run from outside the
+repository tree; otherwise this repository's `global.json` can redirect SDK
+selection to `.dotnet` and make resource probes observe the bootstrap SDK
+instead of the redist under test.

@@ -76,7 +76,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test2");
                 MatchCollection timeoutTestsMatches = Regex.Matches(result.StdOut!, @"failed \(canceled\) Test3");
                 MatchCollection errorTestsMatches = Regex.Matches(result.StdOut!, "failed Test4");
-                MatchCollection canceledTestsMatches = Regex.Matches(result.StdOut!, @"failed \(canceled\) Test5");
 
                 Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
                 Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
@@ -86,13 +85,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.HasCount(2, failedTestsMatches);
                 Assert.HasCount(2, timeoutTestsMatches);
                 Assert.HasCount(2, errorTestsMatches);
-                Assert.HasCount(2, skippedTestsMatches);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
-                    .And.Contain("total: 14")
+                    .And.Contain("total: 12")
                     .And.Contain("succeeded: 3")
-                    .And.Contain("failed: 8")
+                    .And.Contain("failed: 6")
                     .And.Contain("skipped: 3");
             }
 

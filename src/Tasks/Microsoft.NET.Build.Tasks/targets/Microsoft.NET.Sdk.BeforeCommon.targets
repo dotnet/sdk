@@ -53,6 +53,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.TargetFrameworkInference.targets" />
 
+  <!-- Default WebAssembly to Mono only before .NET 12. Defer until TFM inference, preserving explicit values for validation. -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkWebAssembly)' == 'true' and '$(UseMonoRuntime)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(TargetFrameworkVersion)' != ''">
+    <UseMonoRuntime>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '12.0'))</UseMonoRuntime>
+  </PropertyGroup>
+
   <!-- Set default intermediate and output paths -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DefaultOutputPaths.targets" Condition="'$(UsingNETSdkDefaults)' == 'true'"/>
 

@@ -27,6 +27,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 {
                     var properties = new XElement("PropertyGroup",
                         new XElement("RuntimeIdentifier", runtimeIdentifier),
+                        // Native relinking independently requests crossgen2; isolate the ReadyToRun default.
+                        new XElement("WasmBuildNative", "false"),
                         new XElement("PrunePackageTargetingPackRoots", "$(NetCoreTargetingPackRoot)"),
                         new XElement("NetCoreTargetingPackRoot", "$(MSBuildProjectDirectory)/empty-packs"));
                     if (readyToRun is not null)

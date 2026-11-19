@@ -1692,6 +1692,16 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">项目|文件</target>
         <note />
       </trans-unit>
+      <trans-unit id="PropertyArgumentName">
+        <source>NAME=VALUE</source>
+        <target state="new">NAME=VALUE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyOptionDescription">
+        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
+        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">适用于 .NET 平台的发布服务器</target>

@@ -182,8 +182,14 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 
         var expectedStdOut = "hello";
 
+        // The automatic artifacts cleanup runs as a detached process that inherits TMP and can still hold
+        // files inside the temp directory after `dotnet run` exits, which makes Directory.Move fail on Windows.
+        // See https://github.com/dotnet/sdk/issues/57158.
+        const string disableAutomaticCleanup = "DOTNET_CLI_DISABLE_FILE_BASED_APP_ARTIFACTS_AUTOMATIC_CLEANUP";
+
         Directory.CreateDirectory(tmpDir1);
         new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithEnvironmentVariable(disableAutomaticCleanup, "true")
             .WithEnvironmentVariable("TMP", tmpDir1)
             .WithEnvironmentVariable("TMPDIR", tmpDir1)
             .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir1)
@@ -195,6 +201,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         Directory.Move(tmpDir1, tmpDir2);
 
         new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithEnvironmentVariable(disableAutomaticCleanup, "true")
             .WithEnvironmentVariable("TMP", tmpDir2)
             .WithEnvironmentVariable("TMPDIR", tmpDir2)
             .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir2)
