@@ -25,6 +25,16 @@ public sealed class NuGetSourceConfiguration
         IEnumerable<string>? additionalSourceFeeds = null,
         string? basePath = null,
         Action<string>? invalidSource = null)
+        => Load(true, nugetConfig, rootConfigDirectory, sourceFeedOverrides, additionalSourceFeeds, basePath, invalidSource);
+
+    internal static NuGetSourceConfiguration Load(
+        bool validateSources,
+        string? nugetConfig = null,
+        string? rootConfigDirectory = null,
+        IEnumerable<string>? sourceFeedOverrides = null,
+        IEnumerable<string>? additionalSourceFeeds = null,
+        string? basePath = null,
+        Action<string>? invalidSource = null)
     {
         basePath ??= Directory.GetCurrentDirectory();
 
@@ -48,7 +58,10 @@ public sealed class NuGetSourceConfiguration
             : [.. configuredSources.Where(source => source.IsEnabled)];
 
         AddPackageSources(sources, additionalSourceFeeds, configuredSources, basePath, invalidSource);
-        ValidateSources(sources);
+        if (validateSources)
+        {
+            ValidateSources(sources);
+        }
         return new NuGetSourceConfiguration(settings, sources);
     }
 

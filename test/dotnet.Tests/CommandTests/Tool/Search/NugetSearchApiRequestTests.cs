@@ -77,6 +77,51 @@ public class NugetSearchApiRequestTests
     }
 
     [TestMethod]
+    [DataRow("public", false)]
+    [DataRow("public", true)]
+    [DataRow("CORP", false)]
+    [DataRow("CORP", true)]
+    [DataRow("exact", true)]
+    [DataRow("unmapped", true)]
+    public async Task GetResultMapsFullIdsBeforeExpandingVersions(string sourceName, bool includeVersions)
+    {
+        PackageSourceMapping mapping = new(new Dictionary<string, IReadOnlyList<string>>
+        {
+            ["public"] = ["*"],
+            ["corp"] = ["Contoso.*"],
+            ["exact"] = ["Contoso.Exact"],
+        });
+        string[] ids = ["Other.Tool", "contoso.Tool", "Contoso.Exact"];
+        var metadata = ids.Select(id =>
+        {
+            var item = new Mock<IPackageSearchMetadata>(MockBehavior.Loose);
+            item.SetupGet(value => value.Identity).Returns(new PackageIdentity(id, NuGetVersion.Parse("1.0.0")));
+            item.Setup(value => value.GetVersionsAsync()).ReturnsAsync([new VersionInfo(NuGetVersion.Parse("1.0.0"))]);
+            return item;
+        }).ToArray();
+        var request = new NugetToolSearchApiRequest(
+            (_, _) => Task.FromResult<PackageSearchResource?>(new CapturingPackageSearchResource(metadata.Select(item => item.Object))));
+
+        var result = await request.GetResult(
+            new NugetSearchApiParameter("not-a-package-id", includeVersions: includeVersions),
+            new PackageSource(Source.Source, sourceName), TestContext.CancellationToken, mapping);
+
+        string[] expected = sourceName.ToLowerInvariant() switch
+        {
+            "public" => ["Other.Tool"],
+            "corp" => ["contoso.Tool"],
+            "exact" => ["Contoso.Exact"],
+            _ => [],
+        };
+        result.Select(package => package.Id.ToString()).Should().Equal(expected.Select(id => id.ToLowerInvariant()));
+        foreach (var item in metadata)
+        {
+            bool included = expected.Contains(item.Object.Identity.Id);
+            item.Verify(value => value.GetVersionsAsync(), included && includeVersions ? Times.Once() : Times.Never());
+        }
+    }
+
+    [TestMethod]
     public async Task GetResultReportsSourceWithoutPackageSearchResource()
     {
         var request = new NugetToolSearchApiRequest(

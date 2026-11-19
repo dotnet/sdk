@@ -10,7 +10,9 @@ using Microsoft.DotNet.Cli.Commands.Package.Remove;
 using Microsoft.DotNet.Cli.Commands.Package.Search;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Common;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Package;
@@ -45,7 +47,7 @@ internal sealed class PackageCommandParser
         {
             // we should take --prerelease flags into account for version completion
             var allowPrerelease = context.ParseResult.GetValue(def.PrereleaseOption);
-            return QueryNuGet(context.WordToComplete, allowPrerelease, CancellationToken.None).Result.Select(packageId => new CompletionItem(packageId));
+            return QueryNuGet(context, def, allowPrerelease, CancellationToken.None).Result.Select(packageId => new CompletionItem(packageId));
         });
 
         def.VersionOption.CompletionSources.Add(context =>
@@ -55,7 +57,7 @@ internal sealed class PackageCommandParser
             {
                 // we should take --prerelease flags into account for version completion
                 var allowPrerelease = context.ParseResult.GetValue(def.PrereleaseOption);
-                return QueryVersionsForPackage(packageId.Id, context.WordToComplete, allowPrerelease, CancellationToken.None)
+                return QueryVersionsForPackage(context, def, packageId.Id, allowPrerelease, CancellationToken.None)
                     .Result
                     .Select(version => new CompletionItem(version.ToNormalizedString()));
             }
@@ -68,13 +70,14 @@ internal sealed class PackageCommandParser
         def.SetAction(parseResult => new PackageAddCommand(parseResult).Execute());
     }
 
-    private static async Task<IEnumerable<string>> QueryNuGet(string packageStem, bool allowPrerelease, CancellationToken cancellationToken)
+    private static async Task<IEnumerable<string>> QueryNuGet(CompletionContext context, PackageAddCommandDefinitionBase definition, bool allowPrerelease, CancellationToken cancellationToken)
     {
         try
         {
-            var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(packageInstallDir: new DirectoryPath());
-            var versions = await downloader.GetPackageIdsAsync(packageStem, allowPrerelease, cancellationToken: cancellationToken);
-            return versions;
+            PackageSourceLocation location = GetCompletionSourceLocation(context.ParseResult, definition);
+            var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+                packageInstallDir: new DirectoryPath(), verboseLogger: NullLogger.Instance);
+            return await downloader.GetPackageIdsAsync(context.WordToComplete, allowPrerelease, location, cancellationToken);
         }
         catch (Exception)
         {
@@ -82,18 +85,45 @@ internal sealed class PackageCommandParser
         }
     }
 
-    private static async Task<IEnumerable<NuGetVersion>> QueryVersionsForPackage(string packageId, string versionFragment, bool allowPrerelease, CancellationToken cancellationToken)
+    private static async Task<IEnumerable<NuGetVersion>> QueryVersionsForPackage(CompletionContext context, PackageAddCommandDefinitionBase definition, string packageId, bool allowPrerelease, CancellationToken cancellationToken)
     {
         try
         {
-            var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(packageInstallDir: new DirectoryPath());
-            var versions = await downloader.GetPackageVersionsAsync(new(packageId), versionFragment, allowPrerelease, cancellationToken: cancellationToken);
-            return versions;
+            PackageSourceLocation location = GetCompletionSourceLocation(context.ParseResult, definition);
+            var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+                packageInstallDir: new DirectoryPath(), verboseLogger: NullLogger.Instance);
+            return await downloader.GetPackageVersionsAsync(new(packageId), context.WordToComplete, allowPrerelease, location, cancellationToken);
         }
         catch (Exception)
         {
             return [];
         }
+    }
+
+    private static PackageSourceLocation GetCompletionSourceLocation(ParseResult parseResult, PackageAddCommandDefinitionBase definition)
+    {
+        string invocationDirectory = Directory.GetCurrentDirectory();
+        var (target, _) = ProcessPathOptions(definition.FileOption, definition.ProjectOption, definition.GetProjectOrFileArgument(), parseResult);
+        string targetPath = Path.GetFullPath(target, invocationDirectory);
+        string rootDirectory;
+        if (Directory.Exists(targetPath))
+        {
+            rootDirectory = targetPath;
+        }
+        else if (File.Exists(targetPath))
+        {
+            rootDirectory = Path.GetDirectoryName(targetPath)!;
+        }
+        else
+        {
+            throw new FileNotFoundException(null, targetPath);
+        }
+
+        string? source = parseResult.GetValue(definition.SourceOption);
+        return new PackageSourceLocation(
+            rootConfigDirectory: new DirectoryPath(rootDirectory),
+            sourceFeedOverrides: source is null ? [] : [source],
+            basePath: invocationDirectory);
     }
 
     internal static (string Path, AppKinds AllowedAppKinds) ProcessPathOptions(Option<string?>? fileOption, Option<string?>? projectOption, Argument<string>? projectOrFileArgument, ParseResult parseResult)
