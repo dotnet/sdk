@@ -1016,6 +1016,127 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod, WorkItem(57207, "https://github.com/dotnet/sdk/issues/57207")]
+        public async Task CSharp_AspNetCoreControllerActionsAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using Microsoft.AspNetCore.Mvc;
+
+                namespace Microsoft.AspNetCore.Mvc
+                {
+                    [AttributeUsage(AttributeTargets.Class, Inherited = true)]
+                    public class ControllerAttribute : Attribute { }
+
+                    [AttributeUsage(AttributeTargets.Class, Inherited = true)]
+                    public class NonControllerAttribute : Attribute { }
+
+                    [AttributeUsage(AttributeTargets.Method, Inherited = true)]
+                    public class NonActionAttribute : Attribute { }
+                }
+
+                public class ClockController
+                {
+                    public string Get() => "";
+
+                    [NonAction]
+                    public string {|#0:Helper|}() => "";
+                }
+
+                [Controller]
+                public class ClockEndpoint
+                {
+                    public string Get() => "";
+                }
+
+                [NonController]
+                public class SuppressedController
+                {
+                    public string {|#1:Get|}() => "";
+                }
+
+                public class Service
+                {
+                    public string {|#2:Get|}() => "";
+                }
+                """,
+                VerifyCS.Diagnostic().WithLocation(0).WithArguments("Helper"),
+                VerifyCS.Diagnostic().WithLocation(1).WithArguments("Get"),
+                VerifyCS.Diagnostic().WithLocation(2).WithArguments("Get"));
+        }
+
+        [TestMethod, WorkItem(57207, "https://github.com/dotnet/sdk/issues/57207")]
+        public async Task Basic_AspNetCoreControllerActionsAsync()
+        {
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Imports Microsoft.AspNetCore.Mvc
+
+                Namespace Microsoft.AspNetCore.Mvc
+                    <AttributeUsage(AttributeTargets.Class, Inherited:=True)>
+                    Public Class ControllerAttribute
+                        Inherits Attribute
+                    End Class
+
+                    <AttributeUsage(AttributeTargets.Class, Inherited:=True)>
+                    Public Class NonControllerAttribute
+                        Inherits Attribute
+                    End Class
+
+                    <AttributeUsage(AttributeTargets.Method, Inherited:=True)>
+                    Public Class NonActionAttribute
+                        Inherits Attribute
+                    End Class
+                End Namespace
+
+                Public Class ClockController
+                    Public Function Action() As String
+                        Return ""
+                    End Function
+
+                    <NonAction>
+                    Public Function {|#0:Helper|}() As String
+                        Return ""
+                    End Function
+                End Class
+
+                <Controller>
+                Public Class ClockEndpoint
+                    Public Function Action() As String
+                        Return ""
+                    End Function
+                End Class
+
+                <NonController>
+                Public Class SuppressedController
+                    Public Function {|#1:Action|}() As String
+                        Return ""
+                    End Function
+                End Class
+
+                Public Class Service
+                    Public Function {|#2:Action|}() As String
+                        Return ""
+                    End Function
+                End Class
+                """,
+                VerifyVB.Diagnostic().WithLocation(0).WithArguments("Helper"),
+                VerifyVB.Diagnostic().WithLocation(1).WithArguments("Action"),
+                VerifyVB.Diagnostic().WithLocation(2).WithArguments("Action"));
+        }
+
+        [TestMethod, WorkItem(57207, "https://github.com/dotnet/sdk/issues/57207")]
+        public async Task AspNetCoreControllerAttributeUnavailable_DiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class ClockController
+                {
+                    public string {|#0:Get|}() => "";
+                }
+                """,
+                VerifyCS.Diagnostic().WithLocation(0).WithArguments("Get"));
+        }
+
         [TestMethod]
         public async Task MethodsWithOptionalParameterAsync()
         {
