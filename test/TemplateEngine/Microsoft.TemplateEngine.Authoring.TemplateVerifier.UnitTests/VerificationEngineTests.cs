@@ -131,14 +131,19 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         }
 
         [TestMethod]
-        public async Task ExecuteFailsOnInstantiationFailure()
+        [DataRow(100, TemplateVerificationErrorCode.InstantiationFailed)]
+        [DataRow(103, TemplateVerificationErrorCode.TemplateDoesNotExist)]
+        [DataRow(127, TemplateVerificationErrorCode.InvalidOption)]
+        [DataRow(20, TemplateVerificationErrorCode.InstantiationFailed)]
+        [DataRow(-1, TemplateVerificationErrorCode.InstantiationFailed)]
+        public async Task ExecuteFailsOnInstantiationFailure(int exitCode, TemplateVerificationErrorCode expectedErrorCode)
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
             string snapshotsDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
             A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
-                .Returns(new CommandResultData(20, "stdout content", "stderr content", workingDir));
+                .Returns(new CommandResultData(exitCode, "stdout content", "stderr content", workingDir));
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "made-up-template")
             {
@@ -150,12 +155,48 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
                 UniqueFor = UniqueForOption.OsPlatform | UniqueForOption.OsPlatform,
             };
 
-            VerificationEngine engine = new VerificationEngine(Log);
-            Func<Task> executeTask = () => engine.Execute(options, TestContext.CancellationToken);
-            await executeTask
-                .Should()
-                .ThrowAsync<TemplateVerificationException>()
-                .Where(e => e.TemplateVerificationErrorCode == TemplateVerificationErrorCode.InstantiationFailed);
+            try
+            {
+                VerificationEngine engine = new VerificationEngine(commandRunner, Log);
+                Func<Task> executeTask = () => engine.Execute(options, TestContext.CancellationToken);
+                await executeTask.Should().ThrowAsync<TemplateVerificationException>()
+                    .Where(e => e.TemplateVerificationErrorCode == expectedErrorCode);
+            }
+            finally
+            {
+                Directory.Delete(workingDir, recursive: true);
+            }
+        }
+
+        [TestMethod]
+        [DataRow(106, TemplateVerificationErrorCode.InstallFailed)]
+        [DataRow(127, TemplateVerificationErrorCode.InvalidOption)]
+        [DataRow(20, TemplateVerificationErrorCode.InstallFailed)]
+        public async Task ExecuteFailsOnInstallationFailure(int exitCode, TemplateVerificationErrorCode expectedErrorCode)
+        {
+            string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            ICommandRunner commandRunner = A.Fake<ICommandRunner>();
+            A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
+                .Returns(new CommandResultData(exitCode, "stdout content", "stderr content", workingDir));
+
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "made-up-template")
+            {
+                TemplatePath = "missing-template",
+                OutputDirectory = workingDir,
+            };
+
+            try
+            {
+                VerificationEngine engine = new VerificationEngine(commandRunner, Log);
+                Func<Task> executeTask = () => engine.Execute(options, TestContext.CancellationToken);
+                await executeTask.Should().ThrowAsync<TemplateVerificationException>()
+                    .Where(e => e.TemplateVerificationErrorCode == expectedErrorCode);
+                A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._)).MustHaveHappenedOnceExactly();
+            }
+            finally
+            {
+                Directory.Delete(workingDir, recursive: true);
+            }
         }
 
         [TestMethod]
