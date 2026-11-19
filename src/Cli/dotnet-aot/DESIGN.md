@@ -188,9 +188,9 @@ the bridge catches it (and any unexpected parse-time failure) and transparently
 falls through to the managed CLI.
 
 Before parsing or first-run setup, the bridge applies the same
-`UILanguageOverride` as the managed entry point. The Configurer satellite assemblies
-are supplied to ILC so localized first-run resources are available inside the native
-image. UI culture is not an AOT eligibility condition; only behavior unavailable in
+`UILanguageOverride` as the managed entry point. The Configurer translations
+come from the deployed satellites in `ExternalLocalized` and from the native image
+in `Embedded`. UI culture is not an AOT eligibility condition; only behavior unavailable in
 the native closure triggers managed fallback.
 
 **External command path** — When the parsed command is not a built-in
@@ -304,6 +304,80 @@ The existing managed CLI, unchanged. It contains all commands, telemetry,
 workload management, NuGet integration, and everything else the SDK supports.
 It runs on CoreCLR with full runtime capabilities (reflection, JIT, dynamic
 assembly loading, hot reload).
+
+## Localized resource modes
+
+`dotnet-aot` has three private build modes selected by
+`_DotnetAotResourceMode`:
+
+| Mode | Native payload | Localized source |
+|---|---|---|
+| `Embedded` | Neutral resources and the satellites supplied to ILC | ILC-embedded satellites |
+| `ExternalLocalized` | Neutral CLI resources and non-CLI satellites | Existing managed SDK satellite assemblies for CLI resource families |
+| `ExternalAll` | Package/runtime resources only; SDK-owned neutral CLI tables are substituted out | Existing managed owner assemblies and satellites |
+
+`ExternalLocalized` is the default. `ExternalAll` is retained for measurement
+only. The property is an unsupported internal build contract; an unknown value
+is an error.
+
+SDK-generated resource classes call a process-wide manager factory exactly
+once per generated class. `NativeEntryPoint` registers that factory after the
+versioned SDK directory is resolved and before telemetry, first-run work,
+parser construction, or output:
+
+- `Embedded` uses the platform `ResourceManager`: reference satellites are
+  marked as resources and filtered by `SatelliteResourceLanguages` before ILC
+  sees them. The bootstrap build imports the same publish target until the
+  bootstrap SDK ships it.
+- `ExternalLocalized` reads culture satellites as PE data without loading or
+  executing them. Missing, malformed, unreadable, unsupported, or
+  identity-mismatched localized candidates continue through the parent chain
+  and then use the embedded neutral table.
+- `ExternalAll` strictly preflights every managed owner assembly and neutral
+  resource before registering the provider. Any failure enters managed
+  fallback before telemetry ownership, parsing, output, or mutation. Successful
+  lookup reads both neutral and localized tables from the managed SDK layout.
+
+External PE identity checks cover simple name, culture, version, and public-key
+token. The three tables compiled directly into `dotnet-aot` use `dotnet.dll`
+and `dotnet.resources.dll` externally; only the simple-name component is
+aliased, while version and signing identity remain anchored to the generated
+native owner. Resource lookup is string-only and never activates serialized
+types.
+
+The provider reuses the shared [CoreUtils resource runtime](../Microsoft.DotNet.Cli.CoreUtils/Resources/StringResourceManager.cs).
+Managers retain successfully loaded tables, not decoded strings, and retry
+failed loads on the next lookup. The [generated accessors](../Microsoft.DotNet.Cli.Resources.Generator/CSharpResourceRenderer.cs)
+own property-value caching and replace that cache when their effective culture
+changes. With no explicit `Culture`, each property lookup follows the calling
+thread's `CurrentUICulture`. The cached value and lookup culture come from the
+same cache snapshot, so concurrent callers cannot populate another culture's
+cache.
+No additional table-cache or reader-synchronization wrappers are needed in
+the AOT integration.
+
+The native test runners default to the shipping `ExternalLocalized` mode and
+use `PrepareTestSdk.proj` to stage a host-native installation from the
+pre-crossgen SDK content on every run, including `NoBuild` runs. The candidate
+native library replaces the copy under `sdk/<version>`, and the published
+per-mode binaries are kept outside the staged installation.
+The SDK directory
+passed by `dn` must be the directory containing the library it loads, including
+when testing a non-default resource mode. Preserve hidden deployment files,
+especially the SDK's `.version`, so native and managed cache validation use the
+same SDK identity in CI.
+
+`AotResources.targets` removes CLI-owned satellite inputs before ILC writes the
+response file in both external modes. Package satellites stay embedded for
+callers using their original resource managers. `ExternalAllSubstitutions.xml`
+removes the nine SDK-owned neutral CLI resource tables. A content hash in the copied
+substitution filename makes edits invalidate native compilation. The final SDK
+continues to ship one managed copy of each owner and satellite family and no
+`dotnet-aot.resources.dll`.
+
+The resource runtime is adapted into `Microsoft.DotNet.Cli.CoreUtils`; the
+analyzer-only generator lives in `Microsoft.DotNet.Cli.Resources.Generator`.
+Neither component adds a runtime assembly or an external package dependency.
 
 ## Source Sharing and Conditional Compilation
 

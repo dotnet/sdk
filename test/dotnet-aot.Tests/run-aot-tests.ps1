@@ -22,6 +22,9 @@
 .PARAMETER RuntimeIdentifier
     The RID to publish for. Auto-detected if not specified.
 
+.PARAMETER ResourceMode
+    NativeAOT resource mode (Embedded, ExternalLocalized, or ExternalAll). Default: ExternalLocalized.
+
 .PARAMETER NoBuild
     Skip the publish step and run a previously published binary.
 
@@ -45,6 +48,8 @@
 param(
     [string]$Configuration = "Debug",
     [string]$RuntimeIdentifier,
+    [ValidateSet("Embedded", "ExternalLocalized", "ExternalAll")]
+    [string]$ResourceMode = "ExternalLocalized",
     [switch]$NoBuild,
     [switch]$Trx,
     [string]$ResultsDirectory,
@@ -78,8 +83,8 @@ if (-not $RuntimeIdentifier) {
     }
 }
 
-$publishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "aot-tests", $Configuration, $RuntimeIdentifier)
-$aotPublishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "dotnet-aot", $Configuration, $RuntimeIdentifier)
+$publishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "aot-tests", $Configuration, $RuntimeIdentifier, $ResourceMode)
+$aotPublishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "dotnet-aot", $Configuration, $RuntimeIdentifier, $ResourceMode)
 $dnPublishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "dn", $Configuration, $RuntimeIdentifier)
 $exeName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.Tests.exe" } else { "dotnet-aot.Tests" }
 $aotLibraryName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.dll" }
@@ -95,6 +100,7 @@ $testDotnet = Join-Path $testDotnetRoot $dotnetName
 Write-Host "=== dotnet-aot NativeAOT Test Runner ===" -ForegroundColor Cyan
 Write-Host "  Configuration: $Configuration"
 Write-Host "  RID:           $RuntimeIdentifier"
+Write-Host "  Resources:     $ResourceMode"
 Write-Host "  Publish dir:   $publishDir"
 Write-Host ""
 
@@ -108,6 +114,7 @@ if (-not $NoBuild) {
         -r $RuntimeIdentifier `
         -p:PublishAotTests=true `
         -p:UseOptimizedPublish=false `
+        -p:_DotnetAotResourceMode=$ResourceMode `
         -p:PublishDir=$publishDir
 
     if ($LASTEXITCODE -ne 0) {
@@ -130,6 +137,7 @@ if (-not $NoBuild) {
     & $dotnet publish $productProject `
         -c $Configuration `
         -r $RuntimeIdentifier `
+        -p:_DotnetAotResourceMode=$ResourceMode `
         -p:PublishDir=$aotPublishDir
 
     if ($LASTEXITCODE -ne 0) {
@@ -215,6 +223,7 @@ $environment = @{
     DOTNET_AOT_TEST_MANAGED_TEST_MODULE = $managedTestModule
     DOTNET_AOT_TEST_NUGET_CONFIG = [System.IO.Path]::Combine($repoRoot, "NuGet.config")
     DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
+    DOTNET_AOT_TEST_RESOURCE_MODE = $ResourceMode
     DOTNET_HOST_PATH = $testDotnet
     DOTNET_ROOT = $testDotnetRoot
     DOTNET_CLI_USE_MSBUILD_SERVER = "0"

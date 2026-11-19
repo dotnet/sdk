@@ -826,6 +826,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1226: remover dados do pacote não encontrados {0} {1} {2}.  Para ignorar esse erro, defina AllowMissingPrunePackageData como true.</target>
         <note>{StrBegins="NETSDK1226: "}</note>
       </trans-unit>
+      <trans-unit id="PublishInputFileNotFound">
+        <source>NETSDK1247: The file '{0}' required for publishing was not found. Publish without '--no-build', or ensure the project has been built with the appropriate Configuration, TargetFramework, RuntimeIdentifier, and SelfContained properties.</source>
+        <target state="new">NETSDK1247: The file '{0}' required for publishing was not found. Publish without '--no-build', or ensure the project has been built with the appropriate Configuration, TargetFramework, RuntimeIdentifier, and SelfContained properties.</target>
+        <note>{StrBegins="NETSDK1247: "}{Locked="{0}"}{Locked="--no-build"}{Locked="Configuration"}{Locked="TargetFramework"}{Locked="RuntimeIdentifier"}{Locked="SelfContained"}</note>
+      </trans-unit>
       <trans-unit id="PublishProfileNotPresent">
         <source>NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name.</source>
         <target state="translated">NETSDK1198: Um perfil de publicação com o nome '{0}' não foi encontrado no projeto. Defina a propriedade PublishProfile como um nome de arquivo válido.</target>

@@ -810,6 +810,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     Computes the files from both project and package references.
     ============================================================
   -->
+  <Import Project="Microsoft.NET.Publish.ReferenceSatellites.targets" />
+
   <Target Name="_ComputeResolvedCopyLocalPublishAssets"
           DependsOnTargets="_ResolveCopyLocalAssetsForPublish;
                             _FilterSatelliteResourcesForPublish">
@@ -1359,6 +1361,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <NETSdkWarning Condition="'$(IncludeAllContentForSelfExtract)' == 'true'"
                    ResourceName="IncludeAllContentForSelfExtractIsLegacy" />
+
+    <NETSdkError Condition="'$(NoBuild)' == 'true' and !Exists('%(FilesToBundle.Identity)')"
+                 ResourceName="PublishInputFileNotFound"
+                 FormatArguments="$([MSBuild]::Escape('%(FilesToBundle.FullPath)'))" />
 
     <!-- Bundle the files in FilesToBundle (excluded files were already filtered out by PrepareForBundle) -->
     <GenerateBundle FilesToBundle="@(FilesToBundle)"
