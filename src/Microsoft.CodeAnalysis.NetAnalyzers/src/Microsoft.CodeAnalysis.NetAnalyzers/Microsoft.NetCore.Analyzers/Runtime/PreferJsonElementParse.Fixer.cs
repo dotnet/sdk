@@ -54,7 +54,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            ImmutableArray<SyntaxNode> arguments = invocation.Arguments.Select(argument => argument.Syntax).ToImmutableArray();
+            ImmutableArray<SyntaxNode> arguments = invocation.Arguments
+                .Where(argument => !argument.IsImplicit)
+                .Select(argument => argument.Syntax)
+                .ToImmutableArray();
 
             foreach (SyntaxNode argument in arguments)
             {

@@ -100,6 +100,68 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [TestMethod]
+        public async Task Diagnostic_WhenOptionalArgumentIsOmitted()
+        {
+            var source = """
+                using System.Text.Json;
+
+                namespace System.Text.Json
+                {
+                    public sealed class JsonDocument : System.IDisposable
+                    {
+                        public static JsonDocument Parse(string json, JsonDocumentOptions options = default) => null;
+                        public JsonElement RootElement => default;
+                        public void Dispose() { }
+                    }
+
+                    public struct JsonElement
+                    {
+                        public static JsonElement Parse(string json, JsonDocumentOptions options = default) => default;
+                    }
+
+                    public struct JsonDocumentOptions { }
+                }
+
+                class Test
+                {
+                    void M(string response)
+                    {
+                        var root = [|JsonDocument.Parse(response).RootElement|];
+                    }
+                }
+                """;
+            var fixedSource = """
+                using System.Text.Json;
+
+                namespace System.Text.Json
+                {
+                    public sealed class JsonDocument : System.IDisposable
+                    {
+                        public static JsonDocument Parse(string json, JsonDocumentOptions options = default) => null;
+                        public JsonElement RootElement => default;
+                        public void Dispose() { }
+                    }
+
+                    public struct JsonElement
+                    {
+                        public static JsonElement Parse(string json, JsonDocumentOptions options = default) => default;
+                    }
+
+                    public struct JsonDocumentOptions { }
+                }
+
+                class Test
+                {
+                    void M(string response)
+                    {
+                        var root = JsonElement.Parse(response);
+                    }
+                }
+                """;
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
         public async Task Diagnostic_WhenUsingJsonDocumentParseRootElement_WithMultipleArguments()
         {
             var source = """
