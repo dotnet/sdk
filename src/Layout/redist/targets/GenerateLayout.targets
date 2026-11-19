@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
 
   <!-- Track this targets file so implementation changes invalidate RID-chain generation. -->
   <PropertyGroup>
@@ -725,8 +725,7 @@
       <WorkloadManifestFilesContent Include="%(BuiltinManifests.Identity)" />
     </ItemGroup>
 
-    <Error Text="No workload manifest content found."
-           Condition="'@(WorkloadManifestFilesContent->Count())' == '0' and '$(SkipWorkloadManifestValidation)' != 'true'" />
+    <Error Text="No workload manifest content found." Condition="'@(WorkloadManifestFilesContent->Count())' == '0'" />
 
     <ItemGroup>
       <WorkloadManifestFilesContent Include="samsung.net.sdk.tizen" />

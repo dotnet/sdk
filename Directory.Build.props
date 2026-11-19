@@ -35,11 +35,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- The OpenHarmony SDK ships no workloads; the layout validates that the manifest list is non-empty for every other platform. -->
-    <SkipWorkloadManifestValidation Condition="'$(OSName)' == 'openharmony'">true</SkipWorkloadManifestValidation>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

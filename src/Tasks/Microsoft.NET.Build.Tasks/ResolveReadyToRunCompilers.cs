@@ -223,14 +223,7 @@ namespace Microsoft.NET.Build.Tasks
                     out _);
 
             // Older versions of crossgen2 do not recognize `win` as a valid OS name.
-            // The openharmony RID is standalone in the RID graph; crossgen2/ILC only accept
-            // the linux token, so map it like the other portable platforms.
-            targetOS = portablePlatform switch
-            {
-                "win" => "windows",
-                "openharmony" => "linux",
-                _ => portablePlatform
-            };
+            targetOS = portablePlatform == "win" ? "windows" : portablePlatform;
 
             return targetOS != null;
         }
