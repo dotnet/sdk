@@ -35,13 +35,13 @@ We do not recommend using `daily` builds in production. They have no guarantees,
 
 `preview` versions are not officially supported but they are offered for public testing ahead of a promotion to a `stable` release. At our discretion, a selected `daily` build will be used to produce a separately versioned `preview` build.
 
-Breaking change notices may be published in the [.NET Docs](https://github.com/dotnet/docs) if we expect high impact. However, `preview` versions may contain breaking changes without notice. No service-level agreement or fix timeline applies to a `preview` version.
+Breaking change notices are currently maintained in [this repository](breaking-changes/0.3.0-preview.2.md). However, `preview` versions may contain breaking changes without notice. No service-level agreement or fix timeline applies to a `preview` version.
 
 ### `Stable` Channel Versions
 
 Only the most recently published `stable` version of `dotnetup` is supported. Supported in this case means that the latest `stable` version may receive security and bug fixes.
 
-Intentional breaking changes will be documented as breaking change notices in the [.NET Docs](https://github.com/dotnet/docs).
+Intentional breaking changes will be documented as breaking change notices, currently maintained in [this repository](breaking-changes/0.3.0-preview.2.md).
 
 When a new `stable` version of `dotnetup` is published, previous versions no longer receive fixes, updates, or online technical assistance.
 

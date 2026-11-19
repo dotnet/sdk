@@ -64,17 +64,15 @@ stages:
         demands: ImageOverride -equals windows.vs2026.amd64.open
         os: windows
         emoji: 🪟
-      helixTargetQueue: windows.amd64.vs2026.pre.scout.open
 
   ############### LINUX ###############
   - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml@self
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+        demands: ImageOverride -equals build.azurelinux.3.amd64.open
         os: linux
         emoji: 🐧
-      helixTargetQueue: ubuntu.2204.amd64.open
 
   ############### MACOS ###############
   - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml@self
@@ -84,7 +82,6 @@ stages:
         vmImage: macOS-latest
         os: macOS
         emoji: 🍎
-      helixTargetQueue: osx.15.amd64.open
 
   ### ARM64 ###
   - ${{ if eq(parameters.enableArm64Job, true) }}:
@@ -95,7 +92,6 @@ stages:
           vmImage: macOS-15-arm64
           os: macOS
           emoji: 💪
-        helixTargetQueue: osx.13.arm64.open
 
 
 
