@@ -646,6 +646,85 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
+        // https://github.com/dotnet/sdk/issues/37367: building without a RuntimeIdentifier writes the
+        // intermediate assembly to a non-RID directory, so a RID-specific no-build publish can't find it.
+        [TestMethod]
+        public void It_reports_missing_inputs_on_no_build_publish_with_runtime_identifier_not_used_by_build()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            string projectDirectory = Path.Combine(testAsset.TestRoot, testProject.Name);
+            string runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
+
+            new DotnetRestoreCommand(Log, "-r", runtimeIdentifier)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            new DotnetBuildCommand(testAsset, "-c", "Release", PublishSingleFile)
+                .Execute()
+                .Should()
+                .Pass();
+
+            var intermediateDirectory = new BuildCommand(testAsset).GetIntermediateDirectory(
+                ToolsetInfo.CurrentTargetFramework, "Release", runtimeIdentifier);
+
+            new DotnetPublishCommand(Log, "--no-build", "--no-restore", "-r", runtimeIdentifier, "-c", "Release", PublishSingleFile)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(1)
+                .And.HaveStdOutContaining(GetPublishInputFileNotFoundPrefix(intermediateDirectory))
+                .And.NotHaveStdOutContaining("MSB4018");
+        }
+
+        [TestMethod]
+        public void It_reports_missing_inputs_on_no_build_publish_with_configuration_not_used_by_build()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                RuntimeIdentifier = RuntimeInformation.RuntimeIdentifier,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("SelfContained", "true");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            string projectDirectory = Path.Combine(testAsset.TestRoot, testProject.Name);
+
+            new DotnetBuildCommand(testAsset, "-c", "Release", PublishSingleFile)
+                .Execute()
+                .Should()
+                .Pass();
+
+            var intermediateDirectory = new BuildCommand(testAsset).GetIntermediateDirectory(
+                ToolsetInfo.CurrentTargetFramework, "Debug", RuntimeInformation.RuntimeIdentifier);
+
+            new DotnetPublishCommand(Log, "--no-build", "-c", "Debug", PublishSingleFile)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(1)
+                .And.HaveStdOutContaining(GetPublishInputFileNotFoundPrefix(intermediateDirectory))
+                .And.NotHaveStdOutContaining("MSB4018");
+        }
+
+        // The first missing bundle input can be the single-file host or the assembly, so only require
+        // that it is reported from the intermediate directory of the requested configuration and RID.
+        private static string GetPublishInputFileNotFoundPrefix(DirectoryInfo intermediateDirectory)
+        {
+            string message = Strings.PublishInputFileNotFound;
+            return message.Substring(0, message.IndexOf("{0}", StringComparison.Ordinal))
+                + Path.TrimEndingDirectorySeparator(intermediateDirectory.FullName)
+                + Path.DirectorySeparatorChar;
+        }
+
         [TestMethod]
         [RequiresMSBuildVersion("16.8.0")]
         public void It_rewrites_the_apphost_for_single_file_publish()
