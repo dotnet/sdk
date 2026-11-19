@@ -327,6 +327,37 @@ public sealed class ReleaseToolTests
     }
 
     [TestMethod]
+    [DataRow("0.3.0-preview.1.26554.1", false, false)]
+    [DataRow("0.3.0-preview.1.26554.2", false, false)]
+    [DataRow("0.3.0-preview.1.26554.3", false, true)]
+    [DataRow("0.3.0-preview.1.26554.3", true, false)]
+    [DataRow("0.2.9-preview.1.26554.2", false, false)]
+    [DataRow("0.3.1-preview.1.26554.1", false, true)]
+    [DataRow("unknown", false, true)]
+    [DataRow("unknown", true, false)]
+    public async Task RequiresExplicitRollbackForOlderOrUnknownCurrentRelease(string currentVersion, bool rollbackAllowed, bool rejected)
+    {
+        await WriteCandidatesAsync().ConfigureAwait(false);
+        ReleaseRecord release = await CreateReleaseAsync().ConfigureAwait(false);
+        using HttpClient client = new(new FixtureHandler(request => currentVersion == "unknown"
+            ? new HttpResponseMessage(HttpStatusCode.NotFound)
+            : new HttpResponseMessage(HttpStatusCode.MovedPermanently)
+            {
+                Headers = { Location = new Uri($"https://ci.dot.net/public/dotnetup/{currentVersion}/{Path.GetFileName(request.RequestUri!.AbsolutePath)}") }
+            }));
+        AkaChangePlan plan = await AkaLinkPlanning.CreateAsync(release, client).ConfigureAwait(false);
+
+        if (rejected)
+        {
+            Assert.ThrowsExactly<InvalidOperationException>(() => AkaLinkPlanning.EnsureIntentionalRollback(plan, rollbackAllowed));
+        }
+        else
+        {
+            AkaLinkPlanning.EnsureIntentionalRollback(plan, rollbackAllowed);
+        }
+    }
+
+    [TestMethod]
     [DataRow("404")]
     [DataRow("500")]
     [DataRow("fallback")]

@@ -152,6 +152,17 @@ that variant's already-built, signed candidates; it does not rebrand daily binar
 GA candidates are placeholders and cannot be selected. Selecting a variant does not change
 aka.ms links.
 
+The `rollback` parameter defaults to `false`. After recording the aka.ms snapshot, and
+before any blob publishing, the [link planner](../../../eng/dotnetup-release/AkaLinkPlanning.cs)
+reads the version from each observed redirect target (`.../dotnetup/<version>/<filename>`,
+read through public `HEAD` requests without downloading the file). The release fails if
+any link targets a newer version of the selected variant. It also fails if any target is
+missing, unavailable, or cannot be parsed. Set `rollback` to `true` to intentionally
+release an older build. Also use it to publish when there is no comparable current
+release, for example the first release of a variant. The check runs in dry runs too, so a
+dry run shows whether `rollback` is needed. Releasing the version that aka.ms currently
+targets does not require it.
+
 Both modes log the source build URL, branch, variant, version, commit, eligibility result, and
 staged relative paths and sizes, including total bytes. Dry runs explicitly report that blob
 uploads and public download verification are skipped. Set the pipeline variable `System.Debug`
@@ -180,6 +191,9 @@ files into `dotnetup/<version>/<filename>` under the local staging root:
 `dotnetup/<version>/dotnetup-<rid>` (with `.exe` on Windows). The bootstrap scripts and
 all SHA-512 sidecars share the same version directory. Only the 20 expected release files
 are staged, not candidate manifests, other variants, or artifact signing metadata.
+Rolling back by releasing an older successful build with `rollback: true` requires its
+pipeline artifacts to still be retained; configure retention for official signed runs that
+may be needed. Blobs that already exist with matching bytes are reused, not overwritten.
 
 One formal 1ES release job prepares the files and, unless dry-running, publishes them
 with the downloaded executable using the Azure Blob REST API. The upload implementation
@@ -246,8 +260,9 @@ plan. There is no alias-write switch.
 The planner makes public HEAD requests without following redirects. A usable redirect
 is a timestamped observation, not an authoritative aka.ms management record or a
 guaranteed rollback target. HTTP failures, timeouts, missing links, and Bing fallback
-redirects are recorded explicitly as unavailable with an error; they do not prevent
-blob-only publishing. A future implementation must obtain approved ownership and
+redirects are recorded explicitly as unavailable with an error; they block publishing
+unless `rollback` is `true`, because the current release version cannot be established.
+A future implementation must obtain approved ownership and
 authentication, re-read management-service state, update only existing links on 200,
 create only on 404, and fail on other statuses. All uploads and verification must finish
 before any alias changes. Link updates are not atomic, so retain previous targets and
@@ -267,8 +282,8 @@ enabling alias updates.
 `ReleaseToolTests` in [dotnetup.Tests](../../../test/dotnetup.Tests/ReleaseToolTests.cs)
 uses synthetic candidates and mocked HTTP responses for build eligibility, variant
 selection, provenance, asset completeness, staging hashes, blob headers and create-only
-uploads, idempotent retries, conflict rejection, anonymous download verification, and
-disabled aka.ms plans. It does not publish or contact external services.
+uploads, idempotent retries, conflict rejection, anonymous download verification, rollback
+guarding, and disabled aka.ms plans. It does not publish or contact external services.
 Use the [focused test entry point](../../../scripts/RunTests.cs):
 
 ```pwsh

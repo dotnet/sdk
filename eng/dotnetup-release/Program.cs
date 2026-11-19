@@ -9,8 +9,9 @@ using Microsoft.DotNet.Dotnetup.Release;
 try
 {
     // Prepare validates a selected official build and stages its existing signed bytes without publishing.
-    if (args is ["prepare", var source, var variant, var buildId, var commit, var buildPath, var staging, var metadata] &&
-        int.TryParse(buildId, NumberStyles.None, CultureInfo.InvariantCulture, out int id) && id > 0)
+    if (args is ["prepare", var source, var variant, var buildId, var commit, var buildPath, var staging, var metadata, var rollback] &&
+        int.TryParse(buildId, NumberStyles.None, CultureInfo.InvariantCulture, out int id) && id > 0 &&
+        bool.TryParse(rollback, out bool rollbackAllowed))
     {
         JsonElement build = await ReleaseFiles.ReadJsonAsync<JsonElement>(buildPath);
         ReleaseRecord release = await ReleasePreparation.CreateAsync(source, variant, id, commit, build);
@@ -31,6 +32,9 @@ try
         using HttpClient client = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(30) };
         AkaChangePlan plan = await AkaLinkPlanning.CreateAsync(release, client);
         await ReleaseFiles.WriteJsonAsync(Path.Combine(metadata, "aka-ms-plan.json"), plan);
+
+        // Fail before publishing when the selection would move users back to an older release without explicit intent.
+        AkaLinkPlanning.EnsureIntentionalRollback(plan, rollbackAllowed);
 
         Console.WriteLine($"Selected {variant} dotnetup {release.Version}, build {id}, commit {release.Commit}.");
         Console.WriteLine($"Source: https://dev.azure.com/dnceng/internal/_build/results?buildId={id}");
@@ -77,7 +81,7 @@ try
     }
     else
     {
-        Console.Error.WriteLine("Usage: dotnetup-release prepare <candidates> <preview|daily> <build-id> <commit> <source-build.json> <staging> <metadata>");
+        Console.Error.WriteLine("Usage: dotnetup-release prepare <candidates> <preview|daily> <build-id> <commit> <source-build.json> <staging> <metadata> <rollback:true|false>");
         Console.Error.WriteLine("       dotnetup-release publish <staging> <metadata> (requires BLOB_ACCESS_TOKEN)");
         Console.Error.WriteLine("       dotnetup-release verify <metadata> <blob-publication.json> <downloads>");
         return 1;

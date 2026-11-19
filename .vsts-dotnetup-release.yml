@@ -14,6 +14,10 @@ parameters:
   displayName: Dry run (prepare artifacts without publishing to blob storage)
   type: boolean
   default: true
+- name: rollback
+  displayName: Allow rollback (release a version older than, or not comparable to, the current aka.ms target)
+  type: boolean
+  default: false
 - name: blobServiceConnection
   displayName: Azure service connection for blob publishing
   type: string
@@ -114,7 +118,7 @@ extends:
             & (Join-Path $env:RELEASETOOLSDIRECTORY 'dotnetup-release.exe') prepare `
               "$(Pipeline.Workspace)/candidate" '${{ parameters.variant }}' `
               $env:SOURCE_BUILD_ID $env:SOURCE_COMMIT $sourceBuildPath `
-              $env:RELEASESTAGINGDIRECTORY $env:RELEASEMETADATADIRECTORY
+              $env:RELEASESTAGINGDIRECTORY $env:RELEASEMETADATADIRECTORY '${{ parameters.rollback }}'
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             if ('${{ parameters.dryRun }}' -eq 'true') {
               Write-Host 'DRY RUN: candidates staged and aka.ms plan recorded. Blob uploads and public download verification are skipped.'
