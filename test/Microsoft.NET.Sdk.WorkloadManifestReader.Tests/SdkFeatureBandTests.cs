@@ -17,6 +17,8 @@ namespace ManifestReaderTests
         [DataRow("6.0.100", "6.0.100")]
         [DataRow("10.0.512", "10.0.500")]
         [DataRow("7.0.100-preview.1.12345", "7.0.100-preview.1")]
+        [DataRow("11.0.200-preview.26568.113", "11.0.200")]
+        [DataRow("11.0.200-preview.5.26568.113", "11.0.200-preview.5")]
         [DataRow("7.0.100-dev", "7.0.100")]
         [DataRow("7.0.100-ci", "7.0.100")]
         [DataRow("6.0.100-rc.2.21505.57", "6.0.100-rc.2")]
@@ -25,6 +27,15 @@ namespace ManifestReaderTests
         {
             var parsedVersion = new SdkFeatureBand(version).ToString();
             parsedVersion.Should().Be(expectedParsedVersion);
+        }
+
+        [TestMethod]
+        [DataRow("11.0.200-preview.26568.113", "11.0.200")]
+        [DataRow("11.0.200-preview.5.26568.113", "11.0.200-preview.5")]
+        public void ItParsesWorkloadSetVersionsIntoFeatureBands(string version, string expectedFeatureBand)
+        {
+            var featureBand = SdkFeatureBand.FromWorkloadSetVersion(version);
+            featureBand.ToString().Should().Be(expectedFeatureBand);
         }
 
         [TestMethod]
