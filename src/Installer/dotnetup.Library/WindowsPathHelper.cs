@@ -203,10 +203,17 @@ internal sealed partial class WindowsPathHelper : IDisposable
 
         foreach (var architecture in installedVersions.GetSubKeyNames())
         {
-            using var key = installedVersions.OpenSubKey(subKeyName is null ? architecture : $@"{architecture}\{subKeyName}");
-            if (key?.GetValue(valueName) is string { Length: > 0 } value)
+            try
             {
-                values[architecture] = value;
+                using var key = installedVersions.OpenSubKey(subKeyName is null ? architecture : $@"{architecture}\{subKeyName}");
+                if (key?.GetValue(valueName) is string { Length: > 0 } value)
+                {
+                    values[architecture] = value;
+                }
+            }
+            catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException or IOException)
+            {
+                // Ignore inaccessible architecture keys and keep any values already collected.
             }
         }
 
@@ -250,7 +257,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
             return null;
         }
 
-        var normalized = path.TrimEnd(Path.DirectorySeparatorChar);
+        var normalized = Path.TrimEndingDirectorySeparator(path);
         return Directory.Exists(normalized) ? normalized : null;
     }
 
