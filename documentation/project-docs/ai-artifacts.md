@@ -34,28 +34,10 @@ The area team owns the domain knowledge in an area-specific artifact, such as an
 from the CODEOWNERS of the area's source paths so that a domain expert confirms the
 guidance is correct.
 
-## Requesting or proposing a change
+## Requesting a change
 
-Anyone can propose a change to an AI artifact, including contributors who do not own it
-and agents working on a task.
-
-- **Open a pull request** when you know the fix, such as a wrong command, a stale path,
-  or a missing rule. A small correction does not need an issue first.
-- **Open an issue** when you found a problem but not the fix, or when you propose a new
-  skill, agent, or agentic workflow or a change that spans several areas. Name the
-  artifact, describe what an agent did wrong or what is missing, and link the evidence,
-  such as a PR, review comment, or failed run. Apply the `Area-AIEngineering` label, or
-  ask in the issue for it to be applied if you cannot set labels.
-- **Fix it in the same PR** when your code change makes an artifact stale. The root
-  instructions require the
-  [`update-docs` checklist](../../AGENTS.md#keeping-ai-context-and-docs-in-sync)
-  before completion, and the
-  [`code-review` skill](../../.github/skills/code-review/SKILL.md) flags stale or
-  ungrounded AI context.
-
-Turning recurring review feedback into instructions, tests, analyzer rules, or skills
-is tracked as a separate item in
-[dotnet/sdk#55185](https://github.com/dotnet/sdk/issues/55185).
+Propose changes to AI artifacts like any other change: open a pull request, or open an
+issue with the `Area-AIEngineering` label.
 
 ## Review expectations
 
@@ -88,26 +70,24 @@ artifact, plus an area owner for area-specific guidance. Reviewers check that:
 - **Behavior.** For a new or materially changed skill, agent, or workflow, try it on at
   least one representative task and summarize the result in the PR description.
 
-## Periodic review
+## Periodic audit
 
 Most drift is caught when a change makes an artifact stale: the
 [`update-docs` checklist](../../AGENTS.md#keeping-ai-context-and-docs-in-sync), the
 [`code-review` skill](../../.github/skills/code-review/SKILL.md), and the Markdown link
-check. These checks do not catch artifacts that drift without a related change, or that
-gradually duplicate each other.
+check. These checks do not catch artifacts that drift without a related change to them,
+or that gradually duplicate each other.
 
-> [!NOTE]
-> The following cadence is proposed. The AI artifact owners in
-> [`CODEOWNERS`](../../CODEOWNERS) have not committed to it yet.
+Periodic audits are meant to be automated, not done by hand. The planned automation is
+not implemented yet and is tracked in
+[dotnet/sdk#55185](https://github.com/dotnet/sdk/issues/55185):
 
-Proposed: once per quarter, the AI artifact owners review all AI artifacts for:
-
-- claims, commands, and paths that no longer match the repository
-- content that is duplicated across artifacts instead of linked
-- artifacts that meet a [retirement](#retiring-an-artifact) condition
-- a memory [`INDEX.md`](../../.github/memory/INDEX.md) that does not match the memory files
-
-Each finding becomes a fix PR or an `Area-AIEngineering` issue.
+- automated evals for skills and agents, like the
+  [evaluations in dotnet/skills](https://github.com/dotnet/skills/blob/main/CONTRIBUTING.md)
+- scheduled broken-link detection across all AI artifacts, not only Markdown files that a
+  PR changes
+- an agentic workflow that finds claims that no longer match the repository
+- an agentic workflow that finds content duplicated across artifacts
 
 ## Retiring an artifact
 
@@ -117,19 +97,7 @@ Retire an artifact when it:
 - duplicates or has been superseded by another artifact
 - repeatedly leads agents to wrong results and cannot be corrected
 - has no owner who can confirm that it is still accurate
-
-To retire it:
-
-1. Delete the artifact instead of leaving a deprecated copy. Agents can still load and
-   follow a deprecated file, and Git history preserves the content.
-2. In the same PR, remove or redirect every reference to it: root and area `AGENTS.md`
-   files, memory files and [`INDEX.md`](../../.github/memory/INDEX.md), other skills and
-   agents, workflows, and contributor documentation. Search for the artifact's name and
-   path.
-3. For an agentic workflow, delete the source `.md` and its generated `.lock.yml`
-   together, and tell the owners about any secrets or labels that only it used.
-4. In the PR description, explain why the artifact is retired and what replaces it, if
-   anything.
+- no longer provides value over the base AI model
 
 If you are not sure whether an artifact should be retired, open an `Area-AIEngineering`
 issue that proposes the retirement and let the owners decide.
