@@ -109,3 +109,23 @@ target-produced project state, and the session's success/failure cleanup. Cover 
 Parent-process operations must also use the captured invocation directory: pass it through background
 workload updates to both `global.json` discovery and NuGet configuration, and initialize absolute MTP
 trace paths before starting the session. Changing only a child process's directory is insufficient.
+
+## MTP device selection
+
+In `--solution` runs,
+[`device selection`](dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs) applies only to
+MTP test applications (`IsTestingPlatformApplication`); `IsTestProject` is a VSTest concept and must not
+opt a project in. App and library projects, such as MAUI heads, can import `ComputeAvailableDevices` in
+their inner builds and must not prompt for a device. The single-project path evaluates before restore, so
+it must not apply this NuGet-dependent gate.
+
+## MTP process completion
+
+[`TestApplicationHandler`](dotnet/Commands/Test/MTP/TestApplicationHandler.cs) distinguishes
+TestHost completion from orchestrator-only completion. An exit-0 `RefreshMappingsOrchestrator`
+in collection mode or `RunAffectedTestsOrchestrator` in affected-run mode can finish without
+a TestHost; legacy collection can omit handshakes entirely. Missing/unknown capabilities,
+controller-only or mixed partial handshakes, and explicit handshake rejections must not
+gain that exemption. Rejection and partial-handshake state must survive later accepted
+handshakes. Keep these boundaries covered by
+[`TestApplicationHandlerTests`](../../test/dotnet.Tests/CommandTests/Test/TestApplicationHandlerTests.cs).
