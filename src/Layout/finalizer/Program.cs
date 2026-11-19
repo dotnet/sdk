@@ -287,6 +287,12 @@ static void RemoveInstallStateFile(SdkFeatureBand featureBandVersion, string pla
     string programDataPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
     string installStatePath = Path.Combine(programDataPath, "dotnet", "workloads", platform, featureBandVersion.ToString(), "installstate", "default.json");
 
+    if (!TrustedMachinePath.IsUnderRoot(installStatePath, TrustedMachinePath.ProgramDataDotnetRoot))
+    {
+        Logger.Log($"Install state path is outside trusted root: {installStatePath}");
+        return;
+    }
+
     if (File.Exists(installStatePath))
     {
         // %ProgramData% lets a standard user pre-create this tree, so prove the machine dotnet root is

@@ -146,6 +146,7 @@ Error: The template 'name' (TestAssets.Invalid.Localiation.ValidationFailure) ha
                 .WithCustomHive(home)
                 .WithWorkingDirectory(workingDir)
                 .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "de-DE")
+                .WithStandardOutputEncoding(Encoding.UTF8)
                 .Execute()
                 .Should()
                 .ExitWith(0)
