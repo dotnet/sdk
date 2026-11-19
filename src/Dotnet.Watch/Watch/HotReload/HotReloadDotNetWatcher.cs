@@ -1143,7 +1143,6 @@ internal sealed class HotReloadDotNetWatcher
             }
             else if (projectPaths is not [])
             {
-                var solutionFile = Path.Combine(Path.GetTempFileName() + ".slnx");
                 var solutionElement = new XElement("Solution");
 
                 foreach (var projectPath in projectPaths)
@@ -1152,25 +1151,13 @@ internal sealed class HotReloadDotNetWatcher
                 }
 
                 var doc = new XDocument(solutionElement);
-                doc.Save(solutionFile);
 
-                try
+                // The file is kept open during the build: other processes can read it but not modify it.
+                using var solutionFile = _context.TemporaryFileManager.Create(".slnx", doc.Save);
+
+                if (!await BuildFileOrProjectOrSolutionAsync(solutionFile.Path, targetFramework, device, action, cancellationToken))
                 {
-                    if (!await BuildFileOrProjectOrSolutionAsync(solutionFile, targetFramework, device, action, cancellationToken))
-                    {
-                        return false;
-                    }
-                }
-                finally
-                {
-                    try
-                    {
-                        File.Delete(solutionFile);
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
+                    return false;
                 }
             }
 

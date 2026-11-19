@@ -106,13 +106,22 @@ namespace Microsoft.TemplateEngine.CommandUtils
 
         internal static bool IsSurroundedWithQuotes(string argument)
         {
+#if NET
             return argument.StartsWith('"') &&
                    argument.EndsWith('"');
+#else
+            return argument.StartsWith("\"", StringComparison.Ordinal) &&
+                   argument.EndsWith("\"", StringComparison.Ordinal);
+#endif
         }
 
         internal static bool ArgumentContainsWhitespace(string argument)
         {
+#if NET
             return argument.Contains(' ') || argument.Contains('\t') || argument.Contains('\n');
+#else
+            return argument.Contains(" ") || argument.Contains("\t") || argument.Contains("\n");
+#endif
         }
 
         /// <summary>
