@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Elevate;
 internal class WorkloadElevateCommand(ParseResult parseResult)
     : WorkloadCommandBase<WorkloadElevateCommandDefinition>(parseResult)
 {
-    public override int Execute()
+    protected override int ExecuteCore()
     {
         if (!OperatingSystem.IsWindows())
         {

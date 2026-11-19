@@ -54,7 +54,8 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
             currentSdkVersion,
             dotnetDir,
             userProfileDir,
-            workloadResolver
+            workloadResolver,
+            TempDirectoryPath
         );
 
         _includePreviews = parseResult.GetValue(Definition.IncludePreviewsOption);
@@ -67,7 +68,7 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
             packageSourceLocation, displayManifestUpdates: Verbosity.IsDiagnostic());
     }
 
-    public override int Execute()
+    protected override int ExecuteCore()
     {
         IEnumerable<WorkloadId> installedList = _workloadListHelper.InstalledSdkWorkloadIds;
 

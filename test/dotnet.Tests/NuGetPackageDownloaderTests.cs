@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader.Tests
             const BindingFlags InstanceFields = BindingFlags.Instance | BindingFlags.NonPublic;
             var updater = (WorkloadAdvertisingManifestUpdater)typeof(WorkloadManifestUpdater)
                 .GetMethod("GetAdvertisingUpdaterInstance", BindingFlags.Static | BindingFlags.NonPublic)!
-                .Invoke(null, [Path.Combine(testDirectory.Path, "home"), invocationDirectory])!;
+                .Invoke(null, [Path.Combine(testDirectory.Path, "home"), invocationDirectory, new DirectoryPath(Path.Combine(testDirectory.Path, "packages"))])!;
             var resolver = (IWorkloadResolver)typeof(WorkloadAdvertisingManifestUpdater)
                 .GetField("_workloadResolver", InstanceFields)!.GetValue(updater)!;
             resolver.GetWorkloadManifestProvider().GetWorkloadVersion().GlobalJsonPath.Should().Be(globalJsonPath);

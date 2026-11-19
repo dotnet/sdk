@@ -34,7 +34,7 @@ internal sealed class WorkloadSearchCommand : WorkloadCommandBase<WorkloadSearch
         _workloadResolver = creationResult.WorkloadResolver;
     }
 
-    public override int Execute()
+    protected override int ExecuteCore()
     {
         IEnumerable<WorkloadResolver.WorkloadInfo> availableWorkloads = _workloadResolver.GetAvailableWorkloads()
             .OrderBy(workload => workload.Id);

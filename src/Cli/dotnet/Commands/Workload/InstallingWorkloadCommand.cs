@@ -238,7 +238,8 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
                     _workloadResolver,
                     numberOfWorkloadSetsToTake: 1,
                     _packageSourceLocation,
-                    RestoreActionConfiguration);
+                    RestoreActionConfiguration,
+                    TempDirectoryPath);
 
                 if (versions is null)
                 {

@@ -40,7 +40,7 @@ internal class WorkloadHistoryCommand : WorkloadCommandBase<WorkloadHistoryComma
             packageSourceLocation: null);
     }
 
-    public override int Execute()
+    protected override int ExecuteCore()
     {
         var displayRecords = WorkloadHistoryDisplay.ProcessWorkloadHistoryRecords(_workloadInstaller.GetWorkloadHistoryRecords(_sdkFeatureBand.ToString()), out bool unknownRecordsPresent);
 

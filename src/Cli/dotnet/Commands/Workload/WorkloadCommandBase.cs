@@ -98,6 +98,13 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
     protected bool IsPackageDownloaderProvided { get; }
 
     /// <summary>
+    /// The temporary directory this command created for <see cref="TempDirectoryPath"/>, or <see langword="null"/> when the
+    /// directory was supplied by the caller or by the <c>--temp-dir</c> option. Only a directory the command created is
+    /// deleted when it completes.
+    /// </summary>
+    private readonly TemporaryDirectory? _ownedTempDirectory;
+
+    /// <summary>
     /// Initializes a new <see cref="WorkloadCommandBase"/> instance.
     /// </summary>
     /// <param name="parseResult">The results of parsing the command line.</param>
@@ -124,11 +131,19 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
 
         Reporter = reporter ?? Utils.Reporter.Output;
 
-        TempDirectoryPath = !string.IsNullOrWhiteSpace(tempDirPath)
-            ? tempDirPath
-            : Definition.TempDirOption != null && !string.IsNullOrWhiteSpace(parseResult.GetValue(Definition.TempDirOption))
-                ? parseResult.GetValue(Definition.TempDirOption)!
-                : TemporaryDirectory.CreateSubdirectory();
+        if (!string.IsNullOrWhiteSpace(tempDirPath))
+        {
+            TempDirectoryPath = tempDirPath;
+        }
+        else if (Definition.TempDirOption != null && !string.IsNullOrWhiteSpace(parseResult.GetValue(Definition.TempDirOption)))
+        {
+            TempDirectoryPath = parseResult.GetValue(Definition.TempDirOption)!;
+        }
+        else
+        {
+            _ownedTempDirectory = new TemporaryDirectory();
+            TempDirectoryPath = _ownedTempDirectory.DirectoryPath;
+        }
 
         TempPackagesDirectory = new DirectoryPath(Path.Combine(TempDirectoryPath, "dotnet-sdk-advertising-temp"));
 
@@ -148,4 +163,26 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
                 RestoreActionConfiguration);
         }
     }
+
+    /// <summary>
+    /// Runs the command, then deletes the temporary directory if the command created it, so downloaded packages and
+    /// extracted manifests don't accumulate in the user's temp folder.
+    /// </summary>
+    public sealed override int Execute()
+    {
+        try
+        {
+            return ExecuteCore();
+        }
+        finally
+        {
+            _ownedTempDirectory?.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Runs the command. When the command created <see cref="TempDirectoryPath"/>, it is deleted once this call returns,
+    /// so nothing written there may be relied on afterwards.
+    /// </summary>
+    protected abstract int ExecuteCore();
 }
