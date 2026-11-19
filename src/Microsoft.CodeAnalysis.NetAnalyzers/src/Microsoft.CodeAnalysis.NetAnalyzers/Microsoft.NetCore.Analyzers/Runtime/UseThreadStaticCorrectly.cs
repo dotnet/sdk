@@ -37,10 +37,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             isDataflowRule: false);
 
         // [FixedAddressValueType]
-        // private static object s_field;
-        internal static readonly DiagnosticDescriptor NonValueTypeFieldRule = DiagnosticDescriptorHelper.Create(ThreadStaticNonStaticFieldRuleId,
+        // private static int s_field;
+        internal static readonly DiagnosticDescriptor UnsupportedTypeFieldRule = DiagnosticDescriptorHelper.Create(ThreadStaticNonStaticFieldRuleId,
             CreateLocalizableResourceString(nameof(AttributeHasNoEffectTitle)),
-            CreateLocalizableResourceString(nameof(AttributeHasNoEffectNonValueTypeFieldMessage)),
+            CreateLocalizableResourceString(nameof(AttributeHasNoEffectUnsupportedTypeFieldMessage)),
             DiagnosticCategory.Usage,
             RuleLevel.BuildWarning,
             CreateLocalizableResourceString(nameof(AttributeHasNoEffectDescription)),
@@ -68,7 +68,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(NonStaticFieldRule, NonValueTypeFieldRule, NotPInvokeRule, ThreadStaticInitializedInlineRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(NonStaticFieldRule, UnsupportedTypeFieldRule, NotPInvokeRule, ThreadStaticInitializedInlineRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -86,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var fixedAddressValueTypeAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesFixedAddressValueTypeAttribute);
 
                 // Warn on any [ThreadStatic], [ContextStatic] or [FixedAddressValueType] instance field,
-                // and on [FixedAddressValueType] on a static field whose type is a reference type.
+                // and on [FixedAddressValueType] on a static field that is not of a struct type, or is of a primitive type.
                 context.RegisterSymbolAction(context =>
                 {
                     ISymbol symbol = context.Symbol;
@@ -120,10 +120,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             context.ReportDiagnostic(symbol.CreateDiagnostic(NonStaticFieldRule, "FixedAddressValueType", symbol.Name));
                         }
                     }
-                    else if (fieldSymbol.Type.IsReferenceType && fieldSymbol.HasAnyAttribute(fixedAddressValueTypeAttributeType))
+                    else if (fieldSymbol.HasAnyAttribute(fixedAddressValueTypeAttributeType) &&
+                        (fieldSymbol.Type.IsReferenceType || fieldSymbol.Type.IsPrimitiveType() || fieldSymbol.Type.SpecialType is SpecialType.System_IntPtr or SpecialType.System_UIntPtr || fieldSymbol.Type.TypeKind == TypeKind.Enum))
                     {
                         // A type parameter only counts when it is constrained to a reference type, since it may be a struct otherwise.
-                        context.ReportDiagnostic(symbol.CreateDiagnostic(NonValueTypeFieldRule, "FixedAddressValueType", symbol.Name));
+                        context.ReportDiagnostic(symbol.CreateDiagnostic(UnsupportedTypeFieldRule, "FixedAddressValueType", symbol.Name));
                     }
                 }, SymbolKind.Field, SymbolKind.Property);
 

@@ -245,7 +245,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [TestMethod]
-        public async Task FixedAddressValueTypeOnReferenceTypeStaticField_Diagnostic_CSharp()
+        public async Task FixedAddressValueTypeOnUnsupportedStaticField_Diagnostic_CSharp()
         {
             await new VerifyCS.Test
             {
@@ -277,10 +277,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         static Int128 s_int128;
 
                         [FixedAddressValueType]
-                        static int s_int;
+                        static int {|#5:s_int|};
 
                         [FixedAddressValueType]
-                        static DayOfWeek s_enum;
+                        static DayOfWeek {|#7:s_enum|};
+
+                        [FixedAddressValueType]
+                        static IntPtr {|#6:s_intPtr|};
+
+                        [FixedAddressValueType]
+                        static decimal s_decimal;
 
                         [FixedAddressValueType]
                         static TAny s_any;
@@ -294,11 +300,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     """,
                 ExpectedDiagnostics =
                 {
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(0).WithArguments("FixedAddressValueType", "s_object"),
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(1).WithArguments("FixedAddressValueType", "s_string"),
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(2).WithArguments("FixedAddressValueType", "s_array"),
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(3).WithArguments("FixedAddressValueType", "s_class"),
-                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(4).WithArguments("FixedAddressValueType", "Prop"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(0).WithArguments("FixedAddressValueType", "s_object"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(1).WithArguments("FixedAddressValueType", "s_string"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(2).WithArguments("FixedAddressValueType", "s_array"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(3).WithArguments("FixedAddressValueType", "s_class"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(4).WithArguments("FixedAddressValueType", "Prop"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(5).WithArguments("FixedAddressValueType", "s_int"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(6).WithArguments("FixedAddressValueType", "s_intPtr"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(7).WithArguments("FixedAddressValueType", "s_enum"),
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -326,7 +335,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [TestMethod]
-        public async Task FixedAddressValueTypeOnReferenceTypeStaticField_Diagnostic_VB()
+        public async Task FixedAddressValueTypeOnUnsupportedStaticField_Diagnostic_VB()
         {
             await new VerifyVB.Test
             {
@@ -346,13 +355,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Private Shared s_int128 As Int128
 
                         <FixedAddressValueType>
-                        Private Shared s_int As Integer
+                        Private Shared {|#2:s_int|} As Integer
                     End Class
                     """,
                 ExpectedDiagnostics =
                 {
-                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(0).WithArguments("FixedAddressValueType", "s_object"),
-                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.NonValueTypeFieldRule).WithLocation(1).WithArguments("FixedAddressValueType", "s_string"),
+                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(0).WithArguments("FixedAddressValueType", "s_object"),
+                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(1).WithArguments("FixedAddressValueType", "s_string"),
+                    VerifyVB.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(2).WithArguments("FixedAddressValueType", "s_int"),
                 },
             }.RunAsync(CancellationToken.None);
         }
