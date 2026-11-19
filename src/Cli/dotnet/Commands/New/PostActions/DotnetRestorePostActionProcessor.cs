@@ -60,7 +60,7 @@ internal class DotnetRestorePostActionProcessor(Func<string, CancellationToken, 
             }
             return succeeded;
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_Restore_RestoreFailed, e.Message));
             return false;

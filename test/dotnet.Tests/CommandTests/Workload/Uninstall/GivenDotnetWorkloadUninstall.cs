@@ -109,6 +109,34 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
         }
 
         [TestMethod]
+        public void GivenCancellationDuringGarbageCollectionItPropagatesCancellationAfterShutdown()
+        {
+            const string workloadId = "mock-1";
+            const string sdkFeatureVersion = "6.0.100";
+            string testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            string dotnetRoot = Path.Combine(testDirectory, "dotnet");
+            string userProfileDir = Path.Combine(testDirectory, "user-profile");
+            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal: false, userProfileDir);
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
+            var workloadInstaller = new MockPackWorkloadInstaller(installedWorkloads: [new WorkloadId(workloadId)]);
+            var parseResult = Parser.Parse(["dotnet", "workload", "uninstall", workloadId]);
+            var command = new WorkloadUninstallCommand(
+                parseResult,
+                reporter: _reporter,
+                workloadResolverFactory,
+                new MockNuGetPackageDownloader(dotnetRoot),
+                workloadInstaller);
+            using CancellationTokenSource cancellationTokenSource = new();
+            cancellationTokenSource.Cancel();
+
+            OperationCanceledException exception = Assert.ThrowsExactly<OperationCanceledException>(
+                () => command.Execute(cancellationTokenSource.Token));
+
+            Assert.AreEqual(cancellationTokenSource.Token, exception.CancellationToken);
+            Assert.IsTrue(workloadInstaller.ShutdownCalled);
+        }
+
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void GivenWorkloadUninstallItCanUninstallOnlySpecifiedWorkload(bool userLocal)
