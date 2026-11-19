@@ -18,7 +18,8 @@ public class PackageTests
             "Nuget.Packaging",
             "Valleysoft.DockerCredsProvider",
             "Microsoft.Security.AntiSSRF",
-            "Microsoft.Extensions.Logging"
+            "Microsoft.Extensions.Logging",
+            "OrasProject.Oras"
         };
         IReadOnlyList<string> knownProjectReferences = new List<string>()
         {
@@ -52,6 +53,7 @@ public class PackageTests
               "Microsoft.NET.Build.Containers.nuspec",
               "README.md",
               $"tasks/{netTFM}/Microsoft.DotNet.Cli.Utils.dll",
+              $"tasks/{netTFM}/Microsoft.Extensions.Caching.Memory.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.MSBuild.dll",
@@ -64,6 +66,7 @@ public class PackageTests
               $"tasks/{netTFM}/NuGet.Frameworks.dll",
               $"tasks/{netTFM}/NuGet.Packaging.dll",
               $"tasks/{netTFM}/NuGet.Versioning.dll",
+              $"tasks/{netTFM}/OrasProject.Oras.dll",
               $"tasks/{netTFM}/Valleysoft.DockerCredsProvider.dll"
         };
 

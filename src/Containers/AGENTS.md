@@ -24,7 +24,7 @@ feature (`Microsoft.NET.Build.Containers`).
   credentials, `DOTNET_CONTAINER_INSECURE_REGISTRIES`) are `DOTNET_CONTAINER_*`-only.
   Check the existing constant before assuming an alias exists.
 - **Bearer-token (realm) requests are untrusted and use a separate transport.** The
-  realm comes from the registry, so `AuthHandshakeMessageHandler` sends token requests
+  realm comes from the registry, so `OrasRepositoryFactory` configures ORAS `TokenClient` to send requests
   through [AuthRealmHandlerFactory.cs](Microsoft.NET.Build.Containers/AuthRealmHandlerFactory.cs)
   (Microsoft.Security.AntiSSRF, validated at connect time) rather than the registry
   handler chain. The policy comes only from `DOTNET_CONTAINER_AUTH_REALM_POLICY`
@@ -39,9 +39,8 @@ feature (`Microsoft.NET.Build.Containers`).
 - **Registry credentials are origin-bound.** Attach cached credentials and process
   authentication challenges only for the configured registry origin. After normal registry
   redirects, validate the final response origin before acting on a challenge.
-  [AuthHandshakeMessageHandler.cs](Microsoft.NET.Build.Containers/AuthHandshakeMessageHandler.cs)
-  allows one completed authentication acquisition per request; transport failures before
-  acquisition remain retryable within the existing retry budget.
+  [OrasRepositoryFactory.cs](Microsoft.NET.Build.Containers/Registry/OrasRepositoryFactory.cs)
+  checks the effective response origin before ORAS processes authentication challenges.
 
 ## Tests
 

@@ -3,6 +3,7 @@
 
 using System.Formats.Tar;
 using System.IO.Compression;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 

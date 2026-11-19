@@ -63,7 +63,7 @@ internal sealed class AuthRealmHandlerFactory
             // http is only used when the realm URI itself is http (AllowPlainTextHttp above).
             antiSsrfHandler.SslOptions = new SslClientAuthenticationOptions
             {
-                RemoteCertificateValidationCallback = DefaultRegistryAPI.IgnoreCertificateErrorsForSpecificHost(_registryUri.Host)
+                RemoteCertificateValidationCallback = OrasRepositoryFactory.IgnoreCertificateErrorsForSpecificHost(_registryUri.Host)
             };
         }
 

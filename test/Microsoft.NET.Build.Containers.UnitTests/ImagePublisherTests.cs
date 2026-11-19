@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Tasks;
 using Moq;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
@@ -32,12 +33,11 @@ public class ImagePublisherTests
         Uri registryUri = new($"https://{registryName}");
         Uri redirectedUri = new("https://storage.invalid/v2/");
         var transport = new RedirectedChallengeHandler(redirectedUri);
-        using var client = new HttpClient(new AuthHandshakeMessageHandler(
-            registryName, registryUri, false, transport, NullLogger.Instance, localArchive ? RegistryMode.Pull : RegistryMode.Push));
-        var api = new Mock<IRegistryAPI>(MockBehavior.Strict);
-        api.SetupGet(a => a.Manifest).Returns(new DefaultManifestOperations(registryUri, registryName, client, NullLogger.Instance));
-        api.SetupGet(a => a.Blob).Returns(new DefaultBlobOperations(registryUri, registryName, client, NullLogger.Instance));
-        var registry = new Registry(registryName, NullLogger.Instance, api.Object, retryDelayProvider: () => TimeSpan.Zero);
+        var settings = new RegistrySettings();
+        var client = OrasRepositoryFactory.CreateClient(registryName, registryUri, settings, NullLogger.Instance,
+            localArchive ? RegistryMode.Pull : RegistryMode.Push, transport);
+        var factory = new OrasRepositoryFactory(registryUri, client, settings);
+        var registry = new Registry(registryName, NullLogger.Instance, factory, retryDelayProvider: () => TimeSpan.Zero);
         var source = new SourceImageReference(registry, "base/image", "latest", null);
         BuiltImage image = new()
         {
@@ -45,8 +45,8 @@ public class ImagePublisherTests
             ImageDigest = "sha256:config",
             Manifest = "{}",
             ManifestDigest = "sha256:manifest",
-            ManifestMediaType = SchemaTypes.OciManifestV1,
-            Layers = [new ManifestLayer(SchemaTypes.OciLayerGzipV1, 123, $"sha256:{Guid.NewGuid():N}{Guid.NewGuid():N}", null)],
+            ManifestMediaType = MediaType.ImageManifest,
+            Layers = [new Descriptor { MediaType = MediaType.ImageLayerGzip, Size = 123, Digest = $"sha256:{Guid.NewGuid():N}{Guid.NewGuid():N}" }],
             OS = "linux",
             Architecture = "amd64",
         };
@@ -68,7 +68,7 @@ public class ImagePublisherTests
                 MultiArchImage index = new()
                 {
                     ImageIndex = "{}",
-                    ImageIndexMediaType = SchemaTypes.OciImageIndexV1,
+                    ImageIndexMediaType = MediaType.ImageIndex,
                     Images = [image],
                 };
                 await ImagePublisher.PublishImageAsync(index, source, destination, task.Log, telemetry, TestContext.CancellationToken);
@@ -119,18 +119,11 @@ public class ImagePublisherTests
                 nameof(global::Microsoft.NET.Build.Containers.Resources.Strings.InvalidAuthRealmAllowedAddress),
                 environmentVariable,
                 invalidValue);
-        using var client = new HttpClient(new AuthHandshakeMessageHandler(
-            registryName,
-            registryUri,
-            isInsecureRegistry: false,
-            transport,
-            NullLogger.Instance,
-            localArchive ? RegistryMode.Pull : RegistryMode.Push,
-            _ => throw configError));
-        var api = new Mock<IRegistryAPI>(MockBehavior.Strict);
-        api.SetupGet(a => a.Manifest).Returns(new DefaultManifestOperations(registryUri, registryName, client, NullLogger.Instance));
-        api.SetupGet(a => a.Blob).Returns(new DefaultBlobOperations(registryUri, registryName, client, NullLogger.Instance));
-        var registry = new Registry(registryName, NullLogger.Instance, api.Object, retryDelayProvider: () => TimeSpan.Zero);
+        var settings = new RegistrySettings();
+        var client = OrasRepositoryFactory.CreateClient(registryName, registryUri, settings, NullLogger.Instance,
+            localArchive ? RegistryMode.Pull : RegistryMode.Push, transport, _ => throw configError);
+        var factory = new OrasRepositoryFactory(registryUri, client, settings);
+        var registry = new Registry(registryName, NullLogger.Instance, factory, retryDelayProvider: () => TimeSpan.Zero);
         var source = new SourceImageReference(registry, "base/image", "latest", null);
         BuiltImage image = new()
         {
@@ -138,8 +131,8 @@ public class ImagePublisherTests
             ImageDigest = "sha256:config",
             Manifest = "{}",
             ManifestDigest = "sha256:manifest",
-            ManifestMediaType = SchemaTypes.OciManifestV1,
-            Layers = [new ManifestLayer(SchemaTypes.OciLayerGzipV1, 123, $"sha256:{Guid.NewGuid():N}{Guid.NewGuid():N}", null)],
+            ManifestMediaType = MediaType.ImageManifest,
+            Layers = [new Descriptor { MediaType = MediaType.ImageLayerGzip, Size = 123, Digest = $"sha256:{Guid.NewGuid():N}{Guid.NewGuid():N}" }],
             OS = "linux",
             Architecture = "amd64",
         };

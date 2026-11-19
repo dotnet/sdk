@@ -16,10 +16,10 @@ public class ContainerHelpersTests
 
     // // Invalid tests
     [DataRow("mcr.mi-=crosoft.com", false)] // invalid url
-    [DataRow("mcr.microsoft.com/", false)] // invalid url
+    [DataRow("example.com/team", false)]
+    [DataRow("mcr.microsoft.com/", false)]
     public void IsValidRegistry(string registry, bool expectedReturn)
     {
-        Console.WriteLine($"Domain pattern is '{ReferenceParser.AnchoredDomainRegexp.ToString()}'");
         Assert.AreEqual(expectedReturn, ContainerHelpers.IsValidRegistry(registry));
     }
 
@@ -27,6 +27,7 @@ public class ContainerHelpersTests
     [DataRow("mcr.microsoft.com/dotnet/runtime@sha256:6cec36412a215aad2a033cfe259890482be0a1dcb680e81fccc393b2d4069455", true, "mcr.microsoft.com", "dotnet/runtime", null, "sha256:6cec36412a215aad2a033cfe259890482be0a1dcb680e81fccc393b2d4069455", true)]
     // Handle both tag and digest
     [DataRow("mcr.microsoft.com/dotnet/runtime:6.0@sha256:6cec36412a215aad2a033cfe259890482be0a1dcb680e81fccc393b2d4069455", true, "mcr.microsoft.com", "dotnet/runtime", "6.0", "sha256:6cec36412a215aad2a033cfe259890482be0a1dcb680e81fccc393b2d4069455", true)]
+    [DataRow("mcr.microsoft.com/dotnet/runtime:-invalid@sha256:6cec36412a215aad2a033cfe259890482be0a1dcb680e81fccc393b2d4069455", false, null, null, null, null, false)]
     [DataRow("mcr.microsoft.com/dotnet/runtime:6.0", true, "mcr.microsoft.com", "dotnet/runtime", "6.0", null, true)]
     [DataRow("mcr.microsoft.com/dotnet/runtime", true, "mcr.microsoft.com", "dotnet/runtime", null, null, true)]
     [DataRow("mcr.microsoft.com/", false, null, null, null, null, false)] // no image = nothing resolves
@@ -64,6 +65,8 @@ public class ContainerHelpersTests
     [DataRow("foo/bar-", false)]
     [DataRow("foo/bar.", false)]
     [DataRow("foo/bar_", false)]
+    [DataRow("team/app:tag", false)]
+    [DataRow("team/app@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", false)]
     [DataRow("--------", false)]
     public void IsValidImageName(string imageName, bool expectedReturn)
     {
@@ -95,6 +98,7 @@ public class ContainerHelpersTests
     [TestMethod]
     [DataRow("6.0", true)] // baseline
     [DataRow("5.2-asd123", true)] // with commit hash
+    [DataRow("v1@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", false)]
     [DataRow(".6.0", false)] // starts with .
     [DataRow("-6.0", false)] // starts with -
     [DataRow("---", false)] // malformed
