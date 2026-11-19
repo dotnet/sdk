@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Globalization;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -115,6 +116,7 @@ public class ComputeReferenceStaticWebAssetItems : Task, IMultiThreadableTask
             var patterns = new List<StaticWebAssetsDiscoveryPattern>();
             if (Patterns != null)
             {
+                var localAssetDirectories = GetLocalAssetDirectories();
                 foreach (var pattern in Patterns)
                 {
                     if (!StaticWebAssetsDiscoveryPattern.HasSourceId(pattern, Source))
@@ -123,8 +125,18 @@ public class ComputeReferenceStaticWebAssetItems : Task, IMultiThreadableTask
                     }
                     else
                     {
+                        var discoveryPattern = StaticWebAssetsDiscoveryPattern.FromTaskItem(pattern);
+                        var contentRoot = StaticWebAsset.NormalizeContentRootPath(discoveryPattern.ContentRoot, TaskEnvironment);
+                        if (localAssetDirectories.Contains(contentRoot))
+                        {
+                            // Runtime discovery patterns cannot express exclusions. Shared files still have explicit asset entries.
+                            Log.LogMessage(MessageImportance.Low,
+                                "Skipping pattern '{0}' because its content root contains Local assets.", discoveryPattern.Name);
+                            continue;
+                        }
+
                         Log.LogMessage(MessageImportance.Low, "Including pattern '{0}' because is defined in the current project.", pattern.ToString());
-                        patterns.Add(StaticWebAssetsDiscoveryPattern.FromTaskItem(pattern));
+                        patterns.Add(discoveryPattern);
                     }
                 }
             }
@@ -138,6 +150,26 @@ public class ComputeReferenceStaticWebAssetItems : Task, IMultiThreadableTask
         }
 
         return !Log.HasLoggedErrors;
+    }
+
+    private HashSet<string> GetLocalAssetDirectories()
+    {
+        var directories = new HashSet<string>(OSPath.PathComparer);
+        foreach (var asset in StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment))
+        {
+            if (!asset.HasSourceId(Source) || !asset.IsLocal())
+            {
+                continue;
+            }
+
+            var directory = Path.GetDirectoryName(asset.Identity);
+            while (directory != null &&
+                directories.Add(StaticWebAsset.NormalizeContentRootPath(directory, TaskEnvironment)))
+            {
+                directory = Path.GetDirectoryName(directory);
+            }
+        }
+        return directories;
     }
 
     private StaticWebAssetGlobMatcher CreateFrameworkMatcher()

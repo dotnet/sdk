@@ -72,6 +72,12 @@ These invariants must hold at all times. Violating any of them is a bug.
 - **Referential integrity**: Every non-primary asset (`Related` or `Alternative`) must point to a valid asset definition via `RelatedAsset`. If an asset is removed, all assets that reference it must also be removed.
 - **Endpoint validity**: Every `StaticWebAssetEndpoint` must point to an existing `StaticWebAsset` via `AssetFile`. There must be no endpoints referencing non-existent assets.
 - **Endpoint uniqueness**: Endpoints are unique by the `(Route, AssetFile)` pair. No two endpoints share the same route and asset file combination.
+- **Local visibility**: Checked-in compressed alternatives of `Local` primaries must also
+  be `Local`. Do not export discovery patterns whose physical root contains `Local`
+  files: runtime discovery has no exclusion list. Shared files retain explicit manifest
+  entries, but newly added shared files in affected roots require a rebuild. Keep the
+  owning project's discovery and unrelated roots unchanged. See
+  [project boundaries](Architecture.md#4-how-assets-cross-project-boundaries).
 
 **Required properties (every asset must have)**
 

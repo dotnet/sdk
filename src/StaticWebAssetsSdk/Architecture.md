@@ -259,6 +259,20 @@ Local assets still participate in the owning project's development, endpoint and
 pipelines according to their `AssetKind` and copy metadata. Compressed alternatives inherit
 the mode, and reference endpoints are projected from the retained assets by
 [`ComputeEndpointsForReferenceStaticWebAssets`](Tasks/ComputeEndpointsForReferenceStaticWebAssets.cs).
+[`DiscoverPrecompressedAssets`](Tasks/Compression/DiscoverPrecompressedAssets.cs) also
+marks checked-in gzip and Brotli alternatives `Local` when their primary is `Local`,
+even if the compressed file has the default `All` mode. It preserves those files'
+original item identities so reference publish cleanup also removes their `Content`
+items instead of copying them outside the static web assets pipeline.
+
+Development discovery patterns cannot express per-file exclusions.
+[`ComputeReferenceStaticWebAssetItems`](Tasks/ComputeReferenceStaticWebAssetItems.cs)
+therefore omits exported patterns whose physical content root contains a `Local` file.
+Shared files already included in the manifest remain available, including edits to those
+files; newly added shared files in those roots require a rebuild. The owning project's
+discovery patterns and exports from unrelated roots are unchanged. Generated browser-tools
+files live outside `wwwroot` and do not disable its discovery.
+
 Server Web SDK Hot Reload browser-tools assets use this mode to avoid exporting
 project-specific initializers and configurations. WebAssembly browser-tools assets keep `All`
 because a hosted client's server must consume them.

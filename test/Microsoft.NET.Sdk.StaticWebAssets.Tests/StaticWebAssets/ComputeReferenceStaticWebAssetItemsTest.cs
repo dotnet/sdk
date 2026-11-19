@@ -18,6 +18,55 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     public class ComputeReferenceStaticWebAssetItemsTest
     {
         [TestMethod]
+        [DataRow(StaticWebAsset.AssetModes.Local, 1)]
+        [DataRow(StaticWebAsset.AssetModes.All, 3)]
+        [DataRow(StaticWebAsset.AssetModes.CurrentProject, 3)]
+        [DataRow(StaticWebAsset.AssetModes.Reference, 3)]
+        public void FiltersDiscoveryRootsContainingLocalFiles(string assetMode, int expectedPatternCount)
+        {
+            var local = CreateCandidate(Path.Combine("wwwroot", "private", "local.js"), "MyPackage", "Discovered",
+                "private/local.js", "All", assetMode);
+            ITaskItem[] patterns =
+            [
+                CreatePatternCandidate("root", "base", Path.GetFullPath("wwwroot"), "**", "MyPackage"),
+                CreatePatternCandidate("private", "base/private", Path.GetFullPath(Path.Combine("wwwroot", "private")), "**", "MyPackage"),
+                CreatePatternCandidate("public", "base/public", Path.GetFullPath(Path.Combine("wwwroot", "public")), "**", "MyPackage")
+            ];
+            var task = new ComputeReferenceStaticWebAssetItems
+            {
+                BuildEngine = Mock.Of<IBuildEngine>(),
+                Source = "MyPackage",
+                Assets = [local],
+                Patterns = patterns,
+                AssetKind = "Build",
+                ProjectMode = "Root"
+            };
+
+            task.Execute().Should().BeTrue();
+            task.DiscoveryPatterns.Should().HaveCount(expectedPatternCount);
+            task.DiscoveryPatterns.Should().Contain(p => p.ItemSpec == "public");
+            task.Patterns.Should().HaveCount(3);
+        }
+
+        [TestMethod]
+        public void ComputedLocalAssetsDoNotDisableWebRootDiscovery()
+        {
+            var task = new ComputeReferenceStaticWebAssetItems
+            {
+                BuildEngine = Mock.Of<IBuildEngine>(),
+                Source = "MyPackage",
+                Assets = [CreateCandidate(Path.Combine("obj", "local.js"), "MyPackage", "Computed",
+                    "local.js", "All", StaticWebAsset.AssetModes.Local)],
+                Patterns = [CreatePatternCandidate("wwwroot", "base", Path.GetFullPath("wwwroot"), "**", "MyPackage")],
+                AssetKind = "Build",
+                ProjectMode = "Root"
+            };
+
+            task.Execute().Should().BeTrue();
+            task.DiscoveryPatterns.Should().ContainSingle();
+        }
+
+        [TestMethod]
         [DataRow("Default", "Build")]
         [DataRow("Root", "Build")]
         [DataRow("SelfContained", "Build")]

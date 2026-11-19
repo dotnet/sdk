@@ -112,10 +112,18 @@ public class DiscoverPrecompressedAssets : Task, IMultiThreadableTask
         var relativePath = relatedAsset.EmbedTokens(relatedAsset.RelativePath);
 
         asset.RelativePath = $"{relativePath}{fileExtension}";
-        asset.OriginalItemSpec = relatedAsset.Identity;
         asset.RelatedAsset = relatedAsset.Identity;
         asset.AssetRole = "Alternative";
         asset.AssetTraitName = "Content-Encoding";
         asset.AssetTraitValue = assetTraitValue;
+        if (relatedAsset.IsLocal())
+        {
+            // Preserve the compressed file's original item so reference publish cleanup removes its Content item too.
+            asset.AssetMode = StaticWebAsset.AssetModes.Local;
+        }
+        else
+        {
+            asset.OriginalItemSpec = relatedAsset.Identity;
+        }
     }
 }
