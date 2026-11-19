@@ -29,7 +29,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
     private const string ZeroTestsPolicyOptionName = "--zero-tests-policy";
     private const string ZeroTestsPolicyStrictArgument = "strict";
 
-    public int Run(ParseResult parseResult, bool isHelp)
+    public int Run(ParseResult parseResult, bool isHelp, CancellationToken cancellationToken)
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
         string invocationWorkingDirectory = Directory.GetCurrentDirectory();
@@ -113,7 +113,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 : RuntimeFeature.IsDynamicCodeSupported ? new MSBuildHandler(buildOptions, buildSession)
                     : throw new PlatformNotSupportedException("Dynamic code is not supported on this platform.");
 
-            if (!testHandler.Initialize())
+            if (!testHandler.Initialize(cancellationToken))
             {
                 return ExitCode.GenericFailure;
             }

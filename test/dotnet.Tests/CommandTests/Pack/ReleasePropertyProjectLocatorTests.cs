@@ -114,12 +114,13 @@ public class ReleasePropertyProjectLocatorTests : SdkTest
         Assert.AreEqual("true", result[$"_SolutionLevel{propertyName}"]);
     }
 
-    private static IReadOnlyDictionary<string, string>? DiscoverReleaseProperties(string projectOrSolutionPath, string propertyName)
+    private IReadOnlyDictionary<string, string>? DiscoverReleaseProperties(string projectOrSolutionPath, string propertyName)
     {
         var locator = new ReleasePropertyProjectLocator(
             userSpecifiedExplicitMSBuildProperties: null,
             propertyToCheck: propertyName,
-            commandOptions: new ReleasePropertyProjectLocator.DependentCommandOptions([projectOrSolutionPath]));
+            commandOptions: new ReleasePropertyProjectLocator.DependentCommandOptions([projectOrSolutionPath]),
+            TestContext.CancellationToken);
 
         return locator.GetCustomDefaultConfigurationValueIfSpecified();
     }

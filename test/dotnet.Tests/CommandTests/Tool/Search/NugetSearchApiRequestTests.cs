@@ -10,10 +10,12 @@ namespace dotnet.Tests.ToolSearchTests
     {
         private readonly Uri _domainAndPathOverride = new("https://azuresearch-usnc.nuget.org/query");
 
+        public TestContext TestContext { get; set; } = null!;
+
         [TestMethod]
         public async Task WhenPassedInRequestParametersItCanConstructTheUrl()
         {
-            (await NugetToolSearchApiRequest.ConstructUrl("mytool", 3, 4, true, _domainAndPathOverride))
+            (await NugetToolSearchApiRequest.ConstructUrl("mytool", 3, 4, true, TestContext.CancellationToken, _domainAndPathOverride))
                 .AbsoluteUri
                 .Should().Be(
                     "https://azuresearch-usnc.nuget.org/query?q=mytool&packageType=dotnettool&semVerLevel=2.0.0&skip=3&take=4&prerelease=true");
@@ -22,7 +24,9 @@ namespace dotnet.Tests.ToolSearchTests
         [TestMethod]
         public async Task WhenPassedWithoutParameterItCanConstructTheUrl()
         {
-            (await NugetToolSearchApiRequest.ConstructUrl(domainAndPathOverride: _domainAndPathOverride))
+            (await NugetToolSearchApiRequest.ConstructUrl(
+                cancellationToken: TestContext.CancellationToken,
+                domainAndPathOverride: _domainAndPathOverride))
                 .AbsoluteUri
                 .Should().Be(
                     "https://azuresearch-usnc.nuget.org/query?packageType=dotnettool&semVerLevel=2.0.0");

@@ -74,14 +74,17 @@ internal partial class WorkloadManifestUpdater
         return new WorkloadAdvertisingManifestUpdater(reporter, workloadResolver, nugetPackageDownloader, userProfileDir, workloadRecordRepo, manifestInstaller, sdkFeatureBand: sdkFeatureBand);
     }
 
-    public static async Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir, string workingDirectory = null)
+    public static async Task BackgroundUpdateAdvertisingManifestsAsync(
+        string userProfileDir,
+        string workingDirectory,
+        CancellationToken cancellationToken)
     {
         try
         {
             var advertisingUpdater = GetAdvertisingUpdaterInstance(userProfileDir, workingDirectory ?? Directory.GetCurrentDirectory());
-            await advertisingUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+            await advertisingUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(cancellationToken);
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // Never surface messages on background updates
         }

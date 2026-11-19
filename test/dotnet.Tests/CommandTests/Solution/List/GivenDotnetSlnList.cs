@@ -28,6 +28,22 @@ Options:
         }
 
         [TestMethod]
+        public void GivenCanceledTokenSolutionLoadingIsCanceled()
+        {
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset("TestAppWithEmptySln")
+                .WithSource()
+                .Path;
+            using CancellationTokenSource cancellationTokenSource = new();
+            cancellationTokenSource.Cancel();
+
+            Assert.ThrowsExactly<OperationCanceledException>(() =>
+                SlnFileFactory.CreateFromFileOrDirectory(
+                    Path.Combine(projectDirectory, "App.sln"),
+                    cancellationTokenSource.Token));
+        }
+
+        [TestMethod]
         [DataRow("sln", "--help")]
         [DataRow("sln", "-h")]
         [DataRow("solution", "--help")]

@@ -87,7 +87,7 @@ public class DockerDaemonTests : IDisposable
             isMacOS,
             isPodmanAlias);
 
-        Assert.AreEqual((ContainerRuntimeKind)expectedRuntime, runtime.GetTelemetryValue());
+        Assert.AreEqual((ContainerRuntimeKind)expectedRuntime, runtime.GetTelemetryValue(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -102,11 +102,11 @@ public class DockerDaemonTests : IDisposable
                 probedCommands.Add(command);
                 return Task.FromResult(true);
             },
-            () => false,
+            _ => false,
             isWindows: true,
             isMacOS: false);
 
-        Assert.AreEqual(ContainerRuntimeKind.Wslc, runtime.GetTelemetryValue());
+        Assert.AreEqual(ContainerRuntimeKind.Wslc, runtime.GetTelemetryValue(TestContext.CancellationToken));
         Assert.AreSequenceEqual(new[] { ContainerRuntime.WslcCommand }, probedCommands);
     }
 
@@ -121,12 +121,30 @@ public class DockerDaemonTests : IDisposable
                 await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
                 return true;
             },
-            () => false,
+            _ => false,
             isWindows: false,
             isMacOS: false,
             probeTimeout: TimeSpan.FromMilliseconds(10));
 
         Assert.IsFalse(await runtime.IsAvailableAsync(default));
+    }
+
+    [TestMethod]
+    public async Task Availability_check_propagates_cancellation()
+    {
+        ContainerRuntime runtime = new(
+            ContainerRuntime.PodmanCommand,
+            _loggerFactory,
+            (_, _, cancellationToken) => Task.FromCanceled<bool>(cancellationToken),
+            _ => false,
+            isWindows: false,
+            isMacOS: false);
+        using CancellationTokenSource cancellationSource =
+            CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+        cancellationSource.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => runtime.IsAvailableAsync(cancellationSource.Token));
     }
 
     [TestMethod]
@@ -141,11 +159,11 @@ public class DockerDaemonTests : IDisposable
                 probedCommands.Add(command);
                 return Task.FromResult(command == ContainerRuntime.WslcCommand);
             },
-            () => false,
+            _ => false,
             isWindows: false,
             isMacOS: false);
 
-        Assert.AreEqual(ContainerRuntimeKind.Unknown, runtime.GetTelemetryValue());
+        Assert.AreEqual(ContainerRuntimeKind.Unknown, runtime.GetTelemetryValue(TestContext.CancellationToken));
         Assert.DoesNotContain(ContainerRuntime.WslcCommand, probedCommands);
     }
 
@@ -161,11 +179,11 @@ public class DockerDaemonTests : IDisposable
                 probedCommands.Add(command);
                 return Task.FromResult(command == ContainerRuntime.MacOSContainerCommand);
             },
-            () => false,
+            _ => false,
             isWindows: false,
             isMacOS: false);
 
-        Assert.AreEqual(ContainerRuntimeKind.Unknown, runtime.GetTelemetryValue());
+        Assert.AreEqual(ContainerRuntimeKind.Unknown, runtime.GetTelemetryValue(TestContext.CancellationToken));
         Assert.DoesNotContain(ContainerRuntime.MacOSContainerCommand, probedCommands);
     }
 
@@ -187,7 +205,7 @@ public class DockerDaemonTests : IDisposable
                 probedArguments = arguments;
                 return Task.FromResult(true);
             },
-            () => false,
+            _ => false,
             isWindows,
             isMacOS);
 
@@ -203,7 +221,7 @@ public class DockerDaemonTests : IDisposable
         ILocalRegistry registry = KnownLocalRegistryTypes.CreateLocalRegistry(registryType, _loggerFactory);
 
         ContainerRuntime runtime = (ContainerRuntime)registry;
-        Assert.AreEqual((ContainerRuntimeKind)expectedRuntime, runtime.GetTelemetryValue());
+        Assert.AreEqual((ContainerRuntimeKind)expectedRuntime, runtime.GetTelemetryValue(TestContext.CancellationToken));
         Assert.Contains(registryType, KnownLocalRegistryTypes.SupportedLocalRegistryTypes);
     }
 
@@ -218,7 +236,8 @@ public class DockerDaemonTests : IDisposable
             ContainerHelpers.GetManifestMediaType(
                 SchemaTypes.OciManifestV1,
                 KnownImageFormats.Docker,
-                destination));
+                destination,
+                TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -241,7 +260,7 @@ public class DockerDaemonTests : IDisposable
             command: null,
             _loggerFactory,
             (command, _, _) => Task.FromResult(isAvailable(command)),
-            () => isPodmanAlias,
+            _ => isPodmanAlias,
             isWindows,
             isMacOS);
 }

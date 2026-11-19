@@ -94,7 +94,7 @@ internal sealed class DockerCli
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (checkContainerdStore && !IsContainerdStoreEnabledForDocker())
+        if (checkContainerdStore && !IsContainerdStoreEnabledForDocker(cancellationToken))
         {
             throw new DockerLoadException(Strings.ImageLoadFailed_ContainerdStoreDisabled);
         }
@@ -153,7 +153,7 @@ internal sealed class DockerCli
             {
                 case DockerCommand:
                     {
-                        JsonDocument config = GetDockerConfig();
+                        JsonDocument config = GetDockerConfig(cancellationToken);
 
                         if (!config.RootElement.TryGetProperty("ServerErrors", out JsonElement errorProperty))
                         {
@@ -177,7 +177,7 @@ internal sealed class DockerCli
                     throw new NotImplementedException($"{command} is an unknown command.");
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogInformation(Strings.LocalDocker_FailedToGetConfig, ex.Message);
             _logger.LogTrace("Full information: {0}", ex);
@@ -185,19 +185,12 @@ internal sealed class DockerCli
         }
     }
 
-    ///<inheritdoc/>
-    public bool IsAvailable()
-        => IsAvailableAsync(default).GetAwaiter().GetResult();
-
-    public string? GetCommand()
-        => GetCommandAsync(default).GetAwaiter().GetResult();
-
     /// <summary>
     /// Gets docker configuration.
     /// </summary>
     /// <param name="sync">when <see langword="true"/>, the method is executed synchronously.</param>
     /// <exception cref="DockerLoadException">when failed to retrieve docker configuration.</exception>
-    internal static JsonDocument GetDockerConfig()
+    internal static JsonDocument GetDockerConfig(CancellationToken cancellationToken)
     {
         string dockerPath = FindFullPathFromPath("docker");
         Process proc = new()
@@ -210,7 +203,7 @@ internal sealed class DockerCli
             Command dockerCommand = new(proc);
             dockerCommand.CaptureStdOut();
             dockerCommand.CaptureStdErr();
-            CommandResult dockerCommandResult = dockerCommand.Execute();
+            CommandResult dockerCommandResult = dockerCommand.Execute(cancellationToken);
 
             if (dockerCommandResult.ExitCode != 0)
             {
@@ -223,7 +216,7 @@ internal sealed class DockerCli
 
             return JsonDocument.Parse(dockerCommandResult.StdOut ?? string.Empty);
         }
-        catch (Exception e) when (e is not DockerLoadException)
+        catch (Exception e) when (e is not DockerLoadException and not OperationCanceledException)
         {
             throw new DockerLoadException(Resource.FormatString(nameof(Strings.DockerInfoFailed_Ex), e.Message));
         }
@@ -233,12 +226,12 @@ internal sealed class DockerCli
     /// </summary>
     /// <param name="registryDomain"></param>
     /// <returns></returns>
-    public static bool IsInsecureRegistry(string registryDomain)
+    public static bool IsInsecureRegistry(string registryDomain, CancellationToken cancellationToken)
     {
         try
         {
             //check the docker config to see if the registry is marked as insecure
-            var rootElement = GetDockerConfig().RootElement;
+            var rootElement = GetDockerConfig(cancellationToken).RootElement;
 
             //for docker
             if (rootElement.TryGetProperty("RegistryConfig", out var registryConfig) && registryConfig.ValueKind == JsonValueKind.Object)
@@ -589,7 +582,7 @@ internal sealed class DockerCli
         ).ConfigureAwait(false);
 
         // be explicit with this check so that we don't do the link target check unless it might actually be a solution.
-        if (dockerCommand.Result && podmanCommand.Result && IsPodmanAlias())
+        if (dockerCommand.Result && podmanCommand.Result && IsPodmanAlias(cancellationToken))
         {
             _command = PodmanCommand;
         }
@@ -605,13 +598,13 @@ internal sealed class DockerCli
         return _command;
     }
 
-    private static bool IsPodmanAlias()
+    private static bool IsPodmanAlias(CancellationToken cancellationToken)
     {
         // If both exist we need to check and see if the docker command is actually docker,
         // or if it is a podman script in a trenchcoat.
         try
         {
-            var dockerinfo = GetDockerConfig().RootElement;
+            var dockerinfo = GetDockerConfig(cancellationToken).RootElement;
             // Docker's info output has a 'DockerRootDir' top-level property string that is a good marker,
             // while Podman has a 'host' top-level property object with a 'buildahVersion' subproperty
             var hasdockerProperty =
@@ -619,18 +612,18 @@ internal sealed class DockerCli
             var hasPodmanProperty = dockerinfo.TryGetProperty("host", out var host) && host.TryGetProperty("buildahVersion", out var buildahVersion) && buildahVersion.GetString() is not null;
             return !hasdockerProperty && hasPodmanProperty;
         }
-        catch
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             return false;
         }
     }
 
-    internal static bool IsContainerdStoreEnabledForDocker()
+    internal static bool IsContainerdStoreEnabledForDocker(CancellationToken cancellationToken)
     {
         try
         {
             // We don't need to check if this is docker, because there is no "DriverStatus" for podman
-            if (!GetDockerConfig().RootElement.TryGetProperty("DriverStatus", out var driverStatus) || driverStatus.ValueKind != JsonValueKind.Array)
+            if (!GetDockerConfig(cancellationToken).RootElement.TryGetProperty("DriverStatus", out var driverStatus) || driverStatus.ValueKind != JsonValueKind.Array)
             {
                 return false;
             }
@@ -649,7 +642,7 @@ internal sealed class DockerCli
 
             return false;
         }
-        catch
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             return false;
         }

@@ -9,5 +9,5 @@ namespace Microsoft.DotNet.Cli.ShellShim;
 
 internal interface IAppHostShellShimMaker
 {
-    void CreateApphostShellShim(FilePath entryPoint, FilePath shimPath);
+    void CreateApphostShellShim(FilePath entryPoint, FilePath shimPath, CancellationToken cancellationToken);
 }

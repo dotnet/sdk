@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUninstallCommand = new ToolUninstallCommand(result);
 
-            Action a = () => toolUninstallCommand.Execute();
+            Action a = () => toolUninstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUninstallCommand = new ToolUninstallCommand(result);
 
-            Action a = () => toolUninstallCommand.Execute();
+            Action a = () => toolUninstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUninstallCommand = new ToolUninstallCommand(result);
 
-            Action a = () => toolUninstallCommand.Execute();
+            Action a = () => toolUninstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUninstallCommand = new ToolUninstallCommand(result);
 
-            Action a = () => toolUninstallCommand.Execute();
+            Action a = () => toolUninstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
