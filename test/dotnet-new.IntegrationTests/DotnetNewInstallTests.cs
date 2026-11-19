@@ -49,8 +49,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 Directory.CreateDirectory(path);
                 new DotnetCommand(_log, "new", "console", "-o", path, "-n", "myconsole").Execute().Should().Pass();
-                new DotnetCommand(_log, "add", "package", "--project", Path.Combine(path, "myconsole.csproj"), "Microsoft.Azure.Functions.Worker.ProjectTemplates", "-v", "4.0.5086", "--package-directory", path).Execute().Should().Pass();
-                new DotnetCommand(_log, "new", "install", Path.Combine(path, "microsoft.azure.functions.worker.projecttemplates/4.0.5086/microsoft.azure.functions.worker.projecttemplates.4.0.5086.nupkg")).Execute().Should().Pass();
+                new DotnetCommand(_log, "add", "package", "--project", Path.Combine(path, "myconsole.csproj"), "Microsoft.Azure.WebJobs.ProjectTemplates", "-v", "4.0.5590", "--package-directory", path).Execute().Should().Pass();
+                new DotnetCommand(_log, "new", "install", Path.Combine(path, "microsoft.azure.webjobs.projecttemplates/4.0.5590/microsoft.azure.webjobs.projecttemplates.4.0.5590.nupkg")).Execute().Should().Pass();
             }
             finally
             {
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Fact]
         public void CanInstallRemoteNuGetPackageWithPrereleaseVersion()
         {
-            new DotnetNewCommand(_log, "-i", "Microsoft.Azure.WebJobs.ProjectTemplates::4.0.1844-preview1", "--nuget-source", "https://api.nuget.org/v3/index.json")
+            new DotnetNewCommand(_log, "-i", "Microsoft.Azure.WebJobs.ProjectTemplates::4.0.1844-preview1", "--nuget-source", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -184,7 +184,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CanInstallRemoteNuGetPackageWithNuGetSource(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, commandName, "Take.Blip.Client.Templates", "--nuget-source", "https://api.nuget.org/v3/index.json")
+            new DotnetNewCommand(_log, commandName, "Microsoft.Android.Templates", "--nuget-source", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json")
                 .WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -193,10 +193,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And
                 .NotHaveStdErr()
                 .And.HaveStdOutContaining("The following template packages will be installed:")
-                .And.HaveStdOutMatching($"Success: Take\\.Blip\\.Client\\.Templates::([\\d\\.a-z-])+ installed the following templates:")
-                .And.HaveStdOutContaining("blip-console");
+                .And.HaveStdOutMatching($"Success: Microsoft\\.Android\\.Templates::([\\d\\.a-z-])+ installed the following templates:")
+                .And.HaveStdOutContaining("android");
 
-            new DotnetNewCommand(_log, commandName, "Take.Blip.Client.Templates", "--add-source", "https://api.nuget.org/v3/index.json")
+            new DotnetNewCommand(_log, commandName, "Microsoft.Android.Templates", "--add-source", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json")
                 .WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -205,8 +205,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And
                 .NotHaveStdErr()
                 .And.HaveStdOutContaining("The following template packages will be installed:")
-                .And.HaveStdOutMatching($"Success: Take\\.Blip\\.Client\\.Templates::([\\d\\.a-z-])+ installed the following templates:")
-                .And.HaveStdOutContaining("blip-console");
+                .And.HaveStdOutMatching($"Success: Microsoft\\.Android\\.Templates::([\\d\\.a-z-])+ installed the following templates:")
+                .And.HaveStdOutContaining("android");
         }
 
         [Theory]

@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     public partial class DotnetNewDetailsTest : BaseIntegrationTest
     {
-        private const string _nuGetPackageId = "Uno.ProjectTemplates.Dotnet";
+        private const string _nuGetPackageId = "Microsoft.Android.Templates";
         private const string _dotnetPublicFeed = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json";
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
@@ -35,27 +35,47 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             var folder = CreateTemporaryFolder();
 
-            var createCommandResult = () => new DotnetNewCommand(_log, "details", _nuGetPackageId)
-                .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
-                .WithWorkingDirectory(folder)
-                .Execute();
-
-            createCommandResult().Should().Fail();
-
+            // Write a NuGet.Config that clears all globally-configured sources so that
+            // the first call (which omits --nuget-source) cannot fall back to any feed
+            // that already carries the package (e.g. a CI-wide dotnet11 feed).
+            // This makes the "must fail" assertion deterministic across environments.
             File.WriteAllText(Path.Combine(folder, "NuGet.Config"), @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
     <clear />
-    <add key=""NuGet.org"" value=""https://api.nuget.org/v3/index.json"" />
   </packageSources>
 </configuration>
 ");
 
-            var commandResult = createCommandResult();
+            new DotnetNewCommand(_log, "details", _nuGetPackageId)
+                .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
+                .WithWorkingDirectory(folder)
+                .Execute()
+                .Should()
+                .Fail();
+
+            var commandResult = new DotnetNewCommand(_log, "details", _nuGetPackageId, "--nuget-source", _dotnetPublicFeed)
+                .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
+                .WithWorkingDirectory(folder)
+                .Execute();
 
             commandResult.Should().Pass();
 
-            return Verify(commandResult.StdOut);
+            return Verify(commandResult.StdOut)
+                .AddScrubber(output =>
+                {
+                    output.ScrubByRegex(@"^   Package version:.*$", "   Package version: %VERSION%", RegexOptions.Multiline);
+                    output.ScrubByRegex(@"(microsoft\.android\.templates/)[^/]+/", "$1%VERSION%/");
+                    output.ScrubByRegex(@"(microsoft\.android\.templates\.)[^/]+(\.nupkg)", "$1%VERSION%$2");
+                    output.ScrubByRegex(@"(https://pkgs\.dev\.azure\.com/)(?:dnceng/)?(9ee6d478-d288-47f7-aacc-f6e6d082ae6d/)", "$1$2");
+                    // Template list varies between package versions on the public feed;
+                    // omit it because the remote details response may not include it.
+                    int idx = output.ToString().IndexOf("   Templates:");
+                    if (idx >= 0)
+                    {
+                        output.Remove(idx, output.Length - idx);
+                    }
+                });
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
@@ -129,9 +149,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public Task CanDisplayDetails_InstalledPackage_NuGetFeed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", _nuGetPackageId, "--nuget-source", "https://api.nuget.org/v3/index.json")
+            string workingDirectory = CreateTemporaryFolder();
+            WriteNuGetConfig(workingDirectory, _dotnetPublicFeed);
+
+            new DotnetNewCommand(_log, "install", _nuGetPackageId, "--nuget-source", _dotnetPublicFeed)
                 .WithoutBuiltInTemplates().WithCustomHive(home)
-                .WithWorkingDirectory(CreateTemporaryFolder())
+                .WithWorkingDirectory(workingDirectory)
                 .Execute()
                 .Should()
                 .ExitWith(0)
@@ -139,14 +162,30 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             CommandResult commandResult = new DotnetNewCommand(_log, "details", _nuGetPackageId)
                 .WithCustomHive(home).WithoutBuiltInTemplates()
-                .WithWorkingDirectory(CreateTemporaryFolder())
+                .WithWorkingDirectory(workingDirectory)
                 .Execute();
 
             commandResult
                 .Should()
                 .Pass();
 
-            return Verify(commandResult.StdOut);
+            return Verify(commandResult.StdOut)
+                .AddScrubber(output =>
+                {
+                    output.ScrubByRegex(@"^   Package version:.*$", "   Package version: %VERSION%", RegexOptions.Multiline);
+                    output.ScrubByRegex(@"(microsoft\.android\.templates/)[^/]+/", "$1%VERSION%/");
+                    output.ScrubByRegex(@"(microsoft\.android\.templates\.)[^/]+(\.nupkg)", "$1%VERSION%$2");
+                    int idx = output.ToString().IndexOf("   Templates:");
+                    if (idx >= 0)
+                    {
+                        int lineEnd = output.ToString().IndexOf('\n', idx);
+                        if (lineEnd >= 0)
+                        {
+                            output.Remove(lineEnd + 1, output.Length - lineEnd - 1);
+                            output.Append("      %TEMPLATES%");
+                        }
+                    }
+                });
         }
 
         [Fact]
