@@ -26,10 +26,15 @@ test("created issues are dispatched directly to Issue Monster", async () =>
 
     assert.match(workflow, /actions: write/);
     assert.match(workflow, /needs\.safe_outputs\.outputs\.created_issue_number/);
-    assert.match(workflow, /needs\.safe_outputs\.outputs\.process_safe_outputs_temporary_id_map/);
+    assert.match(workflow, /name: safe-outputs-items/);
+    assert.match(workflow, /CREATED_ISSUE_MAP_FILE: \.ci-quality-monitor\/safe-outputs\/temporary-id-map\.json/);
     assert.match(workflow, /github-token: \$\{\{ secrets\.GH_AW_GITHUB_TOKEN \|\| secrets\.GITHUB_TOKEN \}\}/);
     assert.match(workflow, /dispatchCreatedIssues/);
-    assert.doesNotMatch(workflow, /if: needs\.safe_outputs\.outputs\.created_issue_number != ''/);
+    assert.match(getJob(workflow, "dispatch-issues"), /^      issues: read$/m);
+    const dispatch = workflow.match(/      - name: Dispatch Issue Monster for created issues\r?\n([\s\S]*?)(?=^\S)/m)?.[1];
+    assert.ok(dispatch, "Expected the dispatch step in its separate downstream job.");
+    assert.match(dispatch, /^              context,$/m);
+    assert.doesNotMatch(dispatch, /if: needs\.safe_outputs\.outputs\.created_issue_number != ''/);
 });
 
 test("named test assertions require the recurring KBE gate", async () =>

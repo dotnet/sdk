@@ -115,8 +115,8 @@ sandbox:
     version: "v0.28.66"
     images:
       agent: "ghcr.io/github/gh-aw-firewall/agent:0.28.66@sha256:69ca942c4cc616d89ab3fdb832d258d686a7226ae25d786eac5cc59ba5262fa5"
-      apiProxy: "ghcr.io/github/gh-aw-firewall/api-proxy:0.28.66@sha256:d4f7800524e6aca169ce4d153b3bfd4c008ef4b656069949907b13e26827795a"
-      cliProxy: "ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.66@sha256:c94782367d77dc9be38071213e71edf87978937ccf60ed8b208e4e962e7009aa"
+      api-proxy: "ghcr.io/github/gh-aw-firewall/api-proxy:0.28.66@sha256:d4f7800524e6aca169ce4d153b3bfd4c008ef4b656069949907b13e26827795a"
+      cli-proxy: "ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.66@sha256:c94782367d77dc9be38071213e71edf87978937ccf60ed8b208e4e962e7009aa"
       squid: "ghcr.io/github/gh-aw-firewall/squid:0.28.66@sha256:2661fc7dd99f332fa6da2f6de9fd64fa6f3b07dc35eb038c538c52ad552b0527"
 
 engine:
@@ -135,7 +135,7 @@ engine:
 # binlogs have been retrieved from the failed Azure DevOps build.
 steps:
   - name: Download analysis artifact
-    uses: actions/download-artifact@v8.0.1
+    uses: actions/download-artifact@v8.0.2
     with:
       name: build-failure-analysis-data
       path: /tmp/binlogs

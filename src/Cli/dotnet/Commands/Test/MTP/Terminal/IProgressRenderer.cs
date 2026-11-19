@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
-// Adapted from https://github.com/microsoft/testfx/blob/f4d8d35bf45ce0ece75a66e1b197c96684767e48/src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/IProgressRenderer.cs
+// Adapted from https://github.com/microsoft/testfx/blob/b3f3c980c480c5d97976d658ac367b1e246502be/src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/IProgressRenderer.cs
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
+// OnWrite and OnTick hold the terminal lock. OnStart runs before the rendering thread starts,
+// without that lock; TickInterval and OnTestCompleted are also accessed without the lock.
 internal interface IProgressRenderer
 {
     TimeSpan TickInterval { get; }

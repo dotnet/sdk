@@ -35,26 +35,18 @@ jobs:
             val="${!var}"
             if [ -n "$val" ]; then
               CONFIGURED_PAT_COUNT=$((CONFIGURED_PAT_COUNT + 1))
-              if status=$(printf 'Authorization: Bearer %s\nAccept: application/vnd.github+json\nX-GitHub-Api-Version: 2022-11-28\n' "$val" | \
-                curl --silent --show-error \
-                  --output /dev/null \
-                  --write-out '%{http_code}' \
-                  --connect-timeout 5 \
-                  --max-time 15 \
-                  --proto '=https' \
-                  --tlsv1.2 \
-                  --header @- \
-                  https://api.github.com/user); then
-                if [ "$status" = 200 ]; then
-                  PAT_NUMBERS+=("${i}")
-                  POOL_INDICATORS[i]="🟪"
-                else
+              if response=$(GH_TOKEN="$val" timeout 15 gh api --hostname github.com --include --silent user 2>&1); then
+                PAT_NUMBERS+=("${i}")
+                POOL_INDICATORS[i]="🟪"
+              else
+                status=$(sed -n 's/^HTTP[^ ]* \([0-9][0-9][0-9]\).*/\1/p' <<< "$response" | head -n 1)
+                if [ -n "$status" ]; then
                   POOL_INDICATORS[i]="❌"
                   echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check returned HTTP ${status}"
+                else
+                  POOL_INDICATORS[i]="❔"
+                  echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check could not reach GitHub"
                 fi
-              else
-                POOL_INDICATORS[i]="❔"
-                echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check could not reach GitHub"
               fi
             fi
           done

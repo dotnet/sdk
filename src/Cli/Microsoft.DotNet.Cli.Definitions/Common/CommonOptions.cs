@@ -24,7 +24,8 @@ internal static class CommonOptions
         // these are all of the forms that the property switch can be understood by in MSBuild
         new Option<ReadOnlyDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
         {
-            Hidden = true,
+            Description = CommandDefinitionStrings.PropertyOptionDescription,
+            HelpName = CommandDefinitionStrings.PropertyArgumentName,
             Arity = ArgumentArity.ZeroOrMore,
             CustomParser = ParseMSBuildTokensIntoDictionary
         }.ForwardAsMSBuildProperty()
@@ -185,7 +186,7 @@ internal static class CommonOptions
         {
             Description = CommandDefinitionStrings.ArtifactsPathOptionDescription,
             HelpName = CommandDefinitionStrings.ArtifactsPathArgumentName
-        }.ForwardAsSingle(o => $"--property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
+        }.ForwardAsPathProperty("ArtifactsPath");
 
     public static Option<bool> CreateUseCurrentRuntimeOption(string description) =>
         new Option<bool>("--use-current-runtime", "--ucr")

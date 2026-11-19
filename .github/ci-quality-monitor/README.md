@@ -257,11 +257,13 @@ approximate safeguard.
 GitHub AW applies the title prefix, fixed `agentic-workflows` and `cookie`
 labels, and limit of three issue writes per run. Every filed issue therefore
 enters the Issue Monster queue automatically. After issue creation succeeds,
-the conclusion job dispatches Issue Monster once for each created issue number
-so assignment does not wait for the scheduled queue scan. GitHub AW exports only
-the first created issue number, so the dispatch helper also lists open
+the dedicated `dispatch-issues` job reads the trusted creation-map artifact and
+dispatches Issue Monster once for each created issue number, so assignment does
+not wait for the scheduled queue scan. GitHub AW exports only the first created
+issue number directly, so the dispatch helper also lists open
 `live-build-incident` issues and selects those whose GitHub AW provenance marker
-names the current run ID. The agent may request
+names the current run ID. See the
+[workflow](../workflows/ci-quality-monitor.md). The agent may request
 only the additional diagnostic labels allowlisted by the workflow.
 
 ## Adding Pipelines or Branches

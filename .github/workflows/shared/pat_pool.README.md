@@ -154,7 +154,8 @@ There are several details of this implementation that keep our workflows and rep
    steps--no untrusted context or input is within scope. The
   `select-pat-number` action sends each non-empty secret only to the fixed
   `https://api.github.com/user` endpoint and includes only entries that return
-  HTTP 200. Response bodies are discarded. This excludes expired, revoked,
+  HTTP 200. GitHub CLI receives the token through `GH_TOKEN`, with a 15-second
+  process timeout and response bodies suppressed. This excludes expired, revoked,
   and otherwise unauthenticated PATs before random selection. This check does
   not verify Copilot permissions or licensing; the scheduled
   [`validate-pat-pool.yml`](../validate-pat-pool.yml) workflow exercises those
@@ -196,7 +197,7 @@ If assignment fails with `Bad credentials` (HTTP 401), renew that secret with
 metadata: read plus actions, contents, issues, and pull requests: write for
 `dotnet/sdk`. Do not broaden or substitute an inference-pool PAT. A valid
 `assign_to_agent` record in the agent artifact proves only that the agent
-requested assignment, not that GitHub accepted it. The conclusion job requires
+requested assignment, not that GitHub accepted it. The separate `verify-assignment` job requires
 the handler's `assign_to_agent_assigned` output before reporting success.
 
 ### Detection compatibility

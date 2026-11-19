@@ -146,6 +146,85 @@ function getJob(source, name)
     return match.groups.body;
 }
 
+test("triage completion is checked after conclusion without depending on successful detection", () =>
+{
+    const grader = triage.match(/^graders:\r?\n(?<body>[\s\S]*?)(?=^\S)/m);
+    assert.ok(grader, "Missing isolated triage completion grader.");
+    const script = getScript(grader.groups.body);
+    const checkCompletion = new Function("session", script);
+    for (const [types, incomplete] of [
+        [["report_missing_data"], true],
+        [["report_incomplete"], true],
+        [["add_comment", "report_missing_data"], true],
+        [["noop"], false],
+        [["assign_to_user", "add_labels"], false],
+        [[], false],
+    ])
+    {
+        const session = types.map(type => ({type: "safe_output.request", data: {type}, provenance: {phase: "agent"}}));
+        if (incomplete)
+        {
+            assert.throws(() => checkCompletion(session), /Issue triage did not complete/);
+        }
+        else
+        {
+            assert.equal(checkCompletion(session), 1);
+        }
+    }
+    const compiled = readWorkflow("issue-triage.lock.yml");
+    const job = getJob(compiled, "graders");
+    assert.match(job, /needs\.conclusion\.result == 'success'/);
+    assert.doesNotMatch(job, /needs\.detection|COPILOT_PAT_|GH_AW_GITHUB_TOKEN/);
+    const manifest = job.match(/GH_AW_CUSTOM_GRADER_MANIFEST_0: '(?<json>.+)'/);
+    assert.ok(manifest, "Missing compiled custom-grader manifest.");
+    const definition = JSON.parse(manifest.groups.json).graders.find(grader => grader.id === "triage-complete");
+    assert.equal(definition?.script, script, "The compiler must preserve the completion check in the isolated grader.");
+});
+
+const dispatchStep = getStep(readWorkflow("ci-quality-monitor.md"), "Dispatch Issue Monster for created issues");
+const dispatchIssues = new AsyncFunction("require", "process", "github", "context", "core", getScript(dispatchStep));
+
+test("the monitor forwards every issue from the trusted result artifact", async () =>
+{
+    const calls = [];
+    const map = {
+        one: {repo: "dotnet/sdk", number: 101},
+        two: {repo: "dotnet/sdk", number: 102},
+        foreign: {repo: "dotnet/runtime", number: 103},
+    };
+    await dispatchIssues((name) =>
+    {
+        if (name === "node:fs")
+        {
+            return {readFileSync(file, encoding)
+            {
+                assert.equal(file, "trusted-map.json");
+                assert.equal(encoding, "utf8");
+                return JSON.stringify(map);
+            }};
+        }
+        assert.equal(name, "./.github/ci-quality-monitor/issue-monster-dispatch.js");
+        return require("../ci-quality-monitor/issue-monster-dispatch.js");
+    }, {env: {CREATED_ISSUE_NUMBER: "101", CREATED_ISSUE_MAP_FILE: "trusted-map.json", TARGET_REF: "main"}},
+    {rest: {
+        actions: {async createWorkflowDispatch(args) { calls.push(args); }},
+        issues: {async listForRepo() { return {data: []}; }},
+    }},
+    context, {info() {}});
+    assert.deepEqual(calls.map(call => call.inputs.issue_number), ["101", "102"]);
+    assert.ok(calls.every(call => call.ref === "main" && call.workflow_id === "issue-monster.lock.yml"));
+});
+
+test("a missing trusted creation map fails without dispatching only the first issue", async () =>
+{
+    await assert.rejects(dispatchIssues((name) => name === "node:fs"
+        ? {readFileSync() { throw new Error("Trusted map is missing"); }}
+        : require("../ci-quality-monitor/issue-monster-dispatch.js"),
+        {env: {CREATED_ISSUE_NUMBER: "101", CREATED_ISSUE_MAP_FILE: "trusted-map.json"}},
+        {rest: {actions: {async createWorkflowDispatch() { assert.fail("Must not dispatch"); }}}},
+        context, {info() {}}), /Trusted map is missing/);
+});
+
 test("compiled assignment gate precedes activation and agent execution", () =>
 {
     const compiled = readWorkflow("issue-monster-assigner.lock.yml");
@@ -211,7 +290,7 @@ test("compiled analyzers preserve pinned sandbox images in the agent and detecto
         assert.ok(sandbox, `${name}: missing sandbox configuration`);
         const version = sandbox.groups.body.match(/version: "(v[\d.]+)"/)?.[1];
         assert.ok(version, `${name}: missing pinned firewall version`);
-        const images = [...sandbox.groups.body.matchAll(/^\s+(?:agent|apiProxy|cliProxy|squid): "(ghcr\.io\/github\/gh-aw-firewall\/[^"]+@sha256:[a-f0-9]{64})"/gm)];
+        const images = [...sandbox.groups.body.matchAll(/^\s+(?:agent|api-proxy|cli-proxy|squid): "(ghcr\.io\/github\/gh-aw-firewall\/[^"]+@sha256:[a-f0-9]{64})"/gm)];
         assert.equal(images.length, 4, `${name}: all firewall images must be digest-pinned`);
 
         const compiled = readWorkflow(`${name}.lock.yml`);

@@ -42,6 +42,19 @@ to `dotnet` and `Microsoft.DotNet.Cli.Utils`. Internal parser APIs are accessibl
 signed `dotnet` assembly through MSBuild's `InternalsVisibleTo`; keep those calls
 managed-only rather than introducing MSBuild dependencies into `Definitions`.
 
+CLI-owned path options (such as `--output`, `--artifacts-path`, `--packages`, and VSTest
+`--settings`) keep their default, unescaped forwarding in the definitions for consumers such as
+`dotnet-watch`. The managed command parsers replace it through
+[`MSBuildOptionExtensions`](dotnet/Extensions/MSBuildOptionExtensions.cs), which uses
+[`MSBuildPropertyEscaping`](../Microsoft.DotNet.ProjectTools/MSBuildPropertyEscaping.cs)
+to escape literal paths with MSBuild's API before adding command-line quotes. When adding a path
+option, forward it with `ForwardAsPathProperty`/`ForwardAsOutputPath` in the definition and wire
+the `ForwardAsLiteral*` override in the managed parser. Keep explicit `-p:` values on their
+existing MSBuild-syntax path; they are not literals.
+
+When changing AOT-linked commands, resources, dependencies, or first-run behavior,
+follow the [size and trimming contracts](dotnet-aot/DESIGN.md#size-and-trimming-contracts).
+
 ## Where things live
 
 `src/Cli` is a set of projects, not one app. The three above carry commands; the
@@ -54,7 +67,8 @@ rest are supporting libraries:
 | `Microsoft.DotNet.Cli.InternalMicrosoft` | AOT-safe Microsoft-internal classification, probes, and cache. It does not emit telemetry. |
 | `dotnet-aot` + `dn` | NativeAOT shared library + native host exe. |
 | `Microsoft.DotNet.Cli.Utils` | MSBuild/NuGet/process/system abstractions used across the CLI. |
-| `Microsoft.DotNet.Cli.CoreUtils` | Low-level version/file/env-variable parsing. |
+| `Microsoft.DotNet.Cli.CoreUtils` | Low-level version/file/env-variable parsing and the shared string-resource runtime used by generated CLI accessors. |
+| `Microsoft.DotNet.Cli.Resources.Generator` | Analyzer-only RESX generator; emits cached accessors against the CoreUtils resource runtime. |
 | `Microsoft.DotNet.Cli.CommandLine` | Local extensions over `System.CommandLine`. |
 | `Microsoft.DotNet.Configurer` | First-run experience and NuGet/config setup. |
 | `Microsoft.DotNet.InternalAbstractions` | File-system/env abstractions for testability. |
@@ -77,6 +91,16 @@ rest are supporting libraries:
   registry that imports them all.
 - `Common/` — shared option/argument factories.
 - `Help/` — help builder and localization.
+
+### String resources
+
+CLI resource owners select `Generator="Microsoft.DotNet.Cli.Resources"` and
+reference the analyzer-only `Microsoft.DotNet.Cli.Resources.Generator` project.
+The generated accessors use the runtime under
+`Microsoft.DotNet.Cli.CoreUtils/Resources`; do not add another runtime assembly
+or a package/buildTransitive dependency. Current-SDK builds use the CLI
+generator, while multi-targeted owners retain the existing Microsoft generator
+for .NET Framework targets.
 
 ## Per-command services
 
@@ -121,6 +145,12 @@ directory so relative arguments and logs retain their meaning. Keep one coherent
 target-produced project state, and the session's success/failure cleanup. Cover these boundaries in
 [`GivenDotnetTestProducesBinaryLog`](../../test/dotnet.Tests/CommandTests/Test/GivenDotnetTestProducesBinaryLog.cs).
 
+In `--solution` runs,
+[`device selection`](dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs) applies only to
+test projects (`IsTestProject` or `IsTestingPlatformApplication`). App and library projects, such as
+MAUI heads, can import `ComputeAvailableDevices` in their inner builds and must not prompt for a device. The single-project
+path evaluates before restore, so it must not apply this NuGet-dependent gate.
+
 Parent-process operations must also use the captured invocation directory: pass it through background
 workload updates to both `global.json` discovery and NuGet configuration, and initialize absolute MTP
 trace paths before starting the session. Changing only a child process's directory is insufficient.
@@ -144,6 +174,29 @@ aggregate exit code from
 including session failures and ignored-exit policies, instead of upstream's in-process
 failure callback. A successful run with zero tests uses neutral "Zero tests ran" wording,
 not a green "Passed!" verdict.
+
+## MTP module identity
+
+Keep the assembly target framework separate from its executing runtime.
+[`TestApplicationHandler`](dotnet/Commands/Test/MTP/TestApplicationHandler.cs) prefers
+the evaluated project's `TargetFramework`, then optional handshake `TargetFramework`
+metadata (field 21). Missing target metadata stays unknown; never infer it from the
+runtime or output directory. Handshake `Framework` (field 2) remains runtime information,
+and `Architecture` identifies the executing process, not the assembly's AnyCPU setting.
+
+The shared
+[`TestFrameworkDisplay`](dotnet/Commands/Test/MTP/Terminal/TestFrameworkDisplay.cs)
+keeps matching runs compact (`net481|x64`) and labels a differing runtime separately
+(`net472|x64, runtime: net481`). Ignore modern .NET servicing patches and target platform
+suffixes only for comparison; preserve the full target in output and distinguish
+`net48` from `net481`. Unknown targets use an explicit runtime annotation, not a
+runtime-derived target. Keep start, results, completion, recaps and progress consistent,
+and omit secondary runtime information before primary identity in narrow cursor frames.
+
+[`ArtifactPostProcessingManager`](dotnet/Commands/Test/MTP/ArtifactPostProcessingManager.cs)
+can learn capabilities from a controller before the target is known. Fill only a missing
+target when later handshake metadata arrives, even if capabilities are not repeated;
+preserve an already known target.
 
 ## MTP coverage summaries
 
@@ -199,6 +252,13 @@ cancellation plumbing.
 
 The vendored non-cursor renderer measures **visible-output silence**, not silence between
 test completions. Its totals include completed modules after their worker slots are freed.
+Captured per-test stdout and stderr default to failed-only output independently of result
+visibility. Resolve explicit stream modes from each module's effective arguments and
+configuration, not just the parent command line; raw test-host process output is unaffected.
+The SDK owns these rendered defaults, so its dynamic platform-option help must describe them
+even when older test applications supply different defaults in their help metadata. See
+[`MicrosoftTestingPlatformTestCommand`](dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.cs)
+and its [help renderer](dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.Help.cs).
 Resolve parent progress from every selected module's effective arguments and working
 directory; any effective opt-out disables the shared heartbeat and slow-test display.
 Collection status must not override discovery formatting. Keep optional timer and warning

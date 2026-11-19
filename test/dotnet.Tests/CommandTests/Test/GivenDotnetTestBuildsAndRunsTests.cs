@@ -314,6 +314,120 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [DataRow(null, null)]
+        [DataRow("all", "all")]
+        [DataRow("all", "none")]
+        [DataRow("none", "all")]
+        [DataRow("none", "none")]
+        public void RunCapturedOutputHonorsDefaultAndIndependentOverrides(string? stdoutMode, string? stderrMode)
+        {
+            TestAsset testInstance = TestAssetsManager
+                .CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+                .WithSource();
+            File.WriteAllText(
+                Path.Join(testInstance.Path, "TestProject", "UnitTest1.cs"),
+                """
+                namespace TestProject;
+
+                [TestClass]
+                public class UnitTest1
+                {
+                    [TestMethod]
+                    public void PassingTest()
+                    {
+                        Console.WriteLine("captured stdout PassingTest");
+                        Console.Error.WriteLine("captured stderr PassingTest");
+                    }
+
+                    [TestMethod]
+                    public void SkippedTest()
+                    {
+                        Console.WriteLine("captured stdout SkippedTest");
+                        Console.Error.WriteLine("captured stderr SkippedTest");
+                        Assert.Inconclusive("intentional skip");
+                    }
+
+                    [TestMethod]
+                    public void FailingTest()
+                    {
+                        Console.WriteLine("captured stdout FailingTest");
+                        Console.Error.WriteLine("captured stderr FailingTest");
+                        Assert.Fail("intentional failure");
+                    }
+                }
+                """);
+            List<string> arguments =
+            [
+                "--project", Path.Join("TestProject", "TestProject.csproj"),
+                "-c", TestingConstants.Debug,
+                "--output", "detailed",
+                "--no-ansi", "--no-progress",
+            ];
+            if (stdoutMode is not null)
+            {
+                arguments.AddRange(["--show-stdout", stdoutMode]);
+            }
+            if (stderrMode is not null)
+            {
+                arguments.AddRange(["--show-stderr", stderrMode]);
+            }
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en")
+                .Execute([.. arguments]);
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+            string output = result.StdOut!;
+            output.Should().Contain("Test run summary: Failed!")
+                .And.Contain("total: 3")
+                .And.Contain("failed: 1")
+                .And.Contain("succeeded: 1")
+                .And.Contain("skipped: 1");
+            foreach (string testName in new[] { "PassingTest", "SkippedTest", "FailingTest" })
+            {
+                Match block = Regex.Match(
+                    output,
+                    $@"(?ms)^(?:passed|failed|skipped) [^\r\n]*\b{testName}\b[^\r\n]*\r?\n.*?(?=^(?:passed|failed|skipped) |\z)");
+                block.Success.Should().BeTrue($"the result for {testName} must remain visible");
+                bool isFailed = testName == "FailingTest";
+                AssertStream("stdout", "Standard output", stdoutMode);
+                AssertStream("stderr", "Error output", stderrMode);
+
+                void AssertStream(string stream, string heading, string? mode)
+                {
+                    string payload = $"captured {stream} {testName}";
+                    if (mode == "all" || (mode is null or "failed" && isFailed))
+                    {
+                        block.Value.Should().Contain(payload).And.Contain(heading);
+                    }
+                    else
+                    {
+                        block.Value.Should().NotContain(payload).And.NotContain(heading);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        [DataRow("--show-stdout")]
+        [DataRow("--show-stderr")]
+        public void RunCapturedOutputInvalidModeRetainsTestApplicationDiagnostic(string option)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en")
+                .Execute("-c", TestingConstants.Debug, option, "invalid");
+
+            result.ExitCode.Should().Be(TestExitCode.InvalidCommandLine);
+            (result.StdOut + result.StdErr).Should().Contain(option)
+                .And.Contain("expect a single parameter with value 'All', 'Failed', or 'None'");
+        }
+
+        [TestMethod]
         public void RunAppliesReporterOptionsFromResponseFile()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())

@@ -3,14 +3,9 @@
 # Syntax: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-syntax
 
 # These owners will be the default owners for everything in
-# the repo. Unless a later match takes precedence,
-# @dotnet/dotnet-cli  will be requested for
-# review when someone opens a pull request.
+# the repo. However, we don't automatically want to request a review on every PR
+# add an individual if you want a review or ping @dotnet/dotnet-cli for a response
 # Issue/PR labels to use are listed before each section
-
-# Area-CLI
-/src/Cli/ @dotnet/dotnet-cli
-/test/dotnet.Tests/ @dotnet/dotnet-cli
 
 # Area-run-file
 /src/Cli/Microsoft.DotNet.FileBasedPrograms/ @dotnet/run-file
@@ -18,11 +13,6 @@
 /src/Cli/dotnet/Commands/Project/Convert/ @dotnet/run-file
 /test/dotnet.Tests/CommandTests/Run/ @dotnet/run-file
 /test/dotnet.Tests/CommandTests/Project/Convert/ @dotnet/run-file
-
-# Area-NetSDK
-/src/Tasks/Microsoft.NET.Build.Tasks/ @dotnet/dotnet-cli
-/test/Microsoft.NET.Build.Tests/ @dotnet/dotnet-cli
-/test/Microsoft.NET.Publish.Tests/ @dotnet/dotnet-cli
 
 # Area-WebSDK
 /src/WebSdk/ @vijayrkn
