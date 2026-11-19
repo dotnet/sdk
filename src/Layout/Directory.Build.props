@@ -53,8 +53,7 @@
 
     <!-- Native: same OS and same architecture as the build host. CrossBuild may still be true when
          the build uses a same-architecture rootfs. linux-musl is excluded because its NativeAOT
-         toolchain is not wired up here (openharmony is covered by NativeAotSupported=false in the
-         repository Directory.Build.props). -->
+         toolchain is not wired up here (and openharmony keeps NativeAOT out of tree). -->
     <_DotnetAotIsNativeBuild Condition="'$(_DotnetAotIsSameOSBuild)' == 'true' and '$(TargetArchitecture)' == '$(BuildArchitecture)' and '$(OSName)' != 'linux-musl'">true</_DotnetAotIsNativeBuild>
 
     <!-- Cross: same OS but a different architecture from the build host. On Windows/macOS the cross
