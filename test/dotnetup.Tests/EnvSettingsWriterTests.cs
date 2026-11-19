@@ -28,6 +28,16 @@ public class EnvSettingsWriterTests
     }
 
     [TestMethod]
+    [DataRow(DotnetAccessMode.None, true)]
+    [DataRow(DotnetAccessMode.None, false)]
+    [DataRow(DotnetAccessMode.Shell, true)]
+    [DataRow(DotnetAccessMode.Shell, false)]
+    internal void DescribeOutcome_ReportsConfigurationRatherThanCurrentPath(DotnetAccessMode accessMode, bool dotnetupOnPath)
+    {
+        EnvSettingsWriter.DescribeOutcome(accessMode, dotnetupOnPath).Should().StartWith("Configured");
+    }
+
+    [TestMethod]
     public void BuildEffectMessage_ActiveAndUnchanged_ReturnsNull()
     {
         EnvSettingsWriter.BuildEffectMessage(Active, changedPersistedEnvironment: false, activationCommand: null)
