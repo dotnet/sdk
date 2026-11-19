@@ -6,6 +6,7 @@ using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -104,6 +105,12 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         var showPassedTests = parseResult.GetValue(MicrosoftTestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
         var noProgress = parseResult.HasOption(MicrosoftTestingPlatformOptions.NoProgressOption);
         var noAnsi = parseResult.HasOption(MicrosoftTestingPlatformOptions.NoAnsiOption);
+
+        if (new LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment())
+        {
+            noProgress = true;
+            noAnsi = true;
+        }
 
         // TODO: Replace this with proper CI detection that we already have in telemetry. https://github.com/microsoft/testfx/issues/5533#issuecomment-2838893327
         bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);

@@ -6,8 +6,21 @@ using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Tests
 {
+    [Collection(TestConstants.UsesStaticTelemetryState)]
     public class TelemetryCommonPropertiesTests : SdkTest
     {
+        // All environment variables checked by LLMEnvironmentDetectorForTelemetry.
+        // Used to save/restore ambient state so tests are isolated from the host environment.
+        internal static readonly string[] _allLLMEnvVars = [
+            "CLAUDECODE",
+            "CURSOR_EDITOR",
+            "GEMINI_CLI",
+            "GITHUB_COPILOT_CLI_MODE", "GH_COPILOT_WORKING_DIRECTORY", "COPILOT_CLI",
+            "COPILOT_MODEL", "COPILOT_ALLOW_ALL", "COPILOT_GITHUB_TOKEN",
+            "COPILOT_AGENT", "AI_AGENT",
+            "AGENT_CLI",
+        ];
+
         public TelemetryCommonPropertiesTests(ITestOutputHelper log) : base(log)
         {
         }
@@ -165,7 +178,11 @@ namespace Microsoft.DotNet.Tests
         public void TelemetryCommonPropertiesShouldReturnIsLLMDetection()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm"].Should().BeOneOf("claude", null);
+            var llmValue = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm"];
+            if (llmValue != null)
+            {
+                llmValue.Should().NotBeEmpty();
+            }
         }
 
         [Theory]
@@ -193,24 +210,29 @@ namespace Microsoft.DotNet.Tests
         [MemberData(nameof(LLMTelemetryTestCases))]
         public void CanDetectLLMStatusForEnvVars(Dictionary<string, string>? envVars, string? expected)
         {
+            var savedEnvVars = _allLLMEnvVars.ToDictionary(v => v, Environment.GetEnvironmentVariable);
             try
             {
-                if (envVars is not null){
+                foreach (var name in _allLLMEnvVars)
+                {
+                    Environment.SetEnvironmentVariable(name, null);
+                }
+
+                if (envVars is not null)
+                {
                     foreach (var (key, value) in envVars)
                     {
                         Environment.SetEnvironmentVariable(key, value);
                     }
                 }
                 new LLMEnvironmentDetectorForTelemetry().GetLLMEnvironment().Should().Be(expected);
+                new LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment().Should().Be(expected is not null);
             }
             finally
             {
-                if (envVars is not null)
+                foreach (var (key, value) in savedEnvVars)
                 {
-                    foreach (var (key, value) in envVars)
-                    {
-                        Environment.SetEnvironmentVariable(key, null);
-                    }
+                    Environment.SetEnvironmentVariable(key, value);
                 }
             }
         }
@@ -233,15 +255,33 @@ namespace Microsoft.DotNet.Tests
             { new Dictionary<string, string> { {"CLAUDECODE", "1" } }, "claude" },
             { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
             { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
-            { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot" },
-            { new Dictionary<string, string> { { "COPILOT_CLI", "1" } }, "copilot" },
+            { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot-cli" },
+            { new Dictionary<string, string> { { "GH_COPILOT_WORKING_DIRECTORY", "/repo" } }, "copilot-cli" },
+            { new Dictionary<string, string> { { "COPILOT_CLI", "1" } }, "copilot-cli" },
+            { new Dictionary<string, string> { { "COPILOT_MODEL", "gpt" } }, "copilot-cli" },
+            { new Dictionary<string, string> { { "COPILOT_ALLOW_ALL", "1" } }, "copilot-cli" },
+            { new Dictionary<string, string> { { "COPILOT_GITHUB_TOKEN", "test-placeholder" } }, "copilot-cli" },
+            { new Dictionary<string, string> { { "COPILOT_AGENT", "1" } }, "copilot-vscode" },
+            { new Dictionary<string, string> { { "AI_AGENT", "github_copilot_vscode_agent" } }, "copilot-vscode" },
+            { new Dictionary<string, string> { { "AI_AGENT", "github_copilot_app_agent" } }, "copilot-app" },
+            // Presence-based Copilot signals match any non-empty value.
+            { new Dictionary<string, string> { { "COPILOT_CLI", "0" } }, "copilot-cli" },
+            { new Dictionary<string, string> { { "COPILOT_AGENT", "false" } }, "copilot-vscode" },
+            { new Dictionary<string, string> { { "COPILOT_CLI", "" }, { "COPILOT_AGENT", "" }, { "AI_AGENT", "" } }, null },
+            { new Dictionary<string, string> { { "AI_AGENT", "some_other_agent" } }, null },
+            // Multiple signals for the same client produce only one label.
+            { new Dictionary<string, string> { { "COPILOT_CLI", "1" }, { "GH_COPILOT_WORKING_DIRECTORY", "/repo" } }, "copilot-cli" },
+            { new Dictionary<string, string> { { "COPILOT_AGENT", "1" }, { "AI_AGENT", "github_copilot_vscode_agent" } }, "copilot-vscode" },
+            { new Dictionary<string, string> { { "COPILOT_CLI", "1" }, { "COPILOT_AGENT", "1" } }, "copilot-cli, copilot-vscode" },
+            { new Dictionary<string, string> { { "COPILOT_AGENT", "1" }, { "AI_AGENT", "github_copilot_app_agent" } }, "copilot-vscode, copilot-app" },
+            { new Dictionary<string, string> { { "COPILOT_CLI", "1" }, { "COPILOT_AGENT", "1" }, { "AI_AGENT", "github_copilot_app_agent" } }, "copilot-cli, copilot-vscode, copilot-app" },
             { new Dictionary<string, string> { { "AGENT_CLI", "true" } }, "generic_agent" },
             { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
-            { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot" },
+            { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot-cli" },
             { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "GEMINI_CLI", "true" }, { "AGENT_CLI", "true" } }, "claude, gemini, generic_agent" },
-            { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" }, { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" }, { "AGENT_CLI", "true" } }, "claude, cursor, gemini, copilot, generic_agent" },
+            { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" }, { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" }, { "AGENT_CLI", "true" } }, "claude, cursor, gemini, copilot-cli, generic_agent" },
             { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, null },
-            { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, null },
+            { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, "copilot-cli" },
             { new Dictionary<string, string> { { "AGENT_CLI", "false" } }, null },
             { new Dictionary<string, string>(), null },
         };
