@@ -112,7 +112,7 @@ dotnetup sdk update --update-global-json
 The update changes only `sdk.version`. It preserves the existing formatting,
 other properties, and detected text encoding.
 
-## Remove matching repository requirements
+## Remove a repository requirement
 
 Remove `sdk.version` from `global.json`, or delete the file if it is no longer
 needed. Dotnetup picks up the removal during garbage collection and removes
@@ -121,21 +121,7 @@ files only when no remaining requirement needs them.
 To use a different SDK instead, update `sdk.version` and run
 `dotnetup sdk install` from the repository directory.
 
-The uninstall command removes every matching `globaljson` specification in
-the selected installation root. It doesn't target one repository. To remove
-matching requirements from the default root, run:
-
-```dotnetcli
-dotnetup sdk uninstall 10.0.1xx --source globaljson
-```
-
-To select a custom installation root, add `--install-path`:
-
-```dotnetcli
-dotnetup sdk uninstall 10.0.1xx --source globaljson --install-path <INSTALL_PATH>
-```
-
-`dotnetup` removes files only when no remaining requirement needs them.
+`dotnetup sdk uninstall` does not remove repository requirements.
 
 ## See also
 
