@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Build;
 
@@ -29,6 +30,22 @@ public static class BuildCommand
 
         bool noRestore = parseResult.HasOption(definition.NoRestoreOption);
 
+        Option[] optionsToUseWhenParsingMSBuildFlags =
+        [
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            CommonOptions.CreateMSBuildTargetOption(),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption()
+        ];
+
+#if CLI_AOT
+        var msbuildArgs = DotNetCommandFactory.AnalyzePhysicalMSBuildArguments(
+            parseResult.OptionValuesToBeForwarded(definition),
+            parseResult.GetValue(definition.SlnOrProjectOrFileArgument) ?? [],
+            optionsToUseWhenParsingMSBuildFlags);
+        return CreatePhysicalCommand(msbuildArgs, noRestore, msbuildPath, services);
+#else
         return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
@@ -40,30 +57,28 @@ public static class BuildCommand
                 NoRestore = noRestore,
                 NoCache = true,
             },
-            createPhysicalCommand: (msbuildArgs, msbuildPath) => new RestoringCommand(
-                msbuildArgs: msbuildArgs.CloneWithAdditionalArgs("-consoleloggerparameters:Summary"),
-                noRestore: noRestore,
-                msbuildPath: msbuildPath,
-                userProfileDir: null,
-                advertiseWorkloadUpdates: null,
-                services: services
-            ),
-            optionsToUseWhenParsingMSBuildFlags:
-            [
-                CommonOptions.CreatePropertyOption(),
-                CommonOptions.CreateRestorePropertyOption(),
-                CommonOptions.CreateMSBuildTargetOption(),
-                CommonOptions.CreateVerbosityOption(),
-                CommonOptions.CreateNoLogoOption()
-            ],
+            createPhysicalCommand: (msbuildArgs, msbuildPath) => CreatePhysicalCommand(msbuildArgs, noRestore, msbuildPath, services),
+            optionsToUseWhenParsingMSBuildFlags,
             parseResult,
             msbuildPath
         );
+#endif
     }
+
+    private static RestoringCommand CreatePhysicalCommand(MSBuildArgs msbuildArgs, bool noRestore, string? msbuildPath, CommandServices services) =>
+        new(
+            msbuildArgs: msbuildArgs.CloneWithAdditionalArgs("-consoleloggerparameters:Summary"),
+            noRestore: noRestore,
+            msbuildPath: msbuildPath,
+            userProfileDir: null,
+            advertiseWorkloadUpdates: null,
+            services: services);
 
     public static int Run(ParseResult parseResult)
     {
+#if !CLI_AOT
         parseResult.HandleDebugSwitch();
+#endif
 
         return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
     }

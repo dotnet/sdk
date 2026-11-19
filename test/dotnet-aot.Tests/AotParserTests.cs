@@ -64,8 +64,7 @@ public partial class AotParserTests
     [TestMethod]
     public void ParseKnownCommand_HasNoErrors()
     {
-        // The AOT parser now builds the full command tree, so real commands like `build`
-        // parse cleanly (they no longer surface as unknown). Execution still falls back.
+        // The AOT parser builds the same command tree as the managed CLI.
         var result = Parser.Parse(["build"]);
         Assert.IsEmpty(result.Errors);
     }
@@ -308,7 +307,7 @@ public partial class AotParserTests
     public void InvokeKnownCommand_FallsBackToManaged()
     {
         // Commands that cannot run in AOT must signal a managed fallback rather than execute.
-        var result = Parser.Parse(["build"]);
+        var result = Parser.Parse(["build", "--disable-build-servers"]);
         Assert.IsEmpty(result.Errors);
         Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
     }

@@ -251,6 +251,12 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     internal static IDisposable SetMSBuildRequiredEnvironmentVariables()
         => SetEnvironmentVariables(GetMSBuildRequiredEnvironmentVariables());
 
+    internal bool CanSetEnvironmentVariablesInProcess =>
+        _msbuildRequiredEnvironmentVariables.Values.All(value => value != string.Empty && value != "\0");
+
+    internal IDisposable SetEnvironmentVariablesForInProcessExecution() =>
+        SetEnvironmentVariables(_msbuildRequiredEnvironmentVariables);
+
     /// <summary>
     /// Sets the required MSBuild environment variables and additional variables for a direct
     /// in-process MSBuild operation. Restores their original values when disposed.

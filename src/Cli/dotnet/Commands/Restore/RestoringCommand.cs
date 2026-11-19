@@ -144,7 +144,14 @@ public class RestoringCommand : MSBuildForwardingApp
         {
             restoreMSBuildArgs = restoreMSBuildArgs.CloneWithVerbosity(verbosity);
         }
-        return RestoreCommand.CreateForwarding(restoreMSBuildArgs, msbuildPath, services);
+        return CreateRestoreForwarding(restoreMSBuildArgs, msbuildPath, services);
+    }
+
+    internal static MSBuildForwardingApp CreateRestoreForwarding(MSBuildArgs msbuildArgs, string? msbuildPath, CommandServices services)
+    {
+        var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath, services);
+        NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp);
+        return forwardingApp;
     }
 
     private static bool HasPropertyToExcludeFromRestore(MSBuildArgs msbuildArgs)

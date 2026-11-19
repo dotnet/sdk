@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
@@ -21,9 +22,27 @@ public static class RestoreCommand
     {
         var definition = (RestoreCommandDefinition)result.CommandResult.Command;
 
+#if !CLI_AOT
         result.HandleDebugSwitch();
+#endif
         result.ShowHelpOrErrorIfAppropriate();
 
+        Option[] optionsToUseWhenParsingMSBuildFlags =
+        [
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            RestoreCommandDefinition.CreateTargetOption(),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption()
+        ];
+
+#if CLI_AOT
+        var msbuildArgs = DotNetCommandFactory.AnalyzePhysicalMSBuildArguments(
+            result.OptionValuesToBeForwarded(definition),
+            result.GetValue(definition.SlnOrProjectOrFileArgument) ?? [],
+            optionsToUseWhenParsingMSBuildFlags);
+        return CreateForwarding(msbuildArgs, msbuildPath, services);
+#else
         return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
@@ -43,36 +62,30 @@ public static class RestoreCommand
             {
                 return CreateForwarding(msbuildArgs, msbuildPath, services);
             },
-            optionsToUseWhenParsingMSBuildFlags:
-            [
-                CommonOptions.CreatePropertyOption(),
-                CommonOptions.CreateRestorePropertyOption(),
-                RestoreCommandDefinition.CreateTargetOption(),
-                CommonOptions.CreateVerbosityOption(),
-                CommonOptions.CreateNoLogoOption()
-            ],
+            optionsToUseWhenParsingMSBuildFlags,
             result,
             msbuildPath
         );
+#endif
     }
 
     public static MSBuildForwardingApp CreateForwarding(MSBuildArgs msbuildArgs, string? msbuildPath, CommandServices services)
-    {
-        var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath, services);
-        NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp);
-        return forwardingApp;
-    }
+        => RestoringCommand.CreateRestoreForwarding(msbuildArgs, msbuildPath, services);
 
     public static int Run(string[] args)
     {
+#if !CLI_AOT
         DebugHelper.HandleDebugSwitch(ref args);
+#endif
 
         return FromArgs(args, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
     }
 
     public static int Run(ParseResult parseResult)
     {
+#if !CLI_AOT
         parseResult.HandleDebugSwitch();
+#endif
 
         return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
     }

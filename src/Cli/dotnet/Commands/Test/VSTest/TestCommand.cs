@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
@@ -27,7 +28,9 @@ public class TestCommand(
 {
     public static int Run(ParseResult parseResult)
     {
+#if !CLI_AOT
         parseResult.HandleDebugSwitch();
+#endif
 
         FeatureFlag.Instance.PrintFlagFeatureState();
 
@@ -139,7 +142,11 @@ public class TestCommand(
                 additionalBuildProperties = ["--property:VsTestUseMSBuildOutput=true"];
             }
 
-            int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId, additionalBuildProperties).Execute();
+            TestCommand command = FromParseResult(parseResult, settings, testSessionCorrelationId, additionalBuildProperties);
+#if CLI_AOT
+            AotMSBuildServerCommand.ConfigureServerClient(command, "test");
+#endif
+            int exitCode = command.Execute();
 
             // We run post processing also if execution is failed for possible partial successful result to post process.
             exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult.GetValue(definition.DiagOption), FeatureFlag.Instance);
@@ -396,6 +403,29 @@ public class TestCommand(
         }
         return globalProperties;
     }
+
+#if CLI_AOT
+    internal static bool HasServerCompatibleOutput(ParseResult parseResult)
+    {
+        if (TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult) != TerminalLoggerMode.On)
+        {
+            return false;
+        }
+
+        var properties = GetUserSpecifiedExplicitMSBuildProperties(parseResult);
+        if (parseResult.CommandResult.Command is TestCommandDefinition.VSTest definition
+            && parseResult.GetValue(definition.PropertiesOption) is { } parsedProperties)
+        {
+            foreach ((string name, string propertyValue) in parsedProperties)
+            {
+                properties[name] = propertyValue;
+            }
+        }
+
+        return !properties.TryGetValue("VsTestUseMSBuildOutput", out string? value)
+            || !value.Equals("false", StringComparison.OrdinalIgnoreCase);
+    }
+#endif
 }
 
 public class TerminalLoggerDetector
