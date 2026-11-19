@@ -15,6 +15,20 @@ namespace dotnet.Tests.CommandTests.Test;
 public sealed class TestApplicationLaunchTests
 {
     [TestMethod]
+    [DataRow(false, "0")]
+    [DataRow(true, "1")]
+    public void CreateProcessStartInfo_OnlyDisablesHostGroupsForContextualOutput(bool contextual, string expected)
+    {
+        const string variable = "TESTINGPLATFORM_DOTNETTEST_DISABLE_AZDO_HOST_GROUPS";
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            environmentVariables: new Dictionary<string, string> { [variable] = "0" },
+            contextualModuleOutput: contextual);
+
+        application.CreateProcessStartInfo().Environment[variable].Should().Be(expected);
+    }
+
+    [TestMethod]
     public void CreateProcessStartInfo_TopLevelAffectedTests_AddsOptionAndRunMarker()
     {
         using TestApplication application = CreateApplication(
@@ -271,6 +285,22 @@ public sealed class TestApplicationLaunchTests
     }
 
     [TestMethod]
+    [DataRow("1.0.0", true)]
+    [DataRow("1.3.0", true)]
+    [DataRow("", false)]
+    public void HandshakeResponse_AdvertisesProgressOnlyForAcceptedVersions(string version, bool expected)
+    {
+        using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+        Dictionary<byte, string> properties = application.CreateHandshakeMessage(version).Properties;
+
+        properties.ContainsKey(HandshakeMessagePropertyNames.TestInProgressSupported).Should().Be(expected);
+        if (expected)
+        {
+            properties[HandshakeMessagePropertyNames.TestInProgressSupported].Should().Be(bool.TrueString);
+        }
+    }
+
+    [TestMethod]
     [DataRow("help")]
     [DataRow("discovery")]
     [DataRow("collection")]
@@ -312,7 +342,8 @@ public sealed class TestApplicationLaunchTests
         IReadOnlyDictionary<string, string>? environmentVariables = null,
         ProjectLaunchProfile? launchProfile = null,
         string runtimeIdentifier = "",
-        ArtifactPostProcessingManager? artifactPostProcessingManager = null)
+        ArtifactPostProcessingManager? artifactPostProcessingManager = null,
+        bool contextualModuleOutput = false)
     {
         var module = new TestModule(
             new RunProperties("dotnet", "test.dll", null, runtimeIdentifier, string.Empty, string.Empty),
@@ -341,6 +372,7 @@ public sealed class TestApplicationLaunchTests
             {
                 AnsiMode = AnsiMode.SimpleAnsi,
                 ShowProgress = false,
+                ContextualModuleOutput = contextualModuleOutput,
             });
 
         return new TestApplication(

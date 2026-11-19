@@ -102,6 +102,8 @@ internal sealed class TestApplication(
             : Task.CompletedTask;
 
         Process? process = null;
+        Task? stdOutTask = null;
+        Task? stdErrTask = null;
         bool testApplicationStarted = false;
         try
         {
@@ -120,13 +122,14 @@ internal sealed class TestApplication(
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
             // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
             // The collector is thread-safe for the timeout case.
-            // In the timeout case, we leave stdOutTask and stdErrTask running, just we stop observing them.
-            var stdOutBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteMessage);
-            var stdErrBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteMessage);
+            // In the timeout case, readers can remain alive because descendants hold the streams open.
+            // Contextual forwarding is closed before the final summary so they cannot write after it.
+            var stdOutBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteLiveMessage);
+            var stdErrBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteLiveMessage);
             Volatile.Write(ref _standardOutputCollector, stdOutBuilder);
             Volatile.Write(ref _standardErrorCollector, stdErrBuilder);
 
-            var stdOutTask = Task.Factory.StartNew(() =>
+            stdOutTask = Task.Factory.StartNew(() =>
             {
                 var stdOut = process.StandardOutput;
                 string? currentLine;
@@ -136,7 +139,7 @@ internal sealed class TestApplication(
                 }
             }, TaskCreationOptions.LongRunning);
 
-            var stdErrTask = Task.Factory.StartNew(() =>
+            stdErrTask = Task.Factory.StartNew(() =>
             {
                 var stdErr = process.StandardError;
                 string? currentLine;
@@ -227,6 +230,7 @@ internal sealed class TestApplication(
             }
             catch (TimeoutException)
             {
+                _handler.CloseLiveOutput(timedOut: true);
             }
 
             if (artifactPostProcessingTimedOut)
@@ -266,6 +270,10 @@ internal sealed class TestApplication(
         }
         finally
         {
+            _handler.CloseLiveOutput(
+                timedOut: (stdOutTask is not null && !stdOutTask.IsCompleted) ||
+                    (stdErrTask is not null && !stdErrTask.IsCompleted));
+
             if (testApplicationStarted)
             {
                 _testRunPolicy?.OnTestApplicationExited();
@@ -343,6 +351,11 @@ internal sealed class TestApplication(
         else
         {
             processStartInfo.Environment.Remove(TestOptions.AffectedTestsModeEnvironmentVariable);
+        }
+
+        if (output.ContextualModuleOutput)
+        {
+            processStartInfo.Environment["TESTINGPLATFORM_DOTNETTEST_DISABLE_AZDO_HOST_GROUPS"] = "1";
         }
 
         processStartInfo.Environment["DOTNET_CLI_TEST_COMMAND_WORKING_DIRECTORY"] = Directory.GetCurrentDirectory();
@@ -916,7 +929,7 @@ internal sealed class TestApplication(
 
     internal HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true, bool includeCoverageSummary = false)
     {
-        var properties = new Dictionary<byte, string>(capacity: 7)
+        var properties = new Dictionary<byte, string>(capacity: 8)
         {
             { HandshakeMessagePropertyNames.PID, Environment.ProcessId.ToString(CultureInfo.InvariantCulture) },
             { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
@@ -925,9 +938,13 @@ internal sealed class TestApplication(
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
         };
 
-        if (version.Length > 0 && includeControlPipe)
+        if (version.Length > 0)
         {
-            properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+            properties.Add(HandshakeMessagePropertyNames.TestInProgressSupported, bool.TrueString);
+            if (includeControlPipe)
+            {
+                properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+            }
         }
 
         if (includeCoverageSummary)

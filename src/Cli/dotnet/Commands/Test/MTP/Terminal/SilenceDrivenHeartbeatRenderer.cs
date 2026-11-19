@@ -12,7 +12,9 @@ internal sealed class SilenceDrivenHeartbeatRenderer(
     TimeSpan silenceThreshold,
     TimeSpan slowTestThreshold,
     Func<IStopwatch> createStopwatch,
-    Func<IEnumerable<TestProgressState>>? getTestRuns = null) : IProgressRenderer
+    Func<IEnumerable<TestProgressState>>? getTestRuns = null,
+    bool contextualModuleOutput = false,
+    Func<string, string?, string>? moduleDisplayName = null) : IProgressRenderer
 {
     private readonly Dictionary<long, SlowTestThresholdState> _slowTestThresholdStates = [];
     private StringBuilder? _slowTestDescriptionBuilder;
@@ -92,7 +94,7 @@ internal sealed class SilenceDrivenHeartbeatRenderer(
             }
 
             activeModules++;
-            if (activeTest is null)
+            if (!contextualModuleOutput && activeTest is null)
             {
                 TestDetailState? active = item.TestNodeResultsState?.GetRunningTasks(1).FirstOrDefault();
                 if (!string.IsNullOrWhiteSpace(active?.Text))
@@ -115,6 +117,28 @@ internal sealed class SilenceDrivenHeartbeatRenderer(
         }
 
         terminal.AppendLine(line);
+        if (contextualModuleOutput)
+        {
+            foreach (TestProgressState? item in progressItems)
+            {
+                if (item is null)
+                {
+                    continue;
+                }
+
+                terminal.Append(TerminalTestReporter.SingleIndentation);
+                TerminalTestReporter.AppendModuleIdentity(terminal, item.Assembly, item.TargetFramework, item.Architecture, item.RuntimeFramework, moduleDisplayName);
+                terminal.Append(HumanReadableDurationFormatter.Render(item.Stopwatch.Elapsed, wrapInParentheses: false));
+                TestDetailState? active = item.TestNodeResultsState?.GetRunningTasks(1).FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(active?.Text))
+                {
+                    terminal.Append(" - ");
+                    terminal.Append(active.Text);
+                }
+
+                terminal.AppendLine();
+            }
+        }
     }
 
     private void EmitSlowTests(ITerminal terminal, TestProgressState?[] progressItems)
@@ -157,9 +181,14 @@ internal sealed class SilenceDrivenHeartbeatRenderer(
 
                 _slowTestThresholdStates[detail.Id] = thresholdState;
                 string duration = HumanReadableDurationFormatter.Render(elapsed, wrapInParentheses: false);
+                if (contextualModuleOutput)
+                {
+                    TerminalTestReporter.AppendModuleIdentity(terminal, item.Assembly, item.TargetFramework, item.Architecture, item.RuntimeFramework, moduleDisplayName);
+                }
+
                 terminal.AppendLine(string.Format(
                     CultureInfo.CurrentCulture, CliCommandStrings.TerminalProgressSlowTest,
-                    duration, BuildSlowTestDescription(item, detail)));
+                    duration, contextualModuleOutput ? detail.Text : BuildSlowTestDescription(item, detail)));
                 _lastVisibleOutputTicks = NowTicks;
             }
         }

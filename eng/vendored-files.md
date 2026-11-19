@@ -28,9 +28,9 @@ differ".
 
 > **Source of truth.** For the shared `dotnet test` source, `microsoft/testfx`
 > is the source of truth. It enumerates the exact same set of files via
-> `src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/DotnetTestProtocolContract.props`
+> `src/MTP/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/DotnetTestProtocolContract.props`
 > and
-> `src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalReporterContract.props`,
+> `src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalReporterContract.props`,
 > so testfx contributors can see which files are consumed here.
 
 ## Files involved

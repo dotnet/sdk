@@ -41,7 +41,14 @@ internal sealed partial class TerminalTestReporter
         foreach (ErroredAssemblyRecord failure in errored)
         {
             terminal.Append(SingleIndentation);
-            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, failure.AssemblyPath, failure.TargetFramework, failure.Architecture, failure.RuntimeFramework);
+            if (_options.ContextualModuleOutput)
+            {
+                AppendModuleIdentity(terminal, failure.AssemblyPath, failure.TargetFramework, failure.Architecture, failure.RuntimeFramework, trailingSpace: false);
+            }
+            else
+            {
+                AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, failure.AssemblyPath, failure.TargetFramework, failure.Architecture, failure.RuntimeFramework);
+            }
             terminal.AppendLine();
             AppendExecutableSummary(terminal, failure.ExitCode, failure.OutputData, failure.ErrorData);
         }
