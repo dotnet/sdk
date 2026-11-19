@@ -49,6 +49,11 @@ before bounded forceful termination.
 competing command-line termination handler for those signals. MSBuild operations use a
 two-second soft-cancellation override so submissions and loggers, including binary
 loggers, can finish cancellation cleanup; a second Ctrl+C or SIGTERM still bypasses it.
+MTP test execution suspends the automatic deadline while running test applications so
+their own first-Ctrl+C handlers can report final results. Its cancellation manager must
+observe the shared cooperative and forceful lifecycle tokens: cooperative cancellation
+stops queueing new applications, while forceful cancellation kills all registered test
+application process trees before the lifecycle exits.
 
 ### Cancellation and cleanup
 

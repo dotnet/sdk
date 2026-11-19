@@ -8,17 +8,19 @@ using Microsoft.DotNet.Cli.Utils;
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 /// <summary>
-/// Mirrors the two-stage Ctrl+C cancellation UX implemented in Microsoft.Testing.Platform
+/// Mirrors the two-stage cancellation UX implemented in Microsoft.Testing.Platform
 /// (testfx PR #8581 / SDK issue https://github.com/dotnet/sdk/issues/50732) at the
-/// <c>dotnet test</c> orchestrator level:
+/// <c>dotnet test</c> orchestrator level. It can observe either console Ctrl+C directly
+/// or the shared CLI lifecycle's cooperative and forceful cancellation tokens:
 /// <list type="bullet">
 ///   <item>First Ctrl+C: cooperative cancellation. The <see cref="Token"/> is signaled so the
 ///     queue stops scheduling new test apps; running test apps are left alone so they can
 ///     gracefully report their final state via IPC (their own testfx-side Ctrl+C handler will
 ///     cancel the session inside the child process).</item>
-///   <item>Second Ctrl+C: force exit. Every registered child process is killed
-///     (<c>entireProcessTree: true</c>) and the host process exits with
-///     <see cref="ExitCode.TestSessionAborted"/> (=3).</item>
+///   <item>Forceful cancellation: every registered child process is killed
+///     (<c>entireProcessTree: true</c>). When this manager owns the console handler,
+///     a second Ctrl+C also exits with <see cref="ExitCode.TestSessionAborted"/> (=3);
+///     otherwise the shared process lifecycle owns the host exit.</item>
 ///   <item>Any further presses are no-ops (the state machine is idempotent).</item>
 /// </list>
 /// </summary>
@@ -33,10 +35,17 @@ internal sealed class CtrlCCancellationManager : IDisposable
     private readonly Action<int> _exitAction;
     private readonly ConcurrentDictionary<Process, byte> _processes = new();
     private readonly bool _subscribedToConsole;
+    private readonly CancellationTokenRegistration _cooperativeCancellationRegistration;
+    private readonly CancellationTokenRegistration _forcefulCancellationRegistration;
     private int _state = StateIdle;
     private int _disposed;
 
-    public CtrlCCancellationManager(Action onFirstCtrlC, Action<int>? exitAction = null, bool subscribeToConsole = true)
+    public CtrlCCancellationManager(
+        Action onFirstCtrlC,
+        Action<int>? exitAction = null,
+        bool subscribeToConsole = true,
+        CancellationToken cooperativeCancellationToken = default,
+        CancellationToken forcefulCancellationToken = default)
     {
         _onFirstCtrlC = onFirstCtrlC ?? throw new ArgumentNullException(nameof(onFirstCtrlC));
         _exitAction = exitAction ?? Environment.Exit;
@@ -46,6 +55,11 @@ internal sealed class CtrlCCancellationManager : IDisposable
             Console.CancelKeyPress += OnConsoleCancelKeyPress;
             _subscribedToConsole = true;
         }
+
+        _cooperativeCancellationRegistration =
+            cooperativeCancellationToken.Register(() => HandleCooperativeCancellation());
+        _forcefulCancellationRegistration =
+            forcefulCancellationToken.Register(() => HandleForcefulCancellation());
     }
 
     /// <summary>
@@ -56,8 +70,8 @@ internal sealed class CtrlCCancellationManager : IDisposable
     public CancellationToken Token => _cancellationTokenSource.Token;
 
     /// <summary>
-    /// Registers a child test-app process so it will be killed if the user requests a force exit
-    /// (second Ctrl+C). If the manager is already in the forcing state when this is called, the
+    /// Registers a child test-app process so it will be killed if the user requests a force exit.
+    /// If the manager is already in the forcing state when this is called, the
     /// process is killed immediately to avoid orphaning a child that started during the force
     /// exit race window.
     /// </summary>
@@ -97,48 +111,68 @@ internal sealed class CtrlCCancellationManager : IDisposable
 
     private void HandleCtrlC()
     {
-        // First press: Idle -> Cancelling. Signal the token, invoke the UI callback.
-        if (Interlocked.CompareExchange(ref _state, StateCancelling, StateIdle) == StateIdle)
+        if (HandleCooperativeCancellation())
         {
-            // CancellationTokenSource.Cancel() can throw an AggregateException if any registered
-            // callback throws, or an ObjectDisposedException if Dispose races with a Ctrl+C press
-            // (e.g. user presses Ctrl+C while we're tearing down). Swallow both — we still want the
-            // state machine to advance and the UI callback to run.
-            try
-            {
-                _cancellationTokenSource.Cancel();
-            }
-            catch (Exception ex) when (ex is AggregateException or ObjectDisposedException)
-            {
-                Logger.LogTrace($"Exception during CtrlCCancellationManager cancel:\n{ex}");
-            }
-
-            // The UI callback (typically TerminalTestReporter.StartCancelling) must not be able to
-            // affect cancellation state — wrap it best-effort.
-            try
-            {
-                _onFirstCtrlC();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogTrace($"Exception during CtrlCCancellationManager first-press UI callback:\n{ex}");
-            }
-
             return;
         }
 
-        // Second press: Cancelling -> Forcing. Kill every registered child and exit.
-        // We intentionally do not print any additional message here because the user already saw
-        // the "Press Ctrl+C again to force exit." hint and the exit itself is the confirmation.
-        if (Interlocked.CompareExchange(ref _state, StateForcing, StateCancelling) == StateCancelling)
+        if (HandleForcefulCancellation())
         {
-            foreach (var process in _processes.Keys)
-            {
-                TryKill(process);
-            }
-
             _exitAction(ExitCode.TestSessionAborted);
         }
+    }
+
+    private bool HandleCooperativeCancellation()
+    {
+        // First press: Idle -> Cancelling. Signal the token, invoke the UI callback.
+        if (Interlocked.CompareExchange(ref _state, StateCancelling, StateIdle) != StateIdle)
+        {
+            return false;
+        }
+
+        // CancellationTokenSource.Cancel() can throw an AggregateException if any registered
+        // callback throws, or an ObjectDisposedException if Dispose races with a Ctrl+C press
+        // (e.g. user presses Ctrl+C while we're tearing down). Swallow both — we still want the
+        // state machine to advance and the UI callback to run.
+        try
+        {
+            _cancellationTokenSource.Cancel();
+        }
+        catch (Exception ex) when (ex is AggregateException or ObjectDisposedException)
+        {
+            Logger.LogTrace($"Exception during CtrlCCancellationManager cancel:\n{ex}");
+        }
+
+        // The UI callback (typically TerminalTestReporter.StartCancelling) must not be able to
+        // affect cancellation state — wrap it best-effort.
+        try
+        {
+            _onFirstCtrlC();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogTrace($"Exception during CtrlCCancellationManager first-press UI callback:\n{ex}");
+        }
+
+        return true;
+    }
+
+    private bool HandleForcefulCancellation()
+    {
+        // A second Ctrl+C transitions Cancelling -> Forcing. A forceful lifecycle signal such as
+        // SIGTERM can transition directly from Idle -> Forcing.
+        int previousState = Interlocked.Exchange(ref _state, StateForcing);
+        if (previousState == StateForcing)
+        {
+            return false;
+        }
+
+        foreach (var process in _processes.Keys)
+        {
+            TryKill(process);
+        }
+
+        return true;
     }
 
     private static void TryKill(Process process)
@@ -170,6 +204,8 @@ internal sealed class CtrlCCancellationManager : IDisposable
             Console.CancelKeyPress -= OnConsoleCancelKeyPress;
         }
 
+        _cooperativeCancellationRegistration.Dispose();
+        _forcefulCancellationRegistration.Dispose();
         _cancellationTokenSource.Dispose();
     }
 }

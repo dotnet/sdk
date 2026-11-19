@@ -52,6 +52,62 @@ public class CtrlCCancellationManagerTests
     }
 
     [TestMethod]
+    public void CooperativeLifecycleCancellation_CancelsTokenAndInvokesUiCallback()
+    {
+        int callbackCount = 0;
+        using var cooperativeCancellation = new CancellationTokenSource();
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => Interlocked.Increment(ref callbackCount),
+            exitAction: _ => Assert.Fail("Cooperative cancellation must not exit."),
+            subscribeToConsole: false,
+            cooperativeCancellationToken: cooperativeCancellation.Token);
+
+        cooperativeCancellation.Cancel();
+
+        manager.Token.IsCancellationRequested.Should().BeTrue();
+        callbackCount.Should().Be(1);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ForcefulLifecycleCancellation_KillsChildrenWithoutOwningProcessExit(
+        bool cancelCooperativelyFirst)
+    {
+        int exitCount = 0;
+        using var cooperativeCancellation = new CancellationTokenSource();
+        using var forcefulCancellation = new CancellationTokenSource();
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => { },
+            exitAction: _ => Interlocked.Increment(ref exitCount),
+            subscribeToConsole: false,
+            cooperativeCancellationToken: cooperativeCancellation.Token,
+            forcefulCancellationToken: forcefulCancellation.Token);
+        using var process = StartLongRunningProcess();
+        try
+        {
+            manager.Register(process);
+            if (cancelCooperativelyFirst)
+            {
+                cooperativeCancellation.Cancel();
+                process.HasExited.Should().BeFalse("cooperative cancellation must leave the child running");
+            }
+
+            forcefulCancellation.Cancel();
+
+            process.WaitForExit(TimeSpan.FromSeconds(10)).Should().BeTrue();
+            exitCount.Should().Be(0, "ProcessLifecycle owns the host exit for forceful signals");
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+            }
+        }
+    }
+
+    [TestMethod]
     public void ThirdAndSubsequentCtrlC_AreNoOps()
     {
         int callbackCount = 0;

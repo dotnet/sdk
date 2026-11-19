@@ -263,6 +263,42 @@ public class ProcessLifecycleTests : SdkTest
     }
 
     [TestMethod]
+    public void MtpLifecycleAllowsCooperativeCleanupAndKillsChildrenOnForcefulCancellation()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+        using Process child = StartChild("mtp-lifecycle", testDirectory.Path);
+        try
+        {
+            WaitForMarker(testDirectory.Path, "ready");
+            int testApplicationProcessId =
+                int.Parse(File.ReadAllText(GetMarkerPath(testDirectory.Path) + ".pid"));
+
+            SendSignal(child, testDirectory.Path, PosixSignal.SIGINT);
+            WaitForMarker(testDirectory.Path, "signal-cancelled");
+            Thread.Sleep(TimeSpan.FromMilliseconds(750));
+            child.HasExited.Should().BeFalse(
+                "the first Ctrl+C should allow MTP test applications to finish reporting");
+            Process.GetProcessById(testApplicationProcessId).HasExited.Should().BeFalse(
+                "cooperative cancellation should not kill the test application");
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            SendSignal(child, testDirectory.Path, PosixSignal.SIGINT, sequence: 2);
+            child.WaitForExit(s_waitTimeout).Should().BeTrue();
+
+            child.ExitCode.Should().Be(130);
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
+            SpinWait.SpinUntil(
+                    () => HasProcessExited(testApplicationProcessId),
+                    TimeSpan.FromSeconds(10))
+                .Should().BeTrue("forceful cancellation should kill the test application");
+        }
+        finally
+        {
+            StopChild(child);
+        }
+    }
+
+    [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void SigTermIsForwardedToReapedChild()
     {
@@ -463,4 +499,17 @@ public class ProcessLifecycleTests : SdkTest
 
     private static string GetMarkerPath(string testDirectory)
         => Path.Combine(testDirectory, "signal-marker");
+
+    private static bool HasProcessExited(int processId)
+    {
+        try
+        {
+            using Process process = Process.GetProcessById(processId);
+            return process.HasExited;
+        }
+        catch (ArgumentException)
+        {
+            return true;
+        }
+    }
 }

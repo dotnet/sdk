@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Utils.TestApp;
@@ -41,6 +42,12 @@ public static partial class ProcessLifecycleTestApp
             return 0;
         }
 
+        if (childMode == "ignoring-cancellation-child")
+        {
+            RunIgnoringCancellationChild(markerPath);
+            return 0;
+        }
+
         if (OperatingSystem.IsWindows())
         {
             // A private console prevents test signals from reaching MTP or other processes.
@@ -64,6 +71,24 @@ public static partial class ProcessLifecycleTestApp
 
         using IDisposable processLifecycle = ProcessLifecycle.Initialize();
         CancellationToken cancellationToken = ProcessLifecycle.CancellationToken;
+        if (childMode == "mtp-lifecycle")
+        {
+            using IDisposable cancellationTimeout =
+                ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan);
+            using var ctrlC = new CtrlCCancellationManager(
+                onFirstCtrlC: () => WriteMarker(markerPath, "signal-cancelled"),
+                subscribeToConsole: false,
+                cooperativeCancellationToken: cancellationToken,
+                forcefulCancellationToken: ProcessLifecycle.ForcefulCancellationToken);
+            using Process testApplication = CreateChildProcess(args, "ignoring-cancellation-child");
+            testApplication.Start();
+            WaitForMarker(markerPath, "grandchild-ready");
+            File.WriteAllText(markerPath + ".pid", testApplication.Id.ToString());
+            ctrlC.Register(testApplication);
+            WriteMarker(markerPath, "ready");
+            Thread.Sleep(Timeout.Infinite);
+        }
+
         if (childMode == "msbuild-external")
         {
             var forwardingApp = new MSBuildForwardingApp([], args[6]);
@@ -176,6 +201,13 @@ public static partial class ProcessLifecycleTestApp
             context => context.Cancel = true);
 
         File.WriteAllText(markerPath, "grandchild-ready");
+        Thread.Sleep(Timeout.Infinite);
+    }
+
+    private static void RunIgnoringCancellationChild(string markerPath)
+    {
+        Console.CancelKeyPress += (_, eventArgs) => eventArgs.Cancel = true;
+        WriteMarker(markerPath, "grandchild-ready");
         Thread.Sleep(Timeout.Infinite);
     }
 
