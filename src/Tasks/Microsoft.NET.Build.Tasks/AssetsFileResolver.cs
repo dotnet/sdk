@@ -65,7 +65,8 @@ namespace Microsoft.NET.Build.Tasks
                                                                                         pkgRoot,
                                                                                         GetRuntimeTargetDestinationSubDirectory(runtimeTarget)),
                                     package: targetLibraryPackage,
-                                    assetType: _assetType));
+                                    assetType: _assetType,
+                                    runtimeIdentifier: runtimeTarget.Runtime));
                         }
                     }
                 }
