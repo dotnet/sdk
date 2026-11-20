@@ -4,6 +4,9 @@ When creating skills, follow:
 - Agent skills specification: https://agentskills.io/specification.md
 - Best practices: https://agentskills.io/skill-creation/best-practices.md
 
+For ownership, review expectations, and retiring a skill, see
+[AI artifacts](../../documentation/project-docs/ai-artifacts.md).
+
 ## Structure
 
 ```
