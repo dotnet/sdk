@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -727,4 +727,18 @@ public class StaticWebAssetPathPatternTest
     }
 
     private static StaticWebAssetTokenResolver CreateTestResolver(Dictionary<string, string> additionalTokens = null) => new(additionalTokens);
+
+    [TestMethod]
+    [DataRow("site.js", "site.js")]
+    [DataRow("site#[.{fingerprint}]?.js", "site.*.js")]
+    [DataRow("site#[.{fingerprint}]!.js", "site.*.js")]
+    [DataRow("lib/app#[.{fingerprint}]?.css", "lib/app.*.css")]
+    [DataRow("site#[.{fingerprint}]#[.{version}].css", "site.*.*.css")]
+    [DataRow("plain.txt", "plain.txt")]
+    public void ComputeMatchPattern_ReplacesTokensWithWildcards(string rawPattern, string expectedMatch)
+    {
+        var pattern = StaticWebAssetPathPattern.Parse(rawPattern, "test-identity");
+        var result = pattern.ComputeMatchPattern();
+        Assert.AreEqual(expectedMatch, result);
+    }
 }

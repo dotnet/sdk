@@ -19,10 +19,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 [TestClass]
 public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineTest
 {
-    [GeneratedRegex("""(?'project'[a-zA-Z0-9]+)(?:\.(?'fingerprint'[a-zA-Z0-9]*))?\.bundle\.scp\.css(?'compress'\.(?:gz|br))?$""")]
+    [GeneratedRegex("""(?'project'[a-zA-Z0-9]+)(?:\.(?'fingerprint'[a-zA-Z0-9]*))?\.bundle\.scp\.css(?'compress'\.(?:gz|br|zst))?$""")]
     private static partial Regex ProjectBundleRegex();
 
-    [GeneratedRegex("""(?'project'[a-zA-Z0-9]+)(?:\.(?'fingerprint'[a-zA-Z0-9]*))?\.styles\.css(?'compress'\.(?:gz|br))?$""")]
+    [GeneratedRegex("""(?'project'[a-zA-Z0-9]+)(?:\.(?'fingerprint'[a-zA-Z0-9]*))?\.styles\.css(?'compress'\.(?:gz|br|zst))?$""")]
     private static partial Regex AppBundleRegex();
 
     [TestMethod]
@@ -106,7 +106,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
             { Name: "fingerprint", Value: "", Success: false },
             { Name: "compress", Value: var compress, Success: true }
         ]
-    } && (compress == ".gz" || compress == ".br");
+    } && (compress == ".gz" || compress == ".br" || compress == ".zst");
 
     private bool MatchUncompressedProjectBundlesWithFingerprint(StaticWebAssetEndpoint ep) => ProjectBundleRegex().Match(ep.Route) is
     {
@@ -129,7 +129,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
             { Name: "compress", Value: var compress, Success: true }
         ]
     } && !string.IsNullOrWhiteSpace(fingerprint)
-      && (compress == ".gz" || compress == ".br");
+      && (compress == ".gz" || compress == ".br" || compress == ".zst");
 
     private bool MatchUncompressedAppBundleNoFingerprint(StaticWebAssetEndpoint ep) => AppBundleRegex().Match(ep.Route) is
     {
@@ -151,7 +151,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
             { Name: "fingerprint", Value: "", Success: false },
             { Name: "compress", Value: var compress, Success: true }
         ]
-    } && (compress == ".gz" || compress == ".br");
+    } && (compress == ".gz" || compress == ".br" || compress == ".zst");
 
     private bool MatchUncompressedAppBundleWithFingerprint(StaticWebAssetEndpoint ep) => AppBundleRegex().Match(ep.Route) is
     {
@@ -174,7 +174,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
             { Name: "compress", Value: var compress, Success: true }
         ]
     } && !string.IsNullOrWhiteSpace(fingerprint)
-      && (compress == ".gz" || compress == ".br");
+      && (compress == ".gz" || compress == ".br" || compress == ".zst");
 
     [TestMethod]
     public void Publish_CreatesEndpointsForAssets()
@@ -211,13 +211,15 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
         // based on the presence of .razor files in projects referencing the web SDK.
         // In the future we will filter these out based on whether the app references the Endpoints or the Server
         // assemblies, but for now, just account for them in the tests and ignore them.
-        endpoints.Should().HaveCount(65);
+        endpoints.Should().HaveCount(91);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
-        appJsEndpoints.Should().HaveCount(3);
+        appJsEndpoints.Should().HaveCount(4);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));
         appJsGzEndpoints.Should().HaveCount(1);
         var appJsBrEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.br"));
         appJsBrEndpoints.Should().HaveCount(1);
+        var appJsZstEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.zst"));
+        appJsZstEndpoints.Should().HaveCount(1);
 
         var uncompressedAppJsEndpoint = appJsEndpoints.Where(ep => ep.Selectors.Length == 0);
         uncompressedAppJsEndpoint.Should().HaveCount(1);
@@ -262,33 +264,55 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
             ]
         );
 
+        var zstdCompressedAppJsEndpoint = appJsEndpoints.Where(ep => ep.Selectors.Length == 1 && ep.Selectors[0].Value == "zstd");
+        zstdCompressedAppJsEndpoint.Should().HaveCount(1);
+        zstdCompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
+            [
+                "Cache-Control",
+                "Content-Length",
+                "Content-Type",
+                "ETag",
+                "Last-Modified",
+                "Content-Encoding",
+                "Vary",
+            ]
+        );
+
         var bundleEndpoints = endpoints.Where(MatchUncompresedProjectBundlesNoFingerprint);
-        bundleEndpoints.Should().HaveCount(3);
+        bundleEndpoints.Should().HaveCount(4);
         var bundleGzEndpoints = endpoints.Where(MatchCompressedProjectBundlesNoFingerprint).Where(ep => ep.Route.EndsWith(".gz"));
         bundleGzEndpoints.Should().HaveCount(1);
         var bundleBrEndpoints = endpoints.Where(MatchCompressedProjectBundlesNoFingerprint).Where(ep => ep.Route.EndsWith(".br"));
         bundleBrEndpoints.Should().HaveCount(1);
+        var bundleZstEndpoints = endpoints.Where(MatchCompressedProjectBundlesNoFingerprint).Where(ep => ep.Route.EndsWith(".zst"));
+        bundleZstEndpoints.Should().HaveCount(1);
         var fingerprintedBundleGzEndpoints = endpoints.Where(MatchCompressedProjectBundlesWithFingerprint).Where(ep => ep.Route.EndsWith(".gz"));
         fingerprintedBundleGzEndpoints.Should().HaveCount(1);
         var fingerprintedBundleBrEndpoints = endpoints.Where(MatchCompressedProjectBundlesWithFingerprint).Where(ep => ep.Route.EndsWith(".br"));
         fingerprintedBundleBrEndpoints.Should().HaveCount(1);
+        var fingerprintedBundleZstEndpoints = endpoints.Where(MatchCompressedProjectBundlesWithFingerprint).Where(ep => ep.Route.EndsWith(".zst"));
+        fingerprintedBundleZstEndpoints.Should().HaveCount(1);
 
         var fingerprintedBundleEndpoints = endpoints.Where(MatchUncompressedProjectBundlesWithFingerprint);
-        fingerprintedBundleEndpoints.Should().HaveCount(3);
+        fingerprintedBundleEndpoints.Should().HaveCount(4);
 
         var appBundleEndpoints = endpoints.Where(MatchUncompressedAppBundleNoFingerprint);
-        appBundleEndpoints.Should().HaveCount(3);
+        appBundleEndpoints.Should().HaveCount(4);
         var appBundleGzEndpoints = endpoints.Where(MatchCompressedAppBundleNoFingerprint).Where(ep => ep.Route.EndsWith(".gz"));
         appBundleGzEndpoints.Should().HaveCount(1);
         var appBundleBrEndpoints = endpoints.Where(MatchCompressedAppBundleNoFingerprint).Where(ep => ep.Route.EndsWith(".br"));
         appBundleBrEndpoints.Should().HaveCount(1);
+        var appBundleZstEndpoints = endpoints.Where(MatchCompressedAppBundleNoFingerprint).Where(ep => ep.Route.EndsWith(".zst"));
+        appBundleZstEndpoints.Should().HaveCount(1);
         var fingerprintedAppBundleGzEndpoints = endpoints.Where(MatchCompressedAppBundleWithFingerprint).Where(ep => ep.Route.EndsWith(".gz"));
         fingerprintedAppBundleGzEndpoints.Should().HaveCount(1);
         var fingerprintedAppBundleBrEndpoints = endpoints.Where(MatchCompressedAppBundleWithFingerprint).Where(ep => ep.Route.EndsWith(".br"));
         fingerprintedAppBundleBrEndpoints.Should().HaveCount(1);
+        var fingerprintedAppBundleZstEndpoints = endpoints.Where(MatchCompressedAppBundleWithFingerprint).Where(ep => ep.Route.EndsWith(".zst"));
+        fingerprintedAppBundleZstEndpoints.Should().HaveCount(1);
 
         var fingerprintedAppBundleEndpoints = endpoints.Where(MatchUncompressedAppBundleWithFingerprint);
-        fingerprintedAppBundleEndpoints.Should().HaveCount(3);
+        fingerprintedAppBundleEndpoints.Should().HaveCount(4);
 
         AssertManifest(manifest, LoadPublishManifest());
     }
@@ -308,7 +332,6 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
                             new XAttribute("Update", "wwwroot/app.publish.js"),
                             new XAttribute("TargetPath", "wwwroot/app.js"),
                             new XAttribute("CopyToPublishDirectory", "PreserveNewest"))));
-                var doc2 = document;
             });
         var root = ProjectDirectory.TestRoot;
 
@@ -320,7 +343,6 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
         ExecuteCommand(publish).Should().Pass();
 
         var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-        var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
         // GenerateStaticWebAssetsManifest should generate the manifest file.
         var path = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
@@ -333,7 +355,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
         var endpoints = publishManifest.Endpoints;
 
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
-        appJsEndpoints.Should().HaveCount(3);
+        appJsEndpoints.Should().HaveCount(4);
 
         // There's only 1 uncompressed asset endpoint.
         var unCompressedAssetEndpoint = appJsEndpoints.Where(ep => ep.Selectors.Length == 0);
@@ -361,46 +383,66 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
         publishBrAsset.Should().HaveCount(1);
         publishBrAsset.Single().RelatedAsset.Should().Be(publishAsset.Single().Identity);
 
-        // The compressed gzip and br assets are exposed with their extensions.
+        // There is only 1 zstd asset endpoint.
+        var appZstdAssetEndpoint = appJsEndpoints.Where(ep => ep.Selectors.Length == 1 && ep.Selectors[0].Value == "zstd");
+        appZstdAssetEndpoint.Should().HaveCount(1);
+
+        // The zstd asset endpoint is for the zstd compressed version of the publish asset.
+        var publishZstdAsset = publishManifest.Assets.Where(a => a.Identity == appZstdAssetEndpoint.Single().AssetFile);
+        publishZstdAsset.Should().HaveCount(1);
+        publishZstdAsset.Single().RelatedAsset.Should().Be(publishAsset.Single().Identity);
+
+        // The compressed gzip, br, and zstd assets are exposed with their extensions.
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));
         appJsGzEndpoints.Should().HaveCount(1);
 
         var appJsBrEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.br"));
         appJsBrEndpoints.Should().HaveCount(1);
 
+        var appJsZstEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.zst"));
+        appJsZstEndpoints.Should().HaveCount(1);
+
         var bundleEndpoints = endpoints.Where(MatchUncompresedProjectBundlesNoFingerprint);
-        bundleEndpoints.Should().HaveCount(3);
+        bundleEndpoints.Should().HaveCount(4);
         var bundleGzEndpoints = endpoints.Where(MatchCompressedProjectBundlesNoFingerprint).Where(ep => ep.Route.EndsWith(".gz"));
         bundleGzEndpoints.Should().HaveCount(1);
         var bundleBrEndpoints = endpoints.Where(MatchCompressedProjectBundlesNoFingerprint).Where(ep => ep.Route.EndsWith(".br"));
         bundleBrEndpoints.Should().HaveCount(1);
+        var bundleZstEndpoints = endpoints.Where(MatchCompressedProjectBundlesNoFingerprint).Where(ep => ep.Route.EndsWith(".zst"));
+        bundleZstEndpoints.Should().HaveCount(1);
         var fingerprintedBundleGzEndpoints = endpoints.Where(MatchCompressedProjectBundlesWithFingerprint).Where(ep => ep.Route.EndsWith(".gz"));
         fingerprintedBundleGzEndpoints.Should().HaveCount(1);
         var fingerprintedBundleBrEndpoints = endpoints.Where(MatchCompressedProjectBundlesWithFingerprint).Where(ep => ep.Route.EndsWith(".br"));
         fingerprintedBundleBrEndpoints.Should().HaveCount(1);
+        var fingerprintedBundleZstEndpoints = endpoints.Where(MatchCompressedProjectBundlesWithFingerprint).Where(ep => ep.Route.EndsWith(".zst"));
+        fingerprintedBundleZstEndpoints.Should().HaveCount(1);
 
         var fingerprintedBundleEndpoints = endpoints.Where(MatchUncompressedProjectBundlesWithFingerprint);
-        fingerprintedBundleEndpoints.Should().HaveCount(3);
+        fingerprintedBundleEndpoints.Should().HaveCount(4);
 
         var appBundleEndpoints = endpoints.Where(MatchUncompressedAppBundleNoFingerprint);
-        appBundleEndpoints.Should().HaveCount(3);
+        appBundleEndpoints.Should().HaveCount(4);
         var appBundleGzEndpoints = endpoints.Where(MatchCompressedAppBundleNoFingerprint).Where(ep => ep.Route.EndsWith(".gz"));
         appBundleGzEndpoints.Should().HaveCount(1);
         var appBundleBrEndpoints = endpoints.Where(MatchCompressedAppBundleNoFingerprint).Where(ep => ep.Route.EndsWith(".br"));
         appBundleBrEndpoints.Should().HaveCount(1);
+        var appBundleZstEndpoints = endpoints.Where(MatchCompressedAppBundleNoFingerprint).Where(ep => ep.Route.EndsWith(".zst"));
+        appBundleZstEndpoints.Should().HaveCount(1);
         var fingerprintedAppBundleGzEndpoints = endpoints.Where(MatchCompressedAppBundleWithFingerprint).Where(ep => ep.Route.EndsWith(".gz"));
         fingerprintedAppBundleGzEndpoints.Should().HaveCount(1);
         var fingerprintedAppBundleBrEndpoints = endpoints.Where(MatchCompressedAppBundleWithFingerprint).Where(ep => ep.Route.EndsWith(".br"));
         fingerprintedAppBundleBrEndpoints.Should().HaveCount(1);
+        var fingerprintedAppBundleZstEndpoints = endpoints.Where(MatchCompressedAppBundleWithFingerprint).Where(ep => ep.Route.EndsWith(".zst"));
+        fingerprintedAppBundleZstEndpoints.Should().HaveCount(1);
 
         var fingerprintedAppBundleEndpoints = endpoints.Where(MatchUncompressedAppBundleWithFingerprint);
-        fingerprintedAppBundleEndpoints.Should().HaveCount(3);
+        fingerprintedAppBundleEndpoints.Should().HaveCount(4);
 
         // blazor.server.js and blazor.web.js assets and endpoints are included automatically
         // based on the presence of .razor files in projects referencing the web SDK.
         // In the future we will filter these out based on whether the app references the Endpoints or the Server
         // assemblies, but for now, just account for them in the tests and ignore them.
-        endpoints.Should().HaveCount(65);
+        endpoints.Should().HaveCount(91);
 
         AssertManifest(publishManifest, LoadPublishManifest());
     }
@@ -584,7 +626,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
         foreach (var file in wwwrootFolderFiles)
         {
             endpointsByAssetFile.Should().ContainKey(file);
-            if (file.EndsWith(".br") || file.EndsWith(".gz"))
+            if (file.EndsWith(".br") || file.EndsWith(".gz") || file.EndsWith(".zst"))
             {
                 endpointsByAssetFile[file].Should().HaveCountGreaterThanOrEqualTo(2);
             }

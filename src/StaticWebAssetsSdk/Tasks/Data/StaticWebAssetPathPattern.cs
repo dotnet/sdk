@@ -431,6 +431,47 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
         };
     }
 
+    // Computes a URL pattern suitable for Use-As-Dictionary: match= header.
+    // Token expressions (e.g., [.{fingerprint}]?) are replaced with '*' wildcards,
+    // allowing the browser to match any fingerprinted variant of the same file.
+    // For example, the pattern 'file[.{fingerprint}]?.js' becomes 'file*.js'.
+    // Literal-only patterns are returned unchanged (e.g., 'plain.js' → 'plain.js').
+    internal string ComputeMatchPattern()
+    {
+        var result = new StringBuilder();
+        foreach (var segment in Segments)
+        {
+            if (segment.IsPackOnly)
+            {
+                continue;
+            }
+
+            if (IsLiteralSegment(segment))
+            {
+                result.Append(segment.Parts[0].Name);
+            }
+            else
+            {
+                // Preserve literal parts within the segment, replace token parts with '*'.
+                // For example, a segment with parts ['.', '{fingerprint}'] becomes '.*'
+                // rather than just '*', preserving embedded literals like '.min.'.
+                foreach (var part in segment.Parts)
+                {
+                    if (part.IsLiteral)
+                    {
+                        result.Append(part.Name);
+                    }
+                    else
+                    {
+                        result.Append('*');
+                    }
+                }
+            }
+        }
+
+        return result.ToString();
+    }
+
     // Computes the label for the pattern. The label is the pattern without the token expressions.
     // The label is used as a stable way to identify any pattern that has token expressions in it.
     // The combination of label + values applied to the pattern uniquely identifies the pattern.
