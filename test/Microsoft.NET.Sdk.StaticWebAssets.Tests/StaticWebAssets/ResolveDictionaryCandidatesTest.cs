@@ -12,6 +12,7 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
+[TestClass]
 public class ResolveDictionaryCandidatesTest : IDisposable
 {
     private static readonly string PrevRoot = Path.Combine(Path.GetTempPath(), "prev", "wwwroot");
@@ -38,7 +39,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
             .Callback<BuildMessageEventArgs>(args => _logMessages.Add(args.Message));
     }
 
-    [Fact]
+    [TestMethod]
     public void ReturnsEmptyWhenPackDoesNotExist()
     {
         var task = new ResolveDictionaryCandidates
@@ -55,7 +56,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         task.DictionaryCandidates.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void ReturnsEmptyWhenCurrentAssetsIsEmpty()
     {
         var packPath = CreateTestPack(new[]
@@ -77,7 +78,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         task.DictionaryCandidates.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void MatchesCurrentAssetToPreviousVersion()
     {
         var oldAsset = CreateManifestAsset("js/site.js", "hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo=");
@@ -113,7 +114,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         candidate.GetMetadata("OldFileFingerprint").Should().Be("prevfp");
     }
 
-    [Fact]
+    [TestMethod]
     public void ExtractsCorrectPreviousFileContent()
     {
         var expectedContent = "previous version content for dictionary";
@@ -145,7 +146,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         File.ReadAllText(extractedPath).Should().Be(expectedContent);
     }
 
-    [Fact]
+    [TestMethod]
     public void SkipsNewAssetsWithNoPreviousVersion()
     {
         var oldAsset = CreateManifestAsset("js/old.js", "hash1");
@@ -174,7 +175,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         task.DictionaryCandidates.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void SkipsRemovedAssetsNoLongerInCurrent()
     {
         // Pack has two assets but only one exists in current
@@ -210,7 +211,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         task.DictionaryCandidates[0].GetMetadata("MatchPattern").Should().Be("/_content/PrevApp/js/kept.js");
     }
 
-    [Fact]
+    [TestMethod]
     public void MatchesMultipleAssets()
     {
         var assetA = CreateManifestAsset("js/site.js", "hashA");
@@ -258,7 +259,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
             .Should().BeEquivalentTo("/_content/PrevApp/js/site.js", "/_content/PrevApp/css/app.css", "/_content/PrevApp/lib/jquery.js");
     }
 
-    [Fact]
+    [TestMethod]
     public void SkipsCompressedAssetsInPreviousManifest()
     {
         // Include a compressed asset in the manifest — it should be ignored
@@ -296,7 +297,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         task.DictionaryCandidates[0].GetMetadata("Hash").Should().Be(":origHash:");
     }
 
-    [Fact]
+    [TestMethod]
     public void SkipsCompressedAssetsInCurrentAssets()
     {
         var oldAsset = CreateManifestAsset("js/site.js", "origHash");
@@ -332,7 +333,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         task.DictionaryCandidates[0].GetMetadata("TargetAsset").Should().Be(uncompressedAsset.ItemSpec);
     }
 
-    [Fact]
+    [TestMethod]
     public void FailsGracefullyWhenManifestMissingFromPack()
     {
         // Create a zip without manifest.json
@@ -359,7 +360,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         _errorMessages.Should().Contain(m => m.Contains("manifest.json"));
     }
 
-    [Fact]
+    [TestMethod]
     public void SkipsAssetWhenPreviousHasNoIntegrity()
     {
         var assetWithNoIntegrity = CreateManifestAsset("js/site.js", "");
@@ -387,7 +388,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         task.DictionaryCandidates.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void SkipsAssetWhenIntegrityMatchesCurrent()
     {
         var sameIntegrity = "sameHashValue";
@@ -418,7 +419,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         _logMessages.Should().Contain(m => m.Contains("same integrity"));
     }
 
-    [Fact]
+    [TestMethod]
     public void RouteBasedMatching_MatchesByEndpointRoute()
     {
         var oldAsset = CreateManifestAsset("js/site.js", "oldHash123");
@@ -449,7 +450,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         task.DictionaryCandidates[0].GetMetadata("TargetAsset").Should().Be(currentAsset.ItemSpec);
     }
 
-    [Fact]
+    [TestMethod]
     public void RouteBasedMatching_SkipsEndpointsWithContentEncodingSelector()
     {
         var oldAsset = CreateManifestAsset("js/site.js", "oldHash");
@@ -485,7 +486,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         task.DictionaryCandidates.Should().HaveCount(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void ReturnsEmptyWhenNoEndpointsProvided()
     {
         // Route-based matching requires endpoints; without them, no candidates are produced
@@ -511,7 +512,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         task.DictionaryCandidates.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void MatchPattern_UsesWildcardForFingerprintTokens()
     {
         // Old asset has fingerprint token in RelativePath
@@ -545,7 +546,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         task.DictionaryCandidates[0].GetMetadata("MatchPattern").Should().Be("/_content/PrevApp/js/site.*.js");
     }
 
-    [Fact]
+    [TestMethod]
     public void RouteBasedMatching_AvoidsDuplicatesFromMultipleRoutes()
     {
         // Same asset accessible via two routes

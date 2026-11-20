@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -464,7 +464,7 @@ public class ResolveCompressedAssetsTest
         return item;
     }
 
-    [Fact]
+    [TestMethod]
     public void DczFormat_ProducesCandidateWhenDictionaryExists()
     {
         // Arrange
@@ -504,7 +504,7 @@ public class ResolveCompressedAssetsTest
         dczAsset.RelativePath.Should().Contain(".oldfp123.dcz");
     }
 
-    [Fact]
+    [TestMethod]
     public void DczFormat_SkippedWhenNoDictionaryCandidate()
     {
         // Arrange
@@ -531,7 +531,7 @@ public class ResolveCompressedAssetsTest
         compressed[0].ItemSpec.Should().EndWith(".gz");
     }
 
-    [Fact]
+    [TestMethod]
     public void DczFormat_NonDictionaryFormatsUnaffectedByDictionaryCandidates()
     {
         // Arrange
@@ -559,7 +559,7 @@ public class ResolveCompressedAssetsTest
         compressed[1].ItemSpec.Should().EndWith(".br");
     }
 
-    [Fact]
+    [TestMethod]
     public void LogsErrorForCompressedAssetWithoutContentEncoding()
     {
         var asset = CreatePrimaryAsset();
@@ -583,7 +583,7 @@ public class ResolveCompressedAssetsTest
         _errorMessages.Should().ContainSingle(m => m.Contains("does not match any configured compression format"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DczFormat_AlongsideOtherFormats()
     {
         // Arrange

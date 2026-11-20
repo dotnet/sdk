@@ -12,6 +12,7 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
+[TestClass]
 public class GeneratePublishAssetPackTest : IDisposable
 {
     private readonly string _testDir;
@@ -32,7 +33,7 @@ public class GeneratePublishAssetPackTest : IDisposable
             .Callback<BuildErrorEventArgs>(args => _errorMessages.Add(args.Message));
     }
 
-    [Fact]
+    [TestMethod]
     public void CreatesPackWithManifestAndAssets()
     {
         var manifestPath = CreateManifestFile(new[] { "js/site.js", "css/app.css" });
@@ -64,7 +65,7 @@ public class GeneratePublishAssetPackTest : IDisposable
         archive.GetEntry("assets/_content/TestApp/css/app.css").Should().NotBeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void ManifestContentIsPreserved()
     {
         var manifestPath = CreateManifestFile(new[] { "js/site.js" });
@@ -96,7 +97,7 @@ public class GeneratePublishAssetPackTest : IDisposable
         actual.Source.Should().Be(expected.Source);
     }
 
-    [Fact]
+    [TestMethod]
     public void AssetContentIsPreserved()
     {
         var content = "exact content that should be preserved";
@@ -121,7 +122,7 @@ public class GeneratePublishAssetPackTest : IDisposable
         reader.ReadToEnd().Should().Be(content);
     }
 
-    [Fact]
+    [TestMethod]
     public void ExcludesCompressedAssets()
     {
         var manifestPath = CreateManifestFile(new[] { "js/site.js" });
@@ -151,7 +152,7 @@ public class GeneratePublishAssetPackTest : IDisposable
         archive.Entries.Count.Should().Be(2);
     }
 
-    [Fact]
+    [TestMethod]
     public void OverwritesExistingPack()
     {
         var manifestPath = CreateManifestFile(new[] { "js/site.js" });
@@ -177,7 +178,7 @@ public class GeneratePublishAssetPackTest : IDisposable
         archive.GetEntry("manifest.json").Should().NotBeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void FailsWhenManifestDoesNotExist()
     {
         var task = new GeneratePublishAssetPack
@@ -194,7 +195,7 @@ public class GeneratePublishAssetPackTest : IDisposable
         _errorMessages.Should().Contain(m => m.Contains("does not exist"));
     }
 
-    [Fact]
+    [TestMethod]
     public void SkipsDuplicateRelativePaths()
     {
         var manifestPath = CreateManifestFile(new[] { "js/site.js" });
@@ -219,7 +220,7 @@ public class GeneratePublishAssetPackTest : IDisposable
         archive.Entries.Count.Should().Be(2);
     }
 
-    [Fact]
+    [TestMethod]
     public void PreservesNestedDirectoryStructureInPack()
     {
         var manifestPath = CreateManifestFile(new[]

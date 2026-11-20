@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -1428,7 +1428,7 @@ public class ApplyCompressionNegotiationTest
         ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void DictionaryFormat_UsesOSPathSemanticsForPathKeyedLookups()
     {
         var errorMessages = new List<string>();
@@ -1820,7 +1820,7 @@ public class ApplyCompressionNegotiationTest
         }).ToArray();
     }
 
-    [Fact]
+    [TestMethod]
     public void AssignsDescendingQuality_ForMultipleFormats_ByFileSize()
     {
         var errorMessages = new List<string>();
@@ -1885,7 +1885,7 @@ public class ApplyCompressionNegotiationTest
         gzEndpoint.Selectors.Should().Contain(s => s.Name == "Content-Encoding" && s.Value == "gzip" && s.Quality == "0.8");
     }
 
-    [Fact]
+    [TestMethod]
     public void AssignsQuality_WithTiebreaking_ByFormatPriority()
     {
         var errorMessages = new List<string>();
@@ -1941,7 +1941,7 @@ public class ApplyCompressionNegotiationTest
         gzEndpoint.Selectors.Should().Contain(s => s.Name == "Content-Encoding" && s.Value == "gzip" && s.Quality == "0.9");
     }
 
-    [Fact]
+    [TestMethod]
     public void AssignsQuality_WithoutCompressionFormats_TiebreaksAlphabetically()
     {
         var errorMessages = new List<string>();
@@ -1996,7 +1996,7 @@ public class ApplyCompressionNegotiationTest
         zstdEndpoint.Selectors.Should().Contain(s => s.Name == "Content-Encoding" && s.Value == "zstd" && s.Quality == "0.9");
     }
 
-    [Fact]
+    [TestMethod]
     public void AssignsQuality_ForMultipleResources_IndependentRanking()
     {
         var errorMessages = new List<string>();
@@ -2070,7 +2070,7 @@ public class ApplyCompressionNegotiationTest
         bGz.Selectors.Should().Contain(s => s.Name == "Content-Encoding" && s.Value == "gzip" && s.Quality == "1.0");
     }
 
-    [Fact]
+    [TestMethod]
     public void AssignsQuality_WithDescendingTieredSeries_ForManyFormats()
     {
         var errorMessages = new List<string>();
@@ -2139,21 +2139,21 @@ public class ApplyCompressionNegotiationTest
         twelfth.Selectors.Should().Contain(s => s.Name == "Content-Encoding" && s.Quality == "0.08");
     }
 
-    [Theory]
-    [InlineData(0, "1.0")]
-    [InlineData(1, "0.9")]
-    [InlineData(9, "0.1")]
-    [InlineData(10, "0.09")]
-    [InlineData(18, "0.01")]
-    [InlineData(19, "0.009")]
-    [InlineData(27, "0.001")]
-    [InlineData(28, "0.0009")]
+    [TestMethod]
+    [DataRow(0, "1.0")]
+    [DataRow(1, "0.9")]
+    [DataRow(9, "0.1")]
+    [DataRow(10, "0.09")]
+    [DataRow(18, "0.01")]
+    [DataRow(19, "0.009")]
+    [DataRow(27, "0.001")]
+    [DataRow(28, "0.0009")]
     public void ComputeQualityValue_ProducesCorrectSeries(int rank, string expected)
     {
         ApplyCompressionNegotiation.ComputeQualityValue(rank).Should().Be(expected);
     }
 
-    [Fact]
+    [TestMethod]
     public void RouteCollisions_IncludeCollateralEndpoints()
     {
         // Two different assets (build and publish) that share a route, only the build one has gzip.
@@ -2211,7 +2211,7 @@ public class ApplyCompressionNegotiationTest
             .ResponseHeaders.Should().Contain(h => h.Name == "Vary" && h.Value == "Accept-Encoding");
     }
 
-    [Fact]
+    [TestMethod]
     public void MultipleCompressedAssets_ProduceNoDuplicateSynthetics()
     {
         // One original with both gzip and brotli — verify no duplicate synthetic endpoints at the same route.
@@ -2268,7 +2268,7 @@ public class ApplyCompressionNegotiationTest
             .Should().BeEquivalentTo(["br", "gzip"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void ModifiedRouteGroup_EmitsAllGroupMembers()
     {
         // Route group with 3 endpoints from different assets — only one has compression.
@@ -2334,7 +2334,7 @@ public class ApplyCompressionNegotiationTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void DictionaryFormat_AddsDualSelectorsAndVaryHeader()
     {
         var errorMessages = new List<string>();
@@ -2418,7 +2418,7 @@ public class ApplyCompressionNegotiationTest
             h.Name == "Vary" && h.Value == "Available-Dictionary");
     }
 
-    [Fact]
+    [TestMethod]
     public void DictionaryFormat_OriginalEndpointGetsUseDictionaryHeader()
     {
         var errorMessages = new List<string>();
@@ -2494,7 +2494,7 @@ public class ApplyCompressionNegotiationTest
             h.Name == "Vary" && h.Value == "Available-Dictionary");
     }
 
-    [Fact]
+    [TestMethod]
     public void DictionaryFormat_NonDictionaryFormatsUnchanged()
     {
         var errorMessages = new List<string>();
