@@ -2742,9 +2742,9 @@ Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attribu
 |CodeFix|False|
 ---
 
-## [CA2259](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259): 'ThreadStatic' only affects static fields
+## [CA2259](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259): Attribute has no effect
 
-'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.
+Some attributes only take effect in certain places. 'ThreadStatic', 'ContextStatic' and 'FixedAddressValueType' only affect static fields, 'FixedAddressValueType' also needs the field to be of a struct type that is not a primitive or an enum, and 'SuppressGCTransition' only affects P/Invoke methods. Anywhere else they have no impact on behavior.
 
 |Item|Value|
 |-|-|

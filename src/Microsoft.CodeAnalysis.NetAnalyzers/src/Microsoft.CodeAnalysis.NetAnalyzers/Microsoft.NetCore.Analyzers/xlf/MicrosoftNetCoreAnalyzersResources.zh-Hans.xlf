@@ -27,6 +27,31 @@
         <target state="translated">与加密专家一起审阅密码模式“{0}”的使用情况。请考虑使用建议的模式(CBC、CTS)。</target>
         <note />
       </trans-unit>
+      <trans-unit id="AttributeHasNoEffectDescription">
+        <source>Some attributes only take effect in certain places. 'ThreadStatic', 'ContextStatic' and 'FixedAddressValueType' only affect static fields, 'FixedAddressValueType' also needs the field to be of a struct type that is not a primitive or an enum, and 'SuppressGCTransition' only affects P/Invoke methods. Anywhere else they have no impact on behavior.</source>
+        <target state="new">Some attributes only take effect in certain places. 'ThreadStatic', 'ContextStatic' and 'FixedAddressValueType' only affect static fields, 'FixedAddressValueType' also needs the field to be of a struct type that is not a primitive or an enum, and 'SuppressGCTransition' only affects P/Invoke methods. Anywhere else they have no impact on behavior.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeHasNoEffectNonStaticFieldMessage">
+        <source>The '[{0}]' attribute has no effect on member '{1}' because it only applies to static fields</source>
+        <target state="new">The '[{0}]' attribute has no effect on member '{1}' because it only applies to static fields</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeHasNoEffectNotPInvokeMessage">
+        <source>The '[{0}]' attribute has no effect on member '{1}' because it only applies to P/Invoke methods</source>
+        <target state="new">The '[{0}]' attribute has no effect on member '{1}' because it only applies to P/Invoke methods</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeHasNoEffectTitle">
+        <source>Attribute has no effect</source>
+        <target state="new">Attribute has no effect</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeHasNoEffectUnsupportedTypeFieldMessage">
+        <source>The '[{0}]' attribute has no effect on member '{1}' because it only applies to fields of a struct type that is not a primitive or an enum</source>
+        <target state="new">The '[{0}]' attribute has no effect on member '{1}' because it only applies to fields of a struct type that is not a primitive or an enum</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
         <source>The string literal parameter of an attribute does not parse correctly for a URL, a GUID, or a version.</source>
         <target state="translated">特性的字符串文本参数未正确解析 URL、GUID 或版本。</target>
@@ -3041,21 +3066,6 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
       <trans-unit id="ThreadStaticInitializedInlineTitle">
         <source>Improper 'ThreadStatic' field initialization</source>
         <target state="translated">“ThreadStatic” 字段初始化不正确</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ThreadStaticOnNonStaticFieldDescription">
-        <source>'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</source>
-        <target state="translated">“ThreadStatic” 仅影响静态字段。应用于实例字段时，它不会影响行为。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ThreadStaticOnNonStaticFieldMessage">
-        <source>Ensure 'ThreadStatic' is only used with static fields</source>
-        <target state="translated">确保 “ThreadStatic” 仅用于静态字段</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ThreadStaticOnNonStaticFieldTitle">
-        <source>'ThreadStatic' only affects static fields</source>
-        <target state="translated">“ThreadStatic” 仅影响静态字段</target>
         <note />
       </trans-unit>
       <trans-unit id="UseArgumentExceptionThrowHelperTitle">
