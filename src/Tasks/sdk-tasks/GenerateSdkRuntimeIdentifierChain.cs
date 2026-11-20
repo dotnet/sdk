@@ -20,7 +20,8 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public override bool Execute()
         {
-            var runtimeIdentifierGraph = JsonRuntimeFormat.ReadRuntimeGraph(RuntimeIdentifierGraphPath);
+            using var stream = File.OpenRead(RuntimeIdentifierGraphPath);
+            var runtimeIdentifierGraph = JsonRuntimeFormat.ReadRuntimeGraph(stream: stream);
 
             var chainContents = string.Join("\n", runtimeIdentifierGraph.ExpandRuntime(RuntimeIdentifier));
             File.WriteAllText(RuntimeIdentifierChainOutputPath, chainContents);
