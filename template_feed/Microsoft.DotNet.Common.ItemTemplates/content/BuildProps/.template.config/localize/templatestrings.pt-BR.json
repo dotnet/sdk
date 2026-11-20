@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Arquivo MSBuild Directory.Build.props",
   "description": "Um arquivo Directory.Build.props vazio que pode ser usado para especificar as propriedades do MSBuild para uma pasta inteira",

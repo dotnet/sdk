@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Plik Directory.Build.props platformy MsBuild",
   "description": "Pusty plik Directory.Build.props, którego można użyć do określenia właściwości platformy MSBuild dla całego folderu",
