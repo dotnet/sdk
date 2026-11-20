@@ -24,6 +24,16 @@ namespace Microsoft.TemplateEngine.Core.Matching
 
         public int OldestRequiredSequenceNumber => _activePaths.Count == 0 ? _expectedSequenceNumber : _activePaths[0].StartSequenceNumber;
 
+        internal void AdvanceTo(int sequenceNumber)
+        {
+            if (sequenceNumber >= _expectedSequenceNumber)
+            {
+                // Operations can consume input without passing the skipped bytes through Accept.
+                _activePaths.Clear();
+                _expectedSequenceNumber = sequenceNumber;
+            }
+        }
+
         //TODO: Figure out how to do readahead detection better - tracking the last seen sequence number
         //  is too slow
         public bool Accept(byte data, ref int sequenceNumber, out TerminalLocation<T>? terminal)
