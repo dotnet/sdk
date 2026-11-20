@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 
@@ -15,10 +14,9 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         public override string Name => "FINALNEWLINE";
         public override FixCategory Category => FixCategory.Whitespace;
 
-        internal override async Task<SourceText> FormatFileAsync(
-            Document document,
+        internal override Task<SourceText> FormatFileAsync(
+            TextDocument document,
             SourceText sourceText,
-            OptionSet optionSet,
             AnalyzerConfigOptions analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
@@ -27,7 +25,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             if (!analyzerConfigOptions.TryGetValue("insert_final_newline", out var insertFinalNewlineValue) ||
                 !bool.TryParse(insertFinalNewlineValue, out var insertFinalNewline))
             {
-                return await document.GetTextAsync(cancellationToken);
+                return Task.FromResult(sourceText);
             }
 
             if (!EndOfLineFormatter.TryGetEndOfLine(analyzerConfigOptions, out var endOfLine))
@@ -59,7 +57,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 }
             }
 
-            return sourceText;
+            return Task.FromResult(sourceText);
         }
     }
 }
