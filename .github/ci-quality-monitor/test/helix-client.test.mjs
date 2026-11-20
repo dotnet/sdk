@@ -50,6 +50,25 @@ test("prefers TRX over unrelated XML artifacts", async () =>
   assert.equal(observations[0].component, "Example");
 });
 
+test("surfaces extensionless runtime core dumps", async () =>
+{
+  const dump = {FileName: "coredump.2193", Uri: "https://files/coredump.2193"};
+  const observations = await collect({
+    files: [
+      {FileName: "results.trx", Uri: "https://files/results.trx"},
+      dump
+    ],
+    bodies: {"https://files/results.trx": trxResult({outcome: "Passed", message: ""})},
+    exitCode: 134
+  });
+
+  assert.deepEqual(observations[0].evidenceSources, ["helix-console", "process-exit-code", "helix-trx", "helix-dump"]);
+  assert.deepEqual(observations[0].artifacts, [
+    {name: "results.trx", url: "https://files/results.trx"},
+    {name: dump.FileName, url: dump.Uri}
+  ]);
+});
+
 test("uses explicit TRX timeout and aborted outcomes", async () =>
 {
   for (const [outcome, failureType] of [["Timeout", "timeout"], ["Aborted", "process-termination"]])
