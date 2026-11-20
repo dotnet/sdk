@@ -1642,6 +1642,52 @@ public class TestReference
 
         [TestMethod]
         [RequiresMSBuildVersion("17.12")]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        public void Publish_StandaloneBlazorWasm_FingerprintsStartupScript(bool noBuild, bool fingerprint)
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer",
+                identifier: $"{(noBuild ? "StandaloneWasmNoBuild" : "StandaloneWasm")}{fingerprint}");
+            var fingerprintArgument = $"/p:BlazorFingerprintBlazorJs={fingerprint}";
+            if (noBuild)
+            {
+                var buildCommand = CreateBuildCommand(testInstance, "Client");
+                ExecuteCommand(buildCommand, "/p:Configuration=Release", fingerprintArgument).Should().Pass();
+            }
+            var publishCommand = CreatePublishCommand(testInstance, "Client");
+            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm, "Release").ToString();
+            if (Directory.Exists(publishDirectory))
+            {
+                Directory.Delete(publishDirectory, recursive: true);
+            }
+
+            if (noBuild)
+            {
+                ExecuteCommand(publishCommand, "/p:Configuration=Release", "/p:NoBuild=true",
+                    "/p:BuildProjectReferences=false", fingerprintArgument).Should().Pass();
+            }
+            else
+            {
+                ExecuteCommand(publishCommand, "/p:Configuration=Release", fingerprintArgument).Should().Pass();
+            }
+            var wwwroot = Path.Combine(publishDirectory, "wwwroot");
+            var html = File.ReadAllText(Path.Combine(wwwroot, "index.html"));
+            var scriptPath = Regex.Match(
+                html,
+                fingerprint
+                    ? @"src=""(?<path>_framework/blazor\.webassembly\.[a-z0-9]{10}\.js)"""
+                    : @"src=""(?<path>_framework/blazor\.webassembly\.js)"""
+            ).Groups["path"].Value;
+
+            scriptPath.Should().NotBeNullOrEmpty();
+            html.Should().NotContain("#[.{fingerprint}]");
+            new FileInfo(Path.Combine(wwwroot, scriptPath)).Should().Exist();
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         [DataRow("")]
         [DataRow("/p:BlazorFingerprintBlazorJs=false")]
         public void Publish_BlazorWasmReferencedByAspNetCoreServer(string publishArg)
