@@ -31,13 +31,13 @@ internal class CommonOptions
 
     public static readonly Option<bool> NoProgressOption = new("--no-progress")
     {
-        Description = "Disables progress display for operations. Same as --progress none.",
+        Description = Strings.NoProgressOptionDescription,
         Arity = ArgumentArity.ZeroOrOne
     };
 
     public static readonly Option<ProgressMode> ProgressOption = new("--progress")
     {
-        Description = "How to display progress: auto (bars on a terminal, lines when output is redirected), bars, lines, none, or json (JSON Lines events on stdout; other output goes to stderr).",
+        Description = Strings.ProgressOptionDescription,
         Arity = ArgumentArity.ExactlyOne,
         DefaultValueFactory = _ => ProgressMode.Auto
     };

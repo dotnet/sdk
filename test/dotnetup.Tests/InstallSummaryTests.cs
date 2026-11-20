@@ -27,7 +27,7 @@ public class InstallSummaryTests
             Request(InstallComponent.SDK, "10.0.100"),
         };
 
-        InstallExecutor.FormatGroupedRequests(requests).Should().Be(
+        InstallSummaryDisplay.FormatGroupedRequests(requests).Should().Be(
             $"{InstallComponent.Runtime.GetDisplayName()} 6.0.36, 10.0.8, {InstallComponent.SDK.GetDisplayName()} 10.0.100");
     }
 
@@ -52,7 +52,7 @@ public class InstallSummaryTests
             [new InstallFailure(requests[2], new DotnetInstallException(DotnetInstallErrorCode.DownloadFailed, "Download failed."))]);
 
         string runtime = InstallComponent.Runtime.GetDisplayName();
-        CaptureLines(() => InstallExecutor.DisplaySummaryInRequestOrder(requests, batch, RootPath)).Should().Equal(
+        CaptureLines(() => InstallSummaryDisplay.DisplaySummaryInRequestOrder(requests, batch, RootPath)).Should().Equal(
             $"  {runtime} 6.0.36  installed (27.0 MB, repaired)",
             $"  {runtime} 8.0.27  already installed, skipped",
             $"  {runtime} 9.0.16  failed: Download failed.",
@@ -66,7 +66,7 @@ public class InstallSummaryTests
         var request = Request(InstallComponent.SDK, "10.0.100");
         var batch = new InstallBatchResult([], [new InstallFailure(request, new DotnetInstallException(DotnetInstallErrorCode.DownloadFailed, "boom"))]);
 
-        CaptureLines(() => InstallExecutor.DisplaySummaryInRequestOrder([request], batch, RootPath)).Should().Equal(
+        CaptureLines(() => InstallSummaryDisplay.DisplaySummaryInRequestOrder([request], batch, RootPath)).Should().Equal(
             $"  {InstallComponent.SDK.GetDisplayName()} 10.0.100  failed: boom");
     }
 
@@ -76,7 +76,7 @@ public class InstallSummaryTests
         var request = Request(InstallComponent.SDK, "11.0.100");
         var batch = new InstallBatchResult([Result(request, alreadyInstalled: true, installedVersion: "11.0.100-rtm.26510.101")], []);
 
-        CaptureLines(() => InstallExecutor.DisplaySummaryInRequestOrder([request], batch, RootPath)).Should().Equal(
+        CaptureLines(() => InstallSummaryDisplay.DisplaySummaryInRequestOrder([request], batch, RootPath)).Should().Equal(
             $"  {InstallComponent.SDK.GetDisplayName()} 11.0.100  already installed as 11.0.100-rtm.26510.101, skipped",
             $"Installed at {RootPath}.");
     }
@@ -91,7 +91,7 @@ public class InstallSummaryTests
             [new InstallFailure(failedRequest, new DotnetInstallException(DotnetInstallErrorCode.DownloadFailed, "boom"))]);
 
         string sdk = InstallComponent.SDK.GetDisplayName();
-        CaptureLines(() => InstallExecutor.DisplaySummaryInRequestOrder([failedRequest, succeededRequest], batch, RootPath)).Should().Equal(
+        CaptureLines(() => InstallSummaryDisplay.DisplaySummaryInRequestOrder([failedRequest, succeededRequest], batch, RootPath)).Should().Equal(
             $"  {sdk} 10.0.100  failed: boom",
             $"  {sdk} 10.0.100  installed (29.8 MB)",
             $"Installed at {RootPath}.");
@@ -109,7 +109,7 @@ public class InstallSummaryTests
             []);
 
         string sdk = InstallComponent.SDK.GetDisplayName();
-        CaptureLines(() => InstallExecutor.DisplaySummaryInRequestOrder([firstRequest, secondRequest], batch, RootPath)).Should().Equal(
+        CaptureLines(() => InstallSummaryDisplay.DisplaySummaryInRequestOrder([firstRequest, secondRequest], batch, RootPath)).Should().Equal(
             $"  {sdk} 10.0.100  already installed, skipped",
             $"  {sdk} 10.0.100  installed (29.8 MB)",
             $"Installed at {RootPath}.");

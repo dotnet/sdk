@@ -842,4 +842,48 @@ Or open a new terminal.</value>
     <value>The dotnetup manifest at '{0}' uses schema version {1}, but this version of dotnetup supports up to version {2}. Update dotnetup to read this manifest.</value>
     <comment>{0} is the manifest path; {1} is the manifest schema version; {2} is the highest supported schema version.</comment>
   </data>
+  <data name="NoProgressOptionDescription" xml:space="preserve">
+    <value>Disables progress display for operations. Same as --progress none.</value>
+    <comment>{Locked="--progress none"}</comment>
+  </data>
+  <data name="ProgressOptionDescription" xml:space="preserve">
+    <value>How to display progress: auto (bars on a terminal, lines when output is redirected), bars, lines, none, or json (JSON Lines events on stdout; other output goes to stderr).</value>
+    <comment>{Locked="auto"} {Locked="bars"} {Locked="lines"} {Locked="none"} {Locked="json"} {Locked="JSON Lines"} {Locked="stdout"} {Locked="stderr"}</comment>
+  </data>
+  <data name="InstallingComponentsTo" xml:space="preserve">
+    <value>Installing {0} to {1}...</value>
+    <comment>{0} is a comma-separated list of components and versions; {1} is the install path.</comment>
+  </data>
+  <data name="InstallSummaryInstalledAt" xml:space="preserve">
+    <value>Installed at {0}.</value>
+    <comment>Final line of the --no-progress install summary. {0} is the install path.</comment>
+  </data>
+  <data name="InstallSummaryFailed" xml:space="preserve">
+    <value>failed: {0}</value>
+    <comment>Outcome of one component in the --no-progress install summary. {0} is the error message.</comment>
+  </data>
+  <data name="InstallSummaryNotInstalled" xml:space="preserve">
+    <value>not installed</value>
+    <comment>Outcome of one component in the --no-progress install summary.</comment>
+  </data>
+  <data name="InstallSummaryAlreadyInstalled" xml:space="preserve">
+    <value>already installed, skipped</value>
+    <comment>Outcome of one component in the --no-progress install summary.</comment>
+  </data>
+  <data name="InstallSummaryAlreadyInstalledAsVersion" xml:space="preserve">
+    <value>already installed as {0}, skipped</value>
+    <comment>Outcome of one component in the --no-progress install summary. {0} is the installed version.</comment>
+  </data>
+  <data name="InstallSummaryInstalled" xml:space="preserve">
+    <value>installed</value>
+    <comment>Outcome of one component in the --no-progress install summary.</comment>
+  </data>
+  <data name="InstallSummaryInstalledWithDetails" xml:space="preserve">
+    <value>installed ({0})</value>
+    <comment>Outcome of one component in the --no-progress install summary. {0} is a comma-separated list of details, such as the downloaded size and "repaired".</comment>
+  </data>
+  <data name="InstallSummaryRepaired" xml:space="preserve">
+    <value>repaired</value>
+    <comment>Detail shown in the --no-progress install summary when an existing install was repaired.</comment>
+  </data>
 </root>

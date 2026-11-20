@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -33,21 +32,9 @@ internal class InstallExecutor
         }
 
         DotnetInstallRoot installRoot = requests[0].Request.InstallRoot;
-        string escapedPath = installRoot.Path.EscapeMarkup();
         bool summaryOnly = progress == ProgressMode.None;
 
-        if (summaryOnly)
-        {
-            SpectreAnsiConsole.WriteLine($"Installing {FormatGroupedRequests(requests)} to {installRoot.Path}...");
-        }
-        else
-        {
-            // Print "Installing X, Y, Z to <path>..."
-            var descriptions = requests.Select(r =>
-                $"{r.Request.Component.GetDisplayName()} {DotnetupTheme.Accent($"{r.ResolvedVersion}")}").ToList();
-            SpectreAnsiConsole.MarkupLine(
-                $"Installing {string.Join(", ", descriptions)} to {DotnetupTheme.Accent(escapedPath)}...");
-        }
+        InstallSummaryDisplay.DisplayInstallingLine(requests, installRoot.Path, plain: summaryOnly);
 
         if (requests.Any(r => UnsignedSourcePolicy.MayDownloadUnsigned(r.Request)))
         {
@@ -63,75 +50,14 @@ internal class InstallExecutor
 
         if (summaryOnly)
         {
-            DisplaySummaryInRequestOrder(requests, batchResult, installRoot.Path);
+            InstallSummaryDisplay.DisplaySummaryInRequestOrder(requests, batchResult, installRoot.Path);
         }
         else
         {
-            DisplayBatchResults(batchResult);
+            InstallSummaryDisplay.DisplayBatchResults(batchResult);
         }
 
         return batchResult;
-    }
-
-    /// <summary>Formats requests as "dotnet (runtime) 8.0.27, 9.0.16, .NET SDK 10.0.100", grouping versions by component.</summary>
-    internal static string FormatGroupedRequests(IReadOnlyList<ResolvedInstallRequest> requests) =>
-        string.Join(", ", requests
-            .GroupBy(r => r.Request.Component)
-            .Select(group => $"{group.Key.GetDisplayName()} {string.Join(", ", group.Select(r => r.ResolvedVersion.ToString()))}"));
-
-    /// <summary>
-    /// Writes one plain, aligned line per request in request order, so concurrent downloads cannot change the
-    /// output; used for <c>--no-progress</c>.
-    /// </summary>
-    internal static void DisplaySummaryInRequestOrder(IReadOnlyList<ResolvedInstallRequest> requests, InstallBatchResult batchResult, string installRootPath)
-    {
-        var labels = requests.Select(r => $"{r.Request.Component.GetDisplayName()} {r.ResolvedVersion}").ToList();
-        int labelWidth = labels.Max(label => label.Length);
-
-        for (int i = 0; i < requests.Count; i++)
-        {
-            var request = requests[i];
-            InstallResult? result = batchResult.Successes.FirstOrDefault(r => ReferenceEquals(r.Request, request));
-            SpectreAnsiConsole.WriteLine($"  {labels[i].PadRight(labelWidth)}  {DescribeOutcome(request, result, batchResult)}");
-        }
-
-        if (batchResult.Successes.Count > 0)
-        {
-            SpectreAnsiConsole.WriteLine($"Installed at {installRootPath}.");
-        }
-    }
-
-    private static string DescribeOutcome(ResolvedInstallRequest request, InstallResult? result, InstallBatchResult batchResult)
-    {
-        if (batchResult.Failures.FirstOrDefault(f => ReferenceEquals(f.Request, request)) is { } failure)
-        {
-            return $"failed: {failure.Exception.Message}";
-        }
-
-        if (result is null)
-        {
-            return "not installed";
-        }
-
-        if (result.WasAlreadyInstalled)
-        {
-            return result.Install.Version.Equals(request.ResolvedVersion)
-                ? "already installed, skipped"
-                : $"already installed as {result.Install.Version}, skipped";
-        }
-
-        var details = new List<string>();
-        if (result.DownloadedBytes is long bytes)
-        {
-            details.Add(ProgressFormatting.FormatMB(bytes).Trim());
-        }
-
-        if (result.Repaired)
-        {
-            details.Add("repaired");
-        }
-
-        return details.Count > 0 ? $"installed ({string.Join(", ", details)})" : "installed";
     }
 
     /// <summary>
@@ -168,7 +94,7 @@ internal class InstallExecutor
                 primary.AttachAdditionalFailure(batchResult.Failures[i].Exception);
             }
 
-            // DisplayBatchResults already printed every failure message.
+            // The install summary already printed every failure message.
             primary.MarkReportedToUser();
 
             ExceptionDispatchInfo.Capture(primary).Throw();
@@ -184,64 +110,5 @@ internal class InstallExecutor
         int succeeded = batchResult.Successes.Count(r => r.Repaired);
         int failed = batchResult.Failures.Count(f => f.Exception.IsRepairFailed());
         return succeeded + failed == 0 ? null : $"succeeded:{succeeded},failed:{failed}";
-    }
-
-    /// <summary>
-    /// Displays a summary of batch install results, grouping by newly installed, already installed, and failed.
-    /// </summary>
-    private static void DisplayBatchResults(InstallBatchResult batchResult)
-    {
-        var installed = new List<string>();
-        var alreadyInstalled = new List<string>();
-        string? sharedPath = null;
-
-        foreach (var result in batchResult.Successes)
-        {
-            sharedPath ??= result.Install.InstallRoot.Path;
-            string installDetailLine = $"{result.Install.Component.GetDisplayName()} {DotnetupTheme.SuccessAccent(result.Install.Version.ToString().EscapeMarkup())}";
-            if (result.WasAlreadyInstalled)
-            {
-                alreadyInstalled.Add(installDetailLine);
-            }
-            else
-            {
-                installed.Add(installDetailLine);
-            }
-        }
-
-        EmitBatchSummaryLines(installed, alreadyInstalled, sharedPath);
-
-        if (batchResult.Failures.Count > 0)
-        {
-            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Error("The following installs failed:"));
-            foreach (var failure in batchResult.Failures)
-            {
-                SpectreAnsiConsole.MarkupLine(
-                    $"  {DotnetupTheme.Error($"{failure.Request.Request.Component.GetDisplayName()} {failure.Request.ResolvedVersion.ToString().EscapeMarkup()}: {failure.Exception.Message.EscapeMarkup()}")}");
-            }
-        }
-    }
-
-    private static void EmitBatchSummaryLines(List<string> installed, List<string> alreadyInstalled, string? sharedPath)
-    {
-        string escapedPath = sharedPath?.EscapeMarkup() ?? string.Empty;
-
-        if (installed.Count > 0)
-        {
-            SpectreAnsiConsole.MarkupLine($"Installed at {DotnetupTheme.SuccessAccent(escapedPath)}:");
-            foreach (var item in installed)
-            {
-                SpectreAnsiConsole.MarkupLine($"  {item}");
-            }
-        }
-
-        if (alreadyInstalled.Count > 0)
-        {
-            SpectreAnsiConsole.MarkupLine($"Already installed at {DotnetupTheme.SuccessAccent(escapedPath)}:");
-            foreach (var item in alreadyInstalled)
-            {
-                SpectreAnsiConsole.MarkupLine($"  {item}");
-            }
-        }
     }
 }

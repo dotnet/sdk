@@ -88,19 +88,11 @@ present and valid.
 
 ## Keep output useful
 
-- Progress prints as plain lines with periodic percentages when output is
-  redirected or in CI (`--progress lines`). Use `--no-progress` (or
-  `--progress none`) for minimal, deterministic log output: nothing while
-  the install runs, then one line per component in the order you requested:
-
-  ```text
-  Installing dotnet (runtime) 8.0.27, 9.0.16 to D:\sdk\.dotnet...
-    dotnet (runtime) 8.0.27  already installed, skipped
-    dotnet (runtime) 9.0.16  installed (30.4 MB)
-  Installed at D:\sdk\.dotnet.
-  ```
-- Use `--progress json` when a program, such as an editor extension, shows
-  its own progress UI. See [Progress events](#progress-events).
+- Redirected or CI output shows progress as plain lines (`--progress lines`).
+- Use `--no-progress` to print only one result line per component, in
+  request order, after the install.
+- Use `--progress json` when a program shows its own progress UI. See
+  [Progress events](#progress-events).
 - Use `--verbosity normal` for normal automation.
 - Use `--verbosity detailed` to diagnose resolution or installation.
 - Check the command exit code. Update commands can continue after an
@@ -108,9 +100,8 @@ present and valid.
 
 ## Progress events
 
-With `--progress json`, stdout carries only progress events, one JSON object
-per line. All other output, including warnings, errors, and the final summary,
-goes to stderr. Use the exit code to decide success.
+With `--progress json`, stdout has one JSON progress event per line; all other
+output goes to stderr.
 
 ```json
 {"version":1,"event":"started","task":1,"description":"Downloading .NET SDK 10.0.103"}
@@ -120,13 +111,13 @@ goes to stderr. Use the exit code to decide success.
 
 | Field | Description |
 | --- | --- |
-| `version` | Event format version. It increases only for incompatible changes. |
-| `event` | `started`, `progress`, or `finished`. A task that fails gets no `finished` event. |
-| `task` | Identifies the task within one command. Concurrent installs interleave tasks. |
-| `description` | Display text for the task's current state. |
-| `percent` | Whole-number completion, on `progress` events only. A task can finish without reporting every percentage. |
+| `version` | Increases only for incompatible changes. |
+| `event` | `started`, `progress`, or `finished`. Failed tasks get no `finished` event; use the exit code. |
+| `task` | Task ID, unique within one command. |
+| `description` | Display text. |
+| `percent` | Whole-number completion, on `progress` events only. |
 
-Ignore fields you do not recognize; later versions can add fields.
+Ignore unknown fields.
 
 ## Coordinate writers
 
