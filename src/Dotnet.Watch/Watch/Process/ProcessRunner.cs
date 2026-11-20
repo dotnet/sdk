@@ -349,7 +349,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
         {
             try
             {
-                process.Kill();
+                process.Kill(entireProcessTree: true);
             }
             catch (Exception e)
             {
