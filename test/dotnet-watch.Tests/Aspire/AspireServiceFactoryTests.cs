@@ -23,6 +23,7 @@ public class AspireServiceFactoryTests
         var args = AspireServiceFactory.SessionManager.GetRunCommandArguments(request, hostLaunchProfile: null);
 
         AssertEx.SequenceEqual(["--project", "a.csproj"], args);
+        AssertLaunchProfileName(request, hostLaunchProfile: null, expectedHasValue: true, expectedValue: null);
     }
 
     [TestMethod]
@@ -40,6 +41,7 @@ public class AspireServiceFactoryTests
         var args = AspireServiceFactory.SessionManager.GetRunCommandArguments(request, hostLaunchProfile: "H");
 
         AssertEx.SequenceEqual(["--project", "a.csproj", "--no-launch-profile" ], args);
+        AssertLaunchProfileName(request, hostLaunchProfile: "H", expectedHasValue: false, expectedValue: null);
     }
 
     [TestMethod]
@@ -59,6 +61,7 @@ public class AspireServiceFactoryTests
         var args = AspireServiceFactory.SessionManager.GetRunCommandArguments(request, hostLaunchProfile: "H");
 
         AssertEx.SequenceEqual(["--project", "a.csproj", "--launch-profile", "H"], args);
+        AssertLaunchProfileName(request, hostLaunchProfile: "H", expectedHasValue: true, expectedValue: "H");
     }
 
     [TestMethod]
@@ -78,6 +81,7 @@ public class AspireServiceFactoryTests
         var args = AspireServiceFactory.SessionManager.GetRunCommandArguments(request, hostLaunchProfile: "H");
 
         AssertEx.SequenceEqual(["--project", "a.csproj", "--no-launch-profile"], args);
+        AssertLaunchProfileName(request, hostLaunchProfile: "H", expectedHasValue: false, expectedValue: null);
     }
 
     [TestMethod]
@@ -97,6 +101,7 @@ public class AspireServiceFactoryTests
         var args = AspireServiceFactory.SessionManager.GetRunCommandArguments(request, hostLaunchProfile: null);
 
         AssertEx.SequenceEqual(["--project", "a.csproj"], args);
+        AssertLaunchProfileName(request, hostLaunchProfile: null, expectedHasValue: true, expectedValue: null);
     }
     [TestMethod]
     public void GetRunCommandArguments_LaunchProfile_NoArgs()
@@ -113,6 +118,7 @@ public class AspireServiceFactoryTests
         var args = AspireServiceFactory.SessionManager.GetRunCommandArguments(request, hostLaunchProfile: "H");
 
         AssertEx.SequenceEqual(["--project", "a.csproj", "--launch-profile", "P"], args);
+        AssertLaunchProfileName(request, hostLaunchProfile: "H", expectedHasValue: true, expectedValue: "P");
     }
 
     [TestMethod]
@@ -147,5 +153,12 @@ public class AspireServiceFactoryTests
         var args = AspireServiceFactory.SessionManager.GetRunCommandArguments(request, hostLaunchProfile: "H");
 
         AssertEx.SequenceEqual(["--project", "a.csproj", "--launch-profile", "P", "a", "b"], args);
+    }
+
+    private static void AssertLaunchProfileName(ProjectLaunchRequest request, string? hostLaunchProfile, bool expectedHasValue, string? expectedValue)
+    {
+        var launchProfileName = AspireServiceFactory.SessionManager.GetLaunchProfileName(request, hostLaunchProfile);
+        Assert.AreEqual(expectedHasValue, launchProfileName.HasValue);
+        Assert.AreEqual(expectedValue, launchProfileName.Value);
     }
 }
