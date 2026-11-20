@@ -34,7 +34,7 @@ internal class Parser
         //EnableDefaultExceptionHandler = false,
     };
 
-    public static ParseResult Parse(string[] args) => RootCommand.Parse(args, ParserConfiguration);
+    public static ParseResult Parse(string[] args) => RootCommand.Parse(ForwardDotnetCommandArguments(args), ParserConfiguration);
     public static int Invoke(ParseResult parseResult) => parseResult.Invoke(InvocationConfiguration);
     public static int Invoke(string[] args) => Invoke(Parse(args));
 
@@ -49,6 +49,29 @@ internal class Parser
     /// </summary>
     public static string Version { get; } = typeof(Parser).Assembly
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
+
+    private static string[] ForwardDotnetCommandArguments(string[] args)
+    {
+        if (args.Length < 2 || args[1] == "--" || IsHelpToken(args[1]))
+        {
+            return args;
+        }
+
+        Command dotnetCommand = DotnetCommandParser.GetCommand();
+        if (args[0] != dotnetCommand.Name && !dotnetCommand.Aliases.Contains(args[0]))
+        {
+            return args;
+        }
+
+        // Keep options intended for dotnet, such as `format --help`, from binding to dotnetup.
+        return [args[0], "--", .. args[1..]];
+    }
+
+    private static bool IsHelpToken(string token)
+    {
+        HelpOption helpOption = RootCommand.Options.OfType<HelpOption>().Single();
+        return token == helpOption.Name || helpOption.Aliases.Contains(token);
+    }
 
     private static RootCommand ConfigureCommandLine(RootCommand rootCommand)
     {
