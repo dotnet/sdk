@@ -22,7 +22,7 @@ internal abstract class InstallCommand : CommandBase
     public string? InstallPath { get; }
     public string? ManifestPath { get; }
     public bool Interactive { get; }
-    public bool NoProgress { get; }
+    public ProgressMode Progress { get; }
     public Verbosity Verbosity { get; }
     public bool RequireMuxerUpdate { get; }
     public bool Untracked { get; }
@@ -47,7 +47,7 @@ internal abstract class InstallCommand : CommandBase
         InstallPath = parseResult.GetValue(CommonOptions.InstallPathOption);
         ManifestPath = parseResult.GetValue(CommonOptions.ManifestPathOption);
         Interactive = parseResult.GetValue(CommonOptions.InteractiveOption);
-        NoProgress = parseResult.GetValue(CommonOptions.NoProgressOption);
+        Progress = CommonOptions.ResolveProgressMode(parseResult);
         Verbosity = parseResult.GetValue(CommonOptions.VerbosityOption);
         RequireMuxerUpdate = parseResult.GetValue(CommonOptions.RequireMuxerUpdateOption);
         Untracked = parseResult.GetValue(CommonOptions.UntrackedOption);
@@ -66,6 +66,7 @@ internal abstract class InstallCommand : CommandBase
                 CommonOptions.UntrackedOption,
                 CommonOptions.InteractiveOption,
                 CommonOptions.NoProgressOption,
+                CommonOptions.ProgressOption,
                 CommonOptions.VerbosityOption,
                 SdkInstallCommandParser.ChannelArguments,
                 RuntimeInstallCommandParser.ComponentSpecsArgument);

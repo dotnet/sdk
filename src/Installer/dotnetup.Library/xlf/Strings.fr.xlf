@@ -521,10 +521,55 @@ Or open a new terminal.</target>
         <target state="new">(source: {0})</target>
         <note>{0} is an install-source identifier or a global.json path.</note>
       </trans-unit>
+      <trans-unit id="InstallSummaryAlreadyInstalled">
+        <source>already installed, skipped</source>
+        <target state="new">already installed, skipped</target>
+        <note>Outcome of one component in the --no-progress install summary.</note>
+      </trans-unit>
+      <trans-unit id="InstallSummaryAlreadyInstalledAsVersion">
+        <source>already installed as {0}, skipped</source>
+        <target state="new">already installed as {0}, skipped</target>
+        <note>Outcome of one component in the --no-progress install summary. {0} is the installed version.</note>
+      </trans-unit>
+      <trans-unit id="InstallSummaryFailed">
+        <source>failed: {0}</source>
+        <target state="new">failed: {0}</target>
+        <note>Outcome of one component in the --no-progress install summary. {0} is the error message.</note>
+      </trans-unit>
+      <trans-unit id="InstallSummaryInstalled">
+        <source>installed</source>
+        <target state="new">installed</target>
+        <note>Outcome of one component in the --no-progress install summary.</note>
+      </trans-unit>
+      <trans-unit id="InstallSummaryInstalledAt">
+        <source>Installed at {0}.</source>
+        <target state="new">Installed at {0}.</target>
+        <note>Final line of the --no-progress install summary. {0} is the install path.</note>
+      </trans-unit>
+      <trans-unit id="InstallSummaryInstalledWithDetails">
+        <source>installed ({0})</source>
+        <target state="new">installed ({0})</target>
+        <note>Outcome of one component in the --no-progress install summary. {0} is a comma-separated list of details, such as the downloaded size and "repaired".</note>
+      </trans-unit>
+      <trans-unit id="InstallSummaryNotInstalled">
+        <source>not installed</source>
+        <target state="new">not installed</target>
+        <note>Outcome of one component in the --no-progress install summary.</note>
+      </trans-unit>
+      <trans-unit id="InstallSummaryRepaired">
+        <source>repaired</source>
+        <target state="new">repaired</target>
+        <note>Detail shown in the --no-progress install summary when an existing install was repaired.</note>
+      </trans-unit>
       <trans-unit id="InstallValidationFailed">
         <source>Installation validation failed: {0}</source>
         <target state="new">Installation validation failed: {0}</target>
         <note>{0} is the reason the installation validation failed.</note>
+      </trans-unit>
+      <trans-unit id="InstallingComponentsTo">
+        <source>Installing {0} to {1}...</source>
+        <target state="new">Installing {0} to {1}...</target>
+        <note>{0} is a comma-separated list of components and versions; {1} is the install path.</note>
       </trans-unit>
       <trans-unit id="ListAspNetCoreRuntimeComponent">
         <source>ASP.NET Core Runtime</source>
@@ -666,6 +711,11 @@ Or open a new terminal.</target>
         <target state="new">The dotnetup manifest at '{0}' uses schema version {1}, but this version of dotnetup supports up to version {2}. Update dotnetup to read this manifest.</target>
         <note>{0} is the manifest path; {1} is the manifest schema version; {2} is the highest supported schema version.</note>
       </trans-unit>
+      <trans-unit id="NoProgressOptionDescription">
+        <source>Disables progress display for operations. Same as --progress none.</source>
+        <target state="new">Disables progress display for operations. Same as --progress none.</target>
+        <note>{Locked="--progress none"}</note>
+      </trans-unit>
       <trans-unit id="PathGuidanceEverywhere">
         <source>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</source>
         <target state="new">PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</target>
@@ -680,6 +730,11 @@ Or open a new terminal.</target>
         <source>Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</source>
         <target state="new">Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProgressOptionDescription">
+        <source>How to display progress: auto (bars on a terminal, lines when output is redirected), bars, lines, none, or json (JSON Lines events on stdout; other output goes to stderr).</source>
+        <target state="new">How to display progress: auto (bars on a terminal, lines when output is redirected), bars, lines, none, or json (JSON Lines events on stdout; other output goes to stderr).</target>
+        <note>{Locked="auto"} {Locked="bars"} {Locked="lines"} {Locked="none"} {Locked="json"} {Locked="JSON Lines"} {Locked="stdout"} {Locked="stderr"}</note>
       </trans-unit>
       <trans-unit id="RepositoryUsingLastKnownRequirement">
         <source>Warning: Using the last known SDK requirement from {0}.</source>
@@ -780,6 +835,11 @@ Or open a new terminal.</target>
         <source>Dotnetup could not inspect its installation directory '{0}'. Make sure the directory exists and is accessible, or reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</source>
         <target state="new">Dotnetup could not inspect its installation directory '{0}'. Make sure the directory exists and is accessible, or reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</target>
         <note>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the directory containing the dotnetup executable.</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateDownloaded">
+        <source>Downloaded dotnetup</source>
+        <target state="new">Downloaded dotnetup</target>
+        <note>{Locked="dotnetup"} Download progress task description after the download succeeds.</note>
       </trans-unit>
       <trans-unit id="SelfUpdateDownloading">
         <source>Downloading dotnetup</source>

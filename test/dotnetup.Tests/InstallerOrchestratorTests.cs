@@ -529,6 +529,7 @@ public class InstallerOrchestratorTests
             new object());
 
         fatalExceptions.Should().BeEmpty();
+        results.Should().OnlyContain(r => r.Request != null);
         return (results, failures);
     }
 

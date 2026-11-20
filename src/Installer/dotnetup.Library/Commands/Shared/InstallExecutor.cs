@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -21,11 +20,11 @@ internal class InstallExecutor
     /// then displays a unified result summary including any per-request failures.
     /// </summary>
     /// <param name="requests">The resolved install requests to execute.</param>
-    /// <param name="noProgress">Whether to suppress progress display.</param>
+    /// <param name="progress">How to display progress.</param>
     /// <returns>The batch result containing successes and failures.</returns>
     public static InstallBatchResult ExecuteInstalls(
         List<ResolvedInstallRequest> requests,
-        bool noProgress)
+        ProgressMode progress)
     {
         if (requests.Count == 0)
         {
@@ -33,13 +32,9 @@ internal class InstallExecutor
         }
 
         DotnetInstallRoot installRoot = requests[0].Request.InstallRoot;
-        string escapedPath = installRoot.Path.EscapeMarkup();
+        bool summaryOnly = progress == ProgressMode.None;
 
-        // Print "Installing X, Y, Z to <path>..."
-        var descriptions = requests.Select(r =>
-            $"{r.Request.Component.GetDisplayName()} {DotnetupTheme.Accent($"{r.ResolvedVersion}")}").ToList();
-        SpectreAnsiConsole.MarkupLine(
-            $"Installing {string.Join(", ", descriptions)} to {DotnetupTheme.Accent(escapedPath)}...");
+        InstallSummaryDisplay.DisplayInstallingLine(requests, installRoot.Path, plain: summaryOnly);
 
         if (requests.Any(r => UnsignedSourcePolicy.MayDownloadUnsigned(r.Request)))
         {
@@ -48,12 +43,20 @@ internal class InstallExecutor
 
         InstallBatchResult batchResult;
         {
-            IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+            IProgressTarget progressTarget = ProgressTargets.Create(progress);
             using var sharedReporter = new LazyProgressReporter(progressTarget);
             batchResult = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
         }
 
-        DisplayBatchResults(batchResult);
+        if (summaryOnly)
+        {
+            InstallSummaryDisplay.DisplaySummaryInRequestOrder(requests, batchResult, installRoot.Path);
+        }
+        else
+        {
+            InstallSummaryDisplay.DisplayBatchResults(batchResult);
+        }
+
         return batchResult;
     }
 
@@ -65,10 +68,10 @@ internal class InstallExecutor
     /// </summary>
     public static void ExecuteInstallsAndThrowOnFailure(
         List<ResolvedInstallRequest> requests,
-        bool noProgress,
+        ProgressMode progress,
         InstallCommand command)
     {
-        var batchResult = ExecuteInstalls(requests, noProgress);
+        var batchResult = ExecuteInstalls(requests, progress);
         command.CompletedInstalls.AddRange(batchResult.Successes);
 
         int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
@@ -91,7 +94,7 @@ internal class InstallExecutor
                 primary.AttachAdditionalFailure(batchResult.Failures[i].Exception);
             }
 
-            // DisplayBatchResults already printed every failure message.
+            // The install summary already printed every failure message.
             primary.MarkReportedToUser();
 
             ExceptionDispatchInfo.Capture(primary).Throw();
@@ -107,64 +110,5 @@ internal class InstallExecutor
         int succeeded = batchResult.Successes.Count(r => r.Repaired);
         int failed = batchResult.Failures.Count(f => f.Exception.IsRepairFailed());
         return succeeded + failed == 0 ? null : $"succeeded:{succeeded},failed:{failed}";
-    }
-
-    /// <summary>
-    /// Displays a summary of batch install results, grouping by newly installed, already installed, and failed.
-    /// </summary>
-    private static void DisplayBatchResults(InstallBatchResult batchResult)
-    {
-        var installed = new List<string>();
-        var alreadyInstalled = new List<string>();
-        string? sharedPath = null;
-
-        foreach (var result in batchResult.Successes)
-        {
-            sharedPath ??= result.Install.InstallRoot.Path;
-            string installDetailLine = $"{result.Install.Component.GetDisplayName()} {DotnetupTheme.SuccessAccent(result.Install.Version.ToString().EscapeMarkup())}";
-            if (result.WasAlreadyInstalled)
-            {
-                alreadyInstalled.Add(installDetailLine);
-            }
-            else
-            {
-                installed.Add(installDetailLine);
-            }
-        }
-
-        EmitBatchSummaryLines(installed, alreadyInstalled, sharedPath);
-
-        if (batchResult.Failures.Count > 0)
-        {
-            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Error("The following installs failed:"));
-            foreach (var failure in batchResult.Failures)
-            {
-                SpectreAnsiConsole.MarkupLine(
-                    $"  {DotnetupTheme.Error($"{failure.Request.Request.Component.GetDisplayName()} {failure.Request.ResolvedVersion.ToString().EscapeMarkup()}: {failure.Exception.Message.EscapeMarkup()}")}");
-            }
-        }
-    }
-
-    private static void EmitBatchSummaryLines(List<string> installed, List<string> alreadyInstalled, string? sharedPath)
-    {
-        string escapedPath = sharedPath?.EscapeMarkup() ?? string.Empty;
-
-        if (installed.Count > 0)
-        {
-            SpectreAnsiConsole.MarkupLine($"Installed at {DotnetupTheme.SuccessAccent(escapedPath)}:");
-            foreach (var item in installed)
-            {
-                SpectreAnsiConsole.MarkupLine($"  {item}");
-            }
-        }
-
-        if (alreadyInstalled.Count > 0)
-        {
-            SpectreAnsiConsole.MarkupLine($"Already installed at {DotnetupTheme.SuccessAccent(escapedPath)}:");
-            foreach (var item in alreadyInstalled)
-            {
-                SpectreAnsiConsole.MarkupLine($"  {item}");
-            }
-        }
     }
 }

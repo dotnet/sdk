@@ -88,11 +88,36 @@ present and valid.
 
 ## Keep output useful
 
-- Use `--no-progress` when logs do not support terminal progress.
+- Redirected or CI output shows progress as plain lines (`--progress lines`).
+- Use `--no-progress` to print only one result line per component, in
+  request order, after the install.
+- Use `--progress json` when a program shows its own progress UI. See
+  [Progress events](#progress-events).
 - Use `--verbosity normal` for normal automation.
 - Use `--verbosity detailed` to diagnose resolution or installation.
 - Check the command exit code. Update commands can continue after an
   individual failure and report failure after processing other requirements.
+
+## Progress events
+
+With `--progress json`, stdout has one JSON progress event per line; all other
+output goes to stderr.
+
+```json
+{"version":1,"event":"started","task":1,"description":"Downloading .NET SDK 10.0.103"}
+{"version":1,"event":"progress","task":1,"description":"Downloading .NET SDK 10.0.103 (68.2 MB / 272.6 MB)","percent":25}
+{"version":1,"event":"finished","task":1,"description":"Downloaded .NET SDK 10.0.103 (272.6 MB / 272.6 MB)"}
+```
+
+| Field | Description |
+| --- | --- |
+| `version` | Increases only for incompatible changes. |
+| `event` | `started`, `progress`, or `finished`. Failed tasks get no `finished` event; use the exit code. |
+| `task` | Task ID, unique within one command. |
+| `description` | Display text. |
+| `percent` | Whole-number completion, on `progress` events only. |
+
+Ignore unknown fields.
 
 ## Coordinate writers
 

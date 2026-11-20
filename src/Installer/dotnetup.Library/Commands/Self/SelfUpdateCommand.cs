@@ -14,7 +14,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
 {
     private readonly string? _channel = result.GetValue(SelfCommandParser.ChannelOption);
     private readonly bool _force = result.GetValue(SelfCommandParser.ForceOption);
-    private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
+    private readonly ProgressMode _progress = CommonOptions.ResolveProgressMode(result);
     // Null unless --update-notifications was passed. Boolean options always have an implicit result,
     // so only an explicit one counts.
     private readonly bool? _updateNotifications = result.GetResult(SelfCommandParser.UpdateNotificationsOption) is { Implicit: false }
@@ -56,7 +56,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
             (release, destination) =>
             {
                 AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
-                SelfUpdateDownloadProgress.Run(_noProgress,
+                SelfUpdateDownloadProgress.Run(_progress,
                     progress => downloader.DownloadWithVerification(release, destination, progress));
             },
             coordinator)
