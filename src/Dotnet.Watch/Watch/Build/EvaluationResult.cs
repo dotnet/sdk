@@ -12,12 +12,14 @@ namespace Microsoft.DotNet.Watch;
 
 internal sealed class EvaluationResult(
     LoadedProjectGraph projectGraph,
+    ImmutableArray<ProjectInstance> designTimeBuiltProjects,
     IReadOnlyDictionary<ProjectInstanceId, ProjectInstance> restoredProjectInstances,
     IReadOnlyDictionary<string, FileItem> files,
     IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> staticWebAssetsManifests)
 {
     public IReadOnlyDictionary<string, FileItem> Files => files;
     public LoadedProjectGraph ProjectGraph => projectGraph;
+    public ImmutableArray<ProjectInstance> DesignTimeBuiltProjects => designTimeBuiltProjects;
     public ProjectBuildManager BuildManager => projectGraph.BuildManager;
 
     public readonly FilePathExclusions ItemExclusions
@@ -124,7 +126,7 @@ internal sealed class EvaluationResult(
 
         BuildReporter.ReportWatchedFiles(logger, fileItems);
 
-        return new EvaluationResult(projectGraph, restoredProjectInstances, fileItems, staticWebAssetManifests);
+        return new EvaluationResult(projectGraph, [.. buildResults.Select(result => result.ProjectInstance)], restoredProjectInstances, fileItems, staticWebAssetManifests);
     }
 
     // internal for testing
