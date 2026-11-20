@@ -3,6 +3,7 @@
 
 #if CLI_AOT
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Restore;
 
@@ -10,9 +11,13 @@ namespace Microsoft.DotNet.Cli.Commands.Build;
 
 internal static class AotBuildCommand
 {
-    internal static void ConfigureCommand(BuildCommandDefinition command) => command.SetAction(Execute);
+    internal static void ConfigureCommand(BuildCommandDefinition command)
+        => command.SetAction((parseResult, cancellationToken) => Execute(parseResult, cancellationToken));
 
     internal static int Execute(ParseResult parseResult) => Execute(parseResult, RunBuild);
+
+    private static int Execute(ParseResult parseResult, CancellationToken cancellationToken)
+        => Execute(parseResult, result => RunBuild(result, cancellationToken));
 
     internal static int Execute(ParseResult parseResult, Func<ParseResult, int> runBuild, string? currentDirectory = null)
     {
@@ -58,12 +63,14 @@ internal static class AotBuildCommand
         return runBuild(parseResult);
     }
 
-    private static int RunBuild(ParseResult parseResult)
+    private static int RunBuild(ParseResult parseResult) => RunBuild(parseResult, CancellationToken.None);
+
+    private static int RunBuild(ParseResult parseResult, CancellationToken cancellationToken)
     {
         var command = (RestoringCommand)BuildCommand.FromParseResult(
             parseResult, msbuildPath: null, CommandServices.CreateDefault());
         AotMSBuildServerCommand.ConfigureServerClient(command, "build");
-        return command.Execute();
+        return command.Execute(cancellationToken);
     }
 }
 #endif

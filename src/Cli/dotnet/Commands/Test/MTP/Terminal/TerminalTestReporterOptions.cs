@@ -25,6 +25,10 @@ internal sealed class TerminalTestReporterOptions
     /// </summary>
     public bool ShowAssemblyStartAndComplete { get; init; }
 
+    public bool ContextualModuleOutput { get; init; }
+
+    public Func<string, string?, string>? ModuleDisplayName { get; init; }
+
     /// <summary>
     /// Gets minimum amount of tests to run.
     /// </summary>

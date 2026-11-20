@@ -224,7 +224,7 @@ class Program
 
             ICommand toolCommand = toolCommandSpec.ToCommand().CaptureStdOut();
 
-            var toolResult = toolCommand.Execute();
+            var toolResult = toolCommand.Execute(TestContext.CancellationToken);
 
             return toolResult;
         }

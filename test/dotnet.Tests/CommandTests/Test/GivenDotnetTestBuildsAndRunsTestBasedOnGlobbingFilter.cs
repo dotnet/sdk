@@ -16,6 +16,50 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [DataRow("false")]
+        [DataRow("true")]
+        public void ParallelCiRun_AttributesOutputAndKeepsTheFinalFailureVerdict(string enableAot)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            foreach (string project in new[] { "TestProject", "OtherTestProject" })
+            {
+                string path = Path.Combine(testInstance.Path, project, "Program.cs");
+                string source = File.ReadAllText(path);
+                File.WriteAllText(path, source.Replace(
+                    "Console.WriteLine(new string('a', 10000));",
+                    $"Console.WriteLine(\"RAW_{project}\"); Console.WriteLine(\"##vso[task.logissue type=warning;]COMMAND_{project}\");",
+                    StringComparison.Ordinal));
+            }
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("TF_BUILD", "true")
+                .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", enableAot)
+                .Execute("--solution", "MultiTestProjectSolutionWithTests.sln", "-c", "Debug",
+                    "--no-ansi", "--no-progress", "--max-parallel-test-modules", "2");
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+            string[] lines = (result.StdOut ?? string.Empty).Split('\n').Select(line => line.TrimEnd('\r')).ToArray();
+            foreach (string project in new[] { "TestProject", "OtherTestProject" })
+            {
+                lines.Should().Contain(line => line.Contains($"[{project} {ToolsetInfo.CurrentTargetFramework}") &&
+                    line.Contains($"RAW_{project}"));
+                lines.Should().Contain($"##vso[task.logissue type=warning;]COMMAND_{project}");
+            }
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                string output = result.StdOut ?? string.Empty;
+                lines.Should().Contain(line => line.Contains($"[TestProject {ToolsetInfo.CurrentTargetFramework}") &&
+                    line.Contains("Test2"), "the failing test must retain its module identity");
+                output.Should().Contain("failed: 1").And.Contain("skipped: 2");
+                output.LastIndexOf("Test run summary: Failed!", StringComparison.Ordinal)
+                    .Should().BeGreaterThan(output.LastIndexOf("RAW_TestProject", StringComparison.Ordinal));
+            }
+        }
+
+        [TestMethod]
         public void RunTestProjectWithFilterOfDll_ShouldReturnExitCodeSuccess()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
@@ -30,6 +74,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TF_BUILD", "false")
                                     .Execute("--test-modules", $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/TestProject.dll".Replace('/', Path.DirectorySeparatorChar));
 
             // Assert that the bin folder hasn't been modified
@@ -72,6 +117,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TF_BUILD", "false")
                                     .Execute("--test-modules", filterExpression);
 
             // Assert that the bin folder hasn't been modified
@@ -109,6 +155,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TF_BUILD", "false")
                                     .WithTraceOutput()
                                     .Execute("--test-modules", $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/TestProject.dll".Replace('/', Path.DirectorySeparatorChar),
                                     "--root-directory", testInstance.TestRoot);

@@ -37,7 +37,12 @@ public class ImagePublisherTests
         var api = new Mock<IRegistryAPI>(MockBehavior.Strict);
         api.SetupGet(a => a.Manifest).Returns(new DefaultManifestOperations(registryUri, registryName, client, NullLogger.Instance));
         api.SetupGet(a => a.Blob).Returns(new DefaultBlobOperations(registryUri, registryName, client, NullLogger.Instance));
-        var registry = new Registry(registryName, NullLogger.Instance, api.Object, retryDelayProvider: () => TimeSpan.Zero);
+        var registry = new Registry(
+            registryName,
+            NullLogger.Instance,
+            api.Object,
+            TestContext.CancellationToken,
+            retryDelayProvider: () => TimeSpan.Zero);
         var source = new SourceImageReference(registry, "base/image", "latest", null);
         BuiltImage image = new()
         {
@@ -62,7 +67,7 @@ public class ImagePublisherTests
             DestinationImageReference destination = localArchive
                 ? new(new ArchiveFileRegistry(archivePath), "test/image", ["latest"])
                 : new(registry, "test/image", ["latest"]);
-            var telemetry = new Telemetry(source, destination, task.Log);
+            var telemetry = new Telemetry(source, destination, task.Log, TestContext.CancellationToken);
             if (multiArch)
             {
                 MultiArchImage index = new()
@@ -130,7 +135,12 @@ public class ImagePublisherTests
         var api = new Mock<IRegistryAPI>(MockBehavior.Strict);
         api.SetupGet(a => a.Manifest).Returns(new DefaultManifestOperations(registryUri, registryName, client, NullLogger.Instance));
         api.SetupGet(a => a.Blob).Returns(new DefaultBlobOperations(registryUri, registryName, client, NullLogger.Instance));
-        var registry = new Registry(registryName, NullLogger.Instance, api.Object, retryDelayProvider: () => TimeSpan.Zero);
+        var registry = new Registry(
+            registryName,
+            NullLogger.Instance,
+            api.Object,
+            TestContext.CancellationToken,
+            retryDelayProvider: () => TimeSpan.Zero);
         var source = new SourceImageReference(registry, "base/image", "latest", null);
         BuiltImage image = new()
         {
@@ -155,7 +165,7 @@ public class ImagePublisherTests
             DestinationImageReference destination = localArchive
                 ? new(new ArchiveFileRegistry(archivePath), "test/image", ["latest"])
                 : new(registry, "test/image", ["latest"]);
-            var telemetry = new Telemetry(source, destination, task.Log);
+            var telemetry = new Telemetry(source, destination, task.Log, TestContext.CancellationToken);
 
             await ImagePublisher.PublishImageAsync(image, source, destination, false, task.Log, telemetry, TestContext.CancellationToken);
 

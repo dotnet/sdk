@@ -7,6 +7,7 @@ using System.CommandLine.Parsing;
 using System.Globalization;
 using System.Security;
 using Microsoft.DotNet.Cli.Commands.Clean;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
 using CleanCommand = Microsoft.DotNet.Cli.Commands.Clean.CleanCommand;
@@ -18,11 +19,14 @@ internal static class AotMSBuildServerCommand
 {
     private static readonly Option s_propertyOption = CommonOptions.CreatePropertyOption();
 
-    internal static void ConfigureCommand(RestoreCommandDefinition command) => command.SetAction(ExecuteRestore);
+    internal static void ConfigureCommand(RestoreCommandDefinition command)
+        => command.SetAction((parseResult, cancellationToken) => ExecuteRestore(parseResult, cancellationToken));
 
-    internal static void ConfigureCommand(CleanCommandDefinition command) => command.SetAction(ExecuteClean);
+    internal static void ConfigureCommand(CleanCommandDefinition command)
+        => command.SetAction((parseResult, cancellationToken) => ExecuteClean(parseResult, cancellationToken));
 
-    private static int ExecuteRestore(ParseResult parseResult) => ExecuteRestore(parseResult, RunRestore);
+    private static int ExecuteRestore(ParseResult parseResult, CancellationToken cancellationToken)
+        => ExecuteRestore(parseResult, result => RunRestore(result, cancellationToken));
 
     internal static int ExecuteRestore(ParseResult parseResult, Func<ParseResult, int> run, string? currentDirectory = null)
     {
@@ -63,15 +67,16 @@ internal static class AotMSBuildServerCommand
         return run(parseResult);
     }
 
-    private static int RunRestore(ParseResult parseResult)
+    private static int RunRestore(ParseResult parseResult, CancellationToken cancellationToken)
     {
         var command = (MSBuildForwardingApp)RestoreCommand.FromParseResult(
             parseResult, msbuildPath: null, CommandServices.CreateDefault());
         ConfigureServerClient(command, "restore");
-        return command.Execute();
+        return command.Execute(cancellationToken);
     }
 
-    private static int ExecuteClean(ParseResult parseResult) => ExecuteClean(parseResult, RunClean);
+    private static int ExecuteClean(ParseResult parseResult, CancellationToken cancellationToken)
+        => ExecuteClean(parseResult, result => RunClean(result, cancellationToken));
 
     internal static int ExecuteClean(ParseResult parseResult, Func<ParseResult, int> run, string? currentDirectory = null)
     {
@@ -97,12 +102,12 @@ internal static class AotMSBuildServerCommand
         return run(parseResult);
     }
 
-    private static int RunClean(ParseResult parseResult)
+    private static int RunClean(ParseResult parseResult, CancellationToken cancellationToken)
     {
         var command = (MSBuildForwardingApp)CleanCommand.FromParseResult(
             parseResult, msbuildPath: null, CommandServices.CreateDefault());
         ConfigureServerClient(command, "clean");
-        return command.Execute();
+        return command.Execute(cancellationToken);
     }
 
     internal static void ConfigureServerClient(MSBuildForwardingApp command, string commandName)

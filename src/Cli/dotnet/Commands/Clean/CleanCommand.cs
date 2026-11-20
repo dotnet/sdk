@@ -61,11 +61,11 @@ public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath, C
 #endif
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
 #if !CLI_AOT
         parseResult.HandleDebugSwitch();
 #endif
-        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);
     }
 }

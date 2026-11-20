@@ -90,24 +90,24 @@ internal sealed class Registry
     /// </summary>
     public string RegistryName { get; }
 
-    internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
-        this(new Uri($"https://{registryName}"), logger, registryAPI, settings, retryDelayProvider)
+    internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, CancellationToken cancellationToken, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
+        this(new Uri($"https://{registryName}"), logger, registryAPI, cancellationToken, settings, retryDelayProvider)
     { }
 
-    internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
-        this(new Uri($"https://{registryName}"), logger, new RegistryApiFactory(mode), settings)
+    internal Registry(string registryName, ILogger logger, RegistryMode mode, CancellationToken cancellationToken, RegistrySettings? settings = null) :
+        this(new Uri($"https://{registryName}"), logger, new RegistryApiFactory(mode), cancellationToken, settings)
     { }
 
 
-    internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
-        this(baseUri, logger, new RegistryApiFactory(registryAPI), settings, retryDelayProvider)
+    internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, CancellationToken cancellationToken, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
+        this(baseUri, logger, new RegistryApiFactory(registryAPI), cancellationToken, settings, retryDelayProvider)
     { }
 
-    internal Registry(Uri baseUri, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
-        this(baseUri, logger, new RegistryApiFactory(mode), settings)
+    internal Registry(Uri baseUri, ILogger logger, RegistryMode mode, CancellationToken cancellationToken, RegistrySettings? settings = null) :
+        this(baseUri, logger, new RegistryApiFactory(mode), cancellationToken, settings)
     { }
 
-    private Registry(Uri baseUri, ILogger logger, RegistryApiFactory factory, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null)
+    private Registry(Uri baseUri, ILogger logger, RegistryApiFactory factory, CancellationToken cancellationToken, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null)
     {
         RegistryName = DeriveRegistryName(baseUri);
 
@@ -119,7 +119,7 @@ internal sealed class Registry
         BaseUri = baseUri;
 
         _logger = logger;
-        _settings = settings ?? new RegistrySettings(RegistryName);
+        _settings = settings ?? new RegistrySettings(cancellationToken, RegistryName);
         _registryAPI = factory.Create(RegistryName, BaseUri, logger, _settings.IsInsecure);
 
         _retryDelayProvider = retryDelayProvider ?? (() => TimeSpan.FromSeconds(1));

@@ -4,6 +4,7 @@
 #if CLI_AOT
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
@@ -21,15 +22,16 @@ internal static class AotTestCommand
     {
         if (command is TestCommandDefinition.MicrosoftTestingPlatform mtp)
         {
-            mtp.SetAction(Execute);
+            mtp.SetAction((parseResult, cancellationToken) => Execute(parseResult, cancellationToken));
         }
         else if (command is TestCommandDefinition.VSTest vstest)
         {
-            vstest.SetAction(ExecuteVSTest);
+            vstest.SetAction((parseResult, cancellationToken) => ExecuteVSTest(parseResult, cancellationToken));
         }
     }
 
-    private static int ExecuteVSTest(ParseResult parseResult) => ExecuteVSTest(parseResult, TestCommand.Run);
+    private static int ExecuteVSTest(ParseResult parseResult, CancellationToken cancellationToken)
+        => ExecuteVSTest(parseResult, result => TestCommand.Run(result, cancellationToken));
 
     internal static int ExecuteVSTest(ParseResult parseResult, Func<ParseResult, int> run, string? currentDirectory = null)
     {
@@ -90,7 +92,7 @@ internal static class AotTestCommand
                 || value.Equals("true", StringComparison.OrdinalIgnoreCase));
     }
 
-    internal static int Execute(ParseResult parseResult)
+    internal static int Execute(ParseResult parseResult, CancellationToken cancellationToken)
     {
         if (parseResult.CommandResult.Command is not TestCommandDefinition.MicrosoftTestingPlatform definition
             || string.IsNullOrWhiteSpace(parseResult.GetValue(definition.TestModulesFilterOption))
@@ -102,7 +104,7 @@ internal static class AotTestCommand
         }
 
         Reporter.Verbose.WriteLine("AOT test tier: TestModules.");
-        return new MicrosoftTestingPlatformTestCommand().Run(parseResult, isHelp: false);
+        return new MicrosoftTestingPlatformTestCommand().Run(parseResult, isHelp: false, cancellationToken);
     }
 
     private static bool HasUnsupportedRootOption(ParseResult parseResult)

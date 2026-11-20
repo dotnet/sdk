@@ -75,7 +75,7 @@ public sealed class ContainerdStoreUnavailableCondition : ConditionBaseAttribute
     public override bool IsConditionMet
         => DockerCliStatus.IsAvailable
            && DockerCliStatus.Runtime != ContainerRuntimeKind.Podman
-           && !DockerContainerRuntime.IsContainerdStoreEnabled();
+           && !DockerContainerRuntime.IsContainerdStoreEnabled(CancellationToken.None);
 }
 
 public sealed class DockerSupportsArchCondition : ConditionBaseAttribute
@@ -103,7 +103,8 @@ internal static class WslcCliStatus
 {
     private static readonly Lazy<bool> s_isAvailable = new(
         () => OperatingSystem.IsWindows()
-              && new ContainerRuntime(ContainerRuntime.WslcCommand, new Microsoft.NET.TestFramework.TestLoggerFactory()).IsAvailable(),
+              && new ContainerRuntime(ContainerRuntime.WslcCommand, new Microsoft.NET.TestFramework.TestLoggerFactory())
+                  .IsAvailableAsync(CancellationToken.None).GetAwaiter().GetResult(),
         LazyThreadSafetyMode.ExecutionAndPublication);
 
     public static bool IsAvailable => s_isAvailable.Value;
@@ -113,7 +114,8 @@ internal static class MacOSContainerCliStatus
 {
     private static readonly Lazy<bool> s_isAvailable = new(
         () => OperatingSystem.IsMacOS()
-              && new ContainerRuntime(ContainerRuntime.MacOSContainerCommand, new Microsoft.NET.TestFramework.TestLoggerFactory()).IsAvailable(),
+              && new ContainerRuntime(ContainerRuntime.MacOSContainerCommand, new Microsoft.NET.TestFramework.TestLoggerFactory())
+                  .IsAvailableAsync(CancellationToken.None).GetAwaiter().GetResult(),
         LazyThreadSafetyMode.ExecutionAndPublication);
 
     public static bool IsAvailable => s_isAvailable.Value;
@@ -124,7 +126,8 @@ internal static class PodmanCliStatus
     private static readonly Lazy<bool> s_isAvailable = new(
         () => new ContainerRuntime(
             ContainerRuntime.PodmanCommand,
-            new Microsoft.NET.TestFramework.TestLoggerFactory()).IsAvailable(),
+            new Microsoft.NET.TestFramework.TestLoggerFactory())
+            .IsAvailableAsync(CancellationToken.None).GetAwaiter().GetResult(),
         LazyThreadSafetyMode.ExecutionAndPublication);
 
     public static bool IsAvailable => s_isAvailable.Value;
@@ -148,8 +151,8 @@ internal static class DockerCliStatus
     private static (bool IsAvailable, ContainerRuntimeKind Runtime) GetStatus()
     {
         ContainerRuntime runtime = new(new Microsoft.NET.TestFramework.TestLoggerFactory(), probePlatformNativeCli: false);
-        bool isAvailable = runtime.IsAvailable();
-        return (isAvailable, runtime.GetTelemetryValue());
+        bool isAvailable = runtime.IsAvailableAsync(CancellationToken.None).GetAwaiter().GetResult();
+        return (isAvailable, runtime.GetTelemetryValue(CancellationToken.None));
     }
 }
 
@@ -159,7 +162,7 @@ internal static class MultiArchLocalRegistryTestData
     {
         if (DockerCliStatus.IsAvailable
             && DockerCliStatus.Runtime == ContainerRuntimeKind.Docker
-            && DockerContainerRuntime.IsContainerdStoreEnabled())
+            && DockerContainerRuntime.IsContainerdStoreEnabled(CancellationToken.None))
         {
             yield return KnownLocalRegistryTypes.Docker;
         }

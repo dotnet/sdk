@@ -61,6 +61,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
 
         public Task<string> DownloadPackageAsync(PackageId packageId,
+            CancellationToken cancellationToken,
             NuGetVersion? packageVersion = null,
             PackageSourceLocation? packageSourceLocation = null,
             bool includePreview = false,
@@ -92,7 +93,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(path);
         }
 
-        public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
+        public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder, CancellationToken cancellationToken)
         {
             ExtractCallParams.Add((packagePath, targetFolder));
             if (_manifestDownload)
@@ -117,6 +118,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(
             PackageId packageId,
             int numberOfResults,
+            CancellationToken cancellationToken,
             PackageSourceLocation? packageSourceLocation = null,
             bool includePreview = false)
         {
@@ -132,6 +134,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         public Task<NuGetVersion> GetLatestPackageVersion(
             PackageId packageId,
+            CancellationToken cancellationToken,
             PackageSourceLocation? packageSourceLocation = null,
             bool includePreview = false)
         {
@@ -148,16 +151,17 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         public async Task<NuGetVersion> GetBestPackageVersionAsync(
             PackageId packageId,
             VersionRange versionRange,
+            CancellationToken cancellationToken,
             PackageSourceLocation? packageSourceLocation = null)
         {
-            return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation)).version;
+            return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, cancellationToken, packageSourceLocation)).version;
         }
 
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
             PackageId packageId,
             VersionRange versionRange,
-            PackageSourceLocation? packageSourceLocation = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken,
+            PackageSourceLocation? packageSourceLocation = null)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -178,6 +182,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
 
         public Task<string> GetPackageUrl(PackageId packageId,
+            CancellationToken cancellationToken,
             NuGetVersion packageVersion,
             PackageSourceLocation? packageSourceLocation = null,
             bool includePreview = false)

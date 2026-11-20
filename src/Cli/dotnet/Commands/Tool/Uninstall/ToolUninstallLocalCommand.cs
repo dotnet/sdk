@@ -38,7 +38,7 @@ internal sealed class ToolUninstallLocalCommand : CommandBase<ToolUninstallComma
         _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         (FilePath? manifestFileOptional, string warningMessage) =
             _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, _packageId);

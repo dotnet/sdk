@@ -14,18 +14,19 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         [TestMethod]
         [CoreMSBuildOnly]
-        [DataRow("false", null, true)]
-        [DataRow("false", "true", true)]
-        [DataRow("false", "false", false)]
-        [DataRow("true", null, false)]
-        [DataRow("true", "false", false)]
-        public void Restore_DownloadsCrossgen2ForCoreClrBrowserDefault(string useMonoRuntime, string readyToRun, bool expectCrossgen2)
+        [DataRow("browser-wasm", null, true)]
+        [DataRow("browser-wasm", "true", true)]
+        [DataRow("browser-wasm", "false", false)]
+        [DataRow("wasi-wasm", null, true)]
+        [DataRow("wasi-wasm", "true", true)]
+        [DataRow("wasi-wasm", "false", false)]
+        public void Restore_DownloadsCrossgen2ForWasmDefault(string runtimeIdentifier, string readyToRun, bool expectCrossgen2)
         {
-            var testInstance = CreateAspNetSdkTestAsset("VanillaWasm", identifier: $"{useMonoRuntime}_{readyToRun ?? "default"}")
+            var testInstance = CreateAspNetSdkTestAsset("VanillaWasm", identifier: $"{runtimeIdentifier}_{readyToRun ?? "default"}")
                 .WithProjectChanges((project, doc) =>
                 {
                     var properties = new XElement("PropertyGroup",
-                        new XElement("UseMonoRuntime", useMonoRuntime),
+                        new XElement("RuntimeIdentifier", runtimeIdentifier),
                         // Native relinking independently requests crossgen2; isolate the ReadyToRun default.
                         new XElement("WasmBuildNative", "false"),
                         new XElement("PrunePackageTargetingPackRoots", "$(NetCoreTargetingPackRoot)"),
@@ -37,12 +38,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var restore = CreateRestoreCommand(testInstance);
             restore.WithEnvironmentVariable("DOTNETSDK_WORKLOAD_PACK_ROOTS", string.Empty);
-            if (useMonoRuntime == "true")
-            {
-                ExecuteCommand(restore).Should().Fail().And.HaveStdOutContaining("NETSDK1242");
-                return;
-            }
-
             ExecuteCommand(restore).Should().Pass();
 
             using var assets = JsonDocument.Parse(File.ReadAllText(Path.Combine(testInstance.Path, "obj", "project.assets.json")));
@@ -55,16 +50,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         [TestMethod]
         [CoreMSBuildOnly]
-        [DataRow("wasi-wasm", ToolsetInfo.CurrentTargetFramework)]
-        [DataRow("browser-wasm", "net11.0")]
-        public void Crossgen2PackDefault_DoesNotApplyToOtherTargets(string runtimeIdentifier, string targetFramework)
+        public void Crossgen2PackDefault_DoesNotApplyToOlderTargetFramework()
         {
-            var testInstance = CreateAspNetSdkTestAsset("VanillaWasm", identifier: $"{runtimeIdentifier}_{targetFramework}")
+            var testInstance = CreateAspNetSdkTestAsset("VanillaWasm")
                 .WithProjectChanges((project, doc) => doc.Root.Add(
                     new XElement("PropertyGroup",
-                        new XElement("UseMonoRuntime", "false"),
-                        new XElement("RuntimeIdentifier", runtimeIdentifier),
-                        new XElement("TargetFramework", targetFramework))));
+                        new XElement("TargetFramework", "net11.0"))));
 
             var command = new MSBuildCommand(testInstance, string.Empty);
             command.WithWorkingDirectory(testInstance.TestRoot);

@@ -32,6 +32,9 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 /// </remarks>
 public class MSBuildForwardingApp : CommandBase
 {
+    // MSBuild cancellation needs time to finish nodes and close loggers such as the binary logger.
+    internal static readonly TimeSpan BuildSoftCancellationTimeout = TimeSpan.FromSeconds(2);
+
     private readonly MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
 #if CLI_AOT
     private readonly string? _telemetryLoggerArgument;
@@ -146,35 +149,38 @@ public class MSBuildForwardingApp : CommandBase
 
     internal string[] GetArgumentTokensToMSBuild() => _forwardingAppWithoutLogging.GetAllArguments();
 
-    public override int Execute() => Execute(workingDirectory: null);
+    public override int Execute(CancellationToken cancellationToken) => Execute(workingDirectory: null, cancellationToken);
 
-    internal virtual int ExecuteOutOfProc(string workingDirectory) => Execute(workingDirectory);
+    internal virtual int ExecuteOutOfProc(string workingDirectory, CancellationToken cancellationToken) => Execute(workingDirectory, cancellationToken);
 
 #if CLI_AOT
     internal void UseMSBuildServerClient(string commandName) => _msbuildServerCommandName = commandName;
 #endif
 
-    private int Execute(string? workingDirectory)
+    private int Execute(string? workingDirectory, CancellationToken cancellationToken)
     {
+        using IDisposable softCancellationTimeout =
+            ProcessLifecycle.OverrideSoftCancellationTimeout(BuildSoftCancellationTimeout);
+
 #if CLI_AOT
         if (_msbuildServerCommandName is not null && workingDirectory is null && _forwardingAppWithoutLogging.CanSetEnvironmentVariablesInProcess)
         {
-            return ExecuteServerClient();
+            return ExecuteServerClient(cancellationToken);
         }
 #endif
-        return ExecuteForwarded(workingDirectory);
+        return ExecuteForwarded(workingDirectory, cancellationToken);
     }
 
-    private int ExecuteForwarded(string? workingDirectory)
+    private int ExecuteForwarded(string? workingDirectory, CancellationToken cancellationToken)
     {
         // Ignore Ctrl-C for the remainder of the command's execution
         // Forwarding commands will just spawn the child process and exit
         Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
-        return _forwardingAppWithoutLogging.Execute(workingDirectory);
+        return _forwardingAppWithoutLogging.Execute(workingDirectory, cancellationToken);
     }
 
 #if CLI_AOT
-    private int ExecuteServerClient()
+    private int ExecuteServerClient(CancellationToken cancellationToken)
     {
         using var activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
         DateTime startedAt = DateTime.UtcNow;
@@ -199,7 +205,7 @@ public class MSBuildForwardingApp : CommandBase
                 Console.InputEncoding = Encoding.UTF8;
             }
         }
-        using var cancellationSource = new CancellationTokenSource();
+        using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         ConsoleCancelEventHandler cancellationHandler = (_, e) =>
         {
             if (e.SpecialKey != ConsoleSpecialKey.ControlBreak)
@@ -230,7 +236,10 @@ public class MSBuildForwardingApp : CommandBase
             Reporter.Verbose.WriteLine("AOT build server client: request completed.");
         }
 
-        return CompleteServerClientResult(result, cancellationSource.IsCancellationRequested, () => ExecuteForwarded(workingDirectory: null));
+        return CompleteServerClientResult(
+            result,
+            cancellationSource.IsCancellationRequested,
+            () => ExecuteForwarded(workingDirectory: null, cancellationToken));
     }
 
     internal static int CompleteServerClientResult(MSBuildClientExitResult result, bool cancellationRequested, Func<int> forward)

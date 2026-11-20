@@ -183,11 +183,12 @@ public static class ContainerHelpers
     internal static string GetManifestMediaType(
         string defaultManifestMediaType,
         KnownImageFormats? imageFormat,
-        DestinationImageReference destinationImageReference)
+        DestinationImageReference destinationImageReference,
+        CancellationToken cancellationToken)
     {
         if (destinationImageReference.LocalRegistry is ContainerRuntime runtime)
         {
-            return runtime.GetManifestMediaType(defaultManifestMediaType, imageFormat);
+            return runtime.GetManifestMediaType(defaultManifestMediaType, imageFormat, cancellationToken);
         }
 
         return ContainerRuntimeBase.GetDefaultManifestMediaType(defaultManifestMediaType, imageFormat);

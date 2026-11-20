@@ -72,21 +72,21 @@ public static class RestoreCommand
     public static MSBuildForwardingApp CreateForwarding(MSBuildArgs msbuildArgs, string? msbuildPath, CommandServices services)
         => RestoringCommand.CreateRestoreForwarding(msbuildArgs, msbuildPath, services);
 
-    public static int Run(string[] args)
+    public static int Run(string[] args, CancellationToken cancellationToken)
     {
 #if !CLI_AOT
         DebugHelper.HandleDebugSwitch(ref args);
 #endif
 
-        return FromArgs(args, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromArgs(args, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
 #if !CLI_AOT
         parseResult.HandleDebugSwitch();
 #endif
 
-        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);
     }
 }

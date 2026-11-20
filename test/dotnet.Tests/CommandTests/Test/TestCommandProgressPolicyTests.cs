@@ -12,6 +12,47 @@ namespace Microsoft.DotNet.Cli.Test.Tests;
 public sealed class TestCommandProgressPolicyTests : SdkTest
 {
     [TestMethod]
+    [DataRow("true", 2, false, false, false, false, true)]
+    [DataRow("TRUE", 2, false, false, false, true, true)]
+    [DataRow(null, 2, false, false, false, false, false)]
+    [DataRow("false", 2, false, false, false, false, false)]
+    [DataRow("true", 1, false, false, false, false, false)]
+    [DataRow("true", 2, true, false, false, false, false)]
+    [DataRow("true", 2, false, true, false, false, false)]
+    [DataRow("true", 2, false, false, true, false, false)]
+    public void ContextualModuleOutput_OnlyForParallelAzurePipelineRuns(
+        string? azurePipelines, int parallelism, bool help, bool discovery, bool collectMap, bool affected, bool expected)
+    {
+        var options = new TestOptions(help, discovery, TestListFormat.Text)
+        {
+            CollectTestMap = collectMap,
+            AffectedTests = affected,
+        };
+        MicrosoftTestingPlatformTestCommand.ShouldUseContextualModuleOutput(azurePipelines, parallelism, options)
+            .Should().Be(expected);
+    }
+
+    [TestMethod]
+    public void ModuleDisplayNames_KeepDistinctSameFrameworkModulesAndShortenOtherNames()
+    {
+        string first = Path.Combine("first", "net8.0", "tests.dll");
+        string second = Path.Combine("second", "net8.0", "tests.dll");
+        string third = Path.Combine("first", "net9.0", "tests.dll");
+        TestModule[] modules =
+        [
+            CreateTestModule() with { TargetPath = first, TargetFramework = "net8.0" },
+            CreateTestModule() with { TargetPath = second, TargetFramework = "net8.0" },
+            CreateTestModule() with { TargetPath = third, TargetFramework = "net9.0" },
+        ];
+        Func<string, string?, string> displayName = MicrosoftTestingPlatformTestCommand.CreateModuleDisplayNameSelector(modules);
+
+        displayName(first, "net8.0").Should().Be(first);
+        displayName(second, "net8.0").Should().Be(second);
+        displayName(third, "net9.0").Should().Be("tests");
+        displayName(third, null).Should().Be(third);
+    }
+
+    [TestMethod]
     [DataRow("--progress off")]
     [DataRow("--progress=FaLsE")]
     [DataRow("--progress:disable")]

@@ -199,7 +199,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var toolUpdateCommand = new Cli.Commands.Tool.Update.ToolUpdateCommand(result);
 
-            Action a = () => toolUpdateCommand.Execute();
+            Action a = () => toolUpdateCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(Cli.CliStrings.PackageIdentityArgumentVersionOptionConflict);
