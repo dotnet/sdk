@@ -1,0 +1,59 @@
+name: Validate Agent Skills
+
+# Runs .github/skills/ValidateSkill.cs against every skill directory in
+# .github/skills and .claude/skills. See .github/skills/AGENTS.md.
+
+on:
+  pull_request:
+    paths:
+      - '.github/skills/**'
+      - '.claude/skills/**'
+      - '.github/workflows/validate-skills.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  validate-skills:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install repo .NET SDK
+        run: |
+          ./eng/common/dotnet.sh --version
+          echo "$PWD/.dotnet" >> "$GITHUB_PATH"
+
+      - name: Validate skills
+        shell: pwsh
+        run: |
+          $skillDirs = Get-ChildItem -Path .github/skills, .claude/skills -Directory -ErrorAction SilentlyContinue
+          if (-not $skillDirs) {
+            Write-Output '::error::No skill directories found.'
+            exit 1
+          }
+
+          $failed = @()
+          foreach ($dir in $skillDirs) {
+            $relativeDir = [IO.Path]::GetRelativePath($PWD, $dir.FullName).Replace('\', '/')
+            $output = dotnet .github/skills/ValidateSkill.cs $dir.FullName 2>&1
+            if ($LASTEXITCODE -eq 0) {
+              Write-Output "${relativeDir}: $($output -join ' ')"
+            }
+            else {
+              $failed += $relativeDir
+              Write-Output "::error file=$relativeDir/SKILL.md::$($output -join ' ')"
+            }
+          }
+
+          if ($failed.Count -gt 0) {
+            Write-Output "Skill validation failed for $($failed.Count) of $($skillDirs.Count) skill(s). Run 'dotnet .github/skills/ValidateSkill.cs <skill-dir>' locally to reproduce."
+            exit 1
+          }

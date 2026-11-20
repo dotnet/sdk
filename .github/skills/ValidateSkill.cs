@@ -5,6 +5,8 @@
 
 #:property ManagePackageVersionsCentrally=false
 #:property PublishAot=false
+// The repo-pinned SDK may only include a newer runtime than its default file-based app target.
+#:property RollForward=LatestMajor
 #:package YamlDotNet@16.3.0
 
 using YamlDotNet.Serialization;
