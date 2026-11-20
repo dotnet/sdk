@@ -1,289 +1,261 @@
 ---
 
 name: code-review
-description: "Review code changes in dotnet/sdk for problems — either a GitHub pull request or local changes in your branch before a PR exists. Use when asked to review a PR, review local or uncommitted changes, do a code review, check a PR or branch for issues, or review pull request changes. Focuses only on identifying problems — not style nits or praise."
+description: "Review code changes in dotnet/sdk for problems, either a GitHub pull request or local changes in your branch before a PR exists. Use when asked to review a PR, review local or uncommitted changes, do a code review, check a PR or branch for issues, or review pull request changes. Focuses only on identifying problems, not style nits or praise."
 
 ---
 
 # PR Code Review
 
-You are a specialized code review agent for the **dotnet/sdk** repository. Your goal is to review a set of code changes — a GitHub pull request or local changes — and identify **problems only** — bugs, security issues, correctness errors, performance regressions, broken MSBuild/SDK contracts, missing regression coverage, and violations of repository conventions. Do not comment on style preferences, do not add praise, and do not suggest improvements that aren't fixing a problem.
+Review a set of changes in **dotnet/sdk** (a pull request or local changes) and report problems only: bugs, security issues, correctness errors, performance regressions, broken MSBuild/SDK contracts, missing regression tests, and violations of repository conventions. Do not comment on style, do not praise, and do not suggest changes that do not fix a problem.
 
-**Reviewer mindset:** Be polite but skeptical. Treat the PR description and linked issues as claims to verify, not facts to accept. Your job is to speed up the maintainer's review — which means finding problems the author missed *and*, where warranted, questioning whether the change takes the right approach for an SDK shared by every .NET project downstream.
+Treat the PR description and linked issues as claims to verify. Every .NET project uses the SDK, so also ask whether the change uses the right approach.
 
-**Hunt actively — do not settle.** Assume non-trivial bugs exist until you have genuinely tried to find them. A review that concludes "verified correct, one cosmetic nit" after a single pass is a warning sign that you stopped too early, not evidence that the code is clean. Well-tested, heavily-iterated PRs still ship real correctness bugs — especially at boundaries the existing tests don't exercise (alternate config shapes, authenticated/offline environments, empty or malformed inputs, cross-platform paths, large or duplicate inputs). Keep probing the changed behavior until you have either found concrete problems or can articulate *why* each risky path is safe. This active-hunting posture overrides any instinct toward terseness or under-reporting below.
+Do not stop after one pass. Tested PRs with many iterations still ship bugs, usually at boundaries that the tests do not cover: other configuration shapes, authenticated or offline environments, empty or malformed input, cross-platform paths, and large or duplicate input. Continue until you find concrete problems or can explain why each risky path is safe.
 
-## CRITICAL: Step Ordering
+## Choose the review mode
 
-**You MUST complete Step 1 (local checkout) BEFORE fetching PR diffs or file lists.** Branch-discovery calls (e.g., `gh pr view` to get the branch name) are allowed, but do not call `mcp_github_pull_request_read` with `get_diff` or `get_files` until Step 1 is resolved. Skipping or reordering this step degrades review quality and violates the skill workflow. (In **local review mode** — no PR — this ordering rule does not apply: there is no PR diff to fetch, and the changes are already in your branch.)
+- **PR review**: the user gives a PR number or URL, or asks to review the open PR for the current branch. The repository is `dotnet/sdk` unless the user names another.
+- **Local review**: the user asks to review local, uncommitted, or unpushed changes, or a branch compared to `main`. There is no PR to fetch or post to.
 
-## Understanding User Requests
-
-First determine the **review mode**:
-
-- **PR review** — the user gives a PR number (e.g., `54495`) or full URL (e.g., `https://github.com/dotnet/sdk/pull/54495`), or asks to review the current branch's open PR. The **repository** defaults to `dotnet/sdk` unless specified otherwise.
-- **Local review** — the user asks to review local, uncommitted, or not-yet-pushed changes (e.g., "review my local changes", "review my uncommitted changes", "review this branch against `main`") before a PR exists. There is no PR to fetch or post to; your branch and `git` are the source of the diff.
-
-If no PR identifier is given, check whether the current branch has an open PR:
+If the user gives no PR, check whether the current branch has one:
 
 ```bash
 gh pr view --repo dotnet/sdk --json number,title,headRefName 2>/dev/null
 ```
 
-If this returns a PR, use **PR review** mode. If it returns nothing — or the user explicitly asked to review local changes — use **local review** mode and skip the PR-only steps as noted below.
+If this returns a PR, use PR review mode. Otherwise, or if the user asked for local changes, use local review mode.
 
-## Step 1: Ensure the PR Branch Is Available Locally (BLOCKING in PR review mode — must complete before any other step)
+## Step 1: Check out the PR branch (PR review mode only)
 
-**Local review mode:** Skip this step — there is no PR branch to check out. The changes are already in your branch; go straight to Step 2.
-
-Check whether the PR branch is already checked out locally:
+In PR review mode, finish this step before you fetch the diff or file list. You can call `gh pr view` to get the branch name. In local review mode, go to Step 2.
 
 ```bash
-# Get PR branch name
 gh pr view <number> --repo dotnet/sdk --json headRefName --jq '.headRefName'
-```
-
-```bash
-# Check if we're already on that branch
 git branch --show-current
 ```
 
-If the current branch **matches** the PR branch, proceed to Step 2.
+If the branches are the same, go to Step 2. If not, ask the user which option to use:
 
-If the current branch **does not match**, ask the user how they'd like to proceed:
+- **Check out the branch (recommended).** The review can then read the surrounding code: MSBuild targets, callers, test assets, and related SDK areas.
+- **Use the GitHub diff only.** The working tree does not change, but the review cannot read the surrounding code, so it is less accurate.
 
-- **Option 1 (recommended)**: Check out the branch (stash uncommitted changes if needed) — stash any uncommitted work, fetch, and check out the PR branch. This gives the best review quality because surrounding code (MSBuild targets, callers, test assets, sibling SDK areas) is available for context.
-- **Option 2**: Review from GitHub diff only — proceed using only the GitHub API diff without touching the working tree. Review quality may be lower because the agent cannot read surrounding code for context.
-
-### Option: Check out the branch
+To check out the branch, first look for uncommitted changes:
 
 ```bash
-# Check for uncommitted changes
 git status --porcelain
 ```
 
-If there are uncommitted changes, warn the user and stash them:
+If there are uncommitted changes, tell the user and stash them:
 
 ```bash
 git stash push --include-untracked -m "auto-stash before PR review of #<number>"
 ```
 
-Then check out the PR branch (this handles both same-repo and fork PRs):
+Then check out the branch. This works for branches in forks too:
 
 ```bash
 gh pr checkout <number> --repo dotnet/sdk
 ```
 
-### Option: GitHub diff only
+## Step 2: Get the changes
 
-No local action needed. Proceed to Step 2. Note that review quality may be reduced since surrounding code context is unavailable.
+**PR review mode.** Use the `mcp_github_*` tools if the GitHub MCP server is available. If not, use the equivalent `gh` commands.
 
-## Step 2: Gather the Changes and Context
+1. PR details: `mcp_github_pull_request_read`, method `get` (title, description, base branch, author).
+2. Changed files: method `get_files`. Paginate if necessary.
+3. Diff: method `get_diff`.
+4. Existing review comments: method `get_review_comments`. Do not repeat these comments.
 
-**PR review mode** — fetch the PR metadata, diff, and file list. This skill uses the `mcp_github_*` tools (MCP GitHub integration). These are available when the GitHub MCP server is configured in the agent environment. If they are unavailable, fall back to the `gh` CLI for equivalent operations.
+**Local review mode.** Use `git`:
 
-1. **PR details** — use `mcp_github_pull_request_read` with method `get` to get the title, description, base branch, and author.
-2. **Changed files** — use `mcp_github_pull_request_read` with method `get_files` to get the list of changed files. Paginate if there are many files.
-3. **Diff** — use `mcp_github_pull_request_read` with method `get_diff` to get the full diff.
-4. **Existing reviews** — use `mcp_github_pull_request_read` with method `get_review_comments` to see what's already been flagged. Don't duplicate existing review comments.
+1. Find which changes to review: unstaged (`git diff`), staged (`git diff --staged`), all uncommitted (`git diff HEAD`), or the branch compared to its base (`git diff <base>...HEAD`). If this is not clear, ask the user.
+2. For a branch diff, the base is `git merge-base HEAD main`, unless the user gives a different base.
+3. Changed files: `git diff --name-status <range>`.
+4. Diff: the matching `git diff` command.
 
-**Local review mode** — derive the diff and file list from `git` in your branch:
+For each changed file, read the full file, not only the diff hunks. The surrounding code shows target ordering, item-metadata flow, locking, asset-graph invariants, and call patterns that the diff does not show.
 
-1. **Choose the change set.** Decide which changes the user wants reviewed: unstaged (`git diff`), staged (`git diff --staged`), all uncommitted (`git diff HEAD`), or this branch vs. its base (`git diff <base>...HEAD`). If it is ambiguous, ask which set they mean.
-2. **Base for branch diffs.** Default the base to the merge-base with `main` (`git merge-base HEAD main`); honor an explicit base the user names.
-3. **Changed files** — `git diff --name-status <range>` (or the matching staged/working-tree form).
-4. **Diff** — the corresponding `git diff` output. There is no PR review history to deduplicate against.
+## Step 3: Sort the changes by area
 
-For every changed file, read the **entire source file**, not just the diff hunks. In this repo, surrounding code reveals MSBuild target ordering, item-metadata flow, locking protocols, asset-graph invariants, and cross-project call patterns that diff-only review will miss.
-
-## Step 3: Categorize the Changes
-
-Group files by area to guide how deeply to review each. The first five areas are the highest-blast-radius zones in this repo — apply extra scrutiny there.
+The first five areas have the largest effect on users. Examine them most carefully.
 
 | Area | Paths | Review focus |
 | --- | --- | --- |
-| CLI | `src/Cli/**` | Command parsing, help/usage text, error messages, exit codes, `.resx`/localization, telemetry, test-runner contracts, non-default invocation channels |
-| MSBuild Tasks & Targets | `src/Tasks/Microsoft.NET.Build.Tasks/**`, SDK `**/*.props`, `**/*.targets` | Property/item metadata flow, target ordering, path normalization (absolute vs. relative, package-folder roots), side effects across build/pack/publish/restore/test |
-| Templates | `template_feed/**`, `src/*TemplateLocator*/**`, `test/dotnet-new.IntegrationTests/Approvals/**` | Generated project contracts, option matrices, package references, language/runner parity, approval baselines |
-| Static Web Assets / Web SDKs | `src/StaticWebAssetsSdk/**`, `src/RazorSdk/**`, `src/WebSdk/**`, `src/BlazorWasmSdk/**`, `src/WasmSdk/**` | Asset & endpoint graph invariants, identity uniqueness, OS-aware path normalization, referential integrity after transforms, scale |
-| Versioning / Dependency flow | `eng/**`, `eng/Version.Details.xml`, `eng/Versions.props`, `NuGet.config`, `global.json`, `Directory.Packages.props` | Dependency flow, semantic version ordering, source-build, servicing branches, backflow, bootstrap acquisition, downstream-repo effects |
-| Compatibility tooling | `src/Compatibility/**` (ApiCompat/GenAPI) | Compiler/language semantic fidelity, diagnostics, generated reference output, framework variation |
-| Watch / Containers | `src/Dotnet.Watch/**`, `src/Containers/**` | Process lifetime, cancellation, file-system races, cleanup |
-| Analyzers | `src/Microsoft.CodeAnalysis.NetAnalyzers/**` | Roslyn diagnostic correctness across supported frameworks |
-| Build/Infra | `eng/**`, `.github/workflows/**`, `.vsts*.yml`, `Directory.Build.props`, `Directory.Build.targets`, `*.slnx` | Unintended side effects, breaking conditional logic, CI telemetry correlation |
-| Tests | `test/**` | Scenario-accurate regression coverage, target/platform gating, tests that would fail without the fix |
+| CLI | `src/Cli/**` | Command parsing, help text, error messages, exit codes, `.resx` and localization, telemetry, test-runner contracts, other ways to start the command |
+| MSBuild tasks and targets | `src/Tasks/Microsoft.NET.Build.Tasks/**`, SDK `**/*.props`, `**/*.targets` | Property and item-metadata flow, target ordering, path normalization (absolute or relative, package-folder roots), effects on build, pack, publish, restore, and test |
+| Templates | `template_feed/**`, `src/*TemplateLocator*/**`, `test/dotnet-new.IntegrationTests/Approvals/**` | Generated project contracts, option combinations, package references, language and runner parity, approval baselines |
+| Static Web Assets and Web SDKs | `src/StaticWebAssetsSdk/**`, `src/RazorSdk/**`, `src/WebSdk/**`, `src/BlazorWasmSdk/**`, `src/WasmSdk/**` | Asset and endpoint graph invariants, unique identity, OS-aware path normalization, references that stay valid after transforms, scale |
+| Versions and dependency flow | `eng/**`, `eng/Version.Details.xml`, `eng/Versions.props`, `NuGet.config`, `global.json`, `Directory.Packages.props` | Dependency flow, semantic version order, source-build, servicing branches, backflow, bootstrap acquisition, effects on downstream repos |
+| Compatibility tools | `src/Compatibility/**` (ApiCompat, GenAPI) | Same semantics as the compiler and language, diagnostics, generated reference output, framework differences |
+| Watch and containers | `src/Dotnet.Watch/**`, `src/Containers/**` | Process lifetime, cancellation, file-system races, cleanup |
+| Analyzers | `src/Microsoft.CodeAnalysis.NetAnalyzers/**` | Correct Roslyn diagnostics on all supported frameworks |
+| Build and infrastructure | `eng/**`, `.github/workflows/**`, `.vsts*.yml`, `Directory.Build.props`, `Directory.Build.targets`, `*.slnx` | Unwanted side effects, broken conditions, CI telemetry correlation |
+| Tests | `test/**` | Regression tests for the real scenario, correct target and platform conditions, tests that fail without the fix |
 
-## Step 4: Review the Code
+## Step 4: Review the code
 
-Read the diff carefully. For each changed file, also read surrounding context to understand the impact of the change.
+Read the diff and the code around each change. If the branch is checked out, or in local review mode, read files from the workspace. If you use the GitHub diff only, get files from the PR branch with `mcp_github_get_file_contents`.
 
-- **If the branch is checked out directly, or in local review mode**: read files from the current workspace.
-- **If reviewing from GitHub diff only**: use `mcp_github_get_file_contents` to fetch specific files from the PR branch when additional context is needed.
+### Make your own assessment first
 
-### Form an Independent Assessment First
+Before you read the PR description, answer these questions from the code:
 
-Before you internalize the author's framing, form your own read of the code:
+1. What does the change do? Compare the old and new behavior.
+2. Why is it necessary?
+3. Is this the right approach? Can an existing SDK mechanism do the same thing more simply? Does it keep the existing abstractions and ownership boundaries?
+4. What problems do you see? Bugs, edge cases, missing validation, thread safety, performance, broken contracts, missing tests.
 
-1. **What does this change actually do?** Old behavior vs. new behavior, in your own words.
-2. **Why might it be needed?** Infer the motivation from the code itself.
-3. **Is this the right approach?** Would a simpler existing SDK mechanism express the same behavior? Does it preserve existing abstractions and ownership boundaries?
-4. **What problems do you see?** Bugs, edge cases, missing validation, thread-safety, performance, broken contracts, test gaps.
+Then read the description, labels, and linked issues, and verify their claims. If you found a problem that the description does not mention, do not make it weaker because the description sounds reasonable. Look at related implementations, parallel templates, and test assets, because a fix in one place often must also go into the others. Recent `git log` history can show reverted approaches or incomplete migrations.
 
-Then read the PR description, labels, and linked issues (in PR review mode) as **claims to verify**. If your independent read found problems the narrative doesn't acknowledge, those problems are *more* likely real, not less — do not soften them just because the description sounds reasonable. Also check sibling implementations, parallel templates, and related test assets: a one-place fix often needs to be applied to its siblings, and recent `git log` history can reveal reverted approaches or incomplete migrations.
+### Compare with existing implementations
 
-### Cross-File Consistency Check
+If the new code does something that an existing SDK component already does, it should use that component. If it implements the logic again, find the existing implementation and compare the two. New code can be correct C# and still behave differently at the edges. A diff-only review does not find these differences, and they are often the most important findings in this repo.
 
-**Prefer reusing the established component; when the diff reimplements logic an existing component already provides, match its behavior exactly.** When new code handles the same kind of input or operation as an existing SDK component, don't review it in isolation — find the canonical implementation and diff the two for behavioral divergence. This is a correctness check, not a style one: the new code can be perfectly idiomatic and still be wrong because it behaves differently at the edges, and these divergences are invisible to diff-only review. This is where the highest-value findings in this repo hide.
+- Compare behavior: what input each one accepts, how each one orders and normalizes values, and which options each one uses. If the SDK accepts an input in one place, it must not fail in the other. Give the file and line of both implementations.
+- If the new code writes output that another component reads (a project-file edit, a generated directive, a manifest), make sure that the output agrees with what the reader expects, including order and default values.
+- If a top-level CLI command or alias is added or renamed in `DotNetCommandDefinition.cs`, or if `<Name>CommandParser.ConfigureCommand` or `Parser.ConfigureManagedActions` changes the subcommands, options, `ICustomHelp`, or completion sources shown in help for symbols without an explicit `HelpName`, make sure that `Parser.CreateCommandForGenericHelp`, `Parser.TryParseGenericCommandHelp`, and (for help that is filled at run time) `AotPrintHelpAction` agree with the change.
+- For each changed CI entry point, check `DOTNET_CLI_TELEMETRY_SESSIONID`. A workflow or pipeline with more than one job must set it at workflow or pipeline scope. A workflow with one job can set it at job scope. The value must use the format in the [developer guide](../../../documentation/project-docs/developer-guide.md#ci-workflow-telemetry-correlation). Flag a missing value, a value set per step, or a changed value. Without it, the `dotnet` processes of a run cannot be correlated.
 
-- Compare *behavior*, not just shape: how leniently each accepts input, how each orders or normalizes values, and which options or flags each honors. An input the SDK accepts elsewhere should not fail here, and vice versa — flag the divergence with both file:line references (the new code and the established sibling).
-- When the new code emits output that another component must later consume (a project-file edit, a generated directive, a manifest), verify the consumer's contract is satisfied — including ordering and implicit-default semantics, not just syntactic validity.
-- When a top-level CLI command or alias is added/renamed in `DotNetCommandDefinition.cs`, or `<Name>CommandParser.ConfigureCommand` / `Parser.ConfigureManagedActions` changes help-visible subcommands, options, `ICustomHelp`, or completion sources on symbols without an explicit `HelpName`, verify `Parser.CreateCommandForGenericHelp`, `Parser.TryParseGenericCommandHelp`, and (for dynamically populated help) `AotPrintHelpAction` stay in sync.
-- For each changed CI entry point, verify the scope of `DOTNET_CLI_TELEMETRY_SESSIONID`. Require workflow or pipeline scope for multiple jobs. Permit job scope for a single-job workflow. Use the provider format from the [developer guide](../../../documentation/project-docs/developer-guide.md#ci-workflow-telemetry-correlation). Flag a missing, per-step, or changed value. These errors prevent reliable correlation between the run's `dotnet` processes.
+### Examine test coverage
 
-### Impact Analysis for Tests and Regressions
+Do not accept "tests pass" or "there are tests" as proof. For each change to production behavior, find:
 
-Before deciding whether tests are sufficient, perform a code-based impact analysis. Do not stop at "tests pass" or "there are tests"; map the changed code paths to the behaviors that could regress, then compare that list to the test changes.
+1. **Changed behavior**: the code paths, tasks, targets, properties, or item metadata that changed.
+2. **Affected surfaces**: where users or systems can see the change: CLI output and exit codes, the build, pack, publish, or restore graph, generated templates and projects, Static Web Assets endpoints and manifests, NuGet package contents, version selection, analyzer diagnostics, source-build, or downstream projects.
+3. **Regression risks**: how existing scenarios can break: target order, lost item metadata, path normalization, version order, platform, TFM, or RID conditions, package-folder roots, source-build compared to a full build, servicing branches, and assumptions about concurrency or MSBuild nodes.
+4. **Necessary tests**: the tests that fail without the fix or that would find a later regression.
+5. **Missing tests**: affected behavior that neither the PR tests nor existing tests cover.
 
-For each non-trivial production change, identify:
+A PR can have many tests and still not have the test that is necessary. Do not ask for tests of a surface that the change does not affect. Do not ask for tests of documentation, comments, mechanical renames, or refactors that keep the same behavior. Bug fixes must have a test that failed before the fix.
 
-1. **Changed behavior** — what behavior changed, using concrete code paths, task/target names, properties, or item metadata from the diff.
-2. **Affected surfaces** — which user or system surfaces can observe the change: CLI output/exit codes, the MSBuild build/pack/publish/restore graph, generated template/project output, Static Web Assets endpoints/manifests, NuGet package contents, dependency-flow/version selection, analyzer diagnostics, source-build, or downstream consumer projects.
-3. **Regression risks** — the specific ways the change could break existing scenarios: target ordering, item-metadata loss, path-identity/normalization differences, version-ordering, platform/TFM/RID branching, package-folder roots, source-build vs. full build, servicing-branch behavior, and concurrency/per-node assumptions under MSBuild.
-4. **Expected regression coverage** — the focused or scenario tests that should fail without the fix or would catch the risky behavior changing again.
-5. **Coverage gaps** — any impacted behavior not covered by the PR's tests or by clearly relevant existing tests.
-
-Use the impact analysis to drive coverage review. A PR can have many tests and still be missing the regression test that matters. Conversely, do not demand every test category when the impact analysis shows the change does not affect that surface. When the analysis is useful to explain a finding, present it concisely: identify the impacted code path, the regression risk, and the missing test shape.
-
-### Test Coverage Review
-
-Every review must evaluate whether the PR has appropriate tests for the type of behavior being changed. Do not require tests for purely mechanical refactors, comments, or documentation-only changes, but do flag missing or insufficient coverage when production behavior changes and there is no explicit, convincing justification. Regression coverage is especially important: bug fixes and behavior changes should include tests that would have **failed before the fix**, not just broad happy-path coverage or regenerated snapshots/baselines.
-
-Use this mapping when deciding whether coverage is appropriate:
-
-| Change type | Expected coverage to look for |
+| Change type | Expected tests |
 | --- | --- |
-| CLI command behavior, help/usage text, error messages, exit codes, telemetry, resource strings | Tests in the matching `test/dotnet.Tests/` (or area `*.Tests`) project, including non-default invocation channels; verify the test asserts the user-observable contract, not an internal detail |
-| MSBuild tasks/targets, property/item metadata, path handling, target ordering | Integration tests that exercise the relevant build/pack/publish/restore entry point end-to-end; a unit test of the task in isolation is not sufficient when the risk crosses target boundaries |
-| Templates / generated project output | Integration + approval/snapshot coverage under `test/dotnet-new.IntegrationTests/` across the option, language, runner, and package dimensions the product path branches on |
-| Static Web Assets / Web SDK behavior | Integration tests asserting asset/endpoint identity, manifest contents, and referential integrity; snapshot/baseline updates alone do not prove graph behavior (see the `validate-static-web-asset-change` / SWA skills if present) |
-| Versioning, dependency flow, bootstrap, compatibility tooling | Tests that exercise the relevant version-ordering / framework / RID / source-build dimension; a single resolved graph in CI does not prove ordering or backflow correctness |
-| Analyzers / compatibility semantics | Tests covering meaningful language and API-shape variations across supported frameworks, not only the easiest representative case |
+| CLI behavior, help text, error messages, exit codes, telemetry, resource strings | Tests in `test/dotnet.Tests/` or the area `*.Tests` project, including other ways to start the command. The test checks what the user sees, not an internal detail. |
+| MSBuild tasks and targets, metadata, paths, target order | Integration tests through the build, pack, publish, or restore entry point. A unit test of a task is not sufficient when the risk crosses target boundaries. |
+| Templates and generated projects | Integration and approval tests in `test/dotnet-new.IntegrationTests/` for each option, language, runner, and package combination that the code handles differently. |
+| Static Web Assets and Web SDK | Integration tests that check asset and endpoint identity, manifest contents, and valid references. A baseline update alone does not prove graph behavior. See the SWA skills. |
+| Versions, dependency flow, bootstrap, compatibility tools | Tests for the version order, framework, RID, or source-build dimension. One resolved graph in CI does not prove order or backflow. |
+| Analyzers and compatibility semantics | Tests for the important language and API-shape variants on the supported frameworks, not only the easiest case. |
 
-For snapshot, approval, and baseline updates be especially strict: regenerating an approval file, manifest, or baseline only proves the serializer output changed. If the PR changes *behavior*, look for a test that asserts the changed behavior, and confirm any broad baseline diff reflects an **intended** semantic change rather than incidental churn.
+A new snapshot, approval file, manifest, or baseline only proves that the output changed. If the behavior changed, look for a test that checks the behavior. Make sure that a large baseline diff is an intended change.
 
-### What to Flag
+### What to flag
 
-Only flag **actual problems**. Every comment must identify a concrete issue. Categories, roughly in priority order for this repo:
+Flag only real problems. Each finding must identify a concrete issue. Approximate priority:
 
-1. **Scenario-accurate regression coverage gaps** — production behavior changed without a test that proves the user/project/downstream-observable behavior, or a bug fix lacks a test that would have failed before the fix. Be specific about the impacted code path, the regression risk, and the expected test shape. Skipped or partial tests must not be used as evidence that the underlying scenario is fixed.
-2. **MSBuild property, item, target, and path semantics** — broken item-metadata identity, lost metadata, ambiguous absolute-vs-relative or package-folder paths, target-ordering/side-effect changes that aren't traced across build/pack/publish/restore/test.
-3. **User-facing command, resource, and localization contracts** — help/usage text that misstates arity or behavior, non-actionable errors, wording that diverges from existing CLI conventions, or user-visible strings that bypass the `.resx`/localization workflow.
-4. **Generated project & template output contracts** — option combinations that yield inconsistent package references or project files, lost parity across parallel templates, or SDK-side workarounds for behavior owned by the `dotnet/templating` engine packages (file upstream instead).
-5. **Versioning, dependency flow, and servicing compatibility** — version comparisons using incidental string/file ordering instead of semantic ordering; dependency-flow edits that ignore source-build, servicing, backflow, bootstrap acquisition, or downstream expectations; central package/dependency edits with unintended TFM/RID effects.
-6. **Thread-safety, lifetime, cancellation, and scale** — shared mutable state or file-system races in multi-threadable tasks, per-node assumptions, missing cancellation/cleanup in long-running or process-coordinating code, and uniqueness/identity assumptions or quadratic behavior over large project/asset/dependency graphs.
-7. **Asset and endpoint graph invariants** — Static Web Assets / Web SDK changes that break asset/endpoint identity uniqueness, non-OS-aware path comparison, or referential integrity of related/alternative references after transforms, compression, packaging, or publishing.
-8. **Analyzer and compatibility semantic fidelity** — diagnostics, generated reference output, or compatibility decisions that diverge from compiler/language semantics across supported frameworks.
-9. **Bugs** — logic errors, off-by-one, null dereferences, missing awaits, incorrect disposal.
-10. **Security** — injection risks, credential exposure, insecure defaults.
-11. **Behavioral contract changes & weakened invariants** — a refactor that silently changes behavior: a property that threw now returns a default, a removed validation/override, `SingleOrDefault` (throws on duplicates) replaced by `FirstOrDefault`, a removed precondition check.
-12. **Missing error handling at system boundaries** — unvalidated external input or missing null checks at public/internal API entry points. Do NOT flag null checks for parameters the type system already guarantees non-null.
-13. **Resource leaks** — `IDisposable` objects (e.g., `CancellationTokenSource`, `SemaphoreSlim`, process handles) created but never disposed, even if the pattern was moved from elsewhere.
-14. **Documentation & explanatory comments for non-obvious SDK behavior** — subtle target/property decisions, runtime mapping, or cross-repo ownership boundaries that a future maintainer cannot infer from types or names and that lack a durable comment; stale comments that contradict the code; workaround comments without a tracking link.
-15. **Repository convention violations** — the change breaks a rule documented in the [repository guardrails](../../../AGENTS.md#guardrails) or the nearest area `AGENTS.md`. Read those files (they govern the directories being changed) and flag violations the build won't already catch — for example, hand-editing generated or regenerated files, or fixing behavior in this repo that another repo owns.
-16. **Stale or ungrounded AI context / instructions / docs** — the change makes something an AI- or contributor-facing artifact says no longer true: a documented command, file path or location, guardrail, build/test workflow, convention, or architecture description that the change has invalidated (for example, moving or renaming a file that a doc references), and that artifact wasn't updated in the same PR. Also flag newly added or materially changed important claims about architecture, product behavior, or ownership when they lack a durable primary-source link (code or project files, an ADR or design document, or an issue or PR). Flag citations that do not support the claim and inferences presented as established facts. Name the exact artifact — the root or nearest area `AGENTS.md`, `.github/memory/*.md`, a `.github/skills/*/SKILL.md`, a `.claude/skills/*/SKILL.md`, a `.github/agents/*.agent.md`, or a file under `documentation/` — and the concrete drift or unsupported claim. Don't flag internal changes that no artifact describes, and don't demand citations for routine instructions or obvious code-local facts.
+1. **Missing regression tests**: see "Examine test coverage". Give the code path, the risk, and the necessary test. A skipped or partial test does not prove that a scenario works.
+2. **MSBuild semantics**: lost or changed item metadata, unclear absolute, relative, or package-folder paths, changes to target order or side effects that you did not trace through build, pack, publish, restore, and test.
+3. **CLI and localization contracts**: help text with the wrong arity or behavior, errors that do not tell the user what to do, text that does not agree with CLI conventions, user-visible strings that are not in `.resx`.
+4. **Template output**: option combinations that produce different package references or project files, lost parity between parallel templates, SDK workarounds for behavior that the `dotnet/templating` engine owns (report those upstream).
+5. **Versions and servicing**: string or file order used instead of semantic version order; dependency-flow changes that ignore source-build, servicing, backflow, bootstrap, or downstream repos; central package changes with unwanted TFM or RID effects.
+6. **Threads, lifetime, cancellation, scale**: shared mutable state or file-system races in tasks that can run in parallel, assumptions about MSBuild nodes, missing cancellation or cleanup in long-running or multi-process code, identity assumptions or quadratic algorithms on large graphs.
+7. **Asset and endpoint graphs**: duplicate asset or endpoint identities, path comparisons that ignore the OS, references that become invalid after transform, compression, pack, or publish.
+8. **Analyzer and compatibility semantics**: diagnostics, reference output, or compatibility results that are different from compiler or language semantics on a supported framework.
+9. **Bugs**: logic errors, off-by-one errors, null dereferences, missing `await`, incorrect disposal.
+10. **Security**: injection, exposed credentials, insecure defaults.
+11. **Changed contracts**: a refactor that changes behavior. Examples: a property that threw an exception now returns a default; a validation or override is removed; `SingleOrDefault` (throws on duplicates) becomes `FirstOrDefault`.
+12. **Missing validation at boundaries**: external input that is not validated, or missing null checks at public or internal entry points. Do not flag null checks for parameters that the type system makes non-null.
+13. **Resource leaks**: an `IDisposable` (for example `CancellationTokenSource`, `SemaphoreSlim`, or a process handle) that is not disposed, also when the code was moved from a different location.
+14. **Missing or incorrect comments**: a target or property decision, runtime mapping, or cross-repo boundary that a maintainer cannot understand from the code and that has no comment; a comment that the code no longer agrees with; a workaround with no issue link.
+15. **Repository conventions**: a violation of the [repository guardrails](../../../AGENTS.md#guardrails) or the nearest area `AGENTS.md` that the build does not find. Examples: a hand-edited generated file, or a fix in this repo for behavior that a different repo owns.
+16. **Incorrect AI or contributor docs**: the change makes a statement in an AI-facing or contributor-facing file incorrect (a command, file path, guardrail, workflow, convention, or architecture description), and the PR does not update that file. Examples are the root or area `AGENTS.md`, `.github/memory/*.md`, `.github/skills/*/SKILL.md`, `.claude/skills/*/SKILL.md`, `.github/agents/*.agent.md`, and files in `documentation/`. Also flag new statements about architecture, product behavior, or ownership that have no link to a primary source (code, project file, ADR, design document, issue, or PR), links that do not support the statement, and guesses written as facts. Do not flag internal changes that no file describes. Do not ask for sources for routine instructions or facts that are clear from the code.
 
-### What NOT to Flag
+### Maintainer checklist
 
-- Style preferences already handled by `.editorconfig`, `dotnet format`, or analyzers.
-- Anything `TreatWarningsAsErrors`, code-style enforcement, central package management checks, or SDL controls would catch — CI runs these separately across Windows/Linux/macOS Helix queues.
-- Missing XML doc comments (unless a public API is completely undocumented).
-- Missing `.xlf` regeneration during development (expected — `.resx` is the source).
-- Suggestions for refactoring unrelated code.
-- Missing tests for documentation-only changes, comment-only changes, mechanical renames, or refactors that demonstrably preserve behavior.
-- Concerns you cannot support with specific evidence in the diff or surrounding code. Never assert that an API "does not exist," "is deprecated," or "is unavailable" based on training data alone — when uncertain, surface it as a low-confidence question or ask.
+Long-time human reviewers of this repo often found these problems. Check each item that applies. The PR numbers are examples. A checklist finding is a ⚠️ warning, unless it causes incorrect behavior, data exposure, or a broken contract; then it is an ❌ error.
 
-### Reviewing refactored / moved code
+1. **Test mechanics**: Each theory case uses a unique test directory, and a second local run still passes (#11317, #16521). Tests do not change process-wide state, such as culture or environment variables, without the locks in [`test/AGENTS.md`](../../../test/AGENTS.md) (#29559). Tests use `TestProject` and the existing helpers, not hand-edited project XML or new assets (#3275, #18459). Expected values are hard-coded, not calculated by the code under test (#16530). Use `Assert.Throws`, not try/catch with a forced failure. Do not use arbitrary short timeouts. Do not make an assertion weaker so that it accepts nondeterministic results (#55618, #54801). The test must go through the code path that it claims to test (#2196).
+2. **Inputs used together**: For a new or changed option or property, examine conflicting options, other spellings of the same input (`--configuration Debug` and `-p:Configuration=Debug`), letter casing (`True` and `true`), default values, solutions with mixed TFMs, and projects with more than one target framework (#19402, #26808, #29155).
+3. **CLI parser conventions**: Option names are lowercase (#24446). Do not use a short alias that already has a different meaning in the CLI, such as `-f` (#18502). Boolean flags use `Arity = ArgumentArity.Zero` (#26963). In System.CommandLine, `Option<bool>` accepts an optional value by default (arity `ZeroOrOne`), so without this setting `--flag false` parses and the forwarding code can ignore the value. A fixed set of values uses an enum (#29017). Validation is in the parser, not in the command handler (#28333). Arguments are a `string[]`, not one joined string (#26155). Split `key=value` input only at the first `=` (#28059). Parse-error handling must not break commands that forward arguments, such as `dotnet msbuild` (#23677).
+4. **Telemetry**: Hash values that a user can define, such as custom target names and TFMs, in the same way as the existing events (#26427, #27042). Do not rename existing telemetry properties (#29131).
+5. **Errors and diagnostics**: Catch only the expected exception type, and only around the operation that can fail (#43393, #26369). When the code ignores an expected failure, keep the details in verbose output, and let unexpected errors fail (#16891, #19124). A message tells the user why the problem occurred and includes the related value, such as the workload ID or the `global.json` path. Its tone agrees with the other messages of the command. CLI messages do not refer to Visual Studio (#25358, #25733, #28811).
+6. **Versions and TFMs**: Do not hard-code the latest TFM. Use `NETCoreAppMaximumVersion` or the existing helpers (#18815). Compare the framework identifier and version, or use the NuGet TFM parser. Do not parse TFM strings by hand (#24656, #18216). Make sure that the change uses the correct value: the runtime of the SDK or the target framework of the app (#36195, #52242). Do not use private MSBuild properties when a supported property exists (#37139).
+7. **Consumers and later operations**: Find where the changed behavior goes next: design-time builds and IntelliSense, `run`, `test`, `publish`, and later commands such as `workload update` (#12633, #18889, #19124).
+8. **Package and publish output**: When packaging or publishing changes, compare the files produced before and after the change, including the files for each platform (#923, #1843).
+9. **Async and wasted work**: No busy-wait loops (#26870). No blocking on async code (#52581). Do not load the project graph again when its inputs did not change (#56723).
+10. **Layer boundaries**: Do not add console UI dependencies, such as Spectre, to headless projects (#53540). Do not inherit from a collection type only to reuse its code; use composition (#16823, #24005).
+11. **Changes across repos and releases**: The change must not need a simultaneous merge in another repo (#12106). Check the minimum MSBuild version (#11358) and the target branch for servicing fixes (#14798).
+12. **Unrelated changes**: Flag whitespace-only edits in files that the PR does not otherwise need to change (#51624, #25991). Flag unintended resets of `.xlf` translations in merge PRs (#23977).
 
-When code is moved from one file to another (e.g., extracting a task, target snippet, or helper), treat the moved code as if it were newly written:
+### What not to flag
 
-- **Flag pre-existing issues in moved code.** If buggy or unsafe code is copy-pasted into a new location, flag it. Mark these as "Pre-existing issue, good opportunity to fix during this refactoring."
-- **Diff old vs. new behavior.** When a type/target/method is replaced, explicitly compare old and new implementations. Look for removed overrides, changed exception behavior, relaxed validation, lost invariant checks, or altered metadata/target ordering.
-- **Check callers of removed types.** If `OldClass`/an old target is removed and replaced, verify that all call sites and dependent targets that relied on the old behavior still work.
+- Style that `.editorconfig`, `dotnet format`, or analyzers handle.
+- Naming, wording, or formatting preferences that a human reviewer would call a "nit".
+- Problems that `TreatWarningsAsErrors`, code-style enforcement, central package management, or SDL checks find. CI runs these on Windows, Linux, and macOS.
+- Missing XML doc comments, unless a public API has no documentation.
+- `.xlf` files that are not regenerated during development. The `.resx` file is the source.
+- Refactors of unrelated code.
+- More tests when existing tests already go through the changed path.
+- Abstractions or reuse designs when there is no second use case.
+- Problems that you cannot support with evidence from the diff or the code. Do not say that an API "does not exist", "is deprecated", or "is unavailable" only from training data. If you are not sure, ask, or report it as low confidence.
 
-## Step 5: Present Findings to the User
+### Moved code
 
-**Do not post a review automatically.** Instead, present all findings as a numbered list for the user to triage. Order by potential impact.
+When code moves to a different file (for example, a task, target, or helper is extracted), review it as new code:
 
-For each finding, give a **severity** marker and a **confidence** level, and state briefly how you verified it (or that you could not):
+- Flag existing problems in the moved code, and mark them "Pre-existing issue, good opportunity to fix during this refactoring."
+- If a type, target, or method is replaced, compare the old and new implementations. Look for removed overrides, different exceptions, weaker validation, removed invariant checks, and changed metadata or target order.
+- If a class or target is removed, make sure that all callers and dependent targets still work.
 
-- ❌ **error** — Must fix before merge. Bugs, security issues, broken invariants, regression-coverage gaps for behavior changes.
-- ⚠️ **warning** — Should fix. Performance issues, missing validation, inconsistency with established SDK patterns.
+## Step 5: Show the findings to the user
 
-**Confidence: High / Medium / Low.** Do **not** drop a real concern just because it is an edge case or you could not fully confirm it — surface it with an honest confidence label and say what you did and did not verify (e.g. "confirmed the span semantics in code but did not execute a repro"). A real-but-uncertain issue flagged as Low confidence is valuable; an invented one is not. Every finding — at any confidence — must still cite a concrete file:line and a real mechanism. Reserve Low confidence for genuine uncertainty, not for hedging on something you have actually verified.
+Do not post a review automatically. Show the findings as a numbered list, with the most important first. For each finding, give:
 
-Then ask the user what to do next. The user may respond with:
+- **Severity**: ❌ **error** (fix before merge: bugs, security, broken invariants, missing regression tests for behavior changes) or ⚠️ **warning** (should fix: performance, missing validation, differences from SDK patterns). Formatting, whitespace, unrelated edits, and leftover or commented-out code are never errors.
+- **Confidence**: High, Medium, or Low.
+- **Verification**: what you checked and what you did not check, for example "I read the span semantics in the code but did not run a repro".
 
-- **"Add 1, 3, 5 as comments"** — post only those numbered items as review comments.
-- **"Add all"** — post every item.
-- **"Add none"** — skip posting entirely.
-- Any other selection or modification instructions.
+Every finding needs a file and line and a real mechanism. Do not remove a real concern because it is an edge case or because you could not confirm it. Report it with Low confidence. Use Low only when you are not sure, not to hedge a problem that you verified. Do not report problems that you cannot connect to the code.
 
-**Local review mode:** there is no PR to post to. Present the findings and stop here — the user acts on them directly. Skip Step 6.
+Then ask the user what to do. The user can say, for example, "Add 1, 3, 5 as comments", "Add all", or "Add none".
 
-## Step 6: Post Selected Comments as a Review (PR review mode only)
+In local review mode, stop here. There is no PR to post to.
 
-This step applies only in PR review mode. In local review mode there is no PR to post to, so the review ends at Step 5.
+## Step 6: Post the selected comments (PR review mode only)
 
-Once the user has selected which findings to include:
+### AI disclosure
 
-### AI-generated content disclosure
+If you post with the credentials of a person (not a Copilot or bot account), add a short visible note to the review summary, such as a `> [!NOTE]` alert, that says the content was AI-generated. Do not add it only if the user asks you not to.
 
-When posting review content to GitHub under a user's credentials — i.e., the account is **not** a dedicated "copilot"/bot account or app — include a concise, visible note (e.g. a `> [!NOTE]` alert) in the review summary indicating the content was AI-generated. Skip this only if the user explicitly asks you to omit it.
+### Auto-merge check
 
-### Auto-merge safety check
-
-Before submitting a review with `event: "APPROVE"`, check whether the PR has auto-merge enabled:
+Before you submit a review with `event: "APPROVE"`, check for auto-merge:
 
 ```bash
 gh pr view <number> --repo dotnet/sdk --json autoMergeRequest --jq '.autoMergeRequest'
 ```
 
-If the result is **non-null** (auto-merge is enabled) **and** the review includes comments, warn the user:
+If the result is not null and the review has comments, tell the user:
 
-> **Warning:** This PR has auto-merge enabled. Approving it will likely trigger an automatic merge before the author has a chance to address your review comments. Would you like to:
-> 
-> 1. **Approve anyway** — submit as APPROVE (auto-merge may proceed immediately).
-> 2. **Downgrade to comment** — submit as COMMENT instead so the author can address feedback first.
+> **Warning:** This PR has auto-merge enabled. If you approve it, it can merge before the author reads your comments. Do you want to:
+>
+> 1. **Approve anyway**: submit as APPROVE. Auto-merge can start immediately.
+> 2. **Comment only**: submit as COMMENT, so the author can fix the problems first.
 
-Wait for the user's response before proceeding. If they choose option 2, use `event: "COMMENT"` instead of `"APPROVE"`.
+Wait for the answer. For option 2, use `event: "COMMENT"`.
 
-### Posting the review
+### Post the review
 
-1. **Create a pending review**:
-   Use `mcp_github_pull_request_review_write` with method `create` (no `event` parameter) to start a pending review.
-2. **Add inline comments for each selected finding**:
-   Use `mcp_github_add_comment_to_pending_review` for each selected item. Place comments on the specific lines in the diff:
-
-   - `subjectType`: `LINE` for line-specific comments, `FILE` for file-level comments
-   - `side`: `RIGHT` for comments on new code
-   - `path`: relative file path
+1. Create a pending review: `mcp_github_pull_request_review_write`, method `create`, with no `event`.
+2. Add each selected finding with `mcp_github_add_comment_to_pending_review`:
+   - `subjectType`: `LINE` for a line, `FILE` for a file
+   - `side`: `RIGHT` for new code
+   - `path`: the relative file path
    - `line`: the line number in the diff
-   - `body`: concise description of the problem and how to fix it
-3. **Submit the review**:
-   Use `mcp_github_pull_request_review_write` with method `submit_pending`:
+   - `body`: the problem and how to fix it
+3. Submit: `mcp_github_pull_request_review_write`, method `submit_pending`:
+   - Use `event: "APPROVE"` only if the user asked to approve, and auto-merge is off or the user accepted the warning.
+   - Otherwise use `event: "COMMENT"`. Use `"REQUEST_CHANGES"` only if the user asks for it.
+   - In the summary, give the number of problems in each category, and the AI disclosure.
+   - If the user selected no findings, do not create a review. Tell the user that you posted nothing.
 
-   - If any comments were posted and the user explicitly asked to approve: use `event: "APPROVE"` only if auto-merge is not enabled on the PR, or the user confirmed they want to approve after seeing the auto-merge warning.
-   - If any comments were posted and the user did not ask to approve: use `event: "COMMENT"`.
-   - In either case, include a summary body listing the number of issues found by category (and the AI-generated disclosure note above). Do not use `"REQUEST_CHANGES"` unless the user explicitly asks for it.
-   - If the user chose to add none: do not create or submit a review. Confirm to the user that no review was posted.
+## Comment rules
 
-## Review Quality Rules
-
-- **Flag concrete, evidence-backed problems — and label your confidence.** Report any issue you can tie to a specific file:line and a real mechanism: bugs, security problems, correctness errors, performance regressions, broken MSBuild/SDK contracts, regression-coverage gaps, or repository-convention violations. Surface medium- and low-confidence findings too, clearly labeled (see Step 5) — do not suppress a real concern just because it is an edge case or unconfirmed. What you must *not* do is fabricate: no speculative concerns you cannot ground in the code, and no asserting something is broken without a mechanism. Honest "Low confidence — verified X, did not verify Y" is encouraged; invented issues are not.
-- **One problem per comment.** Don't bundle multiple issues into a single comment.
-- **Be specific.** Reference the exact line(s), property/item, target, or condition that is problematic, and how you verified it (e.g., "checked all callers and none validate this metadata").
-- **Provide fix direction.** If the fix isn't obvious, include a brief suggestion or code snippet. Any code you suggest must be syntactically correct and consistent with the surrounding file's conventions.
-- **Don't pile on.** If the same issue appears many times, flag it once on the primary occurrence with a note listing the others.
-- **Respect existing style.** When modifying existing files, the file's current style takes precedence over general guidelines.
-- **Don't repeat existing review comments.** Check existing review threads before posting.
-- **When uncertain, escalate to human review rather than approving.** A false "looks good" is far worse than an unnecessary escalation; separate local code correctness from whether the change fully addresses the underlying problem.
+- One problem in each comment.
+- Give the exact lines, property, item, target, or condition, and how you verified the problem (for example, "I checked all callers, and none validate this metadata").
+- If the fix is not clear, suggest one. Suggested code must compile and use the style of the file.
+- If the same problem occurs many times, comment on the first one and list the others.
+- The style of an existing file has priority over general rules.
+- Do not repeat existing review comments.
+- If you are not sure, ask for human review. Do not approve. An incorrect "looks good" is much worse than an unnecessary escalation. Keep two questions separate: is the code correct, and does the change fix the full problem?
