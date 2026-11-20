@@ -71,9 +71,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private int _buildErrorsCount;
 
     private volatile bool _wasCancelled;
+    private volatile bool _moduleExecutionIncomplete;
 
     public bool HasHandshakeFailure => !_handshakeFailures.IsEmpty;
     internal bool ContextualModuleOutput => _options.ContextualModuleOutput;
+    internal void MarkModuleExecutionIncomplete() => _moduleExecutionIncomplete = true;
     public int TotalTests => _assemblies.Values.Sum(a => a.TotalTests);
     public int SkippedTests => _assemblies.Values.Sum(a => a.SkippedTests);
 
@@ -367,6 +369,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
         _assemblies.Clear();
         _handshakeFailures.Clear();
+        _moduleExecutionIncomplete = false;
         lock (_unselectedAssembliesLock)
         {
             _unselectedAssemblies.Clear();
@@ -454,9 +457,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         AppendExitCodeAndUrl(terminal, exitCode, isRun: true);
         terminal.AppendLine();
         terminal.Append($"##[group]{CliCommandStrings.TestRunSummary}");
-        // A handshake failure can refer to an already registered module (for example a
-        // rejected retry), so failure records cannot reliably be counted as modules.
-        bool hasModuleTotals = _handshakeFailures.IsEmpty;
+        // A rejected retry or an exception after registration can refer to an existing
+        // module, so these failures cannot reliably be counted as additional modules.
+        bool hasModuleTotals = _handshakeFailures.IsEmpty && !_moduleExecutionIncomplete;
         if (hasModuleTotals)
         {
             terminal.Append($" {passed} {CliCommandStrings.PassedLowercase}, {failed} {CliCommandStrings.FailedLowercase}");
@@ -1306,29 +1309,35 @@ internal sealed partial class TerminalTestReporter : IDisposable
             2 => TerminalColor.Magenta,
             _ => TerminalColor.DarkMagenta,
         });
-        terminal.Append('[');
-        AppendVisibleIdentity(displayName?.Invoke(assembly, targetFramework) ?? assembly);
+        string module = displayName?.Invoke(assembly, targetFramework) ?? assembly;
         string identity = TestFrameworkDisplay.GetDisplayName(targetFramework, architecture, runtimeFramework);
-        if (identity.Length > 0)
-        {
-            terminal.Append(' ');
-            AppendVisibleIdentity(identity);
-        }
-
-        terminal.Append(']');
+        string label = identity.Length > 0 ? $"[{module} {identity}]" : $"[{module}]";
+        terminal.Append(MakeIdentityControlCharactersVisible(label));
         terminal.ResetColor();
         if (trailingSpace)
         {
             terminal.Append(' ');
         }
+    }
 
-        void AppendVisibleIdentity(string text)
+    private static string MakeIdentityControlCharactersVisible(string text)
+    {
+        foreach (char character in text)
         {
-            foreach (char character in text)
+            if (char.IsControl(character))
             {
-                terminal.Append(char.IsControl(character) ? (char)(0x2400 + character) : character);
+                return string.Create(text.Length, text, static (buffer, value) =>
+                {
+                    for (int i = 0; i < value.Length; i++)
+                    {
+                        char current = value[i];
+                        buffer[i] = char.IsControl(current) ? (char)(0x2400 + current) : current;
+                    }
+                });
             }
         }
+
+        return text;
     }
 
     private static void AppendAssemblyLinkTargetFrameworkAndArchitecture(ITerminal terminal, string assembly, string? targetFramework, string? architecture, string? runtimeFramework = null)

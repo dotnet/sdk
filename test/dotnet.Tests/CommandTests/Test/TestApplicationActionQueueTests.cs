@@ -14,15 +14,18 @@ namespace dotnet.Tests.CommandTests.Test;
 public class TestApplicationActionQueueTests : SdkTest
 {
     [TestMethod]
-    [DataRow(false, false)]
-    [DataRow(true, false)]
-    [DataRow(false, true)]
-    [DataRow(true, true)]
-    public void SelectedApplicationLaunchFailure_KeepsCoverageScoped(bool merged, bool ignoreFailure)
+    [DataRow(false, false, false, false)]
+    [DataRow(true, false, false, false)]
+    [DataRow(false, true, false, false)]
+    [DataRow(true, true, false, false)]
+    [DataRow(false, false, true, false)]
+    [DataRow(false, false, true, true)]
+    [DataRow(false, true, true, true)]
+    public void SelectedApplicationLaunchFailure_KeepsCoverageScoped(bool merged, bool ignoreFailure, bool contextual, bool unselected)
     {
         var console = new CapturingConsole();
         using var reporter = new TerminalTestReporter(
-            console, new TerminalTestReporterOptions { AnsiMode = AnsiMode.SimpleAnsi, ShowProgress = false });
+            console, new TerminalTestReporterOptions { AnsiMode = AnsiMode.SimpleAnsi, ShowProgress = false, ContextualModuleOutput = contextual });
         reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, isDiscovery: false, isHelp: false, isRetry: false);
         string[] executions = merged ? ["first", "second"] : ["first"];
         foreach (string executionId in executions)
@@ -30,12 +33,17 @@ public class TestApplicationActionQueueTests : SdkTest
             reporter.AssemblyRunStarted($"{executionId}.Tests.dll", ToolsetInfo.CurrentTargetFramework, null, executionId, "instance");
             reporter.TestSessionStarted(executionId, "session", "instance");
             reporter.TestSessionEnded(executionId, "session", "instance");
+            reporter.AssemblyRunCompleted(executionId, 0, null, null);
             reporter.CoverageSummaryAdded(
                 $"{executionId}.Tests.dll", executionId, "instance",
                 [new("session", "collector", 0, null, (int)CoverageMetric.Line, null, 1, 2)]);
             reporter.ArtifactAdded(
                 false, $"{executionId}.Tests.dll", ToolsetInfo.CurrentTargetFramework, null, executionId, null,
                 $"{executionId}.coverage", "instance", "session");
+        }
+        if (unselected)
+        {
+            reporter.AssemblyRunNotSelected("unselected.dll", ToolsetInfo.CurrentTargetFramework, null);
         }
 
         string missingCommand = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, Guid.NewGuid().ToString("N"), "missing-test-app");
@@ -72,19 +80,58 @@ public class TestApplicationActionQueueTests : SdkTest
         int aggregateExitCode = queue.ApplyExitCodeIgnorePolicy(exitCode);
         aggregateExitCode.Should().Be(ignoreFailure ? TestExitCode.Success : TestExitCode.GenericFailure);
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, aggregateExitCode);
-        console.GetOutput().Should().Contain(
+        string output = console.GetOutput();
+        output.Should().Contain(
             merged ? "Merged coverage (merged.coverage) - Line: 50.0%" : "first.Tests.dll (instance|session) - Line: 50.0%")
             .And.NotContain("Total -");
+        if (contextual)
+        {
+            output.Should().Contain(unselected
+                ? "##[group]Test run summary: 1 skipped (No affected tests selected)"
+                : "##[group]Test run summary:" + Environment.NewLine)
+                .And.NotContain("##[group]Test run summary: 1 passed, 0 failed");
+        }
     }
 
     [TestMethod]
     public void NormalizeExitCode_ZeroTestsWithDisposeFailure_ReturnsGenericFailure()
     {
+        using var reporter = new TerminalTestReporter(
+            new CapturingConsole(), new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
         int result = TestApplicationActionQueue.NormalizeExitCode(
             TestExitCode.ZeroTests,
-            hasFailureDuringDispose: true);
+            hasFailureDuringDispose: true,
+            reporter);
 
         result.Should().Be(TestExitCode.GenericFailure);
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void ContextualSummary_DisposeFailureOmitsSuccessfulModuleTotals(bool hasFailureDuringDispose, bool ignoreFailure)
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ContextualModuleOutput = true,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.AssemblyRunStarted("Successful.dll", ToolsetInfo.CurrentTargetFramework, null, "success", "instance");
+        reporter.AssemblyRunCompleted("success", TestExitCode.Success, null, null);
+
+        int exitCode = TestApplicationActionQueue.NormalizeExitCode(
+            TestExitCode.Success, hasFailureDuringDispose, reporter);
+
+        exitCode.Should().Be(hasFailureDuringDispose ? TestExitCode.GenericFailure : TestExitCode.Success);
+        reporter.HasHandshakeFailure.Should().BeFalse();
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, ignoreFailure ? TestExitCode.Success : exitCode);
+
+        console.GetOutput().Should().Contain(hasFailureDuringDispose
+            ? "##[group]Test run summary:" + Environment.NewLine
+            : "##[group]Test run summary: 1 passed, 0 failed");
     }
 
     [TestMethod]

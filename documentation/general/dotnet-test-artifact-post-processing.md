@@ -399,7 +399,9 @@ profile arguments from that decision.
 
 Non-cursor final summaries normally put the verdict, counts, and module/handshake failure
 context before artifact paths. In Azure Pipelines, parallel multi-module runs instead group
-module details, coverage, and artifacts before the final verdict. Compatible test hosts
+module details, coverage, and artifacts before the final verdict. The SDK omits module
+pass/fail totals when a handshake failure or a module execution/disposal failure makes those
+totals ambiguous; unselected module counts remain visible. Compatible test hosts
 disable their own live Azure DevOps groups for these runs; older hosts may still emit
 overlapping groups. Outside that mode, successful module summaries are not repeated if they
 were already printed at completion, and interactive cursor-based summary ordering is unchanged.

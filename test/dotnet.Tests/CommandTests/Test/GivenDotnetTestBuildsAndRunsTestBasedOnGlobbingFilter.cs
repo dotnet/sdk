@@ -74,6 +74,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TF_BUILD", "false")
                                     .Execute("--test-modules", $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/TestProject.dll".Replace('/', Path.DirectorySeparatorChar));
 
             // Assert that the bin folder hasn't been modified
@@ -116,6 +117,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TF_BUILD", "false")
                                     .Execute("--test-modules", filterExpression);
 
             // Assert that the bin folder hasn't been modified
@@ -153,6 +155,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TF_BUILD", "false")
                                     .WithTraceOutput()
                                     .Execute("--test-modules", $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/TestProject.dll".Replace('/', Path.DirectorySeparatorChar),
                                     "--root-directory", testInstance.TestRoot);
