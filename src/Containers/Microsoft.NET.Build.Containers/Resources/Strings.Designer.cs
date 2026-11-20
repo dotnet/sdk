@@ -437,6 +437,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
                 return ResourceManager.GetString("InvalidContainerImageFormat", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to CONTAINER2032: SOURCE_DATE_EPOCH value &apos;{0}&apos; is invalid. Set it to a non-negative Unix timestamp representable as a UTC date, or leave it unset..
+        /// </summary>
+        internal static string InvalidSourceDateEpoch {
+            get {
+                return ResourceManager.GetString("InvalidSourceDateEpoch", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to CONTAINER2015: {0}: &apos;{1}&apos; was not a valid Environment Variable. Ignoring..
