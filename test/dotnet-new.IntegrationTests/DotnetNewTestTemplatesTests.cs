@@ -493,7 +493,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             if (useMSTestSdk)
             {
-                projectContents.Should().Contain("""<Project Sdk="MSTest.Sdk/4.4.0">""");
+                projectContents.Should().Contain("""<Project Sdk="MSTest.Sdk/4.5.3">""");
             }
 
             if (runDotnetTest)
