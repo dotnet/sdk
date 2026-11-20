@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "MSBuild Directory.Build.props ファイル",
   "description": "フォルダー全体の MSBuild プロパティを指定するために使用できる空の Directory.Build.props ファイル",

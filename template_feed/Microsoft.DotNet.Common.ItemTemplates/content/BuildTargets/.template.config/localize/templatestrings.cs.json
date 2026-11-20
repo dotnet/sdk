@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Soubor MSBuild Directory.Build.targets",
   "description": "Prázdný soubor Directory.Build.targets, který lze použít k určení úkolů a cílů nástroje MSBuild pro celou složku",

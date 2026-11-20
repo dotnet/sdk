@@ -866,7 +866,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_PropertyAlreadyExists">
         <source>Cannot set JSON property '{0}' in '{1}' because it already has a different value. The file was not modified.</source>
-        <target state="new">Cannot set JSON property '{0}' in '{1}' because it already has a different value. The file was not modified.</target>
+        <target state="translated">Die JSON-Eigenschaft '{0}' kann in '{1}' nicht festgelegt werden, da sie bereits einen anderen Wert aufweist. Die Datei wurde nicht geändert.</target>
         <note>{0} is the JSON property path, such as test:runner. {1} is the path to the JSON file.</note>
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Succeeded">

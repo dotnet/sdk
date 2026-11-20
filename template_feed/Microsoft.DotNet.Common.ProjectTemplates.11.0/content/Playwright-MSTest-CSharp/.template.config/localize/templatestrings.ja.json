@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "MSTest Playwright テスト プロジェクト",
   "description": "Windows、Linux、MacOS 上の .NET で実行できる、MSTest テスト フレームワークを使用した Playwright テストを含むプロジェクト。",

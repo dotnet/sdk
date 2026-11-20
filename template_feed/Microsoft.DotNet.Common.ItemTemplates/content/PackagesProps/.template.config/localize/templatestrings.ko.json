@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "MSBuild Directory.Packages.props 파일",
   "description": "패키지 버전을 중앙에서 지정하는 데 사용할 수 있는 빈 Directory.Packages.props 파일입니다.",

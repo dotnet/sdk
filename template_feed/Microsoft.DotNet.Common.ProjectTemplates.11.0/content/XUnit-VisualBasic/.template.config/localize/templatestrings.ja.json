@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "xUnit テスト プロジェクト",
   "description": "Windows、Linux、macOS 上の .NET で実行できる xUnit.net テストを含むプロジェクト",

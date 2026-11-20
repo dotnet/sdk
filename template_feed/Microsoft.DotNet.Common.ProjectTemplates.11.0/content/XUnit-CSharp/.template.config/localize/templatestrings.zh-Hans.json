@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "xUnit 测试项目",
   "description": "一个包含 xUnit.net 测试的项目，这些测试可在 Windows、Linux 和 macOS 的 .NET 上运行",

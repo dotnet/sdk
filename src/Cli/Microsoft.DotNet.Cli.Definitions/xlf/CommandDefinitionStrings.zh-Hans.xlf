@@ -1959,12 +1959,12 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       </trans-unit>
       <trans-unit id="TestCmdMTPNoLogo">
         <source>Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</source>
-        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</target>
+        <target state="translated">运行测试，不显示 Microsoft.Testing.Platform (MTP) 横幅</target>
         <note>{Locked="Microsoft.Testing.Platform"}{Locked="MTP"}</note>
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
-        <target state="needs-review-translation">运行测试，而不显示 Microsoft Testplatform 版权标志</target>
+        <target state="translated">运行测试，不显示 Microsoft Test Platform 横幅</target>
         <note>{Locked="Microsoft Test Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">

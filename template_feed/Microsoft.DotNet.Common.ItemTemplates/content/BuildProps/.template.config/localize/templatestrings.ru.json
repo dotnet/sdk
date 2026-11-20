@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Майкрософт",
   "name": "Файл Directory.Build.props MSBuild",
   "description": "Пустой файл Directory.Build.props, который можно использовать для указания свойств MSBuild для всей папки",

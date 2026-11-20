@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Testovací projekt NUnit Playwright",
   "description": "Projekt, který obsahuje testy Playwright pomocí testovací architektury NUnit, který se dá spustit v .NET ve Windows, Linuxu a MacOS.",

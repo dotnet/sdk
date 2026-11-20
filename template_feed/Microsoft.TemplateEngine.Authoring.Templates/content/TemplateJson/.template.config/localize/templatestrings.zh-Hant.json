@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "template.json 設定檔",
   "description": ".NET 範本的 template.json 設定檔案範本。如需完整的設定描述，請參閱 https://github.com/dotnet/templating/wiki/Reference-for-template.json。",

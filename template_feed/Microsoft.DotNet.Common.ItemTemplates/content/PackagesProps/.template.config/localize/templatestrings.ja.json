@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "MSBuild Directory.Packages.props ファイル",
   "description": "パッケージ バージョンを一元的に指定するために使用できる空の Directory.Packages.props ファイル",

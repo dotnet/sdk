@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Fichier Directory.Packages.props MSBuild",
   "description": "Fichier Directory.Packages.props vide qui peut être utilisé pour spécifier des versions de package de manière centralisée",
