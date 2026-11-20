@@ -82,13 +82,15 @@ public sealed class GivenMSBuildSdkDiscovery : SdkTest
         result.Should().Pass();
         using var output = JsonDocument.Parse(result.StdOut!);
         var properties = output.RootElement.GetProperty("Properties");
+        string sdkDirectory = TestPathUtility.ResolveTempPrefixLink(toolset.SdkFolderUnderTest);
+        string sdksDirectory = TestPathUtility.ResolveTempPrefixLink(toolset.SdksPath);
         Path.TrimEndingDirectorySeparator(properties.GetProperty("MSBuildToolsPath").GetString()!)
-            .Should().Be(toolset.SdkFolderUnderTest);
+            .Should().Be(sdkDirectory);
         Path.TrimEndingDirectorySeparator(properties.GetProperty("MSBuildExtensionsPath").GetString()!)
-            .Should().Be(toolset.SdkFolderUnderTest);
-        properties.GetProperty("MSBuildSDKsPath").GetString().Should().Be(toolset.SdksPath);
+            .Should().Be(sdkDirectory);
+        properties.GetProperty("MSBuildSDKsPath").GetString().Should().Be(sdksDirectory);
         Path.GetFullPath(properties.GetProperty("MicrosoftNETBuildTasksAssembly").GetString()!)
-            .Should().StartWith(toolset.SdksPath + Path.DirectorySeparatorChar);
+            .Should().StartWith(sdksDirectory + Path.DirectorySeparatorChar);
     }
 
     [TestMethod]
