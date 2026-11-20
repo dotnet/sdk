@@ -148,6 +148,7 @@ namespace Microsoft.NET.Build.Tasks
             var compositeExclusionSet = PublishReadyToRunCompositeExclusions == null || !Crossgen2Composite ? null : new HashSet<string>(PublishReadyToRunCompositeExclusions, StringComparer.OrdinalIgnoreCase);
             var compositeRootSet = PublishReadyToRunCompositeRoots == null || !Crossgen2Composite ? null : new HashSet<string>(PublishReadyToRunCompositeRoots, StringComparer.OrdinalIgnoreCase);
             var partialSet = PublishReadyToRunPartialAssemblies == null ? null : new HashSet<string>(PublishReadyToRunPartialAssemblies, StringComparer.OrdinalIgnoreCase);
+            List<string> compositeComponentOutputs = new();
 
             foreach (var file in inputFiles)
             {
@@ -256,6 +257,7 @@ namespace Microsoft.NET.Build.Tasks
                     // file names, so the publish source path must use just the file name. The RelativePath metadata
                     // (already set on r2rFileToPublish) continues to drive the final publish destination.
                     r2rFileToPublish.ItemSpec = Path.Combine(OutputPath, Path.GetFileName(outputR2RImageRelativePath));
+                    compositeComponentOutputs.Add(r2rFileToPublish.ItemSpec);
                 }
                 else if (eligibility.CompileIntoCompositeImage)
                 {
@@ -265,6 +267,7 @@ namespace Microsoft.NET.Build.Tasks
                     // file names, so the publish source path must use just the file name. The RelativePath metadata
                     // (already set on r2rFileToPublish) continues to drive the final publish destination.
                     r2rFileToPublish.ItemSpec = Path.Combine(OutputPath, Path.GetFileName(outputR2RImageRelativePath));
+                    compositeComponentOutputs.Add(r2rFileToPublish.ItemSpec);
                 }
 
                 r2rFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
@@ -323,6 +326,12 @@ namespace Microsoft.NET.Build.Tasks
                 TaskItem r2rCompilationEntry = new(MainAssembly);
                 r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, compositeR2RImageOutputPath);
                 r2rCompilationEntry.SetMetadata(MetadataKeys.CreateCompositeImage, "true");
+
+                // Files crossgen2 writes besides the owner image and its symbols. _CreateR2RImages lists these as
+                // outputs so that a missing or stale component recompiles the composite image. Targets that change
+                // the set of files crossgen2 produces (for example with extra compiler arguments) should update this
+                // metadata after _PrepareForReadyToRunCompilation.
+                r2rCompilationEntry.SetMetadata(MetadataKeys.AdditionalOutputs, string.Join(";", compositeComponentOutputs));
                 r2rCompilationEntry.RemoveMetadata(MetadataKeys.OriginalItemSpec);
 
                 if (EmitSymbols)
