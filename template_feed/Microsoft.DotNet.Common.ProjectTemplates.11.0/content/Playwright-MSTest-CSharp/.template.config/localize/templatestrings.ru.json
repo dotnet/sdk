@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Майкрософт",
   "name": "Тестовый проект MSTest Playwright",
   "description": "Проект, содержащий тесты Playwright с использованием инфраструктуры MSTest, которая может работать на .NET в Windows, Linux и MacOS.",

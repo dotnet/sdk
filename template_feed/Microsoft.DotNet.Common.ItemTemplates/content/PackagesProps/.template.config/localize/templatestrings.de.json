@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "MSBuild Directory.Packages.props-Datei",
   "description": "Eine leere Directory.Packages.props-Datei, die genutzt werden kann, um Paketversionen zentral anzugeben.",

@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "控制台应用",
   "description": "用于创建空命令行应用程序的项目，该程序可在 Windows、Linux 和 macOS 上的 .NET 上运行",

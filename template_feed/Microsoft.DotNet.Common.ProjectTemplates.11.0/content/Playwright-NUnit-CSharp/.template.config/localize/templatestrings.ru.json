@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Майкрософт",
   "name": "Проект тестирования NUnit Playwright",
   "description": "Проект, содержащий тесты Playwright с использованием инфраструктуры тестирования NUnit, которая может работать на .NET в Windows, Linux и MacOS.",

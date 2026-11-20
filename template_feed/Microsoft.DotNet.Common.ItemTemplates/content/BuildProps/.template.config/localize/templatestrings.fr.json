@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Fichier MSBuild Directory.Build.props",
   "description": "Fichier Directory.Build.props vide qui peut être utilisé pour spécifier les propriétés MSBuild d’un dossier entier",

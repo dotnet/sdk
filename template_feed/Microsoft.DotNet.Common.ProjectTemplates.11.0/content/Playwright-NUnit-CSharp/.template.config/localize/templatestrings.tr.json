@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "NUnit Playwright Test Projesi",
   "description": "Windows, Linux ve macOS üzerinde .NET'te çalışabilen ve NUnit test çerçevesini kullanan Playwright testlerini içeren bir proje.",

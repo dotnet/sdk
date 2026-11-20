@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "NUnit Playwright-Testprojekt",
   "description": "Ein Projekt, das Playwright-Tests mit NUnit-Testframework enthält, das unter .NET unter Windows, Linux und MacOS ausgeführt werden kann.",

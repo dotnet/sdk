@@ -3075,7 +3075,7 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle">
         <source>Use `{0}` instead of Range-based indexers on an array</source>
-        <target state="translated">Usar "{0}" en lugar de indizadores basados en intervalos en una matriz</target>
+        <target state="translated">Usar `{0}` en lugar de indizadores basados en intervalos en una matriz</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">
