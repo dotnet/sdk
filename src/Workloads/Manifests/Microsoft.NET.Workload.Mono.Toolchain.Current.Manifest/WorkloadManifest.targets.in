@@ -68,6 +68,7 @@
         '$(WasmEnableSIMD)' == 'false' or
         '$(WasmEnableExceptionHandling)' == 'false' or
         '$(InvariantTimezone)' == 'true' or
+        '$(WasmCustomTimezoneDataDirectory)' != '' or
         '$(WasmNativeStrip)' == 'false' or
         '$(WasmNativeDebugSymbols)' == 'true' or
         '$(WasmSingleFileBundle)' == 'false' or
