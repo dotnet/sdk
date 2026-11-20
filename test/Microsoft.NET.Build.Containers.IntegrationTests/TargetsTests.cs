@@ -169,6 +169,27 @@ public class TargetsTests
         }
     }
 
+    [TestMethod]
+    public void MultiArchContainerEnvironmentVariablesPreserveColonsInValues()
+    {
+        const string variableName = "ASPNETCORE_URLS";
+        const string variableValue = "http://+:8080";
+
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["_ContainerEnvironmentVariables"] = $"{variableName}:{variableValue}",
+        }, projectName: nameof(MultiArchContainerEnvironmentVariablesPreserveColonsInValues));
+        using var _ = d;
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+
+        instance.Build(["_ParseItemsForPublishingSingleContainer"], [logger])
+            .Should().BeTrue("Build should have succeeded but failed due to {0}", string.Join('\n', logger.AllMessages));
+
+        instance.GetItems("ContainerEnvironmentVariables")
+            .Select(variable => $"{variable.EvaluatedInclude}={variable.GetMetadata("Value").EvaluatedValue}")
+            .Should().Equal($"{variableName}={variableValue}");
+    }
+
     [DataRow(true)]
     [DataRow(false)]
     [TestMethod]

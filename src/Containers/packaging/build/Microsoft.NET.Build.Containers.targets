@@ -405,8 +405,8 @@
         Include="$(_ContainerEnvironmentVariables)"/>
       <ContainerEnvironmentVariables
         Condition="@(_ParsedContainerEnvironmentVariables->Count()) > 0 "
-        Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[0])"
-        Value="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[1])" />
+        Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':', 2)[0])"
+        Value="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':', 2)[1])" />
     </ItemGroup>
   </Target>
 
