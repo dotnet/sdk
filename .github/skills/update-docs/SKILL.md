@@ -46,6 +46,10 @@ conventions belong in `test/AGENTS.md`; conditional-filtering details belong in
 `.github/memory/KNOWN_ISSUES.md`. Do not use it as a list of transient failures or open
 bugs.
 
+**Corrected a recurring agent failure?** Fix its cause where agents will meet it next time:
+a test or analyzer when the rule can be enforced, otherwise the nearest `AGENTS.md`, the
+owning skill, or the matching memory file. Do not record one-off mistakes.
+
 **Memory files changed?** Update `.github/memory/INDEX.md` when a file is added, removed,
 renamed, or changes purpose. Its loading map must list exactly the files that exist.
 
