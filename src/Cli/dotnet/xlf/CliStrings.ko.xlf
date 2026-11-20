@@ -800,17 +800,17 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ToolInstallationTimeout">
         <source>Timed out waiting for another installation of tool '{0}' version '{1}' to complete.</source>
-        <target state="new">Timed out waiting for another installation of tool '{0}' version '{1}' to complete.</target>
+        <target state="translated">도구 '{0}' 버전 '{1}'의 다른 설치가 완료되기를 기다리는 동안 시간이 초과되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallationWaiting">
         <source>Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete...</source>
-        <target state="new">Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete...</target>
+        <target state="translated">도구 '{0}' 버전 '{1}'의 다른 설치가 진행 중입니다. 완료되기를 기다리는 중...</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallationWaitingWithProcess">
         <source>Process {2} ({3}) is installing tool '{0}' version '{1}'. Waiting for it to complete...</source>
-        <target state="new">Process {2} ({3}) is installing tool '{0}' version '{1}'. Waiting for it to complete...</target>
+        <target state="translated">프로세스 {2}({3})에서 도구 '{0}' 버전 '{1}'를 설치하고 있습니다. 완료되기를 기다리는 중...</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolLibraryFound">
@@ -830,17 +830,17 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ToolPackageMutationTimeout">
         <source>Timed out waiting for another operation on tool '{0}' to complete.</source>
-        <target state="new">Timed out waiting for another operation on tool '{0}' to complete.</target>
+        <target state="translated">도구 '{0}'의 다른 작업이 완료되기를 기다리는 동안 시간이 초과되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolPackageMutationWaiting">
         <source>Another operation on tool '{0}' is in progress. Waiting for it to complete...</source>
-        <target state="new">Another operation on tool '{0}' is in progress. Waiting for it to complete...</target>
+        <target state="translated">도구 '{0}'의 다른 작업이 진행 중입니다. 작업이 완료될 때까지 기다리는 중입니다...</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolPackageMutationWaitingWithProcess">
         <source>Process {1} ({2}) is modifying tool '{0}'. Waiting for it to complete...</source>
-        <target state="new">Process {1} ({2}) is modifying tool '{0}'. Waiting for it to complete...</target>
+        <target state="translated">프로세스 {1}({2})에서 도구 '{0}' 수정하고 있습니다. 완료되기를 기다리는 중...</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolPackageNotATool">

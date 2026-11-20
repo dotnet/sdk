@@ -800,12 +800,12 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ToolInstallationTimeout">
         <source>Timed out waiting for another installation of tool '{0}' version '{1}' to complete.</source>
-        <target state="new">Timed out waiting for another installation of tool '{0}' version '{1}' to complete.</target>
+        <target state="translated">Timeout durante l'attesa del completamento di un'altra installazione dello strumento '{0}' della versione '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallationWaiting">
         <source>Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete...</source>
-        <target state="new">Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete...</target>
+        <target state="translated">È in corso un'altra installazione dello strumento '{0}' versione '{1}'. In attesa del completamento...</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallationWaitingWithProcess">

@@ -800,17 +800,17 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ToolInstallationTimeout">
         <source>Timed out waiting for another installation of tool '{0}' version '{1}' to complete.</source>
-        <target state="new">Timed out waiting for another installation of tool '{0}' version '{1}' to complete.</target>
+        <target state="translated">等候工具 '{0}' 版本 '{1}' 的另一個安裝完成逾時。</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallationWaiting">
         <source>Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete...</source>
-        <target state="new">Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete...</target>
+        <target state="translated">正在安裝工具 '{0}' 版本 '{1}'。正在等候完成...</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallationWaitingWithProcess">
         <source>Process {2} ({3}) is installing tool '{0}' version '{1}'. Waiting for it to complete...</source>
-        <target state="new">Process {2} ({3}) is installing tool '{0}' version '{1}'. Waiting for it to complete...</target>
+        <target state="translated">處理序 {2} ({3}) 正在安裝工具 '{0}' 版本 '{1}'。正在等候完成...</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolLibraryFound">
@@ -830,17 +830,17 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ToolPackageMutationTimeout">
         <source>Timed out waiting for another operation on tool '{0}' to complete.</source>
-        <target state="new">Timed out waiting for another operation on tool '{0}' to complete.</target>
+        <target state="translated">等候工具 '{0}' 上的另一個作業完成時逾時。</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolPackageMutationWaiting">
         <source>Another operation on tool '{0}' is in progress. Waiting for it to complete...</source>
-        <target state="new">Another operation on tool '{0}' is in progress. Waiting for it to complete...</target>
+        <target state="translated">工具 '{0}' 的另一項操作正在進行中。正在等候其完成...</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolPackageMutationWaitingWithProcess">
         <source>Process {1} ({2}) is modifying tool '{0}'. Waiting for it to complete...</source>
-        <target state="new">Process {1} ({2}) is modifying tool '{0}'. Waiting for it to complete...</target>
+        <target state="translated">處理序 {1} ({2}) 正在修改工具 '{0}'。正在等候完成...</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolPackageNotATool">
