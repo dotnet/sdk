@@ -71,7 +71,8 @@ So the host has to pass the versioned SDK directory in.
 
 The same forwarding code is shared by both CLIs and therefore consistently uses
 `SdkPaths.SdkDirectory`; this remains equivalent to `AppContext.BaseDirectory` in
-the normal managed SDK layout.
+the normal managed SDK layout. The Native AOT MSBuild server client uses this path for
+`MSBuild.dll` and for the managed telemetry logger in `dotnet.dll`.
 
 ## Testing
 

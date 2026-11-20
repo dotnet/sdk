@@ -3,6 +3,10 @@
 
 using System.Diagnostics;
 
+#if CLI_AOT
+using System.Text;
+using Microsoft.Build.Server;
+#endif
 #if !CLI_AOT
 using System.Reflection;
 #endif
@@ -23,8 +27,8 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 /// </list>
 /// </summary>
 /// <remarks>
-/// In AOT mode all MSBuild invocations happen via out-of-process execution, so this should be used with caution - most AOT commands at time of writing
-/// do not use MSBuild, and this is mostly intended to make `--help` output for MSBuild-based commands not require jumping into the managed process space.
+/// AOT commands normally forward MSBuild out-of-process. Eligible commands can instead use the
+/// MSBuild server client without loading the build engine into the native process.
 /// </remarks>
 public class MSBuildForwardingApp : CommandBase
 {
@@ -32,12 +36,17 @@ public class MSBuildForwardingApp : CommandBase
     internal static readonly TimeSpan BuildSoftCancellationTimeout = TimeSpan.FromSeconds(2);
 
     private readonly MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
+#if CLI_AOT
+    private readonly string? _telemetryLoggerArgument;
+    private string? _msbuildServerCommandName;
+#endif
 
     /// <summary>
     /// Adds the CLI's telemetry logger to the MSBuild arguments if telemetry is enabled.
     /// </summary>
-    private static MSBuildArgs ConcatTelemetryLogger(MSBuildArgs msbuildArgs)
+    private static MSBuildArgs ConcatTelemetryLogger(MSBuildArgs msbuildArgs, out string? telemetryLoggerArgument)
     {
+        telemetryLoggerArgument = null;
         if (TelemetryClient.CurrentSessionId != null)
         {
             try
@@ -59,7 +68,8 @@ public class MSBuildForwardingApp : CommandBase
                 string forwardingLoggerTypeLocation = loggerTypeLocation;
 #endif
 
-                msbuildArgs.OtherMSBuildArgs.Add($"-distributedlogger:{loggerTypeFullName},{loggerTypeLocation}*{forwardingLoggerTypeFullName},{forwardingLoggerTypeLocation}");
+                telemetryLoggerArgument = $"-distributedlogger:{loggerTypeFullName},{loggerTypeLocation}*{forwardingLoggerTypeFullName},{forwardingLoggerTypeLocation}";
+                msbuildArgs.OtherMSBuildArgs.Add(telemetryLoggerArgument);
                 return msbuildArgs;
             }
             catch (Exception)
@@ -95,9 +105,10 @@ public class MSBuildForwardingApp : CommandBase
         : base(services)
     {
         var modifiedMSBuildArgs = CommonRunHelpers.AdjustMSBuildForLLMs(
-            ConcatTelemetryLogger(msBuildArgs),
+            ConcatTelemetryLogger(msBuildArgs, out string? telemetryLoggerArgument),
             Services);
 #if CLI_AOT
+        _telemetryLoggerArgument = telemetryLoggerArgument;
         const bool forceOutOfProc = true;
 #else
         const bool forceOutOfProc = false;
@@ -142,14 +153,119 @@ public class MSBuildForwardingApp : CommandBase
 
     internal virtual int ExecuteOutOfProc(string workingDirectory, CancellationToken cancellationToken) => Execute(workingDirectory, cancellationToken);
 
+#if CLI_AOT
+    internal void UseMSBuildServerClient(string commandName) => _msbuildServerCommandName = commandName;
+#endif
+
     private int Execute(string? workingDirectory, CancellationToken cancellationToken)
     {
         using IDisposable softCancellationTimeout =
             ProcessLifecycle.OverrideSoftCancellationTimeout(BuildSoftCancellationTimeout);
 
+#if CLI_AOT
+        if (_msbuildServerCommandName is not null && workingDirectory is null && _forwardingAppWithoutLogging.CanSetEnvironmentVariablesInProcess)
+        {
+            return ExecuteServerClient(cancellationToken);
+        }
+#endif
+        return ExecuteForwarded(workingDirectory, cancellationToken);
+    }
+
+    private int ExecuteForwarded(string? workingDirectory, CancellationToken cancellationToken)
+    {
         // Ignore Ctrl-C for the remainder of the command's execution
         // Forwarding commands will just spawn the child process and exit
         Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
         return _forwardingAppWithoutLogging.Execute(workingDirectory, cancellationToken);
     }
+
+#if CLI_AOT
+    private int ExecuteServerClient(CancellationToken cancellationToken)
+    {
+        using var activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
+        DateTime startedAt = DateTime.UtcNow;
+        string[] arguments = _forwardingAppWithoutLogging.GetAllArguments();
+        if (_telemetryLoggerArgument is not null)
+        {
+            int loggerIndex = Array.IndexOf(arguments, _telemetryLoggerArgument);
+            if (loggerIndex < 0)
+            {
+                throw new InvalidOperationException("The SDK telemetry logger is missing from the MSBuild arguments.");
+            }
+
+            arguments[loggerIndex] = MSBuildServerTelemetry.AddClientStartToLogger(_telemetryLoggerArgument, startedAt);
+        }
+
+        if (Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING) != "1"
+            && UILanguageOverride.OperatingSystemSupportsUtf8())
+        {
+            Console.OutputEncoding = Encoding.UTF8;
+            if (OperatingSystem.IsWindows())
+            {
+                Console.InputEncoding = Encoding.UTF8;
+            }
+        }
+        using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        ConsoleCancelEventHandler cancellationHandler = (_, e) =>
+        {
+            if (e.SpecialKey != ConsoleSpecialKey.ControlBreak)
+            {
+                e.Cancel = true;
+                cancellationSource.Cancel();
+            }
+        };
+        MSBuildClientExitResult result;
+        Console.CancelKeyPress += cancellationHandler;
+        try
+        {
+            using var environment = _forwardingAppWithoutLogging.SetEnvironmentVariablesForInProcessExecution();
+            Reporter.Verbose.WriteLine($"AOT {_msbuildServerCommandName} tier: MSBuildServer.");
+            result = new MSBuildClient(
+                [_forwardingAppWithoutLogging.MSBuildPath, .. arguments],
+                _forwardingAppWithoutLogging.MSBuildPath,
+                multiThreaded: false,
+                shutdownServerAfterBuild: false).Execute(cancellationSource.Token);
+        }
+        finally
+        {
+            Console.CancelKeyPress -= cancellationHandler;
+        }
+
+        if (result.MSBuildClientExitType == MSBuildClientExitType.Success && result.MSBuildAppExitTypeString is not null)
+        {
+            Reporter.Verbose.WriteLine("AOT build server client: request completed.");
+        }
+
+        return CompleteServerClientResult(
+            result,
+            cancellationSource.IsCancellationRequested,
+            () => ExecuteForwarded(workingDirectory: null, cancellationToken));
+    }
+
+    internal static int CompleteServerClientResult(MSBuildClientExitResult result, bool cancellationRequested, Func<int> forward)
+    {
+        if (result.MSBuildClientExitType == MSBuildClientExitType.Success)
+        {
+            if (result.MSBuildAppExitTypeString == "Success")
+            {
+                return 0;
+            }
+
+            if (!string.IsNullOrEmpty(result.MSBuildAppExitTypeString))
+            {
+                return 1;
+            }
+        }
+        else if (result.MSBuildClientExitType is MSBuildClientExitType.ServerBusy
+            or MSBuildClientExitType.UnableToConnect
+            or MSBuildClientExitType.UnknownServerState
+            or MSBuildClientExitType.LaunchError)
+        {
+            return cancellationRequested ? 1 : forward();
+        }
+
+        Reporter.Error.WriteLine($"{CliStrings.MSBuildServer}: {CliCommandStrings.Failed} ({result.MSBuildClientExitType}).");
+        return 1;
+    }
+#endif
 }

@@ -155,14 +155,26 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunTier.cs" Link="Commands\Run\RunTier.cs" />
   </ItemGroup>
 
+  <!-- Physical commands share managed argument and restore processing; MSBuild runs in the server. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Build\AotBuildCommand.cs" Link="Commands\Build\AotBuildCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Build\BuildCommand.cs" Link="Commands\Build\BuildCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Clean\CleanCommand.cs" Link="Commands\Clean\CleanCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoreCommand.cs" Link="Commands\Restore\RestoreCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoringCommand.cs" Link="Commands\Restore\RestoringCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\MSBuild\AotMSBuildServerCommand.cs" Link="Commands\MSBuild\AotMSBuildServerCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\MSBuild\MSBuildServerTelemetry.cs" Link="Commands\MSBuild\MSBuildServerTelemetry.cs" />
+  </ItemGroup>
+
   <!--
-    Build-free 'dotnet test' support for explicit test modules. Project/solution discovery and build remain
-    managed-only; the linked command implementation shares the MTP orchestration, IPC, terminal,
-    cancellation, results-layout, and artifact post-processing code with the managed CLI.
+    Explicit MTP test modules use shared build-free orchestration. MTP project discovery remains
+    managed-only. Eligible VSTest project and solution requests use the MSBuild server client.
   -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\AotTestCommand.cs" Link="Commands\Test\AotTestCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\CliConstants.cs" Link="Commands\Test\CliConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\TestCommand.cs" Link="Commands\Test\VSTest\TestCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\VSTestArgumentConverter.cs" Link="Commands\Test\VSTest\VSTestArgumentConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\**\*.cs"
              Exclude="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\MSBuildHandler.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\MSBuildUtility.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\SolutionAndProjectUtility.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\ValidationUtility.cs"
              LinkBase="Commands\Test\MTP" />

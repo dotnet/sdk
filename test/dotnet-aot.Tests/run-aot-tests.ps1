@@ -255,12 +255,15 @@ try {
 }
 finally {
     try {
-        & $testDotnet exec (Join-Path $sdkDirectory "dotnet.dll") build-server shutdown
+        # Shut down only this test SDK's compiler, not shared MSBuild or toolset servers.
+        $compilerPath = [System.IO.Path]::Combine($sdkDirectory, "Roslyn", "bincore", "VBCSCompiler.dll")
+        & $testDotnet exec $compilerPath -shutdown
         if ($LASTEXITCODE -ne 0) {
-            throw "Could not shut down the isolated test SDK's build servers (exit code $LASTEXITCODE)."
+            throw "Could not shut down the test SDK's compiler server (exit code $LASTEXITCODE)."
         }
     }
     finally {
+        # Tests that enable MSBuild use a unique handshake salt and shut down their own server.
         foreach ($entry in $previousEnvironment.GetEnumerator()) {
             [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value)
         }
