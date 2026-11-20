@@ -327,6 +327,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>3aae1dd4eb96b8f61cb3b7b3fab684b01375867e</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.DotNetFormat" Version="11.2.0-preview.26567.106">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>3aae1dd4eb96b8f61cb3b7b3fab684b01375867e</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="11.2.0-preview.26567.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>3aae1dd4eb96b8f61cb3b7b3fab684b01375867e</Sha>
