@@ -1,5 +1,5 @@
 ﻿<!--#if (UseMSTestSdk)-->
-<Project Sdk="MSTest.Sdk/4.5.2">
+<Project Sdk="MSTest.Sdk/4.5.3">
 
   <PropertyGroup>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net11.0</TargetFramework>
@@ -52,7 +52,7 @@
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
 <!--#endif-->
     <PackageReference Include="Microsoft.Playwright.MSTest.v4" Version="1.64.1" />
-    <PackageReference Include="MSTest" Version="4.5.2" />
+    <PackageReference Include="MSTest" Version="4.5.3" />
   </ItemGroup>
 
 <!--#if (csharpFeature_ImplicitUsings)-->
