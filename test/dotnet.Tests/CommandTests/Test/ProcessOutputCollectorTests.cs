@@ -23,7 +23,7 @@ public class ProcessOutputCollectorTests
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public async Task ClosedLiveOutput_DoesNotRenderAWritingThatWasWaitingForTheTerminal(bool showProgress)
+    public async Task CancelledWrite_DoesNotRenderAWritingThatWasWaitingForTheTerminal(bool showProgress)
     {
         using var terminal = new TestProgressStateAwareTerminal(new NonAnsiTerminal(new CapturingConsole()), showProgress);
         using var cancellation = new CancellationTokenSource();

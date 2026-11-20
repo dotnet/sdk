@@ -4,8 +4,10 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.DotNet.ProjectTools;
 using Moq;
 using TestExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
@@ -84,6 +86,41 @@ public class TerminalTestReporterTests
             .And.Contain("##[group]child group")
             .And.Contain("::notice::child notice")
             .And.NotContain("[Tests net9.0|x64] ##[group]");
+    }
+
+    [TestMethod]
+    public void CreateModuleDisplayNameSelector_CachesDisplayNamesAndPreservesNullFrameworkWildcard()
+    {
+        const string firstPath = @"C:\first\Tests.dll";
+        const string secondPath = @"C:\second\Tests.dll";
+        TestModule[] modules =
+        [
+            new(
+                new RunProperties("dotnet", firstPath, null),
+                ProjectFullPath: @"C:\first\Tests.csproj",
+                TargetFramework: "net9.0",
+                IsTestingPlatformApplication: true,
+                LaunchSettings: null,
+                TargetPath: firstPath,
+                DotnetRootArchVariableName: null,
+                EnvironmentVariables: new Dictionary<string, string>()),
+            new(
+                new RunProperties("dotnet", secondPath, null),
+                ProjectFullPath: @"C:\second\Tests.csproj",
+                TargetFramework: "net10.0",
+                IsTestingPlatformApplication: true,
+                LaunchSettings: null,
+                TargetPath: secondPath,
+                DotnetRootArchVariableName: null,
+                EnvironmentVariables: new Dictionary<string, string>()),
+        ];
+
+        Func<string, string?, string> displayName = TerminalTestReporter.CreateModuleDisplayNameSelector(modules);
+
+        displayName(firstPath, "net9.0").Should().Be("Tests");
+        displayName(secondPath, "net10.0").Should().Be("Tests");
+        displayName(firstPath, null).Should().Be(firstPath);
+        displayName(firstPath, "NET9.0").Should().Be("Tests");
     }
 
     [TestMethod]

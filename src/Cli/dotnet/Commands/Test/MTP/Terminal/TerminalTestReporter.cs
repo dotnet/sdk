@@ -1504,19 +1504,22 @@ internal sealed partial class TerminalTestReporter : IDisposable
     }
 
     internal static Func<string, string?, string> CreateModuleDisplayNameSelector(IReadOnlyList<TestModule> modules)
-        => (assembly, targetFramework) =>
+    {
+        var displayNames = new ConcurrentDictionary<(string Assembly, string? TargetFramework), string>();
+        return (assembly, targetFramework) => displayNames.GetOrAdd((assembly, targetFramework), key =>
         {
-            string name = Path.GetFileNameWithoutExtension(assembly);
+            string name = Path.GetFileNameWithoutExtension(key.Assembly);
             int matchingPaths = modules
                 .Where(module => FileUtilities.PathComparer.Equals(Path.GetFileNameWithoutExtension(module.TargetPath), name) &&
-                    (targetFramework is null || module.TargetFramework is null ||
-                     string.Equals(targetFramework, module.TargetFramework, StringComparison.OrdinalIgnoreCase)))
+                    (key.TargetFramework is null || module.TargetFramework is null ||
+                     string.Equals(key.TargetFramework, module.TargetFramework, StringComparison.OrdinalIgnoreCase)))
                 .Select(module => module.TargetPath)
                 .Distinct(FileUtilities.PathComparer)
                 .Take(2)
                 .Count();
-            return matchingPaths > 1 ? assembly : name;
-        };
+            return matchingPaths > 1 ? key.Assembly : name;
+        });
+    }
 
     internal void WriteInformationMessage(string text) =>
         _terminalWithProgress.WriteToTerminal(terminal =>

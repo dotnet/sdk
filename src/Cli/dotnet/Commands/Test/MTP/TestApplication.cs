@@ -214,14 +214,7 @@ internal sealed class TestApplication(
 
             // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
             // We might not be able to consume all the output if the test app has exited but left a child process alive.
-            try
-            {
-                await Task.WhenAll(stdOutTask, stdErrTask).WaitAsync(TimeSpan.FromSeconds(5));
-            }
-            catch (TimeoutException)
-            {
-                _handler.CloseLiveOutput(timedOut: true);
-            }
+            await WaitForOutputDrainAsync(stdOutTask!, stdErrTask!, _handler, TimeSpan.FromSeconds(5));
 
             if (artifactPostProcessingTimedOut)
             {
@@ -914,6 +907,22 @@ internal sealed class TestApplication(
         if (capturedOutput.Length > 0)
         {
             Logger.LogTrace($"{label} (already streamed live): {capturedOutput}");
+        }
+    }
+
+    internal static async Task WaitForOutputDrainAsync(
+        Task stdOutTask,
+        Task stdErrTask,
+        TestApplicationHandler handler,
+        TimeSpan timeout)
+    {
+        try
+        {
+            await Task.WhenAll(stdOutTask, stdErrTask).WaitAsync(timeout);
+        }
+        catch (TimeoutException)
+        {
+            handler.CloseLiveOutput(timedOut: true);
         }
     }
 
