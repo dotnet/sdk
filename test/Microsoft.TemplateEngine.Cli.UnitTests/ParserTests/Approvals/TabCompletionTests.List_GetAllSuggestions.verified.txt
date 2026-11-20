@@ -28,6 +28,13 @@
     Detail: Enables diagnostic output.
   },
   {
+    Label: --format,
+    Kind: Keyword,
+    SortText: --format,
+    InsertText: --format,
+    Detail: Format the output accordingly. Either `table`, or `json`. The default value is `table`.
+  },
+  {
     Label: --ignore-constraints,
     Kind: Keyword,
     SortText: --ignore-constraints,

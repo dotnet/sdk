@@ -13,7 +13,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     {
         protected override Task<NewCommandStatus> ExecuteAsync(ListCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, ParseResult parseResult, CancellationToken cancellationToken)
         {
-            PrintDeprecationMessage<LegacyListCommand, ListCommand>(args.ParseResult);
+            // JSON output must contain only the JSON document, so the deprecation notice is suppressed.
+            if (args.Format != NewListOutputFormat.json)
+            {
+                PrintDeprecationMessage<LegacyListCommand, ListCommand>(args.ParseResult);
+            }
+
             return base.ExecuteAsync(args, environmentSettings, templatePackageManager, parseResult, cancellationToken);
         }
     }

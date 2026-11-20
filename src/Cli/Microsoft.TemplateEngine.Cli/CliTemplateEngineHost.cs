@@ -18,14 +18,15 @@ namespace Microsoft.TemplateEngine.Cli
             IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> builtIns,
             IReadOnlyList<string>? fallbackHostNames = null,
             string? outputPath = null,
-            LogLevel logLevel = LogLevel.Information)
+            LogLevel logLevel = LogLevel.Information,
+            bool logToStdErr = false)
             : base(
                   hostIdentifier,
                   version,
                   preferences,
                   builtIns,
                   fallbackHostNames,
-                  loggerFactory: CreateLoggerFactory(logLevel))
+                  loggerFactory: CreateLoggerFactory(logLevel, logToStdErr))
         {
             string workingPath = FileSystem.GetCurrentDirectory();
             IsCustomOutputPath = outputPath != null;
@@ -36,13 +37,14 @@ namespace Microsoft.TemplateEngine.Cli
 
         public bool IsCustomOutputPath { get; }
 
-        private static ILoggerFactory CreateLoggerFactory(LogLevel logLevel)
+        private static ILoggerFactory CreateLoggerFactory(LogLevel logLevel, bool logToStdErr = false)
         {
             // Construct logging directly to avoid building a dependency injection container for every host.
             ConsoleLoggerProvider provider = new(
                 new StaticOptionsMonitor<ConsoleLoggerOptions>(new()
                 {
-                    FormatterName = nameof(CliConsoleFormatter)
+                    FormatterName = nameof(CliConsoleFormatter),
+                    LogToStandardErrorThreshold = logToStdErr ? LogLevel.Trace : LogLevel.None
                 }),
                 [
                     new CliConsoleFormatter(new StaticOptionsMonitor<ConsoleFormatterOptions>(new()

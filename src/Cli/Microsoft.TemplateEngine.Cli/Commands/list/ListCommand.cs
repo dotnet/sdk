@@ -19,7 +19,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             CancellationToken cancellationToken)
         {
             NewCommandStatus status = await base.ExecuteAsync(args, environmentSettings, templatePackageManager, parseResult, cancellationToken).ConfigureAwait(false);
-            await CheckTemplatesWithSubCommandName(args, templatePackageManager, cancellationToken).ConfigureAwait(false);
+
+            // JSON output must contain only the JSON document, so the short name conflict hint is suppressed.
+            if (args.Format != NewListOutputFormat.json)
+            {
+                await CheckTemplatesWithSubCommandName(args, templatePackageManager, cancellationToken).ConfigureAwait(false);
+            }
+
             return status;
         }
     }
