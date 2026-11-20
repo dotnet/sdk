@@ -83,6 +83,44 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
+        public void It_should_suggest_workload_when_target_adds_missing_workload_pack()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "WorkloadTest",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            // Workload manifests can add MissingWorkloadPack from a target for items that aren't visible during evaluation.
+            var testAsset = TestAssetsManager
+                .CreateTestProject(testProject)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Add(new XElement(ns + "Target",
+                        new XAttribute("Name", "AddMissingWorkloadPack"),
+                        new XAttribute("BeforeTargets", "_CheckForMissingWorkload;GetSuggestedWorkloads"),
+                        new XElement(ns + "ItemGroup",
+                            new XElement(ns + "MissingWorkloadPack",
+                                new XAttribute("Include", "Microsoft.NET.Sdk.MissingTestWorkload.Pack")))));
+                });
+
+            var getValuesCommand = new GetValuesCommand(testAsset, "SuggestedWorkload", GetValuesCommand.ValueType.Item)
+            {
+                DependsOnTargets = "GetSuggestedWorkloads",
+                ShouldRestore = false
+            };
+
+            getValuesCommand.Execute()
+                .Should()
+                .Pass();
+
+            getValuesCommand.GetValues()
+                .Should()
+                .BeEquivalentTo("microsoft-net-sdk-missingtestworkload");
+        }
+
+        [TestMethod]
         public void It_should_fail_to_restore_without_workload_when_multitargeted()
         {
             var testProject = new TestProject()

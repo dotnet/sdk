@@ -17,10 +17,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="ShowMissingWorkloads" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
+  <!-- The MissingWorkloadPack checks are on the tasks rather than the targets so that targets hooked
+       BeforeTargets="GetSuggestedWorkloads;_CheckForMissingWorkload" can add items. MSBuild evaluates a
+       target's condition before running its BeforeTargets. -->
   <Target Name="GetSuggestedWorkloads"
-          Returns="@(SuggestedWorkload)"
-          Condition="@(MissingWorkloadPack) != ''">
-    <ShowMissingWorkloads MissingWorkloadPacks="@(MissingWorkloadPack)"
+          Returns="@(SuggestedWorkload)">
+    <ShowMissingWorkloads Condition="'@(MissingWorkloadPack)' != ''"
+                          MissingWorkloadPacks="@(MissingWorkloadPack)"
                           NetCoreRoot="$(NetCoreRoot)"
                           NETCoreSdkVersion="$(NETCoreSdkVersion)"
                           GenerateErrorsForMissingWorkloads="false">
@@ -33,9 +36,10 @@ Copyright (c) .NET Foundation. All rights reserved.
        Visual Studio to collect the workloads from the GetSuggestedWorkloads target -->
   <Target Name="_CheckForMissingWorkload"
         BeforeTargets="_CheckForInvalidConfigurationAndPlatform;_CheckForUnsupportedTargetPlatformIdentifier"
-        Condition="'@(MissingWorkloadPack)' != '' And '$(DesignTimeBuild)' != 'true'">
+        Condition="'$(DesignTimeBuild)' != 'true'">
 
-    <ShowMissingWorkloads MissingWorkloadPacks="@(MissingWorkloadPack)"
+    <ShowMissingWorkloads Condition="'@(MissingWorkloadPack)' != ''"
+                          MissingWorkloadPacks="@(MissingWorkloadPack)"
                           NetCoreRoot="$(NetCoreRoot)"
                           NETCoreSdkVersion="$(NETCoreSdkVersion)"
                           GenerateErrorsForMissingWorkloads="true"/>
