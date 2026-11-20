@@ -830,7 +830,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ToolPackageMutationTimeout">
         <source>Timed out waiting for another operation on tool '{0}' to complete.</source>
-        <target state="new">Timed out waiting for another operation on tool '{0}' to complete.</target>
+        <target state="translated">ツール '{0}' で別の操作が完了するのを待機中にタイムアウトしました。</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolPackageMutationWaiting">
