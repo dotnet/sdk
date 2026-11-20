@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string projectContents = File.ReadAllText(Path.Combine(outputDirectory, $"{projectName}.{projectExtension}"));
 
             projectContents.Should().Contain($"<TargetFramework>{targetFramework}</TargetFramework>");
-            projectContents.Should().Contain("""<PackageReference Include="MSTest" Version="4.4.0" />""");
+            projectContents.Should().Contain("""<PackageReference Include="MSTest" Version="4.5.3" />""");
         }
 
         public static IEnumerable<object[]> MSTestTemplateSelectionData()
