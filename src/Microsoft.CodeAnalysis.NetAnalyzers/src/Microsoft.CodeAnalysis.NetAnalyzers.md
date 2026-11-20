@@ -2238,6 +2238,18 @@ When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is call
 |CodeFix|True|
 ---
 
+## [CA2029](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2029): Do not set the apartment state of a running thread
+
+The apartment state of a thread can only be set before the thread starts. The 'STAThread' attribute takes effect only on the synchronous entry point of an application; on any other method, including an async 'Main' method, it is ignored and the method runs in the multithreaded apartment. Calling 'SetApartmentState' or 'TrySetApartmentState' on the current thread to request a single-threaded apartment fails because the thread is already running, and in an async method, code after an 'await' can resume on a different thread. To run code in a single-threaded apartment, mark a synchronous 'Main' method with 'STAThread', or call 'SetApartmentState' on a new thread before starting it.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA2100](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.
