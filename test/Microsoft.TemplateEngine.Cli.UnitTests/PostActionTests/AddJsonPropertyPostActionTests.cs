@@ -239,7 +239,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(expectedResult, result);
             string actualJsonContent = _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath);
@@ -300,7 +301,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(expectedResult, result);
             string actualJsonContent = _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath);
@@ -349,7 +351,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsTrue(result);
             JsonNode? modifiedJsonContent = JsonNode.Parse(_engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
