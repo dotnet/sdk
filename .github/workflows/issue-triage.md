@@ -56,9 +56,10 @@ graders:
 #
 # When org-level billing is available, this will be removed.
 # See `shared/pat_pool.README.md` for more information.
+# Pilot: imports the shared pool from arcade-skills; other workflows still use shared/pat_pool.md.
 # ###############################################################
 imports:
-  - uses: shared/pat_pool.md
+  - uses: dotnet/arcade-skills/agentic-workflows/shared/shared_pat_pool.md@main
     with:
       environment: copilot-pat-pool
 
