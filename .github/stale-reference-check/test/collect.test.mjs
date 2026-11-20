@@ -48,6 +48,25 @@ test('collects same-line, adjacent and multiline C#/XML seeds without requiring 
     assert.deepEqual(await collect(root, { rulesHash: 'rules-1' }), manifest);
 });
 
+test('skips C# files with lexical failures and reports a diagnostic', async t => {
+    const root = await fixture(t, {
+        'src/Disabled.cs': [
+            '// TODO remove once https://github.com/dotnet/sdk/issues/123 is fixed.',
+            '#if false',
+            "this isn't active C# source",
+            '#endif',
+        ].join('\n'),
+        'src/Owned.cs': '// TODO remove once https://github.com/dotnet/sdk/issues/456 is fixed.',
+    });
+
+    const result = await collect(root, { rulesHash: 'rules' });
+
+    assert.deepEqual(result.candidates.map(candidate => candidate.path), ['src/Owned.cs']);
+    assert.deepEqual(result.diagnostics, [
+        'Skipped C# candidate collection for src/Disabled.cs: Cannot establish comment site identity: unterminated string or character literal.',
+    ]);
+});
+
 test('Visual Basic sources are not collected', async t => {
     const root = await fixture(t, {
         'test/Cases.vb': [
@@ -65,6 +84,30 @@ test('Visual Basic sources are not collected', async t => {
     });
     const result = await collect(root, { rulesHash: 'rules' });
     assert.deepEqual(result.candidates.map(candidate => candidate.path), ['src/Owned.cs']);
+});
+
+test('C# TODO and workaround matches in attributes or comments are candidates, but unrelated strings are not', async t => {
+    const root = await fixture(t, {
+        'src/Cases.cs': [
+            'namespace Sample.Tests;',
+            'class Cases {',
+            '[UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Remove when https://github.com/dotnet/sdk/issues/123 is fixed.")]',
+            'public void Suppressed() {}',
+            'void Run() {',
+            '    var message = "TODO remove once https://github.com/dotnet/sdk/issues/123 is fixed";',
+            '    // TODO remove once https://github.com/dotnet/sdk/issues/123 is fixed.',
+            '}',
+            '[Ignore("https://github.com/dotnet/sdk/issues/456")]',
+            'public void Ignored() {}',
+            '}',
+        ].join('\n'),
+    });
+    const result = await collect(root, { rulesHash: 'rules' });
+    assert.deepEqual(result.candidates.map(candidate => [candidate.seedLine, candidate.kindHint]), [
+        [3, 'workaround'],
+        [7, 'todo'],
+        [9, 'ignore'],
+    ]);
 });
 
 test('uses tracked committed files and never modifies checkout, index, or HEAD', async t => {

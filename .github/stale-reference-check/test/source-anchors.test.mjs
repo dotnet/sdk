@@ -3,7 +3,7 @@
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { ignoredTestDeclaration, sourceAnchors } from '../source-anchors.mjs';
+import { csharpAttributeSites, ignoredTestDeclaration, sourceAnchors } from '../source-anchors.mjs';
 
 const seed = '// TODO https://github.com/dotnet/sdk/issues/123';
 const anchor = (lines, file = 'src/File.cs', line = lines.findIndex(text => text.includes('TODO')) + 1) =>
@@ -102,7 +102,74 @@ test('C# literals, comments, attributes and nested scopes cannot fabricate decla
         '} } } }',
     ];
     assert.equal(anchor(lines), 'csharp: namespace Outer / namespace Inner / [Attribute("class Imaginary {")]class Real / void Run()');
-    assert.throws(() => anchor(['var text = "TODO https://github.com/dotnet/sdk/issues/123";']), /not a comment/);
+    assert.throws(() => anchor(['var text = "TODO https://github.com/dotnet/sdk/issues/123";']), /not a comment or actionable attribute/);
+});
+
+test('actionable C# attribute arguments get stable source-owned identities', () => {
+    const lines = [
+        'namespace Sample.Tests;',
+        'class Cases {',
+        `[UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Remove when https://github.com/dotnet/sdk/issues/123 is fixed.")]`,
+        'public void First() {}',
+        `[UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Remove when https://github.com/dotnet/sdk/issues/123 is fixed.")]`,
+        'public void Second() {}',
+        '}',
+    ];
+    const sites = csharpAttributeSites(lines);
+    const first = sourceAnchors(lines, 'src/Cases.cs')(3);
+    const second = sourceAnchors(lines, 'src/Cases.cs')(5);
+    assert.match(first, /^csharp attribute: [a-f0-9]{64}$/);
+    assert.notEqual(first, second);
+    assert.equal(first, sourceAnchors(['', ...lines], 'src/Cases.cs')(4));
+    assert.ok(sites.has(3));
+    assert.ok(sites.has(5));
+    assert.equal(sites.has(4), false);
+    assert.throws(() => sourceAnchors([
+        'namespace Sample.Tests;',
+        'class Cases {',
+        'void Run() {',
+        '    var text = "Remove when https://github.com/dotnet/sdk/issues/123 is fixed.";',
+        '    var other = "TODO https://github.com/dotnet/sdk/issues/123";',
+        '    var workaround = "Temporary fix until https://github.com/dotnet/sdk/issues/123";',
+        '    var verbatim = @"Remove when https://github.com/dotnet/sdk/issues/123 is fixed.";',
+        '    var raw = """Remove when https://github.com/dotnet/sdk/issues/123 is fixed.""";',
+        '    var interpolated = $"Remove when https://github.com/dotnet/sdk/issues/123 is fixed.";',
+        '    var value = values[0];',
+        '}',
+        '}',
+    ], 'src/Cases.cs')(4), /not a comment or actionable attribute/);
+});
+
+test('parameter attributes are not confused with collection expressions', () => {
+    const lines = [
+        'class Cases {',
+        '    void Run([ParameterAttribute("TODO remove once https://github.com/dotnet/sdk/issues/123 is fixed")] string value) {}',
+        '    void Invoke() {',
+        '        Consume([Create("TODO remove once https://github.com/dotnet/sdk/issues/456")]);',
+        '    }',
+        '}',
+    ];
+
+    const sites = csharpAttributeSites(lines);
+
+    assert.ok(sites.has(2));
+    assert.equal(sites.has(4), false);
+    assert.match(sourceAnchors(lines, 'src/Cases.cs')(2), /^csharp attribute: [a-f0-9]{64}$/);
+    assert.throws(() => sourceAnchors(lines, 'src/Cases.cs')(4), /not a comment or actionable attribute/);
+});
+
+test('alias-qualified attribute names are distinct from attribute targets', () => {
+    const lines = [
+        '[global::System.Obsolete("TODO remove once https://github.com/dotnet/sdk/issues/123 is fixed")]',
+        '[assembly: global::System.Obsolete("TODO remove once https://github.com/dotnet/sdk/issues/456 is fixed")]',
+    ];
+
+    const sites = csharpAttributeSites(lines);
+
+    assert.ok(sites.has(1));
+    assert.ok(sites.has(2));
+    assert.match(sourceAnchors(lines, 'src/Attributes.cs')(1), /^csharp attribute: [a-f0-9]{64}$/);
+    assert.match(sourceAnchors(lines, 'src/Attributes.cs')(2), /^csharp attribute: [a-f0-9]{64}$/);
 });
 
 test('overloads, different types and different control-flow blocks have distinct lexical sites', () => {

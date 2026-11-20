@@ -18,6 +18,10 @@ branch rather than assuming `main`.
 
 1. [`collect.mjs`](collect.mjs) uses tracked-source grep to locate relevant
    constructs and collect numbered context, including URLs on adjacent lines.
+   In C# files, TODO/workaround matches in comments and attribute arguments are
+   eligible; unrelated TODO-like text in string literals is ignored.
+   If C# lexical analysis fails for a file, that file is skipped with a warning
+   and collection continues for the remaining files.
 2. [`interpretations.mjs`](interpretations.mjs) restores compatible cached
    classifications and selects a bounded batch of new or changed source.
 3. The [reusable interpreter](../workflows/stale-reference-interpret.md) identifies
@@ -90,8 +94,10 @@ neighbor can change it. Identical normalized seeds with identical neighborhoods 
 ambiguous and must be deferred rather than assigned line-based identities.
 This is not a compiler symbol or proof of semantic ownership. Comments preceding
 declarations/elements use the following structural site; other comments use their
-containing scope. Unsupported or ambiguous structures, including indistinguishable
-repeated comments, fail validation rather than acquiring model-chosen identities.
+containing scope. Actionable C# attribute arguments use the neighboring source
+lines as a stable site identity. Unsupported or ambiguous structures, including
+indistinguishable repeated comments, fail validation rather than acquiring
+model-chosen identities.
 This host computation does not expand the model's source evidence allowance.
 
 The interpreter may request up to two additional windows of at most 80 lines
