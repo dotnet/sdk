@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-sln" "1" "2026-09-29" "" ".NET Documentation"
+.TH "dotnet-sln" "1" "2026-11-13" "" ".NET Documentation"
 .hy
 .SH dotnet sln
 .PP
@@ -137,7 +137,7 @@ Adds one or more projects to the solution file.
 .IP
 .nf
 \f[C]
-dotnet sln [<SOLUTION_FILE>] add [--in-root] [-s|--solution-folder <PATH>] <PROJECT_PATH> [<PROJECT_PATH>...]
+dotnet sln [<SOLUTION_FILE>] add [--in-root] [-s|--solution-folder <PATH>] [--include-references] <PROJECT_PATH> [<PROJECT_PATH>...]
 dotnet sln add [-h|--help]
 \f[R]
 .fi
@@ -193,6 +193,13 @@ Can\[cq]t be used with \f[V]-s|--solution-folder\f[R].
 .PP
 The destination solution folder path to add the projects to.
 Can\[cq]t be used with \f[V]--in-root\f[R].
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--include-references\f[B]\f[R]
+.RS 2
+.PP
+Recursively adds any project references referenced by the specified projects to the solution.
+Available in .NET SDK 9.0.300 and later versions.
 .RE
 .SS \f[V]remove\f[R]
 .PP
@@ -297,6 +304,16 @@ Add a C# project to a solution:
 .nf
 \f[C]
 dotnet sln add todo-app/todo-app.csproj
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Add a C# project and all of its project references recursively to a solution:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet sln add todo-app/todo-app.csproj --include-references
 \f[R]
 .fi
 .RE

@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-list" "1" "2026-08-28" "" ".NET Documentation"
+.TH "dotnet-new-list" "1" "2026-11-13" "" ".NET Documentation"
 .hy
 .SH dotnet new list
 .PP
@@ -42,6 +42,11 @@ To find templates in NuGet that you can install locally, use the \f[V]search\f[R
 Starting with .NET SDK 7.0.100, the \f[V]list\f[R] command might not show all the templates installed on the machine.
 It takes the result of template constraints into account, and the templates that can\[cq]t be used won\[cq]t be shown.
 To force show all the templates, use the \f[V]--ignore-constraints\f[R] option.
+.RS
+.PP
+[!WARNING] To limit the list of templates to those that are relevant, .NET walks up the current tree to find a .NET project to scope the list of templates.
+Ensure you only run \f[V]dotnet new\f[R] commands from trusted directories.
+.RE
 .RS
 .PP
 .RE
@@ -150,7 +155,7 @@ Available since .NET SDK 7.0.100.
 .RS 2
 .PP
 The project that the template is added to.
-For the list command, it might be needed to specify the project the template is being added to to correctly evaluate constraints for the template.
+For the list command, it might be needed to specify the project the template is being added to correctly evaluate constraints for the template.
 Available since .NET SDK 7.0.100.
 .RE
 .IP \[bu] 2
