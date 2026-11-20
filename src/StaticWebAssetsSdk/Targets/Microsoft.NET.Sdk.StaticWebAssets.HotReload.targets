@@ -28,6 +28,18 @@ Copyright (c) .NET Foundation. All rights reserved.
                                              '$(JSModulesEnabled)' == 'true'">true</HotReloadBrowserToolsEnabled>
   </PropertyGroup>
 
+  <!-- Server browser tools stay local to their Web SDK project. WebAssembly browser tools must
+       still flow to the hosting server. Filter export candidates without changing the build cache. -->
+  <Target Name="_RemoveHotReloadBrowserToolsAssetsFromReference"
+          AfterTargets="_ReadCurrentProjectBuildStaticWebAssetItems"
+          Condition="'$(HotReloadBrowserToolsRegisterInitializerAsJSModule)' == 'true'">
+    <ItemGroup>
+      <_BuildStaticWebAssetReferenceCandidates Remove="@(_BuildStaticWebAssetReferenceCandidates)"
+        Condition="'%(_BuildStaticWebAssetReferenceCandidates.SourceId)' == '$(PackageId)' and
+                   $([System.String]::Copy('%(_BuildStaticWebAssetReferenceCandidates.RelativePath)').StartsWith('_framework/$(HotReloadBrowserToolsAssetPrefix)'))" />
+    </ItemGroup>
+  </Target>
+
   <!--
     Produces the Hot Reload browser tools assets for the current project:
 

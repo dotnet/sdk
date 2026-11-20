@@ -101,7 +101,6 @@ internal sealed partial class CSharpCompilerCommand
             language: RequestLanguage.CSharpCompile,
             arguments: arguments,
             workingDirectory: BaseDirectory,
-            tempDirectory: Path.GetTempPath(),
             keepAlive: null,
             libDirectory: null,
             compilerHash: GetCompilerCommitHash());

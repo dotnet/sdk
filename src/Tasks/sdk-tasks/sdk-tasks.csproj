@@ -1,4 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
+
+  <PropertyGroup>
+    <SkipCurrentSourceBuiltPackageVersionOverrides Condition="'$(DotNetBuildFromVMR)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">true</SkipCurrentSourceBuiltPackageVersionOverrides>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <TargetFramework>$(BundledNETCoreAppTargetFramework)</TargetFramework>
@@ -7,6 +13,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsAotCompatible>true</IsAotCompatible>
+    <EnableKnownPackVersionUpdatesForCurrentTargetFramework Condition="'$(DotNetBuildFromVMR)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">false</EnableKnownPackVersionUpdatesForCurrentTargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,12 +22,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <!-- Compile against the bootstrap .NET task host, not the shipping MSBuild packages.
+         Use NetCoreSdkRoot rather than MSBuildBinPath because these tasks run with Runtime="NET"
+         even when the outer build uses Full Framework MSBuild. -->
+    <Reference Include="$(NetCoreSdkRoot)Microsoft.Build.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)Microsoft.Build.Framework.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)Microsoft.Build.Tasks.Core.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)Microsoft.Build.Utilities.Core.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)NuGet.Frameworks.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)NuGet.Packaging.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)NuGet.Versioning.dll" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
-    <PackageReference Include="NuGet.Packaging" />
-    <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 
@@ -31,5 +46,7 @@
      <!-- This causes conflicts with System.Threading.Tasks.Task. Giving it an alias to avoid the conflict. -->
     <Using Include="Microsoft.Build.Utilities.Task" Alias="Task" />
   </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>

@@ -9,6 +9,8 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal sealed class TestApplicationHandler
 {
     private const string RetryOrchestratorFeature = "RetryOrchestrator";
+    private const string RefreshMappingsOrchestratorFeature = "RefreshMappingsOrchestrator";
+    private const string RunAffectedTestsOrchestratorFeature = "RunAffectedTestsOrchestrator";
 
     private readonly TerminalTestReporter _output;
     private readonly TestModule _module;
@@ -21,6 +23,9 @@ internal sealed class TestApplicationHandler
 
     private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
     private bool _receivedTestHostHandshake;
+    private bool _receivedAffectedTestsOrchestratorHandshake;
+    private bool _receivedIncompleteHandshake;
+    private bool _handshakeRejected;
 
     public TestApplicationHandler(
         TerminalTestReporter output,
@@ -145,7 +150,7 @@ internal sealed class TestApplicationHandler
             return false;
         }
 
-        // Orchestrators are capability-style participants: recognize the retry orchestrator,
+        // Orchestrators are capability-style participants: recognize known orchestrators,
         // but accept missing or unknown feature values so older and future peers remain compatible.
         // This handshake arrives before the first child TestHost handshake, which lets the reporter
         // render attempt 1 as a retry attempt without relying on command-line inspection.
@@ -154,6 +159,19 @@ internal sealed class TestApplicationHandler
             string.Equals(orchestratorFeature, RetryOrchestratorFeature, StringComparison.Ordinal))
         {
             _output.EnableRetry();
+        }
+
+        if (hostType != HandshakeMessageHostTypes.TestHost)
+        {
+            bool isAffectedTestsOrchestrator = hostType == HandshakeMessageHostTypes.TestHostOrchestrator &&
+                !_options.IsHelp &&
+                !_options.IsDiscovery &&
+                handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.OrchestratorFeature, out string? feature) &&
+                ((_options.CollectTestMap && feature == RefreshMappingsOrchestratorFeature) ||
+                 (_options.AffectedTests && feature == RunAffectedTestsOrchestratorFeature));
+
+            _receivedAffectedTestsOrchestratorHandshake |= isAffectedTestsOrchestrator;
+            _receivedIncompleteHandshake |= !isAffectedTestsOrchestrator;
         }
 
         if (!_options.IsArtifactPostProcessing)
@@ -195,6 +213,8 @@ internal sealed class TestApplicationHandler
     // mode) are real protocol failures and must still be surfaced even when the SDK is in help mode.
     private void ReportHandshakeFailure(string failureMessage)
     {
+        _handshakeRejected = true;
+
         if (_artifactPostProcessingInvocation is not null)
         {
             _artifactPostProcessingInvocation.RecordFailure(failureMessage);
@@ -639,12 +659,16 @@ internal sealed class TestApplicationHandler
 
         if (_receivedTestHostHandshake && _handshakeInfo.HasValue)
         {
-            // If we received a handshake from TestHostController but not from TestHost,
-            // call HandshakeFailure instead of AssemblyRunCompleted
             _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData);
         }
-        else
+        else if (exitCode != ExitCode.Success ||
+            _handshakeRejected ||
+            _receivedIncompleteHandshake ||
+            !(_receivedAffectedTestsOrchestratorHandshake || (_options.CollectTestMap && !_handshakeInfo.HasValue)))
         {
+            // Mapping collection and affected runs with no selected tests can finish in their
+            // recognized orchestrator without starting a TestHost. Legacy collection can also
+            // suppress all handshakes. Neither path excuses rejected or partial handshakes.
             _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputData, errorData);
         }
 
