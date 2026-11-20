@@ -6,7 +6,7 @@
     <RootNamespace>Microsoft.CodeAnalysis.Tools</RootNamespace>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <NoWarn>$(NoWarn);8002</NoWarn>
-    <Description>Command line tool for formatting C# and Visual Basic code files based on .editorconfig settings.</Description>
+    <Description>Command line tool for formatting C#, Visual Basic, and Razor code files based on .editorconfig settings.</Description>
     <RollForward>LatestMajor</RollForward>
 
     <IsPackable>true</IsPackable>
