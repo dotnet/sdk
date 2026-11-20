@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.MSBuild.Tests;
+using Microsoft.DotNet.Cli.Utils;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
 
@@ -16,6 +17,38 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
     public class MSBuildArgumentCommandLineParserTests
     {
         public TestContext TestContext { get; set; } = null!;
+
+        [TestMethod]
+        [DataRow(new string[0], null)]
+        [DataRow(new[] { "-mt" }, true)]
+        [DataRow(new[] { "--multiThreaded:FALSE" }, false)]
+        [DataRow(new[] { "/MT:true" }, true)]
+        [DataRow(new[] { "\"--mt:false\"" }, false)]
+        [DataRow(new[] { "-mt:\"true\"" }, true)]
+        [DataRow(new[] { "-mt:false", "-mt" }, true)]
+        [DataRow(new[] { "-mt", "-mt:false" }, false)]
+        [DataRow(new[] { "-mt:" }, true)]
+        [DataRow(new[] { "-mt:\"\"" }, true)]
+        [DataRow(new[] { "-mt:false", "-mt:\"\"" }, false)]
+        [DataRow(new[] { "-mt:auto", "-mtx", "-mt:\\\"false\\\"" }, null)]
+        public void MSBuildArgumentsParseMultiThreading(string[] arguments, bool? expected)
+        {
+            var args = MSBuildArgs.AnalyzeMSBuildArguments(arguments);
+
+            args.HasMultithreadedSwitch.Should().Be(expected);
+            args.OtherMSBuildArgs.Should().Equal(arguments);
+        }
+
+        [TestMethod]
+        public void MSBuildArgumentsClonesReparseMultiThreading()
+        {
+            var args = MSBuildArgs.FromOtherArgs("-mt");
+
+            args.CloneWithAdditionalArgs("-mt:false").HasMultithreadedSwitch.Should().BeFalse();
+            args.CloneWithExplicitArgs([]).HasMultithreadedSwitch.Should().BeNull();
+            args.CloneWithVerbosity(VerbosityOptions.quiet).HasMultithreadedSwitch.Should().BeTrue();
+            args.HasMultithreadedSwitch.Should().BeTrue();
+        }
 
         [TestMethod]
         [DataRow(new string[] { "-property:prop1=true", "-p:prop2=false" }, true)]
