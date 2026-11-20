@@ -31,13 +31,15 @@ public static class ShellNames
 
         var shellPath = Environment.GetEnvironmentVariable("SHELL") ?? throw new InvalidOperationException(Strings.ShellDiscovery_ShellEnvironmentNotSet);
 
-        var shellName = Path.GetFileName(shellPath);
-        if (All.Contains(shellName))
+        var shellName = ShellInfo.GetCanonicalName(ShellInfo.GetShellType(shellPath));
+        if (shellName is not null && All.Contains(shellName))
         {
             return shellName;
         }
 
-        throw new InvalidOperationException(string.Format(Strings.ShellDiscovery_ShellNotSupported, shellName, string.Join(", ", All)));
+        throw new InvalidOperationException(string.Format(
+            Strings.ShellDiscovery_ShellNotSupported,
+            Path.GetFileName(shellPath),
+            string.Join(", ", All)));
     }
 }
-

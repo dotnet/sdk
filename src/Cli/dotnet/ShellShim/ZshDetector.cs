@@ -4,12 +4,12 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli.Utils;
+using System.CommandLine.StaticCompletions;
 
 namespace Microsoft.DotNet.Cli.ShellShim;
 
 internal static class ZshDetector
 {
-    private const string ZshFileName = "zsh";
     /// <summary>
     /// Returns true if the `SHELL` environment variable ends with `zsh` for the filename.
     /// </summary>
@@ -21,11 +21,6 @@ internal static class ZshDetector
             return false;
         }
 
-        if (Path.GetFileName(environmentVariable).Equals(ZshFileName, StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        return false;
+        return ShellInfo.GetShellType(environmentVariable) == ShellType.Zsh;
     }
 }
