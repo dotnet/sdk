@@ -44,7 +44,6 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.TemplateEngine.Cli;
 using Command = System.CommandLine.Command;
 
 #if !CLI_AOT
@@ -77,7 +76,6 @@ public static class Parser
         var rootCommand = new DotNetCommandDefinition();
 
         NormalizeRootOptions(rootCommand);
-
 #if CLI_AOT
         ConfigureAotActions(rootCommand);
 #else
@@ -86,6 +84,8 @@ public static class Parser
             ConfigureManagedActions(rootCommand);
         }
 #endif
+
+        DotnetHelpBuilder.ConfigureHelp(rootCommand, DotnetHelpBuilder.Instance.Value);
 
         rootCommand.SetAction(parseResult =>
         {
@@ -133,11 +133,12 @@ public static class Parser
 
         DotNetCommandDefinition.EnsureExecutableName();
         RootCommand rootCommand = new();
+        DotnetHelpBuilder helpBuilder = new(DotnetHelpBuilder.Instance.Value.MaxWidth);
         foreach (Option option in rootCommand.Options)
         {
             if (option is HelpOption helpOption)
             {
-                helpOption.Action = new PrintHelpAction(helpOption, DotnetHelpBuilder.Instance.Value);
+                helpOption.Action = new PrintHelpAction(helpOption, helpBuilder);
                 helpOption.Description = CliStrings.ShowHelpDescription;
                 break;
             }
@@ -164,6 +165,7 @@ public static class Parser
         }
 #endif
 
+        DotnetHelpBuilder.ConfigureHelp(rootCommand, helpBuilder);
         parseResult = rootCommand.Parse(args, ParserConfiguration);
         return true;
     }
@@ -526,7 +528,7 @@ public static class Parser
 
     internal class DotnetHelpBuilder : HelpBuilder
     {
-        private DotnetHelpBuilder(int maxWidth = int.MaxValue) : base(maxWidth) { }
+        internal DotnetHelpBuilder(int maxWidth = int.MaxValue) : base(maxWidth) { }
 
         public static Lazy<HelpBuilder> Instance = new(() =>
         {
@@ -545,7 +547,50 @@ public static class Parser
             return dotnetHelpBuilder;
         });
 
-        public static void additionalOption(HelpContext context)
+        internal static void ConfigureHelp(Command rootCommand, HelpBuilder helpBuilder)
+        {
+            Stack<Command> commands = new([rootCommand]);
+            while (commands.TryPop(out Command? command))
+            {
+                if (command is ListCommandDefinition listCommand)
+                {
+                    foreach (Argument argument in listCommand.Arguments)
+                    {
+                        if (argument.Name == CliStrings.SolutionOrProjectArgumentName)
+                        {
+                            helpBuilder.CustomizeSymbol(
+                                argument,
+                                firstColumnText: context => context.Command is ListReferenceCommandDefinition ? $"<{CliStrings.ProjectArgumentName}>" : null,
+                                secondColumnText: context => context.Command is ListReferenceCommandDefinition ? CliStrings.ProjectArgumentDescription : null);
+                        }
+                    }
+                }
+
+                if (command.Name is AddCommandDefinition.Name or AddPackageCommandDefinition.Name)
+                {
+                    foreach (Argument argument in command.Arguments)
+                    {
+                        helpBuilder.CustomizeSymbol(
+                            argument,
+                            firstColumnText: _ => $"<{(string.IsNullOrWhiteSpace(argument.HelpName) ? argument.Name : argument.HelpName)}>");
+                    }
+                }
+
+                if (command is WorkloadSearchCommandDefinition workloadSearchCommand)
+                {
+                    helpBuilder.CustomizeSymbol(
+                        workloadSearchCommand.VersionCommand,
+                        secondColumnText: CliStrings.ShortWorkloadSearchVersionDescription);
+                }
+
+                foreach (Command subcommand in command.Subcommands)
+                {
+                    commands.Push(subcommand);
+                }
+            }
+        }
+
+        public static void AdditionalOption(HelpContext context)
         {
             List<TwoColumnHelpRow> options = [];
             HashSet<Option> uniqueOptions = [];
@@ -578,12 +623,6 @@ public static class Parser
                 return;
             }
 
-            // argument/option cleanups specific to help
-            foreach (var option in command.Options)
-            {
-                option.EnsureHelpName();
-            }
-
             if (IsInNuGetCommandTree(command))
             {
                 NuGetCommand.Run(context.ParseResult, ProcessLifecycle.CancellationToken);
@@ -595,7 +634,7 @@ public static class Parser
                     msbuildPath: null,
                     CommandServices.CreateDefault()).Execute(ProcessLifecycle.CancellationToken);
                 context.Output.WriteLine();
-                additionalOption(context);
+                AdditionalOption(context);
             }
             else if (command is VSTestCommandDefinition)
             {
@@ -620,38 +659,6 @@ public static class Parser
             }
             else
             {
-                // TODO: avoid modifying the commands:
-                // https://github.com/dotnet/sdk/issues/52136
-
-                if (command.Name.Equals(ListReferenceCommandDefinition.Name))
-                {
-                    Command? listCommand = command.Parents.Single() as Command;
-                    if (listCommand is not null)
-                    {
-                        for (int i = 0; i < listCommand.Arguments.Count; i++)
-                        {
-                            if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
-                            {
-                                // Name is immutable now, so we create a new Argument with the right name..
-                                listCommand.Arguments[i] = ListCommandDefinition.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
-                            }
-                        }
-                    }
-                }
-                else if (command.Name.Equals(AddPackageCommandDefinition.Name) || command.Name.Equals(AddCommandDefinition.Name))
-                {
-                    // Don't show package completions in help
-                    foreach (var argument in command.Arguments)
-                    {
-                        argument.CompletionSources.Clear();
-                    }
-                }
-                else if (command is WorkloadSearchCommandDefinition workloadSearchCommand)
-                {
-                    // Set shorter description for displaying parent command help.
-                    workloadSearchCommand.VersionCommand.Description = CliStrings.ShortWorkloadSearchVersionDescription;
-                }
-
                 base.Write(context);
             }
         }

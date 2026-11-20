@@ -282,12 +282,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 return;
             }
 
-            IEnumerable<TwoColumnHelpRow> optionsToWrite = optionsToShow.Select(o =>
-            {
-                o.Option.EnsureHelpName();
-
-                return context.HelpBuilder.GetTwoColumnRow(o.Option, context);
-            });
+            IEnumerable<TwoColumnHelpRow> optionsToWrite = optionsToShow.Select(o => context.HelpBuilder.GetTwoColumnRow(o.Option, context));
             context.HelpBuilder.WriteColumns(optionsToWrite.ToArray(), context);
             context.Output.WriteLine();
         }
@@ -329,11 +324,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     optionsToShow.Add(template.AllowScriptsOption);
                     break;
                 }
-            }
-
-            foreach (Option cliOption in optionsToShow)
-            {
-                cliOption.EnsureHelpName();
             }
 
             context.Output.WriteLine(LocalizationResources.HelpOptionsTitle());
@@ -434,7 +424,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     }
                     else
                     {
-                        optionsToShow.Add(currentOption);
+                        optionsToShow.Add(new TemplateOption(currentOption.TemplateParameter, currentOption.Aliases));
                     }
                 }
             }
@@ -451,17 +441,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private static void WriteCustomInstantiateHelp(HelpContext context, Command command)
         {
-            //unhide arguments of NewCommand. They are hidden not to appear in subcommands help.
-            foreach (Argument arg in command.Arguments)
-            {
-                arg.Hidden = false;
-            }
-
             HelpBuilder.Default.SynopsisSection()(context);
             context.Output.WriteLine();
             CustomUsageSection(context, command);
             context.Output.WriteLine();
-            HelpBuilder.Default.CommandArgumentsSection()(context);
+            HelpBuilder.Default.CommandArgumentsSection(includeHidden: true)(context);
             context.Output.WriteLine();
             HelpBuilder.Default.OptionsSection()(context);
             context.Output.WriteLine();
@@ -502,7 +486,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
             if (showArguments)
             {
-                yield return CommandLineUtils.FormatArgumentUsage(command.Arguments.ToArray());
+                yield return CommandLineUtils.FormatArgumentUsage(command.Arguments.ToArray(), includeHidden: true);
             }
 
             if (showSubcommands)
