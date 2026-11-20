@@ -67,6 +67,11 @@ generating code, tests, or build logic:
 4. Check recent history for the paths and symbols you will change, for example
    `git log --oneline -- <path>` or `git log -S <symbol>`, to find reverted approaches,
    in-flight migrations, and linked issues.
+5. Check the same paths and symbols on relevant active sibling branches, typically
+   `main` and recently updated `release/*` branches, for prior or related changes. Use
+   up-to-date remote refs where available without switching the working branch; for
+   example, `git log origin/main --oneline -- <path>`. Consider what you find as context
+   for the current change, not automatic authorization to modify those branches.
 
 ### Build and test
 
@@ -193,7 +198,10 @@ Treat a missing test hook, opaque runtime state, or an unstructured signal as an
 AI-enablement gap. These gaps block or slow verification because of missing
 infrastructure, not because of the task itself. Examples include behavior that no test can
 reach without a product change, state that is observable only in a debugger, and
-diagnostics that are available only as free-form console text.
+diagnostics that are available only as free-form console text. This also applies to build
+and CI pipeline investigations when missing diagnostic artifacts or structured failure
+signals prevent effective diagnosis. A build or pipeline failure alone is not a gap;
+follow the [PR validation failure guidance](#investigating-pr-validation-failures) first.
 
 - Do not silently work around the gap. Keep any workaround, such as temporary logging or
   output scraping, out of the change unless it is the intended fix.
@@ -201,7 +209,7 @@ diagnostics that are available only as free-form console text.
   requires it.
 - In your final handoff, report the gap with a ready-to-file issue title and body for the
   `Area-AIEngineering` label. Include what you needed to observe or control, what was
-  missing, the workaround you used, and the evidence, such as the file, command, or log.
+  missing, any workaround you used, and the evidence, such as the file, command, or log.
   Search for an existing issue first, and file the issue only when the user asks you to.
 
 ## Keeping AI context and docs in sync
