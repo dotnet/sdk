@@ -966,6 +966,11 @@ Or open a new terminal.</target>
         <target state="new">The installer finished, but the files for {0} are missing. Running a repair with the installer. Approve the administrator prompt if asked.</target>
         <note>{0} is the component display name and version.</note>
       </trans-unit>
+      <trans-unit id="WindowsInstallerReplacedInBatch">
+        <source>{0} {1} was already installed, but installing {0} {2} in this request replaced it.</source>
+        <target state="new">{0} {1} was already installed, but installing {0} {2} in this request replaced it.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the older version that was already installed. {2} is the newer version installed by the same command.</note>
+      </trans-unit>
       <trans-unit id="WindowsInstallerRestartInitiated">
         <source>A restart has been initiated and is required to finish installing {0}.</source>
         <target state="new">A restart has been initiated and is required to finish installing {0}.</target>

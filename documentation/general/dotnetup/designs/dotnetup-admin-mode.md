@@ -285,6 +285,8 @@ In this case, `dotnetup` fails with `NewerVersionInstalled`. It checks when prep
 
 It considers the SDKs and runtimes in the system install folders, comparing the component, architecture, and SDK feature band or runtime `major.minor`. This is conservative: an SDK installed by Visual Studio, or a runtime that an SDK bundle installed, has no bundle that would block the downgrade, but `dotnetup` still refuses it.
 
+When one command requests several builds in the same family, only the newest is installed, because the installer replaces older builds in a family. Each older request fails with `SupersededInBatch`, including one that was already installed when the newer build is installed in the same command. `dotnetup` assumes the installers' default replacement behavior and does not read machine policies such as `RemovePreviousVersion` that keep older builds.
+
 Future work: a bounded wait for an interrupted parent that confirms the original installation has ended, re-queries the installation state, and retries at most once only if installation is still needed. If the original operation's status cannot be established, report an actionable failure without launching another installer.
 
 ## Other Potential Issues - Needs Investigation

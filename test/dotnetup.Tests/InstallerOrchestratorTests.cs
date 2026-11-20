@@ -654,6 +654,36 @@ public class InstallerOrchestratorTests
         InstallerOrchestratorSingleton.FindSupersededBundleRequests([older, newer]).Should().BeEmpty();
     }
 
+    [TestMethod]
+    [DataRow(false, false, true)]
+    [DataRow(true, false, false)]
+    [DataRow(false, true, false)]
+    public void FailSupersededInstallsReplacedInBatch_FailsOlderInstallOnlyWhenNewerWasInstalled(bool newerWasAlreadyInstalled, bool newerFailed, bool expectReplaced)
+    {
+        var older = MakeBatchRequest(InstallComponent.SDK, "10.0.100");
+        var newer = MakeBatchRequest(InstallComponent.SDK, "10.0.114");
+        var olderResult = new InstallResult(older.ToInstall(), WasAlreadyInstalled: true);
+        var replacedFailure = new InstallFailure(older, new DotnetInstallException(DotnetInstallErrorCode.SupersededInBatch, "replaced"));
+        var results = new List<InstallResult> { olderResult };
+        var failures = new List<InstallFailure>();
+        if (newerFailed)
+        {
+            failures.Add(new InstallFailure(newer, new DotnetInstallException(DotnetInstallErrorCode.InstallerFailed, "failed")));
+        }
+        else
+        {
+            results.Add(new InstallResult(newer.ToInstall(), newerWasAlreadyInstalled));
+        }
+
+        InstallerOrchestratorSingleton.FailSupersededInstallsReplacedInBatch(
+            new Dictionary<InstallResult, InstallFailure>(ReferenceEqualityComparer.Instance) { [olderResult] = replacedFailure },
+            results,
+            failures);
+
+        results.Contains(olderResult).Should().Be(!expectReplaced);
+        failures.Contains(replacedFailure).Should().Be(expectReplaced);
+    }
+
     private static ResolvedInstallRequest MakeBatchRequest(
         InstallComponent component,
         string version,

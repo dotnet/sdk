@@ -689,6 +689,10 @@ Or open a new terminal.</value>
     <value>Skipped {0} {1} because this request also installs {0} {2}, and the installer cannot install {1} once {2} is installed.</value>
     <comment>{0} is the component display name, such as .NET SDK. {1} is the skipped older version. {2} is the newer version requested in the same command.</comment>
   </data>
+  <data name="WindowsInstallerReplacedInBatch" xml:space="preserve">
+    <value>{0} {1} was already installed, but installing {0} {2} in this request replaced it.</value>
+    <comment>{0} is the component display name, such as .NET SDK. {1} is the older version that was already installed. {2} is the newer version installed by the same command.</comment>
+  </data>
   <data name="WindowsInstallerFailed" xml:space="preserve">
     <value>The installer for {0} failed with exit code {1} (0x{2:X8}).</value>
     <comment>{0} is the component display name and version. {1} and {2} are the decimal and hexadecimal forms of the installer exit code.</comment>

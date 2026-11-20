@@ -97,12 +97,13 @@ internal class InstallerOrchestratorSingleton
         var failures = new List<InstallFailure>();
         var fatalExceptions = new List<Exception>();
         var installResultCollectionLock = new object();
+        var supersededInstalls = new Dictionary<InstallResult, InstallFailure>(ReferenceEqualityComparer.Instance);
 
         // Use a BlockingCollection so commits can start as soon as downloads finish,
         // overlapping extraction/commit with still-running downloads.
         using var readyQueue = new System.Collections.Concurrent.BlockingCollection<PreparedInstall>();
 
-        var downloadTask = Task.Run(() => PrepareConcurrent(requests, batchContext, readyQueue, results, failures, fatalExceptions, installResultCollectionLock));
+        var downloadTask = Task.Run(() => PrepareConcurrent(requests, batchContext, readyQueue, results, failures, fatalExceptions, supersededInstalls, installResultCollectionLock));
         ConsumeConcurrentPreparedInstallsAndCommit(readyQueue, batchContext, prepared => CommitPreparedInstall(prepared), results, failures, fatalExceptions, installResultCollectionLock);
         downloadTask.Wait();
 
@@ -112,12 +113,15 @@ internal class InstallerOrchestratorSingleton
             throw new AggregateException(fatalExceptions);
         }
 
+        FailSupersededInstallsReplacedInBatch(supersededInstalls, results, failures);
         return new InstallBatchResult(results, failures);
     }
 
     /// <summary>
     /// Downloads archives concurrently (max 3) and enqueues PreparedInstalls for commit.
     /// <see cref="DotnetInstallException"/> failures are captured per-request; other exceptions are fatal.
+    /// Superseded requests that are already installed are added to <paramref name="results"/> and to
+    /// <paramref name="supersededInstalls"/>, paired with the failure to report if the newer install replaces them.
     /// </summary>
     private void PrepareConcurrent(
         IReadOnlyList<ResolvedInstallRequest> requests,
@@ -126,6 +130,7 @@ internal class InstallerOrchestratorSingleton
         List<InstallResult> results,
         List<InstallFailure> failures,
         List<Exception> fatalExceptions,
+        Dictionary<InstallResult, InstallFailure> supersededInstalls,
         object installResultCollectionLock)
     {
         const int maxConcurrentDownloads = 3;
@@ -145,12 +150,23 @@ internal class InstallerOrchestratorSingleton
                     if (supersededBy.TryGetValue(request, out var newer))
                     {
                         var install = request.ToInstall();
+                        string displayName = install.Component.GetDisplayName();
                         var existing = CheckExistingInstallState(request.Request, install, CreateInstallationValidator())
                             ?? throw CreateInstallException(
                                 DotnetInstallErrorCode.SupersededInBatch,
                                 install,
-                                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerSupersededInBatch, install.Component.GetDisplayName(), install.Version, newer.ResolvedVersion));
-                        lock (installResultCollectionLock) { results.Add(existing); }
+                                string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerSupersededInBatch, displayName, install.Version, newer.ResolvedVersion));
+
+                        // The newer install hasn't run yet; once the batch finishes, this is reported as replaced if it ran.
+                        var replacedFailure = new InstallFailure(request, CreateInstallException(
+                            DotnetInstallErrorCode.SupersededInBatch,
+                            install,
+                            string.Format(CultureInfo.CurrentCulture, Strings.WindowsInstallerReplacedInBatch, displayName, install.Version, newer.ResolvedVersion)));
+                        lock (installResultCollectionLock)
+                        {
+                            results.Add(existing);
+                            supersededInstalls.Add(existing, replacedFailure);
+                        }
                         return;
                     }
 
@@ -253,6 +269,10 @@ internal class InstallerOrchestratorSingleton
     /// Returns the Windows installer bundle requests that a newer request in the same batch would replace, each paired
     /// with the newest such request. Installing both would leave only the newer build, whichever commits first.
     /// </summary>
+    /// <remarks>
+    /// This assumes the installers' default behavior of replacing older builds in the same family. Machine policies
+    /// such as <c>RemovePreviousVersion</c> that keep older builds are intentionally not read.
+    /// </remarks>
     internal static List<(ResolvedInstallRequest Request, ResolvedInstallRequest Newer)> FindSupersededBundleRequests(IReadOnlyList<ResolvedInstallRequest> requests)
     {
         var bundleRequests = requests
@@ -274,6 +294,28 @@ internal class InstallerOrchestratorSingleton
         }
 
         return superseded;
+    }
+
+    /// <summary>
+    /// Moves superseded requests that were already installed from <paramref name="results"/> to <paramref name="failures"/>
+    /// when a newer build in the same installer family was installed in this batch, because that install replaced them.
+    /// If the newer install failed or was already present, the older build is still installed and stays a success.
+    /// </summary>
+    internal static void FailSupersededInstallsReplacedInBatch(
+        IReadOnlyDictionary<InstallResult, InstallFailure> supersededInstalls,
+        List<InstallResult> results,
+        List<InstallFailure> failures)
+    {
+        var installedInBatch = results.Where(r => !r.WasAlreadyInstalled).Select(r => r.Install).ToList();
+        foreach (var (result, failure) in supersededInstalls)
+        {
+            var install = failure.Request.ToInstall();
+            if (installedInBatch.Any(i => IsSameInstallerFamily(i, install) && i.Version.CompareTo(install.Version) > 0))
+            {
+                results.Remove(result);
+                failures.Add(failure);
+            }
+        }
     }
 
     /// <summary>

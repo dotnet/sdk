@@ -68,6 +68,17 @@ public class WindowsBundleArtifactTests : IDisposable
     }
 
     [TestMethod]
+    [DataRow("dotnet-sdk-10.0.404-win-x64.exe", "dotnet-sdk-10.0.404-win-x64.exe")]
+    [DataRow("aspnetcore-runtime-2.1.0-rc1-final-win-x64.exe", "aspnetcore-runtime-2.1.0-rc1-final-win-x64.exe")]
+    [DataRow(".NET Host", null)]
+    [DataRow("Cmd.Exe.MUI", null)]
+    [DataRow(@"..\dotnet-sdk-10.0.404-win-x64.exe", null)]
+    [DataRow("", null)]
+    [DataRow(null, null)]
+    public void GetInstallerFileName_AcceptsOnlyPlainExeNames(string? originalFileName, string? expected) =>
+        WindowsBundleArtifact.GetInstallerFileName(originalFileName).Should().Be(expected);
+
+    [TestMethod]
     public void Prepare_NonExeDownload_ThrowsWrongInstallerFileExtension()
     {
         var downloader = CreateDownloader();
