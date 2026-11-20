@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "File Directory.Packages.props di MSBuild",
   "description": "Un file Directory.Packages.props vuoto che può essere usato per specificare le versioni dei pacchetti centralmente",

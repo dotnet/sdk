@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "MSBuild Directory.Packages.props dosyası",
   "description": "Paket sürümlerini merkezi olarak belirtmek için kullanılabilen boş bir Directory.Packages.props dosyası",
