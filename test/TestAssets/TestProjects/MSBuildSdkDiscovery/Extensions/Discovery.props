@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <DiscoveryExtensionsPath>$(MSBuildThisFileDirectory)</DiscoveryExtensionsPath>
+  </PropertyGroup>
+</Project>

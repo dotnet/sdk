@@ -232,6 +232,84 @@ public class RunTelemetryTests : SdkTest
     }
 
     [TestMethod]
+    public void RunProject_EvaluatesReferencesWithExplicitExtensionsPath()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("AppThatOutputsDotnetLaunchProfile", Guid.NewGuid().ToString("N"))
+            .WithSource();
+        string projectPath = Directory.GetFiles(testInstance.Path, "*.csproj").Single();
+        string libraryDirectory = Path.Combine(testInstance.Path, "Library");
+        Directory.CreateDirectory(libraryDirectory);
+        File.WriteAllText(Path.Combine(libraryDirectory, "Library.csproj"), $$"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{{ToolsetInfo.CurrentTargetFramework}}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(libraryDirectory, "Library.cs"), "public class Library { }");
+        File.WriteAllText(projectPath, File.ReadAllText(projectPath).Replace(
+            "</Project>",
+            """
+              <ItemGroup>
+                <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+                <ProjectReference Include="Library/Library.csproj" />
+              </ItemGroup>
+            </Project>
+            """));
+
+        var toolset = SdkTestContext.Current.ToolsetUnderTest;
+        string extensionsPath = toolset.SdkFolderUnderTest;
+        string? originalSdkPath = Environment.GetEnvironmentVariable("MSBuildSDKsPath");
+        string? originalExtensionsPath = Environment.GetEnvironmentVariable("MSBuildExtensionsPath");
+        string? originalHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+        var events = new List<(string? eventName, IDictionary<string, string?>? properties)>();
+        void handler(object? sender, InstrumentationEventArgs args) => events.Add((args.EventName, args.Properties));
+
+        try
+        {
+            Environment.SetEnvironmentVariable("MSBuildSDKsPath", null);
+            Environment.SetEnvironmentVariable("MSBuildExtensionsPath", extensionsPath);
+            Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", toolset.DotNetHostPath);
+            TelemetryEventEntry.EntryPosted += handler;
+
+            var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["MSBuildExtensionsPath"] = extensionsPath
+            };
+            var command = new RunCommand(
+                noBuild: false,
+                projectFileFullPath: projectPath,
+                entryPointFileFullPath: null,
+                launchProfile: null,
+                noLaunchProfile: false,
+                noLaunchProfileArguments: false,
+                device: null,
+                listDevices: false,
+                noRestore: false,
+                noCache: false,
+                interactive: false,
+                msbuildArgs: MSBuildArgs.FromProperties(new(properties)),
+                applicationArgs: [],
+                readCodeFromStdin: false,
+                environmentVariables: new Dictionary<string, string>());
+
+            command.Execute().Should().Be(0);
+
+            var runEvent = events.Should().ContainSingle(entry => entry.eventName == "run").Subject;
+            runEvent.properties.Should().NotBeNull();
+            runEvent.properties!["package_reference_count"].Should().Be("1");
+            runEvent.properties["project_reference_count"].Should().Be("1");
+        }
+        finally
+        {
+            TelemetryEventEntry.EntryPosted -= handler;
+            Environment.SetEnvironmentVariable("MSBuildSDKsPath", originalSdkPath);
+            Environment.SetEnvironmentVariable("MSBuildExtensionsPath", originalExtensionsPath);
+            Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", originalHostPath);
+        }
+    }
+
+    [TestMethod]
     public void TrackRunEvent_WithDefaultLaunchProfile_MarksTelemetryCorrectly()
     {
         // Arrange

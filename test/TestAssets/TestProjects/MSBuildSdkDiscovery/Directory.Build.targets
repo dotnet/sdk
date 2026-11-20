@@ -1,0 +1,8 @@
+<Project>
+  <Target Name="CheckDiscoveryEnvironment" BeforeTargets="Build;ComputeRunArguments">
+    <Error Condition="$([System.Environment]::GetEnvironmentVariable('MSBuildSDKsPath')) != ''"
+           Text="MSBuildSDKsPath leaked into the build environment." />
+    <Error Condition="$([System.Environment]::GetEnvironmentVariable('MSBuildExtensionsPath')) != ''"
+           Text="MSBuildExtensionsPath leaked into the build environment." />
+  </Target>
+</Project>

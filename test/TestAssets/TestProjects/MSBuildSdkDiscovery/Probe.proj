@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+  </PropertyGroup>
+  <Target Name="Report">
+    <Error Condition="$([System.Environment]::GetEnvironmentVariable('MSBuildSDKsPath')) != ''"
+           Text="MSBuildSDKsPath leaked into the build environment." />
+    <Error Condition="$([System.Environment]::GetEnvironmentVariable('MSBuildExtensionsPath')) != ''"
+           Text="MSBuildExtensionsPath leaked into the build environment." />
+    <WriteLinesToFile File="$(MSBuildProjectDirectory)\paths.txt"
+                      Lines="$(MSBuildToolsPath);$(MSBuildExtensionsPath);$(MSBuildSDKsPath);$([System.IO.Path]::GetFullPath('$(MicrosoftNETBuildTasksAssembly)'))"
+                      Overwrite="true" />
+  </Target>
+  <Target Name="Probe" DependsOnTargets="Report">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Report"
+             Properties="DiscoveryWorker=true"
+             BuildInParallel="true" />
+    <Exec Condition="'$(Nested)' != 'true'"
+          WorkingDirectory="$(MSBuildProjectDirectory)\nested"
+          Command="&quot;$(DOTNET_HOST_PATH)&quot; msbuild Probe.proj -t:Probe -p:Nested=true -p:DiscoveryNodeReuse=$(DiscoveryNodeReuse) -nr:$(DiscoveryNodeReuse) -bl:2-{}.binlog" />
+  </Target>
+</Project>

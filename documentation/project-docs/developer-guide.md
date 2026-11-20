@@ -78,6 +78,29 @@ Use `BuildStarted` and `BuildFinished` to manage state for one build. `Shutdown`
 one logger instance. It does not necessarily end the process. A persistent server can run
 multiple builds in one process. Refresh the environment and trace context for each build.
 
+### MSBuild SDK-location discovery
+
+The CLI lets MSBuild discover SDK locations from its selected toolset. It does not
+generate `MSBuildExtensionsPath` or `MSBuildSDKsPath` environment variables. Explicit
+environment overrides remain inherited by MSBuild and child processes.
+[`MSBuildForwardingAppWithoutLogging`](../../src/Cli/Microsoft.DotNet.Cli.Utils/MSBuildForwardingAppWithoutLogging.cs)
+still supplies `DOTNET_HOST_PATH` so tasks can invoke the selected .NET host.
+
+Direct evaluation for `dotnet run` and MTP `dotnet test` follows the same discovery
+rules. The CLI does not add an `MSBuildExtensionsPath` global property.
+[`CommonRunHelpers`](../../src/Cli/dotnet/Commands/Run/CommonRunHelpers.cs)
+preserves caller-supplied properties.
+
+This prevents new CLI invocations from leaking SDK-location defaults into nested
+invocations that select another SDK. An older parent CLI can still supply stale
+values. The child preserves those values because it cannot distinguish them from
+intentional overrides.
+
+Discovery tests must start a fresh child process without `MSBUILD_EXE_PATH`,
+`MSBuildSDKsPath`, or `MSBuildExtensionsPath`. Remove these environment entries
+rather than assigning empty strings. The test harness supplies toolset paths for
+in-process tests, which can otherwise hide discovery failures.
+
 ## Running tests
 
 ### Windows

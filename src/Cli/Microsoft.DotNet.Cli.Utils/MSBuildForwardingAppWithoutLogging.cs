@@ -54,11 +54,6 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     private ForwardingAppImplementation? _forwardingApp;
 
     /// <summary>
-    /// A test-only hook for the MSBuildExtensionsPath, which is a key location that MSBuild logic is read from by the MSBuild Common Targets.
-    /// </summary>
-    internal static string? MSBuildExtensionsPathTestHook = null;
-
-    /// <summary>
     /// Structure describing the parsed and forwarded MSBuild arguments for this command.
     /// </summary>
     private MSBuildArgs _msbuildArgs;
@@ -342,10 +337,9 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
     /// <summary>
     /// Gets the required environment variables for MSBuild.
-    /// The Common Targets require specific environment variables to be set in order to function correctly:
+    /// MSBuild discovers SDK locations from its toolset unless the caller supplies explicit overrides.
+    /// Do not publish SDK-location defaults in the environment: nested CLI invocations can select a different SDK.
     /// <list type="bullet">
-    /// <item><term>MSBuildExtensionsPath</term><description>The path to the 'MSBuild extensions' - where the Common Targets themselves will be loaded from. Also where SDK Resolvers will be loaded from.</description></item>
-    /// <item><term>MSBuildSDKsPath</term><description>The path to the 'MSBuild SDKs' - where the SDKs will be loaded from by the default resolver. </description></item>
     /// <item><term>DOTNET_HOST_PATH</term><description>The path to the .NET SDK host - used to execute .NET applications by targets in the Common Targets that need to run managed .NET binaries that are not shipped with apphosts.</description></item>
     /// </list>
     /// </summary>
@@ -353,8 +347,6 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     {
         return new()
         {
-            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? Environment.GetEnvironmentVariable("MSBuildExtensionsPath") ?? SdkPaths.SdkDirectory },
-            { "MSBuildSDKsPath", GetMSBuildSDKsPath() },
             { "DOTNET_HOST_PATH", GetDotnetPath() },
         };
     }
