@@ -58,6 +58,42 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         }
 
         [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(true, true)]
+        public async Task DownloadPackage_VerifiesPhysicalTemporaryPackage(bool virtualizeSettings, bool virtualizeTemp)
+        {
+            using var feed = new MockNuGetFeed("Templates");
+            string source = feed.BaseAddress + "index.json";
+            IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(virtualize: virtualizeSettings);
+            if (virtualizeTemp)
+            {
+                settings.Host.VirtualizeDirectory(Path.GetTempPath());
+            }
+
+            string installPath = Path.Combine(settings.Paths.GlobalSettingsDir, "packages");
+            settings.Host.FileSystem.CreateDirectory(installPath);
+            var verifier = new PhysicalFileVerifyingPackageVerifier(feed.PackageContent);
+            var packageManager = new NuGetApiPackageManager(settings, verifier);
+
+            NuGetPackageInfo result = await packageManager.DownloadPackageAsync(
+                installPath,
+                "Templates",
+                "1.0.0",
+                additionalSources: new[] { source },
+                force: true,
+                cancellationToken: TestContext.CancellationToken);
+
+            string temporaryPackagePath = verifier.PackagePath ?? throw new InvalidOperationException("The package verifier was not called.");
+            Assert.IsFalse(File.Exists(temporaryPackagePath));
+            Assert.IsTrue(settings.Host.FileSystem.FileExists(result.FullPath));
+            using Stream installedPackage = settings.Host.FileSystem.OpenRead(result.FullPath);
+            using var downloadedPackage = new MemoryStream();
+            installedPackage.CopyTo(downloadedPackage);
+            Assert.AreSequenceEqual(feed.PackageContent, downloadedPackage.ToArray());
+        }
+
+        [TestMethod]
         public async Task GetLatestVersion_MismatchedMetadataId_ThrowsPackageNotFound()
         {
             const string identifier = "Requested.Package";
@@ -100,26 +136,45 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         }
 
         [TestMethod]
-        public async Task DownloadPackage_PackageValidationFailure_RemovesTemporaryPackage()
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task DownloadPackage_PackageValidationFailure_RemovesTemporaryPackage(bool existingPackage)
         {
-            string installPath = s_environmentSettingsHelper.CreateTemporaryFolder();
+            using var feed = new MockNuGetFeed("Templates");
+            string source = feed.BaseAddress + "index.json";
             IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string installPath = Path.Combine(engineEnvironmentSettings.Paths.GlobalSettingsDir, "packages");
+            string packagePath = Path.Combine(installPath, "Templates.1.0.0.nupkg");
+            if (existingPackage)
+            {
+                engineEnvironmentSettings.Host.FileSystem.CreateDirectory(installPath);
+                engineEnvironmentSettings.Host.FileSystem.WriteAllText(packagePath, "existing package");
+            }
+
+            var verifier = new FailingNuGetPackageVerifier();
 
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(
                 engineEnvironmentSettings,
-                new FailingNuGetPackageVerifier());
+                verifier);
 
             var exception = await Assert.ThrowsExactlyAsync<DownloadException>(() => packageManager.DownloadPackageAsync(
                 installPath,
-                "Microsoft.DotNet.Common.ProjectTemplates.5.0",
-                "5.0.0",
-                additionalSources: _additionalSources,
+                "Templates",
+                "1.0.0",
+                additionalSources: new[] { source },
+                force: true,
                 cancellationToken: TestContext.CancellationToken));
 
             Assert.IsInstanceOfType<InvalidDataException>(exception.InnerException);
             exception.InnerException.Message.Should().Be("Package validation failed.");
 
-            Directory.EnumerateFiles(installPath).Should().BeEmpty();
+            Assert.AreEqual(existingPackage, engineEnvironmentSettings.Host.FileSystem.FileExists(packagePath));
+            if (existingPackage)
+            {
+                Assert.AreEqual("existing package", engineEnvironmentSettings.Host.FileSystem.ReadAllText(packagePath));
+            }
+            string temporaryPackagePath = verifier.PackagePath ?? throw new InvalidOperationException("The package verifier was not called.");
+            Assert.IsFalse(File.Exists(temporaryPackagePath));
         }
 
         [TestMethod]
@@ -535,9 +590,34 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             public bool IsEnabled => true;
 
+            public string? PackagePath { get; private set; }
+
             public Task VerifyAsync(string packagePath, SourceRepository repository, ISettings settings, ILogger logger, CancellationToken cancellationToken)
             {
+                PackagePath = packagePath;
                 throw new InvalidDataException("Package validation failed.");
+            }
+        }
+
+        private sealed class PhysicalFileVerifyingPackageVerifier : INuGetPackageVerifier
+        {
+            private readonly byte[] _expectedContent;
+
+            public PhysicalFileVerifyingPackageVerifier(byte[] expectedContent)
+            {
+                _expectedContent = expectedContent;
+            }
+
+            public bool IsEnabled => true;
+
+            public string? PackagePath { get; private set; }
+
+            public Task VerifyAsync(string packagePath, SourceRepository repository, ISettings settings, ILogger logger, CancellationToken cancellationToken)
+            {
+                PackagePath = packagePath;
+                Assert.IsTrue(File.Exists(packagePath));
+                Assert.AreSequenceEqual(_expectedContent, File.ReadAllBytes(packagePath));
+                return Task.CompletedTask;
             }
         }
     }
