@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         {
             var args = MSBuildArgs.AnalyzeMSBuildArguments(arguments);
 
-            args.MultiThreaded.Should().Be(expected);
+            args.HasMultithreadedSwitch.Should().Be(expected);
             args.OtherMSBuildArgs.Should().Equal(arguments);
         }
 
@@ -44,10 +44,10 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         {
             var args = MSBuildArgs.FromOtherArgs("-mt");
 
-            args.CloneWithAdditionalArgs("-mt:false").MultiThreaded.Should().BeFalse();
-            args.CloneWithExplicitArgs([]).MultiThreaded.Should().BeNull();
-            args.CloneWithVerbosity(VerbosityOptions.quiet).MultiThreaded.Should().BeTrue();
-            args.MultiThreaded.Should().BeTrue();
+            args.CloneWithAdditionalArgs("-mt:false").HasMultithreadedSwitch.Should().BeFalse();
+            args.CloneWithExplicitArgs([]).HasMultithreadedSwitch.Should().BeNull();
+            args.CloneWithVerbosity(VerbosityOptions.quiet).HasMultithreadedSwitch.Should().BeTrue();
+            args.HasMultithreadedSwitch.Should().BeTrue();
         }
 
         [TestMethod]
