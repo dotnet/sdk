@@ -61,6 +61,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             componentFileToPublish.ItemSpec.Should().Be(Path.Combine(outputPath, "Component.dll"));
             componentFileToPublish.GetMetadata(MetadataKeys.RequiresNativeLink).Should().BeEmpty();
             componentFileToPublish.GetMetadata(MetadataKeys.NativeLinkerInputPath).Should().BeEmpty();
+            task.ReadyToRunCompileList.Should().ContainSingle()
+                .Which.GetMetadata(MetadataKeys.AdditionalOutputs).Should().Be(Path.Combine(outputPath, "Component.dll"));
 
             task.ReadyToRunCompositeBuildInput.Should().ContainSingle()
                 .Which.GetMetadata(MetadataKeys.RelativePath).Should().Be("sub/Component.dll");
@@ -79,8 +81,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task.Execute().Should().BeTrue();
 
-            task.ReadyToRunCompileList.Should().ContainSingle()
-                .Which.GetMetadata(MetadataKeys.OutputR2RImage).Should().Be(Path.Combine(outputPath, ownerRelativePath));
+            ITaskItem compositeEntry = task.ReadyToRunCompileList.Should().ContainSingle().Which;
+            compositeEntry.GetMetadata(MetadataKeys.OutputR2RImage).Should().Be(Path.Combine(outputPath, ownerRelativePath));
+            compositeEntry.GetMetadata(MetadataKeys.AdditionalOutputs).Should().Be(Path.Combine(outputPath, "Component.wasm"));
 
             ITaskItem owner = task.ReadyToRunFilesToPublish
                 .Single(item => item.GetMetadata(MetadataKeys.RelativePath) == ownerRelativePath);
