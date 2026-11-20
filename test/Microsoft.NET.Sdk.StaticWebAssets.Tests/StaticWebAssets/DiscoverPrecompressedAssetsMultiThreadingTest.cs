@@ -10,6 +10,7 @@ using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
@@ -51,6 +52,11 @@ public class DiscoverPrecompressedAssetsMultiThreadingTest
             {
                 BuildEngine = buildEngine.Object,
                 TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
+                CompressionFormats = [new TaskItem("gzip", new Dictionary<string, string>
+                {
+                    ["FileExtension"] = ".gz",
+                    ["ContentEncoding"] = "gzip",
+                })],
                 CandidateAssets =
                 [
                     CreateCandidate(baseIdentity, relativePath: "js/site.js", relativeContentRoot),

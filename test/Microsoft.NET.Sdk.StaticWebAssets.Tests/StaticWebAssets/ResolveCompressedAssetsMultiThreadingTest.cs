@@ -5,6 +5,7 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
@@ -47,6 +48,11 @@ public class ResolveCompressedAssetsMultiThreadingTest
                 TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
                 OutputPath = relativeOutputPath,
                 Formats = "gzip",
+                CompressionFormats = [new TaskItem("gzip", new Dictionary<string, string>
+                {
+                    ["FileExtension"] = ".gz",
+                    ["ContentEncoding"] = "gzip",
+                })],
                 IncludePatterns = "**/*.js",
                 CandidateAssets = [CreateCandidate(assetIdentity, relativePath: "js/site.js")],
             };
