@@ -3,7 +3,12 @@
 
 namespace System.Linq
 {
-    public static class CustomEnumerableExtensions
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    static class CustomEnumerableExtensions
     {
 #if NET10_0_OR_GREATER
         public static IEnumerable<T> Reverse<T>(T[] array) => Enumerable.Reverse(array);

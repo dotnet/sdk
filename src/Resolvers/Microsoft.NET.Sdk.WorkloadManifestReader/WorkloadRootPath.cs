@@ -3,5 +3,5 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public record WorkloadRootPath(string? Path, bool Installable);
+    partial record WorkloadRootPath(string? Path, bool Installable);
 }
