@@ -102,8 +102,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             projectContents.Should().Contain($"<TargetFramework>{targetFramework}</TargetFramework>");
             projectContents.Should().Contain(useMSTestSdk
-                ? """<Project Sdk="MSTest.Sdk/4.5.2">"""
-                : """<PackageReference Include="MSTest" Version="4.5.2" />""");
+                ? """<Project Sdk="MSTest.Sdk/4.5.3">"""
+                : """<PackageReference Include="MSTest" Version="4.5.3" />""");
 
             if (templateName == "mstest-playwright")
             {
