@@ -106,6 +106,18 @@ public sealed class TestApplicationLaunchTests
     }
 
     [TestMethod]
+    public void CreateProcessStartInfo_ContextualOutput_DisablesAzureDevOpsHostGroups()
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            contextualModuleOutput: true);
+
+        ProcessStartInfo startInfo = application.CreateProcessStartInfo();
+
+        startInfo.Environment["TESTINGPLATFORM_DOTNETTEST_DISABLE_AZDO_HOST_GROUPS"].Should().Be("1");
+    }
+
+    [TestMethod]
     [DataRow("browser-wasm")]
     [DataRow("wasi-wasm")]
     public void CreateProcessStartInfo_WebAssembly_UsesAuthenticatedHttpTransport(string runtimeIdentifier)
@@ -194,7 +206,8 @@ public sealed class TestApplicationLaunchTests
         IEnumerable<string>? forwardedArguments = null,
         IReadOnlyDictionary<string, string>? environmentVariables = null,
         ProjectLaunchProfile? launchProfile = null,
-        string runtimeIdentifier = "")
+        string runtimeIdentifier = "",
+        bool contextualModuleOutput = false)
     {
         var module = new TestModule(
             new RunProperties("dotnet", "test.dll", null, runtimeIdentifier, string.Empty, string.Empty),
@@ -223,6 +236,7 @@ public sealed class TestApplicationLaunchTests
             {
                 AnsiMode = AnsiMode.SimpleAnsi,
                 ShowProgress = false,
+                ContextualModuleOutput = contextualModuleOutput,
             });
 
         return new TestApplication(

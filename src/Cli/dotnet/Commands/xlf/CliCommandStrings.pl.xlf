@@ -3312,6 +3312,11 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <target state="translated">Określ katalog tymczasowy dla tego polecenia, aby pobrać i wyodrębnić pakiety NuGet (musi być bezpieczny).</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputStreamTimeout">
+        <source>Test application output stream did not close within five seconds; further output was omitted.</source>
+        <target state="new">Test application output stream did not close within five seconds; further output was omitted.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
         <target state="translated">... obcięte dane wyjściowe, pominięte wiersze: {0}...</target>

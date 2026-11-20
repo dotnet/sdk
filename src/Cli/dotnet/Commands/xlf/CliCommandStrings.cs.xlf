@@ -3312,6 +3312,11 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <target state="translated">Zadejte dočasný adresář pro tento příkaz, který se má stáhnout a extrahujte balíčky NuGet (musí být zabezpečené).</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputStreamTimeout">
+        <source>Test application output stream did not close within five seconds; further output was omitted.</source>
+        <target state="new">Test application output stream did not close within five seconds; further output was omitted.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
         <target state="translated">... výstup byl zkrácen, vynecháno řádků: {0} ...</target>

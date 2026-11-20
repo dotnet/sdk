@@ -3312,6 +3312,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">NuGet 패키지를 다운로드하고 추출하려면 이 명령의 임시 디렉터리를 지정합니다(보안이 있어야 합니다).</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputStreamTimeout">
+        <source>Test application output stream did not close within five seconds; further output was omitted.</source>
+        <target state="new">Test application output stream did not close within five seconds; further output was omitted.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
         <target state="translated">... 출력이 잘렸고 {0} 줄이 생략되었습니다.</target>

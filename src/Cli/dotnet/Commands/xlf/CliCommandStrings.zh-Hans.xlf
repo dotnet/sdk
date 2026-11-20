@@ -3312,6 +3312,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">为此命令指定一个临时目录，以下载并提取(必须安全)的 NuGet 包。</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputStreamTimeout">
+        <source>Test application output stream did not close within five seconds; further output was omitted.</source>
+        <target state="new">Test application output stream did not close within five seconds; further output was omitted.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
         <target state="translated">... 输出已截断，省略 {0} 行 ...</target>

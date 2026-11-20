@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -18,6 +19,8 @@ internal sealed class TestApplicationHandler
     private readonly ArtifactPostProcessingManager? _artifactPostProcessingManager;
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation;
     private readonly TestRunPolicy? _testRunPolicy;
+    private readonly CancellationTokenSource? _liveOutputCancellation;
+    private readonly CancellationToken _liveOutputToken;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
@@ -26,6 +29,7 @@ internal sealed class TestApplicationHandler
     private bool _receivedAffectedTestsOrchestratorHandshake;
     private bool _receivedIncompleteHandshake;
     private bool _handshakeRejected;
+    private int _liveOutputClosed;
 
     public TestApplicationHandler(
         TerminalTestReporter output,
@@ -41,6 +45,11 @@ internal sealed class TestApplicationHandler
         _artifactPostProcessingManager = artifactPostProcessingManager;
         _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
         _testRunPolicy = testRunPolicy;
+        if (output.ContextualModuleOutput)
+        {
+            _liveOutputCancellation = new CancellationTokenSource();
+            _liveOutputToken = _liveOutputCancellation.Token;
+        }
     }
 
     /// <summary>
@@ -77,7 +86,9 @@ internal sealed class TestApplicationHandler
         }
 
         var arch = architecture!.ToLowerInvariant();
-        var tfm = TargetFrameworkParser.GetShortTargetFramework(framework);
+        var tfm = _output.ContextualModuleOutput && !string.IsNullOrWhiteSpace(_module.TargetFramework)
+            ? _module.TargetFramework
+            : TargetFrameworkParser.GetShortTargetFramework(framework);
         var currentHandshakeInfo = (tfm, arch, executionId!);
 
         if (_options.IsArtifactPostProcessing
@@ -569,7 +580,14 @@ internal sealed class TestApplicationHandler
             // WriteMessage appends the payload verbatim without a trailing newline (the process-output streaming
             // path supplies its own newlines). An Azure DevOps logging command must sit on its own line to be
             // recognized, so terminate the line here without otherwise altering the payload.
-            _output.WriteMessage(EnsureTrailingNewLine(azureDevOpsLogMessage.LogText));
+            if (_output.ContextualModuleOutput)
+            {
+                WriteModuleMessage(EnsureTrailingNewLine(azureDevOpsLogMessage.LogText));
+            }
+            else
+            {
+                _output.WriteMessage(EnsureTrailingNewLine(azureDevOpsLogMessage.LogText));
+            }
         }
     }
 
@@ -589,17 +607,38 @@ internal sealed class TestApplicationHandler
         {
             case DisplayMessageLevels.Warning:
                 // WriteWarningMessage/WriteErrorMessage terminate the line themselves (AppendLine).
-                _output.WriteWarningMessage(displayMessage.Text);
+                if (_output.ContextualModuleOutput)
+                {
+                    WriteModuleMessage(EnsureTrailingNewLine(displayMessage.Text), TerminalColor.DarkYellow);
+                }
+                else
+                {
+                    _output.WriteWarningMessage(displayMessage.Text);
+                }
                 break;
 
             case DisplayMessageLevels.Error:
-                _output.WriteErrorMessage(displayMessage.Text);
+                if (_output.ContextualModuleOutput)
+                {
+                    WriteModuleMessage(EnsureTrailingNewLine(displayMessage.Text), TerminalColor.DarkRed);
+                }
+                else
+                {
+                    _output.WriteErrorMessage(displayMessage.Text);
+                }
                 break;
 
             default:
                 // The information path uses the verbatim WriteMessage, which does not append a newline, so
                 // terminate the line here to keep it from running together with subsequent terminal output.
-                _output.WriteMessage(EnsureTrailingNewLine(displayMessage.Text));
+                if (_output.ContextualModuleOutput)
+                {
+                    WriteModuleMessage(EnsureTrailingNewLine(displayMessage.Text));
+                }
+                else
+                {
+                    _output.WriteMessage(EnsureTrailingNewLine(displayMessage.Text));
+                }
                 break;
         }
     }
@@ -643,9 +682,58 @@ internal sealed class TestApplicationHandler
     {
         if (!string.IsNullOrEmpty(text))
         {
-            _output.WriteMessage(text);
+            if (_output.ContextualModuleOutput)
+            {
+                WriteModuleMessage(text);
+            }
+            else
+            {
+                _output.WriteMessage(text);
+            }
         }
     }
+
+    internal void WriteLiveMessage(string text)
+    {
+        if (_output.ContextualModuleOutput)
+        {
+            WriteModuleMessage(text, cancellationToken: _liveOutputToken);
+        }
+        else
+        {
+            WriteMessage(text);
+        }
+    }
+
+    internal void CloseLiveOutput(bool timedOut)
+    {
+        if (_liveOutputCancellation is null || Interlocked.Exchange(ref _liveOutputClosed, 1) != 0)
+        {
+            return;
+        }
+
+        _liveOutputCancellation.Cancel();
+        try
+        {
+            if (timedOut)
+            {
+                WriteModuleMessage(CliCommandStrings.TestApplicationOutputStreamTimeout);
+            }
+        }
+        finally
+        {
+            _liveOutputCancellation.Dispose();
+        }
+    }
+
+    private void WriteModuleMessage(string text, TerminalColor? color = null, CancellationToken cancellationToken = default)
+        => _output.WriteModuleMessage(
+            _module.TargetPath ?? _module.ProjectFullPath ?? string.Empty,
+            _module.TargetFramework ?? _handshakeInfo?.TargetFramework,
+            _handshakeInfo?.Architecture,
+            text,
+            color,
+            cancellationToken);
 
     internal void OnTestProcessExited(int exitCode, string outputData, string errorData)
     {
