@@ -437,7 +437,17 @@ The build pipeline is extensible through `GenerateComputedBuildStaticWebAssets` 
 
 ### Compression (`Microsoft.NET.Sdk.StaticWebAssets.Compression.targets`)
 
-Primary assets → gzip and/or brotli compressed variants. Each compressed file becomes an `Alternative` asset with `AssetTraitName=Content-Encoding` and `AssetTraitValue=gzip|br`. Endpoints for compressed variants include `Selectors` for content negotiation and `Vary: Content-Encoding` response headers.
+The [compression targets](Targets/Microsoft.NET.Sdk.StaticWebAssets.Compression.targets)
+generate gzip variants by default during build and gzip, Brotli, and Zstandard (`.zst`)
+variants during publish. Each compressed file becomes an `Alternative` asset with the
+`Content-Encoding` trait. Negotiated endpoints select a variant using `Accept-Encoding`
+and include `Vary: Accept-Encoding`.
+
+When `StaticWebAssetDictionaryCompression` is enabled, publish can use an earlier
+asset pack supplied through `StaticWebAssetPreviousAssetPack` to generate
+dictionary-compressed Zstandard (`.dcz`) variants for changed assets. These endpoints
+also vary by `Available-Dictionary` so that clients receive a dictionary-compressed
+response only when they have the matching dictionary.
 
 ### Embedded Assets (`Microsoft.NET.Sdk.StaticWebAssets.EmbeddedAssets.targets`)
 
