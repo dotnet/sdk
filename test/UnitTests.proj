@@ -92,6 +92,14 @@
     <BaseMethodLimit Condition="'$(BaseMethodLimit)' == ''">32</BaseMethodLimit>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(TargetOS)' == 'osx' and '$(TargetArchitecture)' == 'arm64'">
+    <!-- Keep resource-intensive dotnet-new test classes in separate work items on constrained
+         macOS arm64 agents. https://github.com/dotnet/sdk/issues/57241 -->
+    <SDKCustomTestProject Update="dotnet-new.IntegrationTests\dotnet-new.IntegrationTests.csproj">
+      <PartitionByClass>true</PartitionByClass>
+    </SDKCustomTestProject>
+  </ItemGroup>
+
   <!-- Consolidate Helix shards for assemblies with very short test durations.
        MethodLimitMultiplier increases the methods-per-shard threshold, producing
        fewer (but larger) work items and reducing per-item overhead on Helix queues. -->
