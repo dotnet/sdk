@@ -2,17 +2,130 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using DirectiveArgumentKind = Microsoft.DotNet.FileBasedPrograms.CSharpDirective.DirectiveArgumentKind;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
 [TestClass]
 public sealed class RunFileTests_Directives : RunFileTestBase
 {
+    private static IgnoredDirectiveTriviaSyntax GetDirectiveSyntax(SourceFile source)
+        => (IgnoredDirectiveTriviaSyntax)CSharpSyntaxTree.ParseText(
+            source.Text,
+            CSharpParseOptions.Default.WithFeatures([new("FileBasedProgram", "true")]))
+            .GetRoot().GetLeadingTrivia().Single(trivia => trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia)).GetStructure()!;
+
+    [TestMethod]
+    [DataRow("package", "Newtonsoft.Json@13.0.3 PrivateAssets=all", "Newtonsoft.Json|@|13.0.3|PrivateAssets|=|all", DirectiveArgumentKind.Name)]
+    [DataRow("package", "Pkg PrivateAssets=all IncludeAssets=runtime", "Pkg|||PrivateAssets|=|all|IncludeAssets|=|runtime", DirectiveArgumentKind.Name)]
+    [DataRow("sdk", "\"Microsoft.NET.Sdk\" @ \"1.0\"", "\"Microsoft.NET.Sdk\"|@|\"1.0\"", DirectiveArgumentKind.Name)]
+    [DataRow("property", "Name = \"a b\"", "Name|=|\"a b\"", DirectiveArgumentKind.Name)]
+    [DataRow("project", "\"../my project.csproj\" ReferenceOutputAssembly=false", "\"../my project.csproj\"|||ReferenceOutputAssembly|=|false", DirectiveArgumentKind.Value)]
+    [DataRow("ref", "../lib.dll Aliases=Lib", "../lib.dll|||Aliases|=|Lib", DirectiveArgumentKind.Value)]
+    [DataRow("include", "\"my files/*.cs\" Link=\"src/%(Filename)\"", "\"my files/*.cs\"|||Link|=|\"src/%(Filename)\"", DirectiveArgumentKind.Value)]
+    [DataRow("exclude", "my files/*.cs", "my files/*.cs||", DirectiveArgumentKind.Value)]
+    [DataRow("property", "Name = legacy value", "Name|=|legacy value", DirectiveArgumentKind.Name)]
+    [DataRow("package", "Pkg@1.0 NotMetadata", "Pkg|@|1.0 NotMetadata", DirectiveArgumentKind.Name)]
+    [DataRow("package", "Pkg@ Metadata=", "Pkg|@||Metadata|=|", DirectiveArgumentKind.Name)]
+    [DataRow("package", "@1.0", "|@|1.0", DirectiveArgumentKind.Name)]
+    [DataRow("property", "Name", "Name||", DirectiveArgumentKind.Name)]
+    [DataRow("unknown", "some text", "some text||", DirectiveArgumentKind.Unknown)]
+    [DataRow("Package", "Pkg@1.0 PrivateAssets=all", "Pkg@1.0 PrivateAssets=all||", DirectiveArgumentKind.Unknown)]
+    public void TokenizeDirective_Spans(string kind, string content, string expectedParts, object expectedArgumentKind)
+    {
+        var source = new SourceFile("test.cs", SourceText.From($"// prefix\n  #:  {kind}\t{content} \t\n"));
+        var syntax = GetDirectiveSyntax(source);
+        var (kindSpan, argumentKind, tokens) = FileLevelDirectiveHelpers.TokenizeDirective(source, syntax, VirtualProjectBuildingCommand.ThrowingReporter);
+
+        source.Text.ToString(kindSpan).Should().Be(kind);
+        kindSpan.Start.Should().Be(16);
+        argumentKind.Should().Be((DirectiveArgumentKind)expectedArgumentKind);
+        tokens.Should().NotBeNull();
+        tokens!.Value
+            .SelectMany(token => new[] { token.NameSpan, token.SeparatorSpan, token.ValueSpan })
+            .Select(source.Text.ToString)
+            .Should().Equal(expectedParts.Split('|'));
+    }
+
+    [TestMethod]
+    public void TokenizeDirective_RepeatedText()
+    {
+        var source = new SourceFile("test.cs", SourceText.From("// prefix\n  #:  package A@A A=A\n"));
+        var (kindSpan, _, tokens) = FileLevelDirectiveHelpers.TokenizeDirective(source, GetDirectiveSyntax(source), VirtualProjectBuildingCommand.ThrowingReporter);
+
+        kindSpan.Should().Be(new TextSpan(16, 7));
+        tokens.Should().NotBeNull();
+        tokens!.Value.Select(token => (token.NameSpan, token.SeparatorSpan, token.ValueSpan)).Should().Equal(
+            (new TextSpan(24, 1), new TextSpan(25, 1), new TextSpan(26, 1)),
+            (new TextSpan(28, 1), new TextSpan(29, 1), new TextSpan(30, 1)));
+    }
+
+    [TestMethod]
+    public void TokenizeDirective_QuotedEscapes()
+    {
+        var source = new SourceFile("test.cs", SourceText.From("""
+            #:package "P\u006bg" @ "1.0" Note = "a\tb c"
+            """));
+        var (_, _, tokens) = FileLevelDirectiveHelpers.TokenizeDirective(source, GetDirectiveSyntax(source), VirtualProjectBuildingCommand.ThrowingReporter);
+
+        tokens.Should().NotBeNull();
+        tokens!.Value.Select(token => (token.Text, token.SeparatorIndex)).Should().Equal(("Pkg@1.0", 3), ("Note=a\tb c", 4));
+        tokens.Value.Select(token => source.Text.ToString(token.NameSpan)).Should().Equal("\"P\\u006bg\"", "Note");
+        tokens.Value.Select(token => source.Text.ToString(token.ValueSpan)).Should().Equal("\"1.0\"", "\"a\\tb c\"");
+    }
+
+    [TestMethod]
+    public void TokenizeDirective_NoValue()
+    {
+        var source = new SourceFile("test.cs", SourceText.From("#:package"));
+        var (kindSpan, argumentKind, tokens) = FileLevelDirectiveHelpers.TokenizeDirective(source, GetDirectiveSyntax(source), VirtualProjectBuildingCommand.ThrowingReporter);
+
+        kindSpan.Should().Be(new TextSpan(2, 7));
+        argumentKind.Should().Be(DirectiveArgumentKind.Name);
+        tokens.Should().NotBeNull();
+        tokens!.Value.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void TokenizeDirective_InvalidQuote()
+    {
+        var source = new SourceFile("test.cs", SourceText.From("#:package Pkg@1.0 Note=\"unterminated"));
+        var errorReporter = ErrorReporters.CreateCollectingReporter(out var diagnostics);
+        var (kindSpan, argumentKind, tokens) = FileLevelDirectiveHelpers.TokenizeDirective(source, GetDirectiveSyntax(source), errorReporter);
+
+        kindSpan.Should().Be(new TextSpan(2, 7));
+        argumentKind.Should().Be(DirectiveArgumentKind.Name);
+        tokens.Should().BeNull();
+        diagnostics.Should().ContainSingle().Which.Message.Should().Be(FileBasedProgramsResources.UnterminatedQuoteInDirective);
+    }
+
+    [TestMethod]
+    [DataRow(16)]
+    [DataRow(27)]
+    public void TokenizeDirective_TruncatedQuote(int length)
+    {
+        var source = new SourceFile("test.cs", SourceText.From("""
+            #:package Pkg@"1.0" Note="x"
+            """));
+        var syntax = GetDirectiveSyntax(new SourceFile(source.Path, source.Text.GetSubText(new TextSpan(0, length))));
+        var errorReporter = ErrorReporters.CreateCollectingReporter(out var diagnostics);
+
+        var (kindSpan, argumentKind, tokens) = FileLevelDirectiveHelpers.TokenizeDirective(source, syntax, errorReporter);
+
+        kindSpan.Should().Be(new TextSpan(2, 7));
+        argumentKind.Should().Be(DirectiveArgumentKind.Name);
+        tokens.Should().BeNull();
+        diagnostics.Should().ContainSingle().Which.Message.Should().Be(FileBasedProgramsResources.UnterminatedQuoteInDirective);
+    }
+
     [TestMethod]
     public void Define_01()
     {
