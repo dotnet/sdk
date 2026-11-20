@@ -2533,6 +2533,26 @@ L'ampliamento e le conversioni definite dall'utente non sono supportate con tipi
         <target state="translated">Preferire gli overload di metodi Append e Insert fortemente tipizzati su StringBuilder</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferValueTupleOverTupleCodeFixTitle">
+        <source>Use a tuple literal</source>
+        <target state="new">Use a tuple literal</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferValueTupleOverTupleDescription">
+        <source>'ValueTuple' is a struct, so it avoids the heap allocation of each 'Tuple'. A tuple is only reported when every use of it, and of everything it is stored in, passed to or returned from, works the same with a value tuple.</source>
+        <target state="new">'ValueTuple' is a struct, so it avoids the heap allocation of each 'Tuple'. A tuple is only reported when every use of it, and of everything it is stored in, passed to or returned from, works the same with a value tuple.</target>
+        <note>{Locked="ValueTuple"}{Locked="Tuple"}</note>
+      </trans-unit>
+      <trans-unit id="PreferValueTupleOverTupleMessage">
+        <source>Use a value tuple instead of '{0}'</source>
+        <target state="new">Use a value tuple instead of '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferValueTupleOverTupleTitle">
+        <source>Prefer 'ValueTuple' over 'Tuple'</source>
+        <target state="new">Prefer 'ValueTuple' over 'Tuple'</target>
+        <note>{Locked="ValueTuple"}{Locked="Tuple"}</note>
+      </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionNotThrowMessage">
         <source>Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</source>
         <target state="translated">A partire da .NET 7, la conversione esplicita '{0}' non verrà generata in caso di overflow in un contesto controllato. Per ripristinare il comportamento di .NET 6, eseguire il wrapping dell'espressione con un’istruzione 'checked'.</target>
