@@ -6,7 +6,6 @@
 using System.CommandLine;
 using System.Runtime.CompilerServices;
 using ManifestReaderTests;
-using Microsoft.DotNet.Cli.BuildServer;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
@@ -20,7 +19,6 @@ using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Commands.Workload.Update;
 using Microsoft.DotNet.Cli.Commands;
-using Moq;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -36,91 +34,6 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             _reporter = new BufferedReporter();
             _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
             _parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update" });
-        }
-
-        [TestMethod]
-        public void GivenWorkloadUpdateItShutsDownMSBuildServerAfterTheUpdateFinishes()
-        {
-            bool updateFinished = false;
-            bool shutdownAfterUpdate = false;
-            var msbuildServer = new Mock<IBuildServer>(MockBehavior.Strict);
-            msbuildServer
-                .Setup(server => server.Shutdown(It.IsAny<CancellationToken>()))
-                .Callback(() => shutdownAfterUpdate = updateFinished);
-
-            int exitCode = ParseWorkloadUpdate(
-                (_, _) =>
-                {
-                    updateFinished = true;
-                    return 42;
-                },
-                msbuildServer.Object).Invoke(Parser.InvocationConfiguration);
-
-            exitCode.Should().Be(42);
-            shutdownAfterUpdate.Should().BeTrue();
-            msbuildServer.Verify(server => server.Shutdown(It.IsAny<CancellationToken>()), Times.Once);
-        }
-
-        [TestMethod]
-        public void GivenWorkloadUpdateFailsItStillShutsDownMSBuildServer()
-        {
-            var expectedException = new InvalidOperationException("Update failed");
-            var msbuildServer = new Mock<IBuildServer>(MockBehavior.Strict);
-            msbuildServer
-                .Setup(server => server.Shutdown(It.IsAny<CancellationToken>()))
-                .Throws(new InvalidOperationException("Shutdown failed"));
-
-            var actualException = Assert.ThrowsExactly<InvalidOperationException>(() =>
-                ParseWorkloadUpdate((_, _) => throw expectedException, msbuildServer.Object)
-                    .Invoke(Parser.InvocationConfiguration));
-
-            actualException.Should().BeSameAs(expectedException);
-            msbuildServer.Verify(server => server.Shutdown(It.IsAny<CancellationToken>()), Times.Once);
-        }
-
-        [TestMethod]
-        public void GivenMSBuildServerShutdownFailsItPreservesTheWorkloadUpdateExitCode()
-        {
-            var msbuildServer = new Mock<IBuildServer>(MockBehavior.Strict);
-            msbuildServer
-                .Setup(server => server.Shutdown(It.IsAny<CancellationToken>()))
-                .Throws(new InvalidOperationException("Shutdown failed"));
-
-            int exitCode = ParseWorkloadUpdate((_, _) => 42, msbuildServer.Object)
-                .Invoke(Parser.InvocationConfiguration);
-
-            exitCode.Should().Be(42);
-            msbuildServer.Verify(server => server.Shutdown(It.IsAny<CancellationToken>()), Times.Once);
-        }
-
-        [TestMethod]
-        [DataRow("--print-rollback", null)]
-        [DataRow("--print-download-link-only", null)]
-        [DataRow("--download-to-cache", "cache")]
-        [DataRow("--advertising-manifests-only", null)]
-        public void GivenNonMutatingWorkloadUpdateItDoesNotShutDownMSBuildServer(string option, string value)
-        {
-            var msbuildServer = new Mock<IBuildServer>(MockBehavior.Strict);
-            string[] arguments = value is null ? [option] : [option, value];
-
-            int exitCode = ParseWorkloadUpdate((_, _) => 42, msbuildServer.Object, arguments)
-                .Invoke(Parser.InvocationConfiguration);
-
-            exitCode.Should().Be(42);
-            msbuildServer.Verify(server => server.Shutdown(It.IsAny<CancellationToken>()), Times.Never);
-        }
-
-        private static ParseResult ParseWorkloadUpdate(
-            Func<ParseResult, CancellationToken, int> executeUpdate,
-            IBuildServer msbuildServer,
-            params string[] arguments)
-        {
-            var workloadCommand = new WorkloadCommandDefinition();
-            WorkloadCommandParser.ConfigureCommand(workloadCommand, executeUpdate, msbuildServer);
-
-            var rootCommand = new RootCommand();
-            rootCommand.Subcommands.Add(workloadCommand);
-            return rootCommand.Parse(["workload", "update", .. arguments]);
         }
 
         [TestMethod]

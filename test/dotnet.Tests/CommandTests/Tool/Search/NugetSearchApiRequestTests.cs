@@ -31,5 +31,52 @@ namespace dotnet.Tests.ToolSearchTests
                 .Should().Be(
                     "https://azuresearch-usnc.nuget.org/query?packageType=dotnettool&semVerLevel=2.0.0");
         }
+
+        [TestMethod]
+        public async Task InternalTimeoutIsReportedAsRetriableFailure()
+        {
+            Func<Task> action = async () => await NugetToolSearchApiRequest.ExecuteWithTimeout(
+                async token =>
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                    return 0;
+                },
+                TestContext.CancellationToken,
+                TimeSpan.FromMilliseconds(10));
+
+            NugetSearchApiRequestException exception =
+                await Assert.ThrowsExactlyAsync<NugetSearchApiRequestException>(action);
+
+            exception.Message.Should().Contain("Retry");
+        }
+
+        [TestMethod]
+        public async Task CallerCancellationIsNotReportedAsTimeout()
+        {
+            using var cancellation = new CancellationTokenSource();
+            cancellation.Cancel();
+
+            Func<Task> action = async () => await NugetToolSearchApiRequest.ExecuteWithTimeout(
+                async token =>
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                    return 0;
+                },
+                cancellation.Token,
+                TimeSpan.FromSeconds(1));
+
+            await Assert.ThrowsExactlyAsync<TaskCanceledException>(action);
+        }
+
+        [TestMethod]
+        public async Task UnrelatedCancellationIsNotReportedAsTimeout()
+        {
+            Func<Task> action = async () => await NugetToolSearchApiRequest.ExecuteWithTimeout<int>(
+                _ => throw new OperationCanceledException(),
+                TestContext.CancellationToken,
+                TimeSpan.FromSeconds(1));
+
+            await Assert.ThrowsExactlyAsync<OperationCanceledException>(action);
+        }
     }
 }

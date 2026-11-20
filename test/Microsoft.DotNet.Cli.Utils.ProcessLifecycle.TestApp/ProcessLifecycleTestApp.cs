@@ -78,7 +78,7 @@ public static partial class ProcessLifecycleTestApp
 
         using IDisposable processLifecycle = ProcessLifecycle.Initialize();
         CancellationToken cancellationToken = ProcessLifecycle.CancellationToken;
-        if (childMode == "mtp-lifecycle")
+        if (childMode is "mtp-lifecycle" or "mtp-sigterm-lifecycle")
         {
             using IDisposable cancellationTimeout =
                 ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan);
@@ -87,7 +87,11 @@ public static partial class ProcessLifecycleTestApp
                 subscribeToConsole: false,
                 cooperativeCancellationToken: cancellationToken,
                 forcefulCancellationToken: ProcessLifecycle.ForcefulCancellationToken);
-            using Process testApplication = CreateChildProcess(args, "ignoring-cancellation-child");
+            using Process testApplication = CreateChildProcess(
+                args,
+                childMode == "mtp-sigterm-lifecycle"
+                    ? "signal-child"
+                    : "ignoring-cancellation-child");
             testApplication.Start();
             WaitForMarker(markerPath, "grandchild-ready");
             File.WriteAllText(markerPath + ".pid", testApplication.Id.ToString());

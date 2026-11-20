@@ -288,6 +288,36 @@ public class ProcessLifecycleTests : SdkTest
 
     [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void MtpLifecycleForwardsSigTermToTestApplication()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+        using Process child = StartChild("mtp-sigterm-lifecycle", testDirectory.Path);
+        try
+        {
+            WaitForMarker(testDirectory.Path, "ready");
+            int testApplicationProcessId =
+                int.Parse(File.ReadAllText(GetMarkerPath(testDirectory.Path) + ".pid"));
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            child.SafeHandle.Signal(PosixSignal.SIGTERM).Should().BeTrue();
+            WaitForMarker(testDirectory.Path, "forwarded");
+            child.WaitForExit(s_waitTimeout).Should().BeTrue();
+
+            child.ExitCode.Should().Be(143);
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(2));
+            SpinWait.SpinUntil(
+                    () => HasProcessExited(testApplicationProcessId),
+                    TimeSpan.FromSeconds(10))
+                .Should().BeTrue("SIGTERM should let the test application exit before forceful cleanup");
+        }
+        finally
+        {
+            StopChild(child);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void SigTermIsForwardedToReapedChild()
     {
         var testDirectory = TestAssetsManager.CreateTestDirectory();

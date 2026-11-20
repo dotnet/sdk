@@ -20,19 +20,24 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
     public async Task<string> GetResult(
         NugetSearchApiParameter nugetSearchApiParameter,
         CancellationToken cancellationToken)
-    {
-        using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeoutCancellation.CancelAfter(TimeSpan.FromSeconds(10));
+        => await ExecuteWithTimeout(
+            token => GetResultCore(nugetSearchApiParameter, token),
+            cancellationToken,
+            TimeSpan.FromSeconds(10));
 
+    private static async Task<string> GetResultCore(
+        NugetSearchApiParameter nugetSearchApiParameter,
+        CancellationToken cancellationToken)
+    {
         var queryUrl = await ConstructUrl(
             nugetSearchApiParameter.SearchTerm,
             nugetSearchApiParameter.Skip,
             nugetSearchApiParameter.Take,
             nugetSearchApiParameter.Prerelease,
-            timeoutCancellation.Token);
+            cancellationToken);
 
-        var httpClient = new HttpClient();
-        HttpResponseMessage response = await httpClient.GetAsync(queryUrl, timeoutCancellation.Token);
+        using var httpClient = new HttpClient();
+        using HttpResponseMessage response = await httpClient.GetAsync(queryUrl, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
             if ((int)response.StatusCode >= 500 && (int)response.StatusCode < 600)
@@ -49,7 +54,32 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
                     queryUrl.AbsoluteUri, response.ReasonPhrase, response.StatusCode));
         }
 
-        return await response.Content.ReadAsStringAsync(timeoutCancellation.Token);
+        return await response.Content.ReadAsStringAsync(cancellationToken);
+    }
+
+    internal static async Task<T> ExecuteWithTimeout<T>(
+        Func<CancellationToken, Task<T>> operation,
+        CancellationToken cancellationToken,
+        TimeSpan timeout)
+    {
+        using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCancellation.CancelAfter(timeout);
+
+        try
+        {
+            return await operation(timeoutCancellation.Token);
+        }
+        catch (OperationCanceledException e) when (
+            timeoutCancellation.IsCancellationRequested &&
+            !cancellationToken.IsCancellationRequested)
+        {
+            throw new NugetSearchApiRequestException(
+                string.Format(
+                    CliStrings.RetriableNugetSearchFailure,
+                    "https://api.nuget.org/v3/index.json",
+                    e.Message,
+                    "N/A"));
+        }
     }
 
     internal static async Task<Uri> ConstructUrl(string searchTerm = null, int? skip = null, int? take = null,

@@ -30,6 +30,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// </remarks>
 internal class ProcessReaper : IDisposable
 {
+    private static readonly TimeSpan s_forcefulSigTermGracePeriod = TimeSpan.FromSeconds(1);
     private readonly Process _process;
 
 #if TARGET_WINDOWS
@@ -146,8 +147,6 @@ internal class ProcessReaper : IDisposable
 #if !TARGET_WINDOWS && NET
     private sealed class UnixProcessReaper : ProcessReaper
     {
-        // Allow the child enough time to run its SIGTERM handler before escalating under load.
-        private static readonly TimeSpan s_forcefulSigTermGracePeriod = TimeSpan.FromSeconds(1);
         private readonly PosixSignalRegistration _sigTermRegistration;
 
         // Coordinates Dispose (typically the main thread) with HandleProcessExit,
@@ -308,6 +307,76 @@ internal class ProcessReaper : IDisposable
     public virtual void Dispose()
     {
         Console.CancelKeyPress -= HandleCancelKeyPress;
+    }
+
+    internal static void ForwardSigTermAndTerminate(IEnumerable<Process> processes)
+    {
+#if !TARGET_WINDOWS && NET
+        Process[] activeProcesses = [.. processes.Where(static process => !process.HasExited)];
+        var signaledProcesses = new HashSet<Process>();
+
+        foreach (Process process in activeProcesses)
+        {
+            try
+            {
+                if (process.Signal(PosixSignal.SIGTERM))
+                {
+                    signaledProcesses.Add(process);
+                }
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+            {
+            }
+        }
+
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        foreach (Process process in activeProcesses)
+        {
+            if (signaledProcesses.Contains(process))
+            {
+                TimeSpan remaining = s_forcefulSigTermGracePeriod - stopwatch.Elapsed;
+                if (remaining > TimeSpan.Zero)
+                {
+                    try
+                    {
+                        if (process.WaitForExit((int)Math.Ceiling(remaining.TotalMilliseconds)))
+                        {
+                            continue;
+                        }
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        continue;
+                    }
+                }
+            }
+
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+            {
+            }
+        }
+#else
+        foreach (Process process in processes)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill();
+                }
+            }
+            catch (InvalidOperationException)
+            {
+            }
+        }
+#endif
     }
 
     private void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)

@@ -38,6 +38,7 @@ internal sealed class CtrlCCancellationManager : IDisposable
     private readonly CancellationTokenRegistration _cooperativeCancellationRegistration;
     private readonly CancellationTokenRegistration _forcefulCancellationRegistration;
     private int _state = StateIdle;
+    private int _forwardSigTerm;
     private int _disposed;
 
     public CtrlCCancellationManager(
@@ -59,7 +60,8 @@ internal sealed class CtrlCCancellationManager : IDisposable
         _cooperativeCancellationRegistration =
             cooperativeCancellationToken.Register(() => HandleCooperativeCancellation());
         _forcefulCancellationRegistration =
-            forcefulCancellationToken.Register(() => HandleForcefulCancellation());
+            forcefulCancellationToken.Register(
+                () => HandleForcefulCancellation(ProcessLifecycle.IsSigTermRequested));
     }
 
     /// <summary>
@@ -83,7 +85,7 @@ internal sealed class CtrlCCancellationManager : IDisposable
 
         if (Volatile.Read(ref _state) == StateForcing)
         {
-            TryKill(process);
+            TerminateProcesses([process], Volatile.Read(ref _forwardSigTerm) != 0);
         }
     }
 
@@ -116,7 +118,7 @@ internal sealed class CtrlCCancellationManager : IDisposable
             return;
         }
 
-        if (HandleForcefulCancellation())
+        if (HandleForcefulCancellation(forwardSigTerm: false))
         {
             _exitAction(ExitCode.TestSessionAborted);
         }
@@ -157,22 +159,37 @@ internal sealed class CtrlCCancellationManager : IDisposable
         return true;
     }
 
-    private bool HandleForcefulCancellation()
+    private bool HandleForcefulCancellation(bool forwardSigTerm)
     {
         // A second Ctrl+C transitions Cancelling -> Forcing. A forceful lifecycle signal such as
         // SIGTERM can transition directly from Idle -> Forcing.
+        if (forwardSigTerm)
+        {
+            Volatile.Write(ref _forwardSigTerm, 1);
+        }
+
         int previousState = Interlocked.Exchange(ref _state, StateForcing);
         if (previousState == StateForcing)
         {
             return false;
         }
 
-        foreach (var process in _processes.Keys)
+        TerminateProcesses([.. _processes.Keys], forwardSigTerm);
+        return true;
+    }
+
+    private static void TerminateProcesses(IReadOnlyCollection<Process> processes, bool forwardSigTerm)
+    {
+        if (forwardSigTerm)
+        {
+            ProcessReaper.ForwardSigTermAndTerminate(processes);
+            return;
+        }
+
+        foreach (Process process in processes)
         {
             TryKill(process);
         }
-
-        return true;
     }
 
     private static void TryKill(Process process)

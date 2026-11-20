@@ -261,9 +261,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
         }
         finally
         {
-            output.TestExecutionCompleted(DateTimeOffset.Now, exitCode);
+            output.TestExecutionCompleted(
+                DateTimeOffset.Now,
+                GetExitCodeForReporting(exitCode, cancellationToken.IsCancellationRequested));
         }
     }
+
+    internal static int? GetExitCodeForReporting(int? exitCode, bool cancellationRequested)
+        => cancellationRequested && exitCode == ExitCode.Success
+            ? ExitCode.TestSessionAborted
+            : exitCode;
 
     /// <summary>
     /// Decides whether the artifacts of a finished run should be consolidated.
