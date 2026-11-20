@@ -48,6 +48,11 @@ feature (`Microsoft.NET.Build.Containers`).
 
 ## Tests
 
+- **Layer-cache hints only reject candidates.** A hit must validate the canonical source
+  tar fingerprint and both compressed and uncompressed cached-blob digests. Keep reuse
+  gated on an explicit epoch and retain the `ContainerLayerNoIncremental` opt-out.
+  See [LayerInputCache.cs](Microsoft.NET.Build.Containers/LayerInputCache.cs).
+
 - Unit: `test/Microsoft.NET.Build.Containers.UnitTests` (MSTest) — run everywhere.
   Credential-redirect regression tests must exercise the real realm transport with explicitly
   allowed local endpoints; a fake handler that never follows redirects cannot prove this protection.

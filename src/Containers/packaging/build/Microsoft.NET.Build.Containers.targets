@@ -254,6 +254,8 @@
        in a few different ways we can't express that dependency directly here. -->
   <Target Name="_PublishSingleContainer" Returns="@(GeneratedContainer)">
     <PropertyGroup>
+      <_ContainerLayerIncrementalCacheEnabled>true</_ContainerLayerIncrementalCacheEnabled>
+      <_ContainerLayerIncrementalCacheEnabled Condition="'$(ContainerLayerNoIncremental)' == 'true'">false</_ContainerLayerIncrementalCacheEnabled>
       <_ContainerArchiveIncrementalCacheEnabled Condition="'$(ContainerArchiveNoIncremental)' == 'false' and '$(ContainerArchiveOutputPath)' != '' and '$(_IsSingleRIDBuild)' == 'true' and '$(_IsMultiRIDInnerBuild)' != 'true'">true</_ContainerArchiveIncrementalCacheEnabled>
       <_ContainerArchiveIncrementalCachePath>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'container', 'publish.cache.json'))</_ContainerArchiveIncrementalCachePath>
     </PropertyGroup>
@@ -288,6 +290,7 @@
                     GenerateLabels="$(ContainerGenerateLabels)"
                     GenerateCreatedLabels="$(ContainerGenerateLabelsImageCreated)"
                     GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"
+                    EnableLayerIncrementalCache="$(_ContainerLayerIncrementalCacheEnabled)"
                     EnableArchiveIncrementalCache="$(_ContainerArchiveIncrementalCacheEnabled)"
                     ArchiveIncrementalCachePath="$(_ContainerArchiveIncrementalCachePath)"> <!-- The RID graph path is provided as a property by the SDK. -->
 
@@ -346,6 +349,7 @@
           ContainerGenerateLabelsImageCreated=$(ContainerGenerateLabelsImageCreated);
           ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
           ContainerPushNoCache=$(ContainerPushNoCache);
+          ContainerLayerNoIncremental=$(ContainerLayerNoIncremental);
           _SkipContainerPublishing=$(_SkipContainerPublishing);
           ContainerImageFormat=$(_SingleImageContainerFormat);
           _IsMultiRIDBuild=false;
