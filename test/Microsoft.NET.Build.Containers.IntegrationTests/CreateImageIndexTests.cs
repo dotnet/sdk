@@ -53,7 +53,7 @@ public class CreateImageIndexTests : SdkTest
         // Assert that the image index is pushed to the registry
         var loggerFactory = new TestLoggerFactory(Log);
         var logger = loggerFactory.CreateLogger(nameof(CreateImageIndex_Baseline));
-        Registry registry = new(outputRegistry, logger, RegistryMode.Pull);
+        Registry registry = new(outputRegistry, logger, RegistryMode.Pull, TestContext.CancellationToken);
 
         await AssertThatImageIsReferencedInImageIndex("linux-x64", repository, tags, registry);
         await AssertThatImageIsReferencedInImageIndex("linux-arm64", repository, tags, registry);

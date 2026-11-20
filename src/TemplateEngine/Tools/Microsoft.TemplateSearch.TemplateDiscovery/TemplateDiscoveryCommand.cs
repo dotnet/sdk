@@ -139,7 +139,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             (string metadataPath, string legacyMetadataPath) = PackCheckResultReportWriter.WriteResults(config.OutputPath, checkResults);
             if (config.TestEnabled)
             {
-                CacheFileTests.RunTests(metadataPath, legacyMetadataPath);
+                CacheFileTests.RunTests(metadataPath, legacyMetadataPath, cancellationToken);
             }
         }
     }

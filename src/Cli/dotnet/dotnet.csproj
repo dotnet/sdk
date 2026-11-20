@@ -117,6 +117,8 @@
     <InternalsVisibleTo Include="dotnet-watch" />
     <InternalsVisibleTo Include="dotnet-watch.Tests" />
     <InternalsVisibleTo Include="dotnet.Tests" />
+    <InternalsVisibleTo Include="dotnet.Tests.TestApp" />
+    <InternalsVisibleTo Include="Microsoft.DotNet.Cli.Utils.ProcessLifecycle.TestApp" />
   </ItemGroup>
 
   <Target Name="LinkVSEmbeddableAssemblies" DependsOnTargets="ResolveReferences" AfterTargets="ResolveReferences">

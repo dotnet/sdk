@@ -225,7 +225,7 @@ public class CreateNewImageTests : SdkTest
         var logger = loggerFactory.CreateLogger(nameof(CreateNewImage_RootlessBaseImage));
 
         // Build a rootless base runtime image.
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push, TestContext.CancellationToken);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,

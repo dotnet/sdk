@@ -16,7 +16,7 @@ public class DockerRegistryTests : SdkTest
     {
         var loggerFactory = new TestLoggerFactory(Log);
         var logger = loggerFactory.CreateLogger(nameof(GetFromRegistry));
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push, TestContext.CancellationToken);
         var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
 
         // Don't need rid graph for local registry image pulls - since we're only pushing single image manifests (not manifest lists)
@@ -70,9 +70,18 @@ public class DockerRegistryTests : SdkTest
             // login to that registry
             ContainerCli.LoginCommand(Log, "--username", "testuser", "--password", "testpassword", registryName).Execute().Should().Pass();
             // push an image to that registry using username/password
-            Registry localAuthed = new(new Uri($"https://{registryName}"), logger, RegistryMode.Push, settings: new() { ParallelUploadEnabled = false, ForceChunkedUpload = true });
+            Registry localAuthed = new(
+                new Uri($"https://{registryName}"),
+                logger,
+                RegistryMode.Push,
+                TestContext.CancellationToken,
+                settings: new RegistrySettings(TestContext.CancellationToken)
+                {
+                    ParallelUploadEnabled = false,
+                    ForceChunkedUpload = true
+                });
             var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
-            Registry mcr = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Pull);
+            Registry mcr = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Pull, TestContext.CancellationToken);
 
             var sourceImage = new SourceImageReference(mcr, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net6ImageTag, null);
             var destinationImage = new DestinationImageReference(localAuthed, DockerRegistryManager.RuntimeBaseImage, new[] { DockerRegistryManager.Net6ImageTag });

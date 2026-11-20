@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             var expectedWorkloads = new List<WorkloadId>();
             var workloadInstaller = new MockWorkloadRecordRepo(expectedWorkloads);
             var command = new WorkloadListCommand(_parseResult, _reporter, workloadInstaller, "6.0.100");
-            command.Execute();
+            command.Execute(TestContext.CancellationToken);
 
             // Expected number of lines for table headers
             // Expecting a workload set adds two lines
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             var expectedWorkloads = new List<WorkloadId>();
             var workloadInstaller = new MockWorkloadRecordRepo(expectedWorkloads);
             var command = new WorkloadListCommand(_machineReadableParseResult, _reporter, workloadInstaller, "6.0.100");
-            command.Execute();
+            command.Execute(TestContext.CancellationToken);
 
             _reporter.Lines.Should().Contain(l => l.Contains(@"""installed"":[]"));
         }
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             var workloadInstaller = new MockWorkloadRecordRepo(expectedWorkloads);
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(("SampleManifest", _manifestPath, "5.0.0", "6.0.100")), Directory.GetCurrentDirectory());
             var command = new WorkloadListCommand(_parseResult, _reporter, workloadInstaller, "6.0.100", workloadResolver: workloadResolver);
-            command.Execute();
+            command.Execute(TestContext.CancellationToken);
 
             foreach (var workload in expectedWorkloads)
             {
@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             var expectedWorkloads = new List<WorkloadId>() { new WorkloadId("mock-workload-1"), new WorkloadId("mock-workload-2"), new WorkloadId("mock-workload-3") };
             var workloadInstaller = new MockWorkloadRecordRepo(expectedWorkloads);
             var command = new WorkloadListCommand(_machineReadableParseResult, _reporter, workloadInstaller, "6.0.100");
-            command.Execute();
+            command.Execute(TestContext.CancellationToken);
 
             _reporter.Lines.Should().Contain(l => l.Contains("{\"installed\":[\"mock-workload-1\",\"mock-workload-2\",\"mock-workload-3\"]"));
         }
@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             File.Copy(Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "MockListSampleUpdated.json"), manifestPath);
 
             var command = new WorkloadListCommand(_parseResult, _reporter, workloadInstaller, "6.0.100", workloadResolver: workloadResolver, userProfileDir: userProfileDir);
-            command.Execute();
+            command.Execute(TestContext.CancellationToken);
 
             // Workloads 1 and 3 should have updates
             _reporter.Lines.Should().Contain(string.Format(CliCommandStrings.WorkloadListWorkloadUpdatesAvailable, "mock-workload-1 mock-workload-3"));

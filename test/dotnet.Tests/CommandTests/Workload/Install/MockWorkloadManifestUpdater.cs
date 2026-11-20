@@ -28,8 +28,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             _resolver = resolver;
         }
 
-        public Task UpdateAdvertisingManifestsAsync(bool includePreview, bool useWorkloadSets = false, DirectoryPath? cachePath = null)
+        public Task UpdateAdvertisingManifestsAsync(CancellationToken cancellationToken, bool includePreview, bool useWorkloadSets = false, DirectoryPath? cachePath = null)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             UpdateAdvertisingManifestsCallCount++;
             return Task.CompletedTask;
         }
@@ -56,8 +57,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
         }
 
-        public Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand)
+        public Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(CancellationToken cancellationToken, bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             GetManifestPackageDownloadsCallCount++;
             return Task.FromResult<IEnumerable<WorkloadDownload>>(new List<WorkloadDownload>()
             {
@@ -75,7 +77,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return _manifestUpdates.Select(t => t.ManifestUpdate);
         }
 
-        public Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync() => throw new NotImplementedException();
+        public Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
         public IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads) => throw new NotImplementedException();
         public void DeleteUpdatableWorkloadsFile() { }
         public IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> files, WorkloadHistoryRecorder recorder = null) => _manifestUpdates.Select(t => t.ManifestUpdate);

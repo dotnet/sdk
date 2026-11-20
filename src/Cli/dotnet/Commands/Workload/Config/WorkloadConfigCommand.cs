@@ -44,7 +44,7 @@ internal sealed class WorkloadConfigCommand : WorkloadCommandBase<WorkloadConfig
         _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, _sdkFeatureBand, creationResult.WorkloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         //  When we support multiple configuration values, it would be nice if we could process and display them in the order they are passed.
         //  It seems that the parser doesn't give us a good way to do that, however

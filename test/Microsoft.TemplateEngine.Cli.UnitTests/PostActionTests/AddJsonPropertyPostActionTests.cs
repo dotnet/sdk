@@ -18,6 +18,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
     [ResourceLock(nameof(Reporter))]
     public class AddJsonPropertyPostActionTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         // MSTest has no IClassFixture equivalent; a lazily-initialized static helper
         // mirrors the per-class lifetime that xUnit's IClassFixture provides.
         private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
@@ -85,7 +87,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsFalse(result);
             mockReporter.Verify(r => r.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ParentPropertyPathInvalid, parentPropertyPath)), Times.Once);
@@ -119,7 +122,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsFalse(result);
 
@@ -154,7 +158,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsFalse(result);
 
@@ -186,7 +191,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsTrue(result);
 
@@ -233,7 +239,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(expectedResult, result);
             string actualJsonContent = _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath);
@@ -294,7 +301,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(expectedResult, result);
             string actualJsonContent = _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath);
@@ -343,7 +351,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsTrue(result);
             JsonNode? modifiedJsonContent = JsonNode.Parse(_engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
@@ -374,7 +383,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsTrue(result);
 
@@ -411,7 +421,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsTrue(result);
 
@@ -451,7 +462,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsFalse(result);
 
@@ -484,7 +496,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsFalse(result);
 
@@ -519,7 +532,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 postAction,
                 new MockCreationEffects(),
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsFalse(result);
 

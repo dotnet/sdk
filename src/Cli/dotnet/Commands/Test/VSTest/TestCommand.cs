@@ -19,7 +19,7 @@ public class TestCommand(
     bool noRestore,
     string? msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, msbuildPath)
 {
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
 
@@ -50,7 +50,7 @@ public class TestCommand(
         // When we have settings, we want to exclude the '--' as it doesn't end up in unmatched tokens, so we pass settings.Length - 1
         if (ContainsBuiltTestSources(parseResult, GetSettingsCount(settings)))
         {
-            int exitCode = ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId);
+            int exitCode = ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId, cancellationToken);
 
             // Reached only when the invocation completed, whether the tests passed or failed. An invocation that
             // throws or is interrupted deliberately leaves the artifacts on disk for diagnosis.
@@ -58,7 +58,7 @@ public class TestCommand(
             return exitCode;
         }
 
-        int msbuildExitCode = ForwardToMsbuild(parseResult, settings, testSessionCorrelationId);
+        int msbuildExitCode = ForwardToMsbuild(parseResult, settings, testSessionCorrelationId, cancellationToken);
 
         VSTestArtifactsDirectory.Delete();
         return msbuildExitCode;
@@ -84,7 +84,7 @@ public class TestCommand(
         return settings.Length - 1;
     }
 
-    private static int ForwardToMsbuild(ParseResult parseResult, string[] settings, string testSessionCorrelationId)
+    private static int ForwardToMsbuild(ParseResult parseResult, string[] settings, string testSessionCorrelationId, CancellationToken cancellationToken)
     {
         var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
 
@@ -133,10 +133,14 @@ public class TestCommand(
                 additionalBuildProperties = ["--property:VsTestUseMSBuildOutput=true"];
             }
 
-            int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId, additionalBuildProperties).Execute();
+            int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId, additionalBuildProperties).Execute(cancellationToken);
 
             // We run post processing also if execution is failed for possible partial successful result to post process.
-            exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult.GetValue(definition.DiagOption), FeatureFlag.Instance);
+            exitCode |= RunArtifactPostProcessingIfNeeded(
+                testSessionCorrelationId,
+                parseResult.GetValue(definition.DiagOption),
+                FeatureFlag.Instance,
+                cancellationToken);
 
             return exitCode;
         }
@@ -156,7 +160,12 @@ public class TestCommand(
         }
     }
 
-    private static int ForwardToVSTestConsole(ParseResult parseResult, string[] args, string[] settings, string testSessionCorrelationId)
+    private static int ForwardToVSTestConsole(
+        ParseResult parseResult,
+        string[] args,
+        string[] settings,
+        string testSessionCorrelationId,
+        CancellationToken cancellationToken)
     {
         var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
 
@@ -177,10 +186,14 @@ public class TestCommand(
             convertedArgs.Add($"--testSessionCorrelationId:{testSessionCorrelationId}");
         }
 
-        int exitCode = new VSTestForwardingApp(convertedArgs).Execute();
+        int exitCode = new VSTestForwardingApp(convertedArgs).Execute(cancellationToken);
 
         // We run post processing also if execution is failed for possible partial successful result to post process.
-        exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult.GetValue(definition.DiagOption), FeatureFlag.Instance);
+        exitCode |= RunArtifactPostProcessingIfNeeded(
+            testSessionCorrelationId,
+            parseResult.GetValue(definition.DiagOption),
+            FeatureFlag.Instance,
+            cancellationToken);
 
         return exitCode;
     }
@@ -293,7 +306,11 @@ public class TestCommand(
         return testCommand;
     }
 
-    internal static int RunArtifactPostProcessingIfNeeded(string testSessionCorrelationId, string? diag, FeatureFlag disableFeatureFlag)
+    internal static int RunArtifactPostProcessingIfNeeded(
+        string testSessionCorrelationId,
+        string? diag,
+        FeatureFlag disableFeatureFlag,
+        CancellationToken cancellationToken)
     {
         if (disableFeatureFlag.IsSet(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
         {
@@ -320,7 +337,7 @@ public class TestCommand(
         // The post-processing run receives the same artifacts directory as the collecting run did, so it resolves
         // the same session subdirectory. The whole directory is removed once the invocation completes, so there is
         // nothing to clean up here.
-        return new VSTestForwardingApp(artifactsPostProcessArgs).Execute();
+        return new VSTestForwardingApp(artifactsPostProcessArgs).Execute(cancellationToken);
     }
 
     /// <summary>
