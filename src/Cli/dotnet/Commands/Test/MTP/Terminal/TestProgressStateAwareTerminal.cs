@@ -109,12 +109,17 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
     public void Dispose() =>
         ((IDisposable)_cts).Dispose();
 
-    internal void WriteToTerminal(Action<ITerminal> write)
+    internal void WriteToTerminal(Action<ITerminal> write, CancellationToken cancellationToken = default)
     {
         if (_showProgress)
         {
             lock (_lock)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 try
                 {
                     _terminal.StartUpdate();
@@ -132,6 +137,11 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
         {
             lock (_lock)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 try
                 {
                     _terminal.StartUpdate();

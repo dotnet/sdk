@@ -3312,6 +3312,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">このコマンドに NuGet パッケージをダウンロードして抽出するための一時ディレクトリを指定します (セキュリティで保護する必要があります)。</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputStreamTimeout">
+        <source>Test application output stream did not close within five seconds; further output was omitted.</source>
+        <target state="new">Test application output stream did not close within five seconds; further output was omitted.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
         <target state="translated">... 出力が切り捨てられ、{0} 行が省略されました ...</target>

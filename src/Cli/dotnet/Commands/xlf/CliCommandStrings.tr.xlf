@@ -3312,6 +3312,11 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">Bu komut için NuGet paketlerini indirmek ve ayıklamak üzere geçici bir dizin belirtin (güvenli olmalıdır).</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputStreamTimeout">
+        <source>Test application output stream did not close within five seconds; further output was omitted.</source>
+        <target state="new">Test application output stream did not close within five seconds; further output was omitted.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
         <target state="translated">... çıktı kesildi, {0} satır atlandı ...</target>

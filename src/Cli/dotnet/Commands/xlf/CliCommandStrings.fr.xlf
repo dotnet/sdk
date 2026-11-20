@@ -3312,6 +3312,11 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
         <target state="translated">Spécifiez un répertoire temporaire pour que cette commande télécharge et extrait les packages NuGet (doit être sécurisé).</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputStreamTimeout">
+        <source>Test application output stream did not close within five seconds; further output was omitted.</source>
+        <target state="new">Test application output stream did not close within five seconds; further output was omitted.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
         <target state="translated">... sortie tronquée, {0} lignes omises ...</target>

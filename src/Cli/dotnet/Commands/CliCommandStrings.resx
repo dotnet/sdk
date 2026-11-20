@@ -1969,6 +1969,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
     <value>... output truncated, {0} lines omitted ...</value>
     <comment>{0} is the number of output lines that were omitted from the summary.</comment>
   </data>
+  <data name="TestApplicationOutputStreamTimeout" xml:space="preserve">
+    <value>Test application output stream did not close within five seconds; further output was omitted.</value>
+  </data>
   <data name="StatusColumnHeader" xml:space="preserve">
     <value>Status</value>
   </data>
