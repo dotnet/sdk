@@ -103,6 +103,11 @@ first-run setup from modifying the Windows user PATH.
 ### Flag user-visible behavior
 
 Call out intentional user-visible behavior or contract changes in the final handoff.
+User-facing documentation lives in [dotnet/docs](https://github.com/dotnet/docs), so also
+state whether the change needs a dotnet/docs update. Use the
+[`update-docs` skill](.github/skills/update-docs/SKILL.md#check-user-facing-documentation-dotnetdocs)
+to route it. Recommend labels and dotnet/docs issues in the handoff; do not apply labels or
+file issues unless asked.
 
 ### Do not hand-edit generated files
 

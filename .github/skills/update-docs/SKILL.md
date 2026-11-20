@@ -1,9 +1,10 @@
 ---
 name: update-docs
 description: >-
-  Keep dotnet/sdk contributor guidance and agent memory synchronized after code changes.
-  Run at the end of tasks that modify code, move files, change public contracts, alter
-  tests or workflows, establish conventions, or reveal durable repository gotchas.
+  Keep dotnet/sdk contributor guidance and agent memory synchronized after code changes,
+  and identify needed user-facing dotnet/docs updates. Run at the end of tasks that modify
+  code, move files, change public contracts or user-visible behavior, alter tests or
+  workflows, establish conventions, or reveal durable repository gotchas.
 license: MIT
 ---
 
@@ -57,6 +58,32 @@ Review the affected area for:
 - `.github/skills/*/SKILL.md`, `.claude/skills/*/SKILL.md`, and `.github/agents/*.agent.md`
 - contributor and area guidance under `documentation/`
 - command help, usage text, completion and Verify snapshots
+
+## Check user-facing documentation (dotnet/docs)
+
+User-facing SDK documentation lives in [dotnet/docs](https://github.com/dotnet/docs), not
+this repository. When a change adds, removes, or alters something users can observe — a
+command, option, MSBuild property/item/target, diagnostic, telemetry data point, template,
+analyzer, or default behavior — decide whether dotnet/docs needs an update, then route it:
+
+- **Breaking change:** recommend the `breaking-change` label on the issue and PR and follow
+  the [required breaking-change process](../../../documentation/project-docs/breaking-change-guidelines.md#required-process-for-all-net-sdk-breaking-changes).
+  The label triggers a policy reply asking the author to file a dotnet/docs
+  breaking-change issue.
+- **New `NETSDK` diagnostic:** the [diagnostic detection workflow](../../workflows/detect-netsdk-diagnostics.yml)
+  scans the PR's regenerated `.xlf` files, applies `sdk-diagnostic-docs-needed`, and asks
+  for a page under dotnet/docs `docs/core/tools/sdk-errors/`.
+- **Telemetry change:** update [telemetry.md](../../../documentation/project-docs/telemetry.md)
+  and recommend the `Area-Telemetry` label, whose policy reply asks for a matching
+  dotnet/docs issue.
+- **New CA rule:** follow the [add-net-analyzer documentation step](../add-net-analyzer/SKILL.md#9-documentation).
+- **Any other new or changed user-visible behavior:** recommend filing a dotnet/docs issue
+  that describes the change, linked from the PR. Recommend the `Document for new feature`
+  label for new features.
+
+Do not hand-edit generated man pages under `documentation/manpages/sdk`; they come from
+dotnet/docs. Recommend labels and dotnet/docs issues in the handoff; do not apply labels or
+file issues unless asked. Purely internal changes need no dotnet/docs update.
 
 ## Create a memory file only when warranted
 
