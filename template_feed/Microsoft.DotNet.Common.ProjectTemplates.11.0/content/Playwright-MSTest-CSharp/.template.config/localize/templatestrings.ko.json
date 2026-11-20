@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "MSTest Playwright 테스트 프로젝트",
   "description": "Windows, Linux 및 MacOS의 .NET에서 실행할 수 있는 MSTest 테스트 프레임워크를 사용하는 Playwright 테스트를 포함하는 프로젝트입니다.",
