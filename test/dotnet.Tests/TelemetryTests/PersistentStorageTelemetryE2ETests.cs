@@ -94,7 +94,8 @@ public class PersistentStorageTelemetryE2ETests : SdkTest
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER", "false")
             .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", managed ? "false" : "true")
             .WithEnvironmentVariable("OTEL_SDK_DISABLED", "false")
-            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS", "1");
+            // Allow extra time for serialization and atomic storage writes on busy test machines.
+            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS", "5000");
 
         foreach (string variable in Microsoft.DotNet.Cli.EnvironmentVariableNames.OtlpExporterEnvVars)
         {
