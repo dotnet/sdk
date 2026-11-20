@@ -949,7 +949,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     downloader.CreatePackageDownloader(),
                     packagesRoot.Value,
                     packageVersion,
-                    packageSourceLocation);
+                    packageSourceLocation,
+                    TestContext.CancellationToken);
             }, TestContext.CancellationToken);
 
             Task<IToolPackage> reuse;
@@ -966,7 +967,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     packageVersion,
                     packagesRoot,
                     packageSourceLocation,
-                    _testTargetframework), TestContext.CancellationToken);
+                    _testTargetframework,
+                    TestContext.CancellationToken), TestContext.CancellationToken);
                 if (metadataPublished)
                 {
                     IToolPackage acceptedPackage = await reuse.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
@@ -998,7 +1000,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 packageDownloader,
                 packagesRoot.Value,
                 packageVersion,
-                packageSourceLocation).Should().Be(packageVersion);
+                packageSourceLocation,
+                TestContext.CancellationToken).Should().Be(packageVersion);
             packageDownloader.ExtractCalled.Should().BeFalse();
             File.ReadAllText(hashPath).Should().Be(publishedHash);
             File.Exists(reusedPackage.Command.Executable.Value).Should().BeTrue();
@@ -1653,12 +1656,14 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 NuGetVersion packageVersion,
                 DirectoryPath packagesRoot,
                 PackageSourceLocation packageSourceLocation,
-                string targetFramework)
+                string targetFramework,
+                CancellationToken cancellationToken)
             {
                 DownloadTool(
                     packagesRoot,
                     packageId,
                     packageVersion,
+                    cancellationToken,
                     CreatePackageDownloader(),
                     packageSourceLocation,
                     givenSpecificVersion: true,
