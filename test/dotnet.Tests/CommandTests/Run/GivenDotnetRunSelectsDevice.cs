@@ -95,6 +95,98 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItStopsPreparationTaskHostsBeforeLaunchingTheApp()
+    {
+        TestDirectory directory = TestAssetsManager.CreateTestDirectory();
+        string taskDirectory = Directory.CreateDirectory(Path.Combine(directory.Path, "Task")).FullName;
+        string msbuildDirectory = SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest;
+        File.WriteAllText(Path.Combine(taskDirectory, "Task.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                <OutputType>Exe</OutputType>
+                <UseAppHost>false</UseAppHost>
+              </PropertyGroup>
+              <ItemGroup>
+                <Reference Include="Microsoft.Build.Framework">
+                  <HintPath>{SecurityElement.Escape(Path.Combine(msbuildDirectory, "Microsoft.Build.Framework.dll"))}</HintPath>
+                  <Private>false</Private>
+                </Reference>
+              </ItemGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(taskDirectory, "Program.cs"), """
+            using System;
+            using System.Diagnostics;
+            using Microsoft.Build.Framework;
+
+            public sealed class RecordProcess : ITask
+            {
+                public IBuildEngine BuildEngine { get; set; }
+                public ITaskHost HostObject { get; set; }
+                [Output]
+                public int ProcessId { get; set; }
+                public bool Execute()
+                {
+                    ProcessId = Environment.ProcessId;
+                    return true;
+                }
+            }
+
+            public static class Program
+            {
+                public static int Main(string[] args)
+                {
+                    try
+                    {
+                        using var taskHost = Process.GetProcessById(int.Parse(args[0]));
+                        return taskHost.WaitForExit(10000) ? 0 : 1;
+                    }
+                    catch (ArgumentException)
+                    {
+                        return 0;
+                    }
+                }
+            }
+            """);
+        new DotnetCommand(Log, "build", "Task.csproj")
+            .WithWorkingDirectory(taskDirectory)
+            .Execute()
+            .Should().Pass();
+
+        string taskAssembly = Path.Combine(taskDirectory, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Task.dll");
+        File.WriteAllText(Path.Combine(directory.Path, "App.proj"), $"""
+            <Project>
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+              <UsingTask TaskName="RecordProcess" AssemblyFile="{SecurityElement.Escape(taskAssembly)}" />
+              <Target Name="ComputeRunArguments">
+                <RecordProcess>
+                  <Output TaskParameter="ProcessId" PropertyName="TaskHostPid" />
+                </RecordProcess>
+                <Error Condition="'$(TaskHostPid)' == '$([System.Environment]::ProcessId)'"
+                       Text="The task did not run in a separate task host." />
+                <PropertyGroup>
+                  <RunCommand>{SecurityElement.Escape(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath)}</RunCommand>
+                  <RunArguments>exec &quot;{SecurityElement.Escape(taskAssembly)}&quot; $(TaskHostPid)</RunArguments>
+                  <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
+                </PropertyGroup>
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "--project", "App.proj", "--no-build", "--no-launch-profile", "-mt")
+            .WithWorkingDirectory(directory.Path)
+            .WithEnvironmentVariable("MSBUILDDISABLENODEREUSE", "0")
+            .WithEnvironmentVariable("MSBUILDENABLEALLPROPERTYFUNCTIONS", "1")
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", "0")
+            .Execute()
+            .Should().Pass();
+    }
+
+    [TestMethod]
     public void ItFailsInNonInteractiveMode_WhenMultipleDevicesAvailableAndNoneSpecified()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")

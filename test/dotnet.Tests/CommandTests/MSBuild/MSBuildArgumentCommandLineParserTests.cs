@@ -40,6 +40,17 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         }
 
         [TestMethod]
+        public void MSBuildArgumentsClonesReparseMultiThreading()
+        {
+            var args = MSBuildArgs.FromOtherArgs("-mt");
+
+            args.CloneWithAdditionalArgs("-mt:false").MultiThreaded.Should().BeFalse();
+            args.CloneWithExplicitArgs([]).MultiThreaded.Should().BeNull();
+            args.CloneWithVerbosity(VerbosityOptions.quiet).MultiThreaded.Should().BeTrue();
+            args.MultiThreaded.Should().BeTrue();
+        }
+
+        [TestMethod]
         [DataRow(new string[] { "-property:prop1=true", "-p:prop2=false" }, true)]
         [DataRow(new string[] { "-property:prop1=true", "-p:prop2=false" }, false)]
         [DataRow(new string[] { "-p:teamcity_buildConfName=\"Build, Test and Publish\"" }, false)]

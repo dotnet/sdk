@@ -37,6 +37,14 @@ public sealed class MSBuildArgs
         OtherMSBuildArgs = otherMSBuildArgs is not null
             ? [.. otherMSBuildArgs]
             : new List<string>();
+        foreach (string argument in OtherMSBuildArgs)
+        {
+            if (MSBuildArgumentParser.TryGetMultiThreadedSwitch(argument, out bool? value))
+            {
+                // Empty parameters enable MT only when no earlier value was supplied.
+                MultiThreaded = value ?? MultiThreaded ?? true;
+            }
+        }
     }
 
     /// <summary>
@@ -87,23 +95,7 @@ public sealed class MSBuildArgs
     /// </summary>
     public List<string> OtherMSBuildArgs { get; }
 
-    internal bool? MultiThreaded
-    {
-        get
-        {
-            bool? enabled = null;
-            foreach (string argument in OtherMSBuildArgs)
-            {
-                if (MSBuildArgumentParser.TryGetMultiThreadedSwitch(argument, out bool? value))
-                {
-                    // Empty parameters enable MT only when no earlier value was supplied.
-                    enabled = value ?? enabled ?? true;
-                }
-            }
-
-            return enabled;
-        }
-    }
+    internal bool? MultiThreaded { get; }
 
     internal bool IsMultiThreadedEnabled =>
         Env.GetEnvironmentVariable("MSBUILDFORCEMULTITHREADED") == "1" ||

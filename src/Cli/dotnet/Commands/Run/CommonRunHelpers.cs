@@ -238,6 +238,7 @@ internal static class CommonRunHelpers
             Loggers = buildLoggers,
             MaxNodeCount = 1,
             MultiThreaded = multiThreaded,
+            EnableNodeReuse = false,
         };
         parameters.LogTaskInputs |= buildLoggers.Any(logger => logger.Verbosity == LoggerVerbosity.Diagnostic);
         parameters.EnableTargetOutputLogging |= buildLoggers.Any(logger => logger.Verbosity == LoggerVerbosity.Diagnostic);

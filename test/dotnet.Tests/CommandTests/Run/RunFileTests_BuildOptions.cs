@@ -393,9 +393,7 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
                 """);
     }
 
-    [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [TestMethod, CombinatorialData]
     public void ComputeRunArguments_NoBuild_UsesMultiThreading(bool multiThreaded)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(identifier: multiThreaded.ToString());
