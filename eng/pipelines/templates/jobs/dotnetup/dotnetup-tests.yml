@@ -2,7 +2,6 @@ parameters:
   ### GENERAL ###
   variables: {}
   dependsOn: ''
-  helixTargetQueue: ''
   oneESCompat:
     templateFolderName: templates
     publishTaskPrefix: ''
@@ -18,7 +17,7 @@ parameters:
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
   parameters:
-    displayName: '${{ parameters.pool.emoji }} dotnetup tests: ${{ parameters.pool.os }} (${{ parameters.helixTargetQueue }})'
+    displayName: '${{ parameters.pool.emoji }} dotnetup tests: ${{ parameters.pool.os }}'
     pool: ${{ parameters.pool }}
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}

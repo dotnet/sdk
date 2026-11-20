@@ -3,6 +3,7 @@
 
 using System.Runtime.Versioning;
 using System.Security;
+using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.Win32;
 
@@ -27,7 +28,7 @@ public class WindowsPathHelperTests
         // Assert
         paths.Should().NotBeNull();
         paths.Should().NotBeEmpty();
-        paths.Should().AllSatisfy(p => p.Should().EndWith("dotnet"));
+        paths.Should().AllSatisfy(path => Directory.Exists(path).Should().BeTrue());
     }
 
     [TestMethod]
@@ -57,11 +58,27 @@ public class WindowsPathHelperTests
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
+    public void MissingInstalledVersionsKeys_UseOnlyExistingDefaultRoots()
+    {
+        var sharedHostPaths = WindowsPathHelper.ReadArchitectureValues(null, subKeyName: "sharedhost", valueName: "Path");
+        var installLocations = WindowsPathHelper.ReadArchitectureValues(null, subKeyName: null, valueName: "InstallLocation");
+
+        WindowsPathHelper.SelectRegisteredDotnetPaths(sharedHostPaths, installLocations,
+                defaultPaths: [new(s_missingDirectory, InstallArchitecture.x64)])
+            .Should().BeEmpty();
+        WindowsPathHelper.SelectRegisteredDotnetPaths(sharedHostPaths, installLocations,
+                defaultPaths: [new(s_existingDirectory, InstallArchitecture.x64)])
+            .Should().Equal(s_existingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void SelectRegisteredDotnetPaths_PrefersSharedHostPathOverInstallLocation()
     {
         WindowsPathHelper.SelectRegisteredDotnetPaths(
                 sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
-                installLocations: new Dictionary<string, string> { ["x64"] = s_otherExistingDirectory })
+                installLocations: new Dictionary<string, string> { ["x64"] = s_otherExistingDirectory },
+                defaultPaths: [])
             .Should().Equal(s_existingDirectory);
     }
 
@@ -71,7 +88,8 @@ public class WindowsPathHelperTests
     {
         WindowsPathHelper.SelectRegisteredDotnetPaths(
                 sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_missingDirectory },
-                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory + Path.DirectorySeparatorChar })
+                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory + Path.DirectorySeparatorChar },
+                defaultPaths: [])
             .Should().Equal(s_existingDirectory);
     }
 
@@ -81,7 +99,8 @@ public class WindowsPathHelperTests
     {
         WindowsPathHelper.SelectRegisteredDotnetPaths(
                 sharedHostPaths: new Dictionary<string, string>(),
-                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory })
+                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
+                defaultPaths: [])
             .Should().Equal(s_existingDirectory);
     }
 
@@ -91,8 +110,43 @@ public class WindowsPathHelperTests
     {
         WindowsPathHelper.SelectRegisteredDotnetPaths(
                 sharedHostPaths: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
-                installLocations: new Dictionary<string, string> { ["x86"] = s_otherExistingDirectory, ["arm64"] = s_missingDirectory })
+                installLocations: new Dictionary<string, string> { ["x86"] = s_otherExistingDirectory, ["arm64"] = s_missingDirectory },
+                defaultPaths: [])
             .Should().BeEquivalentTo(s_existingDirectory, s_otherExistingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_FallsBackToTheDefaultRootOfUnregisteredArchitectures()
+    {
+        // x64 on Arm64 has no sharedhost\Path, and an unregistered install has no InstallLocation either.
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["arm64"] = s_existingDirectory },
+                installLocations: new Dictionary<string, string>(),
+                defaultPaths: [new(s_otherExistingDirectory, InstallArchitecture.x64), new(s_missingDirectory, InstallArchitecture.x86)])
+            .Should().Equal(s_existingDirectory, s_otherExistingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_PrefersRegistryPathsOverTheDefaultRoot()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string>(),
+                installLocations: new Dictionary<string, string> { ["x64"] = s_existingDirectory },
+                defaultPaths: [new(s_otherExistingDirectory, InstallArchitecture.x64)])
+            .Should().Equal(s_existingDirectory);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void SelectRegisteredDotnetPaths_DoesNotDuplicateADirectorySharedByArchitectures()
+    {
+        WindowsPathHelper.SelectRegisteredDotnetPaths(
+                sharedHostPaths: new Dictionary<string, string> { ["arm64"] = s_existingDirectory },
+                installLocations: new Dictionary<string, string>(),
+                defaultPaths: [new(s_existingDirectory, InstallArchitecture.arm64), new(s_existingDirectory, InstallArchitecture.x86)])
+            .Should().Equal(s_existingDirectory);
     }
 
     [TestMethod]

@@ -18,6 +18,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <PackageId>Microsoft.Dotnet.Installation</PackageId>
     <IsShipping>false</IsShipping>
+    <IsShippingAssembly>true</IsShippingAssembly>
     <Title>.NET Installation Library</Title>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>

@@ -20,6 +20,7 @@ internal static class UninstallPreview
         InstallComponent requestedComponent, string versionOrChannel, IReadOnlyList<InstallSpec> specsToRemove)
     {
         var hasWarnings = false;
+        var hasRepositoryRequirements = false;
         foreach (var target in targets.DistinctBy(i => (i.Component, i.Version)))
         {
             var specs = plan.GetReferencingSpecs(target);
@@ -38,6 +39,11 @@ internal static class UninstallPreview
                     "  {0} {1} {2}", spec.Component.GetDisplayName().EscapeMarkup(), spec.VersionOrChannel.EscapeMarkup(),
                     DotnetupTheme.Dim(string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecSource, source.EscapeMarkup()))));
             }
+            hasRepositoryRequirements |= specs.Any(s => s.InstallSource == InstallSource.GlobalJson);
+        }
+        if (hasRepositoryRequirements)
+        {
+            AnsiConsole.MarkupLine(DotnetupTheme.Dim(Strings.UninstallRepositoryRequirement.EscapeMarkup()));
         }
 
         var deletedPaths = plan.PathsToDelete.ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -53,7 +59,7 @@ internal static class UninstallPreview
         var removesRequestedFiles = targets.Any(t => plan.GetPrimaryPath(t) is { } path && deletedPaths.Contains(path))
             || plan.PathsToDelete.Any(path =>
                 path.StartsWith(requestedPathPrefix, StringComparison.OrdinalIgnoreCase) &&
-                ReleaseVersion.TryParse(path[requestedPathPrefix.Length..], out var version) && channel.Matches(version));
+                ReleaseVersion.TryParse(path[requestedPathPrefix.Length..], out var version) && channel.IsSatisfiedBy(version));
         var removalMessage = removesRequestedFiles
             ? Strings.UninstallUnexpectedAdditionalRemoval
             : Strings.UninstallUnexpectedRemoval;
@@ -75,7 +81,7 @@ internal static class UninstallPreview
 
     private static bool MatchesRequest(Installation installation, InstallComponent component, UpdateChannel channel) =>
         installation.Component == component &&
-        ReleaseVersion.TryParse(installation.Version, out var version) && channel.Matches(version);
+        ReleaseVersion.TryParse(installation.Version, out var version) && channel.IsSatisfiedBy(version);
 
     private static void DisplayRemovalSummary(IReadOnlyList<InstallSpec> specsToRemove)
     {
