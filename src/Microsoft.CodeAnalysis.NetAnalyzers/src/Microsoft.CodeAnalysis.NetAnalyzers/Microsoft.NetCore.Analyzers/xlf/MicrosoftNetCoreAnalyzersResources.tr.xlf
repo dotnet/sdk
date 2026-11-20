@@ -2279,8 +2279,8 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddTitle">
-        <source>Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</source>
-        <target state="translated">'IDictionary.TryAdd(TKey, TValue)' yöntemini tercih edin</target>
+        <source>Prefer the 'Dictionary.TryAdd(TKey, TValue)' method</source>
+        <target state="needs-review-translation">'IDictionary.TryAdd(TKey, TValue)' yöntemini tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddValueCodeFixTitle">

@@ -2279,8 +2279,8 @@ Widening and user defined conversions are not supported with generic types.</sou
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddTitle">
-        <source>Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</source>
-        <target state="translated">Предпочитать метод "IDictionary.TryAdd(TKey, TValue)"</target>
+        <source>Prefer the 'Dictionary.TryAdd(TKey, TValue)' method</source>
+        <target state="needs-review-translation">Предпочитать метод "IDictionary.TryAdd(TKey, TValue)"</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddValueCodeFixTitle">
