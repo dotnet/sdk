@@ -8,7 +8,7 @@ channel identity is compiled into dotnetup and its libraries, not changed at pro
 | Variant | Example version | Default self-update channel | BAR |
 | --- | --- | --- | --- |
 | daily | `0.3.0-daily.26530.1` | daily | Yes |
-| preview | `0.3.0-preview.1.26530.1` | preview | No |
+| preview | `0.3.0-preview.2.26530.1` | preview | No |
 | ga | `0.3.0` | stable | No |
 
 GA variants are **placeholders**, not approved releases. They have stable version

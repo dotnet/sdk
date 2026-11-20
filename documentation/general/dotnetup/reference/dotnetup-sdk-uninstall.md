@@ -22,7 +22,11 @@ dotnetup sdk uninstall <CHANNEL> [options]
 `CHANNEL`
 
 The stored SDK channel or exact version to remove. Matching is
-case-insensitive.
+case-insensitive. Matching command-line and migration specifications are removed
+together. An SDK remains installed if another requirement still needs it.
+
+Repository requirements are not removed by this command. To change or remove
+one, update or delete the corresponding `global.json` file.
 
 Uninstall accepts one argument. It matches the stored spec name, not the
 version that another spec currently resolves to. For example, if only `latest`
@@ -33,7 +37,6 @@ is tracked, `uninstall 11.0` does not remove that spec even when it selects an
 
 | Option | Description |
 | --- | --- |
-| `--source <explicit\|globaljson\|all>` | Remove specifications from the selected source. The default is `explicit`. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
 | `--interactive [true\|false]` | Enable confirmation prompts. Defaults to enabled outside CI when output is not redirected. Redirected input alone does not disable confirmation. |
@@ -54,12 +57,13 @@ The additional-removal warning says "also" only when files for a requested SDK
 will be removed too.
 The preview ends by identifying each spec that will be removed from tracking,
 including its component and source. Retained versions stay installed after
-proceeding. Removing a spec sourced from `global.json` does not delete that file.
+proceeding. Repository specs are not removed; update or delete their `global.json`
+files to change those requirements.
 
 ## Examples
 
 ```dotnetcli
 dotnetup sdk uninstall latest
-dotnetup sdk uninstall 10.0.1xx --source globaljson
-dotnetup sdk uninstall preview --source all --install-path .\.dotnet
+dotnetup sdk uninstall 10.0.1xx
+dotnetup sdk uninstall preview --install-path .\.dotnet
 ```

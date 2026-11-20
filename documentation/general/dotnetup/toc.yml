@@ -24,6 +24,10 @@
     href: channels/daily.md
 - name: Telemetry
   href: telemetry.md
+- name: Breaking changes
+  items:
+  - name: 0.3.0-preview.2
+    href: breaking-changes/0.3.0-preview.2.md
 - name: Troubleshooting
   href: troubleshooting.md
 - name: CLI reference
