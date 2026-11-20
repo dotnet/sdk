@@ -75,9 +75,10 @@ internal class FirstPartyNuGetPackageSigningVerifier : IFirstPartyNuGetPackageSi
     /// <param name="nupkgToVerify">Path to the <c>.nupkg</c> file.</param>
     /// <param name="commandOutput">Diagnostic output from the NuGet verify command.</param>
     /// <returns><see langword="true"/> if the package is validly signed by Microsoft.</returns>
-    public bool Verify(FilePath nupkgToVerify, out string commandOutput)
+    public bool Verify(FilePath nupkgToVerify, CancellationToken cancellationToken, out string commandOutput)
     {
-        return NuGetVerify(nupkgToVerify, out commandOutput) && IsFirstParty(nupkgToVerify);
+        return NuGetVerify(nupkgToVerify, cancellationToken, out commandOutput) &&
+            IsFirstParty(nupkgToVerify, cancellationToken);
     }
 
     /// <summary>
@@ -93,13 +94,13 @@ internal class FirstPartyNuGetPackageSigningVerifier : IFirstPartyNuGetPackageSi
     /// This does NOT validate the signature itself — only the identity of the signer.
     /// Call <see cref="NuGetVerify"/> first for signature validation.
     /// </remarks>
-    internal bool IsFirstParty(FilePath nupkgToVerify)
+    internal bool IsFirstParty(FilePath nupkgToVerify, CancellationToken cancellationToken)
     {
         try
         {
             using (var packageReader = new PackageArchiveReader(nupkgToVerify.Value))
             {
-                PrimarySignature primarySignature = packageReader.GetPrimarySignatureAsync(CancellationToken.None).GetAwaiter().GetResult();
+                PrimarySignature primarySignature = packageReader.GetPrimarySignatureAsync(cancellationToken).GetAwaiter().GetResult();
                 using (IX509CertificateChain certificateChain = SignatureUtility.GetCertificateChain(primarySignature))
                 {
                     if (certificateChain.Count < 2)
@@ -143,13 +144,17 @@ internal class FirstPartyNuGetPackageSigningVerifier : IFirstPartyNuGetPackageSi
     /// <param name="commandOutput">Combined stdout + stderr from the verify command.</param>
     /// <param name="currentWorkingDirectory">Working directory for NuGet config resolution (optional).</param>
     /// <returns><see langword="true"/> if the package signature is valid.</returns>
-    public static bool NuGetVerify(FilePath nupkgToVerify, out string commandOutput, string currentWorkingDirectory = null)
+    public static bool NuGetVerify(
+        FilePath nupkgToVerify,
+        CancellationToken cancellationToken,
+        out string commandOutput,
+        string currentWorkingDirectory = null)
     {
         var args = new[] { "verify", "--all", nupkgToVerify.Value };
         var command = new DotNetCommandFactory(alwaysRunOutOfProc: true, currentWorkingDirectory)
             .Create("nuget", args);
 
-        var commandResult = command.CaptureStdOut().Execute();
+        var commandResult = command.CaptureStdOut().Execute(cancellationToken);
         commandOutput = commandResult.StdOut + Environment.NewLine + commandResult.StdErr;
         return commandResult.ExitCode == 0;
     }

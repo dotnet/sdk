@@ -33,7 +33,7 @@ public abstract class CommandBase
 
     protected internal CommandServices Services { get; }
 
-    public abstract int Execute();
+    public abstract int Execute(CancellationToken cancellationToken);
 }
 
 public abstract class CommandBase<TDefinition>(ParseResult parseResult, CommandServices services) : CommandBase(parseResult, services)

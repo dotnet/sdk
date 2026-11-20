@@ -16,6 +16,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
     {
         private readonly List<string> _createdDirectories = [];
 
+        public TestContext TestContext { get; set; } = null!;
+
         [TestCleanup]
         public void Cleanup()
         {
@@ -100,7 +102,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             int exitCode = TestCommand.RunArtifactPostProcessingIfNeeded(
                 NewCorrelationId(),
                 diag: null,
-                FeatureFlag.Instance);
+                FeatureFlag.Instance,
+                TestContext.CancellationToken);
 
             exitCode.Should().Be(0);
         }

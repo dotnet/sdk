@@ -5,5 +5,6 @@ namespace Microsoft.DotNet.Watch;
 
 /// <summary>
 /// Represents a device item returned from the ComputeAvailableDevices MSBuild target.
+/// Includes display information for the device selection prompt.
 /// </summary>
 internal sealed record DeviceInfo(string Id, string? Description, string? Type, string? Status, string? RuntimeIdentifier);

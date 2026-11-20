@@ -46,7 +46,7 @@ public class DockerRegistryManager
     {
         using TestLoggerFactory loggerFactory = new(testOutput);
 
-        if (!new ContainerRuntime(loggerFactory).IsAvailable())
+        if (!new ContainerRuntime(loggerFactory).IsAvailableAsync(CancellationToken.None).GetAwaiter().GetResult())
         {
             throw new InvalidOperationException("Docker is not available, tests cannot run");
         }
@@ -57,8 +57,8 @@ public class DockerRegistryManager
         int spawnRegistryDelay = 1000; //ms
         StringBuilder failureReasons = new();
 
-        var pullRegistry = new Registry(BaseImageSource, logger, RegistryMode.Pull);
-        var pushRegistry = new Registry(LocalRegistry, logger, RegistryMode.Push);
+        var pullRegistry = new Registry(BaseImageSource, logger, RegistryMode.Pull, CancellationToken.None);
+        var pushRegistry = new Registry(LocalRegistry, logger, RegistryMode.Push, CancellationToken.None);
 
         for (int spawnRegistryAttempt = 1; spawnRegistryAttempt <= spawnRegistryMaxRetry; spawnRegistryAttempt++)
         {

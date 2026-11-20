@@ -25,14 +25,15 @@ internal class Telemetry
     internal Telemetry(
         SourceImageReference source,
         DestinationImageReference destination,
-        Microsoft.Build.Utilities.TaskLoggingHelper Log)
+        Microsoft.Build.Utilities.TaskLoggingHelper Log,
+        CancellationToken cancellationToken)
     {
         this.Log = Log;
         Context = new PublishTelemetryContext(
             source.Registry is not null ? GetRegistryType(source.Registry) : null,
             null, // we don't support local pull yet, but we may in the future
             destination.RemoteRegistry is not null ? GetRegistryType(destination.RemoteRegistry) : null,
-            destination.LocalRegistry is not null ? GetLocalStorageType(destination.LocalRegistry) : null);
+            destination.LocalRegistry is not null ? GetLocalStorageType(destination.LocalRegistry, cancellationToken) : null);
     }
 
     private RegistryType GetRegistryType(Registry r)
@@ -46,12 +47,12 @@ internal class Telemetry
         return RegistryType.Other;
     }
 
-    private LocalStorageType GetLocalStorageType(ILocalRegistry r)
+    private LocalStorageType GetLocalStorageType(ILocalRegistry r, CancellationToken cancellationToken)
     {
         if (r is ArchiveFileRegistry) return LocalStorageType.Tarball;
         var runtime = r as ContainerRuntime;
         System.Diagnostics.Debug.Assert(runtime != null, "Unknown local registry type");
-        return runtime.GetTelemetryValue() switch
+        return runtime.GetTelemetryValue(cancellationToken) switch
         {
             ContainerRuntimeKind.Docker => LocalStorageType.Docker,
             ContainerRuntimeKind.Podman => LocalStorageType.Podman,

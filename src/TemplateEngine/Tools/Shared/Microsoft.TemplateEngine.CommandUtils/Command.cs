@@ -26,13 +26,14 @@ namespace Microsoft.TemplateEngine.CommandUtils
 
         public string CommandArgs => _process.StartInfo.Arguments;
 
-        public CommandResult Execute()
+        public CommandResult Execute(CancellationToken cancellationToken)
         {
-            return Execute(_ => { });
+            return Execute(processStarted: null, cancellationToken);
         }
 
-        public CommandResult Execute(Action<Process>? processStarted)
+        public CommandResult Execute(Action<Process>? processStarted, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Console.WriteLine($"Running {_process.StartInfo.FileName} {_process.StartInfo.Arguments}");
             ThrowIfRunning();
 
@@ -55,10 +56,17 @@ namespace Microsoft.TemplateEngine.CommandUtils
 
                 var taskOut = _stdOut?.BeginRead(_process.StandardOutput);
                 var taskErr = _stdErr?.BeginRead(_process.StandardError);
-                _process.WaitForExit();
+                while (!_process.WaitForExit(milliseconds: 100))
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        TerminateProcess(_process);
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+                }
 
-                taskOut?.Wait();
-                taskErr?.Wait();
+                taskOut?.GetAwaiter().GetResult();
+                taskErr?.GetAwaiter().GetResult();
             }
 
             var exitCode = _process.ExitCode;
@@ -80,6 +88,24 @@ namespace Microsoft.TemplateEngine.CommandUtils
                 exitCode,
                 _stdOut?.CapturedOutput,
                 _stdErr?.CapturedOutput);
+        }
+
+        private static void TerminateProcess(Process process)
+        {
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch (InvalidOperationException) when (process.HasExited)
+            {
+                // The process exited before termination reached it.
+            }
+            catch (System.ComponentModel.Win32Exception) when (process.HasExited)
+            {
+                // The process exited while its process tree was being enumerated.
+            }
+
+            process.WaitForExit();
         }
 
         public Command WorkingDirectory(string projectDirectory)

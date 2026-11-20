@@ -73,7 +73,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
         _restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(result);
     }
 
-    public override int Execute() => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+    public override int Execute(CancellationToken cancellationToken) => ExecuteAsync(cancellationToken).GetAwaiter().GetResult();
 
     internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {

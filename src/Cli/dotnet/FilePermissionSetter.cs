@@ -9,9 +9,9 @@ namespace Microsoft.DotNet.Cli;
 
 internal class FilePermissionSetter : IFilePermissionSetter
 {
-    public void SetUserExecutionPermission(string path)
+    public void SetUserExecutionPermission(string path, CancellationToken cancellationToken)
     {
-        RunCommand(path, "u+x");
+        RunCommand(path, "u+x", cancellationToken);
     }
 
     /// <summary>
@@ -19,12 +19,12 @@ internal class FilePermissionSetter : IFilePermissionSetter
     /// (G)roup can read, can't write and can execute.
     /// (O)thers can read, can't write and can execute.
     /// </summary>
-    public void SetPermission(string path, string chmodArgument)
+    public void SetPermission(string path, string chmodArgument, CancellationToken cancellationToken)
     {
-        RunCommand(path, chmodArgument.ToString());
+        RunCommand(path, chmodArgument.ToString(), cancellationToken);
     }
 
-    private static void RunCommand(string path, string chmodArgument)
+    private static void RunCommand(string path, string chmodArgument, CancellationToken cancellationToken)
     {
         if (OperatingSystem.IsWindows())
         {
@@ -35,7 +35,7 @@ internal class FilePermissionSetter : IFilePermissionSetter
             .Create("chmod", [chmodArgument, path])
             .CaptureStdOut()
             .CaptureStdErr()
-            .Execute();
+            .Execute(cancellationToken);
 
         if (result.ExitCode != 0)
         {

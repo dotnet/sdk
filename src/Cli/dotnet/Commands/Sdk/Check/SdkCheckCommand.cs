@@ -38,7 +38,7 @@ public class SdkCheckCommand : CommandBase
         _productCollectionProvider = productCollectionProvider == null ? new ProductCollectionProvider() : productCollectionProvider;
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         if (_sdkCheckConfig != null && !string.IsNullOrEmpty(_sdkCheckConfig.CommandOutputReplacementString))
         {
@@ -48,14 +48,16 @@ public class SdkCheckCommand : CommandBase
         }
         else
         {
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 var productCollection = _productCollectionProvider.GetProductCollection(
+                    cancellationToken,
                     _sdkCheckConfig?.ReleasesUri == null ? null : new Uri(_sdkCheckConfig.ReleasesUri),
                     _sdkCheckConfig?.ReleasesFilePath == null ? null : _sdkCheckConfig.ReleasesFilePath);
                 var environmentInfo = _netBundleProvider.GetDotnetEnvironmentInfo(_dotnetPath);
-                var sdkFormatter = new SdkOutputWriter(environmentInfo.SdkInfo, productCollection, _productCollectionProvider, _reporter);
-                var runtimeFormatter = new RuntimeOutputWriter(environmentInfo.RuntimeInfo, productCollection, _productCollectionProvider, _reporter);
+                var sdkFormatter = new SdkOutputWriter(environmentInfo.SdkInfo, productCollection, _productCollectionProvider, _reporter, cancellationToken);
+                var runtimeFormatter = new RuntimeOutputWriter(environmentInfo.RuntimeInfo, productCollection, _productCollectionProvider, _reporter, cancellationToken);
 
                 sdkFormatter.PrintSdkInfo();
                 _reporter.WriteLine();
@@ -80,12 +82,12 @@ public class SdkCheckCommand : CommandBase
         return 0;
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
 #if CLI_AOT
-        return new SdkCheckCommand(parseResult, dotnetRoot: NativeEntryPoint.DotnetRoot).Execute();
+        return new SdkCheckCommand(parseResult, dotnetRoot: NativeEntryPoint.DotnetRoot).Execute(cancellationToken);
 #else
-        return new SdkCheckCommand(parseResult).Execute();
+        return new SdkCheckCommand(parseResult).Execute(cancellationToken);
 #endif
     }
 }

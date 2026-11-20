@@ -51,7 +51,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
 
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
-        Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
+        Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode, cancellationToken);
         SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag, BaseImageDigest);
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
@@ -60,7 +60,8 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             msbuildLoggerFactory,
             ArchiveOutputPath,
             OutputRegistry,
-            LocalRegistry);
+            LocalRegistry,
+            cancellationToken);
 
         var images = ParseImages(destinationImageReference.Kind);
         if (Log.HasLoggedErrors)
@@ -75,7 +76,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
         logger.LogInformation(Strings.BuildingImageIndex, destinationImageReference, string.Join(", ", images.Select(i => i.ManifestDigest)));
 
-        var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
+        var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log, cancellationToken);
 
         await ImagePublisher.PublishImageAsync(multiArchImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
             .ConfigureAwait(false); 

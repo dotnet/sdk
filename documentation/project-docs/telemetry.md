@@ -41,6 +41,9 @@ The .NET SDK telemetry can be disabled using the following environment variable:
   - This is useful for correlating multiple `dotnet` invocations that belong to the same CI workflow, job, or higher-level user session
   - If not set, the CLI generates a new GUID per process as before
 
+- **`COPILOT_AGENT_SESSION_ID`**: Supplies the executing Copilot session ID for
+  [`CopilotAgentSessionId`](#copilot-session-correlation). It does not replace the SDK's own session ID
+  or enable telemetry.
 
 - **`DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT`**: Set to `1`, `true`, or `yes` to disable exporting trace
   telemetry to Azure Monitor (both persistence and upload). Metrics/OTLP export and the local disk log are
@@ -202,22 +205,21 @@ Every telemetry event automatically includes these common properties:
 
 ### Copilot session correlation
 
-When telemetry is enabled, `CopilotAgentSessionId` records the nonempty
-`COPILOT_AGENT_SESSION_ID` using
+`CopilotAgentSessionId` lets SDK telemetry be correlated with the executing Copilot
+session. When telemetry is enabled, it reads `COPILOT_AGENT_SESSION_ID` and follows
 [Copilot's normalization](https://github.com/github/copilot-agent-runtime/blob/1fc45d2c2a0a978ebbd068e0eec79715cf5dd417/src/native/primitives/crypto_helpers.rs#L23-L62):
-recognized UUIDs are preserved exactly; other values become lowercase SHA-256 hex
-of the original UTF-8 bytes, without trimming or case normalization.
 
-`TelemetryCommonProperties` collects and normalizes the value. The sender merges
-common, event, and context properties into a snapshot before queueing each event,
-without modifying the caller's properties, so reused MSBuild hosts pick up
-the current request's ID without recollecting machine-level properties.
-Missing/empty environment values produce `not_present`
-rather than null, which exporters can drop. A missing telemetry field means collection
-support is unknown (for example, an older SDK); `not_present` means no Copilot context
-was observed, not proof of a human invocation. A literal `not_present` environment
-value is hashed like any other custom ID. Existing telemetry opt-out settings and
-.NET's own `SessionId` remain unchanged.
+| Environment value | Telemetry value |
+| --- | --- |
+| UUID recognized by Copilot | Original string, including letter case |
+| Other nonempty value | SHA-256 of the original UTF-8 bytes, as lowercase hex; no trimming or case normalization |
+| Missing or empty | `not_present` |
+
+A missing telemetry field means collection support is unknown, including older SDKs.
+`not_present` means no Copilot context was observed, not proof of a human invocation.
+A literal `not_present` environment value is hashed. Context is captured before each
+event is queued, including in reused MSBuild hosts. Existing telemetry opt-out settings
+and the SDK's own `SessionId` are unchanged.
 
 ### Microsoft-internal user classification
 

@@ -128,7 +128,12 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 
             RunInstantiation instantiate =
                 options.CustomInstatiation ??
-                (verifierOptions => Task.FromResult(RunDotnetNewCommand(verifierOptions, _commandRunner, _loggerFactory, _logger)));
+                (verifierOptions => Task.FromResult(RunDotnetNewCommand(
+                    verifierOptions,
+                    _commandRunner,
+                    _loggerFactory,
+                    _logger,
+                    cancellationToken)));
 
             IInstantiationResult commandResult = await instantiate(options).ConfigureAwait(false);
 
@@ -351,7 +356,12 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             return r.Replace(string.Join('#', args), string.Empty);
         }
 
-        private static IInstantiationResult RunDotnetNewCommand(TemplateVerifierOptions options, ICommandRunner commandRunner, ILoggerFactory? loggerFactory, ILogger logger)
+        private static IInstantiationResult RunDotnetNewCommand(
+            TemplateVerifierOptions options,
+            ICommandRunner commandRunner,
+            ILoggerFactory? loggerFactory,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             // Create temp folder and instantiate there
             string workingDir = options.OutputDirectory ?? Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -374,7 +384,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                         .WithEnvironmentVariables(options.Environment)
                         .WithWorkingDirectory(workingDir);
 
-                CommandResultData installCommandResult = commandRunner.RunCommand(installCommand);
+                CommandResultData installCommandResult = commandRunner.RunCommand(installCommand, cancellationToken);
 
                 if (installCommandResult.ExitCode != 0)
                 {
@@ -424,7 +434,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 .WithWorkingDirectory(workingDir)
                 .WithNoUpdateCheck();
 
-            var result = commandRunner.RunCommand(command);
+            var result = commandRunner.RunCommand(command, cancellationToken);
             // Cleanup, unless the settings dir was externally passed
             if (!string.IsNullOrEmpty(customHiveLocation) && string.IsNullOrEmpty(options.SettingsDirectory))
             {
