@@ -389,7 +389,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     {
                         foreach (var workloadManifestDirectory in Directory.EnumerateDirectories(manifestVersionBandDirectory))
                         {
-                            directoriesWithManifests[Path.GetFileName(workloadManifestDirectory)] = workloadManifestDirectory;
+                            //  Skip folders that don't have a manifest (for example, ones left behind after a manifest was uninstalled),
+                            //  so that they don't hide a manifest with the same ID in a lower priority manifest root
+                            if (ContainsWorkloadManifest(workloadManifestDirectory))
+                            {
+                                directoriesWithManifests[Path.GetFileName(workloadManifestDirectory)] = workloadManifestDirectory;
+                            }
                         }
                     }
                 }
@@ -469,6 +474,15 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 .ThenBy(kvp => kvp.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(kvp => kvp.Value)
                 .ToList();
+        }
+
+        /// <summary>
+        /// Returns whether a folder directly includes a WorkloadManifest.json file, or has one in a version subfolder.
+        /// </summary>
+        private static bool ContainsWorkloadManifest(string manifestDirectory)
+        {
+            return File.Exists(Path.Combine(manifestDirectory, "WorkloadManifest.json")) ||
+                Directory.EnumerateDirectories(manifestDirectory).Any(dir => File.Exists(Path.Combine(dir, "WorkloadManifest.json")));
         }
 
         /// <summary>
