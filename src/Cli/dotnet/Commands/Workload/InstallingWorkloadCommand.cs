@@ -181,6 +181,20 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
                 manifestVersionUpdates.Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
                 ).ToDictionaryForJson();
 
+    /// <summary>
+    ///  Fails early with a clear error if a source passed via --source is not a NuGet feed.
+    ///  Skipped when installing from an offline cache (no sources are queried) or when failed sources are ignored.
+    /// </summary>
+    protected void ValidatePackageSources()
+    {
+        if (!string.IsNullOrWhiteSpace(_fromCacheOption) || RestoreActionConfiguration.IgnoreFailedSources)
+        {
+            return;
+        }
+
+        WorkloadPackageSourceValidator.ValidateAsync(_packageSourceLocation?.SourceFeedOverrides).GetAwaiter().GetResult();
+    }
+
     InstallStateContents GetCurrentInstallState()
     {
         string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _workloadRootDir), "default.json");
