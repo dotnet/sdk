@@ -15,14 +15,26 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public SdkFeatureBand(ReleaseVersion version)
         {
             var fullVersion = version ?? throw new ArgumentNullException(nameof(version));
-            if (string.IsNullOrEmpty(version.Prerelease) || version.Prerelease.Contains("dev") || version.Prerelease.Contains("ci") || version.Prerelease.Contains("rtm"))
+            string? prerelease = fullVersion.Prerelease;
+            string[] prereleaseComponents = string.IsNullOrEmpty(prerelease) ? [] : prerelease.Split('.');
+            // Arcade build-number previews use a large numeric component; numbered previews use a small sequence number.
+            const int MinimumBuildNumber = 10000;
+            bool isBuildNumberPreview = prereleaseComponents.Length > 1
+                && prereleaseComponents[0].Equals("preview", StringComparison.OrdinalIgnoreCase)
+                && int.TryParse(prereleaseComponents[1], out int previewNumber)
+                && previewNumber >= MinimumBuildNumber;
+
+            if (string.IsNullOrEmpty(prerelease)
+                || prerelease.Contains("dev")
+                || prerelease.Contains("ci")
+                || prerelease.Contains("rtm")
+                || isBuildNumberPreview)
             {
                 _featureBand = new ReleaseVersion(fullVersion.Major, fullVersion.Minor, fullVersion.SdkFeatureBand);
             }
             else
             {
                 // Treat preview versions as their own feature bands
-                var prereleaseComponents = fullVersion.Prerelease.Split('.');
                 var formattedPrerelease = prereleaseComponents.Length > 1 ?
                     $"{prereleaseComponents[0]}.{prereleaseComponents[1]}"
                     : prereleaseComponents[0];
