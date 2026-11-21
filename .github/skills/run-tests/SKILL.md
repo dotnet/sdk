@@ -142,3 +142,8 @@ the rerun command.
 
 Pass `--test-binlogs` to capture logs from `MSBuildCommand` and `DotnetBuildCommand`.
 The runner writes them to a `test-binlogs` subdirectory under the run directory.
+
+If the retained TRX, binlogs, and output still lack the signal needed to diagnose a
+failure, or no test hook can reach the behavior, report it as an
+[AI-enablement gap](../../../AGENTS.md#reporting-ai-enablement-gaps) instead of silently
+working around it.

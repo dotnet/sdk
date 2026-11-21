@@ -52,6 +52,30 @@ workaround merely because the symptom appears through `dotnet`, and do not infer
 from a diagnostic ID. See the canonical
 [ownership map](.github/memory/ARCHITECTURE.md#ownership-boundaries).
 
+### Before writing code
+
+Memory orients you to the repository; discovery grounds the specific change. Before
+generating code, tests, or build logic:
+
+1. Read the nearest area `AGENTS.md` and the skill that owns the task, if one exists.
+2. Find the closest existing implementation of the same kind (for example, a sibling
+   command, task, target, analyzer, or template) and the tests that cover it. Follow its
+   structure, naming, error handling, localization, and test pattern. State why when you
+   deliberately diverge.
+3. Check whether the change also belongs in sibling implementations, parallel templates,
+   or shared test assets.
+4. Check available recent history for the paths and symbols you will change, for example
+   `git log --oneline -- <path>` or `git log -S <symbol>`, to find reverted approaches,
+   in-flight migrations, and linked issues. If the checkout lacks relevant history, say
+   so and continue source discovery; use a bounded remote lookup only when permitted.
+5. Check the same paths and symbols on relevant active sibling branches, typically
+   `main` and recently updated `release/*` branches, for prior or related changes. Use
+   available up-to-date remote refs without switching the working branch; for example,
+   `git log origin/main --oneline -- <path>`. If relevant refs are unavailable, say so
+   and continue source discovery; use a bounded remote lookup only when permitted.
+   Consider what you find as context for the current change, not automatic authorization
+   to modify those branches.
+
 ### Build and test
 
 - Build the redist SDK with `build.cmd` on Windows or `./build.sh` on Linux/macOS.
@@ -170,6 +194,26 @@ Never hardcode the current TFM in a project. See
 
 1. Read the PR and its comments/reviews. Check for references to other PRs or issues where the problem might have already been solved.
 2. Use the `ci-analysis` skill (if available) to diagnose build failures.
+
+## Reporting AI-enablement gaps
+
+Treat a missing test hook, opaque runtime state, or an unstructured signal as an
+AI-enablement gap. These gaps block or slow verification because of missing
+infrastructure, not because of the task itself. Examples include behavior that no test can
+reach without a product change, state that is observable only in a debugger, and
+diagnostics that are available only as free-form console text. This also applies to build
+and CI pipeline investigations when missing diagnostic artifacts or structured failure
+signals prevent effective diagnosis. A build or pipeline failure alone is not a gap;
+follow the [PR validation failure guidance](#investigating-pr-validation-failures) first.
+
+- Do not silently work around the gap. Keep any workaround, such as temporary logging or
+  output scraping, out of the change unless it is the intended fix.
+- Do not expand the current change to build the missing infrastructure unless the task
+  requires it.
+- In your final handoff, report the gap with a ready-to-file issue title and body for the
+  `Area-AIEngineering` label. Include what you needed to observe or control, what was
+  missing, any workaround you used, and the evidence, such as the file, command, or log.
+  Search for an existing issue first, and file the issue only when the user asks you to.
 
 ## Keeping AI context and docs in sync
 
