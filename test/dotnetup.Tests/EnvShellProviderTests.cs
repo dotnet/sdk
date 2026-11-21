@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
@@ -272,6 +273,121 @@ public class EnvShellProviderTests
         profileEntry.Should().NotContain("Invoke-Expression");
 
         activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' env script | Out-String)");
+    }
+
+    [TestMethod]
+    [DataRow("multiline")]
+    [DataRow("empty")]
+    [DataRow("missing")]
+    public void PowerShellProvider_ProfileEntryRunsInPowerShell(string scenario)
+    {
+        string? powershell = FindPowerShell();
+        if (powershell is null)
+        {
+            Assert.Inconclusive("Neither pwsh nor powershell is available.");
+        }
+
+        string dir = Path.Combine(Path.GetTempPath(), "dotnetup-pwsh-entry", Guid.NewGuid().ToString("N"), "it's here");
+        Directory.CreateDirectory(dir);
+        try
+        {
+            string dotnetRoot = Path.Combine(dir, "dotnet");
+            string escapedRoot = ShellProviderHelpers.EscapePowerShellPath(dotnetRoot);
+
+            // Stands in for dotnetup. The multiline output only parses when it runs as one script,
+            // which is what the profile entry has to preserve.
+            string fakeDotnetup = Path.Combine(dir, "dotnetup.ps1");
+            string fakeOutput = scenario == "multiline"
+                ? $$"""
+                    Write-Output 'if ($true)'
+                    Write-Output '{'
+                    Write-Output '$env:DOTNET_ROOT = ''{{escapedRoot.Replace("'", "''")}}'''
+                    Write-Output '$env:PATH = ''{{escapedRoot.Replace("'", "''")}}'' + [IO.Path]::PathSeparator + $env:PATH'
+                    Write-Output '}'
+                    """
+                : string.Empty;
+            if (scenario != "missing")
+            {
+                File.WriteAllText(fakeDotnetup, fakeOutput);
+            }
+
+            var entry = new PowerShellEnvShellProvider().GenerateProfileEntry(fakeDotnetup);
+            string profile = Path.Combine(dir, "profile.ps1");
+            File.WriteAllText(
+                profile,
+                $"""
+                $ErrorActionPreference = 'Stop'
+                Remove-Item Env:DOTNET_ROOT -ErrorAction Ignore
+                {entry}
+                Write-Output "DOTNET_ROOT=$env:DOTNET_ROOT"
+                Write-Output "PATH0=$(($env:PATH -split [IO.Path]::PathSeparator)[0])"
+                """,
+                new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+
+            var startInfo = new ProcessStartInfo(powershell)
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+            };
+            foreach (var arg in new[] { "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", profile })
+            {
+                startInfo.ArgumentList.Add(arg);
+            }
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            var result = Process.RunAndCaptureTextAsync(startInfo, timeout.Token).GetAwaiter().GetResult();
+            string stdout = result.StandardOutput;
+            string stderr = result.StandardError;
+
+            result.ExitStatus.ExitCode.Should().Be(0, $"stdout:\n{stdout}\nstderr:\n{stderr}");
+            stderr.Should().BeEmpty();
+            if (scenario == "multiline")
+            {
+                stdout.Should().Contain($"DOTNET_ROOT={dotnetRoot}");
+                stdout.Should().Contain($"PATH0={dotnetRoot}");
+            }
+            else
+            {
+                stdout.Should().Contain($"DOTNET_ROOT={Environment.NewLine}");
+                stdout.Should().NotContain($"PATH0={dotnetRoot}");
+            }
+        }
+        finally
+        {
+            try { Directory.Delete(Path.GetDirectoryName(dir)!, recursive: true); }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
+    }
+
+    private static string? FindPowerShell()
+    {
+        foreach (var candidate in new[] { "pwsh", "powershell" })
+        {
+            try
+            {
+                var startInfo = new ProcessStartInfo(candidate, "-NoProfile -NonInteractive -Command exit")
+                {
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                };
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                var result = Process.RunAndCaptureTextAsync(startInfo, timeout.Token).GetAwaiter().GetResult();
+                if (!result.ExitStatus.Canceled)
+                {
+                    return candidate;
+                }
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+            }
+        }
+
+        return null;
     }
 
     [TestMethod]
