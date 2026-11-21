@@ -189,15 +189,17 @@ public class EnvShellProviderTests
     }
 
     [TestMethod]
-    public void FishProvider_ShouldSourceEnvScriptOutput()
+    public void FishProvider_ProfileEntryWritesEnvLinesAndActivationSourcesEnvScript()
     {
         var provider = new FishEnvShellProvider();
 
-        var profileEntry = provider.GenerateProfileEntry("/test/dotnetup");
+        var profileEntry = provider.GenerateProfileEntry("/test/dotnetup", dotnetInstallPath: "/test/dotnet");
         var activationCommand = provider.GenerateActivationCommand("/test/dotnetup");
 
-        profileEntry.Should().Contain("if test -x '/test/dotnetup'");
-        profileEntry.Should().Contain("'/test/dotnetup' env script --shell fish --dotnet --dotnetup | source");
+        profileEntry.Should().StartWith("if test -x '/test/dotnetup'");
+        profileEntry.Should().Contain("\nset -gx DOTNET_ROOT '/test/dotnet'");
+        profileEntry.Should().Contain("\nfish_add_path --global --move --path");
+        profileEntry.Should().NotContain("env script");
         profileEntry.Should().EndWith("end");
 
         activationCommand.Should().Be("'/test/dotnetup' env script | source");
@@ -258,16 +260,11 @@ public class EnvShellProviderTests
     }
 
     [TestMethod]
-    public void PowerShellProvider_ShouldCaptureScriptBeforeInvokingExpression()
+    public void PowerShellProvider_ActivationCommandCapturesScriptBeforeInvokingExpression()
     {
         var provider = new PowerShellEnvShellProvider();
 
-        var profileEntry = provider.GenerateProfileEntry("/test/dotnetup");
         var activationCommand = provider.GenerateActivationCommand("/test/dotnetup");
-
-        profileEntry.Should().Contain("$dotnetupScript = & '/test/dotnetup' env script --shell pwsh --dotnet --dotnetup | Out-String");
-        profileEntry.Should().Contain("if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))");
-        profileEntry.Should().Contain("Invoke-Expression $dotnetupScript");
 
         activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' env script | Out-String)");
     }

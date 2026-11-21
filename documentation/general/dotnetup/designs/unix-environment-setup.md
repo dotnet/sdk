@@ -70,13 +70,16 @@ The home directory used for these lookups comes from the user's current environm
 
 ### Profile Entry Format
 
-Each profile file gets a dotnetup-managed block with explicit begin/end markers:
+Each profile file gets a dotnetup-managed block with explicit begin/end markers. The block contains the same lines that `dotnetup env script` prints for the configured settings, guarded by a check that the dotnetup binary still exists. Writing the lines directly, instead of running `env script` from the profile, keeps dotnetup off the shell startup path.
 
 **Bash / Zsh:**
 ```bash
 # dotnetup: begin
 if [ -x '/path/to/dotnetup' ]; then
-    eval "$('/path/to/dotnetup' print-env-script --shell bash)"
+export DOTNET_ROOT='/path/to/dotnet'
+export PATH='/path/to':'/path/to/dotnet':$PATH
+hash -d dotnet 2>/dev/null
+hash -d dotnetup 2>/dev/null
 fi
 # dotnetup: end
 ```
@@ -85,7 +88,8 @@ fi
 ```fish
 # dotnetup: begin
 if test -x '/path/to/dotnetup'
-    '/path/to/dotnetup' print-env-script --shell fish | source
+set -gx DOTNET_ROOT '/path/to/dotnet'
+fish_add_path --global --move --path '/path/to' '/path/to/dotnet'
 end
 # dotnetup: end
 ```
@@ -93,18 +97,17 @@ end
 **PowerShell:**
 ```powershell
 # dotnetup: begin
-if (Test-Path -LiteralPath '/path/to/dotnetup' -PathType Leaf)
+if ([System.IO.File]::Exists('/path/to/dotnetup'))
 {
-    $dotnetupScript = & '/path/to/dotnetup' print-env-script --shell pwsh | Out-String
-    if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))
-    {
-        Invoke-Expression $dotnetupScript
-    }
+$env:DOTNET_ROOT = '/path/to/dotnet'
+$env:PATH = '/path/to' + [IO.Path]::PathSeparator + '/path/to/dotnet' + [IO.Path]::PathSeparator + $env:PATH
 }
 # dotnetup: end
 ```
 
-The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`). The `--dotnet-install-path` argument is only included in generated profile entries when dotnetup is configured to use a non-default install root.
+The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`). The PowerShell block uses `[System.IO.File]::Exists` rather than `Test-Path` because `Test-Path` loads a module on first use, which slows down every new session.
+
+Because the paths are written into the block, it has to be rewritten when they change. `dotnetup env set` and `dotnetup init` do this. Blocks written by older dotnetup versions call `env script` at shell startup and keep working until one of those commands rewrites them.
 
 ### Safe updates
 

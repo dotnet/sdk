@@ -191,11 +191,13 @@ rather than an install-time side effect.
 and, while installed, is normally on.
 
 **Whether the profile contains a dotnetup-managed section at all is *derived*, not a
-third user-facing knob.** The managed block is a single call to `dotnetup env script`
-(e.g. `eval "$(dotnetup env script …)"` on Unix; the PowerShell equivalent on Windows).
-There are not separate "dotnet" and "dotnetup" lines — the **arguments passed to
-`env script`** determine what the generated script wires, and the two settings map onto
-those arguments:
+third user-facing knob.** The managed block holds the lines that `dotnetup env script`
+prints for the configured selection (`DOTNET_ROOT` and `PATH` assignments), guarded by a check
+that the dotnetup binary still exists. The applier writes those lines at apply time instead of
+calling `env script` from the profile, so shell startup doesn't have to run dotnetup.
+There are not separate "dotnet" and "dotnetup" settings in the block — the **selection the
+applier passes to the script generator** determines what the block wires, and the two settings
+map onto that selection:
 
 - The generated script **wires dotnet** (`DOTNET_ROOT` + the managed dotnet on `PATH`)
   iff `accessMode ∈ {shell, everywhere}`.
@@ -207,8 +209,10 @@ those arguments:
 These two aspects are the existing `includeDotnet` and dotnetup-dir inputs to
 `GenerateEnvScript`. The `env script` surface expresses them as two selection flags,
 `--dotnet` and `--dotnetup` (see [`env script` flag surface](#env-script-flag-surface)).
-The applier bakes the explicit flags into the profile block at apply time, so the
-persisted block is deterministic and never depends on the command's default.
+The applier resolves the selection and the install path at apply time and writes the
+resulting lines, so the persisted block is deterministic. Because the paths are baked in,
+the block is rewritten by `env set` (and `init`) whenever the settings change; a bare
+`env set` re-syncs it.
 
 Exposing "touch the profile at all" as a separate setting would add a knob that is only
 meaningful on Windows (where `dotnetupOnPath` uses the user `PATH` env var and needs no
@@ -216,17 +220,17 @@ profile), so we keep it derived to avoid complexity.
 
 ### Mechanism per OS
 
-- **Unix:** the managed block is one `env script` call whose arguments select whether it
+- **Unix:** the managed block holds the `env script` lines for the selection: whether it
   wires dotnet and whether it adds the dotnetup directory. `dotnetupOnPath = false` drops
-  the dotnetup-dir argument; the block is removed only when the script would wire nothing.
+  the dotnetup-dir line; the block is removed only when it would wire nothing.
 - **Windows:** `dotnetupOnPath` is written to the **user `PATH` env var** (so cmd,
   PowerShell, and GUI-launched apps all see it — not only PowerShell). For simplicity
   the PowerShell profile block **also** includes the dotnetup directory (driven by the
-  same `env script` arguments as Unix), even though that is redundant with the user
+  same selection as Unix), even though that is redundant with the user
   `PATH` entry inside PowerShell. The duplication is harmless — both entries point at the
   same directory — and it keeps profile generation identical across operating systems.
   Consequences: clearing `dotnetupOnPath` must remove it from **both** places on Windows
-  (the profile's `env script` arguments and the user `PATH` entry), and `env show` drift
+  (the profile block's dotnetup-dir line and the user `PATH` entry), and `env show` drift
   detection treats the **user `PATH` env var as authoritative** for `dotnetupOnPath` on
   Windows (the profile copy is just a convenience).
 
@@ -331,7 +335,7 @@ and `--dotnet-install-path | -d <path>` (which install to wire) — and gains tw
 | Invocation | Generated script wires |
 | --- | --- |
 | `env script` (no selection) | follows the stored config (`accessMode` → dotnet, `dotnetupOnPath` → dotnetup); both when no config exists yet |
-| `env script --dotnet --dotnetup` | both (explicit — what the applier bakes into profiles) |
+| `env script --dotnet --dotnetup` | both (explicit) |
 | `env script --dotnetup` | dotnetup only |
 | `env script --dotnet` | dotnet only |
 | `env script --dotnetup-only` | dotnetup only (hidden legacy alias for `--dotnetup`) |
@@ -344,9 +348,10 @@ rely on). Help text states this explicitly so `--dotnet` isn't misread as additi
 the script follows your configured env settings. Pass `--dotnet` and/or `--dotnetup` to emit only
 the parts you list."*
 
-- **Profiles are always explicit.** The applier bakes `--dotnet --dotnetup`,
-  `--dotnetup`, or `--dotnet` (never relying on the default), so a persisted block is
-  deterministic and unaffected by any future change to the default.
+- **Profiles don't call `env script`.** The applier writes the lines `env script` would
+  print for an explicit selection, so a persisted block is deterministic and unaffected by
+  any future change to the default. Blocks written by older dotnetup versions still call
+  `env script --dotnet --dotnetup` (or a subset) and keep working until `env set` rewrites them.
 - **`--dotnetup-only` stays as a hidden legacy alias** for `--dotnetup`, so managed
   blocks written by older dotnetup versions (which call the hidden `print-env-script`
   alias with `--dotnetup-only`) keep working through the compat window, then it's
@@ -354,11 +359,11 @@ the parts you list."*
   is rejected with an error; in practice only old profiles emit it and never in
   combination.
 - "Neither" is not an expressible state — when a mode would wire nothing, the applier
-  removes the managed block instead of emitting an empty `env script` call.
+  removes the managed block instead of writing an empty one.
 
 ### Composition table (what actually gets written)
 
-| `env` | `dotnetupOnPath` | Unix profile (`env script` wires) | Windows user `PATH` | Windows system `PATH` / user `DOTNET_ROOT` | Windows profile (`env script` wires) |
+| `env` | `dotnetupOnPath` | Unix profile (block wires) | Windows user `PATH` | Windows system `PATH` / user `DOTNET_ROOT` | Windows profile (block wires) |
 | --- | --- | --- | --- | --- | --- |
 | none | true | dotnetup only | dotnetup | — | dotnetup only |
 | none | false | (block removed) | — | — | (block removed) |
@@ -367,7 +372,7 @@ the parts you list."*
 | everywhere | true | n/a (`everywhere` is Windows-only) | dotnetup | managed dotnet / managed root | dotnetup + dotnet |
 | everywhere | false | n/a (`everywhere` is Windows-only) | — | managed dotnet / managed root | dotnet only |
 
-The Unix and Windows profile columns are driven by the same `env script` arguments
+The Unix and Windows profile columns are driven by the same selection
 (identical wherever both platforms support the mode; `everywhere` is Windows-only). The Windows
 user `PATH` column controls whether dotnetup itself is discoverable. In `everywhere`, the
 managed dotnet is instead inserted into the system `PATH`, while `DOTNET_ROOT` is set at
