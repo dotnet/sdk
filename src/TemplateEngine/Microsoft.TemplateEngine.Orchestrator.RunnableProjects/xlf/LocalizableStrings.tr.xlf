@@ -25,6 +25,11 @@ Do not localize: actionId</note>
         <target state="translated">'{1}' içinde yapılandırılmış '{0}' bağımsız değişkeni '{2}' içinde listelenmediğinden işlenmeden atlanacak.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Authoring_ChoiceNameContainsSlash">
+        <source>Choice parameter '{0}' contains choice values with '/': {1}. Avoid '/' in choice values because it is used as a separator in localization keys.</source>
+        <target state="new">Choice parameter '{0}' contains choice values with '/': {1}. Avoid '/' in choice values because it is used as a separator in localization keys.</target>
+        <note>{0} is the symbol name, {1} is a comma-separated list of choice values containing a forward slash. {Locked="/"}</note>
+      </trans-unit>
       <trans-unit id="Authoring_CyclicDependencyInSymbols">
         <source>Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation.</source>
         <target state="translated">Parametre koşulları, belirlenimci değerlendirmeyi engelleyen döngüsel bağımlılık içeriyor: [{0}]</target>
@@ -85,6 +90,11 @@ Do not localize: actionId</note>
         <source>Source must be a directory, but '{0}' is a file.</source>
         <target state="translated">Kaynağın bir dizin olması gerekir ancak '{0}' bir dosyadır.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Authoring_SymbolNameContainsSlash">
+        <source>Symbol '{0}' contains '/'. Avoid '/' in symbol names because it is used as a separator in localization keys.</source>
+        <target state="new">Symbol '{0}' contains '/'. Avoid '/' in symbol names because it is used as a separator in localization keys.</target>
+        <note>{0} is the symbol name containing a forward slash. {Locked="/"}</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateMissingCommonInformation">
         <source>The template configuration {0} is missing common information:</source>

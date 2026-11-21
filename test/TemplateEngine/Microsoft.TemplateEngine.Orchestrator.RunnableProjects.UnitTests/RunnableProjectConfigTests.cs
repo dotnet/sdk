@@ -173,6 +173,70 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [TestMethod]
+        [DataRow("ParamA", "FirstChoice", null, false)]
+        [DataRow("Param-A", "First.Choice", null, false)]
+        [DataRow(@"Param\A", @"First\Choice", null, false)]
+        [DataRow("Param/A", "FirstChoice", "MV013", false)]
+        [DataRow("/ParamA", "FirstChoice", "MV013", false)]
+        [DataRow("ParamA/", "FirstChoice", "MV013", false)]
+        [DataRow("ParamA", "First/Choice", "MV014", false)]
+        [DataRow("ParamA", "/", "MV014", false)]
+        [DataRow("ComputedA", null, null, false)]
+        [DataRow("Computed/A", null, "MV013", false)]
+        [DataRow("Param/A", "FirstChoice", "MV013", true)]
+        [DataRow("ParamA", "First/Choice", "MV014", true)]
+        public async Task PerformTemplateValidation_ForwardSlashes(string symbolName, string? choiceName, string? expectedCode, bool isScanning)
+        {
+            JsonObject symbol = choiceName is null
+                ? new JsonObject { ["type"] = "computed", ["value"] = "true" }
+                : new JsonObject
+                {
+                    ["type"] = "parameter",
+                    ["datatype"] = "choice",
+                    ["choices"] = new JsonArray(new JsonObject { ["choice"] = choiceName }),
+                };
+            JsonObject configJson = new()
+            {
+                ["identity"] = "test",
+                ["name"] = "name",
+                ["shortName"] = "shortName",
+                ["symbols"] = new JsonObject { [symbolName] = symbol },
+            };
+            TemplateConfigModel config = TemplateConfigModel.FromJObject(configJson);
+
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment();
+            string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
+            TestFileSystemUtils.WriteTemplateSource(environmentSettings, sourceBasePath, new Dictionary<string, string?>
+            {
+                { TestFileSystemUtils.DefaultConfigRelativePath, configJson.ToJsonString() },
+            });
+            using IMountPoint sourceMountPoint = environmentSettings.MountPath(sourceBasePath);
+            using RunnableProjectConfig templateConfig = new(environmentSettings, new RunnableProjectGenerator(), config, sourceMountPoint.Root);
+            await templateConfig.ValidateAsync(isScanning ? ValidationScope.Scanning : ValidationScope.Instantiation, TestContext.CancellationToken);
+
+            IValidationEntry[] diagnostics = templateConfig.ValidationErrors
+                .Where(e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning)
+                .ToArray();
+            if (expectedCode is null)
+            {
+                Assert.IsEmpty(diagnostics);
+            }
+            else
+            {
+                IValidationEntry diagnostic = Assert.ContainsSingle(diagnostics);
+                Assert.AreEqual(expectedCode, diagnostic.Code);
+                Assert.AreEqual(IValidationEntry.SeverityLevel.Warning, diagnostic.Severity);
+                Assert.Contains(symbolName, diagnostic.ErrorMessage);
+                if (expectedCode == "MV014")
+                {
+                    Assert.Contains(choiceName!, diagnostic.ErrorMessage);
+                }
+            }
+
+            Assert.IsTrue(templateConfig.IsValid);
+        }
+
+        [TestMethod]
         public void VerifyComputedSymbolsParsedCorrectly()
         {
             //
