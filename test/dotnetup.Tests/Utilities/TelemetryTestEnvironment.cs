@@ -46,6 +46,22 @@ internal sealed class TelemetryTestEnvironment : IDisposable
         RunDotnetup(
             ["env", "script", "--shell", "pwsh", "--dotnet-install-path", _testEnvironment.InstallPath]);
 
+    /// <summary>
+    /// Runs dotnetup so it persists telemetry but leaves the blobs on disk for the test to drain.
+    /// </summary>
+    public (int exitCode, string output) RunWithoutDetachedDrainer(string[] args)
+    {
+        EnvironmentVariables[Constants.Telemetry.TestSkipDetachedDrainerEnvVar] = "1";
+        try
+        {
+            return RunDotnetup(args);
+        }
+        finally
+        {
+            EnvironmentVariables.Remove(Constants.Telemetry.TestSkipDetachedDrainerEnvVar);
+        }
+    }
+
     public void ConfigureShutdownBudgetObservation() =>
         EnvironmentVariables[Constants.Telemetry.TestShutdownBudgetPathEnvVar] = ShutdownBudgetPath;
 

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -189,6 +190,22 @@ public class ParserTests
 
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow("env script", true)]
+    [DataRow("env script --shell pwsh --dotnet --dotnetup", true)]
+    [DataRow("print-env-script --shell bash", true)]
+    [DataRow("env", false)]
+    [DataRow("env show", false)]
+    [DataRow("script", false)]
+    [DataRow("install env script", false)]
+    [DataRow("", false)]
+    public void EnvScriptInvocation_MatchesOnlyEnvScriptCommands(string commandLine, bool expected)
+    {
+        string[] args = commandLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        EnvScriptInvocation.IsMatch(args).Should().Be(expected);
     }
 
     [TestMethod]

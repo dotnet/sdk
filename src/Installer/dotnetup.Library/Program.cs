@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
@@ -28,6 +29,13 @@ public class DotnetupProgram
         if (DotnetupTelemetryDrainProcess.TryRunAsDrainer(args, out var drainExitCode))
         {
             return drainExitCode;
+        }
+
+        // The shell profile block runs env script on every shell start and it only prints a few
+        // lines, so don't pay for setting up telemetry there.
+        if (EnvScriptInvocation.IsMatch(args))
+        {
+            DotnetupTelemetry.DisableForProcess();
         }
 
         return InvokeCommand(args, static () => new AutomaticEncodingRestorer());

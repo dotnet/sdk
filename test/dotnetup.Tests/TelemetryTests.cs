@@ -374,6 +374,14 @@ public class DotnetupTelemetryTests : IDisposable
     }
 
     [TestMethod]
+    public void Disabled_TurnsTelemetryOffEvenWhenNotOptedOut()
+    {
+        using var telemetry = new DotnetupTelemetry(_ => null, disabled: true);
+
+        Assert.IsFalse(telemetry.Enabled);
+    }
+
+    [TestMethod]
     public void GetLocalShutdownBudgetMs_UsesShortBudgetForSuccessfulShellStartup()
     {
         using var telemetry = new DotnetupTelemetry(_ => "1");
