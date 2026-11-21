@@ -93,16 +93,18 @@ end
 **PowerShell:**
 ```powershell
 # dotnetup: begin
-if (Test-Path -LiteralPath '/path/to/dotnetup' -PathType Leaf)
+if ([System.IO.File]::Exists('/path/to/dotnetup'))
 {
-    $dotnetupScript = & '/path/to/dotnetup' print-env-script --shell pwsh | Out-String
+    $dotnetupScript = (& '/path/to/dotnetup' print-env-script --shell pwsh) -join [System.Environment]::NewLine
     if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))
     {
-        Invoke-Expression $dotnetupScript
+        . ([scriptblock]::Create($dotnetupScript))
     }
 }
 # dotnetup: end
 ```
+
+The PowerShell entry uses .NET APIs instead of `Test-Path`, `Out-String` and `Invoke-Expression`. Those cmdlets load modules on first use, which noticeably slows every new PowerShell session.
 
 The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`). The `--dotnet-install-path` argument is only included in generated profile entries when dotnetup is configured to use a non-default install root.
 

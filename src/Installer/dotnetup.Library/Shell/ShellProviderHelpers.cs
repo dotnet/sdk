@@ -113,8 +113,10 @@ internal static class ShellProviderHelpers
         var command = BuildPowerShellPrintEnvCommand(dotnetupPath, shellName, flags);
         var activationBlock = IndentLines(BuildPowerShellGuardedInvocationBlock(command), "    ");
 
+        // Use .NET APIs instead of Test-Path / Out-String / Invoke-Expression. In a new session those
+        // cmdlets trigger module autoload, which adds noticeable time to every PowerShell startup.
         return $$"""
-            if (Test-Path -LiteralPath '{{escapedPath}}' -PathType Leaf)
+            if ([System.IO.File]::Exists('{{escapedPath}}'))
             {
                 {{activationBlock}}
             }
@@ -142,10 +144,10 @@ internal static class ShellProviderHelpers
     private static string BuildPowerShellGuardedInvocationBlock(string command)
     {
         return $$"""
-            $dotnetupScript = {{command}} | Out-String
+            $dotnetupScript = ({{command}}) -join [System.Environment]::NewLine
             if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))
             {
-                Invoke-Expression $dotnetupScript
+                . ([scriptblock]::Create($dotnetupScript))
             }
             """;
     }
