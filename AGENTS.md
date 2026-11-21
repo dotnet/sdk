@@ -64,14 +64,17 @@ generating code, tests, or build logic:
    deliberately diverge.
 3. Check whether the change also belongs in sibling implementations, parallel templates,
    or shared test assets.
-4. Check recent history for the paths and symbols you will change, for example
+4. Check available recent history for the paths and symbols you will change, for example
    `git log --oneline -- <path>` or `git log -S <symbol>`, to find reverted approaches,
-   in-flight migrations, and linked issues.
+   in-flight migrations, and linked issues. If the checkout lacks relevant history, say
+   so and continue source discovery; use a bounded remote lookup only when permitted.
 5. Check the same paths and symbols on relevant active sibling branches, typically
    `main` and recently updated `release/*` branches, for prior or related changes. Use
-   up-to-date remote refs where available without switching the working branch; for
-   example, `git log origin/main --oneline -- <path>`. Consider what you find as context
-   for the current change, not automatic authorization to modify those branches.
+   available up-to-date remote refs without switching the working branch; for example,
+   `git log origin/main --oneline -- <path>`. If relevant refs are unavailable, say so
+   and continue source discovery; use a bounded remote lookup only when permitted.
+   Consider what you find as context for the current change, not automatic authorization
+   to modify those branches.
 
 ### Build and test
 
