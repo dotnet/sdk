@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Globalization;
 using System.Runtime.Versioning;
-using System.Security;
 using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -134,57 +132,32 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Gets the default Program Files dotnet installation path(s) by reading from the registry.
-    /// For each architecture subkey under HKLM\SOFTWARE\dotnet\Setup\InstalledVersions\{arch}:
-    ///   1. First checks {arch}\sharedhost → Path value in the native registry view (set by the .NET host installer for the native architecture)
-    ///   2. Falls back to {arch} → InstallLocation value in the 32-bit registry view when that path is missing or does not exist
-    ///   3. Falls back to the installer's default root for that architecture (for example Program Files\dotnet\x64 for x64 on Arm64)
-    /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md#current-state-on-windows
-    /// See https://github.com/dotnet/runtime/issues/109974
-    /// </summary>
-    public static List<string> GetProgramFilesDotnetPaths()
-    {
-        return SelectRegisteredDotnetPaths(
-            sharedHostPaths: ReadSharedHostPaths(),
-            installLocations: ReadInstallLocations(),
-            defaultPaths: new AdminInstallRootResolver().ResolveSupported());
-    }
-
-    /// <summary>
-    /// Gets the system .NET root for <paramref name="architecture"/> the way the host finds it, without creating anything:
-    /// the directory registered under <c>InstalledVersions\{architecture}</c> (chosen with the same rule as
-    /// <see cref="GetProgramFilesDotnetPaths"/>), or otherwise <see cref="GetFallbackProgramFilesDotnetRoot"/>.
-    /// Returns null when neither exists. Registrations for other architectures are ignored.
-    /// See get_dotnet_self_registered_dir_for_arch and get_default_installation_dir_for_arch in
+    /// Gets the existing default Program Files dotnet roots of every architecture this OS supports, native first:
+    /// Program Files\dotnet, Program Files (x86)\dotnet, and Program Files\dotnet\x64 on Arm64 Windows.
+    /// Installs in a custom location (the installer's DOTNETHOME property) are not detected; the registry is not read.
+    /// See get_default_installation_dir_for_arch in
     /// https://github.com/dotnet/runtime/blob/main/src/native/corehost/hostmisc/pal.windows.cpp
     /// </summary>
+    public static List<string> GetProgramFilesDotnetPaths() => GetProgramFilesDotnetPaths(new AdminInstallRootResolver());
+
+    internal static List<string> GetProgramFilesDotnetPaths(AdminInstallRootResolver resolver) =>
+        [.. resolver.ResolveSupported()
+            .Select(root => GetExistingDirectory(root.Path))
+            .OfType<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase)];
+
+    /// <summary>
+    /// Gets the existing default Program Files dotnet root for <paramref name="architecture"/>, or null when it does not exist.
+    /// </summary>
     public static DotnetInstallRoot? GetProgramFilesDotnetRoot(InstallArchitecture architecture) =>
-        GetProgramFilesDotnetRoot(architecture, ReadSharedHostPaths(), ReadInstallLocations(), new AdminInstallRootResolver());
-
-    internal static DotnetInstallRoot? GetProgramFilesDotnetRoot(
-        InstallArchitecture architecture,
-        IReadOnlyDictionary<string, string> sharedHostPaths,
-        IReadOnlyDictionary<string, string> installLocations,
-        AdminInstallRootResolver fallbackRootResolver)
-    {
-        // Apply SelectRegisteredDotnetPaths's rule to this architecture's registrations only.
-        string architectureName = architecture.ToString();
-        string? registeredPath = SelectRegisteredDotnetPaths(
-            OnlyArchitecture(sharedHostPaths, architectureName),
-            OnlyArchitecture(installLocations, architectureName),
-            defaultPaths: []).FirstOrDefault();
-
-        return registeredPath is not null
-            ? new DotnetInstallRoot(registeredPath, architecture)
-            : GetFallbackProgramFilesDotnetRoot(fallbackRootResolver, architecture);
-    }
+        GetProgramFilesDotnetRoot(new AdminInstallRootResolver(), architecture);
 
     /// <summary>
     /// The folder the .NET installer uses for <paramref name="architecture"/>, if it exists: Program Files\dotnet for the
     /// OS architecture, Program Files (x86)\dotnet for x86, and Program Files\dotnet\x64 for x64 on Arm64 Windows. Returns
     /// null when the folder is missing, the combination is unsupported, or the Program Files folder is unknown.
     /// </summary>
-    internal static DotnetInstallRoot? GetFallbackProgramFilesDotnetRoot(AdminInstallRootResolver resolver, InstallArchitecture architecture)
+    internal static DotnetInstallRoot? GetProgramFilesDotnetRoot(AdminInstallRootResolver resolver, InstallArchitecture architecture)
     {
         DotnetInstallRoot root;
         try
@@ -197,122 +170,6 @@ internal sealed partial class WindowsPathHelper : IDisposable
         }
 
         return GetExistingDirectory(root.Path) is { } path ? root with { Path = path } : null;
-    }
-
-    private static Dictionary<string, string> OnlyArchitecture(IReadOnlyDictionary<string, string> valuesByArchitecture, string architectureName)
-    {
-        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        if (valuesByArchitecture.TryGetValue(architectureName, out string? value))
-        {
-            values[architectureName] = value;
-        }
-
-        return values;
-    }
-
-    // The host installer writes InstallLocation to the 32-bit view and sharedhost\Path only to the native view.
-    // See Win64="no": https://github.com/dotnet/runtime/blob/e33be4d53ab951272c9161c50b549e5e7db60262/src/installer/pkg/sfx/installers/host.wxs#L35-L55
-    private static Dictionary<string, string> ReadSharedHostPaths() =>
-        ReadInstalledVersions(Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32, subKeyName: "sharedhost", valueName: "Path");
-
-    private static Dictionary<string, string> ReadInstallLocations() =>
-        ReadInstalledVersions(RegistryView.Registry32, subKeyName: null, valueName: "InstallLocation");
-
-    private const string InstalledVersionsKeyPath = @"SOFTWARE\dotnet\Setup\InstalledVersions";
-
-    private static int s_unreadableSystemInstallRegistryWarned;
-
-    /// <summary>
-    /// Reads <paramref name="valueName"/> for each architecture under <c>InstalledVersions</c> in <paramref name="view"/>.
-    /// A view that cannot be read warns and yields nothing, so it does not hide the other view's registrations.
-    /// </summary>
-    private static Dictionary<string, string> ReadInstalledVersions(RegistryView view, string? subKeyName, string valueName)
-    {
-        try
-        {
-            using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
-            using var installedVersions = baseKey.OpenSubKey(InstalledVersionsKeyPath);
-            return ReadArchitectureValues(installedVersions, subKeyName, valueName);
-        }
-        catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException or IOException)
-        {
-            WarnUnreadableSystemInstallRegistry(ex, Console.Error, ref s_unreadableSystemInstallRegistryWarned);
-            return [];
-        }
-    }
-
-    /// <summary>
-    /// Writes the unreadable-registry warning to <paramref name="warningWriter"/> unless <paramref name="warned"/> is already set.
-    /// </summary>
-    internal static void WarnUnreadableSystemInstallRegistry(Exception exception, TextWriter warningWriter, ref int warned)
-    {
-        // Init queries this before its form renders and again after it closes; only the first, pre-form call may write.
-        if (Interlocked.Exchange(ref warned, 1) == 0)
-        {
-            string keyName = $@"{Registry.LocalMachine.Name}\{InstalledVersionsKeyPath}";
-            warningWriter.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.SystemInstallRegistryUnreadableWarning, keyName, exception.Message));
-        }
-    }
-
-    /// <summary>
-    /// Reads <paramref name="valueName"/> from each architecture key under <paramref name="installedVersions"/>, or from
-    /// its <paramref name="subKeyName"/> child when given, keyed by architecture.
-    /// </summary>
-    internal static Dictionary<string, string> ReadArchitectureValues(RegistryKey? installedVersions, string? subKeyName, string valueName)
-    {
-        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        if (installedVersions is null)
-        {
-            return values;
-        }
-
-        foreach (var architecture in installedVersions.GetSubKeyNames())
-        {
-            try
-            {
-                using var key = installedVersions.OpenSubKey(subKeyName is null ? architecture : $@"{architecture}\{subKeyName}");
-                if (key?.GetValue(valueName) is string { Length: > 0 } value)
-                {
-                    values[architecture] = value;
-                }
-            }
-            catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException or IOException)
-            {
-                // Ignore inaccessible architecture keys and keep any values already collected.
-            }
-        }
-
-        return values;
-    }
-
-    /// <summary>
-    /// Returns the existing install directory for each architecture: its <c>sharedhost\Path</c>, then its
-    /// <c>InstallLocation</c>, then its default install root, skipping any that are missing or do not exist.
-    /// </summary>
-    internal static List<string> SelectRegisteredDotnetPaths(
-        IReadOnlyDictionary<string, string> sharedHostPaths,
-        IReadOnlyDictionary<string, string> installLocations,
-        IEnumerable<DotnetInstallRoot> defaultPaths)
-    {
-        var defaultPathsByArchitecture = defaultPaths.ToDictionary(r => r.Architecture.ToString(), r => r.Path, StringComparer.OrdinalIgnoreCase);
-        var paths = new List<string>();
-        foreach (var architecture in sharedHostPaths.Keys
-            .Union(installLocations.Keys, StringComparer.OrdinalIgnoreCase)
-            .Union(defaultPathsByArchitecture.Keys, StringComparer.OrdinalIgnoreCase))
-        {
-            // Non-native installs and stale sharedhost entries are only found through InstallLocation;
-            // installs without registry entries are only found at their default root.
-            string? installPath = GetExistingDirectory(sharedHostPaths.GetValueOrDefault(architecture))
-                ?? GetExistingDirectory(installLocations.GetValueOrDefault(architecture))
-                ?? GetExistingDirectory(defaultPathsByArchitecture.GetValueOrDefault(architecture));
-
-            if (installPath is not null && !paths.Contains(installPath, StringComparer.OrdinalIgnoreCase))
-            {
-                paths.Add(installPath);
-            }
-        }
-
-        return paths;
     }
 
     private static string? GetExistingDirectory(string? path)

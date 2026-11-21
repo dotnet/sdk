@@ -65,6 +65,15 @@ migrate existing system .NET SDK and Runtime installs.  You can also migrate
 them explicitly by running `dotnetup sdk install --migrate-from-system` for
 SDKs or `dotnetup runtime install --migrate-from-system` for runtimes.
 
+Migration only looks in the installers' default machine-wide locations for the
+current architecture: `Program Files\dotnet` (or `Program Files (x86)\dotnet`
+for x86, and `Program Files\dotnet\x64` for x64 on Arm64) on Windows,
+`/usr/local/share/dotnet` (or its `x64` subfolder under Rosetta) on macOS, and
+`/usr/lib/dotnet`, `/usr/share/dotnet`, or `/usr/lib64/dotnet` on Linux.
+Installs in a custom location, such as one chosen with the Windows installer's
+`DOTNETHOME` property or registered in a macOS `/etc/dotnet/install_location`
+file, are not detected.
+
 Turning everywhere mode on or off requires modifying the system PATH, which
 requires elevation (i.e. a UAC prompt approval, or "Run as Administrator").
 This is because the machine-wide installers for .NET add the Program Files .NET
