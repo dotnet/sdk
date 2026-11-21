@@ -43,6 +43,7 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Common\HotReloadKeyPair.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Tasks\Common\TaskEnvironmentExtensions.cs" LinkBase="Common" />
   </ItemGroup>
 
   <ItemGroup>
