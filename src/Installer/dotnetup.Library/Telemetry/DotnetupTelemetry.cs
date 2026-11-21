@@ -88,8 +88,16 @@ public sealed class DotnetupTelemetry : IDisposable
     /// </summary>
     internal string? CurrentCommandName { get; private set; }
 
+    private static bool s_disabledForProcess;
+
+    /// <summary>
+    /// Disables telemetry for the rest of this process. Only takes effect when called before
+    /// <see cref="Instance"/> is first used.
+    /// </summary>
+    internal static void DisableForProcess() => s_disabledForProcess = true;
+
     private DotnetupTelemetry()
-        : this(Environment.GetEnvironmentVariable)
+        : this(Environment.GetEnvironmentVariable, disabled: s_disabledForProcess)
     {
     }
 
@@ -97,13 +105,13 @@ public sealed class DotnetupTelemetry : IDisposable
     // telemetry-disabled (opt-out) path deterministically, without mutating
     // process-wide environment variables or depending on the Lazy singleton's
     // one-shot, construction-time env read.
-    internal DotnetupTelemetry(Func<string, string?> getEnvironmentVariable, bool? isCIEnvironment = null)
+    internal DotnetupTelemetry(Func<string, string?> getEnvironmentVariable, bool? isCIEnvironment = null, bool disabled = false)
     {
         SessionId = Guid.NewGuid().ToString();
         IsOneAndDoneEnvironment = !IsTruthy(getEnvironmentVariable(Constants.Telemetry.ForceLocalDeliveryEnvVar))
             && (isCIEnvironment ?? TelemetryCommonProperties.IsCIEnvironment);
 
-        Enabled = !IsTelemetryOptedOut(getEnvironmentVariable);
+        Enabled = !disabled && !IsTelemetryOptedOut(getEnvironmentVariable);
 
         if (!Enabled)
         {
@@ -494,7 +502,7 @@ public sealed class DotnetupTelemetry : IDisposable
 
             // Skip the out-of-band drainer on the latency-critical shell-startup hot path; those
             // blobs are delivered by the next dotnetup run or the SDK CLI sharing the store.
-            if (!IsShellStartupCommand)
+            if (!IsShellStartupCommand && !TelemetryTestHooks.IsEnabled(Constants.Telemetry.TestSkipDetachedDrainerEnvVar))
             {
                 DotnetupTelemetryDrainProcess.SpawnDetachedDrainer();
             }

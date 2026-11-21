@@ -5,6 +5,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 internal static class TelemetryTestHooks
 {
+    public static bool IsEnabled(string environmentVariableName)
+        => Environment.GetEnvironmentVariable(environmentVariableName) == "1";
+
     public static void TryWriteFile(string environmentVariableName, string content)
     {
         var path = Environment.GetEnvironmentVariable(environmentVariableName);
