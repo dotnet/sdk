@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Dotnet.Installation.Internal;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 internal static class ShellProviderHelpers
@@ -31,17 +29,18 @@ internal static class ShellProviderHelpers
             .Replace("'", "\\'", StringComparison.Ordinal);
 
     /// <summary>
-    /// Returns the lines a managed profile block writes for the given settings: the same
-    /// assignments <c>env script</c> prints, without its header comment. The block holds these
-    /// lines directly instead of running <c>env script</c>, because that would start a process on
-    /// every shell start. <c>env set</c> rewrites the block when the settings change.
+    /// Returns the script a managed profile block runs for the given settings: what <c>env script</c>
+    /// prints, minus its one-line header comment. The block holds this directly instead of running
+    /// <c>env script</c>, because that would start a process on every shell start. <c>env set</c>
+    /// rewrites the block when the settings change. The rest of the script is kept verbatim, since
+    /// a quoted path may itself span lines.
     /// </summary>
     /// <param name="provider">The shell provider that generates the env script.</param>
     /// <param name="dotnetupPath">The full path to the dotnetup binary.</param>
-    /// <param name="includeDotnet">When true, the lines set DOTNET_ROOT and add the managed dotnet to PATH.</param>
-    /// <param name="includeDotnetup">When true, the lines add the dotnetup directory to PATH.</param>
+    /// <param name="includeDotnet">When true, the script sets DOTNET_ROOT and adds the managed dotnet to PATH.</param>
+    /// <param name="includeDotnetup">When true, the script adds the dotnetup directory to PATH.</param>
     /// <param name="dotnetInstallPath">The .NET install path, or <c>null</c> for the default dotnetup install path.</param>
-    internal static IReadOnlyList<string> GetProfileEnvLines(
+    internal static string GetProfileEnvScript(
         IEnvShellProvider provider,
         string dotnetupPath,
         bool includeDotnet,
@@ -51,11 +50,16 @@ internal static class ShellProviderHelpers
         string installPath = string.IsNullOrEmpty(dotnetInstallPath) ? DotnetupPaths.DefaultDotnetInstallPath : dotnetInstallPath;
         string dotnetupDir = includeDotnetup ? Path.GetDirectoryName(dotnetupPath) ?? string.Empty : string.Empty;
 
-        return provider.GenerateEnvScript(installPath, dotnetupDir, includeDotnet)
-            .ReplaceLineEndings("\n")
-            .Split('\n')
-            .Where(line => !string.IsNullOrWhiteSpace(line) && !line.StartsWith('#'))
-            .ToArray();
+        string script = provider.GenerateEnvScript(installPath, dotnetupDir, includeDotnet).ReplaceLineEndings("\n");
+
+        // The header is always a single comment line (see GetEnvironmentConfigurationComment).
+        if (script.StartsWith('#'))
+        {
+            int headerEnd = script.IndexOf('\n');
+            script = headerEnd < 0 ? string.Empty : script[(headerEnd + 1)..];
+        }
+
+        return script.TrimStart('\n').TrimEnd('\n');
     }
 
     internal static string BuildPosixActivationCommand(string dotnetupPath)
@@ -64,12 +68,10 @@ internal static class ShellProviderHelpers
         return $"eval \"$('{escapedPath}' env script)\"";
     }
 
-    internal static string BuildPosixProfileEntry(string dotnetupPath, IReadOnlyList<string> envLines)
+    internal static string BuildPosixProfileEntry(string dotnetupPath, string envScript)
     {
         var escapedPath = EscapePosixPath(dotnetupPath);
-
-        return BuildGuardedEntry([$"if [ -x '{escapedPath}' ]; then"], envLines, ["fi"]);
-
+        return BuildGuardedEntry($"if [ -x '{escapedPath}' ]; then", envScript, "fi");
     }
 
     // Fish activation runs inside a fish shell, so 'env script' auto-detects fish; no flags are
@@ -80,12 +82,10 @@ internal static class ShellProviderHelpers
         return $"'{escapedPath}' env script | source";
     }
 
-    internal static string BuildFishProfileEntry(string dotnetupPath, IReadOnlyList<string> envLines)
+    internal static string BuildFishProfileEntry(string dotnetupPath, string envScript)
     {
         var escapedPath = EscapeFishPath(dotnetupPath);
-
-        return BuildGuardedEntry([$"if test -x '{escapedPath}'"], envLines, ["end"]);
-
+        return BuildGuardedEntry($"if test -x '{escapedPath}'", envScript, "end");
     }
 
     internal static string BuildPowerShellActivationCommand(string dotnetupPath)
@@ -94,20 +94,19 @@ internal static class ShellProviderHelpers
         return $"Invoke-Expression (& '{escapedPath}' env script | Out-String)";
     }
 
-    internal static string BuildPowerShellProfileEntry(string dotnetupPath, IReadOnlyList<string> envLines)
+    internal static string BuildPowerShellProfileEntry(string dotnetupPath, string envScript)
     {
         var escapedPath = EscapePowerShellPath(dotnetupPath);
 
         // [System.IO.File]::Exists instead of Test-Path: in a new session Test-Path loads a
         // module first, which noticeably slows down every PowerShell start.
-        return BuildGuardedEntry([$"if ([System.IO.File]::Exists('{escapedPath}'))", "{"], envLines, ["}"]);
-
+        return BuildGuardedEntry($"if ([System.IO.File]::Exists('{escapedPath}'))\n{{", envScript, "}");
     }
 
+    // The script is not indented, since indenting would change any quoted value that spans lines.
     // Joined with '\n' so the entry doesn't depend on this file's line endings.
-    // ShellProfileManager rewrites the line endings to match the profile file.
-    private static string BuildGuardedEntry(string[] openingLines, IReadOnlyList<string> envLines, string[] closingLines)
-        => string.Join("\n", [.. openingLines, .. envLines.Select(line => "    " + line), .. closingLines]);
+    private static string BuildGuardedEntry(string opening, string envScript, string closing)
+        => $"{opening}\n{envScript}\n{closing}";
 
     internal static string BuildPosixPathExport(string escapedPath, string dotnetupDir, bool includeDotnet)
     {

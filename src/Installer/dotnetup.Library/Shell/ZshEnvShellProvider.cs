@@ -46,8 +46,8 @@ public class ZshEnvShellProvider : IEnvShellProvider
 
     public string GenerateProfileEntry(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null)
     {
-        var envLines = ShellProviderHelpers.GetProfileEnvLines(this, dotnetupPath, includeDotnet, includeDotnetup, dotnetInstallPath);
-        return ShellProviderHelpers.BuildPosixProfileEntry(dotnetupPath, envLines);
+        var envScript = ShellProviderHelpers.GetProfileEnvScript(this, dotnetupPath, includeDotnet, includeDotnetup, dotnetInstallPath);
+        return ShellProviderHelpers.BuildPosixProfileEntry(dotnetupPath, envScript);
     }
 
     public string GenerateActivationCommand(string dotnetupPath)

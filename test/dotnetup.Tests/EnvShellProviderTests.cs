@@ -197,8 +197,8 @@ public class EnvShellProviderTests
         var activationCommand = provider.GenerateActivationCommand("/test/dotnetup");
 
         profileEntry.Should().StartWith("if test -x '/test/dotnetup'");
-        profileEntry.Should().Contain("    set -gx DOTNET_ROOT '/test/dotnet'");
-        profileEntry.Should().Contain("    fish_add_path --global --move --path");
+        profileEntry.Should().Contain("\nset -gx DOTNET_ROOT '/test/dotnet'");
+        profileEntry.Should().Contain("\nfish_add_path --global --move --path");
         profileEntry.Should().NotContain("env script");
         profileEntry.Should().EndWith("end");
 

@@ -306,7 +306,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         }
     }
 
-    private void ApplyTerminalProfileModificationsWindows(string dotnetRoot, bool includeDotnet, bool includeDotnetup, IEnvShellProvider? shellProvider)
+    private static void ApplyTerminalProfileModificationsWindows(string dotnetRoot, bool includeDotnet, bool includeDotnetup, IEnvShellProvider? shellProvider)
     {
         var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
         // The current shell provider on Windows is always the PowerShell provider (see
@@ -319,7 +319,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, includeDotnet, includeDotnetup, profileDotnetRoot);
     }
 
-    private void ApplyTerminalProfileModificationsUnix(string dotnetRoot, bool includeDotnet, bool includeDotnetup, IEnvShellProvider? shellProvider)
+    private static void ApplyTerminalProfileModificationsUnix(string dotnetRoot, bool includeDotnet, bool includeDotnetup, IEnvShellProvider? shellProvider)
     {
         var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
         shellProvider = ShellDetection.GetCurrentShellProviderOrThrow(shellProvider);

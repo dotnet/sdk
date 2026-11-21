@@ -465,13 +465,26 @@ public class ShellProfileManagerTests : IDisposable
         entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
         entry.Should().StartWith($"if [ -x '{FakeDotnetupPath}' ]; then");
-        entry.Should().Contain($"    export DOTNET_ROOT='{FakeDotnetInstallPath}'");
-        entry.Should().Contain($"    export PATH='{FakeDotnetupDir}':'{FakeDotnetInstallPath}':$PATH");
-        entry.Should().Contain("    hash -d dotnet 2>/dev/null");
+        entry.Should().Contain($"\nexport DOTNET_ROOT='{FakeDotnetInstallPath}'");
+        entry.Should().Contain($"\nexport PATH='{FakeDotnetupDir}':'{FakeDotnetInstallPath}':$PATH");
+        entry.Should().Contain("\nhash -d dotnet 2>/dev/null");
         entry.Should().EndWith("fi");
         entry.Should().NotContain("eval");
         entry.Should().NotContain("env script");
         entry.Should().NotContain("# This");
+    }
+
+    [TestMethod]
+    public void BashProvider_GenerateProfileEntry_KeepsMultilinePathIntact()
+    {
+        const string multilinePath = "/tmp/dotnet\n# path";
+        var provider = new BashEnvShellProvider();
+
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath, dotnetInstallPath: multilinePath);
+
+        entry.Should().Contain($"\nexport DOTNET_ROOT='{multilinePath}'\n");
+        entry.Should().Contain($":'{multilinePath}':$PATH\n");
+        (entry.Count(c => c == '\'') % 2).Should().Be(0, "every quoted value should be closed");
     }
 
     [TestMethod]
@@ -514,7 +527,7 @@ public class ShellProfileManagerTests : IDisposable
         entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
         entry.Should().StartWith($"if [ -x '{FakeDotnetupPath}' ]; then");
-        entry.Should().Contain($"    export DOTNET_ROOT='{FakeDotnetInstallPath}'");
+        entry.Should().Contain($"\nexport DOTNET_ROOT='{FakeDotnetInstallPath}'");
         entry.Should().EndWith("fi");
         entry.Should().NotContain("eval");
         entry.Should().NotContain("env script");
@@ -529,8 +542,8 @@ public class ShellProfileManagerTests : IDisposable
         entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
         entry.Should().StartWith($"if ([System.IO.File]::Exists('{FakeDotnetupPath}'))");
-        entry.Should().Contain($"    $env:DOTNET_ROOT = '{FakeDotnetInstallPath}'");
-        entry.Should().Contain($"    $env:PATH = '{FakeDotnetupDir}' + [IO.Path]::PathSeparator + '{FakeDotnetInstallPath}'");
+        entry.Should().Contain($"\n$env:DOTNET_ROOT = '{FakeDotnetInstallPath}'");
+        entry.Should().Contain($"\n$env:PATH = '{FakeDotnetupDir}' + [IO.Path]::PathSeparator + '{FakeDotnetInstallPath}'");
         entry.Should().EndWith("}");
         entry.Should().NotContain("Test-Path");
         entry.Should().NotContain("Invoke-Expression");

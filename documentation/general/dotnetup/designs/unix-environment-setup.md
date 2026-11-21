@@ -76,10 +76,10 @@ Each profile file gets a dotnetup-managed block with explicit begin/end markers.
 ```bash
 # dotnetup: begin
 if [ -x '/path/to/dotnetup' ]; then
-    export DOTNET_ROOT='/path/to/dotnet'
-    export PATH='/path/to':'/path/to/dotnet':$PATH
-    hash -d dotnet 2>/dev/null
-    hash -d dotnetup 2>/dev/null
+export DOTNET_ROOT='/path/to/dotnet'
+export PATH='/path/to':'/path/to/dotnet':$PATH
+hash -d dotnet 2>/dev/null
+hash -d dotnetup 2>/dev/null
 fi
 # dotnetup: end
 ```
@@ -88,8 +88,8 @@ fi
 ```fish
 # dotnetup: begin
 if test -x '/path/to/dotnetup'
-    set -gx DOTNET_ROOT '/path/to/dotnet'
-    fish_add_path --global --move --path '/path/to' '/path/to/dotnet'
+set -gx DOTNET_ROOT '/path/to/dotnet'
+fish_add_path --global --move --path '/path/to' '/path/to/dotnet'
 end
 # dotnetup: end
 ```
@@ -99,8 +99,8 @@ end
 # dotnetup: begin
 if ([System.IO.File]::Exists('/path/to/dotnetup'))
 {
-    $env:DOTNET_ROOT = '/path/to/dotnet'
-    $env:PATH = '/path/to' + [IO.Path]::PathSeparator + '/path/to/dotnet' + [IO.Path]::PathSeparator + $env:PATH
+$env:DOTNET_ROOT = '/path/to/dotnet'
+$env:PATH = '/path/to' + [IO.Path]::PathSeparator + '/path/to/dotnet' + [IO.Path]::PathSeparator + $env:PATH
 }
 # dotnetup: end
 ```

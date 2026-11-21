@@ -55,8 +55,8 @@ internal sealed class TestShellProvider : IEnvShellProvider
 
         // Reuse the production line builder and guard so this double can't drift from the real
         // profile composition. Only the env script it wraps is test-specific.
-        var envLines = ShellProviderHelpers.GetProfileEnvLines(this, dotnetupPath, includeDotnet, includeDotnetup, dotnetInstallPath);
-        return ShellProviderHelpers.BuildPosixProfileEntry(dotnetupPath, envLines);
+        var envScript = ShellProviderHelpers.GetProfileEnvScript(this, dotnetupPath, includeDotnet, includeDotnetup, dotnetInstallPath);
+        return ShellProviderHelpers.BuildPosixProfileEntry(dotnetupPath, envScript);
     }
 
     public string GenerateActivationCommand(string dotnetupPath)
