@@ -105,7 +105,7 @@ public class TelemetryClient : ITelemetryClient
     static TelemetryClient()
     {
         s_metricsProviderBuilder = Sdk.CreateMeterProviderBuilder()
-            .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
+            .ConfigureResource(ConfigureResource)
             .AddMeter(Activities.Source.Name)
             .AddMeter(Activities.PerformanceSource.Name)
             .AddRuntimeInstrumentation();
@@ -116,7 +116,7 @@ public class TelemetryClient : ITelemetryClient
         }
 
         s_tracerProviderBuilder = Sdk.CreateTracerProviderBuilder()
-            .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
+            .ConfigureResource(ConfigureResource)
             .AddSource(Activities.Source.Name)
             .AddSource(Activities.PerformanceSource.Name)
             .AddProcessor(new InternalMicrosoftTelemetryProcessor(s_internalMicrosoftTelemetry))
@@ -158,6 +158,15 @@ public class TelemetryClient : ITelemetryClient
         ActivityKind = GetActivityKind(parentActivityContext);
         ParentActivityContext = parentActivityContext ?? default;
     }
+
+    internal static void ConfigureResource(ResourceBuilder resourceBuilder) =>
+        resourceBuilder
+            .AddService("dotnet-cli", serviceVersion: Product.Version)
+            .AddAttributes(
+            [
+                new("process.pid", Environment.ProcessId),
+                new("process.executable.name", "dotnet"),
+            ]);
 
     public TelemetryClient() : this(null) { }
 
