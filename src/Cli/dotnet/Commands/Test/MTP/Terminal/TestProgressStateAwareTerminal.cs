@@ -125,12 +125,18 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
 
     internal void NotifyTestCompleted() => _renderer.OnTestCompleted();
 
-    internal void WriteToTerminal(Action<ITerminal> write)
+    internal void WriteToTerminal(Action<ITerminal> write, CancellationToken cancellationToken = default)
     {
+        // Check under the writer lock so a queued late process-output write cannot follow the summary.
         if (_showProgress)
         {
             lock (_lock)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 try
                 {
                     _terminal.StartUpdate();
@@ -146,6 +152,11 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
         {
             lock (_lock)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 try
                 {
                     _terminal.StartUpdate();

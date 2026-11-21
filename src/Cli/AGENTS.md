@@ -233,8 +233,24 @@ Keep the assembly target framework separate from its executing runtime.
 [`TestApplicationHandler`](dotnet/Commands/Test/MTP/TestApplicationHandler.cs) prefers
 the evaluated project's `TargetFramework`, then optional handshake `TargetFramework`
 metadata (field 21). Missing target metadata stays unknown; never infer it from the
-runtime or output directory. Handshake `Framework` (field 2) remains runtime information,
+runtime or output directory. Project metadata takes precedence; when it is absent, a
+first test-host TFM can refine a provisional orchestrator TFM before retries begin.
+Handshake `Framework` (field 2) remains runtime information,
 and `Architecture` identifies the executing process, not the assembly's AnyCPU setting.
+
+The SDK advertises `TestInProgressSupported=true` (field 22) on accepted handshake replies:
+its serializer and handler support those messages even with protocol 1.0. Test hosts must
+not send them when this optional capability is absent or false, because older 1.0 SDKs
+cannot decode them. Older hosts that do not send progress retain module-only heartbeat.
+
+For parallel Azure Pipelines runs, the SDK associates each host's ordinary output with its
+module while preserving workflow-command lines verbatim. Keep same-name modules with the same
+target distinguishable without changing their artifact identities. The SDK asks compatible
+hosts to disable live Azure DevOps groups; older hosts may still emit overlapping groups.
+After the bounded stream drain, contextual forwarding closes before the final summary and
+warns if output may have been truncated. See
+[`TestApplication`](dotnet/Commands/Test/MTP/TestApplication.cs) and
+[`TestApplicationHandler`](dotnet/Commands/Test/MTP/TestApplicationHandler.cs).
 
 The shared
 [`TestFrameworkDisplay`](dotnet/Commands/Test/MTP/Terminal/TestFrameworkDisplay.cs)

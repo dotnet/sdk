@@ -980,6 +980,10 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   <data name="InProcessArtifactsProduced" xml:space="preserve">
     <value>In process file artifacts produced:</value>
   </data>
+  <data name="ArtifactCount" xml:space="preserve">
+    <value>Artifacts: {0}</value>
+    <comment>Heading for a group of test artifacts. {0} is the number of artifacts.</comment>
+  </data>
   <data name="InRoot" xml:space="preserve">
     <value>Place project in root of the solution, rather than creating a solution folder.</value>
   </data>
@@ -1971,6 +1975,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="TestApplicationOutputTruncated" xml:space="preserve">
     <value>... output truncated, {0} lines omitted ...</value>
     <comment>{0} is the number of output lines that were omitted from the summary.</comment>
+  </data>
+  <data name="TestApplicationOutputStreamTimeout" xml:space="preserve">
+    <value>Warning: Process output may be incomplete because its streams did not close in time.</value>
   </data>
   <data name="StatusColumnHeader" xml:space="preserve">
     <value>Status</value>

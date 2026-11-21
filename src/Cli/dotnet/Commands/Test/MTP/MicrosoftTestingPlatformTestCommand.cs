@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.Globalization;
@@ -1219,6 +1220,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
         }
 
         bool inCI = new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
+        bool contextualModuleOutput = ShouldUseContextualModuleOutput(
+            Environment.GetEnvironmentVariable("TF_BUILD"), degreeOfParallelism, testOptions);
 
         AnsiMode ansiMode = AnsiMode.AnsiIfPossible;
         // In LLM environments, prefer simple text output so that LLM can parse it easily.
@@ -1241,6 +1244,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
             AnsiMode = ansiMode,
             ShowAssembly = !isJsonDiscovery,
             ShowAssemblyStartAndComplete = !isJsonDiscovery,
+            ContextualModuleOutput = contextualModuleOutput,
+            ModuleDisplayName = contextualModuleOutput ? CreateModuleDisplayNameSelector([.. testModules]) : null,
             MinimumExpectedTests = parseResult.GetValue(definition.MinimumExpectedTestsOption),
             AllowZeroTests = testOptions.IsAffectedTestsMode,
             CollectTestMap = testOptions.CollectTestMap,
@@ -1263,6 +1268,28 @@ internal partial class MicrosoftTestingPlatformTestCommand
         bool isRetry = fallbackSettings.LegacyRetryEnabled;
         output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, testOptions.IsDiscovery, testOptions.IsHelp, isRetry);
         return output;
+    }
+
+    internal static bool ShouldUseContextualModuleOutput(string? azurePipelines, int degreeOfParallelism, TestOptions testOptions)
+        => bool.TryParse(azurePipelines, out bool enabled) && enabled && degreeOfParallelism > 1 &&
+            !testOptions.IsHelp && !testOptions.IsDiscovery && !testOptions.CollectTestMap;
+
+    internal static Func<string, string?, string> CreateModuleDisplayNameSelector(TestModule[] modules)
+    {
+        var names = new ConcurrentDictionary<(string Assembly, string? TargetFramework), string>();
+        return (assembly, targetFramework) => names.GetOrAdd((assembly, targetFramework), key =>
+        {
+            string name = Path.GetFileNameWithoutExtension(key.Assembly);
+            int matchingPaths = modules
+                .Where(module => FileUtilities.PathComparer.Equals(Path.GetFileNameWithoutExtension(module.TargetPath), name) &&
+                    (key.TargetFramework is null || module.TargetFramework is null ||
+                     string.Equals(key.TargetFramework, module.TargetFramework, StringComparison.OrdinalIgnoreCase)))
+                .Select(module => module.TargetPath)
+                .Distinct(FileUtilities.PathComparer)
+                .Take(2)
+                .Count();
+            return matchingPaths > 1 ? key.Assembly : name;
+        });
     }
 
     internal static TimeSpan GetProgressThreshold(string? value)
