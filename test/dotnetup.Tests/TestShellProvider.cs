@@ -28,10 +28,21 @@ internal sealed class TestShellProvider : IEnvShellProvider
     Encoding IEnvShellProvider.NewFileEncoding
         => NewFileEncodingOverride ?? new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
-    public string GenerateEnvScript(string dotnetInstallPath, string dotnetupDir = "", bool includeDotnet = true) =>
-        includeDotnet
-            ? $"export DOTNET_ROOT='{dotnetInstallPath}'"
-            : !string.IsNullOrEmpty(dotnetupDir) ? $"export PATH='{dotnetupDir}':$PATH" : "";
+    public string GenerateEnvScript(string dotnetInstallPath, string dotnetupDir = "", bool includeDotnet = true)
+    {
+        var lines = new List<string> { "# test env script" };
+        if (includeDotnet)
+        {
+            lines.Add($"export DOTNET_ROOT='{dotnetInstallPath}'");
+        }
+
+        if (!string.IsNullOrEmpty(dotnetupDir))
+        {
+            lines.Add($"export PATH='{dotnetupDir}':$PATH");
+        }
+
+        return string.Join("\n", lines);
+    }
 
     public IReadOnlyList<string> GetProfilePaths() => _profilePaths;
 
@@ -42,12 +53,10 @@ internal sealed class TestShellProvider : IEnvShellProvider
             return ProfileEntryOverride;
         }
 
-        // Reuse the production flag builder so this double can't drift from the real
-        // --dotnet / --dotnetup / --dotnet-install-path composition (including the
-        // default-path suppression). Only the surrounding eval wrapper is test-specific.
-        var flags = ShellProviderHelpers.GetCommandFlags(includeDotnet, includeDotnetup, dotnetInstallPath, ShellProviderHelpers.EscapePosixPath);
-        var command = ShellProviderHelpers.AppendArguments($"'{dotnetupPath}' env script --shell test", flags);
-        return $"eval \"$({command})\"";
+        // Reuse the production line builder and guard so this double can't drift from the real
+        // profile composition. Only the env script it wraps is test-specific.
+        var envLines = ShellProviderHelpers.GetProfileEnvLines(this, dotnetupPath, includeDotnet, includeDotnetup, dotnetInstallPath);
+        return ShellProviderHelpers.BuildPosixProfileEntry(dotnetupPath, envLines);
     }
 
     public string GenerateActivationCommand(string dotnetupPath)

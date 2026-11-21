@@ -62,7 +62,7 @@ public class ShellProfileManager
     /// <param name="dotnetupPath">The full path to the dotnetup binary.</param>
     /// <param name="includeDotnet">When true, the entry sets DOTNET_ROOT and adds the managed dotnet to PATH.</param>
     /// <param name="includeDotnetup">When true, the entry adds the dotnetup directory to PATH.</param>
-    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>env script</c>.</param>
+    /// <param name="dotnetInstallPath">The .NET install path, or <c>null</c> for the default dotnetup install path.</param>
     /// <returns>The list of profile file paths that were modified.</returns>
     public static IReadOnlyList<string> AddProfileEntries(
         IEnvShellProvider provider,

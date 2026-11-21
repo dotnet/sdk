@@ -82,8 +82,8 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
     //   * $PROFILE (bare) points to Microsoft.PowerShell_profile.ps1. A user
     //     running `notepad $PROFILE` won't see our entry -- they have to know to open
     //     $PROFILE.CurrentUserAllHosts.
-    //   * profile.ps1 runs in non-interactive embedded hosts too. Our entry shells out
-    //     (& '...\dotnetup.exe' print-env-script | Out-String) every time PowerShell starts.
+    //   * profile.ps1 runs in non-interactive embedded hosts too. Our entry only sets a couple
+    //     of environment variables, so it stays cheap there.
     //
     // We write to both Windows PowerShell (5.1) and PowerShell 7+ profile locations
     // unconditionally, regardless of whether each flavor is currently installed. This
@@ -106,8 +106,8 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
 
     public string GenerateProfileEntry(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null)
     {
-        var flags = ShellProviderHelpers.GetCommandFlags(includeDotnet, includeDotnetup, dotnetInstallPath, ShellProviderHelpers.EscapePowerShellPath);
-        return ShellProviderHelpers.BuildPowerShellProfileEntry(dotnetupPath, "pwsh", flags);
+        var envLines = ShellProviderHelpers.GetProfileEnvLines(this, dotnetupPath, includeDotnet, includeDotnetup, dotnetInstallPath);
+        return ShellProviderHelpers.BuildPowerShellProfileEntry(dotnetupPath, envLines);
     }
 
     public string GenerateActivationCommand(string dotnetupPath)

@@ -31,37 +31,32 @@ internal static class ShellProviderHelpers
             .Replace("'", "\\'", StringComparison.Ordinal);
 
     /// <summary>
-    /// Builds the explicit selection flags for an <c>env script</c> invocation baked into a
-    /// profile entry or activation command. Always emits <c>--dotnet</c> and/or <c>--dotnetup</c>
-    /// for the requested aspects so the generated call never relies on the command's no-flag
-    /// default. Adds <c>--dotnet-install-path</c> only when dotnet is
-    /// included and the path is non-default.
+    /// Returns the lines a managed profile block writes for the given settings: the same
+    /// assignments <c>env script</c> prints, without its header comment. The block holds these
+    /// lines directly instead of running <c>env script</c>, because that would start a process on
+    /// every shell start. <c>env set</c> rewrites the block when the settings change.
     /// </summary>
-    internal static string GetCommandFlags(bool includeDotnet, bool includeDotnetup, string? dotnetInstallPath, Func<string, string> escapePath)
+    /// <param name="provider">The shell provider that generates the env script.</param>
+    /// <param name="dotnetupPath">The full path to the dotnetup binary.</param>
+    /// <param name="includeDotnet">When true, the lines set DOTNET_ROOT and add the managed dotnet to PATH.</param>
+    /// <param name="includeDotnetup">When true, the lines add the dotnetup directory to PATH.</param>
+    /// <param name="dotnetInstallPath">The .NET install path, or <c>null</c> for the default dotnetup install path.</param>
+    internal static IReadOnlyList<string> GetProfileEnvLines(
+        IEnvShellProvider provider,
+        string dotnetupPath,
+        bool includeDotnet,
+        bool includeDotnetup,
+        string? dotnetInstallPath)
     {
-        List<string> flags = [];
+        string installPath = string.IsNullOrEmpty(dotnetInstallPath) ? DotnetupPaths.DefaultDotnetInstallPath : dotnetInstallPath;
+        string dotnetupDir = includeDotnetup ? Path.GetDirectoryName(dotnetupPath) ?? string.Empty : string.Empty;
 
-        if (includeDotnet)
-        {
-            flags.Add("--dotnet");
-        }
-
-        if (includeDotnetup)
-        {
-            flags.Add("--dotnetup");
-        }
-
-        if (includeDotnet && dotnetInstallPath is { Length: > 0 } installPath &&
-            !DotnetupUtilities.PathsEqual(installPath, DotnetupPaths.DefaultDotnetInstallPath))
-        {
-            flags.Add($"--dotnet-install-path '{escapePath(installPath)}'");
-        }
-
-        return string.Join(" ", flags);
+        return provider.GenerateEnvScript(installPath, dotnetupDir, includeDotnet)
+            .ReplaceLineEndings("\n")
+            .Split('\n')
+            .Where(line => !string.IsNullOrWhiteSpace(line) && !line.StartsWith('#'))
+            .ToArray();
     }
-
-    internal static string AppendArguments(string command, string flags)
-        => string.IsNullOrEmpty(flags) ? command : $"{command} {flags}";
 
     internal static string BuildPosixActivationCommand(string dotnetupPath)
     {
@@ -69,16 +64,12 @@ internal static class ShellProviderHelpers
         return $"eval \"$('{escapedPath}' env script)\"";
     }
 
-    internal static string BuildPosixProfileEntry(string dotnetupPath, string shellName, string flags)
+    internal static string BuildPosixProfileEntry(string dotnetupPath, IReadOnlyList<string> envLines)
     {
         var escapedPath = EscapePosixPath(dotnetupPath);
-        var command = BuildPosixPrintEnvCommand(dotnetupPath, shellName, flags);
 
-        return $$"""
-            if [ -x '{{escapedPath}}' ]; then
-                eval "$({{command}})"
-            fi
-            """;
+        return BuildGuardedEntry([$"if [ -x '{escapedPath}' ]; then"], envLines, ["fi"]);
+
     }
 
     // Fish activation runs inside a fish shell, so 'env script' auto-detects fish; no flags are
@@ -89,16 +80,12 @@ internal static class ShellProviderHelpers
         return $"'{escapedPath}' env script | source";
     }
 
-    internal static string BuildFishProfileEntry(string dotnetupPath, string shellName, string flags)
+    internal static string BuildFishProfileEntry(string dotnetupPath, IReadOnlyList<string> envLines)
     {
         var escapedPath = EscapeFishPath(dotnetupPath);
-        var command = BuildFishPrintEnvCommand(dotnetupPath, shellName, flags);
 
-        return $$"""
-            if test -x '{{escapedPath}}'
-                {{command}} | source
-            end
-            """;
+        return BuildGuardedEntry([$"if test -x '{escapedPath}'"], envLines, ["end"]);
+
     }
 
     internal static string BuildPowerShellActivationCommand(string dotnetupPath)
@@ -107,51 +94,20 @@ internal static class ShellProviderHelpers
         return $"Invoke-Expression (& '{escapedPath}' env script | Out-String)";
     }
 
-    internal static string BuildPowerShellProfileEntry(string dotnetupPath, string shellName, string flags)
+    internal static string BuildPowerShellProfileEntry(string dotnetupPath, IReadOnlyList<string> envLines)
     {
         var escapedPath = EscapePowerShellPath(dotnetupPath);
-        var command = BuildPowerShellPrintEnvCommand(dotnetupPath, shellName, flags);
-        var activationBlock = IndentLines(BuildPowerShellGuardedInvocationBlock(command), "    ");
 
-        return $$"""
-            if (Test-Path -LiteralPath '{{escapedPath}}' -PathType Leaf)
-            {
-                {{activationBlock}}
-            }
-            """;
+        // [System.IO.File]::Exists instead of Test-Path: in a new session Test-Path loads a
+        // module first, which noticeably slows down every PowerShell start.
+        return BuildGuardedEntry([$"if ([System.IO.File]::Exists('{escapedPath}'))", "{"], envLines, ["}"]);
+
     }
 
-    private static string BuildPosixPrintEnvCommand(string dotnetupPath, string shellName, string flags)
-    {
-        var escapedPath = EscapePosixPath(dotnetupPath);
-        return AppendArguments($"'{escapedPath}' env script --shell {shellName}", flags);
-    }
-
-    private static string BuildFishPrintEnvCommand(string dotnetupPath, string shellName, string flags)
-    {
-        var escapedPath = EscapeFishPath(dotnetupPath);
-        return AppendArguments($"'{escapedPath}' env script --shell {shellName}", flags);
-    }
-
-    private static string BuildPowerShellPrintEnvCommand(string dotnetupPath, string shellName, string flags)
-    {
-        var escapedPath = EscapePowerShellPath(dotnetupPath);
-        return AppendArguments($"& '{escapedPath}' env script --shell {shellName}", flags);
-    }
-
-    private static string BuildPowerShellGuardedInvocationBlock(string command)
-    {
-        return $$"""
-            $dotnetupScript = {{command}} | Out-String
-            if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))
-            {
-                Invoke-Expression $dotnetupScript
-            }
-            """;
-    }
-
-    private static string IndentLines(string text, string indentation)
-        => indentation + text.ReplaceLineEndings(Environment.NewLine + indentation);
+    // Joined with '\n' so the entry doesn't depend on this file's line endings.
+    // ShellProfileManager rewrites the line endings to match the profile file.
+    private static string BuildGuardedEntry(string[] openingLines, IReadOnlyList<string> envLines, string[] closingLines)
+        => string.Join("\n", [.. openingLines, .. envLines.Select(line => "    " + line), .. closingLines]);
 
     internal static string BuildPosixPathExport(string escapedPath, string dotnetupDir, bool includeDotnet)
     {

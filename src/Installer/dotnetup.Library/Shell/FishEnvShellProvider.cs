@@ -44,8 +44,8 @@ public class FishEnvShellProvider : IEnvShellProvider
 
     public string GenerateProfileEntry(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null)
     {
-        var flags = ShellProviderHelpers.GetCommandFlags(includeDotnet, includeDotnetup, dotnetInstallPath, ShellProviderHelpers.EscapeFishPath);
-        return ShellProviderHelpers.BuildFishProfileEntry(dotnetupPath, ArgumentName, flags);
+        var envLines = ShellProviderHelpers.GetProfileEnvLines(this, dotnetupPath, includeDotnet, includeDotnetup, dotnetInstallPath);
+        return ShellProviderHelpers.BuildFishProfileEntry(dotnetupPath, envLines);
     }
 
     public string GenerateActivationCommand(string dotnetupPath)
