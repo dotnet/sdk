@@ -245,6 +245,55 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [TestMethod]
+        public async Task AttributeOnFieldLikeEvent_Diagnostic_CSharp()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                TestCode = """
+                    using System;
+                    using System.Runtime.CompilerServices;
+
+                    class C
+                    {
+                        [field: ThreadStatic]
+                        event EventHandler {|#0:Thread|};
+
+                        [field: ContextStatic]
+                        event EventHandler {|#1:Context|};
+
+                        [field: FixedAddressValueType]
+                        event EventHandler {|#2:Fixed|};
+
+                        [field: FixedAddressValueType]
+                        static event EventHandler {|#3:StaticFixed|};
+
+                        [field: ThreadStatic]
+                        static event EventHandler StaticThread;
+
+                        [field: ContextStatic]
+                        static event EventHandler StaticContext;
+
+                        [field: ThreadStatic]
+                        event EventHandler {|#4:First|}, {|#5:Second|};
+
+                        [{|CS0592:ThreadStatic|}]
+                        event EventHandler NoTarget;
+                    }
+                    """,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(0).WithArguments("ThreadStatic", "Thread"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(1).WithArguments("ContextStatic", "Context"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(2).WithArguments("FixedAddressValueType", "Fixed"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(3).WithArguments("FixedAddressValueType", "StaticFixed"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(4).WithArguments("ThreadStatic", "First"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NonStaticFieldRule).WithLocation(5).WithArguments("ThreadStatic", "Second"),
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
         public async Task FixedAddressValueTypeOnUnsupportedStaticField_Diagnostic_CSharp()
         {
             await new VerifyCS.Test
