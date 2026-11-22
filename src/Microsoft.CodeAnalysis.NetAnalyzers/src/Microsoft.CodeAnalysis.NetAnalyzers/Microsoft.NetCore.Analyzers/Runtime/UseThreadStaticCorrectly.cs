@@ -128,37 +128,40 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
                 }, SymbolKind.Field, SymbolKind.Property);
 
-                // The backing field of a field-like event is not exposed as a symbol, so [field: ...] attributes on an
-                // event are found as attribute operations. All three attributes are only valid on fields, so on an event
-                // they can only target its backing field, which has a delegate (reference) type.
+                // The backing field of a field-like event is not exposed as a symbol, so its [field: ...] attributes
+                // are found as attribute operations. The field has a delegate type, which is a reference type.
                 context.RegisterOperationAction(context =>
                 {
-                    if (context.ContainingSymbol is not IEventSymbol @event ||
-                        ((IAttributeOperation)context.Operation).Operation.Type is not INamedTypeSymbol attributeType)
-                    {
-                        return;
-                    }
-
-                    string? attributeName =
-                        SymbolEqualityComparer.Default.Equals(attributeType, threadStaticAttributeType) ? "ThreadStatic" :
-                        SymbolEqualityComparer.Default.Equals(attributeType, contextStaticAttributeType) ? "ContextStatic" :
-                        SymbolEqualityComparer.Default.Equals(attributeType, fixedAddressValueTypeAttributeType) ? "FixedAddressValueType" :
-                        null;
+                    ISymbol symbol = context.ContainingSymbol;
+                    ITypeSymbol? attributeType = ((IAttributeOperation)context.Operation).Operation.Type;
 
                     // Without a field: target the attribute belongs to the event itself, which is already a compiler error.
-                    if (attributeName is null ||
-                        @event.GetAttributes().Any(a => a.ApplicationSyntaxReference?.Span == context.Operation.Syntax.Span && a.ApplicationSyntaxReference.SyntaxTree == context.Operation.Syntax.SyntaxTree))
+                    if (symbol is not IEventSymbol ||
+                        symbol.GetAttributes().Any(a => a.ApplicationSyntaxReference?.Span == context.Operation.Syntax.Span && a.ApplicationSyntaxReference.SyntaxTree == context.Operation.Syntax.SyntaxTree))
                     {
                         return;
                     }
 
-                    if (!@event.IsStatic)
+                    if (!symbol.IsStatic)
                     {
-                        context.ReportDiagnostic(@event.CreateDiagnostic(NonStaticFieldRule, attributeName, @event.Name));
+                        if (SymbolEqualityComparer.Default.Equals(attributeType, threadStaticAttributeType))
+                        {
+                            context.ReportDiagnostic(symbol.CreateDiagnostic(NonStaticFieldRule, "ThreadStatic", symbol.Name));
+                        }
+
+                        if (SymbolEqualityComparer.Default.Equals(attributeType, contextStaticAttributeType))
+                        {
+                            context.ReportDiagnostic(symbol.CreateDiagnostic(NonStaticFieldRule, "ContextStatic", symbol.Name));
+                        }
+
+                        if (SymbolEqualityComparer.Default.Equals(attributeType, fixedAddressValueTypeAttributeType))
+                        {
+                            context.ReportDiagnostic(symbol.CreateDiagnostic(NonStaticFieldRule, "FixedAddressValueType", symbol.Name));
+                        }
                     }
-                    else if (attributeName == "FixedAddressValueType")
+                    else if (SymbolEqualityComparer.Default.Equals(attributeType, fixedAddressValueTypeAttributeType))
                     {
-                        context.ReportDiagnostic(@event.CreateDiagnostic(UnsupportedTypeFieldRule, attributeName, @event.Name));
+                        context.ReportDiagnostic(symbol.CreateDiagnostic(UnsupportedTypeFieldRule, "FixedAddressValueType", symbol.Name));
                     }
                 }, OperationKind.Attribute);
 
