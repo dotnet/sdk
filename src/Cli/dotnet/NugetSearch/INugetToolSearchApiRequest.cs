@@ -7,5 +7,5 @@ namespace Microsoft.DotNet.Cli.NugetSearch;
 
 internal interface INugetToolSearchApiRequest
 {
-    Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter);
+    Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter, CancellationToken cancellationToken);
 }

@@ -14,6 +14,6 @@ internal static class CleanCommandParser
         command.SetAction(CleanCommand.Run);
         command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
         command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
-        command.FileBasedAppsCommand.SetAction(parseResult => new CleanFileBasedAppArtifactsCommand(parseResult).Execute());
+        command.FileBasedAppsCommand.SetAction((parseResult, cancellationToken) => new CleanFileBasedAppArtifactsCommand(parseResult).Execute(cancellationToken));
     }
 }

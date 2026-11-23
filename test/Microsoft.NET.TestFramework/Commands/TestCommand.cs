@@ -157,7 +157,7 @@ namespace Microsoft.NET.TestFramework.Commands
                     action: () => Execute(enumerableArgs),
                     shouldStopRetry: ShouldStopRetry,
                     maxRetryCount: 3,
-                    timer: () => Timer(Intervals),
+                    timer: () => Timer(Intervals, ProcessLifecycle.CancellationToken),
                     taskDescription: "Run command while retrying transient errors")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -235,7 +235,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var display = $"{fileToShow} {string.Join(" ", spec.Arguments)}";
 
             Log.WriteLine($"Executing '{display}':");
-            var result = command.Execute(ProcessStartedHandler);
+            var result = command.Execute(ProcessStartedHandler, ProcessLifecycle.CancellationToken);
             Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
 
             // On failure, dump the already-captured output so the cause is visible in test logs.

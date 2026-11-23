@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
 public interface IProductCollectionProvider
 {
-    ProductCollection GetProductCollection(Uri uri = null, string filePath = null);
+    ProductCollection GetProductCollection(CancellationToken cancellationToken, Uri uri = null, string filePath = null);
 
-    IEnumerable<ProductRelease> GetProductReleases(Product product);
+    IEnumerable<ProductRelease> GetProductReleases(Product product, CancellationToken cancellationToken);
 }

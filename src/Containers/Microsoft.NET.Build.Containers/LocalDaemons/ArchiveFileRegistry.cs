@@ -68,9 +68,6 @@ internal class ArchiveFileRegistry : ILocalRegistry
     /// <inheritdoc />
     public Task<bool> IsAvailableAsync(CancellationToken cancellationToken) => Task.FromResult(true);
 
-    /// <inheritdoc />
-    public bool IsAvailable() => true;
-
     public override string ToString()
     {
         return string.Format(Strings.ArchiveRegistry_PushInfo, ArchiveOutputPath);

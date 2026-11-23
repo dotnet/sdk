@@ -57,11 +57,39 @@ namespace Microsoft.TemplateEngine.Cli
             string? packageName = string.IsNullOrEmpty(templatePackage?.Identifier) ? null : Sha256Hasher.HashWithNormalizedCasing(templatePackage.Identifier);
             string? packageVersion = string.IsNullOrEmpty(templatePackage?.Version) ? null : Sha256Hasher.HashWithNormalizedCasing(templatePackage.Version);
 
+            return await InvokeTemplateAsync(
+                () => CreateTemplateAsync(templateArgs, cancellationToken),
+                success => TelemetryEventEntry.TrackEvent(
+                    TelemetryConstants.CreateEvent,
+                    new Dictionary<string, string?>
+                    {
+                        { TelemetryConstants.Language, templateLanguage },
+                        { TelemetryConstants.ArgError, "False" },
+                        { TelemetryConstants.Framework, framework },
+                        { TelemetryConstants.TemplateName, templateName },
+                        { TelemetryConstants.TemplateShortName, templateShortNames },
+                        { TelemetryConstants.PackageName, packageName },
+                        { TelemetryConstants.PackageVersion, packageVersion },
+                        { TelemetryConstants.IsTemplateThirdParty, (!isMicrosoftAuthored).ToString() },
+                        { TelemetryConstants.CreationResult, success.ToString() },
+                        { TelemetryConstants.Auth, auth }
+                    })).ConfigureAwait(false);
+        }
+
+        internal static async Task<NewCommandStatus> InvokeTemplateAsync(
+            Func<Task<NewCommandStatus>> createTemplateAsync,
+            Action<bool> trackTelemetry)
+        {
             bool success = true;
 
             try
             {
-                return await CreateTemplateAsync(templateArgs, cancellationToken).ConfigureAwait(false);
+                return await createTemplateAsync().ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                success = false;
+                throw;
             }
             catch (ContentGenerationException cx)
             {
@@ -78,27 +106,12 @@ namespace Microsoft.TemplateEngine.Cli
             {
                 success = false;
                 Reporter.Error.WriteLine(ex.Message.Bold().Red());
+                return NewCommandStatus.CreateFailed;
             }
             finally
             {
-                TelemetryEventEntry.TrackEvent(
-                    TelemetryConstants.CreateEvent,
-                    new Dictionary<string, string?>
-                    {
-                        { TelemetryConstants.Language, templateLanguage },
-                        { TelemetryConstants.ArgError, "False" },
-                        { TelemetryConstants.Framework, framework },
-                        { TelemetryConstants.TemplateName, templateName },
-                        { TelemetryConstants.TemplateShortName, templateShortNames },
-                        { TelemetryConstants.PackageName, packageName },
-                        { TelemetryConstants.PackageVersion, packageVersion },
-                        { TelemetryConstants.IsTemplateThirdParty, (!isMicrosoftAuthored).ToString() },
-                        { TelemetryConstants.CreationResult, success.ToString() },
-                        { TelemetryConstants.Auth, auth }
-                    });
+                trackTelemetry(success);
             }
-
-            return NewCommandStatus.CreateFailed;
 
         }
 
@@ -218,7 +231,7 @@ namespace Microsoft.TemplateEngine.Cli
                         Reporter.Output.WriteLine(LocalizableStrings.ThirdPartyNotices, templateArgs.Template.ThirdPartyNotices);
                     }
 
-                    return HandlePostActions(instantiateResult, templateArgs);
+                    return HandlePostActions(instantiateResult, templateArgs, cancellationToken);
                 case CreationResultStatus.CreateFailed:
                 case CreationResultStatus.CondtionsEvaluationMismatch:
                     Reporter.Error.WriteLine(string.Format(LocalizableStrings.CreateFailed, resultTemplateName, instantiateResult.ErrorMessage).Bold().Red());
@@ -308,10 +321,10 @@ namespace Microsoft.TemplateEngine.Cli
             }
         }
 
-        private NewCommandStatus HandlePostActions(ITemplateCreationResult creationResult, TemplateCommandArgs args)
+        private NewCommandStatus HandlePostActions(ITemplateCreationResult creationResult, TemplateCommandArgs args, CancellationToken cancellationToken)
         {
             using var postActionActivity = Activities.Source.StartActivity("post-actions");
-            PostActionExecutionStatus result = _postActionDispatcher.Process(creationResult, args.IsDryRun, args.AllowScripts ?? AllowRunScripts.Prompt);
+            PostActionExecutionStatus result = _postActionDispatcher.Process(creationResult, args.IsDryRun, args.AllowScripts ?? AllowRunScripts.Prompt, cancellationToken);
 
             return result switch
             {

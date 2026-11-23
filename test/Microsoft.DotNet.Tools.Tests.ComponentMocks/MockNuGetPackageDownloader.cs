@@ -55,6 +55,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
 
         public Task<string> DownloadPackageAsync(PackageId packageId,
+            CancellationToken cancellationToken,
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
@@ -86,7 +87,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(path);
         }
 
-        public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
+        public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder, CancellationToken cancellationToken)
         {
             ExtractCallParams.Add((packagePath, targetFolder));
             if (_manifestDownload)
@@ -108,7 +109,12 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(new List<string>() as IEnumerable<string>);
         }
 
-        public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
+        public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(
+            PackageId packageId,
+            int numberOfResults,
+            CancellationToken cancellationToken,
+            PackageSourceLocation packageSourceLocation = null,
+            bool includePreview = false)
         {
 
             if (!ShouldFindPackage(packageId, packageSourceLocation))
@@ -119,7 +125,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(_packageVersions ?? Enumerable.Empty<NuGetVersion>());
         }
 
-        public Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
+        public Task<NuGetVersion> GetLatestPackageVersion(
+            PackageId packageId,
+            CancellationToken cancellationToken,
+            PackageSourceLocation packageSourceLocation = null,
+            bool includePreview = false)
         {
             if (!ShouldFindPackage(packageId, packageSourceLocation))
             {
@@ -129,14 +139,20 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(_packageVersions.Max());
         }
 
-        public async Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null)
+        public async Task<NuGetVersion> GetBestPackageVersionAsync(
+            PackageId packageId,
+            VersionRange versionRange,
+            CancellationToken cancellationToken,
+            PackageSourceLocation packageSourceLocation = null)
         {
-            return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation)).version;
+            return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, cancellationToken, packageSourceLocation)).version;
         }
 
-        public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
-            VersionRange versionRange,PackageSourceLocation packageSourceLocation = null,
-            CancellationToken cancellationToken = default)
+        public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
+            PackageId packageId,
+            VersionRange versionRange,
+            CancellationToken cancellationToken,
+            PackageSourceLocation packageSourceLocation = null)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -159,6 +175,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
 
         public Task<string> GetPackageUrl(PackageId packageId,
+            CancellationToken cancellationToken,
             NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false)
