@@ -17,4 +17,5 @@ internal interface IHotReloadAgent : IDisposable
     string Capabilities { get; }
     void ApplyManagedCodeUpdates(IEnumerable<RuntimeManagedCodeUpdate> updates);
     void ApplyStaticAssetUpdate(RuntimeStaticAssetUpdate update);
+    void ReportRudeEdit(IReadOnlyList<string> diagnostics);
 }

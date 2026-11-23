@@ -108,6 +108,10 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, int p
                     await ReadAndApplyStaticAssetUpdateAsync(request.Stream, cancellationToken).ConfigureAwait(false);
                     break;
 
+                case RequestType.RudeEdit:
+                    await ReadAndReportRudeEditAsync(request.Stream, cancellationToken).ConfigureAwait(false);
+                    break;
+
                 case RequestType.InitialUpdatesCompleted when initialUpdates:
                     return;
 
@@ -181,6 +185,25 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, int p
         // Updating static asset only invokes ContentUpdate metadata update handlers.
         // Failures of these handlers are reported to the log and ignored.
         // Therefore, this request always succeeds.
+        await SendResponseAsync(new UpdateResponse(logEntries, success: true), cancellationToken).ConfigureAwait(false);
+    }
+
+    private async ValueTask ReadAndReportRudeEditAsync(Stream stream, CancellationToken cancellationToken)
+    {
+        var request = await RudeEditRequest.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            agent.ReportRudeEdit(request.Diagnostics);
+        }
+        catch (Exception e)
+        {
+            agent.Reporter.Report($"Failed to report rude edit: {e.Message}", AgentMessageSeverity.Error);
+        }
+
+        var logEntries = agent.Reporter.GetAndClearLogEntries(request.ResponseLoggingLevel);
+
+        // Handler failures are logged and do not fail the request.
         await SendResponseAsync(new UpdateResponse(logEntries, success: true), cancellationToken).ConfigureAwait(false);
     }
 

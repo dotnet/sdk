@@ -90,6 +90,12 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     public abstract Task InitialUpdatesAppliedAsync(CancellationToken cancellationToken);
 
     /// <summary>
+    /// Queues a notification that invokes <c>HotReloadRudeEdit</c> metadata update handlers in the target process.
+    /// </summary>
+    public virtual Task ReportRudeEditAsync(ImmutableArray<string> diagnostics, CancellationToken applyOperationCancellationToken)
+        => Task.CompletedTask;
+
+    /// <summary>
     /// Disposes the client. Can occur unexpectedly whenever the process exits.
     /// </summary>
     public abstract void Dispose();

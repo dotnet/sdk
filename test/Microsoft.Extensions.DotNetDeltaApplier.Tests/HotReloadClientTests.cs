@@ -115,4 +115,65 @@ public class HotReloadClientTests
         Assert.Contains("[Error] The runtime failed to applying the change: Bug!", agentMessages);
         Assert.Contains("[Warning] Further changes won't be applied to this process.", agentMessages);
     }
+
+    [TestMethod]
+    public async Task ReportRudeEdit()
+    {
+        string[]? received = null;
+
+        var agent = new TestHotReloadAgent()
+        {
+            ReportRudeEditImpl = diagnostics =>
+            {
+                received = [.. diagnostics];
+                throw new Exception("Bug!");
+            }
+        };
+
+        await using var test = new Test(TestContext, agent, hasRemoteAgent: false);
+        await test.Client.GetConnectedAgentInfoAsync(CancellationToken.None);
+
+        await test.Client.ReportRudeEditAsync(["error ENC0001: a", "error ENC0002: b"], CancellationToken.None);
+        await test.Client.PendingUpdates;
+
+        Assert.AreSequenceEqual(["error ENC0001: a", "error ENC0002: b"], received);
+
+        // A handler failure is logged and does not fail the request:
+        Assert.Contains("[Error] Failed to report rude edit: Bug!", test.AgentLogger.GetAndClearMessages());
+        Assert.Contains("[Debug] " + string.Format(LogEvents.UpdateBatchCompleted.Message, 0), test.Logger.GetAndClearMessages());
+    }
+
+    [TestMethod]
+    public async Task ReportRudeEdit_NotSentToVersion1Agent()
+    {
+        var logger = new TestLogger(TestContext);
+        var clientTransport = new NamedPipeClientTransport(logger);
+        using var client = new DefaultHotReloadClient(logger, logger, startupHookPath: "", clientTransport, handlesStaticAssetUpdates: true, hasRemoteAgent: false);
+        client.InitiateConnection(environmentVariables: [], CancellationToken.None);
+
+        using var agentTransport = new NamedPipeTransport(clientTransport.NamedPipeName, log: _ => { }, timeoutMS: Timeout.Infinite);
+        await agentTransport.SendAsync(new ClientInitializationResponse(Test.ProcessId, "Baseline", version: 1), TestContext.CancellationToken);
+        await client.GetConnectedAgentInfoAsync(TestContext.CancellationToken);
+
+        await client.ReportRudeEditAsync(["error ENC0001"], CancellationToken.None);
+
+        var update = new HotReloadManagedCodeUpdate(
+            moduleId: Guid.NewGuid(),
+            metadataDelta: [1, 2, 3],
+            ilDelta: [],
+            pdbDelta: [],
+            updatedTypes: [],
+            requiredCapabilities: ["Baseline"]);
+
+        var applyTask = await client.ApplyManagedCodeUpdatesAsync([update], CancellationToken.None, CancellationToken.None);
+
+        // The first request the agent receives is the update, not RudeEdit:
+        var request = await agentTransport.ReceiveAsync(TestContext.CancellationToken);
+        var stream = request.Stream!;
+        Assert.AreEqual(RequestType.ManagedCodeUpdate, (RequestType)await stream.ReadByteAsync(TestContext.CancellationToken));
+        await ManagedCodeUpdateRequest.ReadAsync(stream, TestContext.CancellationToken);
+        await agentTransport.SendAsync(new UpdateResponse([], success: true), TestContext.CancellationToken);
+
+        Assert.IsTrue(await applyTask);
+    }
 }

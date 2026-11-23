@@ -291,6 +291,9 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
         _metadataUpdateHandlerInvoker.ContentUpdated(update);
     }
 
+    public void ReportRudeEdit(IReadOnlyList<string> diagnostics)
+        => _metadataUpdateHandlerInvoker.RudeEditDetected(diagnostics);
+
     /// <summary>
     /// Clear any hot-reload specific environment variables. This prevents child processes from being
     /// affected by the current app's hot reload settings. See https://github.com/dotnet/runtime/issues/58000

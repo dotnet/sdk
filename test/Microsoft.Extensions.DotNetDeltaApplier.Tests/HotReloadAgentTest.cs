@@ -155,13 +155,33 @@ namespace Microsoft.DotNet.HotReload.UnitTests
             Assert.AreSequenceEqual(
             [
                 $"Warning: Type '{handlerType}' has method 'Void ClearCache()' that does not match the required signature.",
-                $"Warning: Type '{handlerType}' has method 'Void UpdateContent()' that does not match the required signature."
+                $"Warning: Type '{handlerType}' has method 'Void UpdateContent()' that does not match the required signature.",
+                $"Warning: Type '{handlerType}' has method 'Void HotReloadRudeEdit(System.String)' that does not match the required signature."
             ],
             log.Select(e => $"{e.severity}: {e.message}"));
 
             Assert.IsEmpty(actions.ClearCacheHandlers);
             Assert.IsEmpty(actions.UpdateContentHandlers);
+            Assert.IsEmpty(actions.RudeEditHandlers);
             Assert.ContainsSingle(actions.UpdateApplicationHandlers);
+        }
+
+        [TestMethod]
+        public void RudeEditDetected_InvokesRudeEditHandlers()
+        {
+            var reporter = new AgentReporter();
+            var invoker = new MetadataUpdateHandlerInvoker(reporter);
+            var actions = invoker.GetUpdateHandlerActions([typeof(HandlerWithRudeEdit)]);
+            Assert.IsEmpty(reporter.GetAndClearLogEntries(ResponseLoggingLevel.Verbose));
+
+            HandlerWithRudeEdit.Log.Clear();
+            actions.RudeEditDetected(reporter, ["error ENC0001", "error ENC0002"]);
+
+            Assert.AreSequenceEqual(["error ENC0001|error ENC0002"], HandlerWithRudeEdit.Log);
+
+            var logEntry = Assert.ContainsSingle(reporter.GetAndClearLogEntries(ResponseLoggingLevel.WarningsAndErrors));
+            Assert.AreEqual(AgentMessageSeverity.Warning, logEntry.severity);
+            Assert.StartsWith($"Exception from '{typeof(HandlerWithRudeEdit).FullName}.HotReloadRudeEdit'", logEntry.message);
         }
 
         [TestMethod]
@@ -176,7 +196,7 @@ namespace Microsoft.DotNet.HotReload.UnitTests
             var log = reporter.GetAndClearLogEntries(ResponseLoggingLevel.WarningsAndErrors);
             var logEntry = Assert.ContainsSingle(log);
             Assert.AreEqual(
-                $"Expected to find a static method 'ClearCache', 'UpdateApplication' or 'UpdateContent' on type '{handlerType.AssemblyQualifiedName}' but neither exists.", logEntry.message);
+                $"Expected to find a static method 'ClearCache', 'UpdateApplication', 'UpdateContent' or 'HotReloadRudeEdit' on type '{handlerType.AssemblyQualifiedName}' but none exists.", logEntry.message);
 
             Assert.AreEqual(AgentMessageSeverity.Warning, logEntry.severity);
             Assert.IsEmpty(actions.ClearCacheHandlers);
@@ -220,6 +240,18 @@ namespace Microsoft.DotNet.HotReload.UnitTests
             internal static void ClearCache() { }   
             internal static void UpdateContent() { }
             internal static void UpdateApplication(Type[]? _) { }
+            internal static void HotReloadRudeEdit(string _) { }
+        }
+
+        private static class HandlerWithRudeEdit
+        {
+            public static readonly List<string> Log = [];
+
+            internal static void HotReloadRudeEdit(string[] diagnostics)
+            {
+                Log.Add(string.Join("|", diagnostics));
+                throw new InvalidOperationException("Bug!");
+            }
         }
 
         private class HandlerWithNoActions

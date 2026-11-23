@@ -37,6 +37,8 @@ internal sealed class DefaultHotReloadClient(
     private Task<HotReloadAgentInfo>? _connectedAgentTask;
     private bool _managedCodeUpdateFailedOrCancelled;
 
+    private bool _agentSupportsRudeEditRequest;
+
     // The status of the last update response.
     private TaskCompletionSource<bool> _updateStatusSource = new();
 
@@ -79,6 +81,7 @@ internal sealed class DefaultHotReloadClient(
                 }
 
                 var response = await ClientInitializationResponse.ReadAsync(r.Data, cancellationToken);
+                _agentSupportsRudeEditRequest = response.SupportsRudeEditRequest;
 
                 // Remote process id has no meaning on the client's machine:
                 var localProcessId = hasRemoteAgent ? (int?)null : response.ProcessId;
@@ -305,6 +308,20 @@ internal sealed class DefaultHotReloadClient(
             var results = await Task.WhenAll(completionTasks);
             return results.All(isSuccess => isSuccess);
         }
+    }
+
+    public override async Task ReportRudeEditAsync(ImmutableArray<string> diagnostics, CancellationToken applyOperationCancellationToken)
+    {
+        var agentInfo = await GetAgentConnectedTask();
+
+        // Older agents close the connection on an unknown request. Agents without capabilities don't read requests.
+        if (!_agentSupportsRudeEditRequest || agentInfo.ManagedCodeUpdateCapabilities.IsEmpty || _managedCodeUpdateFailedOrCancelled)
+        {
+            return;
+        }
+
+        // Queued to keep the order with updates.
+        _ = QueueUpdateBatchRequestAsync(new RudeEditRequest(diagnostics, ResponseLoggingLevel), applyOperationCancellationToken);
     }
 
     private Task<bool> QueueUpdateBatchRequestAsync<TRequest>(TRequest request, CancellationToken applyOperationCancellationToken)

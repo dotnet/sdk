@@ -37,6 +37,7 @@ internal enum RequestType : byte
     ManagedCodeUpdate = 2,
     StaticAssetUpdate = 3,
     InitialUpdatesCompleted = 4,
+    RudeEdit = 5,
 }
 
 internal enum ResponseType : byte
@@ -144,14 +145,20 @@ internal readonly struct UpdateResponse(IReadOnlyCollection<(string message, Age
     }
 }
 
-internal readonly struct ClientInitializationResponse(int processId, string capabilities) : IResponse
+/// <param name="version">
+/// The payload is the same for all versions. Version 2 adds support for <see cref="RequestType.RudeEdit"/>.
+/// </param>
+internal readonly struct ClientInitializationResponse(int processId, string capabilities, byte version = ClientInitializationResponse.CurrentVersion) : IResponse
 {
-    private const byte Version = 1;
+    internal const byte CurrentVersion = 2;
 
     public ResponseType Type => ResponseType.InitializationResponse;
 
+    public byte Version { get; } = version;
     public string Capabilities { get; } = capabilities;
     public int ProcessId { get; } = processId;
+
+    public bool SupportsRudeEditRequest => Version >= 2;
 
     public async ValueTask WriteAsync(Stream stream, CancellationToken cancellationToken)
     {
@@ -163,14 +170,14 @@ internal readonly struct ClientInitializationResponse(int processId, string capa
     public static async ValueTask<ClientInitializationResponse> ReadAsync(Stream stream, CancellationToken cancellationToken)
     {
         var version = await stream.ReadByteAsync(cancellationToken);
-        if (version != Version)
+        if (version is < 1 or > CurrentVersion)
         {
             throw new NotSupportedException($"Unsupported version {version}.");
         }
 
         var processId = await stream.ReadInt32Async(cancellationToken);
         var capabilities = await stream.ReadStringAsync(cancellationToken);
-        return new ClientInitializationResponse(processId, capabilities);
+        return new ClientInitializationResponse(processId, capabilities, version);
     }
 }
 
@@ -191,6 +198,51 @@ internal readonly struct HotReloadExceptionCreatedNotification(int code, string 
         var code = await stream.ReadInt32Async(cancellationToken);
         var message = await stream.ReadStringAsync(cancellationToken);
         return new HotReloadExceptionCreatedNotification(code, message);
+    }
+}
+
+internal readonly struct RudeEditRequest(
+    IReadOnlyList<string> diagnostics,
+    ResponseLoggingLevel responseLoggingLevel) : IUpdateRequest
+{
+    private const byte Version = 1;
+
+    public IReadOnlyList<string> Diagnostics { get; } = diagnostics;
+    public ResponseLoggingLevel ResponseLoggingLevel { get; } = responseLoggingLevel;
+
+    public RequestType Type => RequestType.RudeEdit;
+
+    public async ValueTask WriteAsync(Stream stream, CancellationToken cancellationToken)
+    {
+        await stream.WriteAsync(Version, cancellationToken);
+        await stream.WriteAsync(Diagnostics.Count, cancellationToken);
+
+        foreach (var diagnostic in Diagnostics)
+        {
+            await stream.WriteAsync(diagnostic, cancellationToken);
+        }
+
+        await stream.WriteAsync((byte)ResponseLoggingLevel, cancellationToken);
+    }
+
+    public static async ValueTask<RudeEditRequest> ReadAsync(Stream stream, CancellationToken cancellationToken)
+    {
+        var version = await stream.ReadByteAsync(cancellationToken);
+        if (version != Version)
+        {
+            throw new NotSupportedException($"Unsupported version {version}.");
+        }
+
+        var count = await stream.ReadInt32Async(cancellationToken);
+
+        var diagnostics = new string[count];
+        for (var i = 0; i < count; i++)
+        {
+            diagnostics[i] = await stream.ReadStringAsync(cancellationToken);
+        }
+
+        var responseLoggingLevel = (ResponseLoggingLevel)await stream.ReadByteAsync(cancellationToken);
+        return new RudeEditRequest(diagnostics, responseLoggingLevel);
     }
 }
 
