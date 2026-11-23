@@ -26,12 +26,12 @@ public class DownloadProgressReporter : IProgress<DownloadProgress>
             _totalBytes = value.TotalBytes;
         }
         long total = _totalBytes ?? 0;
+        // Update the text before the value so targets that report on value changes see the current byte count.
+        _task.Description = $"{_description} ({ProgressFormatting.FormatMB(value.BytesDownloaded)} / {ProgressFormatting.FormatMB(total)})";
         if (total > 0)
         {
             double percent = (double)value.BytesDownloaded / total * 100.0;
             _task.Value = percent;
         }
-        // Always use the full two-value format to keep row width consistent
-        _task.Description = $"{_description} ({ProgressFormatting.FormatMB(value.BytesDownloaded)} / {ProgressFormatting.FormatMB(total)})";
     }
 }

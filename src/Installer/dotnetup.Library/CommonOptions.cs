@@ -31,8 +31,15 @@ internal class CommonOptions
 
     public static readonly Option<bool> NoProgressOption = new("--no-progress")
     {
-        Description = "Disables progress display for operations",
+        Description = Strings.NoProgressOptionDescription,
         Arity = ArgumentArity.ZeroOrOne
+    };
+
+    public static readonly Option<ProgressMode> ProgressOption = new("--progress")
+    {
+        Description = Strings.ProgressOptionDescription,
+        Arity = ArgumentArity.ExactlyOne,
+        DefaultValueFactory = _ => ProgressMode.Auto
     };
 
     public static readonly Option<bool> NonInteractiveOption = new("--non-interactive")
@@ -217,6 +224,28 @@ internal class CommonOptions
         => parseResult.GetResult(InteractiveOption) is not null
             ? parseResult.GetValue(InteractiveOption)
             : !IsCIEnvironmentOrRedirected();
+
+    /// <summary>
+    /// Resolves the progress display for the command. <see cref="NoProgressOption"/> wins over
+    /// <see cref="ProgressOption"/>, and <see cref="ProgressMode.Auto"/> is never returned.
+    /// </summary>
+    internal static ProgressMode ResolveProgressMode(ParseResult parseResult)
+    {
+        if (parseResult.GetResult(NoProgressOption) is not null && parseResult.GetValue(NoProgressOption))
+        {
+            return ProgressMode.None;
+        }
+
+        ProgressMode requested = parseResult.GetResult(ProgressOption) is not null
+            ? parseResult.GetValue(ProgressOption)
+            : ProgressMode.Auto;
+
+        return requested switch
+        {
+            ProgressMode.Auto => IsCIEnvironmentOrRedirected() ? ProgressMode.Lines : ProgressMode.Bars,
+            _ => requested,
+        };
+    }
 
     private static bool IsCIEnvironmentOrRedirected() =>
         new Cli.Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;

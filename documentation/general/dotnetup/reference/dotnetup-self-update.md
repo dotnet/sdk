@@ -48,7 +48,8 @@ reinstallation after unrecoverable interruption, use the existing
 | `--channel <daily\|preview\|stable>` | Select the release channel. By default, stable builds use `stable`, preview builds use `preview`, and other prerelease builds use `daily`. |
 | `--force` | Install the latest build from the selected channel even when it isn't newer. This option can reinstall or downgrade dotnetup. |
 | `--update-notifications <true\|false>` | Enable or disable update notifications without updating dotnetup. This option can't be combined with `--channel` or `--force`. |
-| `--no-progress [<true\|false>]` | Disable progress display. |
+| `--no-progress [<true\|false>]` | Disable progress display. Same as `--progress none`. |
+| `--progress <auto\|bars\|lines\|none\|json>` | Choose the progress display. The default, `auto`, uses live bars on a terminal and plain lines when output is redirected or in CI. `json` writes [progress events](../usecases/automation.md#progress-events) to stdout and other output to stderr. |
 | `-?`, `-h`, `--help` | Show command help. |
 
 ## Update notifications

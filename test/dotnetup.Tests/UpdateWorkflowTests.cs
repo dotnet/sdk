@@ -61,7 +61,7 @@ public class UpdateWorkflowTests
         });
 
         new UpdateWorkflow(new ChannelVersionResolver())
-            .Execute(testEnv.ManifestPath, root.Path, InstallComponent.SDK, noProgress: true);
+            .Execute(testEnv.ManifestPath, root.Path, InstallComponent.SDK, progress: ProgressMode.None);
 
         manifest.GetInstallSpecs(root).Should().BeEmpty();
         manifest.GetInstallations(root).Should().BeEmpty();
@@ -90,7 +90,7 @@ public class UpdateWorkflowTests
         });
 
         var update = () => new UpdateWorkflow(new ChannelVersionResolver())
-            .Execute(testEnv.ManifestPath, root.Path, InstallComponent.SDK, noProgress: true);
+            .Execute(testEnv.ManifestPath, root.Path, InstallComponent.SDK, progress: ProgressMode.None);
         update.Should().Throw<DotnetInstallException>()
             .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
         var remaining = manifest.GetInstallSpecs(root).ToList();
@@ -128,7 +128,7 @@ public class UpdateWorkflowTests
         var releases = new OfflineReleaseManifest();
         var resolver = new ChannelVersionResolver(releases, new DailyChannelResolver(releases));
         var workflow = new UpdateWorkflow(resolver);
-        workflow.Execute(env.ManifestPath, root.Path, InstallComponent.SDK, noProgress: true);
+        workflow.Execute(env.ManifestPath, root.Path, InstallComponent.SDK, progress: ProgressMode.None);
         var saved = manifest.GetInstallSpecs(root).Single();
         saved.MinimumVersion.Should().Be("10.0.103");
         saved.AllowPrerelease.Should().BeFalse();
@@ -136,7 +136,7 @@ public class UpdateWorkflowTests
         using var locked = unreadable ? File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None) : null;
 
         workflow.Execute(env.ManifestPath, root.Path, InstallComponent.SDK,
-            noProgress: true, updateGlobalJson: true);
+            progress: ProgressMode.None, updateGlobalJson: true);
 
         manifest.GetInstallations(root).Should().ContainSingle().Which.Version.Should().Be("10.0.105");
         var remaining = manifest.GetInstallSpecs(root).Should().ContainSingle().Subject;
@@ -180,7 +180,7 @@ public class UpdateWorkflowTests
 
         new UpdateWorkflow(new ChannelVersionResolver(releases, new DailyChannelResolver(releases)))
             .Execute(env.ManifestPath, root.Path, InstallComponent.SDK,
-                noProgress: true, updateGlobalJson: updateGlobalJson);
+                progress: ProgressMode.None, updateGlobalJson: updateGlobalJson);
 
         manifest.GetInstallations(root).Should().HaveCount(collects ? 1 : 2)
             .And.Contain(i => i.Version == "10.0.105");
@@ -228,7 +228,7 @@ public class UpdateWorkflowTests
         };
 
         var update = () => new UpdateWorkflow(new ChannelVersionResolver(releases, new DailyChannelResolver(releases)))
-            .Execute(env.ManifestPath, root.Path, InstallComponent.SDK, noProgress: true, updateGlobalJson: true);
+            .Execute(env.ManifestPath, root.Path, InstallComponent.SDK, progress: ProgressMode.None, updateGlobalJson: true);
 
         var failure = update.Should().Throw<DotnetInstallException>().Which;
         failure.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);

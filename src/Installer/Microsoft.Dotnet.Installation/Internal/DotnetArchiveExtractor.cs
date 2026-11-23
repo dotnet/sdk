@@ -30,6 +30,8 @@ internal class DotnetArchiveExtractor : IInstallArtifact
 
     public bool RequiresPostInstallValidation => true;
 
+    public long? DownloadedBytes { get; private set; }
+
     public ReleaseVersion? ProductVersion { get; private set; }
 
     public DotnetArchiveExtractor(
@@ -125,6 +127,7 @@ internal class DotnetArchiveExtractor : IInstallArtifact
             throw CreateException(DotnetInstallErrorCode.DownloadFailed, Strings.ArchiveDownloadFailed, ex);
         }
 
+        DownloadedBytes = new FileInfo(_archivePath).Length;
         ProgressTracker.CompleteDownload(downloadTask, _archivePath);
 
         // Read outside the install-state lock; Commit reads them only if the root gained folders since.

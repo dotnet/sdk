@@ -52,9 +52,9 @@ internal class InstallerOrchestratorSingleton
 
     // Throws DotnetInstallException on failure, returns InstallResult on success
 #pragma warning disable CA1822 // Intentionally an instance method on a singleton
-    public InstallResult Install(ResolvedInstallRequest resolvedRequest, bool noProgress = false)
+    public InstallResult Install(ResolvedInstallRequest resolvedRequest, ProgressMode progress = ProgressMode.Bars)
     {
-        IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+        IProgressTarget progressTarget = ProgressTargets.Create(progress);
         using var reporter = new LazyProgressReporter(progressTarget);
         using var prepared = PrepareInstall(resolvedRequest, new InstallBatchContext(reporter, resolvedRequest.ResolvedVersion.ToString().Length), out var alreadyInstalledResult);
 
@@ -135,7 +135,7 @@ internal class InstallerOrchestratorSingleton
                         }
                         else if (existingResult is not null)
                         {
-                            results.Add(existingResult);
+                            results.Add(existingResult with { Request = request });
                         }
                     }
                 }
@@ -195,7 +195,7 @@ internal class InstallerOrchestratorSingleton
 
                 try
                 {
-                    results.Add(commit(prepared));
+                    results.Add(commit(prepared) with { Request = prepared.ResolvedRequest });
                 }
                 catch (DotnetInstallException ex)
                 {
@@ -429,7 +429,7 @@ internal class InstallerOrchestratorSingleton
                 Installation.FromDotnetInstall(prepared.Install, prepared.Artifact.ExtractedSubcomponents));
         }
 
-        return new InstallResult(prepared.Install, WasAlreadyInstalled: false, Repaired: repaired);
+        return new InstallResult(prepared.Install, WasAlreadyInstalled: false, Repaired: repaired, DownloadedBytes: prepared.Artifact.DownloadedBytes);
     }
 #pragma warning restore CA1822
 

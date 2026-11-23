@@ -47,6 +47,7 @@ internal static class SdkUpdateCommandParser
 
         command.Options.Add(CommonOptions.InteractiveOption);
         command.Options.Add(CommonOptions.NoProgressOption);
+        command.Options.Add(CommonOptions.ProgressOption);
         command.Options.Add(CommonOptions.VerbosityOption);
 
         command.SetAction(parseResult => new SdkUpdateCommand(parseResult).Execute());
@@ -64,6 +65,7 @@ internal static class SdkUpdateCommandParser
 
         command.Options.Add(CommonOptions.InteractiveOption);
         command.Options.Add(CommonOptions.NoProgressOption);
+        command.Options.Add(CommonOptions.ProgressOption);
         command.Options.Add(CommonOptions.VerbosityOption);
 
         command.SetAction(parseResult => new SdkUpdateCommand(parseResult, updateAllOverride: true).Execute());
