@@ -54,27 +54,15 @@ from a diagnostic ID. See the canonical
 
 ### Before writing code
 
-Memory orients you to the repository; discovery grounds the specific change. Before
-generating code, tests, or build logic:
+Before writing code, tests, or build logic, examine the closest implementation and its
+tests. Follow the relevant conventions and explain any deliberate divergence. Check
+whether sibling implementations, parallel templates, or shared test assets also need
+the change.
 
-1. Read the nearest area `AGENTS.md` and the skill that owns the task, if one exists.
-2. Find the closest existing implementation of the same kind (for example, a sibling
-   command, task, target, analyzer, or template) and the tests that cover it. Follow its
-   structure, naming, error handling, localization, and test pattern. State why when you
-   deliberately diverge.
-3. Check whether the change also belongs in sibling implementations, parallel templates,
-   or shared test assets.
-4. Check available recent history for the paths and symbols you will change, for example
-   `git log --oneline -- <path>` or `git log -S <symbol>`, to find reverted approaches,
-   in-flight migrations, and linked issues. If the checkout lacks relevant history, say
-   so and continue source discovery; use a bounded remote lookup only when permitted.
-5. Check the same paths and symbols on relevant active sibling branches, typically
-   `main` and recently updated `release/*` branches, for prior or related changes. Use
-   available up-to-date remote refs without switching the working branch; for example,
-   `git log origin/main --oneline -- <path>`. If relevant refs are unavailable, say so
-   and continue source discovery; use a bounded remote lookup only when permitted.
-   Consider what you find as context for the current change, not automatic authorization
-   to modify those branches.
+When prior decisions or related changes are relevant to the task, consider a focused
+history search and, where useful, available remote refs for `main` or active `release/*`
+branches. If needed history or refs are unavailable, note the limitation and continue
+with source discovery. Use a bounded remote lookup only when permitted.
 
 ### Build and test
 
@@ -197,23 +185,23 @@ Never hardcode the current TFM in a project. See
 
 ## Reporting AI-enablement gaps
 
-Treat a missing test hook, opaque runtime state, or an unstructured signal as an
-AI-enablement gap. These gaps block or slow verification because of missing
-infrastructure, not because of the task itself. Examples include behavior that no test can
-reach without a product change, state that is observable only in a debugger, and
-diagnostics that are available only as free-form console text. This also applies to build
-and CI pipeline investigations when missing diagnostic artifacts or structured failure
-signals prevent effective diagnosis. A build or pipeline failure alone is not a gap;
-follow the [PR validation failure guidance](#investigating-pr-validation-failures) first.
+Missing test or diagnostic support that blocks verification or failure investigation is
+an AI-enablement gap. Examples include missing test hooks, runtime state visible only in
+a debugger, missing diagnostic artifacts, and unstructured output that prevents diagnosis.
+For PR build or CI failures, first follow the
+[PR validation failure guidance](#investigating-pr-validation-failures).
 
-- Do not silently work around the gap. Keep any workaround, such as temporary logging or
-  output scraping, out of the change unless it is the intended fix.
-- Do not expand the current change to build the missing infrastructure unless the task
-  requires it.
-- In your final handoff, report the gap with a ready-to-file issue title and body for the
-  `Area-AIEngineering` label. Include what you needed to observe or control, what was
-  missing, any workaround you used, and the evidence, such as the file, command, or log.
-  Search for an existing issue first, and file the issue only when the user asks you to.
+When you encounter a gap:
+
+1. Unless the task requires it, do not expand the change to build the missing infrastructure.
+2. Use temporary logging or other local workarounds when needed for investigation. Unless
+   the workaround is the intended fix, exclude it from the final change.
+3. Search for an existing issue covering the gap.
+4. In the final handoff, describe what you needed to observe or control, what was missing,
+   any workaround used, and the supporting file, command, or log. Link a matching issue if
+   one exists; otherwise, provide a ready-to-file issue title and body for the
+   `Area-AIEngineering` label.
+5. File a new issue only when the user asks.
 
 ## Keeping AI context and docs in sync
 
