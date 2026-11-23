@@ -98,9 +98,23 @@ internal static class ShellProviderHelpers
     {
         var escapedPath = EscapePowerShellPath(dotnetupPath);
 
-        // [System.IO.File]::Exists instead of Test-Path: in a new session Test-Path loads a
-        // module first, which noticeably slows down every PowerShell start.
-        return BuildGuardedEntry($"if ([System.IO.File]::Exists('{escapedPath}'))\n{{", envScript, "}");
+        // In FullLanguage mode use [System.IO.File]::Exists instead of Test-Path: in a new session
+        // Test-Path loads a module first, which noticeably slows down every PowerShell start.
+        // ConstrainedLanguage mode (e.g. under WDAC / AppLocker) blocks the .NET method call, so
+        // fall back to Test-Path there. The env script itself only uses CLM-safe syntax.
+        string opening = string.Join(
+            "\n",
+            "if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')",
+            "{",
+            $"    $dotnetupFound = [System.IO.File]::Exists('{escapedPath}')",
+            "}",
+            "else",
+            "{",
+            $"    $dotnetupFound = Test-Path -LiteralPath '{escapedPath}' -PathType Leaf",
+            "}",
+            "if ($dotnetupFound)",
+            "{");
+        return BuildGuardedEntry(opening, envScript, "}");
     }
 
     // The script is not indented, since indenting would change any quoted value that spans lines.

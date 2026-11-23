@@ -97,7 +97,15 @@ end
 **PowerShell:**
 ```powershell
 # dotnetup: begin
-if ([System.IO.File]::Exists('/path/to/dotnetup'))
+if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')
+{
+    $dotnetupFound = [System.IO.File]::Exists('/path/to/dotnetup')
+}
+else
+{
+    $dotnetupFound = Test-Path -LiteralPath '/path/to/dotnetup' -PathType Leaf
+}
+if ($dotnetupFound)
 {
 $env:DOTNET_ROOT = '/path/to/dotnet'
 $env:PATH = '/path/to' + [IO.Path]::PathSeparator + '/path/to/dotnet' + [IO.Path]::PathSeparator + $env:PATH
@@ -105,7 +113,7 @@ $env:PATH = '/path/to' + [IO.Path]::PathSeparator + '/path/to/dotnet' + [IO.Path
 # dotnetup: end
 ```
 
-The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`). The PowerShell block uses `[System.IO.File]::Exists` rather than `Test-Path` because `Test-Path` loads a module on first use, which slows down every new session.
+The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`). In FullLanguage mode the PowerShell block uses `[System.IO.File]::Exists` rather than `Test-Path` because `Test-Path` loads a module on first use, which slows down every new session. ConstrainedLanguage mode (for example under WDAC or AppLocker) blocks the .NET method call, so the block falls back to `Test-Path` there.
 
 Because the paths are written into the block, it has to be rewritten when they change. `dotnetup env set` and `dotnetup init` do this. Blocks written by older dotnetup versions call `env script` at shell startup and keep working until one of those commands rewrites them.
 

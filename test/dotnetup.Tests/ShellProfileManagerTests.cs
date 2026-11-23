@@ -541,11 +541,13 @@ public class ShellProfileManagerTests : IDisposable
 
         entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
-        entry.Should().StartWith($"if ([System.IO.File]::Exists('{FakeDotnetupPath}'))");
+        entry.Should().StartWith("if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')");
+        entry.Should().Contain($"$dotnetupFound = [System.IO.File]::Exists('{FakeDotnetupPath}')");
+        entry.Should().Contain($"$dotnetupFound = Test-Path -LiteralPath '{FakeDotnetupPath}' -PathType Leaf");
+        entry.Should().Contain("if ($dotnetupFound)");
         entry.Should().Contain($"\n$env:DOTNET_ROOT = '{FakeDotnetInstallPath}'");
         entry.Should().Contain($"\n$env:PATH = '{FakeDotnetupDir}' + [IO.Path]::PathSeparator + '{FakeDotnetInstallPath}'");
         entry.Should().EndWith("}");
-        entry.Should().NotContain("Test-Path");
         entry.Should().NotContain("Invoke-Expression");
         entry.Should().NotContain("env script");
     }
