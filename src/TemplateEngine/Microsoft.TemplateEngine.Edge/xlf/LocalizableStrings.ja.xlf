@@ -234,7 +234,7 @@
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_PackageSourceMappingMatchNotFound">
         <source>Package source mapping is enabled, but no source was found for package {0}.</source>
-        <target state="new">Package source mapping is enabled, but no source was found for package {0}.</target>
+        <target state="translated">パッケージ ソース マッピングが有効になっていますが、パッケージ {0} のソースが見つかりませんでした。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_DownloadFailed">
