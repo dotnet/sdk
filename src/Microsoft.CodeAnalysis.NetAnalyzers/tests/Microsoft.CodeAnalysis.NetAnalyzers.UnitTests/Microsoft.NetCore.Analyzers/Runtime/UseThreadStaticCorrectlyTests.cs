@@ -303,9 +303,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     using System;
                     using System.Runtime.CompilerServices;
 
-                    class C<TClass, TAny, TStruct>
+                    class C<TClass, TAny, TStruct, TEnum>
                         where TClass : class
                         where TStruct : struct
+                        where TEnum : struct, Enum
                     {
                         [FixedAddressValueType]
                         static object {|#0:s_object|};
@@ -344,6 +345,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         static TStruct s_struct;
 
                         [FixedAddressValueType]
+                        static TEnum {|#8:s_typeParameterEnum|};
+
+                        [FixedAddressValueType]
                         static int? s_nullable;
                     }
                     """,
@@ -357,6 +361,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(5).WithArguments("FixedAddressValueType", "s_int"),
                     VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(6).WithArguments("FixedAddressValueType", "s_intPtr"),
                     VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(7).WithArguments("FixedAddressValueType", "s_enum"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.UnsupportedTypeFieldRule).WithLocation(8).WithArguments("FixedAddressValueType", "s_typeParameterEnum"),
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -487,6 +492,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                         [SuppressGCTransition]
                         static int {|#0:Managed|}() => 0;
+
+                        [SuppressGCTransition]
+                        static partial void {|#3:ManagedPartial|}();
+
+                        static partial void ManagedPartial() { }
                     }
                     """,
                 ExpectedDiagnostics =
@@ -494,6 +504,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     VerifyCS.Diagnostic(UseThreadStaticCorrectly.NotPInvokeRule).WithLocation(0).WithArguments("SuppressGCTransition", "Managed"),
                     VerifyCS.Diagnostic(UseThreadStaticCorrectly.NotPInvokeRule).WithLocation(1).WithArguments("SuppressGCTransition", "DefaultMethod"),
                     VerifyCS.Diagnostic(UseThreadStaticCorrectly.NotPInvokeRule).WithLocation(2).WithArguments("SuppressGCTransition", "StaticHelper"),
+                    VerifyCS.Diagnostic(UseThreadStaticCorrectly.NotPInvokeRule).WithLocation(3).WithArguments("SuppressGCTransition", "ManagedPartial"),
                 },
             }.RunAsync(CancellationToken.None);
         }

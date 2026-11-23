@@ -84,6 +84,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 var contextStaticAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemContextStaticAttribute);
                 var fixedAddressValueTypeAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesFixedAddressValueTypeAttribute);
+                var enumType = context.Compilation.GetSpecialType(SpecialType.System_Enum);
 
                 // Warn on any [ThreadStatic], [ContextStatic] or [FixedAddressValueType] instance field,
                 // and on [FixedAddressValueType] on a static field that is not of a struct type, or is of a primitive type.
@@ -121,9 +122,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         }
                     }
                     else if (fieldSymbol.HasAnyAttribute(fixedAddressValueTypeAttributeType) &&
-                        (fieldSymbol.Type.IsReferenceType || fieldSymbol.Type.IsPrimitiveType() || fieldSymbol.Type.SpecialType is SpecialType.System_IntPtr or SpecialType.System_UIntPtr || fieldSymbol.Type.TypeKind is TypeKind.Enum or TypeKind.Pointer or TypeKind.FunctionPointer))
+                        (fieldSymbol.Type.IsReferenceType || fieldSymbol.Type.IsPrimitiveType() || fieldSymbol.Type.SpecialType is SpecialType.System_IntPtr or SpecialType.System_UIntPtr || fieldSymbol.Type.TypeKind is TypeKind.Enum or TypeKind.Pointer or TypeKind.FunctionPointer ||
+                        (fieldSymbol.Type.TypeKind == TypeKind.TypeParameter && fieldSymbol.Type.DerivesFrom(enumType))))
                     {
-                        // A type parameter only counts when it is constrained to a reference type, since it may be a struct otherwise.
+                        // A type parameter only counts when its constraints make it a reference type or an enum, since it may be a supported struct otherwise.
                         context.ReportDiagnostic(symbol.CreateDiagnostic(UnsupportedTypeFieldRule, "FixedAddressValueType", symbol.Name));
                     }
                 }, SymbolKind.Field, SymbolKind.Property);
@@ -192,6 +194,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     void AnalyzeMethod(IMethodSymbol method, Action<Diagnostic> reportDiagnostic)
                     {
+                        // The two parts of a partial method share their attributes, so only the defining part is reported.
+                        if (method.PartialDefinitionPart is not null)
+                        {
+                            return;
+                        }
+
                         if (method.HasAnyAttribute(suppressGCTransitionAttributeType) &&
                             method.GetDllImportData() is null &&
                             !method.HasAnyAttribute(libraryImportAttributeType) &&
