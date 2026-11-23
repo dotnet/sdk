@@ -8,9 +8,9 @@ internal static class MSBuildArgumentParser
     internal static bool IsMultiThreadedSwitch(string argument)
         => TryGetMultiThreadedSwitch(argument, out _);
 
-    internal static bool TryGetMultiThreadedSwitch(string argument, out bool? enabled)
+    internal static bool TryGetMultiThreadedSwitch(string argument, out string? parameter)
     {
-        enabled = null;
+        parameter = null;
         string unquoted = Unquote(argument);
         int prefixLength = unquoted.StartsWith("--", StringComparison.Ordinal) ? 2
             : unquoted.Length > 0 && (unquoted[0] == '-' || unquoted[0] == '/') ? 1
@@ -33,23 +33,11 @@ internal static class MSBuildArgumentParser
 
         if (separatorIndex < 0)
         {
-            enabled = true;
             return true;
         }
 
-        string parameter = unquoted.Substring(separatorIndex + 1);
-        if (parameter.Length == 0)
-        {
-            return true;
-        }
-
-        if (bool.TryParse(parameter, out bool value))
-        {
-            enabled = value;
-            return true;
-        }
-
-        return false;
+        parameter = unquoted.Substring(separatorIndex + 1);
+        return true;
     }
 
     // Match MSBuild's QuotingUtilities.Unquote, including escaped and doubled quotes.

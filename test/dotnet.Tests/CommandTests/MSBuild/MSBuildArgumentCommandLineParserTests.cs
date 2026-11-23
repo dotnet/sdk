@@ -30,7 +30,8 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         [DataRow(new[] { "-mt:" }, true)]
         [DataRow(new[] { "-mt:\"\"" }, true)]
         [DataRow(new[] { "-mt:false", "-mt:\"\"" }, false)]
-        [DataRow(new[] { "-mt:auto", "-mtx", "-mt:\\\"false\\\"" }, null)]
+        [DataRow(new[] { "-mtx" }, null)]
+        [DataRow(new[] { "-mt:yes", "-mt:false" }, false)]
         public void MSBuildArgumentsParseMultiThreading(string[] arguments, bool? expected)
         {
             var args = MSBuildArgs.AnalyzeMSBuildArguments(arguments);
@@ -48,6 +49,29 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
             args.CloneWithExplicitArgs([]).HasMultithreadedSwitch.Should().BeNull();
             args.CloneWithVerbosity(VerbosityOptions.quiet).HasMultithreadedSwitch.Should().BeTrue();
             args.HasMultithreadedSwitch.Should().BeTrue();
+        }
+
+        [TestMethod]
+        [DataRow("-mt:yes")]
+        [DataRow("--multiThreaded:\"invalid\"")]
+        public void MSBuildArgumentsPreserveInvalidMultiThreadingForValidation(string argument)
+        {
+            var args = MSBuildArgs.AnalyzeMSBuildArguments([argument]);
+
+            args.OtherMSBuildArgs.Should().Equal(argument);
+            args.CloneWithAdditionalArgs("-mt:false").HasMultithreadedSwitch.Should().BeFalse();
+        }
+
+        [TestMethod]
+        [DataRow(new[] { "--", "-mt" })]
+        [DataRow(new[] { "@missing.rsp" })]
+        public void MSBuildArgumentsDoNotExpandRawArguments(string[] arguments)
+        {
+            var args = MSBuildArgs.FromOtherArgs(arguments);
+
+            args.OtherMSBuildArgs.Should().Equal(arguments);
+            args.HasMultithreadedSwitch.Should().BeNull();
+            MSBuildArgs.FromOtherArgs("-mt").CloneWithExplicitArgs(arguments).HasMultithreadedSwitch.Should().BeNull();
         }
 
         [TestMethod]
