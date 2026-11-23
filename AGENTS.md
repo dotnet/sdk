@@ -166,6 +166,10 @@ Never hardcode the current TFM in a project. See
   registering them as a scope in [`test/ConditionalTests.props`](test/ConditionalTests.props).
   See [`documentation/project-docs/pr-test-filtering.md`](documentation/project-docs/pr-test-filtering.md) for details.
 
+## Reviewing code
+
+To review a pull request or local changes, use the [`code-review` skill](.github/skills/code-review/SKILL.md).
+
 ## Investigating PR validation failures
 
 1. Read the PR and its comments/reviews. Check for references to other PRs or issues where the problem might have already been solved.

@@ -97,6 +97,8 @@ The first five areas have the largest effect on users. Examine them most careful
 
 Read the diff and the code around each change. If the branch is checked out, or in local review mode, read files from the workspace. If you use the GitHub diff only, get files from the PR branch with `mcp_github_get_file_contents`.
 
+Before you review, read the convention files that apply to the changed paths: the nearest area `AGENTS.md` of each changed directory, `.github/memory/CONVENTIONS.md`, and the files in the [maintainer checklist](#maintainer-checklist) table. Check the change against their rules.
+
 ### Make your own assessment first
 
 Before you read the PR description, answer these questions from the code:
