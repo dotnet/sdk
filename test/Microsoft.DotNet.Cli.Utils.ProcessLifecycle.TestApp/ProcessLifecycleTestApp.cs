@@ -92,10 +92,17 @@ public static partial class ProcessLifecycleTestApp
                 childMode == "mtp-sigterm-lifecycle"
                     ? "signal-child"
                     : "ignoring-cancellation-child");
-            testApplication.Start();
+            if (ctrlC.StartAndRegister(() =>
+            {
+                testApplication.Start();
+                return testApplication;
+            }) is null)
+            {
+                return ExitCode.TestSessionAborted;
+            }
+
             WaitForMarker(markerPath, "grandchild-ready");
             File.WriteAllText(markerPath + ".pid", testApplication.Id.ToString());
-            ctrlC.Register(testApplication);
             WriteMarker(markerPath, "ready");
             Thread.Sleep(Timeout.Infinite);
         }

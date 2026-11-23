@@ -318,6 +318,31 @@ public class ProcessLifecycleTests : SdkTest
 
     [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void ForwardSigTermSkipsDisposedProcessesAndTerminatesRemainingProcesses()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+        using Process child = StartChild("signal-child", testDirectory.Path);
+        using var disposedProcess = new Process();
+        disposedProcess.Dispose();
+
+        try
+        {
+            WaitForMarker(testDirectory.Path, "grandchild-ready");
+
+            ProcessReaper.ForwardSigTermAndTerminate([disposedProcess, child]);
+
+            WaitForMarker(testDirectory.Path, "forwarded");
+            child.WaitForExit(s_waitTimeout).Should().BeTrue();
+            child.ExitCode.Should().Be(43);
+        }
+        finally
+        {
+            StopChild(child);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void SigTermIsForwardedToReapedChild()
     {
         var testDirectory = TestAssetsManager.CreateTestDirectory();

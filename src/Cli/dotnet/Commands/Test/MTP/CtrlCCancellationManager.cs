@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -17,10 +16,11 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 ///     queue stops scheduling new test apps; running test apps are left alone so they can
 ///     gracefully report their final state via IPC (their own testfx-side Ctrl+C handler will
 ///     cancel the session inside the child process).</item>
-///   <item>Forceful cancellation: every registered child process is killed
-///     (<c>entireProcessTree: true</c>). When this manager owns the console handler,
-///     a second Ctrl+C also exits with <see cref="ExitCode.TestSessionAborted"/> (=3);
-///     otherwise the shared process lifecycle owns the host exit.</item>
+///   <item>Forceful cancellation: SIGTERM is forwarded to every registered child with a
+///     bounded grace period, while a repeated Ctrl+C kills every registered process tree
+///     immediately. When this manager owns the console handler, a second Ctrl+C also exits
+///     with <see cref="ExitCode.TestSessionAborted"/> (=3); otherwise the shared process
+///     lifecycle owns the host exit.</item>
 ///   <item>Any further presses are no-ops (the state machine is idempotent).</item>
 /// </list>
 /// </summary>
@@ -33,7 +33,8 @@ internal sealed class CtrlCCancellationManager : IDisposable
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly Action _onFirstCtrlC;
     private readonly Action<int> _exitAction;
-    private readonly ConcurrentDictionary<Process, byte> _processes = new();
+    private readonly Lock _processesLock = new();
+    private readonly HashSet<Process> _processes = [];
     private readonly bool _subscribedToConsole;
     private readonly CancellationTokenRegistration _cooperativeCancellationRegistration;
     private readonly CancellationTokenRegistration _forcefulCancellationRegistration;
@@ -72,20 +73,28 @@ internal sealed class CtrlCCancellationManager : IDisposable
     public CancellationToken Token => _cancellationTokenSource.Token;
 
     /// <summary>
-    /// Registers a child test-app process so it will be killed if the user requests a force exit.
-    /// If the manager is already in the forcing state when this is called, the
-    /// process is killed immediately to avoid orphaning a child that started during the force
-    /// exit race window.
+    /// Starts and registers a child test-app process as one operation with respect to forceful
+    /// cancellation. Returns <see langword="null"/> without starting a process when forceful
+    /// cancellation has already begun.
     /// </summary>
-    public void Register(Process process)
+    public Process? StartAndRegister(Func<Process?> startProcess)
     {
-        ArgumentNullException.ThrowIfNull(process);
+        ArgumentNullException.ThrowIfNull(startProcess);
 
-        _processes.TryAdd(process, 0);
-
-        if (Volatile.Read(ref _state) == StateForcing)
+        lock (_processesLock)
         {
-            TerminateProcesses([process], Volatile.Read(ref _forwardSigTerm) != 0);
+            if (Volatile.Read(ref _state) == StateForcing)
+            {
+                return null;
+            }
+
+            Process? process = startProcess();
+            if (process is not null)
+            {
+                _processes.Add(process);
+            }
+
+            return process;
         }
     }
 
@@ -93,13 +102,18 @@ internal sealed class CtrlCCancellationManager : IDisposable
     {
         ArgumentNullException.ThrowIfNull(process);
 
-        _processes.TryRemove(process, out _);
+        lock (_processesLock)
+        {
+            _processes.Remove(process);
+        }
     }
 
     /// <summary>
     /// Test-only hook to drive the state machine without depending on a real Console signal.
     /// </summary>
     internal void SimulateCtrlC() => HandleCtrlC();
+
+    internal bool IsForcing => Volatile.Read(ref _state) == StateForcing;
 
     private void OnConsoleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
     {
@@ -174,7 +188,11 @@ internal sealed class CtrlCCancellationManager : IDisposable
             return false;
         }
 
-        TerminateProcesses([.. _processes.Keys], forwardSigTerm);
+        lock (_processesLock)
+        {
+            TerminateProcesses([.. _processes], forwardSigTerm);
+        }
+
         return true;
     }
 

@@ -17,25 +17,27 @@ namespace Microsoft.DotNet.Cli.NugetSearch;
 
 internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
 {
+    private const string ServiceIndexUrl = "https://api.nuget.org/v3/index.json";
+    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(10);
+
     public async Task<string> GetResult(
         NugetSearchApiParameter nugetSearchApiParameter,
         CancellationToken cancellationToken)
-        => await ExecuteWithTimeout(
-            token => GetResultCore(nugetSearchApiParameter, token),
+        => await ExecuteRequest(
+            token => ConstructUrl(
+                nugetSearchApiParameter.SearchTerm,
+                nugetSearchApiParameter.Skip,
+                nugetSearchApiParameter.Take,
+                nugetSearchApiParameter.Prerelease,
+                token),
+            GetResultCore,
             cancellationToken,
-            TimeSpan.FromSeconds(10));
+            RequestTimeout);
 
     private static async Task<string> GetResultCore(
-        NugetSearchApiParameter nugetSearchApiParameter,
+        Uri queryUrl,
         CancellationToken cancellationToken)
     {
-        var queryUrl = await ConstructUrl(
-            nugetSearchApiParameter.SearchTerm,
-            nugetSearchApiParameter.Skip,
-            nugetSearchApiParameter.Take,
-            nugetSearchApiParameter.Prerelease,
-            cancellationToken);
-
         using var httpClient = new HttpClient();
         using HttpResponseMessage response = await httpClient.GetAsync(queryUrl, cancellationToken);
         if (!response.IsSuccessStatusCode)
@@ -57,10 +59,25 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 
+    internal static async Task<T> ExecuteRequest<T>(
+        Func<CancellationToken, Task<Uri>> constructUrl,
+        Func<Uri, CancellationToken, Task<T>> executeQuery,
+        CancellationToken cancellationToken,
+        TimeSpan timeout)
+    {
+        Uri queryUrl = await constructUrl(cancellationToken);
+        return await ExecuteWithTimeout(
+            token => executeQuery(queryUrl, token),
+            cancellationToken,
+            timeout,
+            queryUrl.AbsoluteUri);
+    }
+
     internal static async Task<T> ExecuteWithTimeout<T>(
         Func<CancellationToken, Task<T>> operation,
         CancellationToken cancellationToken,
-        TimeSpan timeout)
+        TimeSpan timeout,
+        string requestUrl = ServiceIndexUrl)
     {
         using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutCancellation.CancelAfter(timeout);
@@ -76,7 +93,7 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
             throw new NugetSearchApiRequestException(
                 string.Format(
                     CliStrings.RetriableNugetSearchFailure,
-                    "https://api.nuget.org/v3/index.json",
+                    requestUrl,
                     e.Message,
                     "N/A"));
         }
@@ -125,15 +142,20 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
     // System.Text.Json source generation. Failures are translated into NugetSearchApiRequestException
     // (a GracefulException) with the same retriable/non-retriable messaging as GetResult.
     private static async Task<Uri> DomainAndPath(CancellationToken cancellationToken)
+        => await ExecuteWithTimeout(
+            DomainAndPathCore,
+            cancellationToken,
+            RequestTimeout);
+
+    private static async Task<Uri> DomainAndPathCore(CancellationToken cancellationToken)
     {
-        const string serviceIndexUrl = "https://api.nuget.org/v3/index.json";
         const string searchQueryServiceType = "SearchQueryService/3.5.0";
 
         using var httpClient = new HttpClient();
         HttpResponseMessage response;
         try
         {
-            response = await httpClient.GetAsync(serviceIndexUrl, cancellationToken);
+            response = await httpClient.GetAsync(ServiceIndexUrl, cancellationToken);
         }
         catch (HttpRequestException e)
         {
@@ -141,7 +163,7 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
             throw new NugetSearchApiRequestException(
                 string.Format(
                     CliStrings.RetriableNugetSearchFailure,
-                    serviceIndexUrl, e.Message, "N/A"));
+                    ServiceIndexUrl, e.Message, "N/A"));
         }
 
         using (response)
@@ -153,13 +175,13 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
                     throw new NugetSearchApiRequestException(
                         string.Format(
                             CliStrings.RetriableNugetSearchFailure,
-                            serviceIndexUrl, response.ReasonPhrase, response.StatusCode));
+                            ServiceIndexUrl, response.ReasonPhrase, response.StatusCode));
                 }
 
                 throw new NugetSearchApiRequestException(
                     string.Format(
                         CliStrings.NonRetriableNugetSearchFailure,
-                        serviceIndexUrl, response.ReasonPhrase, response.StatusCode));
+                        ServiceIndexUrl, response.ReasonPhrase, response.StatusCode));
             }
 
             var indexJson = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -174,14 +196,14 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
                 throw new NugetSearchApiRequestException(
                     string.Format(
                         CliStrings.NonRetriableNugetSearchFailure,
-                        serviceIndexUrl, e.Message, response.StatusCode));
+                        ServiceIndexUrl, e.Message, response.StatusCode));
             }
 
             var resource = index?.Resources?.FirstOrDefault(r => r.Type == searchQueryServiceType)
                 ?? throw new NugetSearchApiRequestException(
                     string.Format(
                         CliStrings.NonRetriableNugetSearchFailure,
-                        serviceIndexUrl, $"{searchQueryServiceType} not found in service index", response.StatusCode));
+                        ServiceIndexUrl, $"{searchQueryServiceType} not found in service index", response.StatusCode));
 
             // The service index is server-supplied, so don't trust the URL to be well-formed.
             try
@@ -193,7 +215,7 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
                 throw new NugetSearchApiRequestException(
                     string.Format(
                         CliStrings.NonRetriableNugetSearchFailure,
-                        serviceIndexUrl, $"{searchQueryServiceType} returned a malformed URL: {e.Message}", response.StatusCode));
+                        ServiceIndexUrl, $"{searchQueryServiceType} returned a malformed URL: {e.Message}", response.StatusCode));
             }
         }
     }

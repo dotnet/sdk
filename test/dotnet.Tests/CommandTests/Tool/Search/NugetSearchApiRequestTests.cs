@@ -78,5 +78,29 @@ namespace dotnet.Tests.ToolSearchTests
 
             await Assert.ThrowsExactlyAsync<OperationCanceledException>(action);
         }
+
+        [TestMethod]
+        public async Task QueryTimeoutStartsAfterEndpointDiscoveryCompletes()
+        {
+            TimeSpan timeout = TimeSpan.FromMilliseconds(50);
+
+            string result = await NugetToolSearchApiRequest.ExecuteRequest(
+                async _ =>
+                {
+                    await Task.Delay(
+                        timeout + TimeSpan.FromMilliseconds(50),
+                        TestContext.CancellationToken);
+                    return _domainAndPathOverride;
+                },
+                (_, token) =>
+                {
+                    token.ThrowIfCancellationRequested();
+                    return Task.FromResult("result");
+                },
+                TestContext.CancellationToken,
+                timeout);
+
+            result.Should().Be("result");
+        }
     }
 }

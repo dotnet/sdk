@@ -312,7 +312,22 @@ internal class ProcessReaper : IDisposable
     internal static void ForwardSigTermAndTerminate(IEnumerable<Process> processes)
     {
 #if !TARGET_WINDOWS && NET
-        Process[] activeProcesses = [.. processes.Where(static process => !process.HasExited)];
+        var activeProcesses = new List<Process>();
+        foreach (Process process in processes)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    activeProcesses.Add(process);
+                }
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+            {
+                Reporter.Verbose.WriteLine($"Exception checking child process state during SIGTERM forwarding:\n{ex}");
+            }
+        }
+
         var signaledProcesses = new HashSet<Process>();
 
         foreach (Process process in activeProcesses)
@@ -326,6 +341,7 @@ internal class ProcessReaper : IDisposable
             }
             catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
             {
+                Reporter.Verbose.WriteLine($"Exception forwarding SIGTERM to child process:\n{ex}");
             }
         }
 
@@ -344,8 +360,9 @@ internal class ProcessReaper : IDisposable
                             continue;
                         }
                     }
-                    catch (InvalidOperationException)
+                    catch (InvalidOperationException ex)
                     {
+                        Reporter.Verbose.WriteLine($"Exception waiting for child process after SIGTERM:\n{ex}");
                         continue;
                     }
                 }
@@ -360,6 +377,7 @@ internal class ProcessReaper : IDisposable
             }
             catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
             {
+                Reporter.Verbose.WriteLine($"Exception killing child process after SIGTERM grace period:\n{ex}");
             }
         }
 #else
@@ -372,8 +390,9 @@ internal class ProcessReaper : IDisposable
                     process.Kill();
                 }
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException ex)
             {
+                Reporter.Verbose.WriteLine($"Exception killing child process:\n{ex}");
             }
         }
 #endif
