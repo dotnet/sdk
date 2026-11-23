@@ -207,18 +207,16 @@ build-failure detector job entirely. Otherwise the framework skips installing
 `threat-detect` but still concludes detection, producing a false `agent_failure`
 warning. An actual output or patch still runs the normal detector.
 
-The Issue Monster detector and build-failure analyzer retain the
-`claude-sonnet-5` default to avoid failures observed with the older firewall:
-the OpenAI Responses route rejected the Copilot CLI's `ctc_call` identifiers
-after built-in edit calls (`Expected an ID that begins with 'fc'`).
-The [build-failure entry points](../build-failure-analysis.md) now also pin the
-AWF v0.28.66 replay fix and immutable images for both the agent and detector.
+The Issue Monster detector retains the `claude-sonnet-5` default. With older
+firewalls, the OpenAI Responses route rejected the Copilot CLI's `ctc_call`
+identifiers after built-in edit calls (`Expected an ID that begins with 'fc'`).
+The [build-failure entry points](../build-failure-analysis.md) pin AWF v0.29.11,
+which contains the replay-ID fix, and immutable images for the agent and detector.
 Regenerate their locks with the compiler and setup runtime specified in the
 [shared build-failure configuration](build-failure-analysis-shared.md), which
-keeps model variables available as explicit
-overrides. Restore an OpenAI default only after the CLI/API combination can
-create a result file and emit the terminal safe output end-to-end; a successful
-first inference call is not sufficient evidence.
+keeps model variables available as explicit overrides. Verify the OpenAI default
+end-to-end through a built-in edit and terminal safe output; a successful first
+inference call is not sufficient evidence.
 
 ### Issue triage unlocks
 
