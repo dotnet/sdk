@@ -1063,6 +1063,117 @@ Commands:
             File.ReadAllText(appFile).Should().Be(sourceBefore);
         }
 
+        private static string CreateProjectWithTargetFrameworkAliases(string directory, string projectName, params (string Alias, string Identifier, string Version)[] aliases)
+        {
+            var projectDirectory = Path.Join(directory, projectName);
+            Directory.CreateDirectory(projectDirectory);
+            var projectFile = Path.Join(projectDirectory, projectName + ".csproj");
+            var targetFrameworkProperty = aliases.Length == 1 ? "TargetFramework" : "TargetFrameworks";
+            var aliasPropertyGroups = string.Join(Environment.NewLine, aliases.Select(a => $"""
+                    <PropertyGroup Condition="'$(TargetFramework)' == '{a.Alias}'">
+                        <TargetFrameworkIdentifier>{a.Identifier}</TargetFrameworkIdentifier>
+                        <TargetFrameworkVersion>{a.Version}</TargetFrameworkVersion>
+                    </PropertyGroup>
+                """));
+            File.WriteAllText(projectFile, $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                    <PropertyGroup>
+                        <{targetFrameworkProperty}>{string.Join(";", aliases.Select(a => a.Alias))}</{targetFrameworkProperty}>
+                    </PropertyGroup>
+                {aliasPropertyGroups}
+                </Project>
+                """);
+            return projectFile;
+        }
+
+        [TestMethod]
+        public void ItAddsRefToProjectWithTargetFrameworkAlias()
+        {
+            var testRoot = TestAssetsManager.CreateTestDirectory().Path;
+            var appProject = CreateMinimalProject(testRoot, "App");
+            var libProject = CreateProjectWithTargetFrameworkAliases(testRoot, "Lib", ("portablelib", ".NETStandard", "v2.0"));
+
+            var cmd = new DotnetCommand(Log, "reference", "add", libProject, "--project", appProject)
+                .WithWorkingDirectory(testRoot)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, @"..\Lib\Lib.csproj"));
+            cmd.StdErr.Should().BeEmpty();
+            File.ReadAllText(appProject).Should().Contain(@"<ProjectReference Include=""..\Lib\Lib.csproj"" />");
+        }
+
+        [TestMethod]
+        public void ItAddsRefToProjectWithMultipleTargetFrameworkAliases()
+        {
+            var testRoot = TestAssetsManager.CreateTestDirectory().Path;
+            var appProject = CreateMinimalProject(testRoot, "App");
+            var libProject = CreateProjectWithTargetFrameworkAliases(testRoot, "Lib",
+                ("freestanding", ".NETStandard", "v1.0"),
+                ("libc", ".NETStandard", "v2.0"));
+
+            var cmd = new DotnetCommand(Log, "reference", "add", libProject, "--project", appProject)
+                .WithWorkingDirectory(testRoot)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdErr.Should().BeEmpty();
+            File.ReadAllText(appProject).Should().Contain(@"<ProjectReference Include=""..\Lib\Lib.csproj"" />");
+        }
+
+        [TestMethod]
+        public void WhenTargetFrameworkAliasIsIncompatibleItPrintsError()
+        {
+            var testRoot = TestAssetsManager.CreateTestDirectory().Path;
+            var libProject = CreateProjectWithTargetFrameworkAliases(testRoot, "Lib", ("portablelib", ".NETStandard", "v2.0"));
+            var modernProject = CreateProjectWithTargetFrameworkAliases(testRoot, "Modern", ("modern", ".NETCoreApp", $"v{ToolsetInfo.CurrentTargetFrameworkVersion}"));
+            var contentBefore = File.ReadAllText(libProject);
+
+            var cmd = new DotnetCommand(Log, "reference", "add", modernProject, "--project", libProject)
+                .WithWorkingDirectory(testRoot)
+                .Execute();
+
+            cmd.Should().Fail();
+            cmd.StdErr.Should().MatchRegex(ProjectNotCompatibleErrorMessageRegEx);
+            cmd.StdErr.Should().MatchRegex(" - netstandard2.0");
+            File.ReadAllText(libProject).Should().Be(contentBefore);
+        }
+
+        [TestMethod]
+        public void ItAddsRefWithCondForTargetFrameworkAliasOfProject()
+        {
+            var testRoot = TestAssetsManager.CreateTestDirectory().Path;
+            var appProject = CreateProjectWithTargetFrameworkAliases(testRoot, "App",
+                ("modern", ".NETCoreApp", $"v{ToolsetInfo.CurrentTargetFrameworkVersion}"),
+                ("portablelib", ".NETStandard", "v2.0"));
+            var libProject = CreateMinimalProject(testRoot, "Lib");
+
+            var cmd = new DotnetCommand(Log, "reference", "add", libProject, "--project", appProject, "-f", "modern")
+                .WithWorkingDirectory(testRoot)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdErr.Should().BeEmpty();
+            var csproj = new ProjDir(Path.GetDirectoryName(appProject)!).CsProj();
+            csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining("Lib.csproj", "== 'modern'").Should().Be(1);
+
+            // The referenced project targets the current .NET, so it is not compatible with the netstandard2.0 alias.
+            cmd = new DotnetCommand(Log, "reference", "add", libProject, "--project", appProject, "-f", "portablelib")
+                .WithWorkingDirectory(testRoot)
+                .Execute();
+
+            cmd.Should().Fail();
+            cmd.StdErr.Should().MatchRegex(ProjectNotCompatibleErrorMessageRegEx);
+
+            // The framework that an alias stands for is not itself a target framework of the project.
+            cmd = new DotnetCommand(Log, "reference", "add", libProject, "--project", appProject, "-f", ToolsetInfo.CurrentTargetFramework)
+                .WithWorkingDirectory(testRoot)
+                .Execute();
+
+            cmd.Should().Fail();
+            cmd.StdErr.Should().Be(string.Format(CliStrings.ProjectDoesNotTargetFramework, appProject, ToolsetInfo.CurrentTargetFramework));
+        }
+
         [TestMethod]
         public void WhenDirectoryContainingProjectIsGivenReferenceIsAdded()
         {

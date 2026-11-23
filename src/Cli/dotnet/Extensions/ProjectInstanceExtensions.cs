@@ -60,15 +60,21 @@ public static class ProjectInstanceExtensions
 
     public static IEnumerable<NuGetFramework> GetTargetFrameworks(this ProjectInstance projectInstance)
     {
-        var targetFrameworksStrings = projectInstance
-                .GetPropertyCommaSeparatedValues("TargetFramework")
-                .Union(projectInstance.GetPropertyCommaSeparatedValues("TargetFrameworks"))
-                .Select((value) => value.ToLower());
-
-        var uniqueTargetFrameworkStrings = new HashSet<string>(targetFrameworksStrings);
-
-        return uniqueTargetFrameworkStrings
+        return projectInstance
+            .GetTargetFrameworkValues()
             .Select((frameworkString) => NuGetFramework.Parse(frameworkString));
+    }
+
+    /// <summary>
+    /// Returns the distinct, unparsed values of the TargetFramework and TargetFrameworks properties.
+    /// A value may be a TargetFramework alias rather than a framework name.
+    /// </summary>
+    public static IEnumerable<string> GetTargetFrameworkValues(this ProjectInstance projectInstance)
+    {
+        return projectInstance
+            .GetPropertyCommaSeparatedValues("TargetFramework")
+            .Concat(projectInstance.GetPropertyCommaSeparatedValues("TargetFrameworks"))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
     }
 
     public static IEnumerable<string> GetPropertyCommaSeparatedValues(this ProjectInstance projectInstance, string propertyName)
