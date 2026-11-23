@@ -21,7 +21,7 @@ internal class DotnetArchiveExtractor : IInstallArtifact
     private IProgressReporter? _progressReporter;
     private readonly HashSet<string> _extractedSubcomponents = [];
     private bool _existingLayoutVerified;
-    private Dictionary<string, string>? _archiveVersionFiles;
+    private Dictionary<string, LayoutVersionFile>? _archiveVersionFiles;
 
     /// <summary>
     /// Gets the list of subcomponent identifiers that were extracted during the last Commit() call.
@@ -128,7 +128,7 @@ internal class DotnetArchiveExtractor : IInstallArtifact
         ProgressTracker.CompleteDownload(downloadTask, _archivePath);
 
         // Read outside the install-state lock; Commit reads them only if the root gained folders since.
-        if (_request.InstallRoot.Path is { } installRoot && LayoutVersionFiles.MayOverlap(installRoot))
+        if (_request.InstallRoot.Path is { } installRoot && LayoutVersionFile.MayOverlap(installRoot))
         {
             try
             {
@@ -179,7 +179,7 @@ internal class DotnetArchiveExtractor : IInstallArtifact
         }
 
         string targetDir = _request.InstallRoot.Path!;
-        if (LayoutVersionFiles.MayOverlap(targetDir))
+        if (LayoutVersionFile.MayOverlap(targetDir))
         {
             _archiveVersionFiles ??= ReadArchiveVersionFiles(_archivePath);
             foreach (var (subcomponent, archiveVersion) in _archiveVersionFiles)
@@ -191,7 +191,7 @@ internal class DotnetArchiveExtractor : IInstallArtifact
         _existingLayoutVerified = true;
     }
 
-    private void ThrowIfSubcomponentDiffers(string targetDir, string subcomponent, string archiveVersion)
+    private void ThrowIfSubcomponentDiffers(string targetDir, string subcomponent, LayoutVersionFile archiveVersion)
     {
         string directory = Path.Combine(targetDir, subcomponent.Replace('/', Path.DirectorySeparatorChar));
         if (!Directory.Exists(directory))
@@ -199,8 +199,8 @@ internal class DotnetArchiveExtractor : IInstallArtifact
             return;
         }
 
-        string? existingVersion = WrapWithCustomExtractionExceptions(Strings.ArchiveReadPermissionDenied, Strings.ArchiveReadFailed, () => LayoutVersionFiles.ReadFromDirectory(directory));
-        if (string.Equals(existingVersion, archiveVersion, StringComparison.OrdinalIgnoreCase))
+        LayoutVersionFile? existingVersion = WrapWithCustomExtractionExceptions(Strings.ArchiveReadPermissionDenied, Strings.ArchiveReadFailed, () => LayoutVersionFile.ReadFromDirectory(directory));
+        if (archiveVersion.IsSameBuild(existingVersion))
         {
             return;
         }
@@ -213,8 +213,8 @@ internal class DotnetArchiveExtractor : IInstallArtifact
             component: _request.Component.ToString());
     }
 
-    private Dictionary<string, string> ReadArchiveVersionFiles(string archivePath) =>
-        WrapWithCustomExtractionExceptions(Strings.ArchiveReadPermissionDenied, Strings.ArchiveReadFailed, () => LayoutVersionFiles.ReadFromArchive(archivePath));
+    private Dictionary<string, LayoutVersionFile> ReadArchiveVersionFiles(string archivePath) =>
+        WrapWithCustomExtractionExceptions(Strings.ArchiveReadPermissionDenied, Strings.ArchiveReadFailed, () => LayoutVersionFile.ReadFromArchive(archivePath));
 
     private void WrapWithCustomExtractionExceptions(string permissionDeniedFormat, string failedFormat, Action action) =>
         WrapWithCustomExtractionExceptions(permissionDeniedFormat, failedFormat, () => { action(); return true; });
