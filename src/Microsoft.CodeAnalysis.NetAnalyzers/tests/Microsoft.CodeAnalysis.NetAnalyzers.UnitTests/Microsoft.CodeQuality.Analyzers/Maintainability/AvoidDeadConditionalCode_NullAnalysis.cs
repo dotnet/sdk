@@ -6942,6 +6942,178 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
         [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod]
+        public async Task RecursiveLocalFunctionsInvokedFromNestedLoops_CompletesAsync()
+        {
+            // Recursive local functions, each called from several sites inside nested loops, used to make the
+            // interprocedural analysis re-analyze every recursive call up to the maximum call chain length at every
+            // fixed-point iteration, which did not finish in practice.
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+
+                abstract class Shape { }
+                sealed class StructShape : Shape { public Guid Id { get; set; } }
+                sealed class ListShape : Shape { public Shape Element { get; set; } }
+                sealed class EnumShape : Shape { public Guid Id { get; set; } }
+                sealed class Header { public Shape Shape { get; set; } }
+                sealed class Field { public Shape Shape { get; set; } public List<Header> Headers { get; set; } }
+                sealed class StructDef { public Guid Id { get; set; } public List<Field> Fields { get; set; } }
+                sealed class Operation { public List<Field> Inputs { get; set; } public Shape Output { get; set; } public bool Broken { get; set; } }
+                sealed class Schema
+                {
+                    public List<Operation> Operations { get; set; }
+                    public List<StructDef> Structs { get; set; }
+                    public Dictionary<Guid, StructDef> StructMap { get; set; }
+                    public HashSet<Guid> EnumIds { get; set; }
+                }
+
+                static class SchemaChecker
+                {
+                    public static int Check(Schema schema, bool markBroken)
+                    {
+                        var count = 0;
+                        var structIds = new HashSet<Guid>();
+                        var enumIds = new HashSet<Guid>();
+
+                        if (schema.Operations != null)
+                        {
+                            foreach (var op in schema.Operations)
+                            {
+                                if (op.Inputs != null)
+                                {
+                                    foreach (var input in op.Inputs)
+                                    {
+                                        Collect(input.Shape, structIds, enumIds, schema.StructMap, schema.EnumIds);
+                                    }
+                                }
+
+                                Collect(op.Output, structIds, enumIds, schema.StructMap, schema.EnumIds);
+                                count++;
+                            }
+                        }
+
+                        var bad = new HashSet<Guid>();
+                        if (schema.Structs != null)
+                        {
+                            foreach (var s in schema.Structs)
+                            {
+                                if (!structIds.Remove(s.Id))
+                                {
+                                    bad.Add(s.Id);
+                                }
+                            }
+                        }
+
+                        if (schema.Operations != null && markBroken && bad.Count > 0)
+                        {
+                            foreach (var op in schema.Operations)
+                            {
+                                if (op.Broken)
+                                {
+                                    continue;
+                                }
+
+                                if (Uses(new HashSet<Guid>(), schema.StructMap, op.Output, bad))
+                                {
+                                    op.Broken = true;
+                                    continue;
+                                }
+
+                                if (op.Inputs != null)
+                                {
+                                    foreach (var input in op.Inputs)
+                                    {
+                                        if (Uses(new HashSet<Guid>(), schema.StructMap, input.Shape, bad))
+                                        {
+                                            op.Broken = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        return count;
+
+                        bool Uses(HashSet<Guid> visited, Dictionary<Guid, StructDef> map, Shape shape, HashSet<Guid> ids)
+                        {
+                            if (shape is StructShape st)
+                            {
+                                if (!visited.Add(st.Id))
+                                {
+                                    return false;
+                                }
+
+                                if (ids.Contains(st.Id))
+                                {
+                                    return true;
+                                }
+
+                                if (map != null && map.TryGetValue(st.Id, out var def) && def.Fields != null)
+                                {
+                                    foreach (var field in def.Fields)
+                                    {
+                                        if (Uses(visited, map, field.Shape, ids))
+                                        {
+                                            return true;
+                                        }
+
+                                        if (field.Headers != null)
+                                        {
+                                            foreach (var header in field.Headers)
+                                            {
+                                                if (Uses(visited, map, header.Shape, ids))
+                                                {
+                                                    return true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            var list = shape as ListShape;
+                            return list != null && Uses(visited, map, list.Element, ids);
+                        }
+
+                        void Collect(Shape shape, HashSet<Guid> ids, HashSet<Guid> enums, Dictionary<Guid, StructDef> map, HashSet<Guid> knownEnums)
+                        {
+                            if (shape is StructShape st)
+                            {
+                                if (ids.Add(st.Id))
+                                {
+                                    if (map != null && map.TryGetValue(st.Id, out var def) && def.Fields != null)
+                                    {
+                                        foreach (var field in def.Fields)
+                                        {
+                                            Collect(field.Shape, ids, enums, map, knownEnums);
+
+                                            if (field.Headers != null)
+                                            {
+                                                foreach (var header in field.Headers)
+                                                {
+                                                    Collect(header.Shape, ids, enums, map, knownEnums);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (shape is EnumShape en && knownEnums != null && knownEnums.Contains(en.Id))
+                            {
+                                enums.Add(en.Id);
+                            }
+                            else if (shape is ListShape list)
+                            {
+                                Collect(list.Element, ids, enums, map, knownEnums);
+                            }
+                        }
+                    }
+                }
+                """);
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [TestMethod]
         public async Task NestedLambdaAndLocalFunctionsWithCapturesAsync()
         {
             await VerifyCSharpAnalyzerAsync("""
