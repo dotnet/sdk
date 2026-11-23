@@ -17,8 +17,11 @@ namespace Analyzer.Utilities.Extensions
     {
 
         private static readonly Func<INamedTypeSymbol, bool> s_isExtension = LightupHelpers.CreateSymbolPropertyAccessor<INamedTypeSymbol, bool>(typeof(INamedTypeSymbol), nameof(IsExtension), fallbackResult: false);
+        private static readonly Func<INamedTypeSymbol, IParameterSymbol?> s_extensionParameter = LightupHelpers.CreateSymbolPropertyAccessor<INamedTypeSymbol, IParameterSymbol?>(typeof(INamedTypeSymbol), nameof(ExtensionParameter), fallbackResult: null);
 
         public static bool IsExtension(this INamedTypeSymbol symbol) => s_isExtension(symbol);
+
+        public static IParameterSymbol? ExtensionParameter(this INamedTypeSymbol symbol) => s_extensionParameter(symbol);
 
         public static IEnumerable<INamedTypeSymbol> GetBaseTypesAndThis(this INamedTypeSymbol type)
         {
