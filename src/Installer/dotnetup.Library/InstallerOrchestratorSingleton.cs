@@ -22,7 +22,7 @@ internal class InstallerOrchestratorSingleton
     private static Func<IEnumerable<DotnetInstall>>? s_systemInstallsOverride;
 
     /// <summary>
-    /// Sets a thread-local replacement for the installs read by <see cref="DotnetEnvironmentManager.GetExistingSystemInstalls"/>, for testing.
+    /// Sets a thread-local replacement for the installs read by <see cref="DotnetEnvironmentManager.GetExistingSystemInstalls()"/>, for testing.
     /// Pass null to clear it.
     /// </summary>
     internal static void SetSystemInstallsOverride(Func<IEnumerable<DotnetInstall>>? getSystemInstalls) =>

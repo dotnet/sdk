@@ -214,7 +214,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     /// </summary>
     private static VerifiedDownload RenameToOriginalFileName(VerifiedDownload download)
     {
-        string? originalFileName = GetInstallerFileName(FileVersionInfo.GetVersionInfo(download.Path).OriginalFilename);
+        string? originalFileName = GetOriginalFileName(download.Path);
         if (originalFileName is null || string.Equals(originalFileName, Path.GetFileName(download.Path), StringComparison.OrdinalIgnoreCase))
         {
             return download;
@@ -234,16 +234,23 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     }
 
     /// <summary>
-    /// Returns <paramref name="originalFileName"/> when it is a plain installer file name, or null otherwise. Bundles set it
+    /// Returns the OriginalFilename from the bundle's version resource when it is a plain installer file name, or null otherwise.
+    /// </summary>
+    private static string? GetOriginalFileName(string bundlePath)
+    {
+        string? originalFileName = FileVersionInfo.GetVersionInfo(bundlePath).OriginalFilename;
+        return IsPlainInstallerFileName(originalFileName) ? originalFileName : null;
+    }
+
+    /// <summary>
+    /// Returns whether <paramref name="fileName"/> is a plain .exe file name with no directory. Bundles set OriginalFilename
     /// to their published name, but other executables can set descriptions such as ".NET Host".
     /// </summary>
-    internal static string? GetInstallerFileName(string? originalFileName) =>
-        !string.IsNullOrWhiteSpace(originalFileName)
-            && originalFileName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-            && originalFileName == Path.GetFileName(originalFileName)
-            && originalFileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0
-                ? originalFileName
-                : null;
+    internal static bool IsPlainInstallerFileName([NotNullWhen(true)] string? fileName) =>
+        !string.IsNullOrWhiteSpace(fileName)
+            && fileName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+            && fileName == Path.GetFileName(fileName)
+            && fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
 
     /// <summary>
     /// Re-hashes the bundle through the locked handle and compares it with the hash the downloader verified,
