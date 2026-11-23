@@ -7,23 +7,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 {
     public static class TestProjectsPathHelper
     {
-        private static string s_projectsDirectory;
-
         public static string GetProjectsDirectory()
         {
-            if (s_projectsDirectory == null)
+            var assetsDirectory = Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "dotnet-format");
+            if (Directory.Exists(assetsDirectory))
             {
-                var assetsDirectory = Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "dotnet-format");
-                if (Directory.Exists(assetsDirectory))
-                {
-                    s_projectsDirectory = assetsDirectory;
-                    return assetsDirectory;
-                }
-
-                throw new ArgumentException("Can't find the project assets directory");
+                return assetsDirectory;
             }
 
-            return s_projectsDirectory;
+            throw new ArgumentException("Can't find the project assets directory");
         }
     }
 }

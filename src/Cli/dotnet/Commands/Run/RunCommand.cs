@@ -141,7 +141,7 @@ public class RunCommand
         EnvironmentVariables = environmentVariables;
     }
 
-    public int Execute()
+    public int Execute(CancellationToken cancellationToken)
     {
         // Create a single logger for all MSBuild operations (device selection + build/run)
         // File-based runs (.cs files) don't support device selection and should use the existing logger behavior
@@ -198,7 +198,8 @@ public class RunCommand
                     out projectBuilder,
                     selector?.IntermediateOutputPath,
                     selector?.HasRuntimeEnvironmentVariableSupport ?? false,
-                    requiresProjectExpansion);
+                    requiresProjectExpansion,
+                    cancellationToken);
                 runPropertiesFromEvaluation = projectBuilder?.LastBuild.Level == BuildLevel.All;
             }
             else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
@@ -245,7 +246,7 @@ public class RunCommand
             // Ignore Ctrl-C for the remainder of the command's execution
             Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
 
-            return targetCommand.Execute().ExitCode;
+            return targetCommand.Execute(cancellationToken).ExitCode;
         }
         catch (InvalidProjectFileException e)
         {
@@ -293,8 +294,9 @@ public class RunCommand
         // If user specified --device on command line, add it to global properties and MSBuildArgs
         if (!string.IsNullOrWhiteSpace(Device))
         {
-            globalProperties["Device"] = Device;
-            var properties = new Dictionary<string, string> { { "Device", Device } };
+            string escapedDevice = MSBuildPropertyEscaping.Escape(Device);
+            globalProperties["Device"] = escapedDevice;
+            var properties = new Dictionary<string, string> { { "Device", escapedDevice } };
             selector.InvalidateGlobalProperties(properties);
             var additionalProperties = new ReadOnlyDictionary<string, string>(properties);
             MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
@@ -344,7 +346,7 @@ public class RunCommand
             // If a device was selected (either by user or by prompt), apply it to MSBuildArgs
             if (selectedDevice is not null)
             {
-                var properties = new Dictionary<string, string> { { "Device", selectedDevice } };
+                var properties = new Dictionary<string, string> { { "Device", MSBuildPropertyEscaping.Escape(selectedDevice) } };
 
                 // If the device provided a RuntimeIdentifier, add it too
                 if (!string.IsNullOrEmpty(runtimeIdentifier))
@@ -518,13 +520,14 @@ public class RunCommand
         out VirtualProjectBuildingCommand? projectBuilder,
         string? intermediateOutputPath,
         bool hasRuntimeEnvironmentVariableSupport,
-        bool requiresProjectExpansion)
+        bool requiresProjectExpansion,
+        CancellationToken cancellationToken)
     {
         int buildResult;
         if (EntryPointFileFullPath is not null)
         {
             projectBuilder = CreateProjectBuilder();
-            buildResult = projectBuilder.Execute();
+            buildResult = projectBuilder.Execute(cancellationToken);
             projectFactory = requiresProjectExpansion || !CanUseRunPropertiesForCscBuiltProgram(projectBuilder.LastBuild.Level, projectBuilder.LastBuild.Cache?.PreviousEntry)
                 ? projectBuilder.CreateProjectInstance
                 : null;
@@ -551,8 +554,11 @@ public class RunCommand
                 buildResult = new RestoringCommand(
                     buildArgs,
                     NoRestore || _restoreDoneForDeviceSelection,
-                    advertiseWorkloadUpdates: false
-                ).Execute();
+                    msbuildPath: null,
+                    userProfileDir: null,
+                    advertiseWorkloadUpdates: false,
+                    CommandServices.CreateDefault()
+                ).Execute(cancellationToken);
             }
             finally
             {
@@ -584,7 +590,8 @@ public class RunCommand
 
         return new(
             entryPointFileFullPath: EntryPointFileFullPath,
-            msbuildArgs: args)
+            msbuildArgs: args,
+            services: CommandServices.CreateDefault())
         {
             NoRestore = NoRestore,
             NoCache = NoCache,
@@ -761,7 +768,8 @@ public class RunCommand
             if (!LoggerUtility.HasNoConsoleLoggerArgument(buildArgs.OtherMSBuildArgs))
             {
                 loggersForBuild.Add(CommonRunHelpers.GetConsoleLogger(
-                    buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
+                    buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs]),
+                    CommandServices.CreateDefault()
                 ));
             }
 
@@ -1075,11 +1083,11 @@ public class RunCommand
         }
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult).Execute(cancellationToken);
     }
 
     public static ParseResult ModifyParseResultForShorthandProjectOption(ParseResult parseResult)

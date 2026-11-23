@@ -15,7 +15,8 @@ namespace Microsoft.DotNet.ApiCompatibility
     /// <param name="message"><see cref="string"/> message describing the difference.</param>
     /// <param name="type"><see cref="DifferenceType"/> to describe the type of the difference.</param>
     /// <param name="memberId"><see cref="string"/> containing the member ID for which the difference is associated to.</param>
-    public readonly struct CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, string? memberId) : IDiagnostic, IEquatable<CompatDifference>
+    /// <param name="severity">The severity of the compatibility difference.</param>
+    public readonly struct CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, string? memberId, DifferenceSeverity severity) : IDiagnostic, IEquatable<CompatDifference>
     {
         /// <inheritdoc />
         public string DiagnosticId { get; } = diagnosticId;
@@ -24,6 +25,15 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// The <see cref="DifferenceType"/>.
         /// </summary>
         public DifferenceType Type { get; } = type;
+
+        /// <summary>
+        /// The severity of the compatibility difference.
+        /// </summary>
+        public DifferenceSeverity Severity { get; } = severity;
+
+        internal ApiStability? LeftStability { get; }
+
+        internal ApiStability? RightStability { get; }
 
         /// <inheritdoc />
         public string Message { get; } = message;
@@ -49,10 +59,37 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// <param name="diagnosticId"><see cref="string"/> representing the diagnostic ID.</param>
         /// <param name="message"><see cref="string"/> message describing the difference.</param>
         /// <param name="type"><see cref="DifferenceType"/> to describe the type of the difference.</param>
+        /// <param name="memberId"><see cref="string"/> containing the member ID for which the difference is associated to.</param>
+        public CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, string? memberId)
+            : this(left, right, diagnosticId, message, type, memberId, DifferenceSeverity.Error)
+        {
+        }
+
+        /// <summary>
+        /// Instantiate a new object representing the compatibility difference.
+        /// </summary>
+        /// <param name="left">The metadata information of the left comparison side.</param>
+        /// <param name="right">The metadata information of the right comparison side.</param>
+        /// <param name="diagnosticId"><see cref="string"/> representing the diagnostic ID.</param>
+        /// <param name="message"><see cref="string"/> message describing the difference.</param>
+        /// <param name="type"><see cref="DifferenceType"/> to describe the type of the difference.</param>
         /// <param name="member"><see cref="ISymbol"/> for which the difference is associated to.</param>
         public CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, ISymbol member)
             : this(left, right, diagnosticId, message, type, member.GetDocumentationCommentId())
         {
+        }
+
+        internal CompatDifference WithSeverity(DifferenceSeverity newSeverity) =>
+            new(Left, Right, DiagnosticId, Message, Type, ReferenceId, newSeverity, LeftStability, RightStability);
+
+        internal CompatDifference WithStabilities(ApiStability? leftStability, ApiStability? rightStability) =>
+            new(Left, Right, DiagnosticId, Message, Type, ReferenceId, Severity, leftStability, rightStability);
+
+        private CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, string? memberId, DifferenceSeverity severity, ApiStability? leftStability, ApiStability? rightStability)
+            : this(left, right, diagnosticId, message, type, memberId, severity)
+        {
+            LeftStability = leftStability;
+            RightStability = rightStability;
         }
 
         /// <summary>

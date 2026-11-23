@@ -144,7 +144,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                                 InstallerErrorCode.PackageNotFound,
                                 e.PackageSourceMappingMatchNotFound
                                     ? string.Format(LocalizableStrings.NuGetInstaller_Error_PackageSourceMappingMatchNotFound, e.PackageIdentifier)
-                                    : string.Format(LocalizableStrings.NuGetInstaller_Error_FailedToReadPackage, e.PackageIdentifier, string.Join(", ", e.SourcesList)),
+                                    : string.Format(LocalizableStrings.NuGetInstaller_InstallResult_Error_PackageNotFound, e.PackageIdentifier, string.Join(", ", e.SourcesList)),
                                 []);
                         }
                         catch (InvalidNuGetSourceException e)
@@ -274,7 +274,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     InstallerErrorCode.PackageNotFound,
                     e.PackageSourceMappingMatchNotFound
                         ? string.Format(LocalizableStrings.NuGetInstaller_Error_PackageSourceMappingMatchNotFound, e.PackageIdentifier)
-                        : string.Format(LocalizableStrings.NuGetInstaller_Error_FailedToReadPackage, e.PackageIdentifier, string.Join(", ", e.SourcesList)),
+                        : string.Format(LocalizableStrings.NuGetInstaller_InstallResult_Error_PackageNotFound, e.PackageIdentifier, string.Join(", ", e.SourcesList)),
                     []);
             }
             catch (InvalidNuGetSourceException e)

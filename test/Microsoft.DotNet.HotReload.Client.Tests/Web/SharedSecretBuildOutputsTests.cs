@@ -41,21 +41,6 @@ public class SharedSecretBuildOutputsTests : IDisposable
     private SharedSecretBuildOutputs CreateOutputs()
         => new(_directory, SharedSecretBuildOutputs.PublicKeyFileName, SharedSecretBuildOutputs.PrivateKeyFileName);
 
-    [TestMethod]
-    public void FromProjectSettings_UsesBrowserKeyFiles()
-    {
-        using var provider = WriteValidKeyPair();
-        var keyDirectory = Path.Combine(_directory, SharedSecretBuildOutputs.DirectoryName);
-        Directory.CreateDirectory(keyDirectory);
-        File.Move(_publicKeyPath, Path.Combine(keyDirectory, SharedSecretBuildOutputs.PublicKeyFileName));
-        File.Move(_privateKeyPath, Path.Combine(keyDirectory, SharedSecretBuildOutputs.PrivateKeyFileName));
-
-        using var sessionKey = SharedSecretBuildOutputs.FromProjectSettings(_directory)!.TryCreateSessionKey(NullLogger.Instance);
-
-        Assert.IsNotNull(sessionKey);
-        Assert.AreEqual(provider.GetPublicKey(), sessionKey.GetPublicKey());
-    }
-
     private SharedSecretProvider WriteValidKeyPair()
     {
         var provider = new SharedSecretProvider();
@@ -113,6 +98,23 @@ public class SharedSecretBuildOutputsTests : IDisposable
         var secret = Convert.ToBase64String([1, 2, 3, 4]);
         var encrypted = Convert.ToBase64String(provider.RSA.Encrypt(Convert.FromBase64String(secret), RSAEncryptionPadding.OaepSHA256));
         Assert.AreEqual(secret, sessionKey.DecryptSecret(encrypted));
+    }
+
+    [TestMethod]
+    public void FromProjectSettings_UsesBrowserKeyFilesUnderIntermediateOutput()
+    {
+        using var provider = WriteValidKeyPair();
+        var keyDirectory = Path.Combine(_directory, SharedSecretBuildOutputs.DirectoryName);
+        Directory.CreateDirectory(keyDirectory);
+        File.Move(_publicKeyPath, Path.Combine(keyDirectory, SharedSecretBuildOutputs.PublicKeyFileName));
+        File.Move(_privateKeyPath, Path.Combine(keyDirectory, SharedSecretBuildOutputs.PrivateKeyFileName));
+
+        var outputs = SharedSecretBuildOutputs.FromProjectSettings(_directory);
+        Assert.IsNotNull(outputs);
+
+        using var sessionKey = outputs.TryCreateSessionKey(NullLogger.Instance);
+        Assert.IsNotNull(sessionKey);
+        Assert.AreEqual(provider.GetPublicKey(), sessionKey.GetPublicKey());
     }
 
     [TestMethod]

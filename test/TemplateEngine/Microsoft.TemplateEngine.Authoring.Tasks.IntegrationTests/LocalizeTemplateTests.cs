@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
+using Microsoft.NET.TestFramework;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
@@ -9,6 +10,8 @@ using Microsoft.TemplateEngine.Tests;
 namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 {
     [TestClass]
+    // Mitigates intermittent Windows cleanup failures under class-level parallelism; see https://github.com/dotnet/sdk/issues/56222.
+    [ResourceLock(nameof(DotnetCommand))]
     public class LocalizeTemplateTests : TestBase
     {
         public TestContext TestContext { get; set; } = null!;
@@ -16,23 +19,21 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
         private ILogger Log => new TestContextLogger(TestContext);
 
         [TestMethod]
-        public void CanRunTask()
+        public async Task CanRunTask()
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/BasicTemplatePackage", tmpDir, true);
             SetupNuGetConfigForPackagesLocation(tmpDir);
 
-            new DotnetCommand(Log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
-                .WithoutTelemetry()
+            CreateDotnetCommand("add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
-            new DotnetCommand(Log, "build")
-                .WithoutTelemetry()
+            CreateDotnetCommand("build")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
@@ -42,27 +43,25 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             Assert.HasCount(14, Directory.GetFiles(locFolder));
             Assert.IsTrue(File.Exists(Path.Combine(locFolder, "templatestrings.de.json")));
 
-            Directory.Delete(tmpDir, true);
+            await DeleteTemporaryDirectoryAsync(tmpDir);
         }
 
         [TestMethod]
-        public void CanRunTaskSelectedLangs()
+        public async Task CanRunTaskSelectedLangs()
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/TemplatePackageEnDe", tmpDir, true);
             SetupNuGetConfigForPackagesLocation(tmpDir);
 
-            new DotnetCommand(Log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
-                .WithoutTelemetry()
+            CreateDotnetCommand("add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
-            new DotnetCommand(Log, "build")
-                .WithoutTelemetry()
+            CreateDotnetCommand("build")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
@@ -73,27 +72,25 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             Assert.IsTrue(File.Exists(Path.Combine(locFolder, "templatestrings.de.json")));
             Assert.IsFalse(File.Exists(Path.Combine(locFolder, "templatestrings.fr.json")));
 
-            Directory.Delete(tmpDir, true);
+            await DeleteTemporaryDirectoryAsync(tmpDir);
         }
 
         [TestMethod]
-        public void CanRunTaskSelectedTemplates()
+        public async Task CanRunTaskSelectedTemplates()
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/TemplatePackagePartiallyLocalized", tmpDir, true);
             SetupNuGetConfigForPackagesLocation(tmpDir);
 
-            new DotnetCommand(Log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
-                .WithoutTelemetry()
+            CreateDotnetCommand("add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
-            new DotnetCommand(Log, "build")
-                .WithoutTelemetry()
+            CreateDotnetCommand("build")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
@@ -105,27 +102,25 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             Assert.IsTrue(File.Exists(Path.Combine(locFolder, "templatestrings.de.json")));
             Assert.IsFalse(Directory.Exists(noLocFolder));
 
-            Directory.Delete(tmpDir, true);
+            await DeleteTemporaryDirectoryAsync(tmpDir);
         }
 
         [TestMethod]
-        public void CanRunTaskAndDetectError()
+        public async Task CanRunTaskAndDetectError()
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/InvalidTemplatePackage", tmpDir, true);
             SetupNuGetConfigForPackagesLocation(tmpDir);
 
-            new DotnetCommand(Log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
-                .WithoutTelemetry()
+            CreateDotnetCommand("add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
-            new DotnetCommand(Log, "build")
-                .WithoutTelemetry()
+            CreateDotnetCommand("build")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Fail()
                 .And.HaveStdOutContaining("Build FAILED.")
@@ -134,7 +129,19 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             string locFolder = Path.Combine(tmpDir, "content/TemplateWithSourceName/.template.config/localize");
 
             Assert.IsFalse(Directory.Exists(locFolder));
-            Directory.Delete(tmpDir, true);
+            await DeleteTemporaryDirectoryAsync(tmpDir);
         }
+
+        private DotnetCommand CreateDotnetCommand(string subcommand, params string[] args) =>
+            new DotnetCommand(Log, subcommand, args)
+                .WithCustomExecutablePath(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath)
+                .WithoutTelemetry();
+
+        private static Task DeleteTemporaryDirectoryAsync(string path) =>
+            TestUtils.AttemptSearch<bool, IOException>(10, TimeSpan.FromMilliseconds(500), () =>
+            {
+                Directory.Delete(path, true);
+                return Task.FromResult(true);
+            });
     }
 }

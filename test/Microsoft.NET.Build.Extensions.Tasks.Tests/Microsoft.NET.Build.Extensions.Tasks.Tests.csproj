@@ -6,6 +6,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
 

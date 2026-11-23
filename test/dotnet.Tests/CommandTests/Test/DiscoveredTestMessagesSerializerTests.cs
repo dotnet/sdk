@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
+using System.Text;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
@@ -11,6 +12,30 @@ namespace dotnet.Tests.CommandTests.Test;
 [TestClass]
 public class DiscoveredTestMessagesSerializerTests
 {
+    [TestMethod]
+    public void Deserialize_RejectsParameterTypeCountLargerThanItsField()
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            writer.Write((ushort)1);
+            writer.Write((ushort)DiscoveredTestMessagesFieldsId.DiscoveredTestMessageList);
+            writer.Write(16);
+            writer.Write(1);
+            writer.Write((ushort)1);
+            writer.Write((ushort)DiscoveredTestMessageFieldsId.ParameterTypeFullNames);
+            writer.Write(sizeof(int));
+            writer.Write(int.MaxValue);
+        }
+
+        stream.Position = 0;
+        var serializer = new DiscoveredTestMessagesSerializer();
+
+        Action deserialize = () => serializer.Deserialize(stream);
+
+        deserialize.Should().Throw<InvalidDataException>();
+    }
+
     [TestMethod]
     public void RoundTrip_AllFieldsPopulated_PreservesValues()
     {
@@ -175,6 +200,42 @@ public class DiscoveredTestMessagesSerializerTests
         _ = reader.ReadInt32();  // list length
         ushort innerFieldCount = reader.ReadUInt16();
         innerFieldCount.Should().Be(1, "only Uid is populated; empty Traits and empty ParameterTypeFullNames must not appear on the wire");
+    }
+
+    [TestMethod]
+    public void Deserialize_LineNumberFieldWithPadding_PreservesFollowingField()
+    {
+        using var listPayload = new MemoryStream();
+        using (var payloadWriter = new BinaryWriter(listPayload, Encoding.UTF8, leaveOpen: true))
+        {
+            byte[] displayName = Encoding.UTF8.GetBytes("after-padding");
+
+            payloadWriter.Write(1);
+            payloadWriter.Write((ushort)2);
+            payloadWriter.Write(DiscoveredTestMessageFieldsId.LineNumber);
+            payloadWriter.Write(sizeof(long));
+            payloadWriter.Write(42);
+            payloadWriter.Write(0);
+            payloadWriter.Write(DiscoveredTestMessageFieldsId.DisplayName);
+            payloadWriter.Write(displayName.Length);
+            payloadWriter.Write(displayName);
+        }
+
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            writer.Write((ushort)1);
+            writer.Write(DiscoveredTestMessagesFieldsId.DiscoveredTestMessageList);
+            writer.Write(checked((int)listPayload.Length));
+            writer.Write(listPayload.ToArray());
+        }
+
+        stream.Position = 0;
+        var deserialized = (DiscoveredTestMessages)new DiscoveredTestMessagesSerializer().Deserialize(stream);
+
+        deserialized.DiscoveredMessages.Should().ContainSingle();
+        deserialized.DiscoveredMessages[0].LineNumber.Should().Be(42);
+        deserialized.DiscoveredMessages[0].DisplayName.Should().Be("after-padding");
     }
 
     private static byte[] Serialize(DiscoveredTestMessages message)

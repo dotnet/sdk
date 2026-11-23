@@ -62,7 +62,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
         _reporter = reporter ?? Reporter.Output;
         _errorReporter = reporter ?? Reporter.Error;
 
-        _configFilePath = result.GetValue(Definition.ConfigOption);
+        _configFilePath = result.GetValue(Definition.ConfigOption)?.FullName;
         _sources = result.GetValue(Definition.AddSourceOption);
         _verbosity = result.GetValue(Definition.VerbosityOption);
         if (!result.HasOption(Definition.VerbosityOption) && result.GetValue(Definition.RestoreOptions.InteractiveOption))
@@ -73,7 +73,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
         _restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(result);
     }
 
-    public override int Execute() => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+    public override int Execute(CancellationToken cancellationToken) => ExecuteAsync(cancellationToken).GetAwaiter().GetResult();
 
     internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {

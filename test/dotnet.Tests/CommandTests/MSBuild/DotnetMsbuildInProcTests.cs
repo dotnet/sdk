@@ -11,6 +11,8 @@ using Microsoft.DotNet.Configurer;
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
     [TestClass]
+    // TelemetryClient static state is process-wide and is accessed by code that cannot participate in a resource lock.
+    [DoNotParallelize]
     public class DotnetMsbuildInProcTests : SdkTest
     {
         public DotnetMsbuildInProcTests()
@@ -54,7 +56,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             TelemetryClient.DisabledForTests = true; // reset static session id modified by telemetry constructor
             telemetry = new TelemetryClient();
 
-            MSBuildForwardingApp msBuildForwardingApp = new(Enumerable.Empty<string>());
+            MSBuildForwardingApp msBuildForwardingApp = new(
+                Enumerable.Empty<string>(),
+                msbuildPath: null,
+                TestCommandServices.CreateNonLLM());
 
             var forwardingAppWithoutLogging = msBuildForwardingApp
                 .GetType()

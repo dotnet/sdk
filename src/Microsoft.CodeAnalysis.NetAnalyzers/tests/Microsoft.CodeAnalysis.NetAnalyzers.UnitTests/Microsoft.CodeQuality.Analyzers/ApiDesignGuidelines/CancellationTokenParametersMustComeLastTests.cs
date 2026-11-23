@@ -19,7 +19,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task NoDiagnosticInEmptyFileAsync()
         {
-            var test = @"";
+            var test = "";
 
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
@@ -27,14 +27,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task DiagnosticForMethodAsync()
         {
-            var source = @"
-using System.Threading;
-class T
-{
-    void M(CancellationToken t, int i)
-    {
-    }
-}";
+            var source = """
+
+                using System.Threading;
+                class T
+                {
+                    void M(CancellationToken t, int i)
+                    {
+                    }
+                }
+                """;
 #pragma warning disable RS0030 // Do not use banned APIs
             var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("T.M(System.Threading.CancellationToken, int)");
 #pragma warning restore RS0030 // Do not use banned APIs
@@ -44,14 +46,16 @@ class T
         [TestMethod]
         public async Task DiagnosticWhenFirstAndLastByOtherInBetweenAsync()
         {
-            var source = @"
-using System.Threading;
-class T
-{
-    void M(CancellationToken t1, int i, CancellationToken t2)
-    {
-    }
-}";
+            var source = """
+
+                using System.Threading;
+                class T
+                {
+                    void M(CancellationToken t1, int i, CancellationToken t2)
+                    {
+                    }
+                }
+                """;
 #pragma warning disable RS0030 // Do not use banned APIs
             var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("T.M(System.Threading.CancellationToken, int, System.Threading.CancellationToken)");
 #pragma warning restore RS0030 // Do not use banned APIs
@@ -61,102 +65,110 @@ class T
         [TestMethod]
         public async Task NoDiagnosticWhenLastParamAsync()
         {
-            var test = @"
-using System.Threading;
-class T
-{
-    void M(int i, CancellationToken t)
-    {
-    }
-}";
+            var test = """
+                using System.Threading;
+                class T
+                {
+                    void M(int i, CancellationToken t)
+                    {
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [TestMethod]
         public async Task NoDiagnosticWhenOnlyParamAsync()
         {
-            var test = @"
-using System.Threading;
-class T
-{
-    void M(CancellationToken t)
-    {
-    }
-}";
+            var test = """
+                using System.Threading;
+                class T
+                {
+                    void M(CancellationToken t)
+                    {
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [TestMethod]
         public async Task NoDiagnosticWhenParamsComesAfterAsync()
         {
-            var test = @"
-using System.Threading;
-class T
-{
-    void M(CancellationToken t, params object[] args)
-    {
-    }
-}";
+            var test = """
+                using System.Threading;
+                class T
+                {
+                    void M(CancellationToken t, params object[] args)
+                    {
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [TestMethod]
         public async Task NoDiagnosticWhenOutComesAfterAsync()
         {
-            var test = @"
-using System.Threading;
-class T
-{
-    void M(CancellationToken t, out int i)
-    {
-        i = 2;
-    }
-}";
+            var test = """
+                using System.Threading;
+                class T
+                {
+                    void M(CancellationToken t, out int i)
+                    {
+                        i = 2;
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [TestMethod]
         public async Task NoDiagnosticWhenRefComesAfterAsync()
         {
-            var test = @"
-using System.Threading;
-class T
-{
-    void M(CancellationToken t, ref int x, ref int y)
-    {
-    }
-}";
+            var test = """
+                using System.Threading;
+                class T
+                {
+                    void M(CancellationToken t, ref int x, ref int y)
+                    {
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [TestMethod]
         public async Task NoDiagnosticWhenOptionalParameterComesAfterNonOptionalCancellationTokenAsync()
         {
-            var test = @"
-using System.Threading;
-class T
-{
-    void M(CancellationToken t, int x = 0)
-    {
-    }
-}";
+            var test = """
+                using System.Threading;
+                class T
+                {
+                    void M(CancellationToken t, int x = 0)
+                    {
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [TestMethod]
         public async Task NoDiagnosticOnOverrideAsync()
         {
-            var test = @"
-using System.Threading;
-class B
-{
-    protected virtual void M(CancellationToken t, int i) { }
-}
+            var test = """
 
-class T : B
-{
-    protected override void M(CancellationToken t, int i) { }
-}";
+                using System.Threading;
+                class B
+                {
+                    protected virtual void M(CancellationToken t, int i) { }
+                }
+
+                class T : B
+                {
+                    protected override void M(CancellationToken t, int i) { }
+                }
+                """;
 
             // One diagnostic for the virtual, but none for the override.
 #pragma warning disable RS0030 // Do not use banned APIs
@@ -168,17 +180,19 @@ class T : B
         [TestMethod]
         public async Task NoDiagnosticOnImplicitInterfaceImplementationAsync()
         {
-            var test = @"
-using System.Threading;
-interface I
-{
-    void M(CancellationToken t, int i);
-}
+            var test = """
 
-class T : I
-{
-    public void M(CancellationToken t, int i) { }
-}";
+                using System.Threading;
+                interface I
+                {
+                    void M(CancellationToken t, int i);
+                }
+
+                class T : I
+                {
+                    public void M(CancellationToken t, int i) { }
+                }
+                """;
 
             // One diagnostic for the interface, but none for the implementation.
 #pragma warning disable RS0030 // Do not use banned APIs
@@ -190,17 +204,19 @@ class T : I
         [TestMethod]
         public async Task NoDiagnosticOnExplicitInterfaceImplementationAsync()
         {
-            var test = @"
-using System.Threading;
-interface I
-{
-    void M(CancellationToken t, int i);
-}
+            var test = """
 
-class T : I
-{
-    void I.M(CancellationToken t, int i) { }
-}";
+                using System.Threading;
+                interface I
+                {
+                    void M(CancellationToken t, int i);
+                }
+
+                class T : I
+                {
+                    void I.M(CancellationToken t, int i) { }
+                }
+                """;
 
             // One diagnostic for the interface, but none for the implementation.
 #pragma warning disable RS0030 // Do not use banned APIs
@@ -212,44 +228,48 @@ class T : I
         [TestMethod, WorkItem(1491, "https://github.com/dotnet/roslyn-analyzers/issues/1491")]
         public async Task NoDiagnosticOnCancellationTokenExtensionMethodAsync()
         {
-            var test = @"
-using System.Threading;
-static class C1
-{
-    public static void M1(this CancellationToken p1, object p2)
-    {
-    }
-}";
+            var test = """
+                using System.Threading;
+                static class C1
+                {
+                    public static void M1(this CancellationToken p1, object p2)
+                    {
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [TestMethod, WorkItem(1816, "https://github.com/dotnet/roslyn-analyzers/issues/1816")]
         public async Task NoDiagnosticWhenMultipleAtEndOfParameterListAsync()
         {
-            var test = @"
-using System.Threading;
-static class C1
-{
-    public static void M1(object p1, CancellationToken token1, CancellationToken token2) { }
-    public static void M2(object p1, CancellationToken token1, CancellationToken token2, CancellationToken token3) { }
-    public static void M3(CancellationToken token1, CancellationToken token2, CancellationToken token3) { }
-    public static void M4(CancellationToken token1, CancellationToken token2 = default(CancellationToken)) { }
-    public static void M5(CancellationToken token1 = default(CancellationToken), CancellationToken token2 = default(CancellationToken)) { }
-}";
+            var test = """
+                using System.Threading;
+                static class C1
+                {
+                    public static void M1(object p1, CancellationToken token1, CancellationToken token2) { }
+                    public static void M2(object p1, CancellationToken token1, CancellationToken token2, CancellationToken token3) { }
+                    public static void M3(CancellationToken token1, CancellationToken token2, CancellationToken token3) { }
+                    public static void M4(CancellationToken token1, CancellationToken token2 = default(CancellationToken)) { }
+                    public static void M5(CancellationToken token1 = default(CancellationToken), CancellationToken token2 = default(CancellationToken)) { }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [TestMethod]
         public async Task DiagnosticOnExtensionMethodWhenCancellationTokenIsNotFirstParameterAsync()
         {
-            var test = @"
-using System.Threading;
-static class C1
-{
-    public static void M1(this object p1, CancellationToken p2, object p3)
-    {
-    }
-}";
+            var test = """
+
+                using System.Threading;
+                static class C1
+                {
+                    public static void M1(this object p1, CancellationToken p2, object p3)
+                    {
+                    }
+                }
+                """;
 
 #pragma warning disable RS0030 // Do not use banned APIs
             var expected = VerifyCS.Diagnostic().WithLocation(5, 24).WithArguments("C1.M1(object, System.Threading.CancellationToken, object)");
@@ -260,61 +280,67 @@ static class C1
         [TestMethod, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
         public async Task CA1068_DoNotReportOnIProgressLastAndCancellationTokenBeforeLastAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Threading;
+                using System.Threading.Tasks;
 
-public class C
-{
-    public Task SomeAsync(object o, CancellationToken cancellationToken, IProgress<int> progress)
-    {
-        throw new NotImplementedException();
-    }
-}");
+                public class C
+                {
+                    public Task SomeAsync(object o, CancellationToken cancellationToken, IProgress<int> progress)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Threading
-Imports System.Threading.Tasks
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Imports System.Threading
+                Imports System.Threading.Tasks
 
-Public Class C
-    Public Function SomeAsync(ByVal o As Object, ByVal cancellationToken As CancellationToken, ByVal progress As IProgress(Of Integer)) As Task
-        Throw New NotImplementedException()
-    End Function
-End Class");
+                Public Class C
+                    Public Function SomeAsync(ByVal o As Object, ByVal cancellationToken As CancellationToken, ByVal progress As IProgress(Of Integer)) As Task
+                        Throw New NotImplementedException()
+                    End Function
+                End Class
+                """);
         }
 
         [TestMethod, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
         public async Task CA1068_ReportOnIProgressLastAndCancellationTokenNotBeforeLastAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class C
-{
-    public Task SomeAsync(CancellationToken cancellationToken, object o, IProgress<int> progress)
-    {
-        throw new NotImplementedException();
-    }
-}",
+                using System;
+                using System.Threading;
+                using System.Threading.Tasks;
+
+                public class C
+                {
+                    public Task SomeAsync(CancellationToken cancellationToken, object o, IProgress<int> progress)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+                """,
 #pragma warning disable RS0030 // Do not use banned APIs
             VerifyCS.Diagnostic().WithLocation(8, 17)
 #pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments("C.SomeAsync(System.Threading.CancellationToken, object, System.IProgress<int>)"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Threading
-Imports System.Threading.Tasks
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class C
-    Public Function SomeAsync(ByVal cancellationToken As CancellationToken, ByVal o As Object, ByVal progress As IProgress(Of Integer)) As Task
-        Throw New NotImplementedException()
-    End Function
-End Class",
+                Imports System
+                Imports System.Threading
+                Imports System.Threading.Tasks
+
+                Public Class C
+                    Public Function SomeAsync(ByVal cancellationToken As CancellationToken, ByVal o As Object, ByVal progress As IProgress(Of Integer)) As Task
+                        Throw New NotImplementedException()
+                    End Function
+                End Class
+                """,
 #pragma warning disable RS0030 // Do not use banned APIs
             VerifyVB.Diagnostic().WithLocation(7, 21)
 #pragma warning restore RS0030 // Do not use banned APIs
@@ -324,33 +350,37 @@ End Class",
         [TestMethod, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
         public async Task CA1068_OnlyExcludeOneIProgressAtTheEndAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class C
-{
-    public Task SomeAsync(CancellationToken cancellationToken, IProgress<int> progress1, IProgress<int> progress2)
-    {
-        throw new NotImplementedException();
-    }
-}",
+                using System;
+                using System.Threading;
+                using System.Threading.Tasks;
+
+                public class C
+                {
+                    public Task SomeAsync(CancellationToken cancellationToken, IProgress<int> progress1, IProgress<int> progress2)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+                """,
 #pragma warning disable RS0030 // Do not use banned APIs
             VerifyCS.Diagnostic().WithLocation(8, 17)
 #pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments("C.SomeAsync(System.Threading.CancellationToken, System.IProgress<int>, System.IProgress<int>)"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Threading
-Imports System.Threading.Tasks
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class C
-    Public Function SomeAsync(ByVal cancellationToken As CancellationToken, ByVal progress1 As IProgress(Of Integer), ByVal progress2 As IProgress(Of Integer)) As Task
-        Throw New NotImplementedException()
-    End Function
-End Class",
+                Imports System
+                Imports System.Threading
+                Imports System.Threading.Tasks
+
+                Public Class C
+                    Public Function SomeAsync(ByVal cancellationToken As CancellationToken, ByVal progress1 As IProgress(Of Integer), ByVal progress2 As IProgress(Of Integer)) As Task
+                        Throw New NotImplementedException()
+                    End Function
+                End Class
+                """,
 #pragma warning disable RS0030 // Do not use banned APIs
             VerifyVB.Diagnostic().WithLocation(7, 21)
 #pragma warning restore RS0030 // Do not use banned APIs
@@ -360,85 +390,89 @@ End Class",
         [TestMethod, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
         public async Task CA1068_CallerAttributesWithNonOptionalCancellationTokenAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Runtime.CompilerServices;
+                using System.Threading;
+                using System.Threading.Tasks;
 
-public class C
-{
-    public Task SomeAsync(CancellationToken cancellationToken,
-        [CallerMemberName] string memberName = """",
-        [CallerFilePath] string sourceFilePath = """",
-        [CallerLineNumber] int sourceLineNumber = 0)
-    {
-        throw new NotImplementedException();
-    }
-}");
+                public class C
+                {
+                    public Task SomeAsync(CancellationToken cancellationToken,
+                        [CallerMemberName] string memberName = "",
+                        [CallerFilePath] string sourceFilePath = "",
+                        [CallerLineNumber] int sourceLineNumber = 0)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+                """);
         }
 
         [TestMethod, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
         public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Runtime.CompilerServices;
+                using System.Threading;
+                using System.Threading.Tasks;
 
-public class C
-{
-    public Task SomeAsync(CancellationToken cancellationToken = default,
-        [CallerMemberName] string memberName = """",
-        [CallerFilePath] string sourceFilePath = """",
-        [CallerLineNumber] int sourceLineNumber = 0)
-    {
-        throw new NotImplementedException();
-    }
-}");
+                public class C
+                {
+                    public Task SomeAsync(CancellationToken cancellationToken = default,
+                        [CallerMemberName] string memberName = "",
+                        [CallerFilePath] string sourceFilePath = "",
+                        [CallerLineNumber] int sourceLineNumber = 0)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+                """);
         }
 
         [TestMethod, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
         public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsLastParameterAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Runtime.CompilerServices;
+                using System.Threading;
+                using System.Threading.Tasks;
 
-public class C
-{
-    public Task SomeAsync([CallerMemberName] string memberName = """",
-        [CallerFilePath] string sourceFilePath = """",
-        [CallerLineNumber] int sourceLineNumber = 0,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-}");
+                public class C
+                {
+                    public Task SomeAsync([CallerMemberName] string memberName = "",
+                        [CallerFilePath] string sourceFilePath = "",
+                        [CallerLineNumber] int sourceLineNumber = 0,
+                        CancellationToken cancellationToken = default)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+                """);
         }
 
         [TestMethod, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
         public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsMiddleParameterAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Runtime.CompilerServices;
+                using System.Threading;
+                using System.Threading.Tasks;
 
-public class C
-{
-    public Task SomeAsync([CallerMemberName] string memberName = """",
-        [CallerFilePath] string sourceFilePath = """",
-        CancellationToken cancellationToken = default,
-        [CallerLineNumber] int sourceLineNumber = 0)
-    {
-        throw new NotImplementedException();
-    }
-}");
+                public class C
+                {
+                    public Task SomeAsync([CallerMemberName] string memberName = "",
+                        [CallerFilePath] string sourceFilePath = "",
+                        CancellationToken cancellationToken = default,
+                        [CallerLineNumber] int sourceLineNumber = 0)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+                """);
         }
 
         [TestMethod, WorkItem(6557, "https://github.com/dotnet/roslyn-analyzers/issues/6557")]
@@ -452,20 +486,21 @@ public class C
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+                        """
+                            using System;
+                            using System.Runtime.CompilerServices;
+                            using System.Threading;
+                            using System.Threading.Tasks;
 
-public class C
-{
-    public Task SomeAsync(string input, [CallerArgumentExpression(nameof(input))] string argumentName = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-}"
+                            public class C
+                            {
+                                public Task SomeAsync(string input, [CallerArgumentExpression(nameof(input))] string argumentName = null,
+                                    CancellationToken cancellationToken = default)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+                            """
                    }
                 }
             }.RunAsync(CancellationToken.None);
@@ -482,20 +517,21 @@ public class C
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+                        """
+                            using System;
+                            using System.Runtime.CompilerServices;
+                            using System.Threading;
+                            using System.Threading.Tasks;
 
-public class C
-{
-    public Task SomeAsync(string input, CancellationToken cancellationToken = default,
-        [CallerArgumentExpression(nameof(input))] string argumentName = null)
-    {
-        throw new NotImplementedException();
-    }
-}"
+                            public class C
+                            {
+                                public Task SomeAsync(string input, CancellationToken cancellationToken = default,
+                                    [CallerArgumentExpression(nameof(input))] string argumentName = null)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                            }
+                            """
                    }
                 }
             }.RunAsync(CancellationToken.None);
@@ -524,13 +560,17 @@ public class C
         [DataRow("internal", "dotnet_code_quality.CA1068.api_surface = all")]
         [DataRow("internal", "dotnet_code_quality.Design.api_surface = all")]
         // General + Specific analyzer option
-        [DataRow("internal", @"dotnet_code_quality.api_surface = private
-                                  dotnet_code_quality.CA1068.api_surface = all")]
+        [DataRow("internal", """
+            dotnet_code_quality.api_surface = private
+                                              dotnet_code_quality.CA1068.api_surface = all
+            """)]
         // Case-insensitive analyzer option
         [DataRow("internal", "DOTNET_code_quality.CA1068.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [DataRow("internal", @"dotnet_code_quality.api_surface = all
-                                  dotnet_code_quality.CA1068.api_surface_2 = private")]
+        [DataRow("internal", """
+            dotnet_code_quality.api_surface = all
+                                              dotnet_code_quality.CA1068.api_surface_2 = private
+            """)]
         public async Task CA1068_CSharp_ApiSurface_DiagnosticAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
@@ -539,19 +579,21 @@ public class C
                 {
                     Sources =
                     {
-                        $@"
-using System.Threading;
+                        $$"""
+                            using System.Threading;
 
-public class C
-{{
-    {accessibility} void [|M|](CancellationToken t, int i) {{}}
-}}"
+                            public class C
+                            {
+                                {{accessibility}} void [|M|](CancellationToken t, int i) {}
+                            }
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") }
+                        [*]
+                        {editorConfigText}
+                        """) }
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -579,13 +621,17 @@ public class C
         [DataRow("Friend", "dotnet_code_quality.CA1068.api_surface = All")]
         [DataRow("Friend", "dotnet_code_quality.Design.api_surface = All")]
         // General + Specific analyzer option
-        [DataRow("Friend", @"dotnet_code_quality.api_surface = Private
-                                dotnet_code_quality.CA1068.api_surface = All")]
+        [DataRow("Friend", """
+            dotnet_code_quality.api_surface = Private
+                                            dotnet_code_quality.CA1068.api_surface = All
+            """)]
         // Case-insensitive analyzer option
         [DataRow("Friend", "DOTNET_code_quality.CA1068.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [DataRow("Friend", @"dotnet_code_quality.api_surface = All
-                                dotnet_code_quality.CA1068.api_surface_2 = Private")]
+        [DataRow("Friend", """
+            dotnet_code_quality.api_surface = All
+                                            dotnet_code_quality.CA1068.api_surface_2 = Private
+            """)]
         public async Task CA1068_VisualBasic_ApiSurface_DiagnosticAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
@@ -594,31 +640,33 @@ public class C
                 {
                     Sources =
                     {
-                        $@"
-Imports System.Threading
-Public Class C
-    {accessibility} Sub [|M|](t As CancellationToken, i As Integer)
-    End Sub
-End Class"
+                        $"""
+                            Imports System.Threading
+                            Public Class C
+                                {accessibility} Sub [|M|](t As CancellationToken, i As Integer)
+                                End Sub
+                            End Class
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") }
+                        [*]
+                        {editorConfigText}
+                        """) }
                 },
             }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod, WorkItem(4467, "https://github.com/dotnet/roslyn-analyzers/issues/4467")]
         // No configuration - validate diagnostics in default configuration
-        [DataRow(@"")]
+        [DataRow("")]
         // Exclude all ctors
-        [DataRow(@"dotnet_code_quality.excluded_symbol_names = .ctor")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = .ctor")]
         // Exclude all members starting with C
-        [DataRow(@"dotnet_code_quality.excluded_symbol_names = C*")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = C*")]
         // Exclude classes C1 and C2
-        [DataRow(@"dotnet_code_quality.excluded_symbol_names = T:C1|T:C2")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = T:C1|T:C2")]
         public async Task CA1068_ExcludedSymbolNames_DiagnosticAsync(string editorConfigText)
         {
             var prefix = editorConfigText.Length == 0 ? "[|" : "";
@@ -630,26 +678,34 @@ End Class"
                 {
                     Sources =
                     {
-                        @"
-using System.Threading;
+                        """
+                            using System.Threading;
 
-public class C1
-{
-    public " + prefix + "C1" + suffix + @"(CancellationToken t, int i) {}
+                            public class C1
+                            {
+                                public 
+                            """ + prefix + "C1" + suffix + """
+        (CancellationToken t, int i) {}
 
-    public " + prefix + "C1" + suffix + @"(CancellationToken t, float f) {}
-}
+            public 
+        """ + prefix + "C1" + suffix + """
+        (CancellationToken t, float f) {}
+        }
 
-public class C2
-{
-    public " + prefix + "C2" + suffix + @"(CancellationToken t, int i) {}
-}"
+        public class C2
+        {
+            public 
+        """ + prefix + "C2" + suffix + """
+        (CancellationToken t, int i) {}
+        }
+        """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") }
+                        [*]
+                        {editorConfigText}
+                        """) }
                 },
             }.RunAsync(CancellationToken.None);
 
@@ -659,36 +715,44 @@ public class C2
                 {
                     Sources =
                     {
-                        $@"
-Imports System.Threading
+                        $"""
+                            Imports System.Threading
 
-Public Class C1
-    Public Sub " + prefix + "New" + suffix + @"(t As CancellationToken, i As Integer)
-    End Sub
+                            Public Class C1
+                                Public Sub 
+                            """ + prefix + "New" + suffix + """
+        (t As CancellationToken, i As Integer)
+            End Sub
 
-    Public Sub " + prefix + "New" + suffix + @"(t As CancellationToken, i As Single)
-    End Sub
-End Class
+            Public Sub 
+        """ + prefix + "New" + suffix + """
+        (t As CancellationToken, i As Single)
+            End Sub
+        End Class
 
-Public Class C2
-    Public Sub " + prefix + "New" + suffix + @"(t As CancellationToken, i As Integer)
-    End Sub
-End Class"
+        Public Class C2
+            Public Sub 
+        """ + prefix + "New" + suffix + """
+        (t As CancellationToken, i As Integer)
+            End Sub
+        End Class
+        """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") }
+                        [*]
+                        {editorConfigText}
+                        """) }
                 },
             }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod, WorkItem(4467, "https://github.com/dotnet/roslyn-analyzers/issues/4467")]
         // No configuration - validate diagnostics in default configuration
-        [DataRow(@"")]
+        [DataRow("")]
         // Exclude all ctors
-        [DataRow(@"dotnet_code_quality.excluded_symbol_names = .ctor")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = .ctor")]
         public async Task CA1068_ExcludedSymbolNames_Record_NoDiagnosticAsync(string editorConfigText)
         {
             var prefix = editorConfigText.Length == 0 ? "[|" : "";
@@ -702,16 +766,18 @@ End Class"
                 {
                     Sources =
                     {
-                        @"
-using System.Threading;
+                        """
+                            using System.Threading;
 
-public record " + prefix + "R" + suffix + @"(CancellationToken t, int i) {}"
+                            public record 
+                            """ + prefix + "R" + suffix + "(CancellationToken t, int i) {}"
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") }
+                        [*]
+                        {editorConfigText}
+                        """) }
                 },
             }.RunAsync(CancellationToken.None);
         }

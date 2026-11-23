@@ -489,6 +489,11 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
         <target state="translated">Paketleri ve http isteklerini önbelleğe almayın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
         <target state="translated">Projeden projeye başvuruları geri yüklemez ve yalnızca belirtilen projeyi geri yükler.</target>
@@ -585,8 +590,8 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Test edilecek proje veya çözüm dosyasının yolunu tanımlar. Proje dosyasının yolunu veya proje dosyasını içeren dizinin yolunu kullanın. Belirtilmezse, varsayılan olarak geçerli dizine ayarlar.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">Test edilecek proje veya çözüm dosyasının yolunu tanımlar. Proje dosyasının yolunu veya proje dosyasını içeren dizinin yolunu kullanın. Belirtilmezse, varsayılan olarak geçerli dizine ayarlar.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
@@ -742,6 +747,11 @@ Bu bağımsız değişken, birden çok değişken sağlamak için birden çok ke
         <target state="translated">Test modülleri belirtilen kök dizine sahip.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestModulesRootDirectoryRequiresTestModules">
+        <source>The '--root-directory' option can only be used with '--test-modules'.</source>
+        <target state="new">The '--root-directory' option can only be used with '--test-modules'.</target>
+        <note>{Locked="--root-directory"}{Locked="--test-modules"}</note>
+      </trans-unit>
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
         <target state="translated">Test çıkışının ayrıntı düzeyi.</target>
@@ -751,6 +761,20 @@ Bu bağımsız değişken, birden çok değişken sağlamak için birden çok ke
         <source>The value must be a positive integer.</source>
         <target state="translated">Değer bir pozitif tamsayı olmalıdır.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="CmdTestShowStderrDescription">
+        <source>Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</source>
+        <target state="new">Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</target>
+        <note>{Locked="All"}{Locked="Failed"}{Locked="None"}</note>
+      </trans-unit>
+      <trans-unit id="CmdTestShowStdoutDescription">
+        <source>Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</source>
+        <target state="new">Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</target>
+        <note>{Locked="All"}{Locked="Failed"}{Locked="None"}</note>
       </trans-unit>
       <trans-unit id="CmdTimeoutDescription">
         <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
@@ -1668,6 +1692,16 @@ Eğer komut bağımsız değişken olmadan belirtilirse yüklü tüm şablon pak
         <target state="translated">PROJE | DOSYA</target>
         <note />
       </trans-unit>
+      <trans-unit id="PropertyArgumentName">
+        <source>NAME=VALUE</source>
+        <target state="new">NAME=VALUE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyOptionDescription">
+        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
+        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">.NET Platformunun yayımcısı.</target>
@@ -1723,6 +1757,11 @@ Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
       <trans-unit id="ReferenceAddProjectPathArgumentName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceCommandDescription">
+        <source>Add, remove, or list ProjectReferences for a .NET project.</source>
+        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceListAppFullName">
@@ -1877,6 +1916,11 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <target state="translated">SLN_FILE</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionListFormatOptionDescription">
+        <source>The output format for the list of paths. JSON output is an array of paths.</source>
+        <target state="new">The output format for the list of paths. JSON output is an array of paths.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">Üzerinde işlem yapılacak proje veya çözüm dosyası. Bir dosya belirtilmezse komut geçerli dizinde dosya arar.</target>
@@ -1908,8 +1952,10 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <note />
       </trans-unit>
       <trans-unit id="StoreAppDescription">
-        <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
-        <target state="translated">.NET Platformu için belirtilen bütünleştirilmiş kodları depolar. Varsayılan olarak, bunlar hedef çalışma zamanı ve çerçeve için iyileştirilir.</target>
+        <source>Warning: The dotnet store command and the runtime package store feature are deprecated and no longer supported.
+
+Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
+        <target state="needs-review-translation">.NET Platformu için belirtilen bütünleştirilmiş kodları depolar. Varsayılan olarak, bunlar hedef çalışma zamanı ve çerçeve için iyileştirilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="StoreFrameworkOptionDescription">
@@ -2138,8 +2184,8 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">Nuget.org'da dotnet araçlarını arayın</target>
+        <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
+        <target state="needs-review-translation">Nuget.org'da dotnet araçlarını arayın</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">

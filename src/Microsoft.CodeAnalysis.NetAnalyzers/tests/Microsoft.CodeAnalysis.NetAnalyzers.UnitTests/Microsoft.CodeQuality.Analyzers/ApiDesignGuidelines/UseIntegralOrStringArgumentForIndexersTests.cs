@@ -19,186 +19,196 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task TestBasicUseIntegralOrStringArgumentForIndexersWarning1Async()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-    Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-    Public Class Months
-        Private month() As String = {""Jan"", ""Feb"", ""...""}
-        Default ReadOnly Property Item(index As Single) As String
-            Get
-                Return month(index)
-            End Get
-        End Property
-    End Class
-", CreateBasicResult(6, 35));
+                    Imports System
+
+                    Public Class Months
+                        Private month() As String = {"Jan", "Feb", "..."}
+                        Default ReadOnly Property Item(index As Single) As String
+                            Get
+                                Return month(index)
+                            End Get
+                        End Property
+                    End Class
+
+                """, CreateBasicResult(6, 35));
         }
 
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestBasicUseIntegralOrStringArgumentForIndexersNoWarning_InternalAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-    Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                    Imports System
 
-    Friend Class Months
-        Private month() As String = {""Jan"", ""Feb"", ""...""}
-        Public Default ReadOnly Property Item(index As Single) As String
-            Get
-                Return month(index)
-            End Get
-        End Property
-    End Class
+                    Friend Class Months
+                        Private month() As String = {"Jan", "Feb", "..."}
+                        Public Default ReadOnly Property Item(index As Single) As String
+                            Get
+                                Return month(index)
+                            End Get
+                        End Property
+                    End Class
 
-    Public Class Months2
-        Private month() As String = {""Jan"", ""Feb"", ""...""}
-        Friend Default ReadOnly Property Item(index As Single) As String
-            Get
-                Return month(index)
-            End Get
-        End Property
-    End Class
-");
+                    Public Class Months2
+                        Private month() As String = {"Jan", "Feb", "..."}
+                        Friend Default ReadOnly Property Item(index As Single) As String
+                            Get
+                                Return month(index)
+                            End Get
+                        End Property
+                    End Class
+                """);
         }
 
         [TestMethod]
         public async Task TestBasicUseIntegralOrStringArgumentForIndexersNoWarning1Async()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-    Public Class Months
-        Private month() As String = {""Jan"", ""Feb"", ""...""}
-        Default ReadOnly Property Item(index As String) As String
-            Get
-                Return month(index)
-            End Get
-        End Property
-    End Class
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                    Public Class Months
+                        Private month() As String = {"Jan", "Feb", "..."}
+                        Default ReadOnly Property Item(index As String) As String
+                            Get
+                                Return month(index)
+                            End Get
+                        End Property
+                    End Class
+                """);
         }
 
         [TestMethod]
         public async Task TestCSharpUseIntegralOrStringArgumentForIndexersWarning1Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    public class Months
-    {
-        string[] month = new string[] {""Jan"", ""Feb"", ""...""};
-        public string this[char index]
-        {
-            get
-            {
-                return month[index];
-            }
-        }
-    }", CreateCSharpResult(5, 23));
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                    public class Months
+                    {
+                        string[] month = new string[] {"Jan", "Feb", "..."};
+                        public string this[char index]
+                        {
+                            get
+                            {
+                                return month[index];
+                            }
+                        }
+                    }
+                """, CreateCSharpResult(5, 23));
         }
 
         [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestCSharpUseIntegralOrStringArgumentForIndexersNoWarning_InternalAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    internal class Months
-    {
-        string[] month = new string[] {""Jan"", ""Feb"", ""...""};
-        public string this[char index]
-        {
-            get
-            {
-                return month[index];
-            }
-        }
-    }
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    internal class Months
+                    {
+                        string[] month = new string[] {"Jan", "Feb", "..."};
+                        public string this[char index]
+                        {
+                            get
+                            {
+                                return month[index];
+                            }
+                        }
+                    }
 
-    public class Months2
-    {
-        string[] month = new string[] {""Jan"", ""Feb"", ""...""};
-        internal string this[char index]
-        {
-            get
-            {
-                return month[index];
-            }
-        }
-    }");
+                    public class Months2
+                    {
+                        string[] month = new string[] {"Jan", "Feb", "..."};
+                        internal string this[char index]
+                        {
+                            get
+                            {
+                                return month[index];
+                            }
+                        }
+                    }
+                """);
         }
 
         [TestMethod]
         public async Task TestCSharpUseIntegralOrStringArgumentForIndexersNoWarning1Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    public class Months
-    {
-        string[] month = new string[] {""Jan"", ""Feb"", ""...""};
-        public string this[int index]
-        {
-            get
-            {
-                return month[index];
-            }
-        }
-    }");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    public class Months
+                    {
+                        string[] month = new string[] {"Jan", "Feb", "..."};
+                        public string this[int index]
+                        {
+                            get
+                            {
+                                return month[index];
+                            }
+                        }
+                    }
+                """);
         }
 
         [TestMethod]
         public async Task TestCSharpGenericIndexerAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    public class Months<T>
-    {
-        public string this[T index]
-        {
-            get
-            {
-                return null;
-            }
-        }
-    }");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    public class Months<T>
+                    {
+                        public string this[T index]
+                        {
+                            get
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                """);
         }
 
         [TestMethod]
         public async Task TestBasicGenericIndexerAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-    Public Class Months(Of T)
-        Default Public ReadOnly Property Item(index As T)
-            Get
-                Return Nothing
-            End Get
-        End Property
-    End Class");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                    Public Class Months(Of T)
+                        Default Public ReadOnly Property Item(index As T)
+                            Get
+                                Return Nothing
+                            End Get
+                        End Property
+                    End Class
+                """);
         }
 
         [TestMethod]
         public async Task TestCSharpEnumIndexerAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    public class Months<T>
-    {
-        public enum SomeEnum { }
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    public class Months<T>
+                    {
+                        public enum SomeEnum { }
 
-        public string this[SomeEnum index]
-        {
-            get
-            {
-                return null;
-            }
-        }
-    }");
+                        public string this[SomeEnum index]
+                        {
+                            get
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                """);
         }
 
         [TestMethod]
         public async Task TestBasicEnumIndexerAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-    Public Class Months(Of T)
-        Public Enum SomeEnum
-            Val1
-        End Enum
+            await VerifyVB.VerifyAnalyzerAsync("""
+                    Public Class Months(Of T)
+                        Public Enum SomeEnum
+                            Val1
+                        End Enum
 
-        Default Public ReadOnly Property Item(index As SomeEnum)
-            Get
-                Return Nothing
-            End Get
-        End Property
-    End Class");
+                        Default Public ReadOnly Property Item(index As SomeEnum)
+                            Get
+                                Return Nothing
+                            End Get
+                        End Property
+                    End Class
+                """);
         }
 
         [TestMethod, WorkItem(3638, "https://github.com/dotnet/roslyn-analyzers/issues/3638")]
@@ -207,27 +217,29 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp30,
-                TestCode = @"
-public class C
-{
-    public string this[System.Index index]
-    {
-        get => null;
-    }
-}",
+                TestCode = """
+                    public class C
+                    {
+                        public string this[System.Index index]
+                        {
+                            get => null;
+                        }
+                    }
+                    """,
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp30,
-                TestCode = @"
-Public Class Months
-    Default ReadOnly Property Item(index As System.Index) As String
-        Get
-            Return Nothing
-        End Get
-    End Property
-End Class",
+                TestCode = """
+                    Public Class Months
+                        Default ReadOnly Property Item(index As System.Index) As String
+                            Get
+                                Return Nothing
+                            End Get
+                        End Property
+                    End Class
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -237,27 +249,29 @@ End Class",
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp30,
-                TestCode = @"
-public class C
-{
-    public string this[System.Range range]
-    {
-        get => null;
-    }
-}",
+                TestCode = """
+                    public class C
+                    {
+                        public string this[System.Range range]
+                        {
+                            get => null;
+                        }
+                    }
+                    """,
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp30,
-                TestCode = @"
-Public Class Months
-    Default ReadOnly Property Item(index As System.Range) As String
-        Get
-            Return Nothing
-        End Get
-    End Property
-End Class",
+                TestCode = """
+                    Public Class Months
+                        Default ReadOnly Property Item(index As System.Range) As String
+                            Get
+                                Return Nothing
+                            End Get
+                        End Property
+                    End Class
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 

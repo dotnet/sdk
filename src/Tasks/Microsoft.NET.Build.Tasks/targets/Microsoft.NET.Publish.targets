@@ -17,6 +17,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsPublishable Condition="'$(IsPublishable)' == ''">true</IsPublishable>
   </PropertyGroup>
 
+  <!--
+    Flow this project's IsPublishable value onto the item returned by GetTargetPath / GetTargetPathWithTargetPlatformMoniker,
+    so that referencing projects can tell (via %(ReferenceCopyLocalPaths.IsPublishable)) whether a project reference's
+    outputs came from a project that opted out of being published, and can avoid copying files (like .pdb) to the
+    publish directory that are only useful when the referenced project itself is publishable.
+  -->
+  <Target Name="_AddIsPublishableToTargetPathWithTargetPlatformMoniker"
+          AfterTargets="GetTargetPathWithTargetPlatformMoniker">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker>
+        <IsPublishable>$(IsPublishable)</IsPublishable>
+      </TargetPathWithTargetPlatformMoniker>
+    </ItemGroup>
+  </Target>
+
   <!-- Trimming/AOT/publish* property configuration -->
   <PropertyGroup>
     <!-- PublishAot depends on PublishTrimmed. This must be set early enough for the KnownILLinkPack to be restored. -->
@@ -153,8 +168,8 @@ Copyright (c) .NET Foundation. All rights reserved.
          @(IntermediateAssembly) in obj\, not from bin\ output. Skipping Build avoids producing
          unnecessary self-contained managed output (apphost, deps.json, runtimeconfig, runtime
          pack files) in the output directory that would confuse users and automation.
-         This optimization is opt-in in .NET 11. Set UseOptimizedPublish=true to enable it. -->
-    <UseOptimizedPublish Condition="'$(UseOptimizedPublish)' == '' and '$(PublishAot)' == 'true'">false</UseOptimizedPublish>
+         Set UseOptimizedPublish=false to restore the previous behavior of running full Build. -->
+    <UseOptimizedPublish Condition="'$(UseOptimizedPublish)' == '' and '$(PublishAot)' == 'true'">true</UseOptimizedPublish>
     <!-- Native AOT is currently the only publish mode that supports optimized publish. -->
     <_UseOptimizedPublish Condition="'$(PublishAot)' == 'true' and '$(UseOptimizedPublish)' == 'true'">true</_UseOptimizedPublish>
     <_BeforeOptimizedPublishTargets Condition="'$(_UseOptimizedPublish)' == 'true'">
@@ -795,6 +810,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     Computes the files from both project and package references.
     ============================================================
   -->
+  <Import Project="Microsoft.NET.Publish.ReferenceSatellites.targets" />
+
   <Target Name="_ComputeResolvedCopyLocalPublishAssets"
           DependsOnTargets="_ResolveCopyLocalAssetsForPublish;
                             _FilterSatelliteResourcesForPublish">
@@ -803,7 +820,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_ResolvedCopyLocalPublishAssets Include="@(ReferenceCopyLocalPaths)"
                                        Exclude="@(_ResolvedCopyLocalBuildAssets);@(RuntimePackAsset)"
                                        Condition="(('$(PublishReferencesDocumentationFiles)' == 'true' and '%(ReferenceCopyLocalPaths.Extension)' == '.xml')
-                                                  or ('$(PublishReferencesSymbols)' == 'true' and '%(ReferenceCopyLocalPaths.Extension)' == '.pdb')
+                                                  or ('$(PublishReferencesSymbols)' == 'true' and '%(ReferenceCopyLocalPaths.Extension)' == '.pdb' and '%(ReferenceCopyLocalPaths.IsPublishable)' != 'false')
                                                   or ('%(ReferenceCopyLocalPaths.Extension)' != '.xml' and '%(ReferenceCopyLocalPaths.Extension)' != '.pdb'))
                                                   and '%(ReferenceCopyLocalPaths.Private)' != 'false'">
         <DestinationSubPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</DestinationSubPath>
@@ -1344,6 +1361,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <NETSdkWarning Condition="'$(IncludeAllContentForSelfExtract)' == 'true'"
                    ResourceName="IncludeAllContentForSelfExtractIsLegacy" />
+
+    <NETSdkError Condition="'$(NoBuild)' == 'true' and !Exists('%(FilesToBundle.Identity)')"
+                 ResourceName="PublishInputFileNotFound"
+                 FormatArguments="$([MSBuild]::Escape('%(FilesToBundle.FullPath)'))" />
 
     <!-- Bundle the files in FilesToBundle (excluded files were already filtered out by PrepareForBundle) -->
     <GenerateBundle FilesToBundle="@(FilesToBundle)"

@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <IsTestProject>true</IsTestProject>
+    <!-- Test classes have independent inputs and working directories. Preserve method isolation
+         so each StringUpdaterTests instance exclusively owns its temporary directory. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

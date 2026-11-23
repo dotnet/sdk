@@ -5,20 +5,14 @@ namespace Microsoft.DotNet.Watch;
 
 internal static class ProcessUtilities
 {
-    public static string? SendWindowsCtrlCEvent(int processId)
+    public static string? SendWindowsCtrlBreakEvent(int processId)
     {
-        const uint CTRL_C_EVENT = 0;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
+        const uint CTRL_BREAK_EVENT = 1;
 
-        // Doc:
-        // "The process identifier of the new process is also the process group identifier of a new process group.
-        //
-        // The process group includes all processes that are descendants of the root process.
-        // Only those processes in the group that share the same console as the calling process receive the signal.
-        // In other words, if a process in the group creates a new console, that process does not receive the signal,
-        // nor do its descendants.
-        //
-        // If this parameter is zero, the signal is generated in all processes that share the console of the calling process."
-        return GenerateConsoleCtrlEvent(CTRL_C_EVENT, (uint)processId) ? null : GetLastPInvokeErrorMessage();
+        // CTRL_C_EVENT succeeds without delivering a signal when a process group is specified.
+        // https://learn.microsoft.com/windows/console/generateconsolectrlevent
+        return GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, (uint)processId) ? null : GetLastPInvokeErrorMessage();
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]

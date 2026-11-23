@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Tests;
 [SupportedOSPlatform("windows5.1.2600")]
 [OSCondition(OperatingSystems.Windows)]
 [TestClass]
-public class TrustedMachinePathTests
+public class TrustedMachinePathTests : SdkTest
 {
     private const string TestPath = @"C:\ProgramData\dotnet";
 
@@ -128,6 +128,15 @@ public class TrustedMachinePathTests
         {
             Directory.Delete(directory, recursive: true);
         }
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void ValidateDirectory_MissingDirectoryThrowsDirectoryNotFound()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+
+        Assert.ThrowsExactly<DirectoryNotFoundException>(() => TrustedMachinePath.ValidateDirectory(directory));
     }
 
     [TestMethod]

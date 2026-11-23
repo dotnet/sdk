@@ -31,6 +31,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             "Details": {
                 "PackageId": "Microsoft.DotNet.Common.ProjectTemplates.5.0",
                 "Author": "Microsoft",
+                "Reserved": "true",
                 "NuGetSource": "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json",
                 "Version": "5.0.0"
             },
@@ -42,6 +43,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             "Details": {
                 "PackageId": "Microsoft.DotNet.Web.ProjectTemplates.10.0",
                 "Author": "Microsoft",
+                "Reserved": "true",
                 "NuGetSource": "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json",
                 "Version": "10.0.0"
             },
@@ -219,7 +221,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         }
 
         [TestMethod]
-        [ResourceLock(WellKnownResources.CurrentDirectory)]
+        [DoNotParallelize] // Other tests read the current directory without taking a resource lock.
         public async Task CanUpdateAllPackagesMetadataOnGetLatestVersion()
         {
             using Bootstrapper bootstrapper = GetBootstrapper(packageJsonContent: ValidPackageJsonFile);
@@ -234,21 +236,16 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var commonPackage = updatedPackages[0];
             Assert.AreEqual("5.0.0", commonPackage.Version);
             var commonPackageDetails = commonPackage.GetDetails();
-            // dotnet-public feed may not return Owners metadata
-            commonPackageDetails.TryGetValue("Owners", out var commonOwners);
-            // Owners may be empty or populated depending on feed behavior
             Assert.IsFalse(bool.Parse(commonPackageDetails["Reserved"]));
 
             var webPackage = updatedPackages[1];
             Assert.AreEqual("10.0.0", webPackage.Version);
             var webPackageDetails = webPackage.GetDetails();
-            // dotnet-public feed may not return Owners metadata
-            webPackageDetails.TryGetValue("Owners", out var webOwners);
             Assert.IsFalse(bool.Parse(webPackageDetails["Reserved"]));
         }
 
         [TestMethod]
-        [ResourceLock(WellKnownResources.CurrentDirectory)]
+        [DoNotParallelize] // Other tests read the current directory without taking a resource lock.
         public async Task CanUpdateSpecifiedPackageMetadataOnGetLatestVersion()
         {
             using Bootstrapper bootstrapper = GetBootstrapper(packageJsonContent: ValidPackageJsonFile);
@@ -262,12 +259,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.HasCount(2, updatedPackages);
             var commonPackageDetails = updatedPackages[0].GetDetails();
             Assert.IsFalse(commonPackageDetails.TryGetValue("Owners", out var _));
-            Assert.IsFalse(bool.Parse(commonPackageDetails["Reserved"]));
+            Assert.IsTrue(bool.Parse(commonPackageDetails["Reserved"]));
 
             // the specified package has updated metadata
             var webPackageDetails = updatedPackages[1].GetDetails();
-            // dotnet-public feed may not return Owners for Microsoft packages
-            webPackageDetails.TryGetValue("Owners", out var webOwners);
             Assert.IsFalse(bool.Parse(webPackageDetails["Reserved"]));
         }
 

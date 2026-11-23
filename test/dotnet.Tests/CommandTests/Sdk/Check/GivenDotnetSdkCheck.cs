@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             var oldSdks = GetFakeEnvironmentInfo(new[] { "3.1.100" }, Array.Empty<string>());
             var newSdks = GetFakeEnvironmentInfo(new[] { "5.0.100" }, Array.Empty<string>());
 
-            new SdkCheckCommand(parseResult, new MockNETBundleProvider(newerBandExists ? oldSdks : newSdks), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
+            new SdkCheckCommand(parseResult, new MockNETBundleProvider(newerBandExists ? oldSdks : newSdks), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute(CancellationToken.None);
 
             if (newerBandExists)
             {
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
             var bundles = GetFakeEnvironmentInfo(new[] { "1.0.10", "2.1.809", "3.1.402", "5.0.100" }, new[] { "1.1.4", "2.1.8", "3.1.0", "3.1.3", "5.0.0" });
 
-            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
+            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute(CancellationToken.None);
 
             foreach (var version in bundles.SdkInfo.Select(b => b.Version.ToString()))
             {
@@ -97,7 +97,6 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/29382")]
         [DataRow(new string[] { "3.1.301" }, new string[] { }, new string[] { "3.1.302" })]
         [DataRow(new string[] { "5.0.100" }, new string[] { }, new string[] { })]
         [DataRow(new string[] { }, new string[] { "3.1.3" }, new string[] { "3.1.10" })]
@@ -110,7 +109,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
             var bundles = GetFakeEnvironmentInfo(sdkVersions, runtimeVersions);
 
-            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
+            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute(CancellationToken.None);
 
             var commandResult = string.Join(' ', _reporter.Lines);
             var expectedLines = latestPatchVersions.Select(version => string.Format(CliCommandStrings.NewPatchAvailableMessage, version));
@@ -123,7 +122,6 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/29382")]
         [DataRow(new string[] { "1.0.10" }, new string[] { }, new string[] { "1.0.10" })]
         [DataRow(new string[] { "5.0.100" }, new string[] { }, new string[] { })]
         [DataRow(new string[] { }, new string[] { "1.0.1" }, new string[] { "1.0.1" })]
@@ -137,7 +135,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
             var bundles = GetFakeEnvironmentInfo(sdkVersions, runtimeVersions);
 
-            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
+            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute(CancellationToken.None);
 
             var commandResult = string.Join(' ', _reporter.Lines);
             var expectedLines = outOfSupportVersions.Select(version => string.Format(CliCommandStrings.OutOfSupportMessage, version.Substring(0, 3)));
@@ -171,7 +169,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
             var bundles = GetFakeEnvironmentInfo(sdkVersions, runtimeVersions);
 
-            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
+            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute(CancellationToken.None);
 
             var commandResult = string.Join('\n', _reporter.Lines);
             var expectedLines = maintenanceVersions.Select(version => string.Format(CliCommandStrings.MaintenanceMessage, version.Substring(0, 3)));
@@ -204,7 +202,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             Directory.CreateDirectory(Path.GetDirectoryName(configFilePath));
             File.WriteAllText(configFilePath, configFileContent);
 
-            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), dotnetRoot: dotnetRoot, dotnetVersion: "6.0.100", reporter: _reporter).Execute();
+            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), dotnetRoot: dotnetRoot, dotnetVersion: "6.0.100", reporter: _reporter).Execute(CancellationToken.None);
 
             _reporter.Lines.Count().Should().Be(3);
             _reporter.Lines.Should().Contain(replacementString);
@@ -218,7 +216,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             var bundles = GetFakeEnvironmentInfo(new[] { "3.1.100", "5.0.100", "99.0.100" }, new[] { "3.1.0", "5.0.0" });
 
             // This should not throw even though 99.0 doesn't have releases.json
-            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
+            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute(CancellationToken.None);
 
             // Verify all SDKs are shown
             foreach (var version in bundles.SdkInfo.Select(b => b.Version.ToString()))

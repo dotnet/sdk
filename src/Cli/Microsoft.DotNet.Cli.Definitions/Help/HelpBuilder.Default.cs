@@ -24,7 +24,9 @@ public partial class HelpBuilder
             return parameter switch
             {
                 Argument argument => argument.HasDefaultValue ? ToString(argument.GetDefaultValue()) : "",
-                Option option => option.HasDefaultValue ? ToString(option.GetDefaultValue()) : "",
+                Option option => option.HasDefaultValue && !(option.ValueType == typeof(bool) && option.Arity.MaximumNumberOfValues == 0)
+                    ? ToString(option.GetDefaultValue())
+                    : "",
                 _ => throw new InvalidOperationException("Symbol must be an Argument or Option.")
             };
 

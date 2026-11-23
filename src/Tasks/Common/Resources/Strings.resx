@@ -1043,8 +1043,8 @@ You may need to build the project on another operating system or architecture, o
     <comment>{StrBegins="NETSDK1241: "}</comment>
   </data>
   <data name="MonoRuntimeNotSupportedForPlatform" xml:space="preserve">
-    <value>NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</value>
-    <comment>{StrBegins="NETSDK1242: "}</comment>
+    <value>NETSDK1242: The Mono runtime is not supported for target framework '{0}'. Use the CoreCLR runtime instead.</value>
+    <comment>{StrBegins="NETSDK1242: "}{Locked="{0}"}</comment>
   </data>
   <data name="RunCommandRequiresWindowsForNetFramework" xml:space="preserve">
     <value>NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</value>
@@ -1054,5 +1054,17 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1244: 'IncludeAllContentForSelfExtract' enables a legacy compatibility mode that extracts all managed assemblies to disk at startup. Prefer the default in-memory single-file behavior by removing the 'IncludeAllContentForSelfExtract' property from your project.</value>
     <comment>{StrBegins="NETSDK1244: "}{Locked="IncludeAllContentForSelfExtract"}</comment>
   </data>
-  <!-- The latest message added is IncludeAllContentForSelfExtractIsLegacy. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="Crossgen2UnsupportedHostRuntimeIdentifier" xml:space="preserve">
+    <value>NETSDK1245: The crossgen2 pack is not available for the build host platform '{0}'.</value>
+    <comment>{StrBegins="NETSDK1245: "}</comment>
+  </data>
+  <data name="Crossgen2UnsupportedTargetFramework" xml:space="preserve">
+    <value>NETSDK1246: The crossgen2 pack is not available for the target framework.</value>
+    <comment>{StrBegins="NETSDK1246: "}</comment>
+  </data>
+  <data name="PublishInputFileNotFound" xml:space="preserve">
+    <value>NETSDK1247: The file '{0}' required for publishing was not found. Publish without '--no-build', or ensure the project has been built with the appropriate Configuration, TargetFramework, RuntimeIdentifier, and SelfContained properties.</value>
+    <comment>{StrBegins="NETSDK1247: "}{Locked="{0}"}{Locked="--no-build"}{Locked="Configuration"}{Locked="TargetFramework"}{Locked="RuntimeIdentifier"}{Locked="SelfContained"}</comment>
+  </data>
+  <!-- The latest message added is PublishInputFileNotFound. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

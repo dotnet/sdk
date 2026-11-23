@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+    <!-- These tests share class-scoped EnvironmentSettingsHelper instances. Run classes in parallel
+         while preserving the original xUnit isolation between methods in the same class. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JsonSchema.Net" />

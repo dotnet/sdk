@@ -3,6 +3,7 @@
   <Import Project="Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests.Shared.props" />
 
   <PropertyGroup>
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
   </PropertyGroup>
 

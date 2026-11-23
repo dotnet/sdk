@@ -5,6 +5,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 [TestClass]
+[ResourceLock(TestSettings.DockerDaemonResource)]
 public class DockerRegistryTests : SdkTest
 {
     private TestLoggerFactory? _loggerFactory;
@@ -16,7 +17,7 @@ public class DockerRegistryTests : SdkTest
     {
         var loggerFactory = new TestLoggerFactory(Log);
         var logger = loggerFactory.CreateLogger(nameof(GetFromRegistry));
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push, TestContext.CancellationToken);
         var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
 
         // Don't need rid graph for local registry image pulls - since we're only pushing single image manifests (not manifest lists)
@@ -40,6 +41,7 @@ public class DockerRegistryTests : SdkTest
         var registryAuthDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "auth"));
         var registryCertsDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "certs"));
         var registryName = "localhost:5555";
+        var registryContainerName = $"auth-registry-{TestSettings.TestRunId}";
         try
         {
             if (!registryCertsDir.Exists)
@@ -54,7 +56,7 @@ public class DockerRegistryTests : SdkTest
             // start up an authenticated registry using that dev cert
             ContainerCli.RunCommand(Log,
                 "-d", "--rm",
-                "--name", "auth-registry",
+                "--name", registryContainerName,
                 "-p", "5555:5000",
                 "-e", "REGISTRY_AUTH=htpasswd",
                 "-e", "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm",
@@ -66,13 +68,22 @@ public class DockerRegistryTests : SdkTest
                 "registry:2")
             .WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
             // verify that the registry container started successfully
-            ContainerCli.InspectCommand(Log, "auth-registry").Execute().Should().Pass();
+            ContainerCli.InspectCommand(Log, registryContainerName).Execute().Should().Pass();
             // login to that registry
             ContainerCli.LoginCommand(Log, "--username", "testuser", "--password", "testpassword", registryName).Execute().Should().Pass();
             // push an image to that registry using username/password
-            Registry localAuthed = new(new Uri($"https://{registryName}"), logger, RegistryMode.Push, settings: new() { ParallelUploadEnabled = false, ForceChunkedUpload = true });
+            Registry localAuthed = new(
+                new Uri($"https://{registryName}"),
+                logger,
+                RegistryMode.Push,
+                TestContext.CancellationToken,
+                settings: new RegistrySettings(TestContext.CancellationToken)
+                {
+                    ParallelUploadEnabled = false,
+                    ForceChunkedUpload = true
+                });
             var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
-            Registry mcr = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Pull);
+            Registry mcr = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Pull, TestContext.CancellationToken);
 
             var sourceImage = new SourceImageReference(mcr, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net6ImageTag, null);
             var destinationImage = new DestinationImageReference(localAuthed, DockerRegistryManager.RuntimeBaseImage, new[] { DockerRegistryManager.Net6ImageTag });
@@ -88,7 +99,7 @@ public class DockerRegistryTests : SdkTest
         finally
         {
             //stop the registry
-            ContainerCli.StopCommand(Log, "auth-registry").WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
+            ContainerCli.StopCommand(Log, registryContainerName).WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
         }
     }
 }

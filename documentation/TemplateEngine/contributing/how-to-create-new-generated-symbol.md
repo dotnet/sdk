@@ -29,10 +29,10 @@ Generated symbols follow the following syntax:
 
 To create new generated symbol type, follow the following guideline
 
-1. Implement [`Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolMacro<T>`](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Abstractions/IGeneratedSymbolMacro.cs) interface.
+1. Implement [`Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolMacro<T>`](../../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Abstractions/IGeneratedSymbolMacro.cs) interface.
 
-Any macro implementation is a component ([`IIdentifiedComponent`](../../src/Microsoft.TemplateEngine.Abstractions/IIdentifiedComponent.cs)) and will be loaded by template engine.
-The existing implementation macro components are located in [`Macros`](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros) folder of `Microsoft.TemplateEngine.Orchestrator.RunnableProjects` projects.
+Any macro implementation is a component ([`IIdentifiedComponent`](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/IIdentifiedComponent.cs)) and will be loaded by template engine.
+The existing implementation macro components are located in [`Macros`](../../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros) folder of `Microsoft.TemplateEngine.Orchestrator.RunnableProjects` projects.
 
 The implementation should have:
 - `Id` property - unique GUID for component 
@@ -107,19 +107,18 @@ The very basic implementation may be:
 ```
 
 `IMacroConfigDependency` interface depicts macro capability to derive it value(s) from other macros.
-Dependencies are defined based on passed `IReadOnlyList<string> symbols` collection. An example of implementation can be find here: [`CoalesceMacroConfig.cs`](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/CoalesceMacroConfig.cs).
+Dependencies are defined based on passed `IReadOnlyList<string> symbols` collection. An example of implementation can be find here: [`CoalesceMacroConfig.cs`](../../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/CoalesceMacroConfig.cs).
 
 `IGeneratedSymbolConfig` config already contains the pre-parsed JSON from template.json. It has properties for: symbol name, data type (if specified) and parameters collection. 
 Parameters collection contains parameter key-value pairs from JSON. Note that value is in JSON format, i.e. if the parameter value is string, then it contains `"\"string-value\""`.
 It is recommend to get `JToken` using `JToken.Parse` on this value when parsing the value or use helper methods available in `BaseMacroConfig` that can parse the data.
 
-2. Once the macro is implemented, add it to [components collection](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Components.cs).
+2. Once the macro is implemented, add it to [components collection](../../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Components.cs).
 
-3. [optional] Update [JSON schema](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Schemas/JSON/template.json) with new generated symbol syntax.
-If you do so, also add [a new test case](../../test/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/SchemaTests/GeneratorTest.json) for testing the syntax.
+3. [optional] Update [JSON schema](../../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Schemas/JSON/template.json) with new generated symbol syntax.
+If you do so, also add [a new test case](../../../test/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/SchemaTests/GeneratorTest.json) for testing the syntax.
 
-4. Add unit tests for new implementation. Macro related unit tests are located in [this folder](../../test/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/MacroTests/).
-For more complete scenario, consider adding the full template generation tests to [`RunnableProjectGeneratorTests.cs`](../../test/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/RunnableProjectGeneratorTests.cs).
+4. Add unit tests for new implementation. Macro related unit tests are located in [this folder](../../../test/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/MacroTests/).
+For more complete scenario, consider adding the full template generation tests to [`RunnableProjectGeneratorTests.cs`](../../../test/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/RunnableProjectGeneratorTests.cs).
 
 5. Update documentation in [docs folder](../Available-Symbols-Generators.md).
-

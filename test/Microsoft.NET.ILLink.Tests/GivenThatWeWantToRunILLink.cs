@@ -487,7 +487,8 @@ namespace Microsoft.NET.ILLink.Tests
             // Please keep list below sorted and de-duplicated
             var expectedWarnings = new List<string> {
                 "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComActivator.GetClassFactoryForTypeInternal(ComActivationContextInternal*",
-                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr",
+                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr): Using member 'Internal.Runtime.InteropServices.ComponentActivator.InternalGetFunctionPointer(AssemblyLoadContext, String, String, IntPtr)'",
+                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr): Using member 'Internal.Runtime.InteropServices.ComponentLoadContextManager.Get(IntPtr, String, Boolean)'",
                 "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.DeserializeUsingBinaryFormatter(DesigntimeLicenseContextSerializer.StreamWrapper, String, RuntimeLicenseContext",
                 "ILLink : Trim analysis warning IL2026: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream, Assembly",
                 "ILLink : Trim analysis warning IL2026: System.StartupHookProvider.ProcessStartupHooks(",
@@ -549,7 +550,8 @@ namespace Microsoft.NET.ILLink.Tests
 
             // Please keep list below sorted and de-duplicated
             var expectedWarnings = new List<string> {
-                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr",
+                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr): Using member 'Internal.Runtime.InteropServices.ComponentActivator.InternalGetFunctionPointer(AssemblyLoadContext, String, String, IntPtr)'",
+                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr): Using member 'Internal.Runtime.InteropServices.ComponentLoadContextManager.Get(IntPtr, String, Boolean)'",
                 "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssembly(IntPtr, IntPtr",
                 "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.DeserializeUsingBinaryFormatter(DesigntimeLicenseContextSerializer.StreamWrapper, String, RuntimeLicenseContext",
                 "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.SerializeWithBinaryFormatter(Stream, String, DesigntimeLicenseContext",
@@ -1036,6 +1038,18 @@ namespace Microsoft.NET.ILLink.Tests
     internal static class ILLinkTestUtils
     {
         public static string UnusedFrameworkAssembly = "System.IO";
+
+        // Current ILLink packs write the incremental-build semaphore next to the "linked" directory
+        // (linked.semaphore); older packs, still used for older target frameworks, write it inside
+        // that directory (linked/Link.semaphore).
+        public static string[] GetLinkSemaphoreCandidates(string intermediateLinkDir) =>
+        [
+            intermediateLinkDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + ".semaphore",
+            Path.Combine(intermediateLinkDir, "Link.semaphore"),
+        ];
+
+        public static string FindLinkSemaphore(string intermediateLinkDir) =>
+            GetLinkSemaphoreCandidates(intermediateLinkDir).FirstOrDefault(File.Exists);
 
         public static bool DoesImageHaveMethod(string path, string methodNameToCheck)
         {

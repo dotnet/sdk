@@ -12,6 +12,7 @@ using Task = System.Threading.Tasks.Task;
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
 [TestClass]
+[ResourceLock(TestSettings.DockerDaemonResource)]
 public class CreateImageIndexTests : SdkTest
 {
     [TestMethod]
@@ -21,7 +22,7 @@ public class CreateImageIndexTests : SdkTest
         DirectoryInfo newProjectDir = CreateNewProject();
         (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
         string outputRegistry = DockerRegistryManager.LocalRegistry;
-        string repository = "dotnet/create-image-index-baseline";
+        string repository = $"dotnet/create-image-index-baseline-{TestSettings.TestRunId}";
         string[] tags = new[] { "tag1", "tag2" };
 
         // Create images for 2 rids
@@ -53,7 +54,7 @@ public class CreateImageIndexTests : SdkTest
         // Assert that the image index is pushed to the registry
         var loggerFactory = new TestLoggerFactory(Log);
         var logger = loggerFactory.CreateLogger(nameof(CreateImageIndex_Baseline));
-        Registry registry = new(outputRegistry, logger, RegistryMode.Pull);
+        Registry registry = new(outputRegistry, logger, RegistryMode.Pull, TestContext.CancellationToken);
 
         await AssertThatImageIsReferencedInImageIndex("linux-x64", repository, tags, registry);
         await AssertThatImageIsReferencedInImageIndex("linux-arm64", repository, tags, registry);
@@ -159,4 +160,3 @@ public class CreateImageIndexTests : SdkTest
 
     private static string FormatBuildMessages(List<string?> messages) => string.Join("\r\n", messages);
 }
-

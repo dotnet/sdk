@@ -25,7 +25,7 @@ internal sealed class PackCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.PackCmdOutputDirDescription,
         HelpName = CommandDefinitionStrings.PackCmdOutputDir
-    }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
+    }.ForwardAsPathProperty("PackageOutputPath");
 
     public readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {
@@ -50,6 +50,12 @@ internal sealed class PackCommandDefinition : Command
         Description = CommandDefinitionStrings.CmdServiceableDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:Serviceable=true");
+
+    public readonly Option<bool> NoDefaultExcludesOption = new Option<bool>("--no-default-excludes")
+    {
+        Description = CommandDefinitionStrings.CmdNoDefaultExcludesDescription,
+        Arity = ArgumentArity.Zero
+    }.ForwardAs("-property:NoDefaultExcludes=true");
 
     public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
 
@@ -102,6 +108,7 @@ internal sealed class PackCommandDefinition : Command
         Options.Add(IncludeSymbolsOption);
         Options.Add(IncludeSourceOption);
         Options.Add(ServiceableOption);
+        Options.Add(NoDefaultExcludesOption);
         Options.Add(NoLogoOption);
         Options.Add(InteractiveOption);
         Options.Add(NoRestoreOption);

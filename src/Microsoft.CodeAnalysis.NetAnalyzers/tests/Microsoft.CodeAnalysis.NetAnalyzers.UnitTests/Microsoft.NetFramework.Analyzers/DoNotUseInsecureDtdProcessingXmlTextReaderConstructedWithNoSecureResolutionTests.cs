@@ -31,39 +31,39 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System;
+                """
+                    using System;
 
-namespace TestNamespace
-{
-    public static class SystemContext
-    {
-        public static Func<DateTime> UtcNow { get; set; }
+                    namespace TestNamespace
+                    {
+                        public static class SystemContext
+                        {
+                            public static Func<DateTime> UtcNow { get; set; }
 
-        static SystemContext()
-        {
-            UtcNow = () => DateTime.UtcNow;
-        }
-    }
-}
-"
+                            static SystemContext()
+                            {
+                                UtcNow = () => DateTime.UtcNow;
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System
+                """
+                    Imports System
 
-Namespace TestNamespace
-    Module SystemContext
-        Public Property UtcNow As Func(Of DateTime)
+                    Namespace TestNamespace
+                        Module SystemContext
+                            Public Property UtcNow As Func(Of DateTime)
 
-        Sub New()
-            UtcNow = Function() DateTime.UtcNow
-        End Sub
-    End Module
-End Namespace
-"
+                            Sub New()
+                                UtcNow = Function() DateTime.UtcNow
+                            End Sub
+                        End Module
+                    End Namespace
+                    """
             );
         }
 
@@ -72,35 +72,39 @@ End Namespace
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlTextReader reader = new XmlTextReader(path);
-        }
-    }
-}
-",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                XmlTextReader reader = new XmlTextReader(path);
+                            }
+                        }
+                    }
+
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(10, 36)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim reader As New XmlTextReader(path)
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Dim reader As New XmlTextReader(path)
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(7, 27)
             );
         }
@@ -110,44 +114,48 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {
-                XmlTextReader reader = new XmlTextReader(path);
-            }
-            catch { throw ; }
-            finally {}
-        }
-    }
-}
-",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                try {
+                                    XmlTextReader reader = new XmlTextReader(path);
+                                }
+                                catch { throw ; }
+                                finally {}
+                            }
+                        }
+                    }
+
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(11, 40)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-                Dim reader As New XmlTextReader(path)
-            Catch
-                Throw
-            Finally
-            End Try
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Try
+                                    Dim reader As New XmlTextReader(path)
+                                Catch
+                                    Throw
+                                Finally
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(8, 31)
             );
         }
@@ -157,43 +165,47 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {   }
-            catch { 
-                XmlTextReader reader = new XmlTextReader(path);
-            }
-            finally {}
-        }
-    }
-}
-",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                try {   }
+                                catch {
+                                    XmlTextReader reader = new XmlTextReader(path);
+                                }
+                                finally {}
+                            }
+                        }
+                    }
+
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(12, 40)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-            Catch
-                Dim reader As New XmlTextReader(path)
-            Finally
-            End Try
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Try
+                                Catch
+                                    Dim reader As New XmlTextReader(path)
+                                Finally
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(9, 31)
             );
         }
@@ -203,44 +215,48 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {   }
-            catch { throw ; }
-            finally {
-                XmlTextReader reader = new XmlTextReader(path);
-            }
-        }
-    }
-}
-",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                try {   }
+                                catch { throw ; }
+                                finally {
+                                    XmlTextReader reader = new XmlTextReader(path);
+                                }
+                            }
+                        }
+                    }
+
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(13, 40)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-            Catch
-                Throw
-            Finally
-                Dim reader As New XmlTextReader(path)
-            End Try
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Try
+                                Catch
+                                    Throw
+                                Finally
+                                    Dim reader As New XmlTextReader(path)
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(11, 31)
             );
         }
@@ -250,37 +266,41 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlTextReader reader = new XmlTextReader(path);
-            reader.XmlResolver = null;
-        }
-    }
-}
-",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                XmlTextReader reader = new XmlTextReader(path);
+                                reader.XmlResolver = null;
+                            }
+                        }
+                    }
+
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(10, 36)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim reader As New XmlTextReader(path)
-            reader.XmlResolver = Nothing
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Dim reader As New XmlTextReader(path)
+                                reader.XmlResolver = Nothing
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(7, 27)
             );
         }
@@ -290,46 +310,50 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {
-                XmlTextReader reader = new XmlTextReader(path);
-                reader.XmlResolver = null;
-            }
-            catch { throw ; }
-            finally {}
-        }
-    }
-}
-",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                try {
+                                    XmlTextReader reader = new XmlTextReader(path);
+                                    reader.XmlResolver = null;
+                                }
+                                catch { throw ; }
+                                finally {}
+                            }
+                        }
+                    }
+
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(11, 40)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-                Dim reader As New XmlTextReader(path)
-                reader.XmlResolver = Nothing
-            Catch
-                Throw
-            Finally
-            End Try
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Try
+                                    Dim reader As New XmlTextReader(path)
+                                    reader.XmlResolver = Nothing
+                                Catch
+                                    Throw
+                                Finally
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(8, 31)
             );
         }
@@ -339,45 +363,49 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {   }
-            catch { 
-                XmlTextReader reader = new XmlTextReader(path);
-                reader.XmlResolver = null;
-            }
-            finally {}
-        }
-    }
-}
-",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                try {   }
+                                catch {
+                                    XmlTextReader reader = new XmlTextReader(path);
+                                    reader.XmlResolver = null;
+                                }
+                                finally {}
+                            }
+                        }
+                    }
+
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(12, 40)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-            Catch
-                Dim reader As New XmlTextReader(path)
-                reader.XmlResolver = Nothing
-            Finally
-            End Try
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Try
+                                Catch
+                                    Dim reader As New XmlTextReader(path)
+                                    reader.XmlResolver = Nothing
+                                Finally
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(9, 31)
             );
         }
@@ -387,46 +415,50 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {   }
-            catch { throw ; }
-            finally {
-                XmlTextReader reader = new XmlTextReader(path);
-                reader.XmlResolver = null;
-            }
-        }
-    }
-}
-",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                try {   }
+                                catch { throw ; }
+                                finally {
+                                    XmlTextReader reader = new XmlTextReader(path);
+                                    reader.XmlResolver = null;
+                                }
+                            }
+                        }
+                    }
+
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(13, 40)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-            Catch
-                Throw
-            Finally
-                Dim reader As New XmlTextReader(path)
-                reader.XmlResolver = Nothing
-            End Try
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Try
+                                Catch
+                                    Throw
+                                Finally
+                                    Dim reader As New XmlTextReader(path)
+                                    reader.XmlResolver = Nothing
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(11, 31)
             );
         }
@@ -436,36 +468,37 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlTextReader reader = new XmlTextReader(path);
-            reader.DtdProcessing = DtdProcessing.Prohibit;
-        }
-    }
-}
-"
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                XmlTextReader reader = new XmlTextReader(path);
+                                reader.DtdProcessing = DtdProcessing.Prohibit;
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim reader As New XmlTextReader(path)
-            reader.DtdProcessing = DtdProcessing.Prohibit
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Dim reader As New XmlTextReader(path)
+                                reader.DtdProcessing = DtdProcessing.Prohibit
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -474,45 +507,46 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {
-                XmlTextReader reader = new XmlTextReader(path);
-                reader.DtdProcessing = DtdProcessing.Prohibit;
-            }
-            catch { throw ; }
-            finally {}
-        }
-    }
-}
-"
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                try {
+                                    XmlTextReader reader = new XmlTextReader(path);
+                                    reader.DtdProcessing = DtdProcessing.Prohibit;
+                                }
+                                catch { throw ; }
+                                finally {}
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-                Dim reader As New XmlTextReader(path)
-                reader.DtdProcessing = DtdProcessing.Prohibit
-            Catch
-                Throw
-            Finally
-            End Try
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Try
+                                    Dim reader As New XmlTextReader(path)
+                                    reader.DtdProcessing = DtdProcessing.Prohibit
+                                Catch
+                                    Throw
+                                Finally
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -521,44 +555,45 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {   }
-            catch { 
-                XmlTextReader reader = new XmlTextReader(path);
-                reader.DtdProcessing = DtdProcessing.Prohibit;
-            }
-            finally {}
-        }
-    }
-}
-"
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                try {   }
+                                catch {
+                                    XmlTextReader reader = new XmlTextReader(path);
+                                    reader.DtdProcessing = DtdProcessing.Prohibit;
+                                }
+                                finally {}
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-            Catch
-                Dim reader As New XmlTextReader(path)
-                reader.DtdProcessing = DtdProcessing.Prohibit
-            Finally
-            End Try
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Try
+                                Catch
+                                    Dim reader As New XmlTextReader(path)
+                                    reader.DtdProcessing = DtdProcessing.Prohibit
+                                Finally
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -567,45 +602,46 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {   }
-            catch { throw ; }
-            finally {
-                XmlTextReader reader = new XmlTextReader(path);
-                reader.DtdProcessing = DtdProcessing.Prohibit;
-            }
-        }
-    }
-}
-"
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                try {   }
+                                catch { throw ; }
+                                finally {
+                                    XmlTextReader reader = new XmlTextReader(path);
+                                    reader.DtdProcessing = DtdProcessing.Prohibit;
+                                }
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-            Catch
-                Throw
-            Finally
-                Dim reader As New XmlTextReader(path)
-                reader.DtdProcessing = DtdProcessing.Prohibit
-            End Try
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Try
+                                Catch
+                                    Throw
+                                Finally
+                                    Dim reader As New XmlTextReader(path)
+                                    reader.DtdProcessing = DtdProcessing.Prohibit
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -614,38 +650,39 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlTextReader reader = new XmlTextReader(path);
-            reader.DtdProcessing = DtdProcessing.Prohibit;
-            reader.XmlResolver = null;
-        }
-    }
-}
-"
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                XmlTextReader reader = new XmlTextReader(path);
+                                reader.DtdProcessing = DtdProcessing.Prohibit;
+                                reader.XmlResolver = null;
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim reader As New XmlTextReader(path)
-            reader.DtdProcessing = DtdProcessing.Prohibit
-            reader.XmlResolver = Nothing
-        End Sub
-    End Class
-End Namespace");
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Dim reader As New XmlTextReader(path)
+                                reader.DtdProcessing = DtdProcessing.Prohibit
+                                reader.XmlResolver = Nothing
+                            End Sub
+                        End Class
+                    End Namespace
+                    """);
         }
 
         [TestMethod]
@@ -653,47 +690,48 @@ End Namespace");
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {
-                XmlTextReader reader = new XmlTextReader(path);
-                reader.DtdProcessing = DtdProcessing.Prohibit;
-                reader.XmlResolver = null;
-            }
-            catch { throw ; }
-            finally {}
-        }
-    }
-}
-"
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                try {
+                                    XmlTextReader reader = new XmlTextReader(path);
+                                    reader.DtdProcessing = DtdProcessing.Prohibit;
+                                    reader.XmlResolver = null;
+                                }
+                                catch { throw ; }
+                                finally {}
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-                Dim reader As New XmlTextReader(path)
-                reader.DtdProcessing = DtdProcessing.Prohibit
-                reader.XmlResolver = Nothing
-            Catch
-                Throw
-            Finally
-            End Try
-        End Sub
-    End Class
-End Namespace");
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Try
+                                    Dim reader As New XmlTextReader(path)
+                                    reader.DtdProcessing = DtdProcessing.Prohibit
+                                    reader.XmlResolver = Nothing
+                                Catch
+                                    Throw
+                                Finally
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """);
         }
 
         [TestMethod]
@@ -701,46 +739,47 @@ End Namespace");
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {   }
-            catch { 
-                XmlTextReader reader = new XmlTextReader(path);
-                reader.DtdProcessing = DtdProcessing.Prohibit;
-                reader.XmlResolver = null;
-            }
-            finally {}
-        }
-    }
-}
-"
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                try {   }
+                                catch {
+                                    XmlTextReader reader = new XmlTextReader(path);
+                                    reader.DtdProcessing = DtdProcessing.Prohibit;
+                                    reader.XmlResolver = null;
+                                }
+                                finally {}
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-            Catch
-                Dim reader As New XmlTextReader(path)
-                reader.DtdProcessing = DtdProcessing.Prohibit
-                reader.XmlResolver = Nothing
-            Finally
-            End Try
-        End Sub
-    End Class
-End Namespace");
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Try
+                                Catch
+                                    Dim reader As New XmlTextReader(path)
+                                    reader.DtdProcessing = DtdProcessing.Prohibit
+                                    reader.XmlResolver = Nothing
+                                Finally
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """);
         }
 
         [TestMethod]
@@ -748,46 +787,46 @@ End Namespace");
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {   }
-            catch { throw ; }
-            finally {
-                XmlTextReader reader = new XmlTextReader(path);
-                reader.DtdProcessing = DtdProcessing.Prohibit;
-                reader.XmlResolver = null;
-            }
-        }
-    }
-}
-");
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                try {   }
+                                catch { throw ; }
+                                finally {
+                                    XmlTextReader reader = new XmlTextReader(path);
+                                    reader.DtdProcessing = DtdProcessing.Prohibit;
+                                    reader.XmlResolver = null;
+                                }
+                            }
+                        }
+                    }
+                    """);
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-            Catch
-                Throw
-            Finally
-                Dim reader As New XmlTextReader(path)
-                reader.DtdProcessing = DtdProcessing.Prohibit
-                reader.XmlResolver = Nothing
-            End Try
-        End Sub
-    End Class
-End Namespace
-"
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Try
+                                Catch
+                                    Throw
+                                Finally
+                                    Dim reader As New XmlTextReader(path)
+                                    reader.DtdProcessing = DtdProcessing.Prohibit
+                                    reader.XmlResolver = Nothing
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -796,39 +835,40 @@ End Namespace
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod(string path)
-        {
-            XmlTextReader doc = new XmlTextReader(path)
-            {
-                DtdProcessing = DtdProcessing.Prohibit,
-                XmlResolver = null
-            };
-        }
-    }
-}");
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod(string path)
+                            {
+                                XmlTextReader doc = new XmlTextReader(path)
+                                {
+                                    DtdProcessing = DtdProcessing.Prohibit,
+                                    XmlResolver = null
+                                };
+                            }
+                        }
+                    }
+                    """);
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod(path As String)
-            Dim doc As New XmlTextReader(path) With { _
-                .DtdProcessing = DtdProcessing.Prohibit, _
-                .XmlResolver = Nothing _
-            }
-        End Sub
-    End Class
-End Namespace
-");
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod(path As String)
+                                Dim doc As New XmlTextReader(path) With { _
+                                    .DtdProcessing = DtdProcessing.Prohibit, _
+                                    .XmlResolver = Nothing _
+                                }
+                            End Sub
+                        End Class
+                    End Namespace
+                    """);
         }
 
         [TestMethod]
@@ -836,39 +876,43 @@ End Namespace
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod(string path)
-        {
-            XmlTextReader doc = new XmlTextReader(path)
-            {
-                XmlResolver = null
-            };
-        }
-    }
-}",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod(string path)
+                            {
+                                XmlTextReader doc = new XmlTextReader(path)
+                                {
+                                    XmlResolver = null
+                                };
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(10, 33)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod(path As String)
-            Dim doc As New XmlTextReader(path) With { _
-                .XmlResolver = Nothing _
-            }
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod(path As String)
+                                Dim doc As New XmlTextReader(path) With { _
+                                    .XmlResolver = Nothing _
+                                }
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(7, 24)
             );
         }
@@ -878,38 +922,40 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod(string path)
-        {
-            XmlTextReader doc = new XmlTextReader(path)
-            {
-                DtdProcessing = DtdProcessing.Prohibit
-            };
-        }
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod(string path)
+                            {
+                                XmlTextReader doc = new XmlTextReader(path)
+                                {
+                                    DtdProcessing = DtdProcessing.Prohibit
+                                };
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod(path As String)
-            Dim doc As New XmlTextReader(path) With { _
-                .DtdProcessing = DtdProcessing.Prohibit _
-            }
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod(path As String)
+                                Dim doc As New XmlTextReader(path) With { _
+                                    .DtdProcessing = DtdProcessing.Prohibit _
+                                }
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -918,29 +964,33 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlTextReader reader = new XmlTextReader(""file.xml"");
-    }
-}",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlTextReader reader = new XmlTextReader("file.xml");
+                        }
+                    }
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(8, 39)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public reader As XmlTextReader = New XmlTextReader(""file.xml"")
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public reader As XmlTextReader = New XmlTextReader("file.xml")
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(6, 42)
             );
         }
@@ -950,35 +1000,37 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlTextReader reader = new XmlTextReader(""file.xml"")
-        {
-            DtdProcessing = DtdProcessing.Prohibit,
-            XmlResolver = null
-        };
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlTextReader reader = new XmlTextReader("file.xml")
+                            {
+                                DtdProcessing = DtdProcessing.Prohibit,
+                                XmlResolver = null
+                            };
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Public reader As XmlTextReader = New XmlTextReader(""file.xml"") With { _
-            .DtdProcessing = DtdProcessing.Prohibit, _
-            .XmlResolver = Nothing _
-        }
-        End Class
-End Namespace");
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public reader As XmlTextReader = New XmlTextReader("file.xml") With { _
+                                .DtdProcessing = DtdProcessing.Prohibit, _
+                                .XmlResolver = Nothing _
+                            }
+                            End Class
+                    End Namespace
+                    """);
         }
 
         [TestMethod]
@@ -986,35 +1038,39 @@ End Namespace");
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlTextReader reader = new XmlTextReader(""file.xml"")
-        {
-            XmlResolver = null
-        };
-    }
-}",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlTextReader reader = new XmlTextReader("file.xml")
+                            {
+                                XmlResolver = null
+                            };
+                        }
+                    }
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(8, 39)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
+                """
 
-Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Public reader As XmlTextReader = New XmlTextReader(""file.xml"") With { _
-           .XmlResolver = Nothing _
-        }
-        End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public reader As XmlTextReader = New XmlTextReader("file.xml") With { _
+                               .XmlResolver = Nothing _
+                            }
+                            End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(7, 42)
             );
         }
@@ -1024,33 +1080,35 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlTextReader reader = new XmlTextReader(""file.xml"")
-        {
-            DtdProcessing = DtdProcessing.Prohibit
-        };
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlTextReader reader = new XmlTextReader("file.xml")
+                            {
+                                DtdProcessing = DtdProcessing.Prohibit
+                            };
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Public reader As XmlTextReader = New XmlTextReader(""file.xml"") With { _
-            .DtdProcessing = DtdProcessing.Prohibit _
-        }
-        End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public reader As XmlTextReader = New XmlTextReader("file.xml") With { _
+                                .DtdProcessing = DtdProcessing.Prohibit _
+                            }
+                            End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -1059,41 +1117,45 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlTextReader reader = new XmlTextReader(""file.xml"");
+                    using System.Xml;
 
-        public TestClass()
-        {
-            reader.XmlResolver = null;
-            reader.DtdProcessing = DtdProcessing.Ignore;
-        }
-    }
-}",
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlTextReader reader = new XmlTextReader("file.xml");
+
+                            public TestClass()
+                            {
+                                reader.XmlResolver = null;
+                                reader.DtdProcessing = DtdProcessing.Ignore;
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(8, 39)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public reader As XmlTextReader = New XmlTextReader(""file.xml"")
+                    Imports System.Xml
 
-        Public Sub New()
-            reader.XmlResolver = Nothing
-            reader.DtdProcessing = DtdProcessing.Ignore
-        End Sub
-    End Class
-End Namespace
-",
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public reader As XmlTextReader = New XmlTextReader("file.xml")
+
+                            Public Sub New()
+                                reader.XmlResolver = Nothing
+                                reader.DtdProcessing = DtdProcessing.Ignore
+                            End Sub
+                        End Class
+                    End Namespace
+
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(6, 42)
             );
         }
@@ -1103,38 +1165,42 @@ End Namespace
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlTextReader reader = new XmlTextReader(""file.xml"");
+                    using System.Xml;
 
-        public TestClass()
-        {
-            reader.XmlResolver = null;
-        }
-    }
-}",
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlTextReader reader = new XmlTextReader("file.xml");
+
+                            public TestClass()
+                            {
+                                reader.XmlResolver = null;
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(8, 39)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public reader As XmlTextReader = New XmlTextReader(""file.xml"")
+                    Imports System.Xml
 
-        Public Sub New()
-            reader.XmlResolver = Nothing
-        End Sub
-    End Class
-End Namespace",
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public reader As XmlTextReader = New XmlTextReader("file.xml")
+
+                            Public Sub New()
+                                reader.XmlResolver = Nothing
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(6, 42)
             );
         }
@@ -1144,48 +1210,52 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlTextReader reader = new XmlTextReader(""file.xml"");
+                    using System.Xml;
 
-        public void TestMethod()
-        {
-            try
-            {
-                reader.XmlResolver = null;
-            }
-            catch { throw; }
-            finally { }
-        }
-    }
-}",
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlTextReader reader = new XmlTextReader("file.xml");
+
+                            public void TestMethod()
+                            {
+                                try
+                                {
+                                    reader.XmlResolver = null;
+                                }
+                                catch { throw; }
+                                finally { }
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(8, 39)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public reader As XmlTextReader = New XmlTextReader(""file.xml"")
+                    Imports System.Xml
 
-        Public Sub TestMethod()
-            Try
-                reader.XmlResolver = Nothing
-            Catch
-                Throw
-            Finally
-            End Try
-        End Sub
-    End Class
-End Namespace",
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public reader As XmlTextReader = New XmlTextReader("file.xml")
+
+                            Public Sub TestMethod()
+                                Try
+                                    reader.XmlResolver = Nothing
+                                Catch
+                                    Throw
+                                Finally
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(6, 42)
             );
         }
@@ -1195,44 +1265,48 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlTextReader reader = new XmlTextReader(""file.xml"");
+                    using System.Xml;
 
-        public void TestMethod()
-        {
-            try {  }
-            catch { reader.XmlResolver = null; }
-            finally { }
-        }
-    }
-}",
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlTextReader reader = new XmlTextReader("file.xml");
+
+                            public void TestMethod()
+                            {
+                                try {  }
+                                catch { reader.XmlResolver = null; }
+                                finally { }
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(8, 39)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public reader As XmlTextReader = New XmlTextReader(""file.xml"")
+                    Imports System.Xml
 
-        Public Sub TestMethod()
-            Try
-            Catch
-                reader.XmlResolver = Nothing
-            Finally
-            End Try
-        End Sub
-    End Class
-End Namespace",
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public reader As XmlTextReader = New XmlTextReader("file.xml")
+
+                            Public Sub TestMethod()
+                                Try
+                                Catch
+                                    reader.XmlResolver = Nothing
+                                Finally
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(6, 42)
             );
         }
@@ -1242,45 +1316,49 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlTextReader reader = new XmlTextReader(""file.xml"");
+                    using System.Xml;
 
-        public void TestMethod()
-        {
-            try {   }
-            catch { throw; }
-            finally { reader.XmlResolver = null; }
-        }
-    }
-}",
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlTextReader reader = new XmlTextReader("file.xml");
+
+                            public void TestMethod()
+                            {
+                                try {   }
+                                catch { throw; }
+                                finally { reader.XmlResolver = null; }
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(8, 39)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public reader As XmlTextReader = New XmlTextReader(""file.xml"")
+                    Imports System.Xml
 
-        Public Sub TestMethod()
-            Try
-            Catch
-                Throw
-            Finally
-                reader.XmlResolver = Nothing
-            End Try
-        End Sub
-    End Class
-End Namespace",
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public reader As XmlTextReader = New XmlTextReader("file.xml")
+
+                            Public Sub TestMethod()
+                                Try
+                                Catch
+                                    Throw
+                                Finally
+                                    reader.XmlResolver = Nothing
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(6, 42)
             );
         }
@@ -1290,38 +1368,42 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlTextReader reader = new XmlTextReader(""file.xml"");
+                    using System.Xml;
 
-        public TestClass()
-        {
-            reader.DtdProcessing = DtdProcessing.Ignore;
-        }
-    }
-}",
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlTextReader reader = new XmlTextReader("file.xml");
+
+                            public TestClass()
+                            {
+                                reader.DtdProcessing = DtdProcessing.Ignore;
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(8, 39)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public reader As XmlTextReader = New XmlTextReader(""file.xml"")
+                    Imports System.Xml
 
-        Public Sub New()
-            reader.DtdProcessing = DtdProcessing.Ignore
-        End Sub
-    End Class
-End Namespace",
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public reader As XmlTextReader = New XmlTextReader("file.xml")
+
+                            Public Sub New()
+                                reader.DtdProcessing = DtdProcessing.Ignore
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(6, 42)
             );
         }
@@ -1331,41 +1413,43 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System;
-using System.Xml;
+                """
+                    using System;
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class DerivedType : XmlTextReader {}   
+                    namespace TestNamespace
+                    {
+                        class DerivedType : XmlTextReader {}
 
-    class TestClass
-    {
-        void TestMethod()
-        {
-            var c = new DerivedType();
-        }
-    }
-    
-}"
+                        class TestClass
+                        {
+                            void TestMethod()
+                            {
+                                var c = new DerivedType();
+                            }
+                        }
+
+                    }
+                    """
             );
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class DerivedType
-        Inherits XmlTextReader
-    End Class
+                    Namespace TestNamespace
+                        Class DerivedType
+                            Inherits XmlTextReader
+                        End Class
 
-    Class TestClass
-        Private Sub TestMethod()
-            Dim c = New DerivedType()
-        End Sub
-    End Class
+                        Class TestClass
+                            Private Sub TestMethod()
+                                Dim c = New DerivedType()
+                            End Sub
+                        End Class
 
-End Namespace");
+                    End Namespace
+                    """);
         }
 
         [TestMethod]
@@ -1373,41 +1457,45 @@ End Namespace");
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
+                    using System.Xml;
 
-        public void Method1(string path)
-        {
-            Method2(new XmlTextReader(path));
-        }
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
 
-        public void Method2(XmlTextReader reader){}
-    }
-}",
+                            public void Method1(string path)
+                            {
+                                Method2(new XmlTextReader(path));
+                            }
+
+                            public void Method2(XmlTextReader reader){}
+                        }
+                    }
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionCSharpResultAt(11, 21)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
+                    Imports System.Xml
 
-        Public Sub Method1(path As String)
-            Method2(New XmlTextReader(path))
-        End Sub
+                    Namespace TestNamespace
+                        Class TestClass
 
-        Public Sub Method2(reader As XmlTextReader)
-        End Sub
-    End Class
-End Namespace",
+                            Public Sub Method1(path As String)
+                                Method2(New XmlTextReader(path))
+                            End Sub
+
+                            Public Sub Method2(reader As XmlTextReader)
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlTextReaderConstructedWithNoSecureResolutionBasicResultAt(8, 21)
             );
         }
@@ -1415,25 +1503,25 @@ End Namespace",
         [TestMethod]
         public async Task ConstructXmlTextReaderOnlySetDtdProcessingProhibitTargetFx451ShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Reflection;               
-using System.Xml;   
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Reflection;
+                using System.Xml;
 
-[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute("".NETFramework,Version=v4.5.1"", FrameworkDisplayName = "".NET Framework 4.5.1"")]
+                [assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=v4.5.1", FrameworkDisplayName = ".NET Framework 4.5.1")]
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlTextReader reader = new XmlTextReader(path);
-            reader.DtdProcessing = DtdProcessing.Prohibit;
-        }
-    }
-}
-"
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path)
+                        {
+                            XmlTextReader reader = new XmlTextReader(path);
+                            reader.DtdProcessing = DtdProcessing.Prohibit;
+                        }
+                    }
+                }
+                """
             );
         }
 
@@ -1442,43 +1530,44 @@ namespace TestNamespace
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net46.Default,
-                @"
-using System;
-using System.Reflection;               
-using System.Xml;   
+                """
+                    using System;
+                    using System.Reflection;
+                    using System.Xml;
 
-[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute("".NETFramework,Version=v4.6"", FrameworkDisplayName = "".NET Framework 4.6"")]
+                    [assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=v4.6", FrameworkDisplayName = ".NET Framework 4.6")]
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlTextReader reader = new XmlTextReader(path);
-            reader.DtdProcessing = DtdProcessing.Prohibit;
-        }
-    }
-}
-"
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                XmlTextReader reader = new XmlTextReader(path);
+                                reader.DtdProcessing = DtdProcessing.Prohibit;
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net46.Default,
-                @"
-Imports System.Reflection
-Imports System.Xml
+                """
+                    Imports System.Reflection
+                    Imports System.Xml
 
-<Assembly: System.Runtime.Versioning.TargetFrameworkAttribute("".NETFramework, Version = v4.6"", FrameworkDisplayName := "".NET Framework 4.6"")>
+                    <Assembly: System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework, Version = v4.6", FrameworkDisplayName := ".NET Framework 4.6")>
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim reader As New XmlTextReader(path)
-            reader.DtdProcessing = DtdProcessing.Prohibit
-        End Sub
-    End Class
-End Namespace");
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Dim reader As New XmlTextReader(path)
+                                reader.DtdProcessing = DtdProcessing.Prohibit
+                            End Sub
+                        End Class
+                    End Namespace
+                    """);
         }
 
         [TestMethod]
@@ -1486,43 +1575,44 @@ End Namespace");
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-using System;
-using System.Reflection;               
-using System.Xml;   
+                """
+                    using System;
+                    using System.Reflection;
+                    using System.Xml;
 
-[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute("".NETFramework,Version=v4.5.2"", FrameworkDisplayName = "".NET Framework 4.5.2"")]
+                    [assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=v4.5.2", FrameworkDisplayName = ".NET Framework 4.5.2")]
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlTextReader reader = new XmlTextReader(path);
-            reader.DtdProcessing = DtdProcessing.Prohibit;
-        }
-    }
-}
-"
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                XmlTextReader reader = new XmlTextReader(path);
+                                reader.DtdProcessing = DtdProcessing.Prohibit;
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-Imports System.Reflection
-Imports System.Xml
+                """
+                    Imports System.Reflection
+                    Imports System.Xml
 
-<Assembly: System.Runtime.Versioning.TargetFrameworkAttribute("".NETFramework, Version = v4.5.2"", FrameworkDisplayName := "".NET Framework 4.5.2"")>
+                    <Assembly: System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework, Version = v4.5.2", FrameworkDisplayName := ".NET Framework 4.5.2")>
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim reader As New XmlTextReader(path)
-            reader.DtdProcessing = DtdProcessing.Prohibit
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Dim reader As New XmlTextReader(path)
+                                reader.DtdProcessing = DtdProcessing.Prohibit
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
     }

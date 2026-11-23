@@ -14,6 +14,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 [TestClass]
+[ResourceLock(TestSettings.DockerDaemonResource)]
 public class EndToEndTests : SdkTest, IDisposable
 {
     private TestLoggerFactory? _loggerFactory;
@@ -21,7 +22,7 @@ public class EndToEndTests : SdkTest, IDisposable
 
     public static string NewImageName([CallerMemberName] string callerMemberName = "")
     {
-        var (normalizedName, warning, error) = ContainerHelpers.NormalizeRepository(callerMemberName);
+        var (normalizedName, warning, error) = ContainerHelpers.NormalizeRepository($"{callerMemberName}-{TestSettings.TestRunId}");
         if (error is (var format, var args))
         {
             throw new ArgumentException(string.Format(Strings.ResourceManager.GetString(format)!, args));
@@ -57,7 +58,7 @@ public class EndToEndTests : SdkTest, IDisposable
 
         // Build the image
 
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push, TestContext.CancellationToken);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -105,7 +106,7 @@ public class EndToEndTests : SdkTest, IDisposable
 
         // Build the image
 
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push, TestContext.CancellationToken);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -214,7 +215,7 @@ public class EndToEndTests : SdkTest, IDisposable
 
         // Build the image
 
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push, TestContext.CancellationToken);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -286,7 +287,7 @@ public class EndToEndTests : SdkTest, IDisposable
     private async Task<(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference)> BuildDockerImageWithArciveDestinationAsync(string archiveFile, string[] tags, string testName)
     {
         ILogger logger = LoggerFactory.CreateLogger(testName);
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push, TestContext.CancellationToken);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -684,7 +685,7 @@ public class EndToEndTests : SdkTest, IDisposable
             .Execute()
             .Should().Pass();
 
-        var containerName = $"test-container-1-{projectType}-{addPackageReference}";
+        var containerName = $"test-container-1-{projectType}-{addPackageReference}-{TestSettings.TestRunId}";
         CommandResult processResult = ContainerCli.RunCommand(
             Log,
             [
@@ -834,7 +835,7 @@ public class EndToEndTests : SdkTest, IDisposable
             .Execute()
             .Should().Pass();
 
-        var containerName = "test-container-2";
+        var containerName = $"test-container-2-{TestSettings.TestRunId}";
         CommandResult processResult = ContainerCli.RunCommand(
             Log,
             "--rm",
@@ -875,7 +876,7 @@ public class EndToEndTests : SdkTest, IDisposable
             Log,
             "--rm",
             "--name",
-            $"test-container-singlearch-norid",
+            $"test-container-singlearch-norid-{TestSettings.TestRunId}",
             $"{imageName}:{imageTag}")
         .Execute();
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
@@ -1034,8 +1035,8 @@ public class EndToEndTests : SdkTest, IDisposable
     {
         string[] imageNames =
         [
-            "endtoendmultiarch-localregistry",
-            "myteam/endtoendmultiarch-localregistry"
+            $"endtoendmultiarch-localregistry-{TestSettings.TestRunId}",
+            $"myteam/endtoendmultiarch-localregistry-{TestSettings.TestRunId}"
         ];
 
         string[] localRegistries = [.. MultiArchLocalRegistryTestData.AvailableRuntimes()];
@@ -1590,7 +1591,7 @@ public class EndToEndTests : SdkTest, IDisposable
         string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
 
         // Build the image
-        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Push, TestContext.CancellationToken);
         var isWin = rid.StartsWith("win");
         ImageBuilder? imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -1644,7 +1645,7 @@ public class EndToEndTests : SdkTest, IDisposable
         string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
 
         // Build the image
-        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Push, TestContext.CancellationToken);
         ImageBuilder? imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
             DockerRegistryManager.Net8PreviewWindowsSpecificImageTag,
@@ -1669,7 +1670,7 @@ public class EndToEndTests : SdkTest, IDisposable
         var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archivePath), NewImageName(), new[] { rid });
 
         (var taskLog, var errors) = SetupTaskLog();
-        var telemetry = new Telemetry(sourceReference, destinationReference, taskLog);
+        var telemetry = new Telemetry(sourceReference, destinationReference, taskLog, TestContext.CancellationToken);
 
         await ImagePublisher.PublishImageAsync(builtImage, sourceReference, destinationReference, false, taskLog, telemetry, CancellationToken.None)
             .ConfigureAwait(false);

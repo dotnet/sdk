@@ -4,10 +4,13 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using Microsoft.NET.TestFramework.Utilities;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
@@ -170,6 +173,42 @@ public partial class AotIntegrationTests
         }
     }
 
+    [TestMethod]
+    public void AotTestModules_RunsManagedTestModule()
+    {
+        SkipIfDnUnavailable();
+        string? testModule = Environment.GetEnvironmentVariable("DOTNET_AOT_TEST_MANAGED_TEST_MODULE");
+        if (string.IsNullOrEmpty(testModule) || !File.Exists(testModule))
+        {
+            Assert.Inconclusive("A managed Microsoft.Testing.Platform module was not provided for Native AOT validation.");
+        }
+
+        var environment = new Dictionary<string, string>
+        {
+            ["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString,
+            ["DOTNET_CLI_CONTEXT_VERBOSE_TO_STDERR"] = bool.TrueString,
+            ["DOTNET_TEST_RUNNER"] = "Microsoft.Testing.Platform",
+        };
+        var (exitCode, stdout, stderr) = RunDn(
+            [
+                "test",
+                "--test-modules", Path.GetFileName(testModule),
+                "--root-directory", Path.GetDirectoryName(testModule)!,
+                "--no-progress",
+                "--no-ansi",
+                "--",
+                "--filter", "FullyQualifiedName~AotParserTests.ParseVersion_HasNoErrors",
+            ],
+            enableAot: true,
+            timeoutMs: 60_000,
+            extraEnv: environment);
+
+        Assert.AreEqual(0, exitCode, stderr);
+        stderr.Should().Contain("AOT test tier: TestModules.");
+        stdout.Should().Contain("total: 1");
+        stdout.Should().Contain("succeeded: 1");
+    }
+
     private static Dictionary<string, string> CreateRunEnvironment(string hostPath)
     {
         string dotnetRoot = Path.GetDirectoryName(hostPath)!;
@@ -214,35 +253,24 @@ public partial class AotIntegrationTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(stdout), "Expected version output");
     }
 
+    // Emulates the deployed muxer layout: dotnet-aot lives in a directory other than dn's own, so
+    // AppContext.BaseDirectory is no longer the SDK directory. Verifies that --info's Base Path still
+    // reports the sdk_dir passed in by the host.
     [TestMethod]
     public void AotInfo_SeparatedLayout_BasePathIsResolvedSdkDirectory()
     {
         SkipIfDnUnavailable();
-        RunSeparatedLayoutBasePathTest(selfLocate: false);
-    }
 
-    [TestMethod]
-    public void AotInfo_SeparatedLayout_SelfLocate_BasePathIsResolvedSdkDirectory()
-    {
-        SkipIfDnUnavailable();
-        RunSeparatedLayoutBasePathTest(selfLocate: true);
-    }
-
-    // Emulates the deployed muxer layout: dotnet-aot lives in a directory other than dn's own, so
-    // AppContext.BaseDirectory is no longer the SDK directory. Verifies that --info's Base Path still
-    // reports the resolved SDK directory - whether it was passed in as sdk_dir (selfLocate: false) or
-    // self-located from the loaded module (selfLocate: true).
-    private void RunSeparatedLayoutBasePathTest(bool selfLocate)
-    {
         string dnPath = FindDnPath()!;
         string sdkLayoutDir = Path.GetDirectoryName(dnPath)!;
         string aotLib = OperatingSystem.IsWindows() ? "dotnet-aot.dll"
             : OperatingSystem.IsMacOS() ? "libdotnet-aot.dylib"
             : "libdotnet-aot.so";
-        string aotSource = Path.Combine(sdkLayoutDir, aotLib);
+        string aotLibraryDir = Environment.GetEnvironmentVariable("DOTNET_AOT_LIBRARY_DIR") ?? sdkLayoutDir;
+        string aotSource = Path.Combine(aotLibraryDir, aotLib);
         if (!File.Exists(aotSource))
         {
-            Assert.Inconclusive($"{aotLib} not found next to dn; build with NativeAOT to enable this test.");
+            Assert.Inconclusive($"{aotLib} not found; build with NativeAOT to enable this test.");
         }
 
         string sdkSubDir = Path.Combine(Path.GetTempPath(), "aot-sep-" + Guid.NewGuid().ToString("N"));
@@ -256,11 +284,13 @@ public partial class AotIntegrationTests
                 Path.Combine(sdkSubDir, ".version"),
                 ["0123456789abcdef", expectedVersion]);
 
-            var env = new Dictionary<string, string> { ["DOTNET_AOT_SDK_DIR"] = sdkSubDir };
-            if (selfLocate)
+            var env = new Dictionary<string, string>
             {
-                env["DOTNET_AOT_BLANK_SDKDIR"] = "1";
-            }
+                ["DOTNET_AOT_SDK_DIR"] = sdkSubDir,
+                ["DOTNET_AOT_LIBRARY_DIR"] = sdkSubDir,
+                // Telemetry's SDK-resolution probe can print installed SDKs to stdout on Windows.
+                ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1",
+            };
 
             var (exitCode, stdout, _) = RunDn(["--info"], enableAot: true, extraEnv: env);
 
@@ -315,6 +345,137 @@ public partial class AotIntegrationTests
         stdout.Should().Contain("Usage:");
     }
 
+    [TestMethod]
+    [DataRow("dotnet bu", 9, new[] { "build", "build-server", "msbuild" })]
+    [DataRow("dotnet --ver", 12, new[] { "--version" })]
+    public void AotComplete_RootLabels_RunWithoutManagedFallbackOrFirstRunSideEffects(
+        string input, int position, string[] expected)
+    {
+        SkipIfDnUnavailable();
+
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"dotnet-aot-complete-{Guid.NewGuid():N}");
+        string sdkDirectory = Path.Combine(testDirectory, "sdk");
+        string cliHome = Path.Combine(testDirectory, "home");
+        Directory.CreateDirectory(sdkDirectory);
+        Directory.CreateDirectory(cliHome);
+
+        var environment = new Dictionary<string, string>
+        {
+            ["DOTNET_AOT_SDK_DIR"] = sdkDirectory,
+            ["DOTNET_AOT_LIBRARY_DIR"] = sdkDirectory,
+            ["DOTNET_CLI_HOME"] = cliHome,
+            ["DOTNET_CLI_TELEMETRY_OPTOUT"] = bool.TrueString,
+            ["DOTNET_GENERATE_ASPNET_CERTIFICATE"] = bool.FalseString,
+            ["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] = bool.FalseString,
+            ["DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK"] = bool.TrueString,
+            ["DOTNET_NOLOGO"] = bool.FalseString,
+        };
+
+        try
+        {
+            CopyAotLibrary(sdkDirectory);
+
+            var (exitCode, stdout, stderr) = RunDn(
+                ["complete", "--position", position.ToString(), input],
+                enableAot: true,
+                extraEnv: environment);
+
+            Assert.AreEqual(0, exitCode, stderr);
+            Assert.IsTrue(string.IsNullOrEmpty(stderr), stderr);
+            Assert.AreSequenceEqual(
+                expected,
+                stdout.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
+            Assert.IsFalse(File.Exists(Path.Combine(
+                cliHome,
+                ".dotnet",
+                FirstTimeUseNoticeSentinel.SENTINEL)));
+            Assert.IsEmpty(Directory.EnumerateFiles(cliHome, "*.sentinel", SearchOption.AllDirectories));
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void AotComplete_CommandSpecificProviders_FallBackToManaged()
+    {
+        SkipIfDnUnavailable();
+
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"dotnet-aot-complete-fallback-{Guid.NewGuid():N}");
+        string sdkDirectory = Path.Combine(testDirectory, "sdk");
+        string cliHome = Path.Combine(testDirectory, "home");
+        string customHive = Path.Combine(testDirectory, "hive");
+        Directory.CreateDirectory(sdkDirectory);
+        Directory.CreateDirectory(cliHome);
+
+        var environment = new Dictionary<string, string>
+        {
+            ["DOTNET_AOT_SDK_DIR"] = sdkDirectory,
+            ["DOTNET_AOT_LIBRARY_DIR"] = sdkDirectory,
+            ["DOTNET_CLI_HOME"] = cliHome,
+            ["DOTNET_CLI_TELEMETRY_OPTOUT"] = bool.TrueString,
+            ["DOTNET_GENERATE_ASPNET_CERTIFICATE"] = bool.FalseString,
+            ["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] = bool.FalseString,
+            ["DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK"] = bool.TrueString,
+            ["DOTNET_NOLOGO"] = bool.TrueString,
+        };
+        string completionInput = $"new --debug:custom-hive \"{customHive}\" ";
+
+        try
+        {
+            // The SDK root must contain both the loaded native library and the managed fallback.
+            string managedSdkDirectory = Environment.GetEnvironmentVariable("DOTNET_AOT_SDK_DIR")
+                ?? Path.GetDirectoryName(FindDnPath()!)!;
+            // Template providers discover installed packages relative to this SDK's Sdks directory.
+            environment["MSBuildSDKsPath"] = Path.Combine(managedSdkDirectory, "Sdks");
+            foreach (string file in Directory.EnumerateFiles(managedSdkDirectory))
+            {
+                File.Copy(file, Path.Combine(sdkDirectory, Path.GetFileName(file)));
+            }
+            CopyAotLibrary(sdkDirectory);
+
+            var (warmupExitCode, _, warmupError) = RunDn(
+                ["complete", completionInput],
+                enableAot: true,
+                extraEnv: environment);
+            Assert.AreEqual(0, warmupExitCode, warmupError);
+
+            var (aotExitCode, aotOutput, aotError) = RunDn(
+                ["complete", completionInput],
+                enableAot: true,
+                extraEnv: environment);
+            var (managedExitCode, managedOutput, managedError) = RunDn(
+                ["complete", completionInput],
+                enableAot: false,
+                extraEnv: environment);
+
+            Assert.AreEqual(0, aotExitCode, aotError);
+            Assert.AreEqual(0, managedExitCode, managedError);
+            Assert.IsTrue(string.IsNullOrEmpty(aotError), aotError);
+            Assert.IsTrue(string.IsNullOrEmpty(managedError), managedError);
+            aotOutput.Should().Contain("console");
+            Assert.AreEqual(managedOutput, aotOutput);
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    private static void CopyAotLibrary(string sdkDirectory)
+    {
+        string aotLibraryDirectory = Environment.GetEnvironmentVariable("DOTNET_AOT_LIBRARY_DIR")
+            ?? Path.GetDirectoryName(FindDnPath()!)!;
+        string aotLibraryFileName = OperatingSystem.IsWindows() ? "dotnet-aot.dll"
+            : OperatingSystem.IsMacOS() ? "libdotnet-aot.dylib"
+            : "libdotnet-aot.so";
+        File.Copy(
+            Path.Combine(aotLibraryDirectory, aotLibraryFileName),
+            Path.Combine(sdkDirectory, aotLibraryFileName),
+            overwrite: true);
+    }
+
     /// <summary>
     /// Verifies synthetic no-build launch across explicit, positional, shorthand, and profile forms, plus conservative managed fallback.
     /// </summary>
@@ -323,8 +484,16 @@ public partial class AotIntegrationTests
     {
         SkipIfDnUnavailable();
 
-        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-run-file-{Guid.NewGuid():N}");
+        string testDirectory = TestPathUtility.ResolveTempPrefixLink(
+            Path.Join(Path.GetTempPath(), $"dotnet-aot-run-file-{Guid.NewGuid():N}"));
         Directory.CreateDirectory(testDirectory);
+        string? nugetConfigPath = Environment.GetEnvironmentVariable("DOTNET_AOT_TEST_NUGET_CONFIG");
+        if (string.IsNullOrEmpty(nugetConfigPath) || !File.Exists(nugetConfigPath))
+        {
+            Assert.Inconclusive("DOTNET_AOT_TEST_NUGET_CONFIG must identify the NuGet configuration for cached run-file integration setup.");
+        }
+        File.Copy(nugetConfigPath, Path.Join(testDirectory, "NuGet.config"));
+
         string entryPointPath = Path.Join(testDirectory, "Program.cs");
         File.WriteAllText(entryPointPath, """
             if (Environment.GetEnvironmentVariable("REPORT_PROFILE") == "1")
@@ -372,6 +541,27 @@ public partial class AotIntegrationTests
 
             Assert.AreEqual(0, setupExitCode, setupOutput + setupError);
             Assert.AreEqual("AOT_RUN_FILE::", setupOutput.Trim());
+
+            string successCachePath = Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName);
+            RunFileBuildCacheEntry? syntheticCacheEntry;
+            using (FileStream stream = File.OpenRead(successCachePath))
+            {
+                syntheticCacheEntry = JsonSerializer.Deserialize(
+                    stream,
+                    RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
+            Assert.IsNotNull(syntheticCacheEntry);
+            syntheticCacheEntry.BuildLevel = BuildLevel.Csc;
+            syntheticCacheEntry.Run = null;
+            syntheticCacheEntry.BuildResultFile = null;
+            syntheticCacheEntry.CscArguments = [];
+            using (FileStream stream = File.Create(successCachePath))
+            {
+                JsonSerializer.Serialize(
+                    stream,
+                    syntheticCacheEntry,
+                    RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
 
             environment["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString;
             environment["DOTNET_CLI_CONTEXT_VERBOSE_TO_STDERR"] = bool.TrueString;
@@ -469,7 +659,6 @@ public partial class AotIntegrationTests
             Assert.AreEqual(projectProfileStdout.Trim(), shorthandProfileStdout.Trim());
             Assert.Contains("AOT run tier: LaunchOnly (NoBuildSyntheticCache).", shorthandProfileStderr);
 
-            string successCachePath = Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName);
             byte[] successCacheBeforeExecutableProfile = File.ReadAllBytes(successCachePath);
             File.Delete(successCachePath);
             DateTime artifactsTimeBeforeExecutableProfile = Directory.GetLastWriteTimeUtc(artifactsPath);
@@ -553,9 +742,25 @@ public partial class AotIntegrationTests
             Assert.Contains("AOT run tier: LaunchOnly (NoBuildSyntheticCache).", projectShorthandStderr);
             File.Delete(projectPath);
 
-            byte[] successCacheBeforeFallback = File.ReadAllBytes(successCachePath);
             File.AppendAllText(entryPointPath, $"{Environment.NewLine}// #: conservative fallback");
+            RunFileBuildCacheEntry? fallbackCacheEntry;
+            using (FileStream stream = File.OpenRead(successCachePath))
+            {
+                fallbackCacheEntry = JsonSerializer.Deserialize(
+                    stream,
+                    RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
+            Assert.IsNotNull(fallbackCacheEntry);
+            fallbackCacheEntry.CscArguments = ["/nologo"];
+            using (FileStream stream = File.Create(successCachePath))
+            {
+                JsonSerializer.Serialize(
+                    stream,
+                    fallbackCacheEntry,
+                    RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
             File.SetLastWriteTimeUtc(entryPointPath, File.GetLastWriteTimeUtc(successCachePath).AddSeconds(2));
+            byte[] successCacheBeforeFallback = File.ReadAllBytes(successCachePath);
 
             var (fallbackExitCode, fallbackStdout, fallbackStderr) = RunDn(
                 [
@@ -699,19 +904,153 @@ public partial class AotIntegrationTests
     }
 
     [TestMethod]
+    public void BuildHelp_ShowsPropertyOptionInNativeAot()
+    {
+        SkipIfDnUnavailable();
+
+        var (aotExitCode, aotOutput, aotError) = RunDn(["build", "--help"], enableAot: true);
+
+        Assert.AreEqual(0, aotExitCode, aotError);
+        aotOutput.Should().Contain($"-p, -property <{CommandDefinitionStrings.PropertyArgumentName}>");
+        Regex.Replace(aotOutput, @"\s+", " ").Should().Contain(CommandDefinitionStrings.PropertyOptionDescription);
+    }
+
+    [TestMethod]
+    [DataRow("--property")]
+    [DataRow("-property")]
+    [DataRow("/property")]
+    [DataRow("/p")]
+    [DataRow("-p")]
+    [DataRow("--p")]
+    public void BuildPropertyAliases_PreserveManagedInvocationFromNativeAot(string alias)
+    {
+        SkipIfDnUnavailable();
+
+        string directory = Path.Combine(Path.GetTempPath(), $"aot-build-properties-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            string projectPath = Path.Combine(directory, "Properties.proj");
+            File.WriteAllText(projectPath, "<Project />");
+            string[] args =
+            [
+                "build", projectPath, "--no-restore", "--nologo",
+                "--getProperty:First,Second",
+                alias, "First=original;Second=two", $"{alias}:First=updated"
+            ];
+
+            var (managedExitCode, managedOutput, managedError) = RunDn(args, enableAot: false, workingDirectory: directory);
+            var (aotExitCode, aotOutput, aotError) = RunDn(args, enableAot: true, workingDirectory: directory);
+
+            Assert.AreEqual(0, managedExitCode, managedError);
+            Assert.AreEqual(0, aotExitCode, aotError);
+            Assert.AreEqual(managedOutput, aotOutput);
+            using var output = JsonDocument.Parse(aotOutput);
+            var properties = output.RootElement.GetProperty("Properties");
+            Assert.AreEqual("updated", properties.GetProperty("First").GetString());
+            Assert.AreEqual("two", properties.GetProperty("Second").GetString());
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void AotBuild_WithEnableAot_FallsBackToManaged()
     {
         SkipIfDnUnavailable();
 
-        // "build" is unsupported by AOT parser → should fall back to managed CLI
-        // In a full SDK layout, this would invoke dotnet build. We just verify it doesn't crash.
-        var (exitCode, stdout, stderr) = RunDn(["build", "--help"], enableAot: true);
+        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-build-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDirectory);
+        try
+        {
+            const string projectFileName = "ManagedFallback.proj";
+            string projectPath = Path.Join(testDirectory, projectFileName);
+            File.Copy(
+                Path.Join(AppContext.BaseDirectory, "TestAssets", "AotManagedFallback", projectFileName),
+                projectPath);
 
-        // If managed fallback works, it should show build help (exit 0)
-        // If managed fallback is missing, it returns 1
-        // Either way, it shouldn't crash or timeout
-        Assert.IsTrue(exitCode == 0 || exitCode == 1,
-            $"Expected exit code 0 or 1, got {exitCode}. Stderr: {stderr}");
+            var (exitCode, stdout, stderr) = RunDn(
+                ["build", projectPath, "--no-restore", "--verbosity", "minimal", "-nologo"],
+                enableAot: true,
+                workingDirectory: testDirectory);
+
+            Assert.AreEqual(0, exitCode, stdout + stderr);
+            Assert.Contains("AOT_MANAGED_FALLBACK:Core", stdout);
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void AotExternalCommand_WaitsForSecondSigIntBeforeExitingQuietly()
+    {
+        SkipIfDnUnavailable();
+
+        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-cancellation-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDirectory);
+        string markerPath = Path.Join(testDirectory, "ready");
+        string commandPath = Path.Join(testDirectory, "dotnet-aot-cancellation-test");
+        File.WriteAllText(
+            commandPath,
+            $"#!/bin/sh{Environment.NewLine}echo ready > '{markerPath}'{Environment.NewLine}sleep 30{Environment.NewLine}");
+        File.SetUnixFileMode(
+            commandPath,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+            UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+            UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+
+        ProcessStartInfo startInfo = new(FindDnPath()!)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        startInfo.ArgumentList.Add("aot-cancellation-test");
+        startInfo.Environment["DOTNET_CLI_ENABLEAOT"] = "true";
+        startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
+        startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
+        startInfo.Environment["PATH"] =
+            testDirectory + Path.PathSeparator + startInfo.Environment["PATH"];
+
+        using Process process = new() { StartInfo = startInfo };
+        try
+        {
+            process.Start();
+            Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
+            Task<string> stderrTask = process.StandardError.ReadToEndAsync(TestContext.CancellationToken);
+            SpinWait.SpinUntil(() => File.Exists(markerPath), TimeSpan.FromSeconds(10))
+                .Should().BeTrue("the external command should start");
+
+            process.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
+            Thread.Sleep(TimeSpan.FromMilliseconds(750));
+            process.HasExited.Should().BeFalse("the first SIGINT should allow the external command to finish");
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            process.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
+            process.WaitForExit(10_000).Should().BeTrue();
+
+            process.ExitCode.Should().Be(130);
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
+            string standardError = stderrTask.GetAwaiter().GetResult();
+            standardError.Should().NotContain("Unhandled exception");
+            standardError.Should().NotContain("The operation was canceled");
+            _ = stdoutTask.GetAwaiter().GetResult();
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+
+            try { Directory.Delete(testDirectory, recursive: true); } catch { }
+        }
     }
 
     [TestMethod]

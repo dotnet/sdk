@@ -26,7 +26,7 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
         _slnOrProjectArgument = result.GetValue(Definition.SlnOrProjectArgument);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var workloadResolverFactory = new WorkloadResolverFactory();
         var creationResult = workloadResolverFactory.Create();
@@ -46,10 +46,13 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
         recorder.Run(() =>
         {
             // First discover projects. This may return an error if no projects are found, and we shouldn't delay until after Update if that's the case.
-            var allProjects = DiscoverAllProjects(Directory.GetCurrentDirectory(), _slnOrProjectArgument).Distinct();
+            var allProjects = DiscoverAllProjects(
+                Directory.GetCurrentDirectory(),
+                cancellationToken,
+                _slnOrProjectArgument).Distinct();
 
             // Then update manifests and install a workload set as necessary
-            new WorkloadUpdateCommand(_result, recorder: recorder, isRestoring: true).Execute();
+            new WorkloadUpdateCommand(_result, recorder: recorder, isRestoring: true).Execute(cancellationToken);
 
             List<WorkloadId> allWorkloadId = RunTargetToGetWorkloadIds(allProjects);
             Reporter.WriteLine(string.Format(CliCommandStrings.InstallingWorkloads, string.Join(" ", allWorkloadId)));
@@ -59,7 +62,7 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
                 skipWorkloadManifestUpdate: true)
             {
                 IsRunningRestore = true
-            }.Execute();
+            }.Execute(cancellationToken);
         });
 
         workloadInstaller.Shutdown();
@@ -111,20 +114,25 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
     }
 
 
-    internal static List<string> DiscoverAllProjects(string currentDirectory,
+    internal static List<string> DiscoverAllProjects(
+        string currentDirectory,
+        CancellationToken cancellationToken,
         IEnumerable<string> slnOrProjectArgument = null)
     {
         var slnFiles = new List<string>();
         var projectFiles = new List<string>();
         if (slnOrProjectArgument == null || !slnOrProjectArgument.Any())
         {
-            slnFiles = [.. SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, false)];
+            slnFiles = [.. SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, includeSolutionFilterFiles: true)];
             projectFiles.AddRange(Directory.GetFiles(currentDirectory, "*.*proj"));
         }
         else
         {
             slnFiles = [.. slnOrProjectArgument
-                .Where(s => Path.GetExtension(s).Equals(".sln", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(s).Equals(".slnx", StringComparison.OrdinalIgnoreCase))
+                .Where(s =>
+                    Path.GetExtension(s).Equals(".sln", StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetExtension(s).Equals(".slnx", StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetExtension(s).Equals(".slnf", StringComparison.OrdinalIgnoreCase))
                 .Select(Path.GetFullPath)];
             projectFiles = [.. slnOrProjectArgument
                 .Where(s => Path.GetExtension(s).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
@@ -133,9 +141,17 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
 
         foreach (string solutionFilePath in slnFiles)
         {
-            var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath);
+            var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, cancellationToken);
+            var projectPathBaseDirectory = Path.GetDirectoryName(solutionFilePath)!;
+
+            if (Path.GetExtension(solutionFilePath).Equals(".slnf", StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrEmpty(solutionFile.Description))
+            {
+                projectPathBaseDirectory = Path.GetDirectoryName(solutionFile.Description)!;
+            }
+
             projectFiles.AddRange(solutionFile.SolutionProjects.Select(
-                p => Path.GetFullPath(p.FilePath, Path.GetDirectoryName(solutionFilePath))));
+                p => Path.GetFullPath(p.FilePath, projectPathBaseDirectory)));
         }
 
         if (projectFiles.Count == 0)

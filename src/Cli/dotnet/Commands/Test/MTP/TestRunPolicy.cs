@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal enum TestRunCancellationReason
@@ -20,13 +18,14 @@ internal sealed class TestRunPolicy : IDisposable
 
     private readonly int? _maximumFailedTests;
     private readonly TimeSpan? _timeout;
+    private readonly TimeProvider _timeProvider;
     private readonly Action<TestRunCancellationReason>? _onCancellation;
     private readonly TaskCompletionSource<TestRunCancellationReason> _cancellation =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly Lock _timerLock = new();
 
-    private Timer? _timer;
+    private ITimer? _timer;
     private TimeSpan? _remainingTimeout;
     private long _timerStartedTimestamp;
     private int _activeTestApplications;
@@ -38,7 +37,8 @@ internal sealed class TestRunPolicy : IDisposable
         int? maximumFailedTests,
         TimeSpan? timeout,
         TimeSpan? cancellationGracePeriod = null,
-        Action<TestRunCancellationReason>? onCancellation = null)
+        Action<TestRunCancellationReason>? onCancellation = null,
+        TimeProvider? timeProvider = null)
     {
         if (maximumFailedTests is <= 0)
         {
@@ -53,6 +53,7 @@ internal sealed class TestRunPolicy : IDisposable
         _maximumFailedTests = maximumFailedTests;
         _timeout = timeout;
         _remainingTimeout = timeout;
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _onCancellation = onCancellation;
         CancellationGracePeriod = cancellationGracePeriod ?? DefaultCancellationGracePeriod;
     }
@@ -91,14 +92,14 @@ internal sealed class TestRunPolicy : IDisposable
                 Reason == TestRunCancellationReason.None &&
                 _remainingTimeout is { } remainingTimeout)
             {
-                _timerStartedTimestamp = Stopwatch.GetTimestamp();
+                _timerStartedTimestamp = _timeProvider.GetTimestamp();
 
                 // A concurrent OnTestApplicationExited can drive _remainingTimeout non-positive a
                 // moment before it flips Reason to Timeout, so clamp to avoid passing a negative due
                 // time to Timer (which throws ArgumentOutOfRangeException). A zero due time fires
                 // immediately and OnTimeout performs the cancellation.
                 TimeSpan dueTime = remainingTimeout > TimeSpan.Zero ? remainingTimeout : TimeSpan.Zero;
-                _timer = new Timer(
+                _timer = _timeProvider.CreateTimer(
                     static state => ((TestRunPolicy)state!).OnTimeout(),
                     this,
                     dueTime,
@@ -128,7 +129,7 @@ internal sealed class TestRunPolicy : IDisposable
                 _timer.Dispose();
                 _timer = null;
 
-                TimeSpan elapsed = Stopwatch.GetElapsedTime(_timerStartedTimestamp);
+                TimeSpan elapsed = _timeProvider.GetElapsedTime(_timerStartedTimestamp);
                 _remainingTimeout -= elapsed;
                 timeoutReached = _remainingTimeout <= TimeSpan.Zero;
             }

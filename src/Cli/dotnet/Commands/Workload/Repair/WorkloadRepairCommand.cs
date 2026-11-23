@@ -8,7 +8,6 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Repair;
@@ -32,10 +31,7 @@ internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepair
         INuGetPackageDownloader nugetPackageDownloader = null)
         : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
     {
-        var configOption = parseResult.GetValue(Definition.ConfigOption);
-        var sourceOption = parseResult.GetValue(Definition.SourceOption);
-        _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
-            new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
+        _packageSourceLocation = parseResult.ToPackageSourceLocation(Definition.ConfigOption, Definition.SourceOption);
 
         _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
@@ -62,7 +58,7 @@ internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepair
         _recorder.HistoryRecord.CommandName = "repair";
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         try
         {
@@ -81,16 +77,21 @@ internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepair
 
                 Reporter.WriteLine(string.Format(CliCommandStrings.RepairingWorkloads, string.Join(" ", workloadIds)));
 
-                ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, sdkFeatureBand);
+                ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, sdkFeatureBand, cancellationToken);
 
-                WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
+                WorkloadInstallCommand.TryRunGarbageCollection(
+                    _workloadInstaller,
+                    Reporter,
+                    Verbosity,
+                    workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion),
+                    cancellationToken);
 
                 Reporter.WriteLine();
                 Reporter.WriteLine(string.Format(CliCommandStrings.RepairSucceeded, string.Join(" ", workloadIds)));
                 Reporter.WriteLine();
             });
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             // Don't show entire stack trace
             throw new GracefulException(string.Format(CliCommandStrings.WorkloadRepairFailed, e.Message), e, isUserError: false);
@@ -103,9 +104,12 @@ internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepair
         return _workloadInstaller.ExitCode;
     }
 
-    private void ReinstallWorkloadsBasedOnCurrentManifests(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand)
+    private void ReinstallWorkloadsBasedOnCurrentManifests(
+        IEnumerable<WorkloadId> workloadIds,
+        SdkFeatureBand sdkFeatureBand,
+        CancellationToken cancellationToken)
     {
-        _workloadInstaller.RepairWorkloads(workloadIds, sdkFeatureBand);
+        _workloadInstaller.RepairWorkloads(workloadIds, sdkFeatureBand, cancellationToken);
     }
 
 }

@@ -35,26 +35,18 @@ jobs:
             val="${!var}"
             if [ -n "$val" ]; then
               CONFIGURED_PAT_COUNT=$((CONFIGURED_PAT_COUNT + 1))
-              if status=$(printf 'Authorization: Bearer %s\nAccept: application/vnd.github+json\nX-GitHub-Api-Version: 2022-11-28\n' "$val" | \
-                curl --silent --show-error \
-                  --output /dev/null \
-                  --write-out '%{http_code}' \
-                  --connect-timeout 5 \
-                  --max-time 15 \
-                  --proto '=https' \
-                  --tlsv1.2 \
-                  --header @- \
-                  https://api.github.com/user); then
-                if [ "$status" = 200 ]; then
-                  PAT_NUMBERS+=("${i}")
-                  POOL_INDICATORS[${i}]="🟪"
-                else
-                  POOL_INDICATORS[${i}]="❌"
-                  echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check returned HTTP ${status}"
-                fi
+              if response=$(GH_TOKEN="$val" timeout 15 gh api --hostname github.com --include --silent user 2>&1); then
+                PAT_NUMBERS+=("${i}")
+                POOL_INDICATORS[i]="🟪"
               else
-                POOL_INDICATORS[${i}]="❔"
-                echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check could not reach GitHub"
+                status=$(sed -n 's/^HTTP[^ ]* \([0-9][0-9][0-9]\).*/\1/p' <<< "$response" | head -n 1)
+                if [ -n "$status" ]; then
+                  POOL_INDICATORS[i]="❌"
+                  echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check returned HTTP ${status}"
+                else
+                  POOL_INDICATORS[i]="❔"
+                  echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check could not reach GitHub"
+                fi
               fi
             fi
           done
@@ -70,9 +62,11 @@ jobs:
           fi
 
           if [ ${#PAT_NUMBERS[@]} -eq 0 ]; then
-            echo "|0|1|2|3|4|5|6|7|8|9|" >> "$GITHUB_STEP_SUMMARY"
-            echo "|-|-|-|-|-|-|-|-|-|-|" >> "$GITHUB_STEP_SUMMARY"
-            (IFS='|'; printf '|%s' "${POOL_INDICATORS[@]}"; printf '|\n') >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo "|0|1|2|3|4|5|6|7|8|9|"
+              echo "|-|-|-|-|-|-|-|-|-|-|"
+              (IFS='|'; printf '|%s' "${POOL_INDICATORS[@]}"; printf '|\n')
+            } >> "$GITHUB_STEP_SUMMARY"
             echo "::error::None of the configured PAT pool entries authenticated successfully"
             exit 1
           fi
@@ -82,17 +76,20 @@ jobs:
             RANDOM=$RANDOM_SEED
           fi
 
-          PAT_INDEX=$(( RANDOM % ${#PAT_NUMBERS[@]} ))
-          PAT_NUMBER="${PAT_NUMBERS[$PAT_INDEX]}"
-          POOL_INDICATORS[${PAT_NUMBER}]="✅"
+          PAT_COUNT=${#PAT_NUMBERS[@]}
+          PAT_INDEX=$(( RANDOM % PAT_COUNT ))
+          PAT_NUMBER="${PAT_NUMBERS[PAT_INDEX]}"
+          POOL_INDICATORS[PAT_NUMBER]="✅"
 
           echo "Pool size: ${#PAT_NUMBERS[@]}"
           echo "Selected PAT number ${PAT_NUMBER} (index: ${PAT_INDEX})"
 
           # Emit a markdown table of the pool entries to the step summary
-          echo "|0|1|2|3|4|5|6|7|8|9|" >> "$GITHUB_STEP_SUMMARY"
-          echo "|-|-|-|-|-|-|-|-|-|-|" >> "$GITHUB_STEP_SUMMARY"
-          (IFS='|'; printf '|%s' "${POOL_INDICATORS[@]}"; printf '|\n') >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "|0|1|2|3|4|5|6|7|8|9|"
+            echo "|-|-|-|-|-|-|-|-|-|-|"
+            (IFS='|'; printf '|%s' "${POOL_INDICATORS[@]}"; printf '|\n')
+          } >> "$GITHUB_STEP_SUMMARY"
 
           # Set the PAT number as the output
           echo "copilot_pat_number=${PAT_NUMBER}" >> "$GITHUB_OUTPUT"

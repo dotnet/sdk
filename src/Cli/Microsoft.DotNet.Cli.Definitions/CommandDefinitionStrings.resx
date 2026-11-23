@@ -506,6 +506,9 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdNoCacheOptionDescription" xml:space="preserve">
     <value>Do not cache packages and http requests.</value>
   </data>
+  <data name="CmdNoDefaultExcludesDescription" xml:space="preserve">
+    <value>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</value>
+  </data>
   <data name="CmdNoDependenciesOptionDescription" xml:space="preserve">
     <value>Do not restore project-to-project references and only restore the specified project.</value>
   </data>
@@ -564,7 +567,7 @@ This is equivalent to deleting project.assets.json.</value>
     <value>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
   </data>
   <data name="CmdProjectOrSolutionDescriptionFormat" xml:space="preserve">
-    <value>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
+    <value>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</value>
   </data>
   <data name="CmdProjectOrSolutionPathName" xml:space="preserve">
     <value>PROJECT_OR_SOLUTION_PATH</value>
@@ -651,8 +654,22 @@ If not specified the file will be generated inside the default 'TestResults' dir
   <data name="CmdTestModulesRootDirectoryDescription" xml:space="preserve">
     <value>The test modules have the specified root directory.</value>
   </data>
+  <data name="CmdTestModulesRootDirectoryRequiresTestModules" xml:space="preserve">
+    <value>The '--root-directory' option can only be used with '--test-modules'.</value>
+    <comment>{Locked="--root-directory"}{Locked="--test-modules"}</comment>
+  </data>
   <data name="CmdTestOutputDescription" xml:space="preserve">
     <value>Verbosity of test output.</value>
+  </data>
+  <data name="CmdTestShowStdoutDescription" xml:space="preserve">
+    <value>Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</value>
+    <comment>{Locked="All"}{Locked="Failed"}{Locked="None"}</comment>
+  </data>
+  <data name="CmdTestShowStderrDescription" xml:space="preserve">
+    <value>Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</value>
+    <comment>{Locked="All"}{Locked="Failed"}{Locked="None"}</comment>
   </data>
   <data name="CmdTransitiveDescription" xml:space="preserve">
     <value>Lists transitive and top-level packages.</value>
@@ -819,6 +836,9 @@ If not specified the file will be generated inside the default 'TestResults' dir
   <data name="ListSolutionFoldersArgumentDescription" xml:space="preserve">
     <value>Display solution folder paths.</value>
   </data>
+  <data name="SolutionListFormatOptionDescription" xml:space="preserve">
+    <value>The output format for the list of paths. JSON output is an array of paths.</value>
+  </data>
   <data name="ManifestOption" xml:space="preserve">
     <value>MANIFEST</value>
   </data>
@@ -984,6 +1004,12 @@ If not specified the file will be generated inside the default 'TestResults' dir
   <data name="ProjectManifestDescription" xml:space="preserve">
     <value>The XML file that contains the list of packages to be stored.</value>
   </data>
+  <data name="PropertyArgumentName" xml:space="preserve">
+    <value>NAME=VALUE</value>
+  </data>
+  <data name="PropertyOptionDescription" xml:space="preserve">
+    <value>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</value>
+  </data>
   <data name="PublishAppDescription" xml:space="preserve">
     <value>Publisher for the .NET Platform</value>
   </data>
@@ -1017,6 +1043,9 @@ The default is to publish a framework-dependent application.</value>
   </data>
   <data name="ReferenceAddProjectPathArgumentName" xml:space="preserve">
     <value>PROJECT_PATH</value>
+  </data>
+  <data name="ReferenceCommandDescription" xml:space="preserve">
+    <value>Add, remove, or list ProjectReferences for a .NET project.</value>
   </data>
   <data name="ReferenceListAppFullName" xml:space="preserve">
     <value>List all project-to-project references of the project.</value>
@@ -1094,7 +1123,9 @@ The default is to publish a framework-dependent application.</value>
     <value>The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.</value>
   </data>
   <data name="StoreAppDescription" xml:space="preserve">
-    <value>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</value>
+    <value>Warning: The dotnet store command and the runtime package store feature are deprecated and no longer supported.
+
+Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</value>
   </data>
   <data name="StoreFrameworkOptionDescription" xml:space="preserve">
     <value>The target framework to store packages for. The target framework has to be specified in the project file.</value>
@@ -1223,7 +1254,7 @@ The default is to publish a framework-dependent application.</value>
     <value>Arguments forwarded to the tool</value>
   </data>
   <data name="ToolSearchCommandDescription" xml:space="preserve">
-    <value>Search dotnet tools in nuget.org</value>
+    <value>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</value>
   </data>
   <data name="ToolSearchPrereleaseDescription" xml:space="preserve">
     <value>Include pre-release packages.</value>

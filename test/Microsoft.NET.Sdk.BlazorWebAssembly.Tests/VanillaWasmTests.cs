@@ -14,6 +14,58 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         [TestMethod]
         [CoreMSBuildOnly]
+        [DataRow("browser-wasm", null, true)]
+        [DataRow("browser-wasm", "true", true)]
+        [DataRow("browser-wasm", "false", false)]
+        [DataRow("wasi-wasm", null, true)]
+        [DataRow("wasi-wasm", "true", true)]
+        [DataRow("wasi-wasm", "false", false)]
+        public void Restore_DownloadsCrossgen2ForWasmDefault(string runtimeIdentifier, string readyToRun, bool expectCrossgen2)
+        {
+            var testInstance = CreateAspNetSdkTestAsset("VanillaWasm", identifier: $"{runtimeIdentifier}_{readyToRun ?? "default"}")
+                .WithProjectChanges((project, doc) =>
+                {
+                    var properties = new XElement("PropertyGroup",
+                        new XElement("RuntimeIdentifier", runtimeIdentifier),
+                        // Native relinking independently requests crossgen2; isolate the ReadyToRun default.
+                        new XElement("WasmBuildNative", "false"),
+                        new XElement("PrunePackageTargetingPackRoots", "$(NetCoreTargetingPackRoot)"),
+                        new XElement("NetCoreTargetingPackRoot", "$(MSBuildProjectDirectory)/empty-packs"));
+                    if (readyToRun is not null)
+                        properties.Add(new XElement("PublishReadyToRun", readyToRun));
+                    doc.Root.Add(properties);
+                });
+
+            var restore = CreateRestoreCommand(testInstance);
+            restore.WithEnvironmentVariable("DOTNETSDK_WORKLOAD_PACK_ROOTS", string.Empty);
+            ExecuteCommand(restore).Should().Pass();
+
+            using var assets = JsonDocument.Parse(File.ReadAllText(Path.Combine(testInstance.Path, "obj", "project.assets.json")));
+            var downloadsCrossgen2 = assets.RootElement.GetProperty("project").GetProperty("frameworks").EnumerateObject()
+                .Where(framework => framework.Value.TryGetProperty("downloadDependencies", out _))
+                .SelectMany(framework => framework.Value.GetProperty("downloadDependencies").EnumerateArray())
+                .Any(dependency => dependency.GetProperty("name").GetString().StartsWith("Microsoft.NETCore.App.Crossgen2.", StringComparison.Ordinal));
+            downloadsCrossgen2.Should().Be(expectCrossgen2);
+        }
+
+        [TestMethod]
+        [CoreMSBuildOnly]
+        public void Crossgen2PackDefault_DoesNotApplyToOlderTargetFramework()
+        {
+            var testInstance = CreateAspNetSdkTestAsset("VanillaWasm")
+                .WithProjectChanges((project, doc) => doc.Root.Add(
+                    new XElement("PropertyGroup",
+                        new XElement("TargetFramework", "net11.0"))));
+
+            var command = new MSBuildCommand(testInstance, string.Empty);
+            command.WithWorkingDirectory(testInstance.TestRoot);
+            var result = ExecuteCommandWithoutRestore(command, "-getProperty:RequiresCrossgen2Pack");
+            result.Should().Pass();
+            result.StdOut.Trim().Should().BeEmpty();
+        }
+
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void Build_Works()
         {
             var testAsset = "VanillaWasm";

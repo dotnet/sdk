@@ -233,6 +233,9 @@ public class ResourcesData
 
     [DataMember(EmitDefaultValue = false)]
     public List<string> remoteSources { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<AppSettingsAsset> appsettings { get; set; }
 }
 
 public class AssetsData
@@ -322,6 +325,19 @@ public class AssetsData
 
     [DataMember(EmitDefaultValue = false)]
     public List<VfsAsset> vfs { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<AppSettingsAsset> appsettings { get; set; }
+}
+
+[DataContract]
+public class AppSettingsAsset
+{
+    public string name { get; set; }
+    public string virtualPath { get; set; }
+    public string resolvedUrl { get; set; }
+    public bool loadIntoVfs { get; set; }
+    public string cache { get; set; }
 }
 
 [DataContract]
@@ -411,6 +427,7 @@ public class BootJsonDataLoader
         BootJsonData config = JsonSerializer.Deserialize<BootJsonData>(jsonContent, options);
         if (config.resourcesRaw is AssetsData assets)
         {
+            config.appsettings ??= assets.appsettings?.Select(asset => asset.name).ToList();
             config.resourcesRaw = ConvertAssetsToResources(assets);
         }
 
@@ -460,7 +477,8 @@ public class BootJsonDataLoader
             modulesAfterRuntimeReady = assets.modulesAfterRuntimeReady?.ToDictionary(a => a.name, a => (string)null),
             extensions = assets.extensions,
             coreVfs = ConvertVfsAssets(assets.coreVfs),
-            vfs = ConvertVfsAssets(assets.vfs)
+            vfs = ConvertVfsAssets(assets.vfs),
+            appsettings = assets.appsettings
         };
         return resources;
     }

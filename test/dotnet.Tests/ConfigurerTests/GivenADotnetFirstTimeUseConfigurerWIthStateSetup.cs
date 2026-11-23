@@ -11,6 +11,8 @@ using static Microsoft.DotNet.Configurer.UnitTests.GivenADotnetFirstTimeUseConfi
 namespace Microsoft.DotNet.Configurer.UnitTests
 {
     [TestClass]
+    // TelemetryClient static state is process-wide and is accessed by code that cannot participate in a resource lock.
+    [DoNotParallelize]
     public class GivenADotnetFirstTimeUseConfigurerWithStateSetup
     {
         private MockBasicSentinel _firstTimeUseNoticeSentinelMock;
@@ -86,6 +88,9 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _environmentProvider
                 .Setup(p => p.GetEnvironmentVariableAsBool("DOTNET_CLI_TELEMETRY_OPTOUT", It.IsAny<bool>()))
                 .Returns(DOTNET_CLI_TELEMETRY_OPTOUT);
+            _environmentProvider
+                .Setup(p => p.GetEnvironmentVariable("COPILOT_AGENT_SESSION_ID"))
+                .Returns((string)null);
             _environmentProvider
                 .Setup(p => p.GetEnvironmentVariableAsBool("DOTNET_NOLOGO", It.IsAny<bool>()))
                 .Returns(DOTNET_NOLOGO);

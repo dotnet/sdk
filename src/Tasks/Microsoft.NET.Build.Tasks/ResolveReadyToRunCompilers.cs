@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// This task is replicated in dotnet/runtime at src/tasks/Crossgen2Tasks/ResolveReadyToRunCompilers.cs.
+// Keep both copies synchronized.
+
 #nullable disable
 
 using Microsoft.Build.Framework;
@@ -170,6 +173,12 @@ namespace Microsoft.NET.Build.Tasks
                 (!version5 || _targetRuntimeIdentifier == _hostRuntimeIdentifier) &&
                 GetCrossgen2ComponentsPaths(version5);
 
+            // WebAssembly ReadyToRun is only supported with the .NET 11+ crossgen2 pack, which ships the wasm cross-JIT.
+            if ((_targetPlatform == "browser" || _targetPlatform == "wasi") && crossgen2PackVersion.Major < 11)
+            {
+                isSupportedTarget = false;
+            }
+
             if (!isSupportedTarget)
             {
                 Log.LogError(Strings.ReadyToRunTargetNotSupportedError);
@@ -210,27 +219,11 @@ namespace Microsoft.NET.Build.Tasks
             string portablePlatform = NuGetUtils.GetBestMatchingRid(
                     runtimeGraph,
                     _targetRuntimeIdentifier,
-                    ["linux", "android", "osx", "win", "ios", "iossimulator", "tvos", "tvossimulator", "maccatalyst", "freebsd", "openbsd", "illumos", "solaris", "haiku"],
+                    ["linux", "android", "osx", "win", "ios", "iossimulator", "tvos", "tvossimulator", "maccatalyst", "freebsd", "openbsd", "illumos", "solaris", "haiku", "browser", "wasi", "openharmony"],
                     out _);
 
-            targetOS = portablePlatform switch
-            {
-                "linux" => "linux",
-                "android" => "android",
-                "osx" => "osx",
-                "win" => "windows",
-                "ios" => "ios",
-                "iossimulator" => "iossimulator",
-                "tvos" => "tvos",
-                "tvossimulator" => "tvossimulator",
-                "maccatalyst" => "maccatalyst",
-                "freebsd" => "freebsd",
-                "openbsd" => "openbsd",
-                "illumos" => "illumos",
-                "solaris" => "solaris",
-                "haiku" => "haiku",
-                _ => null
-            };
+            // Older versions of crossgen2 do not recognize `win` as a valid OS name.
+            targetOS = portablePlatform == "win" ? "windows" : portablePlatform;
 
             return targetOS != null;
         }
@@ -288,6 +281,11 @@ namespace Microsoft.NET.Build.Tasks
                 case "x86":
                     architecture = Architecture.X86;
                     break;
+#if !NETFRAMEWORK
+                case "wasm":
+                    architecture = Architecture.Wasm;
+                    break;
+#endif
                 default:
                     return false;
             }
@@ -452,6 +450,7 @@ namespace Microsoft.NET.Build.Tasks
 #if !NETFRAMEWORK
                 Architecture.RiscV64 => "riscv64",
                 Architecture.LoongArch64 => "loongarch64",
+                Architecture.Wasm => "wasm",
 #endif
                 _ => null
             };

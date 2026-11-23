@@ -54,6 +54,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 var iEnumerator = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerator);
                 var genericIEnumerator = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerator1);
+                var unionAttribute = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesUnionAttribute);
+                var unionInterface = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesIUnion);
 
                 compilationStartContext.RegisterSymbolAction(context =>
                 {
@@ -70,6 +72,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     if (!namedType.IsValueType ||
                         namedType.TypeKind == TypeKind.Enum ||
                         (namedType.TypeKind == TypeKind.Struct && namedType.IsRefLikeType) ||
+                        namedType.GetAttribute(unionAttribute) is not null ||
+                        unionInterface is not null && namedType.DerivesFromOrImplementsAnyConstructionOf(unionInterface) ||
                         !context.Options.MatchesConfiguredVisibility(EqualsRule, namedType, context.Compilation) ||
                         !namedType.GetMembers().Any(m => !m.IsConstructor()))
                     {

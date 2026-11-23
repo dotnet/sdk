@@ -144,6 +144,19 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
+    [DataRow("-mt")]
+    [DataRow("\"--mt:false\"")]
+    public void TraceWithMultiThreadedOption(string option)
+    {
+        var options = VerifyOptions(["--trace", option, "--", option]);
+
+        Assert.AreEqual(LogLevel.Trace, options.GlobalOptions.LogLevel);
+        AssertEx.SequenceEqual([NugetInteractiveProperty, option], options.BuildArguments);
+        AssertEx.SequenceEqual([option, "--", option], options.CommandArguments);
+        AssertEx.SequenceEqual(["--", option], options.CommandArgumentsForFileDiscovery);
+    }
+
+    [TestMethod]
     public void RunOptions_LaunchProfile_Watch()
     {
         var options = VerifyOptions(["-lp", "P", "run"]);
@@ -670,6 +683,18 @@ public class CommandLineOptionsTests
         var buildArgs = new[] { NugetInteractiveProperty, @"--property:ArtifactsPath=" + path };
 
         var options = VerifyOptions(["run", .. args]);
+        AssertEx.SequenceEqual(buildArgs, options.BuildArguments);
+    }
+
+    [TestMethod]
+    public void ForwardedBuildOptions_OutputPath()
+    {
+        var path = Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "out;put") + Path.DirectorySeparatorChar;
+
+        var args = new[] { "--output", path };
+        var buildArgs = new[] { NugetInteractiveProperty, "--property:OutputPath=" + path, "--property:_CommandLineDefinedOutputPath=true", "--nologo" };
+
+        var options = VerifyOptions(["build", .. args]);
         AssertEx.SequenceEqual(buildArgs, options.BuildArguments);
     }
 }

@@ -9,6 +9,8 @@ using Microsoft.TemplateEngine.Tests;
 namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 {
     [TestClass]
+    // Mitigates intermittent Windows cleanup failures under class-level parallelism; see https://github.com/dotnet/sdk/issues/56222.
+    [ResourceLock(nameof(DotnetCommand))]
     public class ValidateTemplatesTests : TestBase
     {
         public TestContext TestContext { get; set; } = null!;
@@ -25,14 +27,14 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             new DotnetCommand(Log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             new DotnetCommand(Log, "build")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Fail()
                 .And.HaveStdOutContaining("Template configuration error MV002: Missing 'name'.")
@@ -49,14 +51,14 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             new DotnetCommand(Log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             new DotnetCommand(Log, "build")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass()
                 .And.HaveStdOutContaining("Template configuration message MV006: Missing 'author'.")

@@ -393,19 +393,23 @@ namespace Microsoft.NET.Publish.Tests
                 var rid = "win-arm64";
 
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
-                testProject.RecordProperties("BundledNETCoreAppPackageVersion");
-                testProject.RecordPropertiesBeforeTarget("Publish");
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                // This will add a reference to a package that will also be automatically imported by the SDK
-                testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", "$(BundledNETCoreAppPackageVersion)"));
-                testProject.AddItem("PackageDownload", new Dictionary<string, string>
-                {
-                    { "Include", "Microsoft.NETCore.App.Runtime.NativeAOT.win-arm64" },
-                    { "Version", $"[$(BundledNETCoreAppPackageVersion)]" }
-                });
-
                 var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                GetKnownILCompilerPackVersion(testAsset, targetFramework, out string expectedVersion);
+
+                testAsset.WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Add(new XElement(ns + "ItemGroup",
+                        // These duplicate references verify that explicit and SDK-generated items are collated.
+                        new XElement(ns + "PackageReference",
+                            new XAttribute("Include", "Microsoft.DotNet.ILCompiler"),
+                            new XAttribute("Version", expectedVersion)),
+                        new XElement(ns + "PackageDownload",
+                            new XAttribute("Include", "Microsoft.NETCore.App.Runtime.NativeAOT.win-arm64"),
+                            new XAttribute("Version", $"[{expectedVersion}]"))));
+                });
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -415,16 +419,13 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning")
                 .And.HaveStdOutContaining("Microsoft.DotNet.ILCompiler");
 
-                var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
-                var targetVersion = buildProperties["BundledNETCoreAppPackageVersion"];
-
                 var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
                 var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
                 var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
                 File.Exists(publishedDll).Should().BeFalse();
                 File.Exists(publishedExe).Should().BeTrue();
 
-                CheckIlcVersions(testAsset, targetFramework, rid, targetVersion, useRuntimePackLayout: true);
+                CheckIlcVersions(testAsset, targetFramework, rid, expectedVersion, useRuntimePackLayout: true);
             }
         }
 
@@ -1664,7 +1665,7 @@ public class NativeLibraryClass
         public void NativeAot_publish_respects_optimized_publish_and_no_build(string useOptimizedPublish, bool noBuild)
         {
             var projectName = "NativeAotCleanOutput";
-            bool optimized = useOptimizedPublish == "true";
+            bool optimized = useOptimizedPublish != "false";
 
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier", "UseOptimizedPublish");
@@ -1715,7 +1716,7 @@ public class NativeLibraryClass
             }
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, ToolsetInfo.CurrentTargetFramework);
-            buildProperties["UseOptimizedPublish"].Should().Be(useOptimizedPublish ?? "false");
+            buildProperties["UseOptimizedPublish"].Should().Be(useOptimizedPublish ?? "true");
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: rid).FullName;
             var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
@@ -1773,7 +1774,6 @@ namespace AotRefLib
                 IsExe = true,
             };
             testProject.AdditionalProperties["PublishAot"] = "true";
-            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";

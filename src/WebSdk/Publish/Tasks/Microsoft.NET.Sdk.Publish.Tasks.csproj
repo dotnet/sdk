@@ -36,7 +36,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <PackageReference Include="Microsoft.Web.Deployment" />
-    <PackageReference Include="System.Text.Json" VersionOverride="$(PinnedSystemTextJsonPackageVersion)" />
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="**\*.cs" />

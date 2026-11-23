@@ -1,10 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Options;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge;
 
@@ -26,18 +25,7 @@ namespace Microsoft.TemplateEngine.Cli
                   preferences,
                   builtIns,
                   fallbackHostNames,
-                  loggerFactory: Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
-                  {
-                      builder
-                          .SetMinimumLevel(logLevel)
-                          .AddConsole(config => config.FormatterName = nameof(CliConsoleFormatter));
-                      builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ConsoleFormatter, CliConsoleFormatter>());
-                      builder.Services.Configure<ConsoleFormatterOptions>(config =>
-                      {
-                          config.IncludeScopes = true;
-                          config.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff";
-                      });
-                  }))
+                  loggerFactory: CreateLoggerFactory(logLevel))
         {
             string workingPath = FileSystem.GetCurrentDirectory();
             IsCustomOutputPath = outputPath != null;
@@ -48,6 +36,37 @@ namespace Microsoft.TemplateEngine.Cli
 
         public bool IsCustomOutputPath { get; }
 
+        private static ILoggerFactory CreateLoggerFactory(LogLevel logLevel)
+        {
+            // Construct logging directly to avoid building a dependency injection container for every host.
+            ConsoleLoggerProvider provider = new(
+                new StaticOptionsMonitor<ConsoleLoggerOptions>(new()
+                {
+                    FormatterName = nameof(CliConsoleFormatter)
+                }),
+                [
+                    new CliConsoleFormatter(new StaticOptionsMonitor<ConsoleFormatterOptions>(new()
+                    {
+                        IncludeScopes = true,
+                        TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff"
+                    }))
+                ]);
+
+            LoggerFactory loggerFactory = new([], new LoggerFilterOptions { MinLevel = logLevel });
+            loggerFactory.AddProvider(provider);
+            return loggerFactory;
+        }
+
+        private sealed class StaticOptionsMonitor<TOptions>(TOptions options)
+            : IOptionsMonitor<TOptions> where TOptions : new()
+        {
+            public TOptions CurrentValue => options;
+
+            public TOptions Get(string? name) => options;
+
+            public IDisposable? OnChange(Action<TOptions, string?> listener) => null;
+        }
+
         private bool GlobalJsonFileExistsInPath
         {
             get
@@ -57,7 +76,7 @@ namespace Microsoft.TemplateEngine.Cli
                 bool found;
                 do
                 {
-                    string checkPath = Path.Combine(workingPath, fileName);
+                    string checkPath = Path.Join(workingPath, fileName);
                     found = FileSystem.FileExists(checkPath);
                     if (!found)
                     {
@@ -69,7 +88,7 @@ namespace Microsoft.TemplateEngine.Cli
                         }
                     }
                 }
-                while (!found && (workingPath != null));
+                while (!found && (workingPath is not null));
 
                 return found;
             }

@@ -9,6 +9,8 @@ using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    // Helix temporary paths can have writable ancestors. These tests cover attachment processing, not
+    // directory security, so opt out of verification only in the child test commands.
     [TestClass]
     public class GivenDotnetTestBuildsAndRunsArtifactPostProcessing : SdkTest
     {
@@ -35,6 +37,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING, "0")
+                                    .WithEnvironmentVariable(FeatureFlag.DISABLE_ARTIFACTS_DIRECTORY_VERIFICATION, "1")
                                     .Execute(
                                         "--configuration", "release",
                                         "--collect", "SampleDataCollector",
@@ -61,6 +64,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING, "0")
+                                    .WithEnvironmentVariable(FeatureFlag.DISABLE_ARTIFACTS_DIRECTORY_VERIFICATION, "1")
                                     .WithEnvironmentVariable("DOTNET_CLI_VSTEST_TRACE", "1")
                                     .Execute(
                                     Directory.GetFiles(testInstance.Path, "test1.dll", SearchOption.AllDirectories).SingleOrDefault(x => x.Contains("publish")),
@@ -90,6 +94,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetVSTestCommand(Log)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING, "0")
+                                    .WithEnvironmentVariable(FeatureFlag.DISABLE_ARTIFACTS_DIRECTORY_VERIFICATION, "1")
                                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "1")
                                     .Execute(
                                         Directory.GetFiles(testInstance.Path, "test1.dll", SearchOption.AllDirectories).SingleOrDefault(x => x.Contains("publish")),

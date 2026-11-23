@@ -20,16 +20,25 @@ namespace Microsoft.DotNet.Cli.Commands.Pack;
 public class PackCommand(
     MSBuildArgs msbuildArgs,
     bool noRestore,
-    string? msbuildPath = null
-    ) : RestoringCommand(msbuildArgs, noRestore, msbuildPath: msbuildPath)
+    string? msbuildPath,
+    CommandServices services
+    ) : RestoringCommand(msbuildArgs, noRestore, msbuildPath, userProfileDir: null, advertiseWorkloadUpdates: null, services: services)
 {
-    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
+    public static CommandBase FromArgs(
+        string[] args,
+        CancellationToken cancellationToken,
+        string? msbuildPath,
+        CommandServices services)
     {
         var parseResult = Parser.Parse(["dotnet", "pack", .. args]);
-        return FromParseResult(parseResult, msbuildPath);
+        return FromParseResult(parseResult, cancellationToken, msbuildPath, services);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+    public static CommandBase FromParseResult(
+        ParseResult parseResult,
+        CancellationToken cancellationToken,
+        string? msbuildPath,
+        CommandServices services)
     {
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
 
@@ -42,7 +51,8 @@ public class PackCommand(
             definition.SlnOrProjectOrFileArgument,
             (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(appFilePath),
-                msbuildArgs: msbuildArgs)
+                msbuildArgs: msbuildArgs,
+                services: services)
             {
                 NoBuild = noBuild,
                 NoRestore = noRestore,
@@ -51,7 +61,8 @@ public class PackCommand(
             (msbuildArgs, msbuildPath) => new PackCommand(
                 msbuildArgs,
                 noRestore,
-                msbuildPath),
+                msbuildPath,
+                services),
             optionsToUseWhenParsingMSBuildFlags:
             [
                 CommonOptions.CreatePropertyOption(),
@@ -68,7 +79,8 @@ public class PackCommand(
                     new ReleasePropertyProjectLocator.DependentCommandOptions(
                             otherArgs,
                             parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null
-                        )
+                        ),
+                    cancellationToken
                 );
                 return msbuildArgs.CloneWithAdditionalProperties(projectLocator.GetCustomDefaultConfigurationValueIfSpecified());
             });
@@ -106,7 +118,8 @@ public class PackCommand(
             Exclude = new List<string>(),
             OutputDirectory = parseResult.GetValue(definition.OutputOption),
             LogLevel = MappingVerbosityToNugetLogLevel(parseResult.GetValue(definition.VerbosityOption)),
-            Arguments = [nuspecPath]
+            Arguments = [nuspecPath],
+            NoDefaultExcludes = parseResult.GetValue(definition.NoDefaultExcludesOption)
         };
 
         packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
@@ -133,7 +146,7 @@ public class PackCommand(
         return 0;
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
 
@@ -148,6 +161,6 @@ public class PackCommand(
         }
 
         // Fallback to MSBuild-based packing
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult, cancellationToken, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);
     }
 }

@@ -27,21 +27,23 @@ internal static class AotRunCommand
     /// </summary>
     /// <param name="command">The shared run command definition.</param>
     internal static void ConfigureCommand(RunCommandDefinition command)
-        => command.SetAction(parseResult => Execute(parseResult, Launch));
+        => command.SetAction((parseResult, cancellationToken) => Execute(parseResult, cancellationToken));
 
     /// <summary>
     /// Executes an eligible file-based application through the Native AOT launcher.
     /// </summary>
     /// <param name="parseResult">The parsed run invocation.</param>
+    /// <param name="cancellationToken">Token observed while launching the invocation.</param>
     /// <returns>The launched process exit code.</returns>
-    internal static int Execute(ParseResult parseResult)
-        => Execute(parseResult, Launch);
+    internal static int Execute(ParseResult parseResult, CancellationToken cancellationToken)
+        => Execute(parseResult, invocation => Launch(invocation, cancellationToken), cancellationToken);
 
     /// <summary>
     /// Plans and executes an eligible file-based application using an injected launcher.
     /// </summary>
     /// <param name="parseResult">The parsed run invocation.</param>
     /// <param name="launch">Launches the committed invocation.</param>
+    /// <param name="cancellationToken">Token observed while launching the invocation.</param>
     /// <param name="currentDirectory">The current directory used for discovery and relative paths.</param>
     /// <returns>The launcher exit code.</returns>
     /// <exception cref="CommandNotAvailableInAotException">The invocation cannot be handled safely by the Native AOT path.</exception>
@@ -49,8 +51,10 @@ internal static class AotRunCommand
     internal static int Execute(
         ParseResult parseResult,
         Func<AotRunInvocation, int> launch,
+        CancellationToken cancellationToken,
         string? currentDirectory = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         currentDirectory ??= Environment.CurrentDirectory;
         var definition = (RunCommandDefinition)parseResult.CommandResult.Command;
         if (!TryGetEligibleInvocationInputs(
@@ -193,12 +197,14 @@ internal static class AotRunCommand
             FileBasedAppRunPlan.MarkArtifactsPathUsed(artifactsPath);
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         int exitCode = launch(new AotRunInvocation(
             command,
             commandArguments,
             launchEnvironment,
             workingDirectory,
             artifactsPath));
+        cancellationToken.ThrowIfCancellationRequested();
         return exitCode;
     }
 
@@ -228,7 +234,7 @@ internal static class AotRunCommand
         }
     }
 
-    private static int Launch(AotRunInvocation invocation)
+    private static int Launch(AotRunInvocation invocation, CancellationToken cancellationToken)
     {
         var commandSpec = new CommandSpec(
             invocation.Command,
@@ -244,7 +250,7 @@ internal static class AotRunCommand
         Console.CancelKeyPress += cancelHandler;
         try
         {
-            return command.Execute().ExitCode;
+            return command.Execute(cancellationToken).ExitCode;
         }
         finally
         {

@@ -11,7 +11,6 @@ namespace Microsoft.DotNet.NativeWrapper
 {
     public static partial class Interop
     {
-        public static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 #if NET
         private static readonly string? s_hostFxrPath;
 #endif
@@ -19,7 +18,7 @@ namespace Microsoft.DotNet.NativeWrapper
         static Interop()
         {
 #if NET
-            if (!RunningOnWindows)
+            if (!OperatingSystem.IsWindows())
             {
                 s_hostFxrPath = (string)AppContext.GetData(Constants.RuntimeProperty.HostFxrPath)!;
                 System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.ResolvingUnmanagedDll += HostFxrResolver;
@@ -291,8 +290,10 @@ namespace Microsoft.DotNet.NativeWrapper
         ///   or custom logging scenarios.
         ///  </para>
         /// </remarks>
+#if !NET
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void hostfxr_error_writer_fn(PlatformString message);
+#endif
 
         /// <summary>
         ///  Sets a callback for receiving error messages from the hosting layer.

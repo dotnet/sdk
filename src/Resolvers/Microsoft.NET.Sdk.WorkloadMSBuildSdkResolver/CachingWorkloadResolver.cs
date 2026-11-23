@@ -1,10 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using System.Collections.Immutable;
+using System.Security.Cryptography;
 
 namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
 {
@@ -25,8 +26,9 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
     //  For SDK or workload installation actions, we expect to be running under a new process since Visual Studio will have been restarted.
     //  For global.json changes, the Resolve method takes parameters for the dotnet root and the SDK version.  If those values have changed
     //  from the previous call, the cached state will be thrown out and recreated.
-    //  We don't currently handle the case where a global.json file is edited to change the workload version.  It may be necessary
-    //  to kill running MSBuild processes to get that change to take effect.
+    //  A caller that keeps an instance beyond a single build is responsible for the rest: see
+    //  WorkloadSdkResolver, which replaces its instance when the opt-out, the user profile
+    //  directory, or the contents of global.json change.
     class CachingWorkloadResolver
     {
         private sealed record CachedState
@@ -50,25 +52,86 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
 
 
         public CachingWorkloadResolver()
+            : this(IsEnabled())
+        {
+        }
+
+        public CachingWorkloadResolver(bool enabled)
+        {
+            _enabled = enabled;
+        }
+
+        //  A caller that caches a resolver must key on this, so sample it once and build the
+        //  resolver from the sampled value rather than reading it again.
+        public static bool IsEnabled()
         {
             // Support opt-out for workload resolution
-            _enabled = true;
             var envVar = Environment.GetEnvironmentVariable("MSBuildEnableWorkloadResolver");
-            if (envVar != null)
+            if (envVar != null && envVar.Equals("false", StringComparison.OrdinalIgnoreCase))
             {
-                if (envVar.Equals("false", StringComparison.OrdinalIgnoreCase))
-                {
-                    _enabled = false;
-                }
+                return false;
             }
 
-            if (_enabled)
+            string sentinelPath = Path.Combine(SdkPaths.SdkDirectory, "DisableWorkloadResolver.sentinel");
+            return !File.Exists(sentinelPath);
+        }
+
+        //  One resolver shared by every build in this process.
+        //
+        //  What a resolver reads is fixed for the life of the process: an SDK or a workload is not
+        //  installed underneath a running build server. Three things are not fixed, and they are
+        //  the key below:
+        //    - the opt-out, which MSBuild re-applies from the client environment on every build;
+        //    - the user profile directory, which selects user-local manifests and packs;
+        //    - global.json, which selects a workload version and can be edited in place.
+        //  Resolve already rebuilds the cached state when the dotnet root or the SDK version
+        //  changes, so those are not repeated here.
+        private static readonly object s_sharedLock = new();
+        private static CachingWorkloadResolver? s_shared;
+        private static (bool Enabled, string? UserProfileDir, string? GlobalJsonPath, string GlobalJson)? s_sharedKey;
+
+        /// <summary>
+        ///  The shared resolver for these settings, built anew when any of them has changed since
+        ///  the last call. Callers should ask once per build rather than once per SDK reference,
+        ///  and keep the returned instance for the whole build.
+        /// </summary>
+        public static CachingWorkloadResolver GetShared(bool enabled, string? userProfileDir, string? globalJsonPath)
+        {
+            //  Hashed outside the lock when enabled: it is file I/O and does not need to be serialized.
+            var key = (enabled, userProfileDir, globalJsonPath, enabled ? DescribeGlobalJson(globalJsonPath) : "disabled");
+
+            lock (s_sharedLock)
             {
-                string sentinelPath = Path.Combine(SdkPaths.SdkDirectory, "DisableWorkloadResolver.sentinel");
-                if (File.Exists(sentinelPath))
+                if (s_shared is null || !key.Equals(s_sharedKey))
                 {
-                    _enabled = false;
+                    s_shared = new CachingWorkloadResolver(enabled);
+                    s_sharedKey = key;
                 }
+
+                return s_shared;
+            }
+        }
+
+        //  Contents, not a timestamp: editing global.json in place need not move its timestamp
+        //  and need not change its length.
+        private static string DescribeGlobalJson(string? globalJsonPath)
+        {
+            //  A stable value, so that the ordinary case of having no global.json still reuses.
+            if (globalJsonPath is null || !File.Exists(globalJsonPath))
+            {
+                return "none";
+            }
+
+            try
+            {
+                using var contents = File.OpenRead(globalJsonPath);
+                using var sha = SHA256.Create();
+                return Convert.ToBase64String(sha.ComputeHash(contents));
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                //  Unreadable: build a new resolver rather than trust a file we could not check.
+                return Guid.NewGuid().ToString();
             }
         }
 

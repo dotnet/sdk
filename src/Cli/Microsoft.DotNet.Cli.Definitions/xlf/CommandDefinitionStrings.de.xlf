@@ -489,6 +489,11 @@ Dies entspricht dem Löschen von "project.assets.json".</target>
         <target state="translated">Pakete und HTTP-Anforderungen nicht zwischenspeichern.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
         <target state="translated">Hiermit werden keine Projekt-zu-Projekt-Verweise wiederhergestellt, sondern nur das angegebene Projekt.</target>
@@ -585,8 +590,8 @@ Dies entspricht dem Löschen von "project.assets.json".</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definiert den Pfad des zu testenden Projekts oder der zu testenden Projektmappendatei. Verwenden Sie den Pfad zur Projektdatei oder den Pfad zu dem Verzeichnis, das die Projektdatei enthält. Wenn keine Angabe erfolgt, wird standardmäßig das aktuelle Verzeichnis verwendet.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">Definiert den Pfad des zu testenden Projekts oder der zu testenden Projektmappendatei. Verwenden Sie den Pfad zur Projektdatei oder den Pfad zu dem Verzeichnis, das die Projektdatei enthält. Wenn keine Angabe erfolgt, wird standardmäßig das aktuelle Verzeichnis verwendet.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
@@ -742,6 +747,11 @@ Beispiele:
         <target state="translated">Die Testmodule weisen das angegebene Stammverzeichnis auf.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestModulesRootDirectoryRequiresTestModules">
+        <source>The '--root-directory' option can only be used with '--test-modules'.</source>
+        <target state="new">The '--root-directory' option can only be used with '--test-modules'.</target>
+        <note>{Locked="--root-directory"}{Locked="--test-modules"}</note>
+      </trans-unit>
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
         <target state="translated">Ausführlichkeit der Testausgabe.</target>
@@ -751,6 +761,20 @@ Beispiele:
         <source>The value must be a positive integer.</source>
         <target state="translated">Der Wert muss eine positive ganze Zahl sein.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="CmdTestShowStderrDescription">
+        <source>Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</source>
+        <target state="new">Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</target>
+        <note>{Locked="All"}{Locked="Failed"}{Locked="None"}</note>
+      </trans-unit>
+      <trans-unit id="CmdTestShowStdoutDescription">
+        <source>Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</source>
+        <target state="new">Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</target>
+        <note>{Locked="All"}{Locked="Failed"}{Locked="None"}</note>
       </trans-unit>
       <trans-unit id="CmdTimeoutDescription">
         <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
@@ -1668,6 +1692,16 @@ Wenn der Befehl ohne Argument angegeben wird, werden alle installierten Vorlagen
         <target state="translated">PROJEKT | DATEI</target>
         <note />
       </trans-unit>
+      <trans-unit id="PropertyArgumentName">
+        <source>NAME=VALUE</source>
+        <target state="new">NAME=VALUE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyOptionDescription">
+        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
+        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Herausgeber für die .NET-Plattform</target>
@@ -1723,6 +1757,11 @@ Standardmäßig wird eine Framework-abhängige Anwendung veröffentlicht.</targe
       <trans-unit id="ReferenceAddProjectPathArgumentName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceCommandDescription">
+        <source>Add, remove, or list ProjectReferences for a .NET project.</source>
+        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceListAppFullName">
@@ -1877,6 +1916,11 @@ Der Standardwert lautet FALSE. Wenn sie jedoch auf .NET 7 oder niedriger abziel
         <target state="translated">SLN_FILE</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionListFormatOptionDescription">
+        <source>The output format for the list of paths. JSON output is an array of paths.</source>
+        <target state="new">The output format for the list of paths. JSON output is an array of paths.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">Das Projekt oder die Projektmappendatei, die verwendet werden soll. Wenn keine Datei angegeben ist, durchsucht der Befehl das aktuelle Verzeichnis nach einer Datei.</target>
@@ -1908,8 +1952,10 @@ Der Standardwert lautet FALSE. Wenn sie jedoch auf .NET 7 oder niedriger abziel
         <note />
       </trans-unit>
       <trans-unit id="StoreAppDescription">
-        <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
-        <target state="translated">Speichert die angegebenen Assemblys für die .NET-Plattform. Standardmäßig werden diese für die Zielruntime und das Framework optimiert.</target>
+        <source>Warning: The dotnet store command and the runtime package store feature are deprecated and no longer supported.
+
+Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
+        <target state="needs-review-translation">Speichert die angegebenen Assemblys für die .NET-Plattform. Standardmäßig werden diese für die Zielruntime und das Framework optimiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="StoreFrameworkOptionDescription">
@@ -2138,8 +2184,8 @@ Der Standardwert lautet FALSE. Wenn sie jedoch auf .NET 7 oder niedriger abziel
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">"dotnet tools" in nuget.org suchen</target>
+        <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
+        <target state="needs-review-translation">"dotnet tools" in nuget.org suchen</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">

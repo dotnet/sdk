@@ -91,7 +91,7 @@ This change will allow for `msbuild` to have a more consistent build experience 
 
 ### .NET SDK analyzers will load from Visual Studio
 
-Analyzers and generators which ship in the .NET SDK box will change to having a copy checked into Visual Studio. This will occur as part of the .NET SDK insertion process. When .NET SDK based projects are loaded at design time, the Visual Studio copy of the analyzer [will be loaded](documentation/general/analyzer-redirecting.md).
+Analyzers and generators which ship in the .NET SDK box will change to having a copy checked into Visual Studio. This will occur as part of the .NET SDK insertion process. When .NET SDK based projects are loaded at design time, the Visual Studio copy of the analyzer [will be loaded](analyzer-redirecting.md).
 
 This means that the behavior of analyzers in Visual Studio design time will be independent of the .NET SDK used by the project. This increases the predictability of our product as we know at ship time what analyzer and generator experience our customers will be getting. It will no longer change as the underlying SDK does.
 

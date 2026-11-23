@@ -11,6 +11,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
     [TestClass]
     public class DotnetSlnPostActionTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         private IEngineEnvironmentSettings _engineEnvironmentSettings = null!;
 
         [TestInitialize]
@@ -32,13 +34,9 @@ namespace Microsoft.DotNet.Cli.New.Tests
         }
 
         [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/49923
         public void AddProjectToSolutionPostActionFindSlnxFileAtOutputPath()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-            _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
-            EnsureParentDirectoriesExist(targetBasePath);
-            
             string solutionFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
 
@@ -51,9 +49,6 @@ namespace Microsoft.DotNet.Cli.New.Tests
         public void AddProjectToSolutionPostActionPrefersSlnOverSlnx()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-            _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
-            EnsureParentDirectoriesExist(targetBasePath);
-            
             string slnFileFullPath = Path.Combine(targetBasePath, "MySln.sln");
             string slnxFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(slnFileFullPath, string.Empty);
@@ -65,12 +60,9 @@ namespace Microsoft.DotNet.Cli.New.Tests
         }
 
         [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/49923
         public void AddProjectToSolutionPostActionPrefersNearbySlnxOverDistantSln()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-            _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
-            EnsureParentDirectoriesExist(targetBasePath);
 
             // Place a .sln in targetBasePath (acts as "parent" directory)
             string parentSlnPath = Path.Combine(targetBasePath, "Parent.sln");
@@ -240,7 +232,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreSequenceEqual(new[] { projFileFullPath }, callback.Projects);
             Assert.AreEqual(slnFileFullPath, callback.Solution);
@@ -269,7 +262,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreSequenceEqual(new[] { projFileFullPath }, callback.Projects);
             Assert.AreEqual(slnFileFullPath, callback.Solution);
@@ -301,7 +295,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsTrue(callback.InRoot);
             Assert.IsNull(callback.TargetFolder);
@@ -333,7 +328,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsNull(callback.InRoot);
             Assert.AreEqual("src", callback.TargetFolder);
@@ -366,23 +362,10 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsFalse(result);
-        }
-
-        private void EnsureParentDirectoriesExist(string targetBasePath)
-        {
-            // Ensure parent directories exist to avoid DirectoryNotFoundException during traversal
-            string? currentPath = targetBasePath;
-            while (!string.IsNullOrEmpty(currentPath) && currentPath != Path.GetPathRoot(currentPath))
-            {
-                if (!_engineEnvironmentSettings.Host.FileSystem.DirectoryExists(currentPath))
-                {
-                    _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(currentPath);
-                }
-                currentPath = Path.GetDirectoryName(currentPath);
-            }
         }
 
         private class MockAddProjectToSolutionCallback
@@ -395,7 +378,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
             public bool? InRoot { get; private set; }
 
-            public bool AddProjectToSolution(string solution, IReadOnlyList<string?> projects, string? targetFolder, bool? inRoot)
+            public bool AddProjectToSolution(string solution, IReadOnlyList<string?> projects, string? targetFolder, bool? inRoot, CancellationToken cancellationToken = default)
             {
                 Solution = solution;
                 Projects = projects;

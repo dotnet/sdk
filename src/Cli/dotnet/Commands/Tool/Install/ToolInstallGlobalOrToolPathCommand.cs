@@ -69,7 +69,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         _verifySignatures = verifySignatures;
         _currentWorkingDirectory = currentWorkingDirectory;
 
-        _configFilePath = parseResult.GetValue(Definition.ConfigOption);
+        _configFilePath = parseResult.GetValue(Definition.ConfigOption)?.FullName;
         _framework = parseResult.GetValue(Definition.FrameworkOption);
         _source = parseResult.GetValue(Definition.SourceOption);
         _addSource = parseResult.GetValue(Definition.AddSourceOption);
@@ -96,7 +96,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         _createShellShimRepository = createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
 
         var tempDir = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
-        var configOption = parseResult.GetValue(Definition.ConfigOption);
+        string? configOption = parseResult.GetValue(Definition.ConfigOption)?.FullName;
         var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: _source, additionalSourceFeeds: _addSource, basePath: _currentWorkingDirectory);
 
         restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(parseResult);
@@ -139,7 +139,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         return defaultOption;
     }
 
-    public override int Execute() => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+    public override int Execute(CancellationToken cancellationToken) => ExecuteAsync(cancellationToken).GetAwaiter().GetResult();
 
     internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
@@ -185,11 +185,6 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         using var _activity = Activities.Source.StartActivity("install-tool");
         _activity?.DisplayName = $"Install {packageId}";
         _activity?.SetTag("tool.package.id", packageId);
-
-        if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
-        {
-            throw new GracefulException(string.Format(CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist, Path.GetFullPath(_configFilePath)));
-        }
 
         DirectoryPath? toolPath = null;
         if (!string.IsNullOrEmpty(_toolPath))
@@ -250,6 +245,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                 IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
                     new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
                     packageId: packageId,
+                    cancellationToken: cancellationToken,
                     versionRange: versionRange,
                     targetFramework: _framework,
                     verbosity: _verbosity,
@@ -272,9 +268,16 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                     framework = string.IsNullOrEmpty(_framework) ? null : NuGetFramework.Parse(_framework);
                 }
                 var shimActivity = Activities.Source.StartActivity("create-shell-shim");
-                string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architecture, framework, RuntimeInformation.ProcessArchitecture).Result;
+                string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(
+                    _architecture,
+                    framework,
+                    RuntimeInformation.ProcessArchitecture,
+                    cancellationToken).GetAwaiter().GetResult();
 
-                shellShimRepository.CreateShim(newInstalledPackage.Command, newInstalledPackage.PackagedShims);
+                shellShimRepository.CreateShim(
+                    newInstalledPackage.Command,
+                    cancellationToken,
+                    newInstalledPackage.PackagedShims);
                 shimActivity?.Dispose();
 
                 foreach (string w in newInstalledPackage.Warnings)
@@ -325,17 +328,6 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                         oldPackage.Version.ToNormalizedString())
                 ],
                 isUserError: false);
-        }
-    }
-
-    private void ValidateArguments()
-    {
-        if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
-        {
-            throw new GracefulException(
-                string.Format(
-                    CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
-                    Path.GetFullPath(_configFilePath)));
         }
     }
 

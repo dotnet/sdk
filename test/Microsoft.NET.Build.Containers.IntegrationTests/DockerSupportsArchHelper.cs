@@ -59,7 +59,7 @@ internal static class DockerSupportsArchHelper
         }
         // the config json has an OSType property that is either "linux" or "windows" -
         // we can't use this for linux arch detection because that isn't enough information.
-        var config = DockerContainerRuntime.GetDockerConfig();
+        var config = DockerContainerRuntime.GetDockerConfig(CancellationToken.None);
         if (config.RootElement.TryGetProperty("OSType", out JsonElement osTypeProperty))
         {
             return osTypeProperty.GetString() == "windows";

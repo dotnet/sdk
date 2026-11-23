@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallCommand = new ToolInstallCommand(
                 parseResult);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
@@ -36,6 +36,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         [TestMethod]
         [Ignore("https://github.com/dotnet/sdk/issues/42346")]
+        // CurrentDirectory is process-wide and is read by code throughout this project that cannot participate in a resource lock.
+        [DoNotParallelize]
         public void WhenRunWithRoot()
         {
             Directory.CreateDirectory("/tmp/folder/sub");
@@ -47,14 +49,14 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
                 new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder").WithWorkingDirectory("/tmp/folder").Execute().Should().Pass();
                 var parseResult = Parser.Parse("tool install dotnetsay");
-                new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath).Execute().Should().Be(0);
+                new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath).Execute(CancellationToken.None).Should().Be(0);
 
                 Directory.SetCurrentDirectory("/tmp/folder/sub");
                 new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder/sub").WithWorkingDirectory("/tmp/folder/sub").Execute().Should().Pass();
                 parseResult = Parser.Parse("tool install dotnetsay");
-                new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath).Execute().Should().Be(0);
+                new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath).Execute(CancellationToken.None).Should().Be(0);
 
-                new ToolRunCommand(Parser.Parse($"tool run dotnetsay")).Execute().Should().Be(0);
+                new ToolRunCommand(Parser.Parse($"tool run dotnetsay")).Execute(CancellationToken.None).Should().Be(0);
             }
             finally
             {
@@ -71,7 +73,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallCommand = new ToolInstallCommand(
                 parseResult);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
@@ -88,7 +90,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallCommand = new ToolInstallCommand(
                 parseResult);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
@@ -106,7 +108,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallCommand = new ToolInstallCommand(
                 parseResult);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
@@ -124,7 +126,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallCommand = new ToolInstallCommand(
                 parseResult);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(CliCommandStrings.LocalOptionDoesNotSupportFrameworkOption);

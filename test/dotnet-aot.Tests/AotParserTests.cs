@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Utilities;
@@ -13,12 +16,15 @@ namespace Microsoft.DotNet.Cli.Tests;
 
 /// <summary>
 ///  Tests for the AOT-compiled CLI parser (the #if CLI_AOT path in Parser.cs).
-///  Validates that --version, --info, --help, and default usage are served entirely
+///  Validates that --version, --info, --help, root completion, default usage, and
+///  build-free test-module orchestration are served entirely
 ///  from AOT, that the full command surface now parses (matching the managed CLI),
 ///  and that commands which require the managed CLI report this via
 ///  <see cref="CommandNotAvailableInAotException"/> so the bridge can fall back.
 /// </summary>
 [TestClass]
+[ResourceLock(nameof(Reporter))]
+[ResourceLock(WellKnownResources.Console)]
 public partial class AotParserTests
 {
     private static Exception? RecordException(Action action)
@@ -62,6 +68,117 @@ public partial class AotParserTests
         // parse cleanly (they no longer surface as unknown). Execution still falls back.
         var result = Parser.Parse(["build"]);
         Assert.IsEmpty(result.Errors);
+    }
+
+    [TestMethod]
+    public void ParseGenericCommandHelp_UsesMinimalTreeWithFullParserParityForAllInProcessCommands()
+    {
+        HashSet<string> excludedCommands = ["new", "test", "completions", "package"];
+        HashSet<string> externalHelpCommands = ["msbuild", "nuget", "vstest", "format", "fsi"];
+        HashSet<string> rootCommandNames = Parser.RootCommand.Subcommands.Select(c => c.Name).ToHashSet(StringComparer.Ordinal);
+        Assert.IsTrue(excludedCommands.IsSubsetOf(rootCommandNames));
+        Assert.IsTrue(externalHelpCommands.IsSubsetOf(rootCommandNames));
+
+        foreach (System.CommandLine.Command command in Parser.RootCommand.Subcommands)
+        {
+            if (excludedCommands.Contains(command.Name) || externalHelpCommands.Contains(command.Name))
+            {
+                continue;
+            }
+
+            foreach (string token in (string[])[command.Name, .. command.Aliases])
+            {
+                AssertMinimalTreeWithFullParserParity([token, "--help"], token);
+            }
+        }
+    }
+
+    [TestMethod]
+    [DataRow("build -h")]
+    [DataRow("build /h")]
+    [DataRow("build --help")]
+    [DataRow("build -?")]
+    [DataRow("build /?")]
+    public void ParseGenericCommandHelp_UsesMinimalTreeWithFullParserParity(string commandLine)
+        => AssertMinimalTreeWithFullParserParity(commandLine.Split(' '), commandLine);
+
+    private static void AssertMinimalTreeWithFullParserParity(string[] args, string context)
+    {
+        Assert.IsTrue(Parser.TryParseGenericCommandHelp(args, out ParseResult? minimalResult), context);
+        Assert.HasCount(1, minimalResult.RootCommandResult.Command.Subcommands, context);
+
+        (int minimalExitCode, string minimalOutput, string minimalError) = InvokeWithCapture(minimalResult);
+        (int fullExitCode, string fullOutput, string fullError) = InvokeWithCapture(Parser.Parse(args));
+
+        Assert.AreEqual(fullExitCode, minimalExitCode, context);
+        Assert.AreEqual(fullOutput, minimalOutput, context);
+        Assert.AreEqual(fullError, minimalError, context);
+    }
+
+    [TestMethod]
+    [DataRow(null, "dotnet")]
+    [DataRow("", "dotnet")]
+    [DataRow("custom-host", "custom-host")]
+    [DoNotParallelize] // AppContext is shared with all parser tests.
+    public void ParseGenericCommandHelp_InitializesExecutableName(string? configuredName, string expectedName)
+    {
+        const string key = "System.CommandLine.ExecutableName";
+        object? originalName = AppContext.GetData(key);
+        try
+        {
+            AppContext.SetData(key, configuredName);
+
+            Assert.IsTrue(Parser.TryParseGenericCommandHelp(["help", "--help"], out _));
+            Assert.AreEqual(expectedName, AppContext.GetData(key) as string);
+        }
+        finally
+        {
+            AppContext.SetData(key, originalName);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("new --help")]
+    [DataRow("new create --help")]
+    [DataRow("test --help")]
+    [DataRow("completions --help")]
+    [DataRow("package --help")]
+    [DataRow("package -?")]
+    public void ParseGenericCommandHelp_RejectsDynamicHelp(string commandLine)
+    {
+        Assert.IsFalse(Parser.TryParseGenericCommandHelp(commandLine.Split(' '), out ParseResult? parseResult));
+        Assert.IsNull(parseResult);
+    }
+
+    [TestMethod]
+    public void ParseGenericCommandHelp_CoversEveryEligibleTopLevelCommandAndAlias()
+    {
+        HashSet<string> excludedCommands = ["new", "test", "completions", "package"];
+        HashSet<string> rootCommandNames = Parser.RootCommand.Subcommands.Select(c => c.Name).ToHashSet(StringComparer.Ordinal);
+        Assert.IsTrue(excludedCommands.IsSubsetOf(rootCommandNames));
+
+        foreach (System.CommandLine.Command command in Parser.RootCommand.Subcommands)
+        {
+            bool expected = !excludedCommands.Contains(command.Name);
+
+            foreach (string token in (string[])[command.Name, .. command.Aliases])
+            {
+                Assert.AreEqual(
+                    expected,
+                    Parser.TryParseGenericCommandHelp([token, "--help"], out ParseResult? parseResult),
+                    token);
+
+                if (expected)
+                {
+                    Assert.IsNotNull(parseResult, token);
+                    Assert.HasCount(1, parseResult.RootCommandResult.Command.Subcommands, token);
+                }
+                else
+                {
+                    Assert.IsNull(parseResult, token);
+                }
+            }
+        }
     }
 
     [TestMethod]
@@ -252,6 +369,58 @@ public partial class AotParserTests
         Assert.IsNull(exception);
     }
 
+    [TestMethod]
+    public void InvokeBuildHelp_ShowsPropertyOptionWithoutFallback()
+    {
+        var (exitCode, stdout, stderr) = InvokeWithCapture(["build", "--help"]);
+
+        Assert.AreEqual(0, exitCode);
+        Assert.IsEmpty(stderr);
+        stdout.Should().Contain($"-p, -property <{CommandDefinitionStrings.PropertyArgumentName}>");
+        Regex.Replace(stdout, @"\s+", " ").Should().Contain(CommandDefinitionStrings.PropertyOptionDescription);
+        stdout.Should().NotContain("--restoreProperty");
+        stdout.Should().NotContain("--getProperty");
+        stdout.Should().NotContain("--source");
+    }
+
+    [TestMethod]
+    [DataRow("--property")]
+    [DataRow("-property")]
+    [DataRow("/property")]
+    [DataRow("/p")]
+    [DataRow("-p")]
+    [DataRow("--p")]
+    public void ParseBuildPropertyAliases_PreservesMultipleProperties(string alias)
+    {
+        var result = Parser.Parse(
+            ["build", alias, "First=original;Second=two", $"{alias}:First=updated", "project.csproj"]);
+
+        Assert.IsEmpty(result.Errors);
+        var definition = (BuildCommandDefinition)result.CommandResult.Command;
+        var properties = result.GetValue(definition.ImplicitRestoreOptions.PropertiesOption);
+        Assert.IsNotNull(properties);
+        Assert.HasCount(2, properties);
+        Assert.AreEqual("updated", properties["First"]);
+        Assert.AreEqual("two", properties["Second"]);
+        Assert.AreSequenceEqual(["project.csproj"], result.GetValue(definition.SlnOrProjectOrFileArgument));
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    [DataRow("reference", "Add, remove, or list ProjectReferences for a .NET project.")]
+    [DataRow("reference add", "Add a project-to-project reference to the project.")]
+    [DataRow("reference list", "List all project-to-project references of the project.")]
+    [DataRow("reference remove", "Remove a project-to-project reference from the project.")]
+    public void InvokeReferenceHelp_RendersCommandDescriptionFromAotWithoutFallback(string commandLine, string description)
+    {
+        var (exitCode, stdout, stderr) = InvokeWithCapture([.. commandLine.Split(' '), "--help"]);
+
+        Assert.AreEqual(0, exitCode);
+        stdout.Should().ContainVisuallySameFragmentIfNotLocalized(
+            $"Description:{Environment.NewLine}  {description}");
+        stderr.Should().BeEmpty();
+    }
+
     /// <summary>Verifies that run help renders directly from the Native AOT command tree.</summary>
     [TestMethod]
     public void InvokeRunHelp_RendersFromAotWithoutFallback()
@@ -335,6 +504,108 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    public void InvokeTestModulesWithoutMatches_IsHandledInAot()
+    {
+        string rootDirectory = Path.Combine(Path.GetTempPath(), $"aot-test-modules-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            var (exitCode, stdout, _) = InvokeWithCapture(ParseAotTestCommand([
+                "--test-modules", "**/*.dll",
+                "--root-directory", rootDirectory,
+                "--no-progress",
+            ]));
+
+            Assert.AreEqual(1, exitCode);
+            stdout.Should().Contain("No test modules found");
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory);
+        }
+    }
+
+    [TestMethod]
+    public void InvokeTestModules_AcceptsArgumentsAfterDoubleDashInAot()
+    {
+        string rootDirectory = Path.Combine(Path.GetTempPath(), $"aot-test-modules-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            ParseResult parseResult = ParseAotTestCommand([
+                "--test-modules", "**/*.dll",
+                "--root-directory", rootDirectory,
+                "--",
+                "--extension-option",
+            ]);
+
+            TestCommandOptions.GetBuildOptions(parseResult).TestApplicationArguments
+                .Should().Contain("--extension-option");
+
+            var (exitCode, _, _) = InvokeWithCapture(parseResult);
+
+            Assert.AreEqual(1, exitCode);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory);
+        }
+    }
+
+    [TestMethod]
+    public void ParseTestModules_RejectsRootDirectoryWithoutTestModules()
+    {
+        ParseResult parseResult = ParseAotTestCommand([
+            "--root-directory", Path.GetTempPath(),
+        ]);
+
+        Assert.HasCount(1, parseResult.Errors);
+        parseResult.Errors[0].Message.Should().Contain("--test-modules");
+    }
+
+    [TestMethod]
+    public void ParseTestModules_RejectsNonPositiveParallelism()
+    {
+        ParseResult parseResult = ParseAotTestCommand([
+            "--test-modules", "**/*.dll",
+            "--max-parallel-test-modules", "0",
+        ]);
+
+        Assert.HasCount(1, parseResult.Errors);
+    }
+
+    [TestMethod]
+    [DataRow("test --project sample.csproj")]
+    [DataRow("test --test-modules **/*.dll --framework net10.0")]
+    [DataRow("test --test-modules **/*.dll --unknown-option")]
+    public void InvokeUnsupportedTestShape_FallsBackToManaged(string commandLine)
+    {
+        var result = ParseAotTestCommand(commandLine.Split(' ')[1..]);
+
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => result.Invoke(Parser.InvocationConfiguration));
+    }
+
+    [TestMethod]
+    public void InvokeTestModules_WithRootDiagnostics_FallsBackToManaged()
+    {
+        var root = new RootCommand();
+        root.Options.Add(CommonOptions.CreateDiagnosticsOption(recursive: false));
+        TestCommandDefinition testCommand = TestCommandDefinition.Create(
+            Environment.CurrentDirectory,
+            "Microsoft.Testing.Platform");
+        AotTestCommand.ConfigureCommand(testCommand);
+        root.Subcommands.Add(testCommand);
+        ParseResult result = root.Parse([
+            "--diagnostics",
+            "test",
+            "--test-modules", "**/*.dll",
+        ]);
+
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(
+            () => result.Invoke(Parser.InvocationConfiguration));
+    }
+
+    [TestMethod]
     public void InvokeExternalToolHelp_RendersFromAotWithoutFallback()
     {
         // Help for the external-tool commands (msbuild/nuget/vstest/format/fsi) now shells out to the
@@ -359,6 +630,46 @@ public partial class AotParserTests
         stdout.Should().Contain($"\"version\": \"{Product.Version}\"");
         stdout.Should().Contain("\"subcommands\"");
         stdout.Should().Contain("\"build\"");
+    }
+
+    [TestMethod]
+    [DataRow("dotnet bu", 9, new[] { "build", "build-server", "msbuild" })]
+    [DataRow("dotnet --ver", 12, new[] { "--version" })]
+    public void InvokeComplete_RendersCompletionsFromAot(string input, int position, string[] expected)
+    {
+        var (exitCode, stdout, stderr) = InvokeWithCapture([
+            "complete",
+            "--position", position.ToString(),
+            input,
+        ]);
+
+        Assert.AreEqual(0, exitCode);
+        Assert.IsTrue(string.IsNullOrEmpty(stderr));
+        Assert.AreSequenceEqual(
+            expected,
+            stdout.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    [TestMethod]
+    [DataRow("dotnet new ")]
+    [DataRow("dotnet build --framework ")]
+    [DataRow("dotnet add package ")]
+    [DataRow("new ")]
+    [DataRow("dotnet package update ")]
+    [DataRow("dotnet build --unknown-option ")]
+    public void InvokeComplete_CommandSpecificCompletionsFallBackToManaged(string input)
+    {
+        var result = Parser.Parse(["complete", input]);
+
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void InvokeComplete_CommandSpecificCompletionsBeyondInputFallBackToManaged()
+    {
+        var result = Parser.Parse(["complete", "--position", "13", "dotnet build"]);
+
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
     }
 
     [TestMethod]
@@ -455,6 +766,35 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    public void InvokeAotToolSearchCommand_ExecutesWithoutManagedFallback()
+    {
+        string configPath = Path.Combine(Path.GetTempPath(), $"aot-tool-search-{Guid.NewGuid():N}.config");
+        File.WriteAllText(
+            configPath,
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <configuration>
+              <packageSources>
+                <clear />
+              </packageSources>
+            </configuration>
+            """);
+
+        try
+        {
+            var (exitCode, _, stderr) = InvokeWithCapture(
+                ["tool", "search", "mysearchterm", "--configfile", configPath]);
+
+            Assert.AreEqual(1, exitCode);
+            stderr.Should().Contain("No NuGet package sources are configured or enabled.");
+        }
+        finally
+        {
+            File.Delete(configPath);
+        }
+    }
+
+    [TestMethod]
     [DataRow("tool list --global")]                  // global list dispatches to managed CLI
     [DataRow("tool list --tool-path somepath")]      // tool-path list dispatches to managed CLI
     [DataRow("tool uninstall mypackage --global")]   // global uninstall dispatches to managed CLI
@@ -478,9 +818,19 @@ public partial class AotParserTests
     ///  and Console.SetOut for direct Console.Out writes (used by default usage action).
     /// </summary>
     private static (int exitCode, string stdout, string stderr) InvokeWithCapture(string[] args)
-    {
-        var parseResult = Parser.Parse(args);
+        => InvokeWithCapture(Parser.Parse(args));
 
+    private static ParseResult ParseAotTestCommand(string[] args)
+    {
+        var command = TestCommandDefinition.Create(
+            Environment.CurrentDirectory,
+            "Microsoft.Testing.Platform");
+        AotTestCommand.ConfigureCommand(command);
+        return command.Parse(args);
+    }
+
+    private static (int exitCode, string stdout, string stderr) InvokeWithCapture(ParseResult parseResult)
+    {
         var bufferedOutput = new BufferedReporter();
         var bufferedError = new BufferedReporter();
         var originalOut = Console.Out;

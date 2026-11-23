@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 {
     public class Processor : IProcessor
     {
-        private const int DefaultBufferSize = 8 * 1024 * 1024;
+        internal const int DefaultBufferSize = 8 * 1024 * 1024;
         private const int DefaultFlushThreshold = 8 * 1024 * 1024;
         private readonly IReadOnlyList<IOperationProvider> _operations;
 

@@ -176,7 +176,7 @@ public class EvaluationTests
             ProjectSdk = "Microsoft.NET.Sdk.Razor",
             PackageReferences =
             {
-                new("Microsoft.AspNetCore.Components.Web", ToolsetInfo.GetPackageVersion("Microsoft.AspNetCore.App.Ref")),
+                new("Microsoft.AspNetCore.Components.Web", ToolsetInfo.GetPackageVersion("AspNetTest")),
                 new("Microsoft.AspNetCore.Mvc", "2.3.0"),
             },
             SourceFiles =

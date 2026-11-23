@@ -18,74 +18,80 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         public async Task CA1823CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
-                @"  
-class C  
-{  
-    public int x;
-    public int y;
-    public int z;
-    private int a;
-    private int [|b|];
-    private int c;
-    private int d, [|e|], f;
+                """
 
-    public int SomeMethod()
-    {
-        return x + z + a + c + d + f;
-    }
-}  
- ",
-                @"  
-class C  
-{  
-    public int x;
-    public int y;
-    public int z;
-    private int a;
-    private int c;
-    private int d, f;
+                    class C
+                    {
+                        public int x;
+                        public int y;
+                        public int z;
+                        private int a;
+                        private int [|b|];
+                        private int c;
+                        private int d, [|e|], f;
 
-    public int SomeMethod()
-    {
-        return x + z + a + c + d + f;
-    }
-}  
- ");
+                        public int SomeMethod()
+                        {
+                            return x + z + a + c + d + f;
+                        }
+                    }
+
+                    """,
+                """
+
+                    class C
+                    {
+                        public int x;
+                        public int y;
+                        public int z;
+                        private int a;
+                        private int c;
+                        private int d, f;
+
+                        public int SomeMethod()
+                        {
+                            return x + z + a + c + d + f;
+                        }
+                    }
+
+                    """);
         }
 
         [TestMethod]
         public async Task CA1823VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
-                @"
-Class C
-    Public x As Integer
-    Public y As Integer
-    Public z As Integer
-    Private a As Integer
-    Private [|b|] As Integer
-    Private c As Integer
-    Private d, [|e|], f As Integer
+                """
+                    Class C
+                        Public x As Integer
+                        Public y As Integer
+                        Public z As Integer
+                        Private a As Integer
+                        Private [|b|] As Integer
+                        Private c As Integer
+                        Private d, [|e|], f As Integer
 
-    Public Function SomeMethod() As Integer
-        Return x + z + a + c + d + f
-    End Function
-End Class
- ",
-                @"
-Class C
-    Public x As Integer
-    Public y As Integer
-    Public z As Integer
-    Private a As Integer
-    Private c As Integer
-    Private d, f As Integer
+                        Public Function SomeMethod() As Integer
+                            Return x + z + a + c + d + f
+                        End Function
+                    End Class
 
-    Public Function SomeMethod() As Integer
-        Return x + z + a + c + d + f
-    End Function
-End Class
- ");
+                    """,
+                """
+                    Class C
+                        Public x As Integer
+                        Public y As Integer
+                        Public z As Integer
+                        Private a As Integer
+                        Private c As Integer
+                        Private d, f As Integer
+
+                        Public Function SomeMethod() As Integer
+                            Return x + z + a + c + d + f
+                        End Function
+                    End Class
+
+                    """);
         }
     }
 }

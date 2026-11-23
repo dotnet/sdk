@@ -3,6 +3,7 @@ parameters:
     templateFolderName: templates
   locBranch: ''
   runTests: true
+  timeoutInMinutes: ''
   additionalWindowsJobParameterSets: []
   ### WINDOWS ###
   windowsJobParameterSets:

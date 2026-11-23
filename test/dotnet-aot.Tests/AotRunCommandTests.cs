@@ -16,8 +16,48 @@ namespace Microsoft.DotNet.Cli.Tests;
 /// Tests Native AOT file-based run planning and launch invocation construction.
 /// </summary>
 [TestClass]
+[ResourceLock(nameof(NativeEntryPoint))]
+[ResourceLock(nameof(Reporter))]
+[ResourceLock(WellKnownResources.EnvironmentVariables)]
 public class AotRunCommandTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
+    [TestMethod]
+    public void PreCanceledTokenDoesNotCallLauncher()
+    {
+        var fixture = CreateFixture();
+        try
+        {
+            var parseResult = Parser.Parse([
+                "run",
+                "--file", fixture.EntryPointPath,
+                "--no-build",
+                "--no-launch-profile",
+            ]);
+            using var cancellationSource = new CancellationTokenSource();
+            cancellationSource.Cancel();
+            bool launcherCalled = false;
+
+            Assert.ThrowsExactly<OperationCanceledException>(() =>
+                AotRunCommand.Execute(
+                    parseResult,
+                    _ =>
+                    {
+                        launcherCalled = true;
+                        return 0;
+                    },
+                    cancellationSource.Token,
+                    fixture.TestDirectory));
+
+            Assert.IsFalse(launcherCalled);
+        }
+        finally
+        {
+            DeleteFixture(fixture);
+        }
+    }
+
     /// <summary>Verifies that an explicit no-build invocation reaches the launcher without prevalidating output.</summary>
     [TestMethod]
     public void EligibleSyntheticNoBuildProducesLaunchInvocation()
@@ -59,6 +99,7 @@ public class AotRunCommandTests
                     invocation = value;
                     return 17;
                 },
+                TestContext.CancellationToken,
                 fixture.TestDirectory);
 
             Assert.AreEqual(17, exitCode);
@@ -109,6 +150,7 @@ public class AotRunCommandTests
                     invocation = value;
                     return 17;
                 },
+                TestContext.CancellationToken,
                 fixture.TestDirectory);
 
             Assert.AreEqual(17, exitCode);
@@ -139,6 +181,7 @@ public class AotRunCommandTests
                 AotRunCommand.Execute(
                     parseResult,
                     static _ => throw new InvalidOperationException("Launcher should not be called."),
+                    TestContext.CancellationToken,
                     fixture.TestDirectory));
 
             Assert.AreEqual(oldArtifactsTime, Directory.GetLastWriteTimeUtc(fixture.ArtifactsPath));
@@ -170,6 +213,7 @@ public class AotRunCommandTests
                 AotRunCommand.Execute(
                     parseResult,
                     static _ => throw new InvalidOperationException("Launcher should not be called."),
+                    TestContext.CancellationToken,
                     fixture.TestDirectory));
 
             Assert.AreEqual(oldArtifactsTime, Directory.GetLastWriteTimeUtc(fixture.ArtifactsPath));
@@ -193,6 +237,7 @@ public class AotRunCommandTests
                 AotRunCommand.Execute(
                     parseResult,
                     static _ => throw new InvalidOperationException("Launcher should not be called."),
+                    TestContext.CancellationToken,
                     fixture.TestDirectory));
 
             Assert.AreEqual(
@@ -220,6 +265,7 @@ public class AotRunCommandTests
                 AotRunCommand.Execute(
                     parseResult,
                     static _ => throw new InvalidOperationException("Launcher should not be called."),
+                    TestContext.CancellationToken,
                     fixture.TestDirectory));
 
             Assert.AreEqual(
@@ -271,6 +317,7 @@ public class AotRunCommandTests
                     invocation = value;
                     return 17;
                 },
+                TestContext.CancellationToken,
                 fixture.TestDirectory);
 
             Assert.AreEqual(17, exitCode);
@@ -322,6 +369,7 @@ public class AotRunCommandTests
                 AotRunCommand.Execute(
                     parseResult,
                     static _ => throw new InvalidOperationException("Launcher should not be called."),
+                    TestContext.CancellationToken,
                     fixture.TestDirectory));
         }
         finally
@@ -363,6 +411,7 @@ public class AotRunCommandTests
                 AotRunCommand.Execute(
                     parseResult,
                     static _ => throw new InvalidOperationException("Launcher should not be called."),
+                    TestContext.CancellationToken,
                     fixture.TestDirectory));
         }
         finally
@@ -415,6 +464,7 @@ public class AotRunCommandTests
                     invocation = value;
                     return 17;
                 },
+                TestContext.CancellationToken,
                 fixture.TestDirectory);
 
             Assert.AreEqual(17, exitCode);
@@ -461,11 +511,14 @@ public class AotRunCommandTests
             ]);
             AotRunInvocation? invocation = null;
 
-            int exitCode = AotRunCommand.Execute(parseResult, value =>
-            {
-                invocation = value;
-                return 17;
-            });
+            int exitCode = AotRunCommand.Execute(
+                parseResult,
+                value =>
+                {
+                    invocation = value;
+                    return 17;
+                },
+                cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(17, exitCode);
             Assert.IsNotNull(invocation);
@@ -511,7 +564,10 @@ public class AotRunCommandTests
 
             IReadOnlyList<string> messages = CaptureVerboseMessages(() =>
                 Assert.Throws<CommandNotAvailableInAotException>(() =>
-                    AotRunCommand.Execute(parseResult, static _ => throw new InvalidOperationException("Launcher should not be called."))));
+                    AotRunCommand.Execute(
+                        parseResult,
+                        static _ => throw new InvalidOperationException("Launcher should not be called."),
+                        cancellationToken: TestContext.CancellationToken)));
 
             Assert.AreEqual(oldArtifactsTime, Directory.GetLastWriteTimeUtc(fixture.ArtifactsPath));
             Assert.Contains("--configuration", string.Join(Environment.NewLine, messages));
@@ -543,7 +599,10 @@ public class AotRunCommandTests
             Assert.IsEmpty(parseResult.Errors);
 
             Assert.Throws<CommandNotAvailableInAotException>(() =>
-                AotRunCommand.Execute(parseResult, static _ => throw new InvalidOperationException("Launcher should not be called.")));
+                AotRunCommand.Execute(
+                    parseResult,
+                    static _ => throw new InvalidOperationException("Launcher should not be called."),
+                    cancellationToken: TestContext.CancellationToken));
 
             Assert.AreEqual(oldArtifactsTime, Directory.GetLastWriteTimeUtc(fixture.ArtifactsPath));
         }

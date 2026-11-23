@@ -26,7 +26,8 @@ internal sealed class TestApplication(
     Action<CommandLineOptionMessages> onHelpRequested,
     ArtifactPostProcessingManager? artifactPostProcessingManager = null,
     ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
-    TestRunPolicy? testRunPolicy = null) : IDisposable
+    TestRunPolicy? testRunPolicy = null,
+    TestApplicationSettings? testApplicationSettings = null) : IDisposable
 {
     private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
     private static readonly TimeSpan DefaultArtifactPostProcessingTimeout = TimeSpan.FromMinutes(15);
@@ -50,9 +51,10 @@ internal sealed class TestApplication(
         output,
         module,
         testOptions,
-        artifactPostProcessingManager,
-        artifactPostProcessingInvocation,
-        testRunPolicy);
+        artifactPostProcessingManager: artifactPostProcessingManager,
+        artifactPostProcessingInvocation: artifactPostProcessingInvocation,
+        testRunPolicy: testRunPolicy,
+        testApplicationSettings: testApplicationSettings ?? TestApplicationSettings.Default);
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
     private readonly TestRunPolicy? _testRunPolicy = testRunPolicy;
     private readonly CancellationTokenSource _pipeCancellationTokenSource = new();
@@ -100,6 +102,8 @@ internal sealed class TestApplication(
             : Task.CompletedTask;
 
         Process? process = null;
+        Task? stdOutTask = null;
+        Task? stdErrTask = null;
         bool testApplicationStarted = false;
         try
         {
@@ -118,13 +122,14 @@ internal sealed class TestApplication(
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
             // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
             // The collector is thread-safe for the timeout case.
-            // In the timeout case, we leave stdOutTask and stdErrTask running, just we stop observing them.
-            var stdOutBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteMessage);
-            var stdErrBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteMessage);
+            // In the timeout case, readers can remain alive because descendants hold the streams open.
+            // Contextual forwarding is closed before the final summary so they cannot write after it.
+            var stdOutBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteLiveMessage);
+            var stdErrBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteLiveMessage);
             Volatile.Write(ref _standardOutputCollector, stdOutBuilder);
             Volatile.Write(ref _standardErrorCollector, stdErrBuilder);
 
-            var stdOutTask = Task.Factory.StartNew(() =>
+            stdOutTask = Task.Factory.StartNew(() =>
             {
                 var stdOut = process.StandardOutput;
                 string? currentLine;
@@ -134,7 +139,7 @@ internal sealed class TestApplication(
                 }
             }, TaskCreationOptions.LongRunning);
 
-            var stdErrTask = Task.Factory.StartNew(() =>
+            stdErrTask = Task.Factory.StartNew(() =>
             {
                 var stdErr = process.StandardError;
                 string? currentLine;
@@ -192,17 +197,25 @@ internal sealed class TestApplication(
             {
                 try
                 {
-                    await process.WaitForExitAsync().WaitAsync(ArtifactPostProcessingTimeout);
+                    await process.WaitForExitAsync().WaitAsync(ArtifactPostProcessingTimeout, ctrlC.Token);
                 }
-                catch (TimeoutException)
+                catch (Exception ex) when (ex is TimeoutException || (ex is OperationCanceledException && ctrlC.Token.IsCancellationRequested))
                 {
-                    if (!process.HasExited)
+                    try
                     {
-                        process.Kill(entireProcessTree: true);
-                        await process.WaitForExitAsync();
+                        if (!process.HasExited)
+                        {
+                            process.Kill(entireProcessTree: true);
+                        }
+                    }
+                    catch (InvalidOperationException killException)
+                    {
+                        // The worker exited between HasExited and Kill.
+                        Logger.LogTrace($"Artifact worker exited before it could be killed:\n{killException}");
                     }
 
-                    artifactPostProcessingTimedOut = true;
+                    await process.WaitForExitAsync();
+                    artifactPostProcessingTimedOut = ex is TimeoutException;
                 }
             }
 
@@ -217,6 +230,7 @@ internal sealed class TestApplication(
             }
             catch (TimeoutException)
             {
+                _handler.CloseLiveOutput(timedOut: true);
             }
 
             if (artifactPostProcessingTimedOut)
@@ -256,6 +270,10 @@ internal sealed class TestApplication(
         }
         finally
         {
+            _handler.CloseLiveOutput(
+                timedOut: (stdOutTask is not null && !stdOutTask.IsCompleted) ||
+                    (stdErrTask is not null && !stdErrTask.IsCompleted));
+
             if (testApplicationStarted)
             {
                 _testRunPolicy?.OnTestApplicationExited();
@@ -335,6 +353,11 @@ internal sealed class TestApplication(
             processStartInfo.Environment.Remove(TestOptions.AffectedTestsModeEnvironmentVariable);
         }
 
+        if (output.ContextualModuleOutput)
+        {
+            processStartInfo.Environment["TESTINGPLATFORM_DOTNETTEST_DISABLE_AZDO_HOST_GROUPS"] = "1";
+        }
+
         processStartInfo.Environment["DOTNET_CLI_TEST_COMMAND_WORKING_DIRECTORY"] = Directory.GetCurrentDirectory();
         return processStartInfo;
     }
@@ -358,6 +381,7 @@ internal sealed class TestApplication(
             return BuildArtifactPostProcessingArguments(
                 builder,
                 _buildOptions.PathOptions,
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationArguments(Module, _buildOptions),
                 _artifactPostProcessingInvocation.ManifestPath,
                 AppendTestHostTransportArguments);
         }
@@ -528,11 +552,13 @@ internal sealed class TestApplication(
     internal static string BuildArtifactPostProcessingArguments(
         StringBuilder builder,
         PathOptions pathOptions,
+        IReadOnlyList<string> testApplicationArguments,
         string manifestPath,
         string pipeName)
         => BuildArtifactPostProcessingArguments(
             builder,
             pathOptions,
+            testApplicationArguments,
             manifestPath,
             transportArgumentsBuilder => transportArgumentsBuilder.Append(
                 $" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(pipeName)}"));
@@ -540,6 +566,7 @@ internal sealed class TestApplication(
     private static string BuildArtifactPostProcessingArguments(
         StringBuilder builder,
         PathOptions pathOptions,
+        IReadOnlyList<string> testApplicationArguments,
         string manifestPath,
         Action<StringBuilder> appendTransportArguments)
     {
@@ -558,6 +585,28 @@ internal sealed class TestApplication(
         if (pathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
         {
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
+        }
+
+        for (int i = 0; i < testApplicationArguments.Count; i++)
+        {
+            string argument = testApplicationArguments[i];
+            bool hasValue =
+                MicrosoftTestingPlatformTestCommand.IsOption(argument, "--diagnostic-verbosity", allowValue: true) ||
+                MicrosoftTestingPlatformTestCommand.IsOption(argument, "--diagnostic-file-prefix", allowValue: true) ||
+                MicrosoftTestingPlatformTestCommand.IsOption(argument, TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName, allowValue: true) ||
+                MicrosoftTestingPlatformTestCommand.IsOption(argument, TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName, allowValue: true);
+            if (!hasValue &&
+                !MicrosoftTestingPlatformTestCommand.IsOption(argument, "--diagnostic", allowValue: false) &&
+                !MicrosoftTestingPlatformTestCommand.IsOption(argument, "--diagnostic-synchronous-write", allowValue: false))
+            {
+                continue;
+            }
+
+            builder.Append($" {ArgumentEscaper.EscapeSingleArg(argument)}");
+            if (hasValue && argument.IndexOfAny('=', ':') < 0 && i + 1 < testApplicationArguments.Count)
+            {
+                builder.Append($" {ArgumentEscaper.EscapeSingleArg(testApplicationArguments[++i])}");
+            }
         }
 
         // The results directory is deliberately not forwarded: the merged output location travels in
@@ -603,11 +652,24 @@ internal sealed class TestApplication(
         {
             while (!token.IsCancellationRequested)
             {
-                var pipeConnection = new NamedPipeServer(_pipeName, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
-                pipeConnection.RegisterAllSerializers();
+                NamedPipeServer? pipeConnection = new(
+                    _pipeName,
+                    OnRequest,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    token,
+                    skipUnknownMessages: true);
+                try
+                {
+                    pipeConnection.RegisterAllSerializers();
 
-                await pipeConnection.WaitConnectionAsync(token);
-                AddPipeConnection(pipeConnection);
+                    await pipeConnection.WaitConnectionAsync(token);
+                    AddPipeConnection(pipeConnection);
+                    pipeConnection = null;
+                }
+                finally
+                {
+                    pipeConnection?.Dispose();
+                }
             }
         }
         catch (OperationCanceledException ex)
@@ -743,7 +805,8 @@ internal sealed class TestApplication(
                         SetNegotiatedProtocolVersion(handshakeAccepted ? negotiatedVersion : string.Empty);
                         return Task.FromResult((IResponse)CreateHandshakeMessage(
                             handshakeAccepted ? negotiatedVersion : string.Empty,
-                            includeControlPipe: _httpGateway is null));
+                            includeControlPipe: _httpGateway is null,
+                            includeCoverageSummary: handshakeAccepted && SupportsCoverageSummary(handshakeMessage)));
 
                     case CommandLineOptionMessages commandLineOptionMessages:
                         OnCommandLineOptionMessages(commandLineOptionMessages);
@@ -761,12 +824,21 @@ internal sealed class TestApplication(
                         OnFileArtifactMessages(fileArtifactMessages);
                         break;
 
+                    case CoverageSummaryMessages coverageSummaryMessages:
+                        _handler.OnCoverageSummaryReceived(coverageSummaryMessages);
+                        break;
+
                     case TestInProgressMessages testInProgressMessages:
                         OnTestInProgressMessages(testInProgressMessages);
                         break;
 
                     case TestSessionEvent sessionEvent:
-                        OnSessionEvent(sessionEvent);
+                        string? sessionInstanceId = server is not null
+                            && _handshakes.TryGetValue(server, out HandshakeMessage? sessionHandshake)
+                            && sessionHandshake.Properties.TryGetValue(HandshakeMessagePropertyNames.InstanceId, out string? senderInstanceId)
+                                ? senderInstanceId
+                                : null;
+                        OnSessionEvent(sessionEvent, sessionInstanceId);
                         break;
 
                     case AzureDevOpsLogMessage azureDevOpsLogMessage:
@@ -851,9 +923,13 @@ internal sealed class TestApplication(
         return highestCommonVersionText;
     }
 
-    private HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true)
+    internal static bool SupportsCoverageSummary(HandshakeMessage handshakeMessage)
+        => handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.CoverageSummaryVersion, out string? version)
+            && version == ProtocolConstants.CoverageSummaryVersion;
+
+    internal HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true, bool includeCoverageSummary = false)
     {
-        var properties = new Dictionary<byte, string>(capacity: 6)
+        var properties = new Dictionary<byte, string>(capacity: 8)
         {
             { HandshakeMessagePropertyNames.PID, Environment.ProcessId.ToString(CultureInfo.InvariantCulture) },
             { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
@@ -862,9 +938,28 @@ internal sealed class TestApplication(
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
         };
 
-        if (version.Length > 0 && includeControlPipe)
+        if (version.Length > 0)
         {
-            properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+            properties.Add(HandshakeMessagePropertyNames.TestInProgressSupported, bool.TrueString);
+            if (includeControlPipe)
+            {
+                properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+            }
+        }
+
+        if (includeCoverageSummary)
+        {
+            properties.Add(HandshakeMessagePropertyNames.CoverageSummaryVersion, ProtocolConstants.CoverageSummaryVersion);
+        }
+
+        if (version.Length > 0
+            && artifactPostProcessingManager?.IsEnabled == true
+            && !TestOptions.IsArtifactPostProcessing
+            && !RequiresHttpTransport(Module)
+            && MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
+                TestOptions, noArtifactPostProcessingRequested: false, cancellationRequested: false))
+        {
+            properties.Add(HandshakeMessagePropertyNames.RequiredPostProcessingSupported, bool.TrueString);
         }
 
         return new HandshakeMessage(properties);
@@ -936,8 +1031,8 @@ internal sealed class TestApplication(
     private void OnTestInProgressMessages(TestInProgressMessages testInProgressMessages)
         => _handler.OnTestInProgressReceived(testInProgressMessages);
 
-    private void OnSessionEvent(TestSessionEvent sessionEvent)
-        => _handler.OnSessionEventReceived(sessionEvent);
+    private void OnSessionEvent(TestSessionEvent sessionEvent, string? instanceId)
+        => _handler.OnSessionEventReceived(sessionEvent, instanceId);
 
     private void OnAzureDevOpsLogMessage(AzureDevOpsLogMessage azureDevOpsLogMessage)
         => _handler.OnAzureDevOpsLogReceived(azureDevOpsLogMessage);

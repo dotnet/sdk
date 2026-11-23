@@ -489,6 +489,11 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <target state="translated">패키지 및 http 요청을 캐시하지 않습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
         <target state="translated">p2p(프로젝트 간) 참조를 복원하지 않고 지정한 프로젝트만 복원합니다.</target>
@@ -585,8 +590,8 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">테스트할 프로젝트 또는 솔루션 파일의 경로를 정의합니다. 프로젝트 파일의 경로 또는 프로젝트 파일이 포함된 디렉터리의 경로를 사용합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">테스트할 프로젝트 또는 솔루션 파일의 경로를 정의합니다. 프로젝트 파일의 경로 또는 프로젝트 파일이 포함된 디렉터리의 경로를 사용합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
@@ -742,6 +747,11 @@ Examples:
         <target state="translated">테스트 모듈에 지정된 루트 디렉터리가 있습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestModulesRootDirectoryRequiresTestModules">
+        <source>The '--root-directory' option can only be used with '--test-modules'.</source>
+        <target state="new">The '--root-directory' option can only be used with '--test-modules'.</target>
+        <note>{Locked="--root-directory"}{Locked="--test-modules"}</note>
+      </trans-unit>
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
         <target state="translated">테스트 출력의 세부 정보 표시입니다.</target>
@@ -751,6 +761,20 @@ Examples:
         <source>The value must be a positive integer.</source>
         <target state="translated">값은 양의 정수여야 합니다.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="CmdTestShowStderrDescription">
+        <source>Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</source>
+        <target state="new">Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</target>
+        <note>{Locked="All"}{Locked="Failed"}{Locked="None"}</note>
+      </trans-unit>
+      <trans-unit id="CmdTestShowStdoutDescription">
+        <source>Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</source>
+        <target state="new">Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</target>
+        <note>{Locked="All"}{Locked="Failed"}{Locked="None"}</note>
       </trans-unit>
       <trans-unit id="CmdTimeoutDescription">
         <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
@@ -1668,6 +1692,16 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">프로젝트 | 파일</target>
         <note />
       </trans-unit>
+      <trans-unit id="PropertyArgumentName">
+        <source>NAME=VALUE</source>
+        <target state="new">NAME=VALUE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyOptionDescription">
+        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
+        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">.NET 플랫폼용 게시자입니다.</target>
@@ -1723,6 +1757,11 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="ReferenceAddProjectPathArgumentName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceCommandDescription">
+        <source>Add, remove, or list ProjectReferences for a .NET project.</source>
+        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceListAppFullName">
@@ -1877,6 +1916,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">SLN_FILE</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionListFormatOptionDescription">
+        <source>The output format for the list of paths. JSON output is an array of paths.</source>
+        <target state="new">The output format for the list of paths. JSON output is an array of paths.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">수행할 프로젝트 또는 솔루션 파일입니다. 파일을 지정하지 않으면 명령이 현재 디렉토리에서 파일을 검색합니다.</target>
@@ -1908,8 +1952,10 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <note />
       </trans-unit>
       <trans-unit id="StoreAppDescription">
-        <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
-        <target state="translated">.NET 플랫폼에 대해 지정된 어셈블리를 저장합니다. 기본적으로 대상 런타임 및 프레임워크에 대해 최적화됩니다.</target>
+        <source>Warning: The dotnet store command and the runtime package store feature are deprecated and no longer supported.
+
+Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
+        <target state="needs-review-translation">.NET 플랫폼에 대해 지정된 어셈블리를 저장합니다. 기본적으로 대상 런타임 및 프레임워크에 대해 최적화됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="StoreFrameworkOptionDescription">
@@ -2138,8 +2184,8 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">nuget.org에서 dotnet 도구 검색</target>
+        <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
+        <target state="needs-review-translation">nuget.org에서 dotnet 도구 검색</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">

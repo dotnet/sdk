@@ -9,6 +9,7 @@
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">$(SdkTargetFramework)</TargetFrameworks>
 
     <AssemblyName>Microsoft.NET.Sdk.Publish.Tasks.Tests</AssemblyName>
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
     <EndToEndTestsDisabled>true</EndToEndTestsDisabled>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>

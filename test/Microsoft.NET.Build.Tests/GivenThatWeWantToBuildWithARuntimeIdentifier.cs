@@ -11,7 +11,9 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [CoreMSBuildOnly]
-        public void It_fails_with_solution_level_RID()
+        [DataRow("Build")]
+        [DataRow("Rebuild")]
+        public void It_fails_with_solution_level_RID(string target)
         {
             var testAsset = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
@@ -19,7 +21,7 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(Log, testAsset.TestRoot, "App.sln");
             buildCommand
-                .Execute($"/p:RuntimeIdentifier={ToolsetInfo.LatestWinRuntimeIdentifier}-x64")
+                .Execute($"/t:{target}", $"/p:RuntimeIdentifier={ToolsetInfo.LatestWinRuntimeIdentifier}-x64")
                 .Should()
                 .Fail()
                 .And

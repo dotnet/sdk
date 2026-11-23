@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -49,20 +50,43 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             string sourceFile);
 
         /// <summary>
-        /// The test-framework-specific Verify directory verifier used by the built-in (non-custom)
-        /// verification path. This must be set by the consuming test project to its framework's
-        /// <c>Verifier.VerifyDirectory</c> (for example <c>VerifyXunit.Verifier.VerifyDirectory</c> or
-        /// <c>VerifyMSTest.Verifier.VerifyDirectory</c>) so snapshot verification resolves the ambient
-        /// test context of the active framework. When left unset, snapshot verification throws an
-        /// <see cref="InvalidOperationException"/>.
+        /// The Verify directory verifier used by the built-in (non-custom) verification path.
         /// </summary>
         /// <remarks>
-        /// This package intentionally does not depend on any test framework, so it cannot supply a
-        /// default verifier. Consumers that verify against snapshot files must assign this property
-        /// (typically from a <c>[ModuleInitializer]</c>) or provide a per-call verifier via
+        /// The default implementation uses Verify's runner-independent API. Test projects may assign
+        /// their framework's <c>Verifier.VerifyDirectory</c> method (typically from a
+        /// <c>[ModuleInitializer]</c>) or provide a per-call verifier via
         /// <see cref="TemplateVerifierOptions.CustomDirectoryVerifier"/>.
         /// </remarks>
-        public static VerifyDirectoryDelegate? DirectoryVerifier { get; set; }
+        public static VerifyDirectoryDelegate? DirectoryVerifier { get; set; } = VerifyDirectoryWithCore;
+
+        private static SettingsTask VerifyDirectoryWithCore(
+            string path,
+            Func<string, bool>? include,
+            string? pattern,
+            EnumerationOptions? options,
+            VerifySettings? settings,
+            object? info,
+            FileScrubber? fileScrubber,
+            string sourceFile)
+        {
+            return new(
+                settings,
+                async effectiveSettings =>
+                {
+                    VerifierSettings.AssignTargetAssembly(Assembly.GetEntryAssembly() ?? typeof(VerificationEngine).Assembly);
+                    effectiveSettings.UseUniqueDirectory();
+                    using InnerVerifier verifier = new(
+                        sourceFile,
+                        effectiveSettings,
+                        nameof(VerificationEngine),
+                        nameof(VerifyDirectoryWithCore),
+                        methodParameters: null,
+                        pathInfo: default);
+
+                    return await verifier.VerifyDirectory(path, include, pattern, options, info, fileScrubber);
+                });
+        }
 
         public VerificationEngine(ILogger logger)
         {
@@ -104,7 +128,12 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 
             RunInstantiation instantiate =
                 options.CustomInstatiation ??
-                (verifierOptions => Task.FromResult(RunDotnetNewCommand(verifierOptions, _commandRunner, _loggerFactory, _logger)));
+                (verifierOptions => Task.FromResult(RunDotnetNewCommand(
+                    verifierOptions,
+                    _commandRunner,
+                    _loggerFactory,
+                    _logger,
+                    cancellationToken)));
 
             IInstantiationResult commandResult = await instantiate(options).ConfigureAwait(false);
 
@@ -327,7 +356,12 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             return r.Replace(string.Join('#', args), string.Empty);
         }
 
-        private static IInstantiationResult RunDotnetNewCommand(TemplateVerifierOptions options, ICommandRunner commandRunner, ILoggerFactory? loggerFactory, ILogger logger)
+        private static IInstantiationResult RunDotnetNewCommand(
+            TemplateVerifierOptions options,
+            ICommandRunner commandRunner,
+            ILoggerFactory? loggerFactory,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             // Create temp folder and instantiate there
             string workingDir = options.OutputDirectory ?? Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -350,7 +384,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                         .WithEnvironmentVariables(options.Environment)
                         .WithWorkingDirectory(workingDir);
 
-                CommandResultData installCommandResult = commandRunner.RunCommand(installCommand);
+                CommandResultData installCommandResult = commandRunner.RunCommand(installCommand, cancellationToken);
 
                 if (installCommandResult.ExitCode != 0)
                 {
@@ -400,7 +434,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 .WithWorkingDirectory(workingDir)
                 .WithNoUpdateCheck();
 
-            var result = commandRunner.RunCommand(command);
+            var result = commandRunner.RunCommand(command, cancellationToken);
             // Cleanup, unless the settings dir was externally passed
             if (!string.IsNullOrEmpty(customHiveLocation) && string.IsNullOrEmpty(options.SettingsDirectory))
             {

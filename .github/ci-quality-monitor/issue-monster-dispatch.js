@@ -47,6 +47,32 @@ function getCreatedIssueNumbers({temporaryIdMapInput, createdIssueNumberInput, r
     return [...issueNumbers];
 }
 
+const runMarkerPattern = /^<!-- gh-aw-agentic-workflow: .*, id: (\d+), workflow_id: ci-quality-monitor,/m;
+
+function isCreatedByRun(issue, runId)
+{
+    return !issue.pull_request && runMarkerPattern.exec(issue.body ?? "")?.[1] === String(runId);
+}
+
+// gh-aw v0.89 no longer exports the temporary ID map, so later issues from a
+// multi-issue run are found through the provenance marker gh-aw writes into
+// every issue body. The REST list is used because search indexing lags.
+async function findRunCreatedIssueNumbers({github, context, label})
+{
+    const {data: issues} = await github.rest.issues.listForRepo({
+        ...context.repo,
+        labels: label,
+        state: "open",
+        sort: "created",
+        direction: "desc",
+        per_page: 100,
+    });
+
+    return issues
+        .filter(issue => isCreatedByRun(issue, context.runId))
+        .map(issue => issue.number);
+}
+
 async function dispatchCreatedIssues({
     github,
     context,
@@ -54,13 +80,19 @@ async function dispatchCreatedIssues({
     temporaryIdMapInput,
     createdIssueNumberInput,
     ref,
+    label = "live-build-incident",
 })
 {
-    const issueNumbers = getCreatedIssueNumbers({
+    const declaredIssueNumbers = getCreatedIssueNumbers({
         temporaryIdMapInput,
         createdIssueNumberInput,
         repository: `${context.repo.owner}/${context.repo.repo}`,
     });
+    const discoveredIssueNumbers = declaredIssueNumbers.length > 0
+        ? await findRunCreatedIssueNumbers({github, context, label})
+        : [];
+    const issueNumbers = [...new Set([...declaredIssueNumbers, ...discoveredIssueNumbers])]
+        .sort((left, right) => left - right);
 
     for (const issueNumber of issueNumbers)
     {
@@ -79,4 +111,5 @@ async function dispatchCreatedIssues({
 module.exports = {
     dispatchCreatedIssues,
     getCreatedIssueNumbers,
+    isCreatedByRun,
 };

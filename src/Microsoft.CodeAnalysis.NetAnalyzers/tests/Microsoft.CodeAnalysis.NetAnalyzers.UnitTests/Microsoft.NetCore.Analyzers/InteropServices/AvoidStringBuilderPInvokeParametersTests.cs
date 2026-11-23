@@ -18,34 +18,34 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
         [TestMethod]
         public async Task NotPInvoke_NoDiagnostics_CSAsync()
         {
-            string source = @"
-using System.Runtime.InteropServices;
-using System.Text;
+            string source = """
+                using System.Runtime.InteropServices;
+                using System.Text;
 
-public class C
-{
-    private static extern void Method(StringBuilder sb);
-}
-";
+                public class C
+                {
+                    private static extern void Method(StringBuilder sb);
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
         [TestMethod]
         public async Task StringBuilderParameter_Diagnostics_CSAsync()
         {
-            string source = @"
-using System.Runtime.InteropServices;
-using System.Text;
+            string source = """
+                using System.Runtime.InteropServices;
+                using System.Text;
 
-public class C
-{
-    [DllImport(""native.dll"")]
-    private static extern void Method1(StringBuilder {|#0:sb|});
+                public class C
+                {
+                    [DllImport("native.dll")]
+                    private static extern void Method1(StringBuilder {|#0:sb|});
 
-    [DllImport(""native.dll"")]
-    private static extern void Method2(StringBuilder {|#1:sb1|}, StringBuilder {|#2:sb2|});
-}
-";
+                    [DllImport("native.dll")]
+                    private static extern void Method2(StringBuilder {|#1:sb1|}, StringBuilder {|#2:sb2|});
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(
                 source,
                 CSharpResult(0, "sb"),
@@ -56,35 +56,35 @@ public class C
         [TestMethod]
         public async Task NotPInvoke_NoDiagnostics_VBAsync()
         {
-            string source = @"
-Imports System.Runtime.InteropServices
-Imports System.Text
+            string source = """
+                Imports System.Runtime.InteropServices
+                Imports System.Text
 
-Class C
-    Private Shared Sub Method1(sb As StringBuilder)
-    End Sub
-End Class
-";
+                Class C
+                    Private Shared Sub Method1(sb As StringBuilder)
+                    End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
         [TestMethod]
         public async Task StringBuilderParameter_Diagnostics_VBAsync()
         {
-            string source = @"
-Imports System.Runtime.InteropServices
-Imports System.Text
+            string source = """
+                Imports System.Runtime.InteropServices
+                Imports System.Text
 
-Class C
-    <DllImport(""native.dll"")>
-    Private Shared Sub Method1({|#0:sb|} As StringBuilder)
-    End Sub
+                Class C
+                    <DllImport("native.dll")>
+                    Private Shared Sub Method1({|#0:sb|} As StringBuilder)
+                    End Sub
 
-    <DllImport(""native.dll"")>
-    Private Shared Sub Method2({|#1:sb1|} As StringBuilder, {|#2:sb2|} As StringBuilder)
-    End Sub
-End Class
-";
+                    <DllImport("native.dll")>
+                    Private Shared Sub Method2({|#1:sb1|} As StringBuilder, {|#2:sb2|} As StringBuilder)
+                    End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(
                 source,
                 BasicResult(0, "sb"),

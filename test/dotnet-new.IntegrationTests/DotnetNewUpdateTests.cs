@@ -68,10 +68,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Execute()
                 .Should()
                 .Fail()
-                .And.HaveStdErr($@"Failed to check update for {nugetFullName}: the package is not available in configured NuGet feeds.
-
-
-For details on the exit code, refer to https://aka.ms/templating-exit-codes#106");
+                .And.HaveStdErrContaining($"Failed to check update for {nugetFullName}: the package is not available in configured NuGet feeds.")
+                .And.HaveStdErrContaining($"{nugetName} was not found in NuGet feeds")
+                .And.HaveStdErrContaining("For details on the exit code, refer to https://aka.ms/templating-exit-codes#106");
         }
 
         [TestMethod]

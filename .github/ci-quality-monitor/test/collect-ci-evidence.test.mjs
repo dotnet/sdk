@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import {mkdtemp, readFile, rm} from "node:fs/promises";
+import {tmpdir} from "node:os";
+import path from "node:path";
 import test from "node:test";
 import { BuildCandidateSelector } from "../build-candidate-selector.mjs";
 
@@ -25,8 +28,66 @@ import {
   summarizeSharedTestMechanism,
   shouldRunAgent,
   suppressTrackedIssueCandidates,
-  selectUnprocessedFailures
+  selectUnprocessedFailures,
+  writeGitHubOutputs
 } from "../collect-ci-evidence.mjs";
+
+test("timeout evidence excludes identifiers but retains explicit timeout messages", () => {
+  const nonEvidence = [
+    "at Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.Execution.TestMethodInfo.ExecuteInternalAsync(Object[] arguments, CancellationTokenSource timeoutTokenSource)",
+    "at Microsoft.Testing.Platform.Helpers.SystemAsyncMonitor.LockAsync(TimeSpan timeout)",
+    "at Example.ExceptionHandler.Handle(TimeoutException exception)",
+    "dotnet test --timeout 10m",
+    "HELIX_WORK_ITEM_TIMEOUT=01:00:00",
+    "Test run completed.\nHELIX_WORK_ITEM_TIMED_OUT=false",
+    "HELIX_WORK_ITEM_TIMED_OUT: false",
+    "HELIX_WORK_ITEM_TIMED_OUT: no",
+    "HELIX_WORK_ITEM_TIMED_OUT: 0",
+    "The operation did not time out",
+    "The operation never timed out",
+    "The operation completed without timing out",
+    "No timeout occurred",
+    "The timeout did not occur",
+    "Hang timeout: 00:10:00",
+    "Workload timeout = 01:00:00",
+    "Run timeout 10m",
+    "Timeout the test run when test takes more than the default timeout of 1 hour",
+    "Expected a timeout of 30 seconds to be configured on the client",
+    "Setting the request timeout\nof the client to 30s",
+    "Elapsed time out of expected bounds"
+  ];
+  for (const text of nonEvidence)
+  {
+    assert.equal(classifyWorkItem(2, text).failureType, "unknown-error");
+    assert.deepEqual(summarizeHelixConsole(text).hangEvidence, []);
+  }
+
+  for (const message of [
+    "WORKLOAD TIMED OUT",
+    "Hang timeout expired",
+    "TIMED_OUT",
+    "Work item WORKITEM_TIMED_OUT",
+    "System.TimeoutException: The operation has timed out.",
+    "TestTimeoutException: The test exceeded its limit.",
+    "The test run was aborted: timeout reached",
+    "Timeout 900000ms exceeded.",
+    "Timeout waiting for the process to exit",
+    "The timeout period elapsed prior to completion of the operation",
+    "Timeout of '00:00:30' while waiting for the semaphore",
+    "The specified inactivity time of 2 seconds has elapsed. Collecting hang dumps."
+  ])
+  {
+    assert.equal(classifyWorkItem(2, message).failureType, "timeout");
+  }
+
+  const corroboratedHang = [
+    "[00:10:01] Hang timeout: 00:10:00",
+    "Capturing dump of process tree for testhost",
+    "Hang dump written to Sdk.Tests_hang.dmp"
+  ].join("\n");
+  assert.equal(classifyWorkItem(2, corroboratedHang).failureType, "timeout");
+  assert.match(summarizeHelixConsole(corroboratedHang).hangEvidence.join("\n"), /Hang timeout/);
+});
 
 test("CiEvidenceCollector owns one Azure client per registered pipeline", () => {
   const pipeline = {
@@ -67,6 +128,21 @@ test("parseArguments requires registry and output", () => {
     { registry: "pipelines.json", output: "dossier.json" });
   assert.throws(() => parseArguments(["--registry", "pipelines.json"]), /required/);
   assert.throws(() => parseArguments(["registry", "pipelines.json"]), /Invalid argument/);
+});
+
+test("large dossiers do not enter size-limited GitHub job outputs", async context => {
+  const directory = await mkdtemp(path.join(tmpdir(), "ci-quality-outputs-"));
+  context.after(() => rm(directory, {recursive: true, force: true}));
+  const outputPath = path.join(directory, "outputs");
+  const dossier = {
+    bootstrap: false,
+    pipelineHealth: [{actionable: true}, {actionable: false}],
+    failures: [{issueCandidates: [{evidence: "x".repeat(1_048_577)}]}]
+  };
+
+  await writeGitHubOutputs(outputPath, dossier);
+
+  assert.equal(await readFile(outputPath, "utf8"), "should_run=true\nfailure_count=2\n");
 });
 
 test("normalizeEvidenceText removes volatile values and bounds output", () => {
@@ -410,6 +486,8 @@ test("summarizeHelixConsole preserves hang, host exit, and dump failures", () =>
     The following tests were still running when dump was taken (format: [<time-elapsed-since-start>] <name>):
     [50:03] Microsoft.DotNet.Watcher.Tools.Tests.BrowserTests.BrowserDiagnostics
     Hang timeout expired. Capturing process tree and hang dumps.
+    Blame: a hang was observed in test BrowserDiagnostics.
+    The test run aborted due to hang.
     Failed to collect dump for dotnet-watch-test-browser: Permission denied.
     Test host crashed.
     Test application process didn't exit gracefully, exit code is '137'.`);
@@ -417,6 +495,8 @@ test("summarizeHelixConsole preserves hang, host exit, and dump failures", () =>
   assert.match(summary.activeTest, /BrowserDiagnostics/);
   assert.equal(summary.hostExitCode, 137);
   assert.match(summary.hangEvidence.join("\n"), /Hang timeout expired/);
+  assert.match(summary.hangEvidence.join("\n"), /hang was observed/);
+  assert.match(summary.hangEvidence.join("\n"), /aborted due to hang/);
   assert.match(summary.dumpFailures.join("\n"), /Permission denied/);
 });
 

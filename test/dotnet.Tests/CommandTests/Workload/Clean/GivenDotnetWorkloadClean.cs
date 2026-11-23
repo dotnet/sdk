@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
 
             var cleanCommand = cleanAll ? GenerateWorkloadCleanAllCommand(workloadResolver, userProfileDir, dotnetRoot) : GenerateWorkloadCleanCommand(workloadResolver, userProfileDir, dotnetRoot);
-            cleanCommand.Execute();
+            cleanCommand.Execute(CancellationToken.None);
 
             AssertExtraneousPacksAreRemoved(extraPackPath, extraPackRecordPath);
             AssertValidPackCountsMatchExpected(installRoot, expectedPackCount: cleanAll ? 0 : 7, expectedPackRecordCount: cleanAll ? 0 : 8);
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
             MakePseudoWorkloadRecord(oldWorkloadInstallationRecordDirectory);
 
             var cleanCommand = GenerateWorkloadCleanAllCommand(workloadResolver, userProfileDir, dotnetRoot);
-            cleanCommand.Execute();
+            cleanCommand.Execute(CancellationToken.None);
 
             AssertExtraneousPacksAreRemoved(extraPackPath, extraBelowBandPackRecordPath, true);
             AssertExtraneousPacksAreRemoved(extraPackPath, extraAboveBandPackRecordPath);
@@ -120,7 +120,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory: workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: _manifestUpdater, tempDirPath: testDirectory);
 
-            installCommand.Execute();
+            installCommand.Execute(CancellationToken.None);
         }
 
         private WorkloadCleanCommand GenerateWorkloadCleanCommand(WorkloadResolver workloadResolver, string userProfileDir, string dotnetRoot)

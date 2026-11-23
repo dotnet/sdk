@@ -13,11 +13,14 @@ internal class TestApplicationActionQueue
     private readonly Channel<ParallelizableTestModuleGroupWithSequentialInnerModules> _channel;
     private readonly Task[] _readers;
     private readonly CancellationToken _cancellationToken;
-    private readonly TestApplicationPolicy _fallbackTestApplicationPolicy;
+    private readonly TestApplicationSettings _fallbackTestApplicationSettings;
     private readonly BuildOptions _buildOptions;
+    private readonly OutputOptions _outputOptions;
+    private readonly bool _outputOptionSpecified;
 
     private int? _aggregateExitCode;
     private readonly List<TestApplicationPolicy> _effectivePolicies = [];
+    private readonly Dictionary<TestModule, TestApplicationSettings> _effectiveSettings = [];
 
     private readonly Lock _lock = new();
 
@@ -32,13 +35,17 @@ internal class TestApplicationActionQueue
         ArtifactPostProcessingManager artifactPostProcessingManager,
         TestRunPolicy testRunPolicy,
         CancellationToken cancellationToken,
-        TestApplicationPolicy fallbackTestApplicationPolicy = default)
+        OutputOptions outputOptions,
+        bool outputOptionSpecified,
+        TestApplicationSettings fallbackTestApplicationSettings)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = new Task[degreeOfParallelism];
         _cancellationToken = cancellationToken;
-        _fallbackTestApplicationPolicy = fallbackTestApplicationPolicy;
+        _fallbackTestApplicationSettings = fallbackTestApplicationSettings;
         _buildOptions = buildOptions;
+        _outputOptions = outputOptions;
+        _outputOptionSpecified = outputOptionSpecified;
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
@@ -60,10 +67,14 @@ internal class TestApplicationActionQueue
         {
             foreach (TestModule module in testApplication)
             {
-                _effectivePolicies.Add(
-                    MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationPolicy(
+                TestApplicationSettings settings =
+                    MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
                         module,
-                        _buildOptions));
+                        _buildOptions,
+                        _outputOptions,
+                        _outputOptionSpecified);
+                _effectiveSettings[module] = settings;
+                _effectivePolicies.Add(settings.Policy);
             }
         }
 
@@ -117,9 +128,11 @@ internal class TestApplicationActionQueue
                         output,
                         onHelpRequested,
                         artifactPostProcessingManager,
-                        testRunPolicy: testRunPolicy);
+                        testRunPolicy: testRunPolicy,
+                        testApplicationSettings: GetEffectiveSettings(module));
                     try
                     {
+                        output.TestMapCollectionModuleStarted(module.TargetPath);
                         using (testApp)
                         {
                             result = await testApp.RunAsync(ctrlC);
@@ -127,10 +140,16 @@ internal class TestApplicationActionQueue
                     }
                     catch (Exception ex)
                     {
+                        output.MarkModuleExecutionIncomplete();
+                        output.MarkCoverageIncomplete();
                         var exAsString = ex.ToString();
                         Logger.LogTrace($"Exception running test module {module.RunProperties?.Command} {module.RunProperties?.Arguments}: {exAsString}");
                         Reporter.Error.WriteLine(string.Format(CliCommandStrings.ErrorRunningTestModule, module.RunProperties?.Command, module.RunProperties?.Arguments, exAsString));
                         result = ExitCode.GenericFailure;
+                    }
+                    finally
+                    {
+                        output.TestMapCollectionModuleCompleted();
                     }
 
                     // A module that ran zero tests (exit code 8) is not, by itself, a whole-run failure.
@@ -140,7 +159,7 @@ internal class TestApplicationActionQueue
                     // stricter per-module minimum requested via -- --minimum-expected-tests N still fails that
                     // module with ExitCode.MinimumExpectedTestsPolicyViolation (9) and is preserved.
                     // See https://github.com/microsoft/testfx/issues/7457.
-                    result = NormalizeExitCode(result, testApp.HasFailureDuringDispose);
+                    result = NormalizeExitCode(result, testApp.HasFailureDuringDispose, output);
 
                     lock (_lock)
                     {
@@ -222,11 +241,26 @@ internal class TestApplicationActionQueue
 
     private IReadOnlyList<TestApplicationPolicy> GetEffectivePolicies()
         => _effectivePolicies.Count == 0
-            ? [_fallbackTestApplicationPolicy]
+            ? [_fallbackTestApplicationSettings.Policy]
             : _effectivePolicies;
 
-    internal static int NormalizeExitCode(int result, bool hasFailureDuringDispose)
+    private TestApplicationSettings GetEffectiveSettings(TestModule module)
     {
+        lock (_lock)
+        {
+            return _effectiveSettings.TryGetValue(module, out TestApplicationSettings settings)
+                ? settings
+                : _fallbackTestApplicationSettings;
+        }
+    }
+
+    internal static int NormalizeExitCode(int result, bool hasFailureDuringDispose, TerminalTestReporter output)
+    {
+        if (hasFailureDuringDispose)
+        {
+            output.MarkModuleExecutionIncomplete();
+        }
+
         if (result == ExitCode.ZeroTests)
         {
             result = ExitCode.Success;

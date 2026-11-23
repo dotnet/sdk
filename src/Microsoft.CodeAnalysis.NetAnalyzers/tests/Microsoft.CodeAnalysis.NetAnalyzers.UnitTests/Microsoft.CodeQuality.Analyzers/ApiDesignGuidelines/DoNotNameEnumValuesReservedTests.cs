@@ -18,23 +18,27 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CA1700_NameContainsReserved_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public enum Enum1
-{
-    Reserved,
-    SomethingReserved,
-    ReservedSuffix,
-}",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public enum Enum1
+                {
+                    Reserved,
+                    SomethingReserved,
+                    ReservedSuffix,
+                }
+                """,
                 GetCSharpResultAt(4, 5, "Enum1", "Reserved"),
                 GetCSharpResultAt(5, 5, "Enum1", "SomethingReserved"),
                 GetCSharpResultAt(6, 5, "Enum1", "ReservedSuffix"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Enum Enum1
-    Reserved
-    SomethingReserved
-    ReservedSuffix
-End Enum",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Public Enum Enum1
+                    Reserved
+                    SomethingReserved
+                    ReservedSuffix
+                End Enum
+                """,
                 GetBasicResultAt(3, 5, "Enum1", "Reserved"),
                 GetBasicResultAt(4, 5, "Enum1", "SomethingReserved"),
                 GetBasicResultAt(5, 5, "Enum1", "ReservedSuffix"));
@@ -43,74 +47,82 @@ End Enum",
         [TestMethod]
         public async Task CA1700_NameContainsReservedWithoutCorrectCase_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public enum Enum1
-{
-    [|reserved|],
-    [|RESERVED|],
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public enum Enum1
+                {
+                    [|reserved|],
+                    [|RESERVED|],
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Enum Enum1
-    [|reserved|]
-End Enum
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Enum Enum1
+                    [|reserved|]
+                End Enum
 
-Public Enum Enum2
-    [|RESERVED|]
-End Enum");
+                Public Enum Enum2
+                    [|RESERVED|]
+                End Enum
+                """);
         }
 
         [TestMethod]
         public async Task CA1700_NameContainsReservedWithoutCorrectCase_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public enum Enum1
-{
-    Somethingreserved,
-    ReserveDSuffix,
-    ReSeRvEd,
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public enum Enum1
+                {
+                    Somethingreserved,
+                    ReserveDSuffix,
+                    ReSeRvEd,
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Enum Enum1
-    Somethingreserved
-    ReserveDSuffix
-    ReSeRvEd
-End Enum");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Enum Enum1
+                    Somethingreserved
+                    ReserveDSuffix
+                    ReSeRvEd
+                End Enum
+                """);
         }
 
         [TestMethod]
         public async Task CA1700_EnumIsNotPublicAndNameContainsReserved_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-internal enum Enum1
-{
-    Reserved,
-    SomethingReserved,
-    ReservedSuffix,
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                internal enum Enum1
+                {
+                    Reserved,
+                    SomethingReserved,
+                    ReservedSuffix,
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Friend Enum Enum1
-    Reserved
-    SomethingReserved
-    ReservedSuffix
-End Enum");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Friend Enum Enum1
+                    Reserved
+                    SomethingReserved
+                    ReservedSuffix
+                End Enum
+                """);
         }
 
         [TestMethod]
         public async Task CA1700_NameContainsPreserved_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public enum Enum1
-{
-    Preserved,
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public enum Enum1
+                {
+                    Preserved,
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Enum Enum1
-    Preserved
-End Enum");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Enum Enum1
+                    Preserved
+                End Enum
+                """);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string className, string memberName)
