@@ -2,7 +2,7 @@
 title: Install .NET SDKs and runtimes with dotnetup
 description: Install stable, preview, and exact .NET component requirements.
 ms.topic: how-to
-ms.date: 08/07/2026
+ms.date: 11/05/2026
 ---
 
 # Install .NET SDKs and runtimes with dotnetup
@@ -38,6 +38,16 @@ dotnetup runtime install windowsdesktop@10.0
 
 A value without a component selects the core .NET runtime.
 `windowsdesktop` is available only on Windows.
+
+## Install multiple requirements concurrently
+
+Pass multiple channels or exact versions to one install command. `dotnetup`
+resolves all requirements first and downloads the components concurrently:
+
+```dotnetcli
+dotnetup sdk install 10.0 11.0
+dotnetup runtime install runtime@10.0 aspnetcore@10.0
+```
 
 ## Install without tracking
 
