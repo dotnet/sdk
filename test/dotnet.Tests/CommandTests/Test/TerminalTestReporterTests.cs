@@ -218,6 +218,8 @@ public class TerminalTestReporterTests
         reporter.AssemblyRunStarted("Crashed.dll", "net9.0", "x64", "crash", "instance");
         reporter.AssemblyRunCompleted("crash", 7, "host crash context", null);
         reporter.ArtifactAdded(false, "Successful.dll", "net9.0", "x64", "success", null, "original.trx");
+        reporter.ArtifactAdded(false, "Successful.dll", "net9.0", "x64", "success", null, "coverage.cobertura");
+        reporter.ArtifactAdded(true, "Crashed.dll", "net9.0", "x64", "crash", null, "crash.dmp");
 
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, 7);
 
@@ -226,6 +228,8 @@ public class TerminalTestReporterTests
         summary.IndexOf("failed: 0", StringComparison.Ordinal).Should().BeLessThan(summary.IndexOf("original.trx", StringComparison.Ordinal));
         summary.IndexOf("Errored assemblies:", StringComparison.Ordinal).Should().BeLessThan(summary.IndexOf("original.trx", StringComparison.Ordinal));
         summary.Should().Contain("Crashed.dll").And.Contain("host crash context");
+        summary.Should().Contain("In process file artifacts produced: 2")
+            .And.Contain("Out of process file artifacts produced: 1");
         if (showCompletion)
         {
             summary.Should().NotContain("Successful.dll");

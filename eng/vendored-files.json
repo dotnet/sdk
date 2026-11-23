@@ -11,8 +11,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/ObjectFieldIds.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "path": "src/MTP/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/ObjectFieldIds.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "289a192a8acb6e2472c1fb4d4e3dbb7558152b5c",
           "scope": "entire file; ids must match exactly"
         }
@@ -42,8 +42,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.cs",
-          "baseline_ref_sha": "c8fb08e4d803883ce5f17a59dd6ebdf876fc4159",
-          "baseline_blob_sha": "4ede0224d5af29f74b7253696c415fdb4d097165",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
+          "baseline_blob_sha": "0e4db40c684de9fa3a6827918acdd9182960dd54",
           "scope": "reporter partial; upstream NoAnsi comment change has no SDK counterpart"
         },
         {
@@ -98,8 +98,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Summary.cs",
-          "baseline_ref_sha": "8bbb93c41344ce34ab0516f9996cc96570fe2a0c",
-          "baseline_blob_sha": "911f21aed12dc878f6c2247ce9dced3fec8f26de",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
+          "baseline_blob_sha": "a3354e7bcf7b8c8efb6e378ae736617025bb6a12",
           "scope": "reporter partial"
         },
         {
@@ -152,8 +152,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiCodes.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiCodes.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "634cbfae5834af1d5e181a9605c17e061aa104c1",
           "scope": "entire file"
         }
@@ -167,8 +167,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiDetector.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiDetector.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "07e0ea43228e1ac9314ecf679281e5714bef76ca",
           "scope": "entire file"
         }
@@ -182,8 +182,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminal.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminal.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "745089af14f85d0234e164c88f94629c278c1dc8",
           "scope": "entire file"
         }
@@ -197,32 +197,32 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "58fd5ab224a93119727cefa638f03c75a3a6a137",
           "scope": "entire file"
         },
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.Append.cs",
-          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.Append.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "46a0c0ceae74d22e4f11f09c8b862355f242e3a0",
           "scope": "frame partial; split out of AnsiTerminalTestProgressFrame.cs"
         },
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.Render.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.Render.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "cb915390fbb283d3d40578a381dc98c7f20a782e",
           "scope": "frame partial; split out of AnsiTerminalTestProgressFrame.cs"
         },
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.TextLayout.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.TextLayout.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "628b12b511692c96112e4db8c6f2791403186ed4",
           "scope": "frame partial; split out of AnsiTerminalTestProgressFrame.cs"
         }
@@ -236,8 +236,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/ExceptionFlattener.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/ExceptionFlattener.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "72938eee7845c8b150e3a7925ab7eb4db9b67e5c",
           "scope": "entire file"
         }
@@ -251,8 +251,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/FileUtilities.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/FileUtilities.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "f1084a2ff09382bd26479de00731b89824736f3a",
           "scope": "entire file"
         }
@@ -266,8 +266,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/HumanReadableDurationFormatter.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/HumanReadableDurationFormatter.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "8892f577d8d4fe399d79fedaa141108031e4550a",
           "scope": "entire file"
         }
@@ -281,8 +281,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/ITerminal.cs",
-          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/ITerminal.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "30ae2cbbe2f02e0b94f4f5bd82627a9c397e4c47",
           "scope": "entire file"
         }
@@ -296,8 +296,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/NativeMethods.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/NativeMethods.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "f591c3fa14d084155b46e4b474fa3df2813c2f43",
           "scope": "entire file"
         }
@@ -311,8 +311,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/NonAnsiTerminal.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/NonAnsiTerminal.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "db8dfa4f6ff2bd84e810a3a67ae50ce81d930ddb",
           "scope": "entire file"
         }
@@ -326,8 +326,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SimpleAnsiTerminal.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/SimpleAnsiTerminal.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "3fdf052d2c75beb7566358f994d31dac19ed2ce3",
           "scope": "entire file"
         }
@@ -341,8 +341,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SimpleTerminalBase.cs",
-          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/SimpleTerminalBase.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "8a81b8882d4010ad84d6de904ec17a4535bbee74",
           "scope": "entire file"
         }
@@ -356,8 +356,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalColor.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalColor.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "ef36dc706786b8081dca5e088a2deba1463fcb83",
           "scope": "entire file"
         }
@@ -386,8 +386,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestDetailState.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TestDetailState.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "82564a8d1ae6337d144d7b5b27fe65baa5792303",
           "scope": "entire file"
         }
@@ -401,8 +401,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestNodeResultsState.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TestNodeResultsState.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "00c340ec43694e6727024dd3e6109bee339e44ab",
           "scope": "entire file"
         }
@@ -416,8 +416,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestOutcome.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TestOutcome.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "4bdf16f8259b2b6c8725867719077f5b625146fe",
           "scope": "entire file"
         }
@@ -431,24 +431,24 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.cs",
-          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "31c3b2bf3de5d8f576838e6d84cfd6c47be18c0a",
           "scope": "entire file"
         },
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.Results.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.Results.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "0c1d69f81f7d90299ca6fe47ecd3b709f2ca5798",
           "scope": "progress-state partial; split out of TestProgressState.cs"
         },
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.Summary.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.Summary.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "8a320b77551dfbab6400d9dce94d100e47263fad",
           "scope": "progress-state partial; split out of TestProgressState.cs"
         }
@@ -462,8 +462,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressStateAwareTerminal.cs",
-          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressStateAwareTerminal.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "d0405762d63f1c4998ce199f8a208e048b8ad044",
           "scope": "entire file"
         }
@@ -477,8 +477,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestRunArtifact.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TestRunArtifact.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "62538d2cad82a449e3043e636e69c25eb64352ca",
           "scope": "entire file"
         }
@@ -492,8 +492,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/IColor.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/IColor.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "bfd6173af166f6626846276bb90caeade2a8ac45",
           "scope": "entire file"
         }
@@ -507,8 +507,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/SystemConsoleColor.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/SystemConsoleColor.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "e59363aa915e2c11b0c6936143ef8bd4198be467",
           "scope": "entire file"
         }
@@ -522,8 +522,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs",
-          "baseline_ref_sha": "74be6a61c1324c7b4810841ba2716040b47230f4",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "c58e1f65cb1f831c95bb1e2d4c7626b3bd6ea9a9",
           "scope": "entire file"
         }
@@ -537,8 +537,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/Helpers/System/IConsole.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "path": "src/MTP/Microsoft.Testing.Platform/Helpers/System/IConsole.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "25a54b2def43e298a0f7b6d884c3d3a185b834b3",
           "scope": "entire file"
         }
@@ -552,8 +552,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/Helpers/System/IStopwatch.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/Helpers/System/IStopwatch.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "e85a0a5bd6272a6278503d61e4fbf3a161c05aac",
           "scope": "entire file"
         }
@@ -567,8 +567,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/Helpers/System/SystemConsole.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "path": "src/MTP/Microsoft.Testing.Platform/Helpers/System/SystemConsole.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "90a80fb7fb82b53ad361f777283917b0b4047038",
           "scope": "entire file"
         }
@@ -582,8 +582,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/Helpers/System/SystemStopwatch.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "path": "src/MTP/Microsoft.Testing.Platform/Helpers/System/SystemStopwatch.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "7ce0c0b08a798fdb926c45c09c38c30e4a0e1d8c",
           "scope": "entire file"
         }
@@ -597,8 +597,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/IProgressRenderer.cs",
-          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/IProgressRenderer.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "7361e7601a3f41f1a78832313551cba0919ea7e6",
           "scope": "renderer contract without in-process progress messages"
         }
@@ -612,8 +612,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/CursorProgressRenderer.cs",
-          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/CursorProgressRenderer.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "556ceb7af12e5e7a0fc746d40fd88749e4054ac3",
           "scope": "cursor rendering without in-process progress messages"
         }
@@ -642,8 +642,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/SlowTestThresholdState.cs",
-          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/SlowTestThresholdState.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "221f3e0a1032e01b3fa1e6cdd674491ce2355b25",
           "scope": "entire file"
         }
@@ -657,8 +657,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/ProgressReportingConfiguration.cs",
-          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/ProgressReportingConfiguration.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "857cf4239674b526bb6d11accdadb6f72b574756",
           "scope": "progress threshold parsing"
         }
@@ -687,8 +687,8 @@
         {
           "repo": "microsoft/testfx",
           "ref": "main",
-          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestFrameworkDisplay.cs",
-          "baseline_ref_sha": "c2b618b17ef3ecbf46054cde3785476673ff9f63",
+          "path": "src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TestFrameworkDisplay.cs",
+          "baseline_ref_sha": "13cb26964e3bc674d91e5f1114450230dae5af82",
           "baseline_blob_sha": "6e2c9842fa96f3662330833fedce45ec5fb6409c",
           "scope": "entire helper; namespace/resources adapted"
         }
