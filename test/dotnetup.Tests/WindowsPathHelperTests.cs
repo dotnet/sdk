@@ -21,7 +21,7 @@ public class WindowsPathHelperTests
         // Assert
         paths.Should().NotBeNull();
         paths.Should().NotBeEmpty();
-        paths.Should().AllSatisfy(p => p.Should().EndWith("dotnet"));
+        paths.Should().AllSatisfy(path => Directory.Exists(path).Should().BeTrue());
     }
 
     [TestMethod]
