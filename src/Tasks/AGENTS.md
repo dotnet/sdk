@@ -36,13 +36,15 @@ without changing output paths, diagnostics, or invalid-input behavior. Keep orig
 inputs through shared helpers when they govern validation or control flow; audit every
 filesystem use in those helpers.
 [`GetAbsolutePathPreservingInvalidArguments`](Common/TaskEnvironmentExtensions.cs)
-retains BCL argument validation, including Framework hosts' legacy-path switch, without
+retains BCL argument validation by consulting the host before anchoring whitespace, without
 letting accepted whitespace operands resolve against a shared process CWD.
-Choose the actual host runtime, not the task's target TFM, when applying that policy:
-a Framework task assembly can also execute in .NET MSBuild.
-On Windows .NET hosts, only ASCII spaces trigger empty-path rejection; valid
-Unicode-whitespace file names and parent directories (such as U+00A0) still need
-project-relative resolution.
+Do not infer rejection from the task TFM or the Framework legacy-path switch alone:
+Framework rejects ASCII spaces in both modes but accepts some Unicode whitespace (such
+as U+2003) in legacy mode. Windows .NET accepts U+00A0 as well. A Framework task assembly
+can also execute in .NET MSBuild. Accepted names always need project-relative resolution;
+discard the validation probe's process-relative absolute path.
+The [fresh-process parity fixture](../../test/TestAssets/TestProjects/TaskEnvironmentPaths/Program.cs)
+checks both Framework modes against the raw directory/file APIs and a decoy working directory.
 
 For expensive shared initialization, use
 [`TaskObjectCache`](Microsoft.NET.Build.Tasks/TaskObjectCache.cs), as

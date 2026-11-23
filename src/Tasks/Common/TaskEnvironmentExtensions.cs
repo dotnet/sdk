@@ -17,14 +17,15 @@ internal static class TaskEnvironmentExtensions
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && string.IsNullOrWhiteSpace(path))
         {
-            // A Framework task assembly can run on .NET; use the host's BCL behavior.
-            bool isFramework = RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.Ordinal);
-            // .NET rejects only ASCII spaces; Framework's legacy normalization trims all whitespace.
-            bool rejectedByHost = isFramework
-                ? AppContext.TryGetSwitch("Switch.System.IO.UseLegacyPathHandling", out bool useLegacy) && useLegacy
-                : path.All(character => character == ' ');
-            if (rejectedByHost)
+            // Ask the host BCL before anchoring: Framework's two path modes and .NET reject
+            // different whitespace. Discard the result so accepted names remain project-relative.
+            try
             {
+                _ = Path.GetFullPath(path);
+            }
+            catch (ArgumentException)
+            {
+                // Preserve the caller's exception and side-effect ordering.
                 return path;
             }
         }

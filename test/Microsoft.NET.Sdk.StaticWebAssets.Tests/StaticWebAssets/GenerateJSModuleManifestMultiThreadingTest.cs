@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -147,9 +148,10 @@ public sealed class GenerateJSModuleManifestMultiThreadingTest : SdkTest
     [OSCondition(OperatingSystems.Windows)]
     [DataRow(" ", false)]
     [DataRow("\u00A0", true)]
+    [DataRow("\u2003", true)]
     public void FrameworkTaskUsesTheActualMSBuildRuntimeForPathValidation(string outputDirectory, bool validPath)
     {
-        string directory = TestAssetsManager.CreateTestDirectory(identifier: validPath.ToString()).Path;
+        string directory = TestAssetsManager.CreateTestDirectory(identifier: ((int)outputDirectory[0]).ToString()).Path;
         var toolset = SdkTestContext.Current.ToolsetUnderTest;
         string taskAssembly = Path.Combine(toolset.SdksPath,
             "Microsoft.NET.Sdk.StaticWebAssets", "tasks", "net472", "Microsoft.NET.Sdk.StaticWebAssets.Tasks.dll");
@@ -182,5 +184,32 @@ public sealed class GenerateJSModuleManifestMultiThreadingTest : SdkTest
                 .And.HaveStdOutContaining("System.ArgumentException")
                 .And.NotHaveStdOutContaining("System.IO.DirectoryNotFoundException");
         }
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void FrameworkPathModesPreserveValidationAndProjectIsolation(bool useLegacyPathHandling)
+    {
+        var asset = TestAssetsManager.CopyTestAsset("TaskEnvironmentPaths",
+            identifier: useLegacyPathHandling.ToString()).WithSource();
+        var build = new BuildCommand(asset);
+        string msbuildVersion = typeof(GenerateJSModuleManifestMultiThreadingTest).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>().Single(a => a.Key == "MicrosoftBuildVersion").Value!;
+        build.Execute($"/p:MicrosoftBuildVersion={msbuildVersion}").Should().Pass();
+
+        var toolset = SdkTestContext.Current.ToolsetUnderTest;
+        string coreTasks = Path.Combine(toolset.SdksPath,
+            "Microsoft.NET.Sdk", "tools", "net472", "Microsoft.NET.Build.Tasks.dll");
+        string webTasks = Path.Combine(toolset.SdksPath,
+            "Microsoft.NET.Sdk.StaticWebAssets", "tasks", "net472", "Microsoft.NET.Sdk.StaticWebAssets.Tasks.dll");
+        string executable = Path.Combine(build.GetOutputDirectory("net472").FullName, "TaskEnvironmentPaths.exe");
+
+        new RunExeCommand(Log, executable)
+            .WithWorkingDirectory(asset.TestRoot)
+            .Execute(useLegacyPathHandling.ToString(), coreTasks, webTasks)
+            .Should().Pass()
+            .And.HaveStdOutContaining("Path validation and project isolation preserved.");
     }
 }
