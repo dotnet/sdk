@@ -1,5 +1,5 @@
 ---
-coverage: Repository-wide code style, framework/build constraints, dependency management, and canonical area convention sources
+coverage: Repository-wide code style, framework/build constraints, error handling and performance, dependency management, and canonical area convention sources
 ---
 
 # Conventions

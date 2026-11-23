@@ -165,15 +165,15 @@ Flag only real problems. Each finding must identify a concrete issue. Approximat
 
 ### Maintainer checklist
 
-Long-time human reviewers of this repo often found these problems. Many are conventions, so they are in the files that authors also read. Check the change against the files that apply:
+Long-time human reviewers of this repo often found these problems. The full rules, with example PRs, are in the files that authors also read. Check each line that applies, and read the linked file when a line applies to the change:
 
-| Change | Read |
-| --- | --- |
-| Tests | [`test/AGENTS.md`](../../../test/AGENTS.md): test mechanics and process-wide state |
-| CLI commands | [`src/Cli/AGENTS.md`](../../../src/Cli/AGENTS.md#command-line-conventions): options, boolean flags, validation, arguments, messages, and telemetry |
-| MSBuild targets | [`src/Tasks/AGENTS.md`](../../../src/Tasks/AGENTS.md#versions-and-properties-in-targets): versions, TFMs, and private properties |
-| `dotnet watch` | [`src/Dotnet.Watch/AGENTS.md`](../../../src/Dotnet.Watch/AGENTS.md): console UI in the headless library |
-| All code | [`.github/memory/CONVENTIONS.md`](../../memory/CONVENTIONS.md): TFMs, exception handling, async and wasted work, and composition |
+- **Tests** ([`test/AGENTS.md`](../../../test/AGENTS.md)): the test goes through the code path that it claims to test; expected values are hard-coded; exceptions use an exception assertion, not try/catch; no arbitrary short timeouts or weakened assertions; each theory case has its own directory; no process-wide state changes.
+- **CLI options** ([`src/Cli/AGENTS.md`](../../../src/Cli/AGENTS.md#command-line-conventions)): names are lowercase; short aliases do not reuse an existing meaning; fixed values are restricted with an enum or `AcceptOnlyFromAmong`; an `Option<bool>` flag that ignores its value sets `Arity = ArgumentArity.Zero`, because the default arity is `ZeroOrOne`.
+- **CLI validation and arguments** ([`src/Cli/AGENTS.md`](../../../src/Cli/AGENTS.md#command-line-conventions)): validation that needs only tokens is in the parser, and validation that needs files or projects is in the command; arguments are a `string[]`; `key=value` is split at the first `=`; parse errors do not break commands that forward arguments.
+- **CLI messages and telemetry** ([`src/Cli/AGENTS.md`](../../../src/Cli/AGENTS.md#command-line-conventions)): a message says why and includes the related value; it refers to Visual Studio only when Visual Studio owns the state; telemetry hashes user-defined values, such as target names and TFMs; existing telemetry properties keep their names.
+- **MSBuild targets** ([`src/Tasks/AGENTS.md`](../../../src/Tasks/AGENTS.md#versions-and-properties-in-targets)): no hard-coded current .NET version; TFMs are compared with the MSBuild version functions, not parsed; no private properties when a supported one exists.
+- **`dotnet watch`** ([`src/Dotnet.Watch/AGENTS.md`](../../../src/Dotnet.Watch/AGENTS.md)): no console UI dependencies in the headless `Watch` library.
+- **All code** ([`.github/memory/CONVENTIONS.md`](../../memory/CONVENTIONS.md)): the TFM property fits the context; the SDK's runtime and the app's TFM are not confused; catches are narrow; ignored failures keep details in verbose output; no busy-waits, blocking on async code, or repeated expensive work; composition instead of inheriting a collection type.
 
 These checks are specific to reviews:
 
