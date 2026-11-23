@@ -1,0 +1,3 @@
+# Arcade passes /warnaserror on the command line, which overrides WarningsNotAsErrors in Directory.Build.props.
+# Keep NuGet audit-source outages (NU1900/NU1905) as warnings so they do not fail restore; see Directory.Build.props.
+-warnnotaserror:NU1900;NU1905

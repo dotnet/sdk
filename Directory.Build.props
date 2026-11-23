@@ -74,6 +74,9 @@
     <!-- NU1507 Disable multi-feed check as .NET uses multiple internal feeds intentionally -->
     <!-- NU5039 Disable NuGet is unable to find the readme file in the package. -->
     <NoWarn>$(NoWarn);NU1507;NU1202;NU5039</NoWarn>
+    <!-- NU1900/NU1905: the NuGet audit source was unreachable or returned no data. Keep these as warnings so
+         audit-service outages do not fail restore. Vulnerability findings (NU1901-NU1904) are handled separately. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1900;NU1905</WarningsNotAsErrors>
     <!-- do not enable analyzers on source build-->
     <EnforceCodeStyleInBuild Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</EnforceCodeStyleInBuild>
     <UseSharedCompilation Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</UseSharedCompilation>
