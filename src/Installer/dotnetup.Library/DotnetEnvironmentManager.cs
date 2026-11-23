@@ -14,8 +14,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// Responsibilities:
 /// - Detecting the current install type (user vs. system/admin) via PATH and registry.
 /// - Resolving the default dotnetup-managed install path.
-/// - Enumerating existing system-level .NET installs across platforms (Windows registry,
-///   macOS /etc/dotnet/install_location files, Linux well-known paths).
+/// - Enumerating existing system-level .NET installs in the installers' default locations.
 /// - Delegating SDK installation and global.json management.
 /// </summary>
 internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
@@ -74,36 +73,52 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         var sdkInstalls = GetExistingSystemInstalls()
             .Where(i => i.Component == InstallComponent.SDK)
             .ToList();
-        return sdkInstalls.Count > 0 ? sdkInstalls[0].Version.ToString() : null;
+        return sdkInstalls.Count > 0 ? sdkInstalls[0].LayoutVersion.ToString() : null;
     }
 
     public List<string> GetInstalledSystemSdkVersions()
     {
         return [.. GetExistingSystemInstalls()
             .Where(i => i.Component == InstallComponent.SDK)
-            .Select(i => i.Version.ToString())];
+            .Select(i => i.LayoutVersion.ToString())];
     }
 
-    // hostfxr only sees folders, so Version is the on-disk version, not an RTM or servicing daily build's identity.
+    /// <summary>
+    /// Lists the installs in the native-architecture system roots. An SDK's <see cref="DotnetInstall.Version"/>
+    /// is its build identity from <c>.version</c>; use <see cref="DotnetInstall.LayoutVersion"/> for the version
+    /// that <c>dotnet --list-sdks</c> reports and that released channels contain.
+    /// </summary>
     public List<DotnetInstall> GetExistingSystemInstalls()
+        => GetExistingSystemInstalls(GetSystemDotnetRoots());
+
+    internal static List<DotnetInstall> GetExistingSystemInstalls(IEnumerable<DotnetInstallRoot> systemRoots)
+        => GetExistingSystemInstalls(systemRoots, InstallRootEnumerator.GetInstalls);
+
+    /// <summary>
+    /// Lists the installs in the system roots that match this process's architecture. Roots of another
+    /// architecture are skipped before they are read, so they can never displace a native install.
+    /// A root that cannot be read is reported and skipped so the remaining roots are still listed.
+    /// </summary>
+    internal static List<DotnetInstall> GetExistingSystemInstalls(
+        IEnumerable<DotnetInstallRoot> systemRoots,
+        Func<DotnetInstallRoot, IEnumerable<DotnetInstall>> enumerateRoot)
     {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var installs = new List<DotnetInstall>();
 
-        foreach (var systemPath in GetSystemDotnetPaths())
+        foreach (var installRoot in systemRoots.Where(root => root.Architecture == nativeArch))
         {
             try
             {
-                installs.AddRange(HostFxrWrapper.getInstalls(systemPath));
+                installs.AddRange(enumerateRoot(installRoot));
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                // Log the failure rather than silently swallowing — aids debugging
-                // when hostfxr is missing or the path is inaccessible.
-                Metrics.Tag(TelemetryTagNames.HostfxrEnumerationFailed, "true");
-                Metrics.Tag(TelemetryTagNames.HostfxrEnumerationError, ex.GetType().Name);
-                Metrics.Tag(TelemetryTagNames.HostfxrEnumerationPath, systemPath);
+                Metrics.Tag(TelemetryTagNames.SystemInstallEnumerationFailed, "true");
+                Metrics.Tag(TelemetryTagNames.SystemInstallEnumerationError, ex.GetType().Name);
+                Metrics.Tag(TelemetryTagNames.SystemInstallEnumerationPath, installRoot.Path);
                 AnsiConsole.MarkupLine(DotnetupTheme.Dim(
-                    $"[{DotnetupTheme.Current.Warning}]Warning:[/] Could not enumerate installs at {systemPath.EscapeMarkup()}: {ex.Message.EscapeMarkup()}"));
+                    $"[{DotnetupTheme.Current.Warning}]Warning:[/] Could not enumerate installs at {installRoot.Path.EscapeMarkup()}: {ex.Message.EscapeMarkup()}"));
             }
         }
 
@@ -111,7 +126,8 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     }
 
     /// <summary>
-    /// Filters a list of installs to only the native architecture and sorts descending by version.
+    /// Filters a list of installs to only the native architecture, keeps one install per on-disk folder, and sorts
+    /// descending by on-disk version, then by build identity.
     /// Shared between production code and test mocks to ensure consistent behavior.
     /// </summary>
     public static List<DotnetInstall> FilterToNativeArchAndSort(List<DotnetInstall> installs)
@@ -119,78 +135,78 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var filtered = installs
             .Where(i => i.InstallRoot.Architecture == nativeArch)
-            .DistinctBy(i => (i.Component, Version: i.Version.ToString(), i.InstallRoot.Architecture))
+            .DistinctBy(i => (i.Component, LayoutVersion: i.LayoutVersion.ToString(), i.InstallRoot.Architecture))
             .ToList();
 
         // Sort descending so newest versions appear first.
-        filtered.Sort((a, b) => b.Version.CompareTo(a.Version));
+        filtered.Sort((a, b) =>
+        {
+            int byLayout = b.LayoutVersion.CompareTo(a.LayoutVersion);
+            return byLayout != 0 ? byLayout : b.Version.CompareTo(a.Version);
+        });
         return filtered;
     }
 
     /// <summary>
-    /// Returns the system-level .NET install directories for the current platform.
-    /// Windows: reads registry (sharedhost\Path, then InstallLocation) per architecture,
-    ///          falls back to %ProgramFiles%\dotnet.
-    /// macOS: checks /etc/dotnet/install_location_{arch}, /etc/dotnet/install_location,
-    ///        defaults to /usr/local/share/dotnet (plus /usr/local/share/dotnet/x64 under Rosetta).
+    /// Returns the existing system-level .NET install roots for the current platform, each with the architecture of
+    /// the .NET it holds. Only the installers' default locations are checked; the Windows registry and macOS
+    /// /etc/dotnet/install_location files are not read, so installs in a custom location are not found.
+    /// Callers still filter by architecture because Linux roots are labeled with the OS architecture.
+    /// Windows: the default Program Files root for the process architecture (see <see cref="AdminInstallRootResolver"/>).
+    /// macOS: /usr/local/share/dotnet, or /usr/local/share/dotnet/x64 for x64 under Rosetta.
     /// Linux: checks /usr/lib/dotnet, /usr/share/dotnet, /usr/lib64/dotnet.
     ///
+    /// These match get_default_installation_dir_for_arch in the host's pal.windows.cpp and pal.unix.cpp:
+    /// https://github.com/dotnet/runtime/tree/main/src/native/corehost/hostmisc
     /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
-    /// See https://github.com/dotnet/runtime/issues/109974
     /// </summary>
-    internal static List<string> GetSystemDotnetPaths()
+    internal static List<DotnetInstallRoot> GetSystemDotnetRoots()
     {
         if (OperatingSystem.IsWindows())
         {
-            return WindowsPathHelper.GetProgramFilesDotnetPaths();
+            return WindowsPathHelper.GetProgramFilesDotnetRoot(InstallerUtilities.GetDefaultInstallArchitecture()) is { } root
+                ? [root]
+                : [];
         }
 
-        var paths = new List<string>();
+        var roots = new List<DotnetInstallRoot>();
 
         if (OperatingSystem.IsMacOS())
         {
-            AddMacOSPaths(paths);
+            AddMacOSRoot(
+                roots,
+                "/usr/local/share/dotnet",
+                InstallerUtilities.GetDefaultInstallArchitecture(),
+                InstallerUtilities.GetOsInstallArchitecture());
         }
         else
         {
-            AddLinuxPaths(paths);
+            AddLinuxRoots(roots);
         }
 
-        return paths;
+        return roots;
     }
 
     /// <summary>
-    /// Adds macOS system dotnet paths in priority order:
-    /// 1. Per-architecture install_location file: /etc/dotnet/install_location_{arch}
-    /// 2. Default install_location file: /etc/dotnet/install_location
-    /// 3. Default system location: /usr/local/share/dotnet
-    /// 4. x64 emulation sublocation: /usr/local/share/dotnet/x64 (when running x64 on arm64 via Rosetta)
+    /// Adds the macOS installer's root for <paramref name="processArch"/> under <paramref name="defaultInstallDirectory"/>:
+    /// the directory itself, or its x64 subdirectory for x64 under Rosetta on an arm64 Mac.
+    /// install_location files are not read. The installer always uses these folders, and on an arm64 Mac with only
+    /// x64 .NET installed, the arch-less legacy file points at the x64 folder, which would be mislabeled as arm64.
     /// </summary>
-    private static void AddMacOSPaths(List<string> paths)
+    internal static void AddMacOSRoot(
+        List<DotnetInstallRoot> roots,
+        string defaultInstallDirectory,
+        InstallArchitecture processArch,
+        InstallArchitecture osArch)
     {
-        var arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
-
-        // Per-architecture install_location file takes highest priority.
-        // See: https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
-        TryReadInstallLocationFile(paths, $"/etc/dotnet/install_location_{arch}");
-
-        // Fall back to the non-architecture-specific file.
-        TryReadInstallLocationFile(paths, "/etc/dotnet/install_location");
-
-        // Default macOS system location (the .NET macOS installer places files here).
-        TryAddPath(paths, "/usr/local/share/dotnet");
-
-        // When running x64 under Rosetta on an arm64 Mac, the x64 dotnet root
-        // is a subdirectory rather than a sibling directory.
-        if (RuntimeInformation.ProcessArchitecture == Architecture.X64 &&
-            RuntimeInformation.OSArchitecture == Architecture.Arm64)
-        {
-            TryAddPath(paths, "/usr/local/share/dotnet/x64");
-        }
+        string path = processArch == InstallArchitecture.x64 && osArch == InstallArchitecture.arm64
+            ? Path.Combine(defaultInstallDirectory, "x64")
+            : defaultInstallDirectory;
+        TryAddRoot(roots, path, processArch);
     }
 
     /// <summary>
-    /// Adds Linux system dotnet paths in priority order:
+    /// Adds Linux system dotnet roots in priority order. Package managers install the native architecture:
     /// 1. /usr/lib/dotnet — preferred by newer distros and the .NET install docs.
     /// 2. /usr/share/dotnet — used by some distributions (e.g., Ubuntu packages).
     /// 3. /usr/lib64/dotnet — used by some RPM-based distributions (Fedora, RHEL).
@@ -199,48 +215,19 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     /// and may reference dotnet library paths on some distributions. The well-known
     /// directories above cover the standard package-manager install locations.
     /// </summary>
-    private static void AddLinuxPaths(List<string> paths)
+    private static void AddLinuxRoots(List<DotnetInstallRoot> roots)
     {
-        TryAddPath(paths, "/usr/lib/dotnet");
-        TryAddPath(paths, "/usr/share/dotnet");
-        TryAddPath(paths, "/usr/lib64/dotnet");
+        var osArch = InstallerUtilities.GetOsInstallArchitecture();
+        TryAddRoot(roots, "/usr/lib/dotnet", osArch);
+        TryAddRoot(roots, "/usr/share/dotnet", osArch);
+        TryAddRoot(roots, "/usr/lib64/dotnet", osArch);
     }
 
-    /// <summary>
-    /// Reads a dotnet install_location file and adds the path it contains if valid.
-    /// These files are written by the .NET installer on macOS and contain a single
-    /// line with the dotnet root directory.
-    /// </summary>
-    private static void TryReadInstallLocationFile(List<string> paths, string filePath)
+    private static void TryAddRoot(List<DotnetInstallRoot> roots, string path, InstallArchitecture architecture)
     {
-        try
+        if (Directory.Exists(path) && !roots.Any(root => string.Equals(root.Path, path, StringComparison.Ordinal)))
         {
-            if (!File.Exists(filePath))
-            {
-                return;
-            }
-
-            string? location = File.ReadAllText(filePath).Trim();
-            if (!string.IsNullOrEmpty(location))
-            {
-                var normalized = location.TrimEnd(Path.DirectorySeparatorChar);
-                if (Directory.Exists(normalized) && !paths.Contains(normalized, StringComparer.Ordinal))
-                {
-                    paths.Add(normalized);
-                }
-            }
-        }
-        catch
-        {
-            // Best-effort; file may be unreadable due to permissions
-        }
-    }
-
-    private static void TryAddPath(List<string> paths, string path)
-    {
-        if (Directory.Exists(path) && !paths.Contains(path, StringComparer.Ordinal))
-        {
-            paths.Add(path);
+            roots.Add(new DotnetInstallRoot(path, architecture));
         }
     }
 

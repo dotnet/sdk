@@ -103,6 +103,26 @@ public class MigrationWorkflowTests : IDisposable
     }
 
     [TestMethod]
+    public void BuildMigrationSelections_UsesTheOnDiskVersionOfSdkBuilds()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+        List<DotnetInstall> systemInstalls =
+        [
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.403-servicing.26523.112"), InstallComponent.SDK)
+                .WithProductVersion(new ReleaseVersion("10.0.403")),
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.401-servicing.26423.113"), InstallComponent.SDK)
+                .WithProductVersion(new ReleaseVersion("10.0.401")),
+        ];
+
+        var result = MigrationWorkflow.BuildMigrationSelections(systemInstalls, installRoot);
+
+        var selection = result.Should().ContainSingle().Subject;
+        selection.Channel.Name.Should().Be("10.0.4xx");
+        selection.ExampleVersion.ToString().Should().Be("10.0.403");
+    }
+
+    [TestMethod]
     public void FilterMigrationSelections_UsesInstallSpecChannels()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();

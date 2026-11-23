@@ -20,4 +20,10 @@ public static class InstallerUtilities
     {
         return GetInstallArchitecture(RuntimeInformation.ProcessArchitecture);
     }
+
+    /// <summary>Gets the operating system's native architecture, which can differ from the process under emulation.</summary>
+    public static InstallArchitecture GetOsInstallArchitecture()
+    {
+        return GetInstallArchitecture(RuntimeInformation.OSArchitecture);
+    }
 }
