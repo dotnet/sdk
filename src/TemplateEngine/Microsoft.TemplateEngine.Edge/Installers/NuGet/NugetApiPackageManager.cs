@@ -120,14 +120,12 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 throw new DownloadException(packageMetadata.Identity.Id, packageMetadata.Identity.Version.ToNormalizedString(), new[] { source.Source });
             }
 
-            string temporaryFilePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".tmp");
-            bool temporaryFileCreated = false;
+            string temporaryFilePath = filePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
             try
             {
                 bool downloadSucceeded;
-                using (Stream packageStream = new FileStream(temporaryFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                using (Stream packageStream = _environmentSettings.Host.FileSystem.CreateFile(temporaryFilePath))
                 {
-                    temporaryFileCreated = true;
                     downloadSucceeded = await resource.CopyNupkgToStreamAsync(
                         packageMetadata.Identity.Id,
                         packageMetadata.Identity.Version,
@@ -172,10 +170,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
             finally
             {
-                if (temporaryFileCreated)
-                {
-                    TryDeleteTemporaryFile(temporaryFilePath);
-                }
+                TryDeleteFile(temporaryFilePath);
             }
 
             async Task VerifyPackageAsync(string packagePath, CancellationToken cancellationToken)
@@ -193,9 +188,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 try
                 {
-                    using Stream sourceStream = File.OpenRead(sourceFilePath);
-                    using Stream destinationStream = _environmentSettings.Host.FileSystem.CreateFile(destinationFilePath);
-                    sourceStream.CopyTo(destinationStream);
+                    _environmentSettings.Host.FileSystem.FileCopy(sourceFilePath, destinationFilePath, overwrite: true);
                 }
                 catch (Exception)
                 {
@@ -209,22 +202,6 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 try
                 {
                     _environmentSettings.Host.FileSystem.FileDelete(filePath);
-                }
-                catch (Exception ex)
-                {
-                    _nugetLogger.LogWarning(
-                        string.Format(
-                            LocalizableStrings.NuGetApiPackageManager_Warning_FailedToDelete,
-                            filePath));
-                    _nugetLogger.LogDebug($"Details: {ex}.");
-                }
-            }
-
-            void TryDeleteTemporaryFile(string filePath)
-            {
-                try
-                {
-                    File.Delete(filePath);
                 }
                 catch (Exception ex)
                 {
