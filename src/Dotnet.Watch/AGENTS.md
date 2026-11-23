@@ -15,6 +15,9 @@ Reload).
 
 ## Conventions & gotchas
 
+- **Keep console UI out of the `Watch` library.** Only the `dotnet-watch` tool references
+  `Spectre.Console`. The `Watch` library also runs headless, for example from Aspire
+  ([#53540](https://github.com/dotnet/sdk/pull/53540)).
 - **File-based defaults are not the watch tool's runtime framework.** The CLI and
   watch source-link [`FileBasedProgramDefaults`](../Common/FileBasedProgramDefaults.cs).
   Keep [`ProjectGraphFactory`](Watch/Build/ProjectGraphFactory.cs) aligned with

@@ -55,3 +55,13 @@ breaks localization or silently collides with another PR.
 - **`.xlf` files are generated**, never hand-edited — regenerate via `/t:UpdateXlf`.
 
 Diagnostics are covered by tests under `test/Microsoft.NET.Build.Tests/`.
+
+## Versions and properties in targets
+
+- Do not hard-code the current .NET version or TFM in shipping targets. Use
+  `$(NETCoreAppMaximumVersion)` ([#18815](https://github.com/dotnet/sdk/pull/18815)).
+- Compare `$(TargetFrameworkIdentifier)` and `$(TargetFrameworkVersion)` with the MSBuild
+  version functions. Do not parse TFM strings
+  ([#24656](https://github.com/dotnet/sdk/pull/24656)).
+- Do not use a private MSBuild property (one that starts with `_`) when a supported
+  property exists ([#37139](https://github.com/dotnet/sdk/pull/37139)).

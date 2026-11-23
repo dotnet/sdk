@@ -154,6 +154,41 @@ or a package/buildTransitive dependency. Current-SDK builds use the CLI
 generator, while multi-targeted owners retain the existing Microsoft generator
 for .NET Framework targets.
 
+## Command-line conventions
+
+Maintainers often found these problems in CLI reviews:
+
+- **Options.** Option names are lowercase ([#24446](https://github.com/dotnet/sdk/pull/24446)).
+  Do not use a short alias that already has a different meaning in the CLI, such as
+  `-f` ([#18502](https://github.com/dotnet/sdk/pull/18502)). An option with a fixed set
+  of values restricts them in the parser, with an enum or `AcceptOnlyFromAmong`
+  ([#29017](https://github.com/dotnet/sdk/pull/29017)).
+- **Boolean flags.** `Option<bool>` accepts an optional value by default (arity
+  `ZeroOrOne`), so `--flag false` parses. A flag that does not take an explicit `true`
+  or `false` sets `Arity = ArgumentArity.Zero`, so the forwarding code cannot ignore a
+  value ([#26963](https://github.com/dotnet/sdk/pull/26963)). Some options, such as
+  `--self-contained`, accept `true` or `false` on purpose.
+- **Validation.** Validation that needs only the parsed tokens belongs in the command
+  definition or parser, not in the command handler
+  ([#28333](https://github.com/dotnet/sdk/pull/28333)). Validation that needs files,
+  projects, or other run-time state belongs in the command.
+- **Arguments.** Pass arguments as a `string[]`, not as one joined string
+  ([#26155](https://github.com/dotnet/sdk/pull/26155)). Split `key=value` input only at
+  the first `=` ([#28059](https://github.com/dotnet/sdk/pull/28059)). Parse-error
+  handling must not break commands that forward arguments, such as `dotnet msbuild`
+  ([#23677](https://github.com/dotnet/sdk/pull/23677)).
+- **Messages.** A message tells the user why the problem occurred and includes the
+  related value, such as the workload ID or the `global.json` path
+  ([#25358](https://github.com/dotnet/sdk/pull/25358), [#25733](https://github.com/dotnet/sdk/pull/25733)).
+  CLI messages do not refer to Visual Studio, unless Visual Studio owns the affected
+  state, such as workloads that the Visual Studio Installer manages
+  ([#28811](https://github.com/dotnet/sdk/pull/28811)).
+- **Telemetry.** Hash values that a user can define, such as custom target names and
+  TFMs, in the same way as the existing events
+  ([#26427](https://github.com/dotnet/sdk/pull/26427), [#27042](https://github.com/dotnet/sdk/pull/27042)).
+  Do not rename existing telemetry properties
+  ([#29131](https://github.com/dotnet/sdk/pull/29131)).
+
 ## Per-command services
 
 [`CommandServices`](dotnet/CommandServices.cs) holds immutable service dependencies.

@@ -38,6 +38,22 @@ Guidance for changes under `test/`.
   for local retention and response-file behavior.
 - **Test asset placement.** Put test inputs (projects, packages, workloads, etc.) in
   `test/TestAssets/`. They are automatically deployed to Helix via `test/UnitTests.proj`.
+- **Prefer `TestProject` and the existing helpers and assets.** Change project XML
+  (for example with `TestProject.ProjectChanges`) or add a new asset only when the
+  helpers cannot express the scenario
+  ([#3275](https://github.com/dotnet/sdk/pull/3275), [#18459](https://github.com/dotnet/sdk/pull/18459)).
+- **Make each test prove the behavior.**
+  - The test must go through the code path that it claims to test
+    ([#2196](https://github.com/dotnet/sdk/pull/2196)).
+  - Hard-code expected values. Do not calculate them with the code under test
+    ([#16530](https://github.com/dotnet/sdk/pull/16530)).
+  - Use an exception assertion (`Assert.ThrowsExactly` or `.Should().Throw<T>()`), not
+    try/catch with a forced failure.
+  - Do not use arbitrary short timeouts, and do not make an assertion weaker so that it
+    accepts nondeterministic results
+    ([#55618](https://github.com/dotnet/sdk/pull/55618), [#54801](https://github.com/dotnet/sdk/pull/54801)).
+  - Give each theory case its own test directory, so that a second local run still
+    passes ([#11317](https://github.com/dotnet/sdk/pull/11317), [#16521](https://github.com/dotnet/sdk/pull/16521)).
 - **Audit before raising parallelism.** New MSTest projects are repo-defaulted to `None`
   in `test/Directory.Build.props` until their shared resources have been audited.
   Runnable test projects override that default with `ClassLevel` or `MethodLevel` when

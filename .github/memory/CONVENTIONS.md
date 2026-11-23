@@ -34,10 +34,29 @@ Repository policy:
   errors, implicit usings, central package management, and the Arcade SDK; see
   [`Directory.Build.props`](../../Directory.Build.props).
 - Source and test projects targeting current .NET use `$(SdkTargetFramework)`. Test
-  assets use `$(CurrentTargetFramework)` because the test harness substitutes it.
+  assets use `$(CurrentTargetFramework)` because the test harness substitutes it. C# test
+  code uses `ToolsetInfo.CurrentTargetFramework`. Shipping SDK targets use
+  `$(NETCoreAppMaximumVersion)`; see [`src/Tasks/AGENTS.md`](../../src/Tasks/AGENTS.md).
+- In C#, parse and compare TFMs with the NuGet framework APIs, not string operations
+  ([#18216](https://github.com/dotnet/sdk/pull/18216)). Use the correct value: the runtime
+  of the SDK or the target framework of the app
+  ([#36195](https://github.com/dotnet/sdk/pull/36195), [#52242](https://github.com/dotnet/sdk/pull/52242)).
 - Multi-targeting projects that include .NET Framework follow peer projects in their area.
 - Area-specific compatibility constraints belong in the nearest `AGENTS.md`; notably,
   task assemblies and resolvers have .NET Framework host requirements.
+
+## Error Handling and Performance
+
+- Catch only the expected exception type, and only around the operation that can fail
+  ([#43393](https://github.com/dotnet/sdk/pull/43393), [#26369](https://github.com/dotnet/sdk/pull/26369)).
+- When code ignores an expected failure, keep the details in verbose output, and let
+  unexpected errors fail ([#16891](https://github.com/dotnet/sdk/pull/16891), [#19124](https://github.com/dotnet/sdk/pull/19124)).
+- Do not busy-wait ([#26870](https://github.com/dotnet/sdk/pull/26870)) or block on async
+  code ([#52581](https://github.com/dotnet/sdk/pull/52581)). Do not repeat expensive work,
+  such as loading the project graph again when its inputs did not change
+  ([#56723](https://github.com/dotnet/sdk/pull/56723)).
+- Do not inherit from a collection type only to reuse its code; use composition
+  ([#16823](https://github.com/dotnet/sdk/pull/16823), [#24005](https://github.com/dotnet/sdk/pull/24005)).
 
 ## Dependency Management
 
