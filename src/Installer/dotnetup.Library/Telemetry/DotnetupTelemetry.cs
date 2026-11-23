@@ -433,19 +433,9 @@ public sealed class DotnetupTelemetry : IDisposable
     private const int LocalShutdownBudgetMs = 200;
 
     /// <summary>
-    /// Teardown budget (ms) for a successful shell-startup command. This command runs in the shell's startup path, where latency is especially visible.
-    /// </summary>
-    private const int ShellStartupShutdownBudgetMs = 10;
-
-    /// <summary>
     /// Teardown budget (ms) after a failed command. Allow extra time to persist the diagnostic telemetry before the process exits.
     /// </summary>
     private const int FailureShutdownBudgetMs = 400;
-
-    /// <summary>
-    /// Gets or sets whether the current invocation is the latency-critical shell-startup command.
-    /// </summary>
-    internal bool IsShellStartupCommand { get; set; }
 
     /// <summary>
     /// Returns the CI shutdown budget (ms): the <c>DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS</c>
@@ -469,12 +459,10 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Returns the local shutdown budget (ms). Failures take precedence over the shell-startup fast path so their diagnostic telemetry has time to persist.
+    /// Returns the local shutdown budget (ms). Failures get a longer budget so their diagnostic telemetry has time to persist.
     /// </summary>
-    internal int GetLocalShutdownBudgetMs(int exitCode) =>
-        exitCode != 0 ? FailureShutdownBudgetMs :
-        IsShellStartupCommand ? ShellStartupShutdownBudgetMs :
-        LocalShutdownBudgetMs;
+    internal static int GetLocalShutdownBudgetMs(int exitCode) =>
+        exitCode != 0 ? FailureShutdownBudgetMs : LocalShutdownBudgetMs;
 
     /// <summary>
     /// Production exit entrypoint.
@@ -500,9 +488,7 @@ public sealed class DotnetupTelemetry : IDisposable
         {
             ShutdownProviders(GetLocalShutdownBudgetMs(exitCode));
 
-            // Skip the out-of-band drainer on the latency-critical shell-startup hot path; those
-            // blobs are delivered by the next dotnetup run or the SDK CLI sharing the store.
-            if (!IsShellStartupCommand && !TelemetryTestHooks.IsEnabled(Constants.Telemetry.TestSkipDetachedDrainerEnvVar))
+            if (!TelemetryTestHooks.IsEnabled(Constants.Telemetry.TestSkipDetachedDrainerEnvVar))
             {
                 DotnetupTelemetryDrainProcess.SpawnDetachedDrainer();
             }
