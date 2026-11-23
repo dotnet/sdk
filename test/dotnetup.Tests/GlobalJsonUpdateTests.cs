@@ -453,8 +453,10 @@ public class GlobalJsonUpdateTests : IDisposable
         var update = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
         var unconditionalUpdate = () => GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
 
-        update.Should().Throw<JsonException>();
-        unconditionalUpdate.Should().Throw<JsonException>();
+        update.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
+        unconditionalUpdate.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         File.ReadAllText(path).Should().Be(contents);
     }
 
@@ -473,8 +475,10 @@ public class GlobalJsonUpdateTests : IDisposable
         var updateIfNewer = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
         var replace = () => GlobalJsonHelper.ReplaceGlobalJsonSdkVersion(contents, "10.0.105");
 
-        update.Should().Throw<JsonException>().WithMessage(Strings.GlobalJsonDuplicateSdkVersion);
-        updateIfNewer.Should().Throw<JsonException>().WithMessage(Strings.GlobalJsonDuplicateSdkVersion);
+        update.Should().Throw<DotnetInstallException>()
+            .WithInnerException<JsonException>().WithMessage(Strings.GlobalJsonDuplicateSdkVersion);
+        updateIfNewer.Should().Throw<DotnetInstallException>()
+            .WithInnerException<JsonException>().WithMessage(Strings.GlobalJsonDuplicateSdkVersion);
         replace.Should().Throw<JsonException>().WithMessage(Strings.GlobalJsonDuplicateSdkVersion);
         File.ReadAllBytes(path).Should().Equal(originalBytes);
     }
@@ -540,8 +544,10 @@ public class GlobalJsonUpdateTests : IDisposable
         read.Should().Throw<DotnetInstallException>()
             .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         readSdk.Should().Throw<JsonException>();
-        update.Should().Throw<JsonException>();
-        updateIfNewer.Should().Throw<JsonException>();
+        update.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
+        updateIfNewer.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         File.ReadAllBytes(path).Should().Equal(contents);
     }
 
@@ -564,8 +570,10 @@ public class GlobalJsonUpdateTests : IDisposable
         read.Should().Throw<DotnetInstallException>()
             .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         readSdk.Should().Throw<JsonException>();
-        update.Should().Throw<JsonException>();
-        updateIfNewer.Should().Throw<JsonException>();
+        update.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
+        updateIfNewer.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         replace.Should().Throw<JsonException>();
         File.ReadAllText(path).Should().Be(contents);
     }
@@ -608,8 +616,10 @@ public class GlobalJsonUpdateTests : IDisposable
         read.Should().Throw<DotnetInstallException>()
             .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         readSdk.Should().Throw<JsonException>();
-        update.Should().Throw<JsonException>();
-        updateIfNewer.Should().Throw<JsonException>();
+        update.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
+        updateIfNewer.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         File.ReadAllBytes(path).Should().Equal(contents);
     }
 }

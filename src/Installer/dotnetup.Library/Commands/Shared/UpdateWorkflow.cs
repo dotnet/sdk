@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using System.Runtime.ExceptionServices;
-using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
@@ -251,24 +250,12 @@ internal class UpdateWorkflow
     /// </summary>
     private static bool UpdateGlobalJsonFile(string globalJsonPath, ReleaseVersion latestVersion)
     {
-        try
+        if (GlobalJsonHelper.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
         {
-            if (GlobalJsonHelper.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
-            {
-                AnsiConsole.MarkupLine($"  Updated {DotnetupTheme.Dim(globalJsonPath.EscapeMarkup())} to {latestVersion}.");
-                return true;
-            }
-            return false;
+            AnsiConsole.MarkupLine($"  Updated {DotnetupTheme.Dim(globalJsonPath.EscapeMarkup())} to {latestVersion}.");
+            return true;
         }
-        catch (JsonException ex)
-        {
-            throw GlobalJsonHelper.CreateMalformedGlobalJsonException(globalJsonPath, ex);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed,
-                $"Failed to update '{globalJsonPath}': {ex.Message}", ex);
-        }
+        return false;
     }
 
     /// <summary>

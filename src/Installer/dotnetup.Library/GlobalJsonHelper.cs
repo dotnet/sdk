@@ -33,7 +33,7 @@ public static class GlobalJsonHelper
     /// </summary>
     /// <exception cref="DotnetInstallException">
     /// <paramref name="parseContents"/> is set and the file cannot be read or parsed.
-    /// See <see cref="ReadGlobalJsonForCommand"/>.
+    /// See <see cref="WrapGlobalJsonErrors"/>.
     /// </exception>
     public static GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory, bool parseContents)
     {
@@ -46,22 +46,22 @@ public static class GlobalJsonHelper
         return new GlobalJsonInfo
         {
             GlobalJsonPath = globalJsonPath,
-            GlobalJsonContents = parseContents ? ReadGlobalJsonForCommand(globalJsonPath) : null
+            GlobalJsonContents = parseContents ? WrapGlobalJsonErrors(globalJsonPath, () => ReadGlobalJson(globalJsonPath)) : null
         };
     }
 
     /// <summary>
-    /// Reads global.json contents that a command requires, converting failures to user-facing errors.
+    /// Runs a global.json operation, converting failures to user-facing errors.
     /// </summary>
     /// <exception cref="DotnetInstallException">
     /// <see cref="DotnetInstallErrorCode.MalformedGlobalJson"/> when the file is not valid global.json, or
-    /// <see cref="DotnetInstallErrorCode.ContextResolutionFailed"/> when it cannot be read.
+    /// <see cref="DotnetInstallErrorCode.ContextResolutionFailed"/> when it cannot be read or written.
     /// </exception>
-    private static GlobalJsonContents ReadGlobalJsonForCommand(string globalJsonPath)
+    private static T WrapGlobalJsonErrors<T>(string globalJsonPath, Func<T> operation)
     {
         try
         {
-            return ReadGlobalJson(globalJsonPath);
+            return operation();
         }
         catch (JsonException ex)
         {
@@ -115,7 +115,10 @@ public static class GlobalJsonHelper
     /// <paramref name="sdkVersion"/> is null or the file does not exist.
     /// The file must be UTF-8 JSON with optional comments and no trailing commas.
     /// </summary>
-    /// <exception cref="JsonException">The file cannot be parsed or contains duplicate SDK versions; it is left unchanged.</exception>
+    /// <exception cref="DotnetInstallException">
+    /// The file cannot be read, parsed, or written, or contains duplicate SDK versions; it is left unchanged
+    /// unless the write itself fails. See <see cref="WrapGlobalJsonErrors"/>.
+    /// </exception>
     public static void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null)
     {
         if (sdkVersion is null)
@@ -128,8 +131,11 @@ public static class GlobalJsonHelper
             return;
         }
 
-        var (_, fileText, encoding) = ReadGlobalJsonFile(globalJsonPath);
-        WriteGlobalJsonSdkVersion(globalJsonPath, sdkVersion, fileText, encoding);
+        WrapGlobalJsonErrors(globalJsonPath, () =>
+        {
+            var (_, fileText, encoding) = ReadGlobalJsonFile(globalJsonPath);
+            return WriteGlobalJsonSdkVersion(globalJsonPath, sdkVersion, fileText, encoding);
+        });
     }
 
     private static bool WriteGlobalJsonSdkVersion(string globalJsonPath, string sdkVersion, string fileText, Encoding encoding)
@@ -169,21 +175,25 @@ public static class GlobalJsonHelper
     /// recorded in the file (or when the current version cannot be parsed).
     /// </summary>
     /// <returns><see langword="true"/> if the file was updated; otherwise <see langword="false"/>.</returns>
-    /// <exception cref="JsonException">The file contains malformed JSON or duplicate SDK versions; it is left unchanged.</exception>
-    public static bool UpdateGlobalJsonIfNewer(string globalJsonPath, ReleaseVersion latestVersion)
-    {
-        var (contents, fileText, encoding) = ReadGlobalJsonFile(globalJsonPath);
-        string? currentVersionString = contents.Sdk?.Version;
-
-        if (currentVersionString is not null
-            && ReleaseVersion.TryParse(currentVersionString, out var currentVersion)
-            && latestVersion <= currentVersion)
+    /// <exception cref="DotnetInstallException">
+    /// The file cannot be read, parsed, or written, or contains duplicate SDK versions; it is left unchanged
+    /// unless the write itself fails. See <see cref="WrapGlobalJsonErrors"/>.
+    /// </exception>
+    public static bool UpdateGlobalJsonIfNewer(string globalJsonPath, ReleaseVersion latestVersion) =>
+        WrapGlobalJsonErrors(globalJsonPath, () =>
         {
-            return false;
-        }
+            var (contents, fileText, encoding) = ReadGlobalJsonFile(globalJsonPath);
+            string? currentVersionString = contents.Sdk?.Version;
 
-        return WriteGlobalJsonSdkVersion(globalJsonPath, latestVersion.ToString(), fileText, encoding);
-    }
+            if (currentVersionString is not null
+                && ReleaseVersion.TryParse(currentVersionString, out var currentVersion)
+                && latestVersion <= currentVersion)
+            {
+                return false;
+            }
+
+            return WriteGlobalJsonSdkVersion(globalJsonPath, latestVersion.ToString(), fileText, encoding);
+        });
 
     /// <summary>
     /// Replaces the "version" value inside the "sdk" section of a global.json string,
