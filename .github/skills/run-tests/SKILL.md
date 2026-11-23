@@ -144,5 +144,5 @@ Pass `--test-binlogs` to capture logs from `MSBuildCommand` and `DotnetBuildComm
 The runner writes them to a `test-binlogs` subdirectory under the run directory.
 
 If no test hook reaches the behavior, or retained TRX, binlogs, and output lack the
-information needed to diagnose a failure, report an
-[AI-enablement gap](../../../AGENTS.md#reporting-ai-enablement-gaps).
+information needed to diagnose a failure, use the
+[`report-ai-enablement-gap` skill](../report-ai-enablement-gap/SKILL.md).

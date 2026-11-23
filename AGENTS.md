@@ -186,22 +186,8 @@ Never hardcode the current TFM in a project. See
 ## Reporting AI-enablement gaps
 
 Missing test or diagnostic support that blocks verification or failure investigation is
-an AI-enablement gap. Examples include missing test hooks, runtime state visible only in
-a debugger, missing diagnostic artifacts, and unstructured output that prevents diagnosis.
-For PR build or CI failures, first follow the
-[PR validation failure guidance](#investigating-pr-validation-failures).
-
-When you encounter a gap:
-
-1. Unless the task requires it, do not expand the change to build the missing infrastructure.
-2. Use temporary logging or other local workarounds when needed for investigation. Unless
-   the workaround is the intended fix, exclude it from the final change.
-3. Search for an existing issue covering the gap.
-4. In the final handoff, describe what you needed to observe or control, what was missing,
-   any workaround used, and the supporting file, command, or log. Link a matching issue if
-   one exists; otherwise, provide a ready-to-file issue title and body for the
-   `Area-AIEngineering` label.
-5. File a new issue only when the user asks.
+an AI-enablement gap. When you encounter one, use the
+[`report-ai-enablement-gap` skill](.github/skills/report-ai-enablement-gap/SKILL.md).
 
 ## Keeping AI context and docs in sync
 
