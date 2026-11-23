@@ -113,10 +113,20 @@ internal static class ShellProviderHelpers
         var command = BuildPowerShellPrintEnvCommand(dotnetupPath, shellName, flags);
         var activationBlock = IndentLines(BuildPowerShellGuardedInvocationBlock(command), "    ");
 
-        // Use .NET APIs instead of Test-Path / Out-String / Invoke-Expression. In a new session those
-        // cmdlets trigger module autoload, which adds noticeable time to every PowerShell startup.
+        // In FullLanguage mode use .NET APIs instead of Test-Path / Out-String / Invoke-Expression.
+        // In a new session those cmdlets trigger module autoload, which adds noticeable time to every
+        // PowerShell startup. ConstrainedLanguage mode (e.g. under WDAC / AppLocker) blocks the .NET
+        // method calls, so fall back to the cmdlets there.
         return $$"""
-            if ([System.IO.File]::Exists('{{escapedPath}}'))
+            if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')
+            {
+                $dotnetupFound = [System.IO.File]::Exists('{{escapedPath}}')
+            }
+            else
+            {
+                $dotnetupFound = Test-Path -LiteralPath '{{escapedPath}}' -PathType Leaf
+            }
+            if ($dotnetupFound)
             {
                 {{activationBlock}}
             }
@@ -147,7 +157,14 @@ internal static class ShellProviderHelpers
             $dotnetupScript = ({{command}}) -join [System.Environment]::NewLine
             if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))
             {
-                . ([scriptblock]::Create($dotnetupScript))
+                if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')
+                {
+                    . ([scriptblock]::Create($dotnetupScript))
+                }
+                else
+                {
+                    Invoke-Expression $dotnetupScript
+                }
             }
             """;
     }

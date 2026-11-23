@@ -270,16 +270,17 @@ public class EnvShellProviderTests
         profileEntry.Should().Contain("if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))");
         profileEntry.Should().Contain(". ([scriptblock]::Create($dotnetupScript))");
         profileEntry.Should().NotContain("Out-String");
-        profileEntry.Should().NotContain("Invoke-Expression");
 
         activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' env script | Out-String)");
     }
 
     [TestMethod]
-    [DataRow("multiline")]
-    [DataRow("empty")]
-    [DataRow("missing")]
-    public void PowerShellProvider_ProfileEntryRunsInPowerShell(string scenario)
+    [DataRow("multiline", false)]
+    [DataRow("empty", false)]
+    [DataRow("missing", false)]
+    [DataRow("multiline", true)]
+    [DataRow("missing", true)]
+    public void PowerShellProvider_ProfileEntryRunsInPowerShell(string scenario, bool constrainedLanguage)
     {
         string? powershell = FindPowerShell();
         if (powershell is null)
@@ -311,14 +312,19 @@ public class EnvShellProviderTests
                 File.WriteAllText(fakeDotnetup, fakeOutput);
             }
 
-            var entry = new PowerShellEnvShellProvider().GenerateProfileEntry(fakeDotnetup);
+            // The entry runs from its own file so that, like a real profile, it runs entirely in the
+            // language mode set before it is loaded. ConstrainedLanguage blocks .NET method calls.
+            string entryPath = Path.Combine(dir, "entry.ps1");
+            File.WriteAllText(entryPath, new PowerShellEnvShellProvider().GenerateProfileEntry(fakeDotnetup), new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+            string languageMode = constrainedLanguage ? "$ExecutionContext.SessionState.LanguageMode = 'ConstrainedLanguage'" : string.Empty;
             string profile = Path.Combine(dir, "profile.ps1");
             File.WriteAllText(
                 profile,
                 $"""
                 $ErrorActionPreference = 'Stop'
                 Remove-Item Env:DOTNET_ROOT -ErrorAction Ignore
-                {entry}
+                {languageMode}
+                . '{ShellProviderHelpers.EscapePowerShellPath(entryPath)}'
                 Write-Output "DOTNET_ROOT=$env:DOTNET_ROOT"
                 Write-Output "PATH0=$(($env:PATH -split [IO.Path]::PathSeparator)[0])"
                 """,
