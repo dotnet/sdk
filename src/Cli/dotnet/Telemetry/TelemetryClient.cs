@@ -19,6 +19,8 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 public class TelemetryClient : ITelemetryClient
 {
+    private const int LocalTracePersistenceTimeoutMilliseconds = 100;
+
     private static FrozenDictionary<string, string?> s_commonProperties = [];
     private Task? _trackEventTask;
 
@@ -132,6 +134,9 @@ public class TelemetryClient : ITelemetryClient
             AppContext.SetSwitch("Azure.Monitor.OpenTelemetry.Exporter.DisablePersistOnShutdown", s_isCIEnvironment);
             AppContext.SetData("Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds", 0); //  background upload will occur next time - reduce exit latency. This only impacts storage persistThenDrain, so not CI.
             AppContext.SetSwitch("Azure.Monitor.OpenTelemetry.Exporter.PersistOnForceFlush", !s_isCIEnvironment);
+            // The storage sub directory name otherwise hashes the process name and AppContext.BaseDirectory, which differ
+            // between dotnet.dll and dotnet-aot. Sharing it lets each entry point drain telemetry the other persisted.
+            AppContext.SetData("Azure.Monitor.OpenTelemetry.Exporter.StorageSubDirectory", "dotnet-cli");
             s_tracerProviderBuilder.AddAzureMonitorTraceExporter(options =>
             {
                 options.ConnectionString = s_connectionString;
@@ -277,17 +282,21 @@ public class TelemetryClient : ITelemetryClient
         }
         else
         {
-            s_tracerProvider?.Shutdown();
+            // This timeout includes batch serialization and the atomic storage write. Ten milliseconds can
+            // interrupt the write before its temporary file is finalized, leaving nothing a later run can drain.
+            s_tracerProvider?.Shutdown(LocalTracePersistenceTimeoutMilliseconds);
             s_metricsProvider?.Shutdown(timeoutMilliseconds: 10);
         }
     }
 
     internal static void ForceFlushProviders()
     {
-        int timeout = s_isCIEnvironment || s_enableOtlpExporter ? s_shutdownTimeoutMs : Timeout.Infinite;
+        int timeout = s_isCIEnvironment || s_enableOtlpExporter
+            ? s_shutdownTimeoutMs
+            : LocalTracePersistenceTimeoutMilliseconds;
         long started = Stopwatch.GetTimestamp();
         s_tracerProvider?.ForceFlush(timeout);
-        int remaining = timeout == Timeout.Infinite ? 10 : Math.Max(0, timeout - (int)Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+        int remaining = Math.Max(0, timeout - (int)Stopwatch.GetElapsedTime(started).TotalMilliseconds);
         s_metricsProvider?.ForceFlush(remaining);
     }
 

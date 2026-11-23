@@ -90,14 +90,23 @@ and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.c
   use a separate 300-ms trace allowance in each runtime; there is no cross-runtime deadline coordination.
   Normal exports before shutdown remain network-first; this is not synchronous
   persistence of every ended span, and abrupt termination can lose queued spans. An upload already in flight
-  can still delay shutdown. Successful local shutdown waits for the batch processor to finish rather than
-  applying the old 10-ms timeout to persistence. Failed-command persistence is subject to the 300-ms timeout.
+  can still delay shutdown. Successful local shutdown gives the trace batch processor 100 ms to finalize
+  persistence; the zero drain budget prevents waiting for the subsequent upload. This is long enough for a cold
+  exporter to complete its atomic file write without reintroducing an unbounded exit delay. Failed-command
+  persistence is subject to the 300-ms timeout.
 2. **Subsequent invocations.** Azure schedules an eager background drain after a 50-ms startup delay; actual
   start time also depends on thread scheduling and storage work. The two-minute periodic retry timer remains.
   Accepted payloads are deleted; retryable failures remain for later attempts. Storage partitioning, retention,
   leases, and response handling belong to Azure. Blobs written directly into the storage root by the previous
   SDK-owned exporter are not migrated or automatically consumed by Azure's partitioned store. They are left
   untouched; this migration does not delete old telemetry files.
+
+  Azure names each storage sub directory from the instrumentation key, user name, process name, and
+  `AppContext.BaseDirectory`. The base directory differs between `dotnet.dll` and `dotnet-aot`, so without an
+  override each entry point would drain only its own backlog. The SDK sets the
+  `Azure.Monitor.OpenTelemetry.Exporter.StorageSubDirectory` AppContext value to `dotnet-cli` (see
+  [Azure/azure-sdk-for-net#62997](https://github.com/Azure/azure-sdk-for-net/issues/62997)). Every entry point
+  for a given user then shares one sub directory and drains telemetry that the others persisted.
 3. **CI invocations.** The SDK sets `Azure.Monitor.OpenTelemetry.Exporter.DisablePersistOnShutdown` to true and
   calls `Shutdown` with a finite timeout because another invocation may never run. The default CI
   wait budget is five seconds, shared across trace and metric providers. A positive
@@ -106,8 +115,8 @@ and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.c
   be persisted, and a timeout can leave telemetry undelivered.
 4. **Persistent MSBuild hosts.** A logger finishes a build request with nonterminal `ForceFlush`, allowing the
   same provider to handle later builds. Locally the SDK enables
-  `Azure.Monitor.OpenTelemetry.Exporter.PersistOnForceFlush`; process exit uses `Shutdown`. CI uses a bounded
-  network-first flush. A force-flush result is not an ingestion acknowledgment.
+  `Azure.Monitor.OpenTelemetry.Exporter.PersistOnForceFlush` and gives trace persistence 100 ms; process exit uses
+  `Shutdown`. CI uses a bounded network-first flush. A force-flush result is not an ingestion acknowledgment.
 
 These Azure settings are process-wide. OTLP-enabled invocations retain bounded provider shutdown, and the trace
 and metric providers share the configured wait budget. This bounds provider waits, not all process-exit work. Azure's

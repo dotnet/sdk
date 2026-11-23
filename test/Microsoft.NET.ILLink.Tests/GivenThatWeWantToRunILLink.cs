@@ -64,11 +64,9 @@ namespace Microsoft.NET.ILLink.Tests
             DoesDepsFileHaveAssembly(depsFile, UnusedFrameworkAssembly).Should().BeTrue();
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
+        // https://github.com/dotnet/sdk/issues/49665
         [TestMethod]
         [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
-        [DataRow("netcoreapp3.0", true)]
-        [DataRow("netcoreapp3.0", false)]
         [DataRow("net5.0", false)]
         [DataRow(ToolsetInfo.CurrentTargetFramework, false)]
         public void ILLink_runs_and_creates_linked_app(string targetFramework, bool referenceClassLibAsPackage)
@@ -1432,7 +1430,7 @@ namespace HelloWorld
                 // NOTE: If using a package reference for the reference project, it will be retrieved
                 // from the nuget cache. Set the reference project TFM to the lowest common denominator
                 // of these tests to prevent conflicts.
-                TargetFrameworks = usePackageReference ? "netcoreapp3.0" : targetFrameworks,
+                TargetFrameworks = usePackageReference ? "net5.0" : targetFrameworks,
             };
             referenceProject.SourceFiles[$"{referenceProjectName}.cs"] = @"
 using System;

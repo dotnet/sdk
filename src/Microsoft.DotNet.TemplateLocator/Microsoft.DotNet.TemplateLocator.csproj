@@ -13,6 +13,9 @@
     <!-- https://github.com/dotnet/sdk/issues/14801 -->
     <AssemblyVersion Condition="'$(TargetFramework)' == '$(NetFrameworkToolCurrent)'">5.0.100.0</AssemblyVersion>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+    <PublishWindowsPdb Condition="'$(TargetFramework)' == '$(NetFrameworkToolCurrent)' and
+                                 '$(OS)' == 'Windows_NT' and
+                                 '$(DotNetBuildSourceOnly)' != 'true'">true</PublishWindowsPdb>
 
     <!--
       Mark as Native AOT compatible. This will enable relevant analyzers.
@@ -50,10 +53,12 @@
     <Compile Include="..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\**\*.cs" LinkBase="Microsoft.NET.Sdk.WorkloadManifestReader" />
     <Compile Include="..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" LinkBase="Microsoft.DotNet.SdkResolver" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\PathComponentUtilities.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\Polyfills.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Commands\Workload\InstallStateContents.cs" LinkBase="Cli" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Installer\Windows\TrustedMachinePath.cs" LinkBase="Cli" />
   </ItemGroup>
 
   <ItemGroup>

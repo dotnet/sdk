@@ -98,22 +98,32 @@ internal sealed class MSBuildSession : IDisposable
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+            string originalWorkingDirectory = Directory.GetCurrentDirectory();
 
-            // Every ProjectInstance.Build call used to be its own build, which meant a fresh results
-            // cache each time. Within a single session MSBuild would instead serve a second request
-            // for the same project from the results cached by the first one, so targets shared by
-            // DeployToDevice and ComputeRunArguments would silently stop re-running.
-            // ReplaceExistingProjectInstance re-points the configuration at this instance and clears
-            // its cached results, which keeps the previous per-request behavior.
-            var requestData = new BuildRequestData(
-                project,
-                targets,
-                hostServices: null,
-                BuildRequestDataFlags.ReplaceExistingProjectInstance);
+            try
+            {
+                // Every ProjectInstance.Build call used to be its own build, which meant a fresh results
+                // cache each time. Within a single session MSBuild would instead serve a second request
+                // for the same project from the results cached by the first one, so targets shared by
+                // DeployToDevice and ComputeRunArguments would silently stop re-running.
+                // ReplaceExistingProjectInstance re-points the configuration at this instance and clears
+                // its cached results, which keeps the previous per-request behavior.
+                var requestData = new BuildRequestData(
+                    project,
+                    targets,
+                    hostServices: null,
+                    BuildRequestDataFlags.ReplaceExistingProjectInstance);
 
-            BuildResult result = GetOrStartBuildManager().BuildRequest(requestData);
-            targetOutputs = result.ResultsByTarget;
-            return result.OverallResult == BuildResultCode.Success;
+                BuildResult result = GetOrStartBuildManager().BuildRequest(requestData);
+                targetOutputs = result.ResultsByTarget;
+                return result.OverallResult == BuildResultCode.Success;
+            }
+            finally
+            {
+                // The in-process node restores its operating environment when the build session ends.
+                // This session spans several requests, so restore the caller's directory after each one.
+                Directory.SetCurrentDirectory(originalWorkingDirectory);
+            }
         }
     }
 

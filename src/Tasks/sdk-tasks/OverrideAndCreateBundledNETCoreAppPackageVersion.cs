@@ -13,7 +13,9 @@ namespace Microsoft.DotNet.Build.Tasks
     /// the latest patches of different major versions are built entirely separately, and we want to have tests
     /// on downlevel versions but we can't depend on the latest patches being available in test environments.
     ///
-    /// So we copy the version numbers from stage 0 for those downlevel versions.
+    /// So we copy the version numbers from stage 0 for those downlevel versions.  This also applies to the downlevel
+    /// runtime pack versions in the Mono toolchain workload manifest, which override the bundled versions for
+    /// browser-wasm and mobile projects.
     ///
     /// However, if the stage 2 version is a preview version, we don't overwrite it.  This is because in this case
     /// the version of .NET hasn't been released yet, so we want to use the later preview version.  The preview
@@ -23,6 +25,19 @@ namespace Microsoft.DotNet.Build.Tasks
     {
         [Required] public string Stage0BundledVersionsPath { get; set; }
         [Required] public string Stage2BundledVersionsPath { get; set; }
+
+        /// <summary>
+        /// WorkloadManifest.targets files of the microsoft.net.workload.mono.toolchain.current manifest in stage 0.
+        /// The one with the highest manifest version is used.
+        /// </summary>
+        public ITaskItem[] Stage0MonoToolchainManifestTargetsPaths { get; set; } = Array.Empty<ITaskItem>();
+
+        /// <summary>
+        /// WorkloadManifest.targets files of the microsoft.net.workload.mono.toolchain.current manifest in stage 2.
+        /// The Mono workload targets override the runtime/targeting/WebAssembly SDK pack versions for downlevel
+        /// browser-wasm and mobile projects, so their downlevel versions are replaced with the stage 0 ones as well.
+        /// </summary>
+        public ITaskItem[] Stage2MonoToolchainManifestTargetsPaths { get; set; } = Array.Empty<ITaskItem>();
 
         public override bool Execute()
         {
@@ -114,8 +129,12 @@ namespace Microsoft.DotNet.Build.Tasks
                 UpdateItems("KnownILCompilerPack", new[] { "Include", "TargetFramework" }, new[] { "ILCompilerPackVersion" });
                 UpdateItems("KnownRuntimePack", new[] { "Include", "TargetFramework", "RuntimePackLabels" }, new[] { "LatestRuntimeFrameworkVersion" });
                 UpdateItems("KnownILLinkPack", new[] { "Include", "TargetFramework" }, new[] { "ILLinkPackVersion" });
+                UpdateItems("KnownAspNetCorePack", new[] { "Include", "TargetFramework" }, new[] { "AspNetCorePackVersion" });
 
                 stage2Doc.Save(Stage2BundledVersionsPath);
+
+                OverrideMonoToolchainManifestVersions();
+
                 return !Log.HasLoggedErrors;
             }
             catch (Exception ex)
@@ -123,6 +142,56 @@ namespace Microsoft.DotNet.Build.Tasks
                 Log.LogErrorFromException(ex, true);
                 return false;
             }
+        }
+
+        private void OverrideMonoToolchainManifestVersions()
+        {
+            if (Stage0MonoToolchainManifestTargetsPaths.Length == 0 || Stage2MonoToolchainManifestTargetsPaths.Length == 0)
+            {
+                return;
+            }
+
+            // e.g. sdk-manifests/11.0.100-rc.1/microsoft.net.workload.mono.toolchain.current/11.0.100-rc.1.26425.128/WorkloadManifest.targets
+            var stage0Path = Stage0MonoToolchainManifestTargetsPaths
+                .Select(i => i.ItemSpec)
+                .OrderByDescending(p => NuGetVersion.TryParse(Path.GetFileName(Path.GetDirectoryName(p)), out var v) ? v : new NuGetVersion(0, 0, 0))
+                .First();
+            var stage0Versions = LoadDownlevelRuntimePackVersions(XDocument.Load(stage0Path))
+                .ToDictionary(e => e.Name.LocalName, e => e.Value.Trim());
+
+            foreach (var stage2Path in Stage2MonoToolchainManifestTargetsPaths.Select(i => i.ItemSpec))
+            {
+                var stage2Doc = XDocument.Load(stage2Path, LoadOptions.PreserveWhitespace);
+                bool changed = false;
+                foreach (var property in LoadDownlevelRuntimePackVersions(stage2Doc))
+                {
+                    if (stage0Versions.TryGetValue(property.Name.LocalName, out var v0) &&
+                        v0 != property.Value.Trim() &&
+                        NuGetVersion.TryParse(property.Value.Trim(), out var v2) && !v2.IsPrerelease)
+                    {
+                        Log.LogMessage(MessageImportance.Low, $"{stage2Path}: overriding {property.Name.LocalName} '{property.Value}' with stage 0 value '{v0}'.");
+                        property.Value = v0;
+                        changed = true;
+                    }
+                }
+
+                if (changed)
+                {
+                    stage2Doc.Save(stage2Path, SaveOptions.DisableFormatting);
+                }
+            }
+        }
+
+        // _RuntimePackInWorkloadVersion6, _RuntimePackInWorkloadVersion10, etc. but not _RuntimePackInWorkloadVersionCurrent.
+        private static IEnumerable<XElement> LoadDownlevelRuntimePackVersions(XDocument doc)
+        {
+            const string Prefix = "_RuntimePackInWorkloadVersion";
+            return doc.Root.Elements(doc.Root.Name.Namespace + "PropertyGroup")
+                .SelectMany(pg => pg.Elements())
+                .Where(e => e.Name.LocalName.StartsWith(Prefix, StringComparison.Ordinal) &&
+                            e.Name.LocalName.Length > Prefix.Length &&
+                            e.Name.LocalName.Substring(Prefix.Length).All(char.IsDigit))
+                .ToList();
         }
     }
 }

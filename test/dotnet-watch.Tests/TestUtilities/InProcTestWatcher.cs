@@ -39,14 +39,15 @@ internal record class InProcTestWatcher(
             }
             finally
             {
-                Context.Dispose();
+                await Context.DisposeAsync();
             }
         }, ShutdownSource.Token);
     }
 
     public async ValueTask DisposeAsync()
     {
-        Assert.IsNotNull(_lazyTask);
+        var task = _lazyTask;
+        Assert.IsNotNull(task);
 
         if (!ShutdownSource.IsCancellationRequested)
         {
@@ -56,7 +57,7 @@ internal record class InProcTestWatcher(
 
         try
         {
-            await _lazyTask;
+            await task;
         }
         catch (OperationCanceledException)
         {

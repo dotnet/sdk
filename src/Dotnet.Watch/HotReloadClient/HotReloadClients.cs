@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.HotReload;
 /// </param>
 internal sealed class HotReloadClients(
     ImmutableArray<HotReloadClient> clients,
-    AbstractBrowserRefreshServer? browserRefreshServer,
+    BrowserRefreshServer? browserRefreshServer,
     bool useRefreshServerToApplyStaticAssets) : IDisposable
 {
     /// <summary>
@@ -55,7 +55,7 @@ internal sealed class HotReloadClients(
     public bool UseRefreshServerToApplyStaticAssets
         => useRefreshServerToApplyStaticAssets;
 
-    public AbstractBrowserRefreshServer? BrowserRefreshServer
+    public BrowserRefreshServer? BrowserRefreshServer
         => browserRefreshServer;
 
     public ImmutableArray<HotReloadClient> Clients

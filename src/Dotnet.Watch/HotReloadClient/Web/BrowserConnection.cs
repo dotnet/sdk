@@ -55,22 +55,6 @@ internal readonly struct BrowserConnection(
     /// </summary>
     public ImmutableArray<BrowserToolsUpdateBatch> PendingReplayUpdates => pendingReplayUpdates;
 
-    internal async ValueTask<bool> WaitForInitializationAsync(CancellationToken cancellationToken)
-    {
-        var initialized = Initialized.Task;
-        if (initialized.IsCompleted)
-        {
-            return initialized.Status == TaskStatus.RanToCompletion && initialized.Result;
-        }
-
-        // Work around lack of Task.WaitAsync(CancellationToken) on .NET Framework:
-        var cancellation = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var registration = cancellationToken.Register(static state => ((TaskCompletionSource<bool>)state!).TrySetResult(false), cancellation);
-
-        var completed = await Task.WhenAny(initialized, cancellation.Task);
-        return completed == initialized && initialized.Result;
-    }
-
     internal async ValueTask<bool> TrySendMessageAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
     {
 #if NET

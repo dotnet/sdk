@@ -76,7 +76,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test2");
                 MatchCollection timeoutTestsMatches = Regex.Matches(result.StdOut!, @"failed \(canceled\) Test3");
                 MatchCollection errorTestsMatches = Regex.Matches(result.StdOut!, "failed Test4");
-                MatchCollection canceledTestsMatches = Regex.Matches(result.StdOut!, @"failed \(canceled\) Test5");
 
                 Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
                 Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
@@ -90,9 +89,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
-                    .And.Contain("total: 14")
+                    .And.Contain("total: 12")
                     .And.Contain("succeeded: 3")
-                    .And.Contain("failed: 8")
+                    .And.Contain("failed: 6")
                     .And.Contain("skipped: 3");
             }
 
@@ -136,6 +135,25 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             {
                 result.ExitCode.Should().Be(ExitCodes.Success);
             }
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void RunProjectWithMultipleTFMsUsingRelativePath_ShouldSucceed(bool useProjectOption)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsParallelization", Guid.NewGuid().ToString())
+                .WithSource();
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
+
+            string projectPath = Path.Combine("TestProject", "TestProject.csproj");
+            string[] projectArguments = useProjectOption ? ["--project", projectPath] : [projectPath];
+
+            new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute([.. projectArguments, "--property", "TestTfmsInParallel=false"])
+                .Should()
+                .Pass();
         }
 
         [DataRow(TestingConstants.Debug)]
