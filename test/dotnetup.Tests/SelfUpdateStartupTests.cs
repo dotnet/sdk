@@ -141,7 +141,6 @@ public class SelfUpdateStartupTests
         foreach (var args in commands)
         {
             activities.Clear();
-            DotnetupTelemetry.Instance.IsShellStartupCommand = false;
             using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
             using var rootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
             var parsed = Parser.Parse(args);
@@ -152,7 +151,6 @@ public class SelfUpdateStartupTests
             Assert.AreEqual(1, Parser.Invoke(parsed), string.Join(' ', args));
             Assert.ContainsSingle(activities);
             Assert.AreEqual(nameof(DotnetInstallErrorCode.DotnetupUpdateInProgress), activities[0].GetTagItem("error.type"), string.Join(' ', args));
-            Assert.IsFalse(DotnetupTelemetry.Instance.IsShellStartupCommand);
             Assert.AreEqual(0L, manifest.Position);
             Assert.IsFalse(File.Exists("blocked-log.txt"));
         }
@@ -215,25 +213,15 @@ public class SelfUpdateStartupTests
     }
 
     [TestMethod]
-    public void EnvScriptConstructionDoesNotMarkShellStartupOrStartRootOperation()
+    public void EnvScriptConstructionDoesNotStartRootOperation()
     {
         using var files = new SelfUpdateTestFiles();
         using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
-        var telemetry = DotnetupTelemetry.Instance;
-        bool previous = telemetry.IsShellStartupCommand;
-        try
-        {
-            telemetry.IsShellStartupCommand = false;
-            var previousActivity = Activity.Current;
-            _ = new EnvScriptCommand(Parser.Parse(["env", "script", "--shell", "pwsh"]));
+        var previousActivity = Activity.Current;
 
-            Assert.IsFalse(telemetry.IsShellStartupCommand);
-            Assert.AreSame(previousActivity, Activity.Current);
-        }
-        finally
-        {
-            telemetry.IsShellStartupCommand = previous;
-        }
+        _ = new EnvScriptCommand(Parser.Parse(["env", "script", "--shell", "pwsh"]));
+
+        Assert.AreSame(previousActivity, Activity.Current);
     }
 
     [TestMethod]

@@ -19,7 +19,7 @@ public class TelemetryDrainE2ETests
         using var server = new MockTelemetryIngestionServer();
         using var environment = new TelemetryTestEnvironment(server.IngestionEndpoint);
 
-        (int fixtureExitCode, string fixtureOutput) = environment.RunEnvScript();
+        (int fixtureExitCode, string fixtureOutput) = environment.RunWithoutDetachedDrainer(["--help"]);
         fixtureExitCode.Should().Be(0, fixtureOutput);
         environment.TelemetryBlobPaths.Should().NotBeEmpty(
             "the real persistent exporter should write the telemetry fixture");
@@ -48,7 +48,7 @@ public class TelemetryDrainE2ETests
     }
 
     [TestMethod]
-    public void EnvScript_UsesShellStartupShutdownBudget()
+    public void EnvScript_DoesNotRecordTelemetry()
     {
         using var server = new MockTelemetryIngestionServer();
         using var environment = new TelemetryTestEnvironment(server.IngestionEndpoint);
@@ -58,6 +58,7 @@ public class TelemetryDrainE2ETests
 
         exitCode.Should().Be(0, output);
         output.Should().NotBeEmpty("env script should emit the requested PowerShell environment script");
-        File.ReadAllText(environment.ShutdownBudgetPath).Should().Be("ShutdownBudgetMs=10");
+        environment.TelemetryBlobPaths.Should().BeEmpty("env script runs on every shell start and skips telemetry");
+        File.Exists(environment.ShutdownBudgetPath).Should().BeFalse("telemetry should not be set up or flushed for env script");
     }
 }
