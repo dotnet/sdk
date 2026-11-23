@@ -522,8 +522,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         foreach (IGrouping<bool, TestRunArtifact> artifactGroup in artifactGroups)
         {
-            terminal.Append(SingleIndentation);
-            terminal.AppendLine(artifactGroup.Key ? CliCommandStrings.OutOfProcessArtifactsProduced : CliCommandStrings.InProcessArtifactsProduced);
+            string heading = artifactGroup.Key ? CliCommandStrings.OutOfProcessArtifactsProduced : CliCommandStrings.InProcessArtifactsProduced;
+            terminal.AppendLine($"{SingleIndentation}{heading} {artifactGroup.Count()}");
             foreach (TestRunArtifact artifact in artifactGroup)
             {
                 terminal.Append(DoubleIndentation);
