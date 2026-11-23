@@ -79,6 +79,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         formatString = argument.Value;
                     }
+                    else if (formatString is IConditionalAccessInstanceOperation conditionalReceiver)
+                    {
+                        formatString = conditionalReceiver.GetConditionalAccess()?.Operation;
+                    }
 
                     if (formatString?.ConstantValue.Value is not string stringFormat || !Equals(formatString.Type, formatInfo.String))
                     {
@@ -115,7 +119,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     if (info.ParamsIndex is not int paramsIndex)
                     {
-                        // Not a formatting method, we only checked the format specification.
+                        // No known argument count; only check the format specification.
                         return;
                     }
 
@@ -522,8 +526,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         {
                             ParamsIndex = firstArgumentIndex;
                         }
-                        else
+                        else if (formatIndex.HasValue || !parameters[parameters.Length - 1].IsParams)
                         {
+                            // For extension receivers, don't count a trailing params array as one fixed value.
                             FixedArgumentCount = parameters.Length - firstArgumentIndex;
                         }
                     }
