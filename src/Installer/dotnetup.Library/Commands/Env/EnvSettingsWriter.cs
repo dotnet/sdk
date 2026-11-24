@@ -85,8 +85,8 @@ internal static class EnvSettingsWriter
     }
 
     /// <summary>
-    /// Describes the resulting environment in outcome terms (what's on PATH) rather than the
-    /// internal setting names, composed from both axes. <c>full</c> shares <c>shell</c>'s wording —
+    /// Describes the resulting configured environment, composed from both axes.
+    /// <c>full</c> shares <c>shell</c>'s wording —
     /// from the terminal's perspective the available commands are the same; the difference is only
     /// that <c>full</c> also reaches cmd / GUI apps, which is not worth a distinct line here.
     /// </summary>

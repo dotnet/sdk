@@ -172,33 +172,33 @@ Or open a new terminal.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvOutcomeAdminDotnetupOffPath">
-        <source>dotnetup is not added to your PATH. System .NET PATH configuration is managed by the Windows installer.</source>
-        <target state="new">dotnetup is not added to your PATH. System .NET PATH configuration is managed by the Windows installer.</target>
+        <source>Configured not to add dotnetup to PATH. System .NET PATH configuration is managed by the Windows installer.</source>
+        <target state="new">Configured not to add dotnetup to PATH. System .NET PATH configuration is managed by the Windows installer.</target>
         <note>{Locked="dotnetup"}{Locked="PATH"}</note>
       </trans-unit>
       <trans-unit id="EnvOutcomeAdminDotnetupOnPath">
-        <source>dotnetup is on your PATH. System .NET PATH configuration is managed by the Windows installer.</source>
-        <target state="new">dotnetup is on your PATH. System .NET PATH configuration is managed by the Windows installer.</target>
+        <source>Configured to add dotnetup to PATH. System .NET PATH configuration is managed by the Windows installer.</source>
+        <target state="new">Configured to add dotnetup to PATH. System .NET PATH configuration is managed by the Windows installer.</target>
         <note>{Locked="dotnetup"}{Locked="PATH"}</note>
       </trans-unit>
       <trans-unit id="EnvOutcomeBothOnPath">
-        <source>dotnet and dotnetup are on your PATH.</source>
-        <target state="new">dotnet and dotnetup are on your PATH.</target>
+        <source>Configured to add dotnet and dotnetup to PATH.</source>
+        <target state="new">Configured to add dotnet and dotnetup to PATH.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvOutcomeDotnetOnlyOnPath">
-        <source>dotnet is on your PATH. dotnetup is not.</source>
-        <target state="new">dotnet is on your PATH. dotnetup is not.</target>
+        <source>Configured to add dotnet to PATH. dotnetup is configured not to be added.</source>
+        <target state="new">Configured to add dotnet to PATH. dotnetup is configured not to be added.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvOutcomeDotnetupOnlyOnPath">
-        <source>dotnetup is on your PATH. dotnet is not — run it with 'dotnetup dotnet &lt;command&gt;'.</source>
-        <target state="new">dotnetup is on your PATH. dotnet is not — run it with 'dotnetup dotnet &lt;command&gt;'.</target>
+        <source>Configured to add dotnetup to PATH. dotnet access is disabled — run it with 'dotnetup dotnet &lt;command&gt;'.</source>
+        <target state="new">Configured to add dotnetup to PATH. dotnet access is disabled — run it with 'dotnetup dotnet &lt;command&gt;'.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvOutcomeNeitherOnPath">
-        <source>Neither dotnet nor dotnetup is on your PATH.</source>
-        <target state="new">Neither dotnet nor dotnetup is on your PATH.</target>
+        <source>Configured not to add dotnet or dotnetup to PATH.</source>
+        <target state="new">Configured not to add dotnet or dotnetup to PATH.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvScriptCommandDescription">
@@ -277,8 +277,8 @@ Or open a new terminal.</target>
         <note>{Locked="none"}{Locked="shell"}{Locked="everywhere"}</note>
       </trans-unit>
       <trans-unit id="EnvSetDotnetupOnPathOptionDescription">
-        <source>Whether the dotnetup directory is on PATH ('true' or 'false'). Omit to leave unchanged.</source>
-        <target state="new">Whether the dotnetup directory is on PATH ('true' or 'false'). Omit to leave unchanged.</target>
+        <source>Whether dotnetup adds its directory to PATH ('true' or 'false'). Omit to leave unchanged.</source>
+        <target state="new">Whether dotnetup adds its directory to PATH ('true' or 'false'). Omit to leave unchanged.</target>
         <note>{Locked="true"}{Locked="false"}</note>
       </trans-unit>
       <trans-unit id="EnvSetModeArgumentDescription">
@@ -337,8 +337,8 @@ Or open a new terminal.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvShowLabelDotnetupOnPath">
-        <source>dotnetup on PATH</source>
-        <target state="new">dotnetup on PATH</target>
+        <source>add dotnetup to PATH</source>
+        <target state="new">add dotnetup to PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvShowNoConfiguration">

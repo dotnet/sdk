@@ -470,23 +470,23 @@
     <value>Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.</value>
   </data>
   <data name="EnvOutcomeDotnetupOnlyOnPath" xml:space="preserve">
-    <value>dotnetup is on your PATH. dotnet is not — run it with 'dotnetup dotnet &lt;command&gt;'.</value>
+    <value>Configured to add dotnetup to PATH. dotnet access is disabled — run it with 'dotnetup dotnet &lt;command&gt;'.</value>
   </data>
   <data name="EnvOutcomeNeitherOnPath" xml:space="preserve">
-    <value>Neither dotnet nor dotnetup is on your PATH.</value>
+    <value>Configured not to add dotnet or dotnetup to PATH.</value>
   </data>
   <data name="EnvOutcomeBothOnPath" xml:space="preserve">
-    <value>dotnet and dotnetup are on your PATH.</value>
+    <value>Configured to add dotnet and dotnetup to PATH.</value>
   </data>
   <data name="EnvOutcomeDotnetOnlyOnPath" xml:space="preserve">
-    <value>dotnet is on your PATH. dotnetup is not.</value>
+    <value>Configured to add dotnet to PATH. dotnetup is configured not to be added.</value>
   </data>
   <data name="EnvOutcomeAdminDotnetupOnPath" xml:space="preserve">
-    <value>dotnetup is on your PATH. System .NET PATH configuration is managed by the Windows installer.</value>
+    <value>Configured to add dotnetup to PATH. System .NET PATH configuration is managed by the Windows installer.</value>
     <comment>{Locked="dotnetup"}{Locked="PATH"}</comment>
   </data>
   <data name="EnvOutcomeAdminDotnetupOffPath" xml:space="preserve">
-    <value>dotnetup is not added to your PATH. System .NET PATH configuration is managed by the Windows installer.</value>
+    <value>Configured not to add dotnetup to PATH. System .NET PATH configuration is managed by the Windows installer.</value>
     <comment>{Locked="dotnetup"}{Locked="PATH"}</comment>
   </data>
   <data name="EnvApplyToTerminalPrompt" xml:space="preserve">
@@ -526,7 +526,7 @@ Or open a new terminal.</value>
     <value>The dotnet access mode: {0}. Omit to re-apply the stored mode.</value>
   </data>
   <data name="EnvSetDotnetupOnPathOptionDescription" xml:space="preserve">
-    <value>Whether the dotnetup directory is on PATH ('true' or 'false'). Omit to leave unchanged.</value>
+    <value>Whether dotnetup adds its directory to PATH ('true' or 'false'). Omit to leave unchanged.</value>
     <comment>{Locked="true"}{Locked="false"}</comment>
   </data>
   <data name="EnvSetCommandDescription" xml:space="preserve">
@@ -570,7 +570,7 @@ Or open a new terminal.</value>
     <value>dotnet access</value>
   </data>
   <data name="EnvShowLabelDotnetupOnPath" xml:space="preserve">
-    <value>dotnetup on PATH</value>
+    <value>add dotnetup to PATH</value>
   </data>
   <data name="EnvShowInSync" xml:space="preserve">
     <value>In sync.</value>
