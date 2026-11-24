@@ -139,8 +139,7 @@ job declares `issues: none`; the interpreter call requires no `issues: write`
 grant from the driver.
 
 Run `gh aw compile` for this workflow on Linux or macOS (for example, WSL);
-compiling on Windows fails because of a compiler path-separator bug. See
-[KNOWN_ISSUES](../memory/KNOWN_ISSUES.md#gh-aw-compile-must-run-on-linux-or-macos-never-windows).
+the compiler currently fails on Windows because of a path-separator bug.
 
 The gh-aw v0.89.21 compiler defaults to MCP gateway v0.4.25, which the protocol
 smoke test validates for native clients' stateful fallback initialization. Strict
@@ -300,8 +299,8 @@ assignment, so creation does not depend on an issue event from `GITHUB_TOKEN`
 triggering another workflow.
 
 For ignored tests, the task starts by removing the relevant Ignore and following
-the [`run-tests` skill](../skills/run-tests/SKILL.md) for the smallest appropriate
-selection on the required platform. The test must actually execute. A passing
+the [`targeted-test` skill](../skills/targeted-test/SKILL.md) for the smallest
+appropriate selection on the required platform. The test must actually execute. A passing
 test can be re-enabled; a newly exposed failure belongs in the tracking task.
 
 ## Preview, refresh, and diagnostics
