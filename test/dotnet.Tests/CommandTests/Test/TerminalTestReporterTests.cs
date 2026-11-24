@@ -91,13 +91,13 @@ public class TerminalTestReporterTests
     [TestMethod]
     public void CreateModuleDisplayNameSelector_CachesDisplayNamesAndPreservesNullFrameworkWildcard()
     {
-        const string firstPath = @"C:\first\Tests.dll";
-        const string secondPath = @"C:\second\Tests.dll";
+        string firstPath = Path.Combine("first", "Tests.dll");
+        string secondPath = Path.Combine("second", "Tests.dll");
         TestModule[] modules =
         [
             new(
                 new RunProperties("dotnet", firstPath, null),
-                ProjectFullPath: @"C:\first\Tests.csproj",
+                ProjectFullPath: Path.Combine("first", "Tests.csproj"),
                 TargetFramework: "net9.0",
                 IsTestingPlatformApplication: true,
                 LaunchSettings: null,
@@ -106,7 +106,7 @@ public class TerminalTestReporterTests
                 EnvironmentVariables: new Dictionary<string, string>()),
             new(
                 new RunProperties("dotnet", secondPath, null),
-                ProjectFullPath: @"C:\second\Tests.csproj",
+                ProjectFullPath: Path.Combine("second", "Tests.csproj"),
                 TargetFramework: "net10.0",
                 IsTestingPlatformApplication: true,
                 LaunchSettings: null,

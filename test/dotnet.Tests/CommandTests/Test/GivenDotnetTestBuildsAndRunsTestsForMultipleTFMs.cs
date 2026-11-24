@@ -243,10 +243,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Contain("##[group]Test run summary:")
                 .And.Contain("##[endgroup]");
 
+            string outputWithoutAnsi = Regex.Replace(parallelAzureRun.StdOut!, "\x1b\\[[0-9;]*[a-zA-Z]", string.Empty);
             foreach (string framework in new[] { previousFramework, currentFramework })
             {
                 Regex.IsMatch(
-                    parallelAzureRun.StdOut!,
+                    outputWithoutAnsi,
                     $@"\[TestProject {Regex.Escape(framework)}(?:\|[^\]]+)?\] failed TestMethod3")
                     .Should().BeTrue($"the {framework} failure should identify its test module");
             }
