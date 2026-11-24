@@ -191,4 +191,8 @@ dotnet tool install --global {1}</value>
   <data name="Error_NU1302_HttpSourceUsed" xml:space="preserve">
     <value>NuGet source '{0}' uses an insecure HTTP connection. To use an HTTP source, explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</value>
   </data>
+  <data name="InvalidMultiThreadedValue" xml:space="preserve">
+    <value>Invalid value '{0}' for '-mt'. Specify 'true' or 'false'.</value>
+    <comment>{Locked="-mt"} {Locked="true"} {Locked="false"} {0} is the invalid switch value.</comment>
+  </data>
 </root>
