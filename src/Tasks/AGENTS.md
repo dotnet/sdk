@@ -43,8 +43,8 @@ Framework rejects ASCII spaces in both modes but accepts some Unicode whitespace
 as U+2003) in legacy mode. Windows .NET accepts U+00A0 as well. A Framework task assembly
 can also execute in .NET MSBuild. Accepted names always need project-relative resolution;
 discard the validation probe's process-relative absolute path.
-The [fresh-process parity fixture](../../test/TestAssets/TestProjects/TaskEnvironmentPaths/Program.cs)
-checks both Framework modes against the raw directory/file APIs and a decoy working directory.
+The [Framework regression test](../../test/TestAssets/TestProjects/TaskEnvironmentPaths/Program.cs)
+checks ASCII space and U+2003 in a fresh process for each path mode.
 
 For expensive shared initialization, use
 [`TaskObjectCache`](Microsoft.NET.Build.Tasks/TaskObjectCache.cs), as

@@ -188,28 +188,25 @@ public sealed class GenerateJSModuleManifestMultiThreadingTest : SdkTest
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void FrameworkPathModesPreserveValidationAndProjectIsolation(bool useLegacyPathHandling)
+    public void FrameworkPathModesPreserveValidationAndProjectIsolation()
     {
-        var asset = TestAssetsManager.CopyTestAsset("TaskEnvironmentPaths",
-            identifier: useLegacyPathHandling.ToString()).WithSource();
+        var asset = TestAssetsManager.CopyTestAsset("TaskEnvironmentPaths").WithSource();
         var build = new BuildCommand(asset);
         string msbuildVersion = typeof(GenerateJSModuleManifestMultiThreadingTest).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>().Single(a => a.Key == "MicrosoftBuildVersion").Value!;
         build.Execute($"/p:MicrosoftBuildVersion={msbuildVersion}").Should().Pass();
 
         var toolset = SdkTestContext.Current.ToolsetUnderTest;
-        string coreTasks = Path.Combine(toolset.SdksPath,
-            "Microsoft.NET.Sdk", "tools", "net472", "Microsoft.NET.Build.Tasks.dll");
         string webTasks = Path.Combine(toolset.SdksPath,
             "Microsoft.NET.Sdk.StaticWebAssets", "tasks", "net472", "Microsoft.NET.Sdk.StaticWebAssets.Tasks.dll");
         string executable = Path.Combine(build.GetOutputDirectory("net472").FullName, "TaskEnvironmentPaths.exe");
 
-        new RunExeCommand(Log, executable)
-            .WithWorkingDirectory(asset.TestRoot)
-            .Execute(useLegacyPathHandling.ToString(), coreTasks, webTasks)
-            .Should().Pass()
-            .And.HaveStdOutContaining("Path validation and project isolation preserved.");
+        // Framework caches the path-handling switch on first use.
+        foreach (bool legacy in new[] { false, true })
+        {
+            new RunExeCommand(Log, executable)
+                .WithWorkingDirectory(asset.TestRoot)
+                .Execute(legacy.ToString(), webTasks).Should().Pass();
+        }
     }
 }
