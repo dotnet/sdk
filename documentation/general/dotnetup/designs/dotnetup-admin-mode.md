@@ -251,6 +251,16 @@ Because UAC is required, the user's intent will be assumed and respected, so `gl
 
 SDK `paths` are not respected by the `admin` installers, which always install to the shared system location, so they must not influence system level decisions. Instead, when the first meaningful `paths` entry is a literal directory outside the system .NET location, `dotnetup` installs into that directory with the same archive mechanism it uses outside `admin` mode, because the repository opted into a local SDK there. These installs require no elevation, are tracked in the dotnetup manifest like any other archive install unless `--untracked` is passed, and allow unsigned daily builds unless `BlockUnsignedDownloads` blocks them. The access mode remains `admin` for the command gate and telemetry; the `install.mechanism` (`archive`) and `install.path_source` (`globaljson`) telemetry tags identify these installs. When the first entry is `$host$`, or the literal path is the system .NET location, the `.exe` installer installs to the system location as usual.
 
+## MSI Upgrade Handling
+
+Typically, admin installs of .NET upgrade patches in place, while different versions or feature bands install side by side: SDKs within the same feature band and runtimes within the same `major.minor` form one family. There are various complications to this. For example, Visual Studio and the standalone .NET SDK installer are separate owners (dependents), so if they install different patches of the .NET SDK, the patches are kept side by side instead of upgraded.
+
+To keep `dotnetup` simple and to avoid registry and MSI ownership lookups, `dotnetup` uses simplified logic. If a later patch in the same family is already installed, it assumes that an earlier one cannot be installed and fails with `NewerVersionInstalled` before downloading the installer, and again right before running it. The installers would otherwise report success without installing anything, or `1638` when repairing.
+
+`dotnetup` determines what is installed from the SDKs and runtimes in the system install folders rather than the registry or MSI registration, comparing the component, architecture, and SDK feature band or runtime `major.minor`. This is conservative: an SDK installed by Visual Studio, or a runtime that an SDK bundle installed, has no bundle that would block the downgrade, but `dotnetup` still refuses it.
+
+When one command requests several builds in the same family, only the newest is installed, because the installer replaces older builds in a family. Each older request fails with `SupersededInBatch`, including one that was already installed when the newer build is installed in the same command. `dotnetup` assumes the installers' default replacement behavior and does not read machine policies such as `RemovePreviousVersion` that keep older builds.
+
 ## `.exe` Installer Error Handling
 
 Before running an installer, `dotnetup` verifies its SHA-512 hash from the signed `releases.json`, opens it so that it cannot be written or deleted until the installer exits, verifies the hash again, and then verifies Authenticode. Unsigned blob-feed builds are blocked before download.
@@ -270,6 +280,7 @@ https://github.com/dotnet/vscode-dotnet-runtime/blob/f54c68789e1bdfca13e8262045c
 | `1641` | Success. A restart has already been initiated; `dotnetup` reports this and skips post-install hostfxr validation. |
 | `1602`, `1223` (UAC declined) | Cancelled (`OperationCancelled`). |
 | `1618` | Another installation is in progress (`InstallerBusy`). No automatic retry. |
+| `1638` | A newer version of the product is already installed (`NewerVersionInstalled`). No repair or retry. |
 | `740` | The installer requires elevation (`InstallerFailed`). |
 | Any other nonzero code, including `1603` | `InstallerFailed`, reporting the exit code. No retry. |
 | Installer did not start | `ProcessStartFailed`. |
