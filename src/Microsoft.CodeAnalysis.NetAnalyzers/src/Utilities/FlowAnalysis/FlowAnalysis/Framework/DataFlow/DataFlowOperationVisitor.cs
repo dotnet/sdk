@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         private readonly ImmutableDictionary<IOperation, TAbstractAnalysisValue>.Builder _valueCacheBuilder;
         private readonly ImmutableDictionary<IOperation, PredicateValueKind>.Builder _predicateValueKindCacheBuilder;
         private readonly HashSet<IArgumentOperation> _pendingArgumentsToReset;
-        private readonly List<IArgumentOperation> _pendingArgumentsToPostProcess;
+        private readonly Dictionary<IOperation, (IArgumentOperation First, List<IArgumentOperation>? Additional)> _pendingArgumentsToPostProcess;
         private readonly HashSet<IOperation> _visitedFlowBranchConditions;
         private readonly HashSet<IFlowAnonymousFunctionOperation> _visitedLambdas;
         private readonly HashSet<IOperation>? _returnValueOperations;
@@ -272,7 +272,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             _valueCacheBuilder = ImmutableDictionary.CreateBuilder<IOperation, TAbstractAnalysisValue>();
             _predicateValueKindCacheBuilder = ImmutableDictionary.CreateBuilder<IOperation, PredicateValueKind>();
             _pendingArgumentsToReset = new HashSet<IArgumentOperation>();
-            _pendingArgumentsToPostProcess = new List<IArgumentOperation>();
+            _pendingArgumentsToPostProcess = new Dictionary<IOperation, (IArgumentOperation, List<IArgumentOperation>?)>();
             _visitedFlowBranchConditions = new HashSet<IOperation>();
             _visitedLambdas = new HashSet<IFlowAnonymousFunctionOperation>();
             _returnValueOperations = OwningSymbol is IMethodSymbol method && !method.ReturnsVoid ? new HashSet<IOperation>() : null;
@@ -1362,7 +1362,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             throw new NotImplementedException();
         }
 
-        private bool GetBlockReachability(BasicBlock basicBlock)
+        internal bool GetBlockReachability(BasicBlock basicBlock)
         {
             return basicBlock.IsReachable &&
                 (DataFlowAnalysisContext.CopyAnalysisResult == null || DataFlowAnalysisContext.CopyAnalysisResult[basicBlock].IsReachable) &&
@@ -2120,24 +2120,26 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         /// for interprocedural analysis.
         /// The default implementation returns cloned CurrentAnalysisData.
         /// </summary>
-        protected virtual TAnalysisData GetInitialInterproceduralAnalysisData(
+        protected virtual (TAnalysisData Data, bool IsTrimmed) GetInitialInterproceduralAnalysisData(
             IMethodSymbol invokedMethod,
+            ControlFlowGraph invokedCfg,
             (AnalysisEntity? Instance, PointsToAbstractValue PointsToValue)? invocationInstance,
             (AnalysisEntity Instance, PointsToAbstractValue PointsToValue)? thisOrMeInstanceForCaller,
             ImmutableDictionary<IParameterSymbol, ArgumentInfo<TAbstractAnalysisValue>> argumentValuesMap,
+            ImmutableDictionary<ISymbol, PointsToAbstractValue> capturedVariablesMap,
             IDictionary<AnalysisEntity, PointsToAbstractValue>? pointsToValues,
             IDictionary<AnalysisEntity, CopyAbstractValue>? copyValues,
             IDictionary<AnalysisEntity, ValueContentAbstractValue>? valueContentValues,
             bool isLambdaOrLocalFunction,
             bool hasParameterWithDelegateType)
-            => GetClonedCurrentAnalysisData();
+            => (GetClonedCurrentAnalysisData(), false);
 
         /// <summary>
         /// Apply the result data from interprocedural analysis to CurrentAnalysisData.
         /// Default implementation is designed for the default implementation of GetInitialInterproceduralAnalysisData.
         /// and overwrites the CurrentAnalysisData with the given <paramref name="resultData"/>.
         /// </summary>
-        protected virtual void ApplyInterproceduralAnalysisResult(TAnalysisData resultData, bool isLambdaOrLocalFunction, bool hasDelegateTypeArgument, TAnalysisResult analysisResult)
+        protected virtual void ApplyInterproceduralAnalysisResult(TAnalysisData resultData, bool isLambdaOrLocalFunction, bool hasDelegateTypeArgument, TAnalysisResult analysisResult, bool initialDataIsTrimmed)
             => CurrentAnalysisData = resultData;
 
         private void ApplyInterproceduralAnalysisDataForUnhandledThrowOperations(Dictionary<ThrownExceptionInfo, TAnalysisData> interproceduralUnhandledThrowOperationsData)
@@ -2271,7 +2273,8 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
 
             // Compute optional interprocedural analysis data for context-sensitive analysis.
             bool isContextSensitive = isLambdaOrLocalFunction || InterproceduralAnalysisKind == InterproceduralAnalysisKind.ContextSensitive;
-            var interproceduralAnalysisData = isContextSensitive ? ComputeInterproceduralAnalysisData() : null;
+            bool initialDataIsTrimmed = false;
+            var interproceduralAnalysisData = isContextSensitive ? ComputeInterproceduralAnalysisData(out initialDataIsTrimmed) : null;
             TAnalysisResult? analysisResult;
 
             try
@@ -2325,7 +2328,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
 
                     // Apply interprocedural result analysis data for non-exception paths.
                     var resultData = GetExitBlockOutputData(analysisResult);
-                    ApplyInterproceduralAnalysisResult(resultData, isLambdaOrLocalFunction, hasParameterWithDelegateType, analysisResult);
+                    ApplyInterproceduralAnalysisResult(resultData, isLambdaOrLocalFunction, hasParameterWithDelegateType, analysisResult, initialDataIsTrimmed);
 
                     Debug.Assert(arguments.All(arg => !_pendingArgumentsToReset.Contains(arg)));
                 }
@@ -2425,7 +2428,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 return hasEscapes;
             }
 
-            InterproceduralAnalysisData<TAnalysisData, TAnalysisContext, TAbstractAnalysisValue> ComputeInterproceduralAnalysisData()
+            InterproceduralAnalysisData<TAnalysisData, TAnalysisContext, TAbstractAnalysisValue> ComputeInterproceduralAnalysisData(out bool isTrimmed)
             {
                 RoslynDebug.Assert(cfg != null);
 
@@ -2435,15 +2438,17 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 var pointsToValues = pointsToAnalysisResult?[cfg.GetEntry()].Data;
                 var copyValues = copyAnalysisResult?[cfg.GetEntry()].Data;
                 var valueContentValues = valueContentAnalysisResult?[cfg.GetEntry()].Data;
-                var initialAnalysisData = GetInitialInterproceduralAnalysisData(invokedMethod, invocationInstance,
-                    thisOrMeInstance, argumentValuesMap, pointsToValues, copyValues, valueContentValues, isLambdaOrLocalFunction, hasParameterWithDelegateType);
+                var capturedVariablesMap = GetCapturedVariablesMap(cfg, invokedMethod, isLambdaOrLocalFunction);
+                var (initialAnalysisData, initialDataIsTrimmed) = GetInitialInterproceduralAnalysisData(invokedMethod, cfg, invocationInstance,
+                    thisOrMeInstance, argumentValuesMap, capturedVariablesMap, pointsToValues, copyValues, valueContentValues, isLambdaOrLocalFunction, hasParameterWithDelegateType);
+                isTrimmed = initialDataIsTrimmed;
 
                 return new InterproceduralAnalysisData<TAnalysisData, TAnalysisContext, TAbstractAnalysisValue>(
                     initialAnalysisData,
                     invocationInstance,
                     thisOrMeInstance,
                     argumentValuesMap,
-                    GetCapturedVariablesMap(cfg, invokedMethod, isLambdaOrLocalFunction),
+                    capturedVariablesMap,
                     _addressSharedEntitiesProvider.GetAddressedSharedEntityMap(),
                     ImmutableStack.CreateRange(_interproceduralCallStack),
                     newMethodsBeingAnalyzed,
@@ -2776,27 +2781,34 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                     HandlePossibleThrowingOperation(operation);
                 }
 
-                var pendingArguments = _pendingArgumentsToPostProcess.ExtractAll(static (arg, operation) => arg.Parent == operation, operation);
-                foreach (IArgumentOperation argumentOperation in pendingArguments)
+                if (_pendingArgumentsToPostProcess.TryGetValue(operation, out var pendingArguments))
                 {
-                    bool isEscaped;
-                    if (_pendingArgumentsToReset.Remove(argumentOperation))
+                    _pendingArgumentsToPostProcess.Remove(operation);
+                    PostProcessPendingArgument(pendingArguments.First);
+                    if (pendingArguments.Additional != null)
                     {
-                        PostProcessEscapedArgument(argumentOperation);
-                        isEscaped = true;
+                        foreach (var argumentOperation in pendingArguments.Additional)
+                        {
+                            PostProcessPendingArgument(argumentOperation);
+                        }
                     }
-                    else
-                    {
-                        isEscaped = false;
-                    }
-
-                    PostProcessArgument(argumentOperation, isEscaped);
                 }
 
                 return value;
             }
 
             return ValueDomain.UnknownOrMayBeValue;
+        }
+
+        private void PostProcessPendingArgument(IArgumentOperation operation)
+        {
+            var isEscaped = _pendingArgumentsToReset.Remove(operation);
+            if (isEscaped)
+            {
+                PostProcessEscapedArgument(operation);
+            }
+
+            PostProcessArgument(operation, isEscaped);
         }
 
         private TAbstractAnalysisValue VisitCore(IOperation operation, object? argument)
@@ -3081,7 +3093,22 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 FlowBranchConditionKind = ControlFlowConditionKind.None;
             }
 
-            _pendingArgumentsToPostProcess.Add(operation);
+            RoslynDebug.Assert(operation.Parent != null);
+            if (_pendingArgumentsToPostProcess.TryGetValue(operation.Parent, out var pendingArguments))
+            {
+                if (pendingArguments.Additional == null)
+                {
+                    pendingArguments.Additional = new List<IArgumentOperation>();
+                    _pendingArgumentsToPostProcess[operation.Parent] = pendingArguments;
+                }
+
+                pendingArguments.Additional.Add(operation);
+            }
+            else
+            {
+                _pendingArgumentsToPostProcess.Add(operation.Parent, (operation, null));
+            }
+
             _pendingArgumentsToReset.Add(operation);
             return value;
         }

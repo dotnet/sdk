@@ -3,8 +3,10 @@
 
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tests.TelemetryTests;
+using Moq;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 using CleanCommand = Microsoft.DotNet.Cli.Commands.Clean.CleanCommand;
 using PackCommand = Microsoft.DotNet.Cli.Commands.Pack.PackCommand;
@@ -62,7 +64,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 expectedAdditionalArgs = expectedAdditionalArgs.Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar)).ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
 
                 command.SeparateRestoreCommand.Should().BeNull();
                 var commandArgs = command.GetArgumentTokensToMSBuild();
@@ -129,11 +131,32 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(new[] { "--no-restore" }, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(new[] { "--no-restore" }, msbuildPath, TestCommandServices.CreateNonLLM());
 
                 command.SeparateRestoreCommand.Should().BeNull();
                 command.GetArgumentTokensToMSBuild().Should().NotContain("-restore");
             });
+        }
+
+        [TestMethod]
+        [DataRow("--property")]
+        [DataRow("-property")]
+        [DataRow("/property")]
+        [DataRow("/p")]
+        [DataRow("-p")]
+        [DataRow("--p")]
+        public void PropertyAliasesPreserveMultiplePropertyForwarding(string alias)
+        {
+            var command = (RestoringCommand)BuildCommand.FromArgs(
+                ["--no-restore", alias, "First=original;Second=two", $"{alias}:First=updated", "project.csproj"],
+                msbuildPath: "<msbuildpath>",
+                services: TestCommandServices.CreateNonLLM());
+
+            command.GetArgumentTokensToMSBuild().Should()
+                .Contain("--property:First=updated")
+                .And.Contain("--property:Second=two")
+                .And.Contain("project.csproj")
+                .And.NotContain("--property:First=original");
         }
 
         [TestMethod]
@@ -174,7 +197,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
 
                 List<string> expectedItems = [.. ExpectedPrefix, NugetInteractiveProperty, .. expectedAdditionalArgsForRestore, .. RestoreExpectedPrefixForSeparateRestore];
                 expectedItems.Should().BeSubsetOf(command.SeparateRestoreCommand!.GetArgumentTokensToMSBuild());
@@ -186,48 +209,28 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
-        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         [DynamicData(nameof(TelemetryCommonPropertiesTests.LLMTelemetryTestCases), typeof(TelemetryCommonPropertiesTests))]
         public void WhenLLMIsDetectedTLLiveUpdateIsDisabled(Dictionary<string, string>? llmEnvVarsToSet, string? expectedLLMName)
         {
-            CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
+            var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
+            environmentProvider
+                .Setup(provider => provider.GetEnvironmentVariable(It.IsAny<string>()))
+                .Returns((string name) => llmEnvVarsToSet?.GetValueOrDefault(name));
+
+            var llmEnvironmentDetector = new LLMEnvironmentDetectorForTelemetry(environmentProvider.Object);
+            llmEnvironmentDetector.GetLLMEnvironment().Should().Be(expectedLLMName);
+
+            var services = new CommandServices(llmEnvironmentDetector);
+            var command = (RestoringCommand)BuildCommand.FromArgs([], msbuildPath: null, services: services);
+
+            if (!string.IsNullOrEmpty(expectedLLMName))
             {
-                var originalValues = llmEnvVarsToSet?
-                    .ToDictionary(pair => pair.Key, pair => Environment.GetEnvironmentVariable(pair.Key));
-
-                try
-                {
-                    // Set environment variables to simulate LLM environment
-                    if (llmEnvVarsToSet is not null)
-                    {
-                        foreach (var (key, value) in llmEnvVarsToSet)
-                        {
-                            Environment.SetEnvironmentVariable(key, value);
-                        }
-                    }
-
-                    var command = (RestoringCommand)BuildCommand.FromArgs([]);
-
-                    if (expectedLLMName is not null)
-                    {
-                        command.GetArgumentTokensToMSBuild().Should().Contain(Constants.TerminalLogger_DisableNodeDisplay);
-                    }
-                    else
-                    {
-                        command.GetArgumentTokensToMSBuild().Should().NotContain(Constants.TerminalLogger_DisableNodeDisplay);
-                    }
-                }
-                finally
-                {
-                    if (originalValues is not null)
-                    {
-                        foreach (var (key, value) in originalValues)
-                        {
-                            Environment.SetEnvironmentVariable(key, value);
-                        }
-                    }
-                }
-            });
+                command.GetArgumentTokensToMSBuild().Should().Contain(Constants.TerminalLogger_DisableNodeDisplay);
+            }
+            else
+            {
+                command.GetArgumentTokensToMSBuild().Should().NotContain(Constants.TerminalLogger_DisableNodeDisplay);
+            }
         }
     }
 }

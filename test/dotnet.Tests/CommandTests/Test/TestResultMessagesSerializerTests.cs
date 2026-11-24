@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
+using System.Text;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
@@ -11,6 +12,35 @@ namespace dotnet.Tests.CommandTests.Test;
 [TestClass]
 public class TestResultMessagesSerializerTests
 {
+    [TestMethod]
+    public void RoundTrip_SuccessfulTest_PreservesValues()
+    {
+        var original = new TestResultMessages(
+            ExecutionId: "exec-1",
+            InstanceId: "inst-2",
+            SuccessfulTestMessages:
+            [
+                new SuccessfulTestResultMessage(
+                    Uid: "uid-1",
+                    DisplayName: "My Passing Test",
+                    State: 3,
+                    Duration: 123,
+                    Reason: "Passed",
+                    StandardOutput: "stdout",
+                    ErrorOutput: "stderr",
+                    SessionUid: "session-1"),
+            ],
+            FailedTestMessages: []);
+
+        TestResultMessages roundTripped = SerializeAndDeserialize(original);
+
+        roundTripped.ExecutionId.Should().Be("exec-1");
+        roundTripped.InstanceId.Should().Be("inst-2");
+        roundTripped.SuccessfulTestMessages.Should().ContainSingle();
+        roundTripped.SuccessfulTestMessages[0].Should().Be(original.SuccessfulTestMessages[0]);
+        roundTripped.FailedTestMessages.Should().BeEmpty();
+    }
+
     [TestMethod]
     public void RoundTrip_FailedTest_PreservesExpectedAndActual()
     {
@@ -107,6 +137,33 @@ public class TestResultMessagesSerializerTests
             int fieldSize = reader.ReadInt32();
             reader.ReadBytes(fieldSize);
         }
+    }
+
+    [TestMethod]
+    public void Deserialize_DurationFieldSmallerThanLong_ThrowsInvalidDataException()
+    {
+        using var listPayload = new MemoryStream();
+        using (var payloadWriter = new BinaryWriter(listPayload, Encoding.UTF8, leaveOpen: true))
+        {
+            payloadWriter.Write(1);
+            payloadWriter.Write((ushort)1);
+            payloadWriter.Write(SuccessfulTestResultMessageFieldsId.Duration);
+            payloadWriter.Write(sizeof(int));
+            payloadWriter.Write(123L);
+        }
+
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            writer.Write((ushort)1);
+            writer.Write(TestResultMessagesFieldsId.SuccessfulTestMessageList);
+            writer.Write(checked((int)listPayload.Length));
+            writer.Write(listPayload.ToArray());
+        }
+
+        stream.Position = 0;
+
+        Assert.ThrowsExactly<InvalidDataException>(() => new TestResultMessagesSerializer().Deserialize(stream));
     }
 
     private static byte[] Serialize(TestResultMessages message)

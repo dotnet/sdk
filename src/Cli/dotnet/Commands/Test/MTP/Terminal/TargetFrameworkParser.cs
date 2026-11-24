@@ -9,7 +9,7 @@ internal static class TargetFrameworkParser
 {
     public static string? GetShortTargetFramework(string? frameworkDescription)
     {
-        if (frameworkDescription == null)
+        if (frameworkDescription is null)
         {
             return null;
         }
@@ -18,14 +18,21 @@ internal static class TargetFrameworkParser
         string netFramework = ".NET Framework";
         if (frameworkDescription.StartsWith(netFramework, ignoreCase: false, CultureInfo.InvariantCulture))
         {
-            // .NET Framework 4.7.2
-            if (frameworkDescription.Length < netFramework.Length + 6)
+            // .NET Framework 4.8 or .NET Framework 4.7.2
+            if (frameworkDescription.Length < netFramework.Length + 4)
             {
                 return frameworkDescription;
             }
 
             char major = frameworkDescription[netFramework.Length + 1];
             char minor = frameworkDescription[netFramework.Length + 3];
+
+            // Framework display names can omit a zero patch.
+            if (frameworkDescription.Length < netFramework.Length + 6)
+            {
+                return $"net{major}{minor}";
+            }
+
             char patch = frameworkDescription[netFramework.Length + 5];
 
             if (major == '4' && minor == '6' && patch == '2')
@@ -63,10 +70,16 @@ internal static class TargetFrameworkParser
         string net = ".NET";
         if (frameworkDescription.StartsWith(net, ignoreCase: false, CultureInfo.InvariantCulture))
         {
-            int firstDotInVersion = frameworkDescription.IndexOf('.', net.Length + 1);
-            return firstDotInVersion < 1
+            int versionStart = net.Length + 1;
+            if (frameworkDescription.Length <= versionStart)
+            {
+                return frameworkDescription;
+            }
+
+            int firstDotInVersion = frameworkDescription.IndexOf('.', versionStart);
+            return firstDotInVersion <= versionStart || firstDotInVersion == frameworkDescription.Length - 1
                 ? frameworkDescription
-                : $"net{frameworkDescription.Substring(net.Length + 1, firstDotInVersion - net.Length - 1)}.{frameworkDescription[firstDotInVersion + 1]}";
+                : $"net{frameworkDescription.Substring(versionStart, firstDotInVersion - versionStart)}.{frameworkDescription[firstDotInVersion + 1]}";
         }
 
         return frameworkDescription;

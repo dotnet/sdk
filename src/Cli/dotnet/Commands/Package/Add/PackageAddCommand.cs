@@ -22,7 +22,7 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
         _packageId = parseResult.GetValue(Definition.PackageIdArgument);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(Definition.FileOption, Definition.ProjectOption, Definition.GetProjectOrFileArgument(), _parseResult);
 
@@ -61,7 +61,7 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
                 throw new GracefulException(string.Format(CliCommandStrings.CmdDGFileIOException, projectFilePath), ioex);
             }
 
-            GetProjectDependencyGraph(projectFilePath, tempDgFilePath, isFileBasedApp);
+            GetProjectDependencyGraph(projectFilePath, tempDgFilePath, isFileBasedApp, cancellationToken);
         }
 
         var args = TransformArgs(
@@ -69,14 +69,17 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
             tempDgFilePath,
             projectFilePath);
 
-        var result = NuGetCommand.Run(args, isFileBasedApp);
-
-        DisposeTemporaryFile(tempDgFilePath);
-
-        return result;
+        try
+        {
+            return NuGetCommand.Run(args, cancellationToken, isFileBasedApp);
+        }
+        finally
+        {
+            DisposeTemporaryFile(tempDgFilePath);
+        }
     }
 
-    private static void GetProjectDependencyGraph(string projectFilePath, string dgFilePath, bool isFileBasedApp)
+    private static void GetProjectDependencyGraph(string projectFilePath, string dgFilePath, bool isFileBasedApp, CancellationToken cancellationToken)
     {
         int result;
         if (isFileBasedApp)
@@ -91,12 +94,13 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
                         { "RestoreDotnetCliToolReferences", "false" },
                     }.AsReadOnly())
                     .CloneWithVerbosity(VerbosityOptions.quiet)
-                    .CloneWithAdditionalTargets("GenerateRestoreGraphFile"))
+                    .CloneWithAdditionalTargets("GenerateRestoreGraphFile"),
+                services: CommandServices.CreateDefault())
             {
                 NoRestore = true,
                 NoCache = true,
                 NoWriteBuildMarkers = true,
-            }.Execute();
+            }.Execute(cancellationToken);
         }
         else
         {
@@ -122,7 +126,9 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
 
                     // Set verbosity to quiet to avoid cluttering the output for this 'inner' build
                     "-v:quiet"
-                ]).Execute();
+                ],
+                msbuildPath: null,
+                services: CommandServices.CreateDefault()).Execute(cancellationToken);
         }
 
         if (result != 0)

@@ -139,3 +139,10 @@ It only requests a TRX when the project enables the TRX report extension. It pri
 run directory and exact command before execution. At completion it prints the retained
 TRX/binlog paths; on failure it also prints failed test names when a TRX is available and
 the rerun command.
+
+Pass `--test-binlogs` to capture logs from `MSBuildCommand` and `DotnetBuildCommand`.
+The runner writes them to a `test-binlogs` subdirectory under the run directory.
+
+If no test hook reaches the behavior, or retained TRX, binlogs, and output lack the
+information needed to diagnose a failure, use the
+[`report-ai-enablement-gap` skill](../report-ai-enablement-gap/SKILL.md).

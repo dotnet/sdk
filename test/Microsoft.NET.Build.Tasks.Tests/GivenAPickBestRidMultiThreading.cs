@@ -6,7 +6,6 @@ using Microsoft.Build.Framework;
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class GivenAPickBestRidMultiThreading
     {
         private const string RuntimeGraphContent = @"{
@@ -18,7 +17,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }";
 
+        // Other tests read the process-wide current directory without declaring a shared resource
+        // lock, so run only this mutating test in the serial tail.
         [TestMethod]
+        [DoNotParallelize]
         public void ItResolvesRelativeRuntimeGraphPathAgainstProjectDirectory()
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "pickbestrid-relpath-" + Guid.NewGuid().ToString("N"));

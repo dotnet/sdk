@@ -18,7 +18,10 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             _fileSystem = fileSystem ?? new FileSystemWrapper();
         }
 
-        public void CreateApphostShellShim(FilePath entryPoint, FilePath shimPath)
+        public void CreateApphostShellShim(
+            FilePath entryPoint,
+            FilePath shimPath,
+            CancellationToken cancellationToken)
         {
             var shim = new FakeShim
             {

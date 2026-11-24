@@ -58,7 +58,7 @@ public class EndToEndTests : SdkTest, IDisposable
 
         // Build the image
 
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push, TestContext.CancellationToken);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -106,7 +106,7 @@ public class EndToEndTests : SdkTest, IDisposable
 
         // Build the image
 
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push, TestContext.CancellationToken);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -215,7 +215,7 @@ public class EndToEndTests : SdkTest, IDisposable
 
         // Build the image
 
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push, TestContext.CancellationToken);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -287,7 +287,7 @@ public class EndToEndTests : SdkTest, IDisposable
     private async Task<(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference)> BuildDockerImageWithArciveDestinationAsync(string archiveFile, string[] tags, string testName)
     {
         ILogger logger = LoggerFactory.CreateLogger(testName);
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push, TestContext.CancellationToken);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -963,6 +963,49 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
+    [DynamicData(nameof(AvailableMultiArchLocalRegistryData))]
+    public void EndToEndMultiArch_LocalRegistry_DualPublish(string imageName, string localRegistry)
+    {
+        string tag = "1.0";
+        string image = $"{imageName}:{tag}";
+
+        // Create a new console project
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+        ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
+
+        string[] publishArgs =
+        [
+            "publish",
+            "/t:PublishContainer",
+            "-f", _oldFramework,
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={tag}",
+            $"/p:LocalRegistry={localRegistry}"
+        ];
+
+        // First publish
+        CommandResult firstResult = new DotnetCommand(Log, publishArgs)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        firstResult.Should().Pass()
+            .And.HaveStdOutContaining($"Pushed image '{image}' to local registry");
+
+        // Second publish to the same image name should also succeed
+        CommandResult secondResult = new DotnetCommand(Log, publishArgs)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        secondResult.Should().Pass()
+            .And.HaveStdOutContaining($"Pushed image '{image}' to local registry");
+
+        // Cleanup
+        newProjectDir.Delete(true);
+    }
+
+    [TestMethod]
     [WslcAvailableCondition]
     public void EndToEndMultiArch_WslcIsRejected()
     {
@@ -1548,7 +1591,7 @@ public class EndToEndTests : SdkTest, IDisposable
         string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
 
         // Build the image
-        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Push, TestContext.CancellationToken);
         var isWin = rid.StartsWith("win");
         ImageBuilder? imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -1602,7 +1645,7 @@ public class EndToEndTests : SdkTest, IDisposable
         string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
 
         // Build the image
-        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Push);
+        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Push, TestContext.CancellationToken);
         ImageBuilder? imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
             DockerRegistryManager.Net8PreviewWindowsSpecificImageTag,
@@ -1627,7 +1670,7 @@ public class EndToEndTests : SdkTest, IDisposable
         var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archivePath), NewImageName(), new[] { rid });
 
         (var taskLog, var errors) = SetupTaskLog();
-        var telemetry = new Telemetry(sourceReference, destinationReference, taskLog);
+        var telemetry = new Telemetry(sourceReference, destinationReference, taskLog, TestContext.CancellationToken);
 
         await ImagePublisher.PublishImageAsync(builtImage, sourceReference, destinationReference, false, taskLog, telemetry, CancellationToken.None)
             .ConfigureAwait(false);

@@ -226,6 +226,7 @@ namespace Microsoft.NET.TestFramework
 
             environment["GenerateResourceMSBuildArchitecture"] = "CurrentArchitecture";
             environment["GenerateResourceMSBuildRuntime"] = "CurrentRuntime";
+            environment["NuGetAudit"] = "false";
 
             //  Prevent test MSBuild nodes from persisting
             environment["MSBUILDDISABLENODEREUSE"] = "1";

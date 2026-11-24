@@ -17,13 +17,29 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetStoreInvocation));
 
         [TestMethod]
+        public void HelpDescriptionIndicatesDeprecation()
+        {
+            var originalUICulture = System.Globalization.CultureInfo.CurrentUICulture;
+            try
+            {
+                System.Globalization.CultureInfo.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+                new StoreCommandDefinition().Description.Should().StartWith(
+                    "Warning: The dotnet store command and the runtime package store feature are deprecated and no longer supported.");
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentUICulture = originalUICulture;
+            }
+        }
+
+        [TestMethod]
         [DataRow("-m")]
         [DataRow("--manifest")]
         public void ItAddsProjectToMsbuildInvocation(string optionName)
         {
             var msbuildPath = "<msbuildpath>";
             string[] args = new string[] { optionName, "<project>" };
-            StoreCommand.FromArgs(args, msbuildPath)
+            StoreCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM())
                 .GetArgumentTokensToMSBuild().Should().Contain(ExpectedPrefix);
         }
 
@@ -50,7 +66,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var msbuildPath = "<msbuildpath>";
                 List<string> expected = [.. ExpectedPrefix, .. expectedarr];
                 expected.Should().BeSubsetOf(
-                    StoreCommand.FromArgs(args, msbuildPath).GetArgumentTokensToMSBuild()
+                    StoreCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM()).GetArgumentTokensToMSBuild()
                 );
             });
         }
@@ -64,9 +80,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var args = ArgsPrefix.Concat(new string[] { optionName, path }).ToArray();
 
             var msbuildPath = "<msbuildpath>";
-            StoreCommand.FromArgs(args, msbuildPath)
+            StoreCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM())
                 .GetArgumentTokensToMSBuild().Should().BeEquivalentTo([..ExpectedPrefix, $"--property:ComposeDir={Path.GetFullPath(path)}{Path.DirectorySeparatorChar}", "--property:_CommandLineDefinedOutputPath=true"]);
         }
     }
 }
-

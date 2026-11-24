@@ -29,6 +29,13 @@ Guidance for changes under `test/`.
   **Never** use `.dotnet/dotnet` or `Process.Start("dotnet", ...)` without going through
   `DotNetHostPath` — this ensures the test exercises the built SDK, not a globally
   installed one.
+- **Test build binlogs.** `MSBuildCommand` and `DotnetBuildCommand` can capture
+  binlogs when `DOTNET_SDK_TEST_BINLOG_DIRECTORY` is set to an absolute path.
+  The `run-tests` skill's `--test-binlogs` option creates a separate directory per
+  test-run iteration. Keep capture opt-in; a command that must not participate can set
+  `DisableTestBinlogCapture = true`. Explicit logger destinations remain in place,
+  with changed logs archived for retention. See the [run-tests skill](../.github/skills/run-tests/SKILL.md)
+  for local retention and response-file behavior.
 - **Test asset placement.** Put test inputs (projects, packages, workloads, etc.) in
   `test/TestAssets/`. They are automatically deployed to Helix via `test/UnitTests.proj`.
 - **Audit before raising parallelism.** New MSTest projects are repo-defaulted to `None`

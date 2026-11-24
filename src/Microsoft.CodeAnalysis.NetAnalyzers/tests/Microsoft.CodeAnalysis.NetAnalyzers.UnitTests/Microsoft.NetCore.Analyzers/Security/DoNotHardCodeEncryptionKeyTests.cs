@@ -1,9 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.DoNotHardCodeEncryptionKey, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
@@ -14,7 +17,296 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     {
         protected override DiagnosticDescriptor Rule => DoNotHardCodeEncryptionKey.Rule;
 
+        [TestMethod]
+        [DataRow(0)]
+        [DataRow(8)]
+        public Task IndexedWritesPastLiteralBoundCSharp_NoDiagnosticAsync(int keyIndex)
+            => VerifyCS.VerifyAnalyzerAsync(CreateIndexedSourceCSharp(keyIndex, markDiagnostic: false));
+
+        [TestMethod]
+        public Task LatestIndexedWritePastLiteralBoundCSharp_DiagnosticAsync()
+            => VerifyCS.VerifyAnalyzerAsync(CreateIndexedSourceCSharp(15, markDiagnostic: true),
+                new DiagnosticResult(Rule).WithLocation(0).WithLocation(1).WithArguments(
+                    "byte[] SymmetricAlgorithm.Key", "void TestClass.Method(int index)",
+                    "byte[] Convert.FromBase64String(string s)", "void TestClass.Method(int index)"));
+
+        [TestMethod]
+        [DataRow(0)]
+        [DataRow(8)]
+        public Task IndexedWritesPastLiteralBoundVisualBasic_NoDiagnosticAsync(int keyIndex)
+            => VerifyVisualBasicWithDependenciesAsync(CreateIndexedSourceVisualBasic(keyIndex, markDiagnostic: false));
+
+        [TestMethod]
+        public Task LatestIndexedWritePastLiteralBoundVisualBasic_DiagnosticAsync()
+            => VerifyVisualBasicWithDependenciesAsync(CreateIndexedSourceVisualBasic(15, markDiagnostic: true),
+                new DiagnosticResult(Rule).WithLocation(0).WithLocation(1).WithArguments(
+                    "Property SymmetricAlgorithm.Key As Byte()", "Sub TestClass.Method(index As Integer)",
+                    "Function Convert.FromBase64String(s As String) As Byte()", "Sub TestClass.Method(index As Integer)"));
+
+        private static string CreateIndexedSourceCSharp(int keyIndex, bool markDiagnostic)
+        {
+            var statements = string.Join("\n", Enumerable.Range(0, 16).Select(index =>
+                $"values[index] = \"{GetIndexedLiteral(index, keyIndex)}\";"));
+            var target = markDiagnostic ? "{|#0:algorithm.Key|}" : "algorithm.Key";
+            var source = markDiagnostic ? "{|#1:Convert.FromBase64String(values[0])|}" : "Convert.FromBase64String(values[0])";
+            return $$"""
+                using System;
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    public void Method(int index)
+                    {
+                        var values = new string[4];
+                        values[0] = "AQID";
+                        values[1] = "AQID";
+                        values[2] = "AQID";
+                        values[3] = "AQID";
+                        {{statements}}
+                        var algorithm = Aes.Create();
+                        {{target}} = {{source}};
+                    }
+                }
+                """;
+        }
+
+        private static string CreateIndexedSourceVisualBasic(int keyIndex, bool markDiagnostic)
+        {
+            var statements = string.Join("\n", Enumerable.Range(0, 16).Select(index =>
+                $"values(index) = \"{GetIndexedLiteral(index, keyIndex)}\""));
+            var target = markDiagnostic ? "{|#0:algorithm.Key|}" : "algorithm.Key";
+            var source = markDiagnostic ? "{|#1:Convert.FromBase64String(values(0))|}" : "Convert.FromBase64String(values(0))";
+            return $$"""
+                Imports System
+                Imports System.Security.Cryptography
+
+                Public Class TestClass
+                    Public Sub Method(index As Integer)
+                        Dim values(3) As String
+                        values(0) = "AQID"
+                        values(1) = "AQID"
+                        values(2) = "AQID"
+                        values(3) = "AQID"
+                        {{statements}}
+                        Dim algorithm = Aes.Create()
+                        {{target}} = {{source}}
+                    End Sub
+                End Class
+                """;
+        }
+
+        private static string GetIndexedLiteral(int index, int keyIndex)
+            => index == keyIndex ? new string('A', 32) : Convert.ToBase64String(new byte[] { (byte)index, 2, 3 });
+
+        [TestMethod]
+        public async Task LiteralSourceOnInfeasibleBranch_CSharp_NoDiagnosticAsync()
+        {
+            var counts = await GetCSharpFlowCountsAsync("""
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    void Method(byte[] key, SymmetricAlgorithm algorithm)
+                    {
+                        int mode = 0;
+                        if (mode == 1)
+                        {
+                            key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        }
+
+                        algorithm.Key = key;
+                    }
+                }
+                """);
+            Assert.IsGreaterThan(0, counts.DataflowCount);
+            Assert.IsGreaterThan(0, counts.ValueContentCount);
+        }
+
+        [TestMethod]
+        public async Task LiteralSourceInNonconstantCatchFilter_RunsValueContentAnalysis_CSharpAsync()
+        {
+            var counts = await GetCSharpFlowCountsAsync("""
+                using System;
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    void Method(byte[] key, SymmetricAlgorithm algorithm, int mode)
+                    {
+                        try
+                        {
+                            algorithm.GetHashCode();
+                        }
+                        catch (Exception) when (mode == 1)
+                        {
+                            key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        }
+                        catch (Exception)
+                        {
+                        }
+
+                        algorithm.Key = key;
+                    }
+                }
+                """,
+                false,
+                GetCSharpResultAt(20, 9, 14, 19, "byte[] SymmetricAlgorithm.Key", "void TestClass.Method(byte[] key, SymmetricAlgorithm algorithm, int mode)", "byte[]", "void TestClass.Method(byte[] key, SymmetricAlgorithm algorithm, int mode)"));
+            Assert.IsGreaterThan(0, counts.DataflowCount);
+            Assert.IsGreaterThan(0, counts.ValueContentCount);
+        }
+
+        [TestMethod]
+        public async Task LiteralSourceInInfeasibleCatchFilter_CSharp_NoDiagnosticAsync()
+        {
+            var counts = await GetCSharpFlowCountsAsync("""
+                using System;
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    void Method(byte[] key, SymmetricAlgorithm algorithm)
+                    {
+                        int mode = 0;
+                        try
+                        {
+                            algorithm.GetHashCode();
+                        }
+                        catch (Exception) when (mode == 1)
+                        {
+                            key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        }
+
+                        algorithm.Key = key;
+                    }
+                }
+                """);
+            Assert.IsGreaterThan(0, counts.DataflowCount);
+            Assert.IsGreaterThan(0, counts.ValueContentCount);
+        }
+
+        [TestMethod]
+        public async Task LiteralSourceInInfeasibleCatchFilter_VB_NoDiagnosticAsync()
+        {
+            await VerifyVisualBasicWithDependenciesAsync("""
+                Imports System
+                Imports System.Security.Cryptography
+
+                Public Class TestClass
+                    Public Sub Method(key As Byte(), algorithm As SymmetricAlgorithm)
+                        Dim mode = 0
+                        Try
+                            algorithm.GetHashCode()
+                        Catch ex As Exception When mode = 1
+                            key = New Byte() {1, 2, 3, 4, 5, 6, 7, 8}
+                        End Try
+
+                        algorithm.Key = key
+                    End Sub
+                End Class
+                """);
+        }
+
+        [TestMethod]
+        public async Task LiteralSourceOnInfeasibleBranch_VB_NoDiagnosticAsync()
+        {
+            await VerifyVisualBasicWithDependenciesAsync("""
+                Imports System.Security.Cryptography
+
+                Public Class TestClass
+                    Public Sub Method(key As Byte(), algorithm As SymmetricAlgorithm)
+                        Dim mode = 0
+                        If mode = 1 Then
+                            key = New Byte() {1, 2, 3, 4, 5, 6, 7, 8}
+                        End If
+
+                        algorithm.Key = key
+                    End Sub
+                End Class
+                """);
+        }
+
         protected override IEnumerable<string> AdditionalCSharpSources => new string[] { readOnlySpanAndAesGcmAndAesCcmCSharpSourceCode };
+
+        [TestMethod]
+        public async Task RepeatedByteArraySourcesWithoutReachableSinkAsync()
+        {
+            Assert.AreEqual(0, await GetCSharpDataflowCountAsync(RepeatedByteArraySourcesWithoutReachableSink()));
+        }
+
+        [TestMethod]
+        public async Task AttributeAndMethodBodySourcesWithReachableSinkAnalyzeOnceAsync()
+        {
+            int count = await GetCSharpDataflowCountAsync("""
+                using System;
+                using System.Security.Cryptography;
+
+                sealed class BytesAttribute : Attribute
+                {
+                    public BytesAttribute(byte[] values) { }
+                }
+
+                class TestClass
+                {
+                    [Bytes(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 })]
+                    public void Emit(SymmetricAlgorithm algorithm, byte[] supplied)
+                    {
+                        byte[] other = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        algorithm.Key = supplied;
+                    }
+                }
+                """);
+            // The attribute and method body are distinct source roots in the same analysis block.
+            Assert.AreEqual(1, count);
+        }
+
+        [TestMethod]
+        public async Task SinkReachedThroughTwoMethodsAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    public void Emit()
+                    {
+                        byte[] key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        UseKey(key);
+                    }
+
+                    private void UseKey(byte[] key) => SetKey(key);
+
+                    private void SetKey(byte[] key)
+                    {
+                        using (var aes = Aes.Create())
+                        {
+                            aes.Key = key;
+                        }
+                    }
+                }
+                """,
+                GetCSharpResultAt(17, 13, 7, 22, "byte[] SymmetricAlgorithm.Key", "void TestClass.SetKey(byte[] key)", "byte[]", "void TestClass.Emit()"));
+        }
+
+        [TestMethod]
+        public async Task VisualBasicSinkReachedThroughMethodAsync()
+        {
+            await VerifyVisualBasicWithDependenciesAsync("""
+                Imports System.Security.Cryptography
+
+                Public Class TestClass
+                    Public Sub Emit()
+                        Dim key As Byte() = New Byte() {1, 2, 3, 4, 5, 6, 7, 8}
+                        SetKey(key)
+                    End Sub
+
+                    Private Sub SetKey(key As Byte())
+                        Dim algorithm = Aes.Create()
+                        algorithm.Key = key
+                    End Sub
+                End Class
+                """,
+                GetBasicResultAt(11, 9, 5, 29, "Property SymmetricAlgorithm.Key As Byte()", "Sub TestClass.SetKey(key As Byte())", "Byte()", "Sub TestClass.Emit()"));
+        }
 
         public const string readOnlySpanAndAesGcmAndAesCcmCSharpSourceCode = """
 
@@ -232,7 +524,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task Test_AesGcmWithByteArrayParameter_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            var counts = await GetCSharpFlowCountsAsync("""
 
                 using System;
                 using System.Security.Cryptography;
@@ -246,7 +538,10 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                     }
                 }
                 """,
+            true,
             GetCSharpResultAt(10, 25, 9, 22, "AesGcm.AesGcm(byte[] key)", "void TestClass.TestMethod()", "byte[]", "void TestClass.TestMethod()"));
+            Assert.IsGreaterThan(0, counts.DataflowCount);
+            Assert.AreEqual(0, counts.ValueContentCount);
         }
 
         [TestMethod]

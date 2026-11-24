@@ -100,52 +100,31 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
 
         terminal.Append(' ');
         charsTaken++;
-        AppendToWidth(terminal, progress.AssemblyName, nonReservedWidth, ref charsTaken);
-
-        if (charsTaken < nonReservedWidth && (progress.TargetFramework != null || progress.Architecture != null))
+        string primaryIdentity = TestFrameworkDisplay.GetDisplayName(progress.TargetFramework, progress.Architecture);
+        string identity = TestFrameworkDisplay.GetDisplayName(progress.TargetFramework, progress.Architecture, progress.RuntimeFramework);
+        int availableWidth = Math.Max(0, nonReservedWidth - charsTaken);
+        if (progress.AssemblyName.Length + IdentityWidth(identity) > availableWidth)
         {
-            int lengthNeeded = 0;
+            identity = primaryIdentity;
+        }
 
-            lengthNeeded++; // for '('
-            if (progress.TargetFramework != null)
-            {
-                lengthNeeded += progress.TargetFramework.Length;
-                if (progress.Architecture != null)
-                {
-                    lengthNeeded++; // for '|'
-                }
-            }
+        if (IdentityWidth(identity) + 3 > availableWidth)
+        {
+            identity = string.Empty;
+        }
 
-            if (progress.Architecture != null)
-            {
-                lengthNeeded += progress.Architecture.Length;
-            }
-
-            lengthNeeded++; // for ')'
-
-            if (charsTaken + lengthNeeded < nonReservedWidth)
-            {
-                terminal.Append(" (");
-                if (progress.TargetFramework != null)
-                {
-                    terminal.Append(progress.TargetFramework);
-                    if (progress.Architecture != null)
-                    {
-                        terminal.Append('|');
-                    }
-                }
-
-                if (progress.Architecture != null)
-                {
-                    terminal.Append(progress.Architecture);
-                }
-
-                terminal.Append(')');
-            }
+        AppendToWidth(terminal, progress.AssemblyName, nonReservedWidth - IdentityWidth(identity), ref charsTaken);
+        if (identity.Length > 0)
+        {
+            terminal.Append(" (");
+            terminal.Append(identity);
+            terminal.Append(')');
         }
 
         terminal.SetCursorHorizontal(Width - durationString.Length);
         terminal.Append(durationString);
+
+        static int IdentityWidth(string identity) => identity.Length > 0 ? identity.Length + 3 : 0;
     }
 
     public void AppendTestWorkerDetail(TestDetailState detail, RenderedProgressItem currentLine, AnsiTerminal terminal)
@@ -168,22 +147,28 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
 
     private static void AppendToWidth(AnsiTerminal terminal, string text, int width, ref int charsTaken)
     {
-        if (charsTaken + text.Length < width)
+        int availableWidth = width - charsTaken;
+        if (availableWidth <= 0)
+        {
+            return;
+        }
+
+        if (text.Length <= availableWidth)
         {
             terminal.Append(text);
             charsTaken += text.Length;
         }
         else
         {
-            terminal.Append("...");
-            charsTaken += 3;
-            if (charsTaken < width)
+            int ellipsisWidth = Math.Min(3, availableWidth);
+            terminal.Append("..."[..ellipsisWidth]);
+            int charsToTake = availableWidth - ellipsisWidth;
+            if (charsToTake > 0)
             {
-                int charsToTake = width - charsTaken;
-                string cutText = text[^charsToTake..];
-                terminal.Append(cutText);
-                charsTaken += charsToTake;
+                terminal.Append(text[^charsToTake..]);
             }
+
+            charsTaken += availableWidth;
         }
     }
 
@@ -343,18 +328,25 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
         // We do this by distributing the remaining lines for each projects.
         TestProgressState[] progressItems = [.. progress.OfType<TestProgressState>()];
         int linesToDistribute = (int)(Height * 0.7) - 1 - progressItems.Length;
-        var detailItems = new IEnumerable<TestDetailState>[progressItems.Length];
+        var detailItems = new IEnumerable<TestDetailState>?[progressItems.Length];
         IEnumerable<int> sortedItemsIndices = Enumerable.Range(0, progressItems.Length).OrderBy(i => progressItems[i].TestNodeResultsState?.Count ?? 0);
 
-        foreach (int sortedItemIndex in sortedItemsIndices)
+        int linesPerItem = progressItems.Length > 0 ? linesToDistribute / progressItems.Length : 0;
+        if (linesPerItem > 0)
         {
-            detailItems[sortedItemIndex] = progressItems[sortedItemIndex].TestNodeResultsState?.GetRunningTasks(linesToDistribute / progressItems.Length) ?? [];
+            foreach (int sortedItemIndex in sortedItemsIndices)
+            {
+                detailItems[sortedItemIndex] = progressItems[sortedItemIndex].TestNodeResultsState?.GetRunningTasks(linesPerItem);
+            }
         }
 
         for (int progressI = 0; progressI < progressItems.Length; progressI++)
         {
             linesToRender.Add(progressItems[progressI]);
-            linesToRender.AddRange(detailItems[progressI]);
+            if (detailItems[progressI] is { } details)
+            {
+                linesToRender.AddRange(details);
+            }
         }
 
         return linesToRender;

@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -347,6 +348,385 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
                     End Class
                 End Namespace
                 """;
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [TestMethod]
+        public async Task TestSingleEnumeration()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> items)
+    {
+        items.Count();
+    }
+}";
+
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(items As IEnumerable(Of Integer))
+            items.Count()
+        End Sub
+    End Class
+End Namespace
+";
+
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [TestMethod]
+        public async Task TestSingleEnumerationForMultipleParameters()
+        {
+            var csharpCode = """
+                using System.Collections.Generic;
+                using System.Linq;
+
+                public class Bar
+                {
+                    public void Sub(IEnumerable<int> first, IEnumerable<int> second, IEnumerable<int> third)
+                    {
+                        first.Count();
+                        second.Any();
+                        third.Sum();
+                    }
+                }
+                """;
+
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = """
+                Imports System.Collections.Generic
+                Imports System.Linq
+
+                Namespace Ns
+                    Public Class Hoo
+                        Public Sub Goo(first As IEnumerable(Of Integer), second As IEnumerable(Of Integer), third As IEnumerable(Of Integer))
+                            first.Count()
+                            second.Any()
+                            third.Sum()
+                        End Sub
+                    End Class
+                End Namespace
+                """;
+
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [TestMethod]
+        public async Task TestRepeatedDirectParameterEnumeration()
+        {
+            var csharpCode = """
+                using System.Collections.Generic;
+                using System.Linq;
+
+                public class Bar
+                {
+                    public void Sub(IEnumerable<int> first, IEnumerable<int> second, IEnumerable<int> third)
+                    {
+                        [|first|].Count();
+                        second.Any();
+                        third.Sum();
+                        [|first|].Max();
+                    }
+                }
+                """;
+
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = """
+                Imports System.Collections.Generic
+                Imports System.Linq
+
+                Namespace Ns
+                    Public Class Hoo
+                        Public Sub Goo(first As IEnumerable(Of Integer), second As IEnumerable(Of Integer), third As IEnumerable(Of Integer))
+                            [|first|].Count()
+                            second.Any()
+                            third.Sum()
+                            [|first|].Max()
+                        End Sub
+                    End Class
+                End Namespace
+                """;
+
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [TestMethod]
+        public async Task TestSingleEnumerationForMultipleParametersWithLocalAliasAndLinqChain()
+        {
+            var csharpCode = """
+                using System.Collections.Generic;
+                using System.Linq;
+
+                public class Bar
+                {
+                    public void Sub(IEnumerable<int> first, IEnumerable<int> second)
+                    {
+                        var alias = first;
+                        alias.Count();
+                        second.Select(value => value + 1).Sum();
+                    }
+                }
+                """;
+
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = """
+                Imports System.Collections.Generic
+                Imports System.Linq
+
+                Namespace Ns
+                    Public Class Hoo
+                        Public Sub Goo(first As IEnumerable(Of Integer), second As IEnumerable(Of Integer))
+                            Dim aliasValue = first
+                            aliasValue.Count()
+                            second.Select(Function(value) value + 1).Sum()
+                        End Sub
+                    End Class
+                End Namespace
+                """;
+
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [TestMethod]
+        public async Task TestSingleEnumerationForMultipleByRefParameters()
+        {
+            var csharpCode = """
+                using System.Collections.Generic;
+                using System.Linq;
+
+                public class Bar
+                {
+                    public void Sub(ref IEnumerable<int> first, ref IEnumerable<int> second)
+                    {
+                        first.Count();
+                        second.Any();
+                    }
+                }
+                """;
+
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = """
+                Imports System.Collections.Generic
+                Imports System.Linq
+
+                Namespace Ns
+                    Public Class Hoo
+                        Public Sub Goo(ByRef first As IEnumerable(Of Integer), ByRef second As IEnumerable(Of Integer))
+                            first.Count()
+                            second.Any()
+                        End Sub
+                    End Class
+                End Namespace
+                """;
+
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [TestMethod]
+        public async Task TestNestedFunctionWithSingleEnumerations()
+        {
+            var csharpCode = """
+                using System.Collections.Generic;
+                using System.Linq;
+
+                public class Bar
+                {
+                    public void Sub(IEnumerable<int> first, IEnumerable<int> second)
+                    {
+                        first.Count();
+                        void Local()
+                        {
+                            second.Sum();
+                        }
+                    }
+                }
+                """;
+
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = """
+                Imports System.Collections.Generic
+                Imports System.Linq
+
+                Namespace Ns
+                    Public Class Hoo
+                        Public Sub Goo(first As IEnumerable(Of Integer), second As IEnumerable(Of Integer))
+                            first.Count()
+                            Dim local = Sub()
+                                             second.Sum()
+                                         End Sub
+                        End Sub
+                    End Class
+                End Namespace
+                """;
+
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [TestMethod]
+        [DataRow("var alias = first; alias.Count(); second.Any();")]
+        [DataRow("var query = first.Where(x => x != 0); query.Count(); second.Any();")]
+        [DataRow("var query = first.Concat(second); query.Count();")]
+        [DataRow("first.Concat(second).Count();")]
+        [DataRow("foreach (var item in first) {} foreach (var item in second) {}")]
+        [DataRow("foreach (var text in first.Select(x => x.ToString())) {} second.Any();")]
+        [DataRow("first.Count(); for (int i = 0; i < 2; i++) {} second.Any();")]
+        [DataRow("var alias = first; [|alias|].Count(); [|first|].Any();")]
+        [DataRow("var query = [|first|].Where(x => x != 0); [|query|].Count(); [|query|].Any();")]
+        [DataRow("var query = [|first|].Concat([|first|]); query.Count();")]
+        [DataRow("var alias = first; var query = [|first|].Concat([|alias|]); query.Count();")]
+        [DataRow("[|first|].Concat([|first|]).Count();")]
+        [DataRow("first = second; [|first|].Count(); [|second|].Any();")]
+        [DataRow("object value = first; var alias = (IEnumerable<int>)value; [|alias|].Count(); [|first|].Any();")]
+        [DataRow("object value = first; if (value is IEnumerable<int> alias) { [|alias|].Count(); [|first|].Any(); }")]
+        [DataRow("switch (first) { case IEnumerable<int> alias: [|alias|].Count(); [|first|].Any(); break; }")]
+        [DataRow("_ = first switch { IEnumerable<int> alias => [|alias|].Count() + [|first|].Count(), _ => 0 };")]
+        [DataRow("switch (first) { case IEnumerable<int> alias when [|first|].Any(): [|alias|].Count(); break; }")]
+        [DataRow("switch (first) { case IEnumerable<int> alias: alias.Count(); second.Any(); break; }")]
+        [DataRow("if (first is {} alias) { alias.Count(); first.Any(); }")]
+        [DataRow("var tuple = (first, second); var alias = tuple.Item1; [|alias|].Count(); [|first|].Any();")]
+        [DataRow("if (flag) { [|first|].Count(); } else { [|first|].Any(); } second.Count();")]
+        [DataRow("again: [|first|].Count(); if (flag) goto again;")]
+        [DataRow("foreach (var item in [|first|]) {} [|first|].Count();")]
+        public Task SourceSummaryPreservesDiagnosticsCSharp(string body)
+            => VerifyCSharpAsync($$"""
+                using System.Collections.Generic;
+                using System.Linq;
+
+                public class Bar
+                {
+                    public void Sub(IEnumerable<int> first, IEnumerable<int> second, bool flag)
+                    {
+                        {{body}}
+                    }
+                }
+                """);
+
+        [TestMethod]
+        [DataRow("Dim aliasValue = first : aliasValue.Count() : second.Any()")]
+        [DataRow("Dim query = first.Where(Function(x) x <> 0) : query.Count() : second.Any()")]
+        [DataRow("Dim query = first.Concat(second) : query.Count()")]
+        [DataRow("first.Concat(second).Count()")]
+        [DataRow("Dim aliasValue = first : [|aliasValue|].Count() : [|first|].Any()")]
+        [DataRow("Dim query = [|first|].Where(Function(x) x <> 0) : [|query|].Count() : [|query|].Any()")]
+        [DataRow("Dim query = [|first|].Concat([|first|]) : query.Count()")]
+        [DataRow("Dim aliasValue = first : Dim query = [|first|].Concat([|aliasValue|]) : query.Count()")]
+        [DataRow("[|first|].Concat([|first|]).Count()")]
+        [DataRow("first = second : [|first|].Count() : [|second|].Any()")]
+        [DataRow("Dim value As Object = first : Dim aliasValue = DirectCast(value, IEnumerable(Of Integer)) : [|aliasValue|].Count() : [|first|].Any()")]
+        [DataRow("Dim pair = (first, second) : Dim aliasValue = pair.Item1 : [|aliasValue|].Count() : [|first|].Any()")]
+        [DataRow("Dim firstAlias = first, secondAlias = first : [|firstAlias|].Count() : [|secondAlias|].Any()")]
+        public Task SourceSummaryPreservesDiagnosticsVisualBasic(string body)
+            => VerifyVisualBasicAsync($$"""
+                Imports System.Collections.Generic
+                Imports System.Linq
+
+                Public Class Hoo
+                    Public Sub Goo(first As IEnumerable(Of Integer), second As IEnumerable(Of Integer), flag As Boolean)
+                        {{body}}
+                    End Sub
+                End Class
+                """);
+
+        [TestMethod]
+        [DataRow(1, 1)]
+        [DataRow(8, 1)]
+        [DataRow(32, 1)]
+        [DataRow(1, 8)]
+        [DataRow(8, 8)]
+        [DataRow(32, 8)]
+        public Task ManyIndependentOrRepeatedSourcesCSharp(int inputs, int uses)
+        {
+            var parameters = string.Join(", ", Enumerable.Range(0, inputs).Select(index => $"IEnumerable<int> input{index}"));
+            var statements = string.Join("\n", Enumerable.Range(0, inputs).SelectMany(index =>
+                Enumerable.Repeat(uses > 1 ? $"[|input{index}|].Count();" : $"input{index}.Count();", uses)));
+            return VerifyCSharpAsync($$"""
+                using System.Collections.Generic;
+                using System.Linq;
+
+                public class Bar
+                {
+                    public void Sub({{parameters}})
+                    {
+                        {{statements}}
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [DataRow(1, 1)]
+        [DataRow(8, 1)]
+        [DataRow(32, 1)]
+        [DataRow(1, 8)]
+        [DataRow(8, 8)]
+        [DataRow(32, 8)]
+        public Task ManyIndependentOrRepeatedSourcesVisualBasic(int inputs, int uses)
+        {
+            var parameters = string.Join(", ", Enumerable.Range(0, inputs).Select(index => $"input{index} As IEnumerable(Of Integer)"));
+            var statements = string.Join("\n", Enumerable.Range(0, inputs).SelectMany(index =>
+                Enumerable.Repeat(uses > 1 ? $"[|input{index}|].Count()" : $"input{index}.Count()", uses)));
+            return VerifyVisualBasicAsync($$"""
+                Imports System.Collections.Generic
+                Imports System.Linq
+
+                Public Class Hoo
+                    Public Sub Goo({{parameters}})
+                        {{statements}}
+                    End Sub
+                End Class
+                """);
+        }
+
+        [TestMethod]
+        public async Task TestSingleEnumerationInLoop()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> items)
+    {
+        for (var index = 0; index < 2; index++)
+        {
+            [|items|].Count();
+        }
+    }
+}";
+
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(items As IEnumerable(Of Integer))
+            For index = 0 To 1
+                [|items|].Count()
+            Next
+        End Sub
+    End Class
+End Namespace
+";
+
             await VerifyVisualBasicAsync(vbCode);
         }
 
@@ -4202,6 +4582,58 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
                 End Namespace
                 """;
             await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
+
+        [TestMethod]
+        [DataRow(1, false)]
+        [DataRow(4, false)]
+        [DataRow(12, false)]
+        [DataRow(24, false)]
+        [DataRow(4, true)]
+        [DataRow(24, true)]
+        public Task SharedDeferredPathsPreserveMultiplicityCSharp(int depth, bool ordered)
+        {
+            var statements = Enumerable.Range(1, depth).Select(index =>
+                $"var a{index} = [|a{index - 1}|].Concat([|a{index - 1}|]){(ordered ? ".OrderBy(value => value)" : string.Empty)};");
+            return VerifyCSharpAsync($$"""
+                using System.Collections.Generic;
+                using System.Linq;
+
+                class C
+                {
+                    void M(IEnumerable<int> source)
+                    {
+                        var a0 = source;
+                        {{string.Join("\n", statements)}}
+                        a{{depth}}.Count();
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [DataRow(1, false)]
+        [DataRow(4, false)]
+        [DataRow(12, false)]
+        [DataRow(24, false)]
+        [DataRow(4, true)]
+        [DataRow(24, true)]
+        public Task SharedDeferredPathsPreserveMultiplicityVisualBasic(int depth, bool ordered)
+        {
+            var statements = Enumerable.Range(1, depth).Select(index =>
+                $"Dim a{index} = [|a{index - 1}|].Concat([|a{index - 1}|]){(ordered ? ".OrderBy(Function(value) value)" : string.Empty)}");
+            return VerifyVisualBasicAsync($$"""
+                Imports System.Collections.Generic
+                Imports System.Linq
+
+                Class C
+                    Sub M(source As IEnumerable(Of Integer))
+                        Dim a0 = source
+                        {{string.Join("\n", statements)}}
+                        a{{depth}}.Count()
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod]

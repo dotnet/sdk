@@ -52,12 +52,14 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [TestMethod]
         public void UpdateToolParserCanGetFollowingArguments()
         {
+            string configFile = typeof(UpdateInstallToolParserTests).Assembly.Location;
             var result =
                 Parser.Parse(
-                    $@"dotnet tool update -g console.test.app --version 1.0.1 --framework {ToolsetInfo.CurrentTargetFramework} --configfile C:\TestAssetLocalNugetFeed");
+                    $@"dotnet tool update -g console.test.app --version 1.0.1 --framework {ToolsetInfo.CurrentTargetFramework} --configfile ""{configFile}""");
 
             var definition = Assert.IsExactInstanceOfType<ToolUpdateCommandDefinition>(result.CommandResult.Command);
-            result.GetValue(definition.ConfigOption).Should().Be(@"C:\TestAssetLocalNugetFeed");
+            result.Errors.Should().BeEmpty();
+            result.GetRequiredValue(definition.ConfigOption).FullName.Should().Be(configFile);
             result.GetValue(definition.FrameworkOption).Should().Be(ToolsetInfo.CurrentTargetFramework);
         }
 
@@ -197,7 +199,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var toolUpdateCommand = new Cli.Commands.Tool.Update.ToolUpdateCommand(result);
 
-            Action a = () => toolUpdateCommand.Execute();
+            Action a = () => toolUpdateCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(Cli.CliStrings.PackageIdentityArgumentVersionOptionConflict);

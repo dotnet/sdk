@@ -200,6 +200,7 @@ namespace Analyzer.Utilities
         public const string SystemConfigurationConfigurationSection = "System.Configuration.ConfigurationSection";
         public const string SystemConfigurationIConfigurationSectionHandler = "System.Configuration.IConfigurationSectionHandler";
         public const string SystemConsole = "System.Console";
+        public const string SystemContextStaticAttribute = "System.ContextStaticAttribute";
         public const string SystemConvert = "System.Convert";
         public const string SystemDataDataRow = "System.Data.DataRow";
         public const string SystemDataDataSet = "System.Data.DataSet";
@@ -326,6 +327,7 @@ namespace Analyzer.Utilities
         public const string SystemRuntimeCompilerServicesConfiguredValueTaskAwaitable = "System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable";
         public const string SystemRuntimeCompilerServicesConfiguredValueTaskAwaitable1 = "System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable`1";
         public const string SystemRuntimeCompilerServicesDisableRuntimeMarshallingAttribute = "System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute";
+        public const string SystemRuntimeCompilerServicesFixedAddressValueTypeAttribute = "System.Runtime.CompilerServices.FixedAddressValueTypeAttribute";
         public const string SystemRuntimeCompilerServicesICriticalNotifyCompletion = "System.Runtime.CompilerServices.ICriticalNotifyCompletion";
         public const string SystemRuntimeCompilerServicesInlineArrayAttribute = "System.Runtime.CompilerServices.InlineArrayAttribute";
         public const string SystemRuntimeCompilerServicesINotifyCompletion = "System.Runtime.CompilerServices.INotifyCompletion";
@@ -356,11 +358,13 @@ namespace Analyzer.Utilities
         public const string SystemRuntimeInteropServicesLibraryImportAttribute = "System.Runtime.InteropServices.LibraryImportAttribute";
         public const string SystemRuntimeInteropServicesMarshal = "System.Runtime.InteropServices.Marshal";
         public const string SystemRuntimeInteropServicesMarshalAsAttribute = "System.Runtime.InteropServices.MarshalAsAttribute";
+        public const string SystemRuntimeInteropServicesMarshallingGeneratedComInterfaceAttribute = "System.Runtime.InteropServices.Marshalling.GeneratedComInterfaceAttribute";
         public const string SystemRuntimeInteropServicesOSPlatform = "System.Runtime.InteropServices.OSPlatform";
         public const string SystemRuntimeInteropServicesOutAttribute = "System.Runtime.InteropServices.OutAttribute";
         public const string SystemRuntimeInteropServicesRuntimeInformation = "System.Runtime.InteropServices.RuntimeInformation";
         public const string SystemRuntimeInteropServicesSafeHandle = "System.Runtime.InteropServices.SafeHandle";
         public const string SystemRuntimeInteropServicesStructLayoutAttribute = "System.Runtime.InteropServices.StructLayoutAttribute";
+        public const string SystemRuntimeInteropServicesSuppressGCTransitionAttribute = "System.Runtime.InteropServices.SuppressGCTransitionAttribute";
         public const string SystemRuntimeInteropServicesUnmanagedFunctionPoitnerAttribute = "System.Runtime.InteropServices.UnmanagedFunctionPointerAttribute";
         public const string SystemRuntimeInteropServicesUnmanagedType = "System.Runtime.InteropServices.UnmanagedType";
         public const string SystemRuntimeIntrinsicsVector128 = "System.Runtime.Intrinsics.Vector128";

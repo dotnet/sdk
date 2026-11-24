@@ -89,7 +89,4 @@ Tento produkt shromažďuje data o využití
   
   <String Id="VisualStudioWarning" Value="Pokud plánujete používat rozhraní .NET [VERSIONMAJOR].[VERSIONMINOR] se sadou Visual Studio, je vyžadována verze Visual Studio 2026 [MINIMUMVSVERSION] nebo novější. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Přečtěte si další informace&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Kliknutím na Nainstalovat vyjadřujete souhlas s následujícími podmínkami:"/>
-  <String Id="InstallPathx64x86" Value="Instalační cesta pro instalace sady x64 SDK[ DOTNETHOME_X64] nemůže být stejná jako u instalací sady x86 SDK: [DOTNETHOME_X86]."/>
-  <String Id="InstallPathARM64x86" Value="Instalační cesta pro instalace sady ARM64 SDK[ DOTNETHOME_ARM64] nemůže být stejná jako u instalací sady x86 SDK: [DOTNETHOME_X86]"/>
-  <String Id="InstallPathARM64x64" Value="Instalační cesta pro instalace sady ARM64 SDK[ DOTNETHOME_ARM64] nemůže být stejná jako u instalací sady x64 SDK: [DOTNETHOME_X64]"/>
 </WixLocalization>

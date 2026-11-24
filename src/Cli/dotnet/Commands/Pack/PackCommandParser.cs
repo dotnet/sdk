@@ -11,6 +11,9 @@ internal static class PackCommandParser
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static void ConfigureCommand(PackCommandDefinition command)
     {
+        command.OutputOption.ForwardAsLiteralPathProperty("PackageOutputPath");
+        command.ArtifactsPathOption.ForwardAsLiteralPathProperty("ArtifactsPath");
+        command.ImplicitRestoreOptions.ForwardPathsAsLiterals();
         command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
         command.SetAction(PackCommand.Run);
     }

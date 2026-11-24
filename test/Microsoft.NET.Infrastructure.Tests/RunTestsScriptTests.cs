@@ -48,6 +48,7 @@ public class RunTestsScriptTests : SdkTest
         Assert.Contains("--framework", result.StdOut);
         Assert.Contains("--repeat", result.StdOut);
         Assert.Contains("--skip-redist-check", result.StdOut);
+        Assert.Contains("--test-binlogs", result.StdOut);
         Assert.DoesNotContain("--no-build", result.StdOut);
     }
 
@@ -94,12 +95,31 @@ public class RunTestsScriptTests : SdkTest
             "test/Microsoft.DotNet.Cli.Utils.Tests/Microsoft.DotNet.Cli.Utils.Tests.csproj",
             "--filter",
             "FullyQualifiedName~ArgumentEscaperTests.EscapesArgumentsForProcessStart",
-            "--skip-redist-check");
+            "--skip-redist-check",
+            "--test-binlogs");
 
         Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
-        Assert.Contains($"Framework: {ToolsetInfo.CurrentTargetFramework}", result.StdOut);
+        Assert.Contains($"Framework: {ToolsetInfo.SdkTargetFramework}", result.StdOut);
         Assert.Contains("TRX: artifacts", result.StdOut);
         Assert.Contains("Binlog: artifacts", result.StdOut);
+        Assert.Contains("Test binlogs: artifacts", result.StdOut);
+    }
+
+    [TestMethod]
+    public async Task IgnoresInheritedTestBinlogDirectory()
+    {
+        ScriptResult result = await RunScript(
+            [
+                "--project",
+                "test/Microsoft.DotNet.Cli.Utils.Tests/Microsoft.DotNet.Cli.Utils.Tests.csproj",
+                "--filter",
+                "FullyQualifiedName~ArgumentEscaperTests.EscapesArgumentsForProcessStart",
+                "--skip-redist-check"
+            ],
+            testBinlogDirectory: "not-an-absolute-path");
+
+        Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
+        Assert.DoesNotContain("Test binlogs:", result.StdOut);
     }
 
     [TestMethod]
@@ -128,7 +148,7 @@ public class RunTestsScriptTests : SdkTest
         ScriptResult result = await RunWorkloadManifestReaderTests();
 
         Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
-        Assert.Contains($"Framework: {ToolsetInfo.CurrentTargetFramework}", result.StdOut);
+        Assert.Contains($"Framework: {ToolsetInfo.SdkTargetFramework}", result.StdOut);
     }
 
     [TestMethod]
@@ -147,16 +167,17 @@ public class RunTestsScriptTests : SdkTest
     [TestMethod]
     public async Task InvalidFrameworkReturnsAProjectSpecificErrorAndPortableRerun()
     {
-        ScriptResult result = await RunWorkloadManifestReaderTests("net999.0");
+        ScriptResult result = await RunWorkloadManifestReaderTests("net999.0", testBinlogs: true);
 
         Assert.AreNotEqual(0, result.ExitCode);
         Assert.Contains("Target framework 'net999.0' is not listed in TargetFrameworks", result.StdErr);
         Assert.Contains("Rerun:", result.StdErr);
         Assert.Contains(Path.Combine("scripts", "RunTests.cs"), result.StdErr);
         Assert.DoesNotContain(_repoRoot, result.StdErr);
+        Assert.Contains("--test-binlogs", result.StdErr);
     }
 
-    private Task<ScriptResult> RunWorkloadManifestReaderTests(string? framework = null)
+    private Task<ScriptResult> RunWorkloadManifestReaderTests(string? framework = null, bool testBinlogs = false)
     {
         var arguments = new List<string>
         {
@@ -171,11 +192,20 @@ public class RunTestsScriptTests : SdkTest
             arguments.Add("--framework");
             arguments.Add(framework);
         }
+        if (testBinlogs)
+        {
+            arguments.Add("--test-binlogs");
+        }
 
         return RunScript([.. arguments]);
     }
 
-    private async Task<ScriptResult> RunScript(params string[] arguments)
+    private Task<ScriptResult> RunScript(params string[] arguments) =>
+        RunScript(arguments, testBinlogDirectory: null);
+
+    private async Task<ScriptResult> RunScript(
+        string[] arguments,
+        string? testBinlogDirectory)
     {
         var startInfo = new ProcessStartInfo(_dotnetPath)
         {
@@ -193,6 +223,10 @@ public class RunTestsScriptTests : SdkTest
         startInfo.Environment.Remove("MSBUILD_EXE_PATH");
         startInfo.Environment.Remove("MSBuildSDKsPath");
         startInfo.Environment.Remove("MSBuildExtensionsPath");
+        if (testBinlogDirectory is not null)
+        {
+            startInfo.Environment["DOTNET_SDK_TEST_BINLOG_DIRECTORY"] = testBinlogDirectory;
+        }
 
         var output = await Process.RunAndCaptureTextAsync(startInfo);
         return new ScriptResult(

@@ -59,6 +59,9 @@ eng/dotnetup/
 # Coding agents
 ###############################################################################
 
+# Stale-reference workflow local inputs, cache, and previews
+/.stale-reference-check/
+
 # Claude Code user-local settings
 .claude/settings.local.json
 # GitHub Copilot CLI user-local settings

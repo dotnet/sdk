@@ -4,10 +4,14 @@
 
 # Publishes the NativeAOT test binary, dotnet-aot library, and dn host, then runs
 # the full test suite including end-to-end dn integration.
+# Build the redist SDK first; the script copies its SDK content into an isolated
+# host-native installation and overlays the test-built native library there.
+# Test setup and managed fallback use that SDK, not the cross-built host.
 # See run-aot-tests.ps1 for detailed documentation.
 #
 # Usage:
 #   ./run-aot-tests.sh [--configuration Debug|Release] [--rid <RID>] [--no-build] \
+#                      [--resource-mode Embedded|ExternalLocalized|ExternalAll] \
 #                      [--trx] [--results-directory <DIR>]
 
 set -euo pipefail
@@ -18,8 +22,10 @@ DOTNET="$REPO_ROOT/.dotnet/dotnet"
 TEST_PROJECT="$SCRIPT_DIR/dotnet-aot.Tests.csproj"
 PRODUCT_PROJECT="$REPO_ROOT/src/Cli/dotnet-aot/dotnet-aot.csproj"
 DN_PROJECT="$REPO_ROOT/src/Cli/dn/dn.csproj"
+LAYOUT_PROJECT="$SCRIPT_DIR/PrepareTestSdk.proj"
 
 CONFIGURATION="Debug"
+RESOURCE_MODE="ExternalLocalized"
 RID=""
 NO_BUILD=false
 TRX=false
@@ -29,12 +35,18 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --configuration|-c) CONFIGURATION="$2"; shift 2 ;;
         --rid|-r) RID="$2"; shift 2 ;;
+        --resource-mode) RESOURCE_MODE="$2"; shift 2 ;;
         --no-build) NO_BUILD=true; shift ;;
         --trx) TRX=true; shift ;;
         --results-directory) RESULTS_DIRECTORY="$2"; shift 2 ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
 done
+
+case "$RESOURCE_MODE" in
+    Embedded|ExternalLocalized|ExternalAll) ;;
+    *) echo "Invalid resource mode: $RESOURCE_MODE"; exit 1 ;;
+esac
 
 # Auto-detect RID
 if [[ -z "$RID" ]]; then
@@ -55,9 +67,9 @@ if [[ -z "$RID" ]]; then
     fi
 fi
 
-PUBLISH_DIR="$SCRIPT_DIR/artifacts/aot-tests/$CONFIGURATION/$RID"
+PUBLISH_DIR="$SCRIPT_DIR/artifacts/aot-tests/$CONFIGURATION/$RID/$RESOURCE_MODE"
 EXE_PATH="$PUBLISH_DIR/dotnet-aot.Tests"
-AOT_PUBLISH_DIR="$SCRIPT_DIR/artifacts/dotnet-aot/$CONFIGURATION/$RID"
+AOT_PUBLISH_DIR="$SCRIPT_DIR/artifacts/dotnet-aot/$CONFIGURATION/$RID/$RESOURCE_MODE"
 DN_PUBLISH_DIR="$SCRIPT_DIR/artifacts/dn/$CONFIGURATION/$RID"
 case "$RID" in
     win-*) AOT_LIBRARY_NAME="dotnet-aot.dll"; DN_NAME="dn.exe" ;;
@@ -66,10 +78,13 @@ case "$RID" in
 esac
 AOT_LIBRARY_PATH="$AOT_PUBLISH_DIR/$AOT_LIBRARY_NAME"
 DN_PATH="$DN_PUBLISH_DIR/$DN_NAME"
+TEST_DOTNET_ROOT="$SCRIPT_DIR/artifacts/test-sdk/$CONFIGURATION/$RID"
+TEST_DOTNET="$TEST_DOTNET_ROOT/dotnet"
 
 echo "=== dotnet-aot NativeAOT Test Runner ==="
 echo "  Configuration: $CONFIGURATION"
 echo "  RID:           $RID"
+echo "  Resources:     $RESOURCE_MODE"
 echo "  Publish dir:   $PUBLISH_DIR"
 echo ""
 
@@ -77,15 +92,26 @@ echo ""
 if [[ "$NO_BUILD" == false ]]; then
     echo "Publishing as NativeAOT..."
 
+    # Managed module integration also needs the full Build output.
     "$DOTNET" publish "$TEST_PROJECT" \
         -c "$CONFIGURATION" \
         -r "$RID" \
         -p:PublishAotTests=true \
+        -p:UseOptimizedPublish=false \
+        -p:_DotnetAotResourceMode="$RESOURCE_MODE" \
         -p:PublishDir="$PUBLISH_DIR"
+
+    # AotTestModules_RunsManagedTestModule runs the managed (JIT) build of this test module
+    # through dn. Build it explicitly rather than relying on the NativeAOT publish above to
+    # leave a RID-specific copy in artifacts/bin.
+    "$DOTNET" build "$TEST_PROJECT" \
+        -c "$CONFIGURATION" \
+        -r "$RID"
 
     "$DOTNET" publish "$PRODUCT_PROJECT" \
         -c "$CONFIGURATION" \
         -r "$RID" \
+        -p:_DotnetAotResourceMode="$RESOURCE_MODE" \
         -p:PublishDir="$AOT_PUBLISH_DIR"
 
     "$DOTNET" publish "$DN_PROJECT" \
@@ -101,6 +127,18 @@ if [[ "$NO_BUILD" == false ]]; then
     fi
     echo ""
 fi
+
+# Prepare even with --no-build so runtime versions and SDK content cannot go stale.
+"$DOTNET" msbuild "$LAYOUT_PROJECT" -restore -t:PrepareTestSdk \
+    -p:Configuration="$CONFIGURATION" -p:RuntimeIdentifier="$RID"
+
+# Do not resolve through --info here: the repository global.json selects the bootstrap SDK.
+SDK_ASSEMBLIES=("$TEST_DOTNET_ROOT"/sdk/*/dotnet.dll)
+if [[ ${#SDK_ASSEMBLIES[@]} -ne 1 || ! -f "${SDK_ASSEMBLIES[0]}" ]]; then
+    echo "ERROR: Expected one test SDK in $TEST_DOTNET_ROOT."
+    exit 1
+fi
+SDK_DIRECTORY="$(dirname "${SDK_ASSEMBLIES[0]}")"
 
 # Run
 if [[ ! -f "$EXE_PATH" ]]; then
@@ -120,31 +158,31 @@ fi
 echo "Running AOT tests..."
 echo ""
 
-SDK_DIRECTORY=$("$DOTNET" --info 2>/dev/null | awk '
-    /^[[:space:]]*Base Path:/ {
-        sub(/^[[:space:]]*Base Path:[[:space:]]*/, "")
-        print
-        exit
-    }')
-
-if [[ -z "$SDK_DIRECTORY" ]]; then
-    echo "ERROR: Could not determine the bootstrap SDK directory."
-    exit 1
-fi
+cp "$AOT_LIBRARY_PATH" "$SDK_DIRECTORY/$AOT_LIBRARY_NAME"
 
 export DOTNET_AOT_TEST_SDK_DIRECTORY="$SDK_DIRECTORY"
+export DOTNET_AOT_TEST_RESOURCE_MODE="$RESOURCE_MODE"
 export DOTNET_AOT_TEST_DN_PATH="$DN_PATH"
-MANAGED_TEST_MODULE="$(find "$REPO_ROOT/artifacts/bin/dotnet-aot.Tests/$CONFIGURATION" -path "*/$RID/dotnet-aot.Tests.dll" -print -quit)"
-if [[ -z "$MANAGED_TEST_MODULE" ]]; then
-    echo "ERROR: Managed test module not found for Native AOT integration validation."
+MANAGED_TEST_MODULE=$("$DOTNET" msbuild "$TEST_PROJECT" \
+    -p:Configuration="$CONFIGURATION" \
+    -p:RuntimeIdentifier="$RID" \
+    -p:PublishAotTests=true \
+    -p:UseOptimizedPublish=false \
+    -p:PublishDir="$PUBLISH_DIR" \
+    -getProperty:TargetPath)
+if [[ ! -f "$MANAGED_TEST_MODULE" ]]; then
+    echo "ERROR: Managed test module not found at $MANAGED_TEST_MODULE for Native AOT integration validation."
     exit 1
 fi
 export DOTNET_AOT_TEST_MANAGED_TEST_MODULE="$MANAGED_TEST_MODULE"
 export DOTNET_AOT_TEST_NUGET_CONFIG="$REPO_ROOT/NuGet.config"
 export DOTNET_AOT_SDK_DIR="$SDK_DIRECTORY"
-export DOTNET_AOT_LIBRARY_DIR="$AOT_PUBLISH_DIR"
-export DOTNET_HOST_PATH="$DOTNET"
-export DOTNET_ROOT="$REPO_ROOT/.dotnet"
+export DOTNET_AOT_LIBRARY_DIR="$SDK_DIRECTORY"
+export DOTNET_HOST_PATH="$TEST_DOTNET"
+export DOTNET_ROOT="$TEST_DOTNET_ROOT"
+# Do not leave build servers holding files in the disposable test installation.
+export DOTNET_CLI_USE_MSBUILD_SERVER=0
+export MSBUILDDISABLENODEREUSE=1
 
 chmod +x "$EXE_PATH"
 chmod +x "$DN_PATH"
@@ -164,6 +202,8 @@ set +e
 "$EXE_PATH" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"}
 TEST_EXIT=$?
 set -e
+
+"$TEST_DOTNET" exec "$SDK_DIRECTORY/dotnet.dll" build-server shutdown
 
 echo ""
 if [[ $TEST_EXIT -eq 0 ]]; then

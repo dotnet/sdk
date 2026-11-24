@@ -16,7 +16,7 @@ internal abstract class ToolUpdateInstallCommandDefinition : System.CommandLine.
         toolPathOptionDescription: CommandDefinitionStrings.ToolInstallToolPathOptionDescription);
 
     public readonly Option<string> VersionOption = ToolAppliedOption.CreateVersionOption();
-    public readonly Option<string> ConfigOption = ToolAppliedOption.CreateConfigOption();
+    public readonly Option<FileInfo> ConfigOption = ToolAppliedOption.CreateConfigOption();
     public readonly Option<string> ToolManifestOption = ToolAppliedOption.CreateToolManifestOption(CommandDefinitionStrings.ToolInstallManifestPathOptionDescription);
 
     public readonly Option<string[]> AddSourceOption = ToolAppliedOption.CreateAddSourceOption();

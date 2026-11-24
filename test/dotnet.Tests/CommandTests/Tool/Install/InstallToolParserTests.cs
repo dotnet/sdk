@@ -30,12 +30,14 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [TestMethod]
         public void InstallGlobaltoolParserCanGetFollowingArguments()
         {
+            string configFile = typeof(InstallToolParserTests).Assembly.Location;
             var result =
                 Parser.Parse(
-                    $@"dotnet tool install -g console.test.app --version 1.0.1 --framework {ToolsetInfo.CurrentTargetFramework} --configfile C:\TestAssetLocalNugetFeed");
+                    $@"dotnet tool install -g console.test.app --version 1.0.1 --framework {ToolsetInfo.CurrentTargetFramework} --configfile ""{configFile}""");
 
             var definition = Assert.IsExactInstanceOfType<ToolInstallCommandDefinition>(result.CommandResult.Command);
-            result.GetRequiredValue(definition.ConfigOption).Should().Be(@"C:\TestAssetLocalNugetFeed");
+            result.Errors.Should().BeEmpty();
+            result.GetRequiredValue(definition.ConfigOption).FullName.Should().Be(configFile);
             result.GetRequiredValue(definition.FrameworkOption).Should().Be(ToolsetInfo.CurrentTargetFramework);
         }
 
@@ -176,7 +178,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var toolInstallCommand = new Cli.Commands.Tool.Install.ToolInstallCommand(result);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(Cli.CliStrings.PackageIdentityArgumentVersionOptionConflict);

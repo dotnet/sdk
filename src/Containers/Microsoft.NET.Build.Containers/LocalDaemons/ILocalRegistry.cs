@@ -26,9 +26,4 @@ internal interface ILocalRegistry
     /// <returns><see langword="true"/> when the destination is available; otherwise, <see langword="false"/>.</returns>
     public Task<bool> IsAvailableAsync(CancellationToken cancellationToken);
 
-    /// <summary>
-    /// Determines synchronously whether the destination is ready to receive images.
-    /// </summary>
-    /// <returns><see langword="true"/> when the destination is available; otherwise, <see langword="false"/>.</returns>
-    public bool IsAvailable();
 }

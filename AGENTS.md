@@ -52,6 +52,18 @@ workaround merely because the symptom appears through `dotnet`, and do not infer
 from a diagnostic ID. See the canonical
 [ownership map](.github/memory/ARCHITECTURE.md#ownership-boundaries).
 
+### Before writing code
+
+Before writing code, tests, or build logic, examine the closest implementation and its
+tests. Follow the relevant conventions and explain any deliberate divergence. Check
+whether sibling implementations, parallel templates, or shared test assets also need
+the change.
+
+When prior decisions or related changes are relevant to the task, consider a focused
+history search and, where useful, available remote refs for `main` or active `release/*`
+branches. If needed history or refs are unavailable, note the limitation and continue
+with source discovery. Use a bounded remote lookup only when permitted.
+
 ### Build and test
 
 - Build the redist SDK with `build.cmd` on Windows or `./build.sh` on Linux/macOS.
@@ -93,6 +105,12 @@ See [TESTING_STRATEGY.md](.github/memory/TESTING_STRATEGY.md) and the
 ## Guardrails
 
 These are hard boundaries for agents working in this repo. Treat them as "must not" rules.
+
+### Keep isolated SDK runs out of the user PATH
+
+When invoking an isolated SDK with a temporary `DOTNET_CLI_HOME`, set
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=0` before the first `dotnet` invocation to prevent
+first-run setup from modifying the Windows user PATH.
 
 ### Flag user-visible behavior
 
@@ -164,6 +182,12 @@ Never hardcode the current TFM in a project. See
 
 1. Read the PR and its comments/reviews. Check for references to other PRs or issues where the problem might have already been solved.
 2. Use the `ci-analysis` skill (if available) to diagnose build failures.
+
+## Reporting AI-enablement gaps
+
+Missing test or diagnostic support that blocks verification or failure investigation is
+an AI-enablement gap. When you encounter one, use the
+[`report-ai-enablement-gap` skill](.github/skills/report-ai-enablement-gap/SKILL.md).
 
 ## Keeping AI context and docs in sync
 

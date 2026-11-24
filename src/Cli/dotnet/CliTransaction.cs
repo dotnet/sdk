@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Utils;
+
 namespace Microsoft.DotNet.Cli;
 
 internal interface ITransactionContext
@@ -45,6 +47,9 @@ internal class CliTransaction
         }
         catch (Exception)
         {
+            using IDisposable softCancellationTimeout =
+                ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan);
+
             //  Roll back transaction
             RollbackStarted?.Invoke();
 
@@ -72,6 +77,9 @@ internal class CliTransaction
         }
         finally
         {
+            using IDisposable softCancellationTimeout =
+                ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan);
+
             foreach (var cleanupAction in transactionContext.CleanupActions)
             {
                 cleanupAction();

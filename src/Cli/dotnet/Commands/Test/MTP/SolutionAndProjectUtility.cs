@@ -8,6 +8,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -139,30 +140,32 @@ internal static class SolutionAndProjectUtility
         }
 
         var actualSolutionFiles = GetSolutionFilePaths(directory);
+        var solutionFilterFiles = GetSolutionFilterFilePaths(directory);
+        var solutionFiles = actualSolutionFiles.Concat(solutionFilterFiles).ToArray();
 
-        if (actualSolutionFiles.Length == 0)
+        if (solutionFiles.Length == 0)
         {
             return (false, string.Format(CliStrings.SolutionDoesNotExist, directory + Path.DirectorySeparatorChar));
         }
 
-        if (actualSolutionFiles.Length > 1)
+        if (solutionFiles.Length > 1)
         {
             return (false, string.Format(CliStrings.MoreThanOneSolutionInDirectory, directory + Path.DirectorySeparatorChar));
         }
 
-        solutionFilePath = actualSolutionFiles[0];
+        solutionFilePath = solutionFiles[0];
         return (true, string.Empty);
     }
 
-    private static string[] GetSolutionFilePaths(string directory) => [
-            .. Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly),
-            .. Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly)
-        ];
+    private static string[] GetSolutionFilePaths(string directory)
+        => GetFilesWithExtensions(directory, ".sln", ".slnx");
 
     private static string[] GetSolutionFilterFilePaths(string directory)
-    {
-        return Directory.GetFiles(directory, CliConstants.SolutionFilterExtensionPattern, SearchOption.TopDirectoryOnly);
-    }
+        => GetFilesWithExtensions(directory, ".slnf");
+
+    private static string[] GetFilesWithExtensions(string directory, params string[] extensions)
+        => [.. Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly)
+            .Where(path => extensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase))];
 
     private static string[] GetProjectFilePaths(string directory) => Directory.GetFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly);
 
@@ -325,7 +328,7 @@ internal static class SolutionAndProjectUtility
             // (a "diamond") is only tested once, while the same project referenced with a *different*
             // configuration/platform is still tested for each distinct combination. This also guards against
             // cycles (a traversal project that transitively references itself).
-            visitedTraversalProjects ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            visitedTraversalProjects ??= CreateTraversalProjectVisitSet();
             visitedTraversalProjects.Add(GetTraversalVisitKey(Path.GetFullPath(projectFilePath), configuration, platform));
 
             foreach (var reference in GetTraversalReferencedProjects(projectInstance, configuration, platform))
@@ -429,6 +432,9 @@ internal static class SolutionAndProjectUtility
     private static string GetTraversalVisitKey(string fullPath, string? configuration, string? platform)
         => $"{fullPath}|{configuration}|{platform}";
 
+    internal static HashSet<string> CreateTraversalProjectVisitSet()
+        => new(FileUtilities.PathComparer);
+
     /// <summary>
     /// Returns the projects a traversal project references. The globs and conditions in the traversal
     /// project are already expanded by MSBuild during evaluation, so the resolved <c>ProjectReference</c>
@@ -472,6 +478,11 @@ internal static class SolutionAndProjectUtility
     /// The evaluation happens in the collection of <paramref name="buildSession"/>, which is the one
     /// every project of the run has to share; pass an <paramref name="evaluationContext"/> to reuse an
     /// existing one and avoid redundant evaluation.
+    /// When <paramref name="requireTestProject"/> is <see langword="true"/>, only target frameworks that
+    /// are test projects participate in device selection. Solutions use this so that non-test projects
+    /// (e.g. a MAUI app or library) that import <c>ComputeAvailableDevices</c> through their workload
+    /// are not asked for a device. It must only be used after restore, since test-project properties
+    /// typically come from NuGet package imports.
     /// </summary>
     internal static DeviceSelectionEvaluation? EvaluateProjectForDeviceSelection(
         string projectFilePath,
@@ -479,7 +490,8 @@ internal static class SolutionAndProjectUtility
         MSBuildSession buildSession,
         EvaluationContext? evaluationContext = null,
         string? configuration = null,
-        string? platform = null)
+        string? platform = null,
+        bool requireTestProject = false)
     {
         // --device is already handled by HandleDeviceWithTargetFrameworkSelection
         if (!string.IsNullOrWhiteSpace(buildOptions.Device))
@@ -496,6 +508,8 @@ internal static class SolutionAndProjectUtility
         {
             return null;
         }
+
+        using var activity = Activities.PerformanceSource.StartActivity("test-project-discovery");
 
         var collection = buildSession.ProjectCollection;
         evaluationContext ??= EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
@@ -557,7 +571,7 @@ internal static class SolutionAndProjectUtility
             evaluatedProjects[framework] = frameworkProject;
         }
 
-        return new DeviceSelectionEvaluation(evaluatedProjects, testTfmsInParallel);
+        return new DeviceSelectionEvaluation(evaluatedProjects, testTfmsInParallel, requireTestProject);
     }
 
     /// <summary>
@@ -582,7 +596,7 @@ internal static class SolutionAndProjectUtility
             // Workload-specific targets are imported only by inner builds, so probe the
             // TFM-specific evaluation before constructing the selector that executes the target.
             (string? Device, string? RuntimeIdentifier, bool RestoreWasPerformed) selection =
-                frameworkProject.Targets.ContainsKey(Constants.ComputeAvailableDevices)
+                evaluation.RequiresDeviceSelection(frameworkProject)
                     ? SelectDeviceForTfm(
                         projectFilePath,
                         buildOptions,
@@ -606,7 +620,8 @@ internal static class SolutionAndProjectUtility
 
     internal sealed record DeviceSelectionEvaluation(
         Dictionary<string, ProjectInstance> EvaluatedProjects,
-        bool TestTfmsInParallel)
+        bool TestTfmsInParallel,
+        bool RequireTestProject = false)
     {
         public IEnumerable<KeyValuePair<string, ProjectInstance>> ProjectsByFramework
             => EvaluatedProjects.Count == 1
@@ -614,7 +629,15 @@ internal static class SolutionAndProjectUtility
                 : EvaluatedProjects.Where(project => !string.IsNullOrEmpty(project.Key));
 
         public bool SupportsDeviceSelection
-            => ProjectsByFramework.Any(project => project.Value.Targets.ContainsKey(Constants.ComputeAvailableDevices));
+            => ProjectsByFramework.Any(project => RequiresDeviceSelection(project.Value));
+
+        public bool RequiresDeviceSelection(ProjectInstance project)
+            => project.Targets.ContainsKey(Constants.ComputeAvailableDevices)
+                && (!RequireTestProject
+                    || IsTrue(project.GetPropertyValue(ProjectProperties.IsTestProject))
+                    || IsTrue(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)));
+
+        private static bool IsTrue(string value) => bool.TryParse(value, out bool result) && result;
     }
 
     internal sealed record DeviceSelectionResult(
@@ -673,7 +696,9 @@ internal static class SolutionAndProjectUtility
                 out var restoreWasPerformed))
             {
                 throw new GracefulException(
-                    string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+                    string.IsNullOrEmpty(tfm)
+                        ? string.Format(CliCommandStrings.TestCommandDeviceSelectionFailed, projectFilePath)
+                        : string.Format(CliCommandStrings.TestCommandDeviceSelectionFailedForTargetFramework, projectFilePath, tfm));
             }
 
             return (selectedDevice, runtimeIdentifier, restoreWasPerformed);

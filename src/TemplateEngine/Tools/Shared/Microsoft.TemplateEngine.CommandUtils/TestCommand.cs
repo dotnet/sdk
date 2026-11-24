@@ -70,13 +70,13 @@ namespace Microsoft.TemplateEngine.CommandUtils
             return psi;
         }
 
-        internal CommandResult Execute(params string[] args)
+        internal CommandResult Execute(CancellationToken cancellationToken, params string[] args)
         {
             IEnumerable<string> enumerableArgs = args;
-            return Execute(enumerableArgs);
+            return Execute(enumerableArgs, cancellationToken);
         }
 
-        internal virtual CommandResult Execute(IEnumerable<string> args)
+        internal virtual CommandResult Execute(IEnumerable<string> args, CancellationToken cancellationToken)
         {
             Command command = CreateCommandSpec(args)
                 .ToCommand()
@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
                 command.OnOutputLine(CommandOutputHandler);
             }
 
-            var result = command.Execute(ProcessStartedHandler);
+            var result = command.Execute(ProcessStartedHandler, cancellationToken);
 
             _loggerWrapper.WriteLine($"> {result.StartInfo.FileName} {result.StartInfo.Arguments}");
             _loggerWrapper.WriteLine(result.StdOut);

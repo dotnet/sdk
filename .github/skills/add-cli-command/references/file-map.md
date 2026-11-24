@@ -24,11 +24,13 @@ repo layout.
 | Register in the root tree (`Subcommands.Add(<Name>Command = new());`) | `src/Cli/Microsoft.DotNet.Cli.Definitions/Commands/DotNetCommandDefinition.cs` |
 | Managed impl + `<Name>CommandParser.cs` (`ConfigureCommand(...)`) | `src/Cli/dotnet/Commands/<Name>/` |
 | Wire parser (`<Name>CommandParser.ConfigureCommand(rootCommand.<Name>Command);`) | `src/Cli/dotnet/Parser.cs` → `ConfigureManagedActions` |
+| Register top-level `--help` fast path (command name + aliases; mirror help-visible `ConfigureCommand` setup in `TryParseGenericCommandHelp`, or exclude + register in `AotPrintHelpAction` when `--help` is dynamic) | `src/Cli/dotnet/Parser.cs` → `CreateCommandForGenericHelp` / `TryParseGenericCommandHelp` / `NormalizeRootOptions` |
+| Verify generic-help parity tests | `test/dotnet.Tests/ParserTests/GenericCommandHelpParserTests.cs`, `test/dotnet-aot.Tests/AotParserTests.cs` |
 
 ## Native AOT
 
-Parsing and `--help` reach the AOT CLI for free via `Definitions`, and a newly
-registered command runs under AOT through the managed fallback. To make a command
+Static parsing and `--help` reach the AOT CLI via `Definitions` and `CreateCommandForGenericHelp`, and a newly
+registered command runs under AOT through the managed fallback. Commands whose managed `--help` is populated dynamically must be gated out of `CreateCommandForGenericHelp` under `CLI_AOT` and passed to `AotPrintHelpAction` in `NormalizeRootOptions`. To make a command
 execute **in-process** in the Native AOT binary — the `dotnet-aot`/`dn` source closure,
 `AotSourceFiles.props`, `#if CLI_AOT` gating, and the AOT tests — follow the
 **add-dotnet-aot-command** skill, which owns those file details.

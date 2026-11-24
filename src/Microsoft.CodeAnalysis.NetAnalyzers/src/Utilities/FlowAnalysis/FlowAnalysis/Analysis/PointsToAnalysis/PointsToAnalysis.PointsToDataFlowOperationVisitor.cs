@@ -141,6 +141,24 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
                     }
                 }
             }
+
+            protected override ImmutableHashSet<AnalysisEntity> GetChildAnalysisEntitiesCore(
+                PointsToAbstractValue instanceLocation, Func<AnalysisEntity, bool> predicate)
+            {
+                using var builder = PooledHashSet<AnalysisEntity>.GetInstance();
+
+                foreach (var entity in TrackedEntitiesBuilder.EnumerateChildEntities(instanceLocation))
+                {
+                    if ((CurrentAnalysisData.HasAbstractValue(entity) || _defaultPointsToValueGenerator.IsTrackedEntity(entity)) &&
+                        predicate(entity))
+                    {
+                        builder.Add(entity);
+                    }
+                }
+
+                return builder.ToImmutable();
+            }
+
             internal override bool IsPointsToAnalysis => true;
 
             protected override bool HasAbstractValue(AnalysisEntity analysisEntity) => CurrentAnalysisData.HasAbstractValue(analysisEntity);
@@ -602,11 +620,13 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
                 return trimmedData;
             }
 
-            protected override PointsToAnalysisData GetInitialInterproceduralAnalysisData(
+            protected override (PointsToAnalysisData Data, bool IsTrimmed) GetInitialInterproceduralAnalysisData(
                 IMethodSymbol invokedMethod,
+                ControlFlowGraph invokedCfg,
                 (AnalysisEntity? Instance, PointsToAbstractValue PointsToValue)? invocationInstance,
                 (AnalysisEntity Instance, PointsToAbstractValue PointsToValue)? thisOrMeInstanceForCaller,
                 ImmutableDictionary<IParameterSymbol, ArgumentInfo<PointsToAbstractValue>> argumentValuesMap,
+                ImmutableDictionary<ISymbol, PointsToAbstractValue> capturedVariablesMap,
                 IDictionary<AnalysisEntity, PointsToAbstractValue>? pointsToValues,
                 IDictionary<AnalysisEntity, CopyAbstractValue>? copyValues,
                 IDictionary<AnalysisEntity, ValueContentAbstractValue>? valueContentValues,
@@ -614,10 +634,10 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
                 bool hasParameterWithDelegateType)
             {
                 pointsToValues = CurrentAnalysisData.CoreAnalysisData;
-                var initialAnalysisData = base.GetInitialInterproceduralAnalysisData(invokedMethod,
-                    invocationInstance, thisOrMeInstanceForCaller, argumentValuesMap, pointsToValues,
+                var initialAnalysisData = base.GetInitialInterproceduralAnalysisData(invokedMethod, invokedCfg,
+                    invocationInstance, thisOrMeInstanceForCaller, argumentValuesMap, capturedVariablesMap, pointsToValues,
                     copyValues, valueContentValues, isLambdaOrLocalFunction, hasParameterWithDelegateType);
-                AssertValidPointsToAnalysisData(initialAnalysisData);
+                AssertValidPointsToAnalysisData(initialAnalysisData.Data);
                 return initialAnalysisData;
             }
 

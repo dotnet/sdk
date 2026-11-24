@@ -58,6 +58,14 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
             this.PropertyAbstractValues = ImmutableArray<PropertySetAbstractValueKind>.Empty;
         }
 
+        public ConstructorMapper(
+            ValueContentAbstractValueCallback mapFromValueContentAbstractValueCallback,
+            Func<IMethodSymbol, PropertySetAbstractValue?> mapWithoutValueContent)
+            : this(mapFromValueContentAbstractValueCallback)
+        {
+            this.MapWithoutValueContent = mapWithoutValueContent ?? throw new ArgumentNullException(nameof(mapWithoutValueContent));
+        }
+
         /// <summary>
         /// Initializes a <see cref="ConstructorMapper"/> that maps a constructor invocation's arguments' <see cref="NullAbstractValue"/>s to <see cref="PropertySetAbstractValueKind"/>s for the properties being tracked by PropertySetAnalysis.
         /// </summary>
@@ -76,6 +84,8 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
         }
 
         internal ValueContentAbstractValueCallback? MapFromValueContentAbstractValue { get; }
+
+        internal Func<IMethodSymbol, PropertySetAbstractValue?>? MapWithoutValueContent { get; }
 
         internal PointsToAbstractValueCallback? MapFromPointsToAbstractValue { get; }
 
@@ -102,6 +112,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
             var hashCode = new RoslynHashCode();
             HashUtilities.Combine(PropertyAbstractValues, ref hashCode);
             hashCode.Add(MapFromValueContentAbstractValue.GetHashCodeOrDefault());
+            hashCode.Add(MapWithoutValueContent.GetHashCodeOrDefault());
             hashCode.Add(MapFromPointsToAbstractValue.GetHashCodeOrDefault());
             return hashCode.ToHashCode();
         }
@@ -115,6 +126,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
         {
             return other != null
                 && this.MapFromValueContentAbstractValue == other.MapFromValueContentAbstractValue
+                && this.MapWithoutValueContent == other.MapWithoutValueContent
                 && this.MapFromPointsToAbstractValue == other.MapFromPointsToAbstractValue
                 && this.PropertyAbstractValues == other.PropertyAbstractValues;
         }

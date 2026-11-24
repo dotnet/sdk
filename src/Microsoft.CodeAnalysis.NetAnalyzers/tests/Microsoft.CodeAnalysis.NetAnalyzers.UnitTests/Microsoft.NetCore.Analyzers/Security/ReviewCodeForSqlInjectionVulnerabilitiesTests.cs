@@ -16,6 +16,22 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => ReviewCodeForSqlInjectionVulnerabilities.Rule;
 
         [TestMethod]
+        public async Task RepeatedWebInputWithoutReachableSinkAsync()
+        {
+            Assert.AreEqual(0, await GetCSharpDataflowCountAsync(RepeatedWebInputWithoutReachableSink(), withDependencies: true));
+        }
+
+        [TestMethod]
+        public async Task WebInputWithSinkReachedThroughMethodAsync()
+        {
+            int count = await GetCSharpDataflowCountAsync(
+                WebInputWithSinkReachedThroughMethod,
+                true,
+                GetCSharpResultAt(13, 9, 7, 24, "string IDbCommand.CommandText", "void WebForm.UseInput(IDbCommand command, string input)", "NameValueCollection HttpRequest.Form", "void WebForm.Emit(IDbCommand command)"));
+            Assert.IsGreaterThan(0, count);
+        }
+
+        [TestMethod]
         public async Task EntityFramework_FromSql_Constant_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync("""

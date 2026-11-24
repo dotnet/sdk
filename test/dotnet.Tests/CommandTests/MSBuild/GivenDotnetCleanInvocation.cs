@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void ItAddsProjectToMsbuildInvocation()
         {
             var msbuildPath = "<msbuildpath>";
-            ((CleanCommand)CleanCommand.FromArgs(new string[] { "<project>" }, msbuildPath))
+            ((CleanCommand)CleanCommand.FromArgs(new string[] { "<project>" }, msbuildPath, TestCommandServices.CreateNonLLM()))
                 .GetArgumentTokensToMSBuild()
                 .Should()
                 .BeEquivalentTo([.. ExpectedPrefix, "<project>"]);
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                ((CleanCommand)CleanCommand.FromArgs(args, msbuildPath))
+                ((CleanCommand)CleanCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM()))
                     .GetArgumentTokensToMSBuild()
                     .Should()
                     .BeSubsetOf([.. ExpectedPrefix, .. expectedAdditionalArgs]);
@@ -69,4 +69,3 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
-

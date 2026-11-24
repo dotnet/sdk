@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
  * DisplayMessageSerializer: 12
  * WaitForServerControlRequestSerializer: 13
  * ServerControlMessageSerializer: 14
+ * CoverageSummaryMessagesSerializer: 15
  */
 
 internal static class RegisterSerializers
@@ -41,5 +42,6 @@ internal static class RegisterSerializers
         namedPipeBase.RegisterSerializer(new DisplayMessageSerializer(), typeof(DisplayMessage));
         namedPipeBase.RegisterSerializer(new WaitForServerControlRequestSerializer(), typeof(WaitForServerControlRequest));
         namedPipeBase.RegisterSerializer(new ServerControlMessageSerializer(), typeof(ServerControlMessage));
+        namedPipeBase.RegisterSerializer(new CoverageSummaryMessagesSerializer(), typeof(CoverageSummaryMessages));
     }
 }

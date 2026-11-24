@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
@@ -123,37 +122,33 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
         List<SuccessfulTestResultMessage>? successfulTestResultMessages = null;
         List<FailedTestResultMessage>? failedTestResultMessages = null;
 
-        ushort fieldCount = ReadUShort(stream);
-
-        for (int i = 0; i < fieldCount; i++)
+        ReadFields(stream, (fieldId, fieldSize) =>
         {
-            int fieldId = ReadUShort(stream);
-            int fieldSize = ReadInt(stream);
+            if (TryReadExecutionScopedField(stream, fieldId, fieldSize, ref executionId, ref instanceId))
+            {
+                return true;
+            }
 
             switch (fieldId)
             {
-                case TestResultMessagesFieldsId.ExecutionId:
-                    executionId = ReadStringValue(stream, fieldSize);
-                    break;
-
-                case TestResultMessagesFieldsId.InstanceId:
-                    instanceId = ReadStringValue(stream, fieldSize);
-                    break;
-
                 case TestResultMessagesFieldsId.SuccessfulTestMessageList:
-                    successfulTestResultMessages = ReadSuccessfulTestMessagesPayload(stream);
-                    break;
+                    successfulTestResultMessages = ReadFieldPayload(
+                        stream,
+                        fieldSize,
+                        ReadSuccessfulTestMessagesPayload);
+                    return true;
 
                 case TestResultMessagesFieldsId.FailedTestMessageList:
-                    failedTestResultMessages = ReadFailedTestMessagesPayload(stream);
-                    break;
+                    failedTestResultMessages = ReadFieldPayload(
+                        stream,
+                        fieldSize,
+                        ReadFailedTestMessagesPayload);
+                    return true;
 
                 default:
-                    // If we don't recognize the field id, skip the payload corresponding to that field
-                    SetPosition(stream, stream.Position + fieldSize);
-                    break;
+                    return false;
             }
-        }
+        });
 
         return new TestResultMessages(
             executionId,
@@ -166,59 +161,53 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
     {
         List<SuccessfulTestResultMessage> successfulTestResultMessages = [];
 
-        int length = ReadInt(stream);
+        int length = ReadCollectionLength(stream, sizeof(ushort));
         for (int i = 0; i < length; i++)
         {
             string? uid = null, displayName = null, reason = null, standardOutput = null, errorOutput = null, sessionUid = null;
             byte? state = null;
             long? duration = null;
 
-            int fieldCount = ReadUShort(stream);
-
-            for (int j = 0; j < fieldCount; j++)
+            ReadFields(stream, (fieldId, fieldSize) =>
             {
-                int fieldId = ReadUShort(stream);
-                int fieldSize = ReadInt(stream);
-
                 switch (fieldId)
                 {
                     case SuccessfulTestResultMessageFieldsId.Uid:
                         uid = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case SuccessfulTestResultMessageFieldsId.DisplayName:
                         displayName = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case SuccessfulTestResultMessageFieldsId.State:
                         state = ReadByte(stream);
-                        break;
+                        return true;
 
                     case SuccessfulTestResultMessageFieldsId.Duration:
                         duration = ReadLong(stream);
-                        break;
+                        return true;
 
                     case SuccessfulTestResultMessageFieldsId.Reason:
                         reason = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case SuccessfulTestResultMessageFieldsId.StandardOutput:
                         standardOutput = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case SuccessfulTestResultMessageFieldsId.ErrorOutput:
                         errorOutput = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case SuccessfulTestResultMessageFieldsId.SessionUid:
                         sessionUid = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     default:
-                        SetPosition(stream, stream.Position + fieldSize);
-                        break;
+                        return false;
                 }
-            }
+            });
 
             successfulTestResultMessages.Add(new SuccessfulTestResultMessage(uid, displayName, state, duration, reason, standardOutput, errorOutput, sessionUid));
         }
@@ -230,7 +219,7 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
     {
         List<FailedTestResultMessage> failedTestResultMessages = [];
 
-        int length = ReadInt(stream);
+        int length = ReadCollectionLength(stream, sizeof(ushort));
         for (int i = 0; i < length; i++)
         {
             string? uid = null, displayName = null, reason = null, sessionUid = null, standardOutput = null, errorOutput = null, expected = null, actual = null;
@@ -238,64 +227,61 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
             byte? state = null;
             long? duration = null;
 
-            int fieldCount = ReadUShort(stream);
-
-            for (int j = 0; j < fieldCount; j++)
+            ReadFields(stream, (fieldId, fieldSize) =>
             {
-                int fieldId = ReadUShort(stream);
-                int fieldSize = ReadInt(stream);
-
                 switch (fieldId)
                 {
                     case FailedTestResultMessageFieldsId.Uid:
                         uid = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case FailedTestResultMessageFieldsId.DisplayName:
                         displayName = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case FailedTestResultMessageFieldsId.State:
                         state = ReadByte(stream);
-                        break;
+                        return true;
 
                     case FailedTestResultMessageFieldsId.Duration:
                         duration = ReadLong(stream);
-                        break;
+                        return true;
 
                     case FailedTestResultMessageFieldsId.Reason:
                         reason = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case FailedTestResultMessageFieldsId.ExceptionMessageList:
-                        exceptionMessages = ReadExceptionMessagesPayload(stream);
-                        break;
+                        exceptionMessages = ReadFieldPayload(
+                            stream,
+                            fieldSize,
+                            ReadExceptionMessagesPayload);
+                        return true;
 
                     case FailedTestResultMessageFieldsId.StandardOutput:
                         standardOutput = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case FailedTestResultMessageFieldsId.ErrorOutput:
                         errorOutput = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case FailedTestResultMessageFieldsId.SessionUid:
                         sessionUid = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case FailedTestResultMessageFieldsId.Expected:
                         expected = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case FailedTestResultMessageFieldsId.Actual:
                         actual = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     default:
-                        SetPosition(stream, stream.Position + fieldSize);
-                        break;
+                        return false;
                 }
-            }
+            });
 
             failedTestResultMessages.Add(new FailedTestResultMessage(uid, displayName, state, duration, reason, exceptionMessages, standardOutput, errorOutput, sessionUid, expected, actual));
         }
@@ -307,35 +293,33 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
     {
         var exceptionMessages = new List<ExceptionMessage>();
 
-        int length = ReadInt(stream);
+        int length = ReadCollectionLength(stream, sizeof(ushort));
         for (int i = 0; i < length; i++)
         {
-            int fieldCount = ReadUShort(stream);
-
             string? errorMessage = null;
             string? errorType = null;
             string? stackTrace = null;
 
-            for (int j = 0; j < fieldCount; j++)
+            ReadFields(stream, (fieldId, fieldSize) =>
             {
-                int fieldId = ReadUShort(stream);
-                int fieldSize = ReadInt(stream);
-
                 switch (fieldId)
                 {
                     case ExceptionMessageFieldsId.ErrorMessage:
                         errorMessage = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case ExceptionMessageFieldsId.ErrorType:
                         errorType = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
 
                     case ExceptionMessageFieldsId.StackTrace:
                         stackTrace = ReadStringValue(stream, fieldSize);
-                        break;
+                        return true;
+
+                    default:
+                        return false;
                 }
-            }
+            });
 
             exceptionMessages.Add(new ExceptionMessage(errorMessage, errorType, stackTrace));
         }
@@ -345,123 +329,61 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
 
     public void Serialize(object objectToSerialize, Stream stream)
     {
-        Debug.Assert(stream.CanSeek, "We expect a seekable stream.");
-
         var testResultMessages = (TestResultMessages)objectToSerialize;
 
-        WriteUShort(stream, GetFieldCount(testResultMessages));
+        WriteExecutionScopedHeader(
+            stream,
+            testResultMessages.ExecutionId,
+            testResultMessages.InstanceId,
+            (ushort)((IsNullOrEmpty(testResultMessages.SuccessfulTestMessages) ? 0 : 1) +
+                (IsNullOrEmpty(testResultMessages.FailedTestMessages) ? 0 : 1)));
 
-        WriteField(stream, TestResultMessagesFieldsId.ExecutionId, testResultMessages.ExecutionId);
-        WriteField(stream, TestResultMessagesFieldsId.InstanceId, testResultMessages.InstanceId);
         WriteSuccessfulTestMessagesPayload(stream, testResultMessages.SuccessfulTestMessages);
         WriteFailedTestMessagesPayload(stream, testResultMessages.FailedTestMessages);
     }
 
     private static void WriteSuccessfulTestMessagesPayload(Stream stream, SuccessfulTestResultMessage[]? successfulTestResultMessages)
-    {
-        if (successfulTestResultMessages is null || successfulTestResultMessages.Length == 0)
+        => WriteListPayload(stream, TestResultMessagesFieldsId.SuccessfulTestMessageList, successfulTestResultMessages, static (s, successfulTestResultMessage) =>
         {
-            return;
-        }
+            WriteUShort(s, GetFieldCount(successfulTestResultMessage));
 
-        WriteUShort(stream, TestResultMessagesFieldsId.SuccessfulTestMessageList);
-
-        // We will reserve an int (4 bytes)
-        // so that we fill the size later, once we write the payload
-        WriteInt(stream, 0);
-
-        long before = stream.Position;
-        WriteInt(stream, successfulTestResultMessages.Length);
-        foreach (SuccessfulTestResultMessage successfulTestResultMessage in successfulTestResultMessages)
-        {
-            WriteUShort(stream, GetFieldCount(successfulTestResultMessage));
-
-            WriteField(stream, SuccessfulTestResultMessageFieldsId.Uid, successfulTestResultMessage.Uid);
-            WriteField(stream, SuccessfulTestResultMessageFieldsId.DisplayName, successfulTestResultMessage.DisplayName);
-            WriteField(stream, SuccessfulTestResultMessageFieldsId.State, successfulTestResultMessage.State);
-            WriteField(stream, SuccessfulTestResultMessageFieldsId.Duration, successfulTestResultMessage.Duration);
-            WriteField(stream, SuccessfulTestResultMessageFieldsId.Reason, successfulTestResultMessage.Reason);
-            WriteField(stream, SuccessfulTestResultMessageFieldsId.StandardOutput, successfulTestResultMessage.StandardOutput);
-            WriteField(stream, SuccessfulTestResultMessageFieldsId.ErrorOutput, successfulTestResultMessage.ErrorOutput);
-            WriteField(stream, SuccessfulTestResultMessageFieldsId.SessionUid, successfulTestResultMessage.SessionUid);
-        }
-
-        // NOTE: We are able to seek only if we are using a MemoryStream
-        // thus, the seek operation is fast as we are only changing the value of a property
-        WriteAtPosition(stream, (int)(stream.Position - before), before - sizeof(int));
-    }
+            WriteField(s, SuccessfulTestResultMessageFieldsId.Uid, successfulTestResultMessage.Uid);
+            WriteField(s, SuccessfulTestResultMessageFieldsId.DisplayName, successfulTestResultMessage.DisplayName);
+            WriteField(s, SuccessfulTestResultMessageFieldsId.State, successfulTestResultMessage.State);
+            WriteField(s, SuccessfulTestResultMessageFieldsId.Duration, successfulTestResultMessage.Duration);
+            WriteField(s, SuccessfulTestResultMessageFieldsId.Reason, successfulTestResultMessage.Reason);
+            WriteField(s, SuccessfulTestResultMessageFieldsId.StandardOutput, successfulTestResultMessage.StandardOutput);
+            WriteField(s, SuccessfulTestResultMessageFieldsId.ErrorOutput, successfulTestResultMessage.ErrorOutput);
+            WriteField(s, SuccessfulTestResultMessageFieldsId.SessionUid, successfulTestResultMessage.SessionUid);
+        });
 
     private static void WriteFailedTestMessagesPayload(Stream stream, FailedTestResultMessage[]? failedTestResultMessages)
-    {
-        if (failedTestResultMessages is null || failedTestResultMessages.Length == 0)
+        => WriteListPayload(stream, TestResultMessagesFieldsId.FailedTestMessageList, failedTestResultMessages, static (s, failedTestResultMessage) =>
         {
-            return;
-        }
+            WriteUShort(s, GetFieldCount(failedTestResultMessage));
 
-        WriteUShort(stream, TestResultMessagesFieldsId.FailedTestMessageList);
-
-        // We will reserve an int (4 bytes)
-        // so that we fill the size later, once we write the payload
-        WriteInt(stream, 0);
-
-        long before = stream.Position;
-        WriteInt(stream, failedTestResultMessages.Length);
-        foreach (FailedTestResultMessage failedTestResultMessage in failedTestResultMessages)
-        {
-            WriteUShort(stream, GetFieldCount(failedTestResultMessage));
-
-            WriteField(stream, FailedTestResultMessageFieldsId.Uid, failedTestResultMessage.Uid);
-            WriteField(stream, FailedTestResultMessageFieldsId.DisplayName, failedTestResultMessage.DisplayName);
-            WriteField(stream, FailedTestResultMessageFieldsId.State, failedTestResultMessage.State);
-            WriteField(stream, FailedTestResultMessageFieldsId.Duration, failedTestResultMessage.Duration);
-            WriteField(stream, FailedTestResultMessageFieldsId.Reason, failedTestResultMessage.Reason);
-            WriteExceptionMessagesPayload(stream, failedTestResultMessage.Exceptions);
-            WriteField(stream, FailedTestResultMessageFieldsId.StandardOutput, failedTestResultMessage.StandardOutput);
-            WriteField(stream, FailedTestResultMessageFieldsId.ErrorOutput, failedTestResultMessage.ErrorOutput);
-            WriteField(stream, FailedTestResultMessageFieldsId.SessionUid, failedTestResultMessage.SessionUid);
-            WriteField(stream, FailedTestResultMessageFieldsId.Expected, failedTestResultMessage.Expected);
-            WriteField(stream, FailedTestResultMessageFieldsId.Actual, failedTestResultMessage.Actual);
-        }
-
-        // NOTE: We are able to seek only if we are using a MemoryStream
-        // thus, the seek operation is fast as we are only changing the value of a property
-        WriteAtPosition(stream, (int)(stream.Position - before), before - sizeof(int));
-    }
+            WriteField(s, FailedTestResultMessageFieldsId.Uid, failedTestResultMessage.Uid);
+            WriteField(s, FailedTestResultMessageFieldsId.DisplayName, failedTestResultMessage.DisplayName);
+            WriteField(s, FailedTestResultMessageFieldsId.State, failedTestResultMessage.State);
+            WriteField(s, FailedTestResultMessageFieldsId.Duration, failedTestResultMessage.Duration);
+            WriteField(s, FailedTestResultMessageFieldsId.Reason, failedTestResultMessage.Reason);
+            WriteExceptionMessagesPayload(s, failedTestResultMessage.Exceptions);
+            WriteField(s, FailedTestResultMessageFieldsId.StandardOutput, failedTestResultMessage.StandardOutput);
+            WriteField(s, FailedTestResultMessageFieldsId.ErrorOutput, failedTestResultMessage.ErrorOutput);
+            WriteField(s, FailedTestResultMessageFieldsId.SessionUid, failedTestResultMessage.SessionUid);
+            WriteField(s, FailedTestResultMessageFieldsId.Expected, failedTestResultMessage.Expected);
+            WriteField(s, FailedTestResultMessageFieldsId.Actual, failedTestResultMessage.Actual);
+        });
 
     private static void WriteExceptionMessagesPayload(Stream stream, ExceptionMessage[]? exceptionMessages)
-    {
-        if (exceptionMessages is null || exceptionMessages.Length == 0)
+        => WriteListPayload(stream, FailedTestResultMessageFieldsId.ExceptionMessageList, exceptionMessages, static (s, exceptionMessage) =>
         {
-            return;
-        }
+            WriteUShort(s, GetFieldCount(exceptionMessage));
 
-        WriteUShort(stream, FailedTestResultMessageFieldsId.ExceptionMessageList);
-
-        // We will reserve an int (4 bytes)
-        // so that we fill the size later, once we write the payload
-        WriteInt(stream, 0);
-
-        long before = stream.Position;
-        WriteInt(stream, exceptionMessages.Length);
-        foreach (ExceptionMessage exceptionMessage in exceptionMessages)
-        {
-            WriteUShort(stream, GetFieldCount(exceptionMessage));
-
-            WriteField(stream, ExceptionMessageFieldsId.ErrorMessage, exceptionMessage.ErrorMessage);
-            WriteField(stream, ExceptionMessageFieldsId.ErrorType, exceptionMessage.ErrorType);
-            WriteField(stream, ExceptionMessageFieldsId.StackTrace, exceptionMessage.StackTrace);
-        }
-
-        // NOTE: We are able to seek only if we are using a MemoryStream
-        // thus, the seek operation is fast as we are only changing the value of a property
-        WriteAtPosition(stream, (int)(stream.Position - before), before - sizeof(int));
-    }
-
-    private static ushort GetFieldCount(TestResultMessages testResultMessages) =>
-        (ushort)((testResultMessages.ExecutionId is null ? 0 : 1) +
-        (testResultMessages.InstanceId is null ? 0 : 1) +
-        (IsNullOrEmpty(testResultMessages.SuccessfulTestMessages) ? 0 : 1) +
-        (IsNullOrEmpty(testResultMessages.FailedTestMessages) ? 0 : 1));
+            WriteField(s, ExceptionMessageFieldsId.ErrorMessage, exceptionMessage.ErrorMessage);
+            WriteField(s, ExceptionMessageFieldsId.ErrorType, exceptionMessage.ErrorType);
+            WriteField(s, ExceptionMessageFieldsId.StackTrace, exceptionMessage.StackTrace);
+        });
 
     private static ushort GetFieldCount(SuccessfulTestResultMessage successfulTestResultMessage) =>
         (ushort)((successfulTestResultMessage.Uid is null ? 0 : 1) +

@@ -17,18 +17,27 @@ public class PublishCommand : RestoringCommand
     private PublishCommand(
         MSBuildArgs msbuildArgs,
         bool noRestore,
-        string? msbuildPath = null)
-        : base(msbuildArgs, noRestore, msbuildPath)
+        string? msbuildPath,
+        CommandServices services)
+        : base(msbuildArgs, noRestore, msbuildPath, userProfileDir: null, advertiseWorkloadUpdates: null, services: services)
     {
     }
 
-    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
+    public static CommandBase FromArgs(
+        string[] args,
+        CancellationToken cancellationToken,
+        string? msbuildPath,
+        CommandServices services)
     {
         var parseResult = Parser.Parse(["dotnet", "publish", .. args]);
-        return FromParseResult(parseResult);
+        return FromParseResult(parseResult, cancellationToken, msbuildPath, services);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+    public static CommandBase FromParseResult(
+        ParseResult parseResult,
+        CancellationToken cancellationToken,
+        string? msbuildPath,
+        CommandServices services)
     {
         var definition = (PublishCommandDefinition)parseResult.CommandResult.Command;
 
@@ -47,7 +56,8 @@ public class PublishCommand : RestoringCommand
             definition.SlnOrProjectOrFileArgument,
             (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(appFilePath),
-                msbuildArgs: msbuildArgs)
+                msbuildArgs: msbuildArgs,
+                services: services)
             {
                 NoBuild = noBuild,
                 NoRestore = noRestore,
@@ -56,7 +66,8 @@ public class PublishCommand : RestoringCommand
             (msbuildArgs, msbuildPath) => new PublishCommand(
                 msbuildArgs: msbuildArgs,
                 noRestore: noRestore,
-                msbuildPath: msbuildPath
+                msbuildPath: msbuildPath,
+                services: services
             ),
             optionsToUseWhenParsingMSBuildFlags:
             [
@@ -75,17 +86,21 @@ public class PublishCommand : RestoringCommand
                         parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null,
                         parseResult.HasOption(definition.FrameworkOption) ? parseResult.GetValue(definition.FrameworkOption) : null
                     );
-                var projectLocator = new ReleasePropertyProjectLocator(msbuildArgs.GlobalProperties, MSBuildPropertyNames.PUBLISH_RELEASE, options);
+                var projectLocator = new ReleasePropertyProjectLocator(
+                    msbuildArgs.GlobalProperties,
+                    MSBuildPropertyNames.PUBLISH_RELEASE,
+                    options,
+                    cancellationToken);
                 var releaseModeProperties = projectLocator.GetCustomDefaultConfigurationValueIfSpecified();
                 return msbuildArgs.CloneWithAdditionalProperties(releaseModeProperties);
             }
         );
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult, cancellationToken, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);
     }
 }

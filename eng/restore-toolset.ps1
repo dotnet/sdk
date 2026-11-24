@@ -27,7 +27,7 @@ function InitializeCustomSDKToolset {
     # The following shared frameworks are only needed for testing.
     # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
     if ($env:DOTNET_INSTALL_TEST_RUNTIMES -ne 'false') {
-        $runtimeSpecs = @("6.0", "7.0", "8.0", "9.0", "10.0")
+        $runtimeSpecs = @("6.0", "aspnetcore@6.0.36", "7.0", "8.0", "9.0", "10.0")
         # Also install the exact runtime versions that arcade's toolset requires
         # (from Version.Details.props) so tests can target those specific versions.
         $runtimeSpecs += Get-CurrentRuntimeToolsetSpecs
@@ -156,8 +156,8 @@ function ConvertTo-DotNetInstallScriptVersion([string]$version) {
     return $version
 }
 
-function Get-VersionDetailsProperty([string]$propertyName) {
-    $versionDetails = [xml](Get-Content -Raw -Path (Join-Path $RepoRoot 'eng\Version.Details.props'))
+function Get-VersionProperty([string]$propertyName, [string]$fileName = 'Version.Details.props') {
+    $versionDetails = [xml](Get-Content -Raw -Path (Join-Path $RepoRoot "eng\$fileName"))
     $property = $versionDetails.SelectSingleNode("//$propertyName")
     if ($null -eq $property) {
         return ""
@@ -167,10 +167,32 @@ function Get-VersionDetailsProperty([string]$propertyName) {
 }
 
 function Get-CurrentRuntimeToolsetSpecs() {
-    $runtimeVersion = Get-VersionDetailsProperty 'MicrosoftNETCoreAppRefPackageVersion'
-    $aspNetCoreVersion = Get-VersionDetailsProperty 'MicrosoftAspNetCoreAppRefPackageVersion'
+    $runtimeVersion = Get-VersionProperty 'MicrosoftNETCoreAppRefPackageVersion'
+    $aspNetCoreVersion = Get-VersionProperty 'MicrosoftAspNetCoreAppRefPackageVersion'
+    $net110Version = Get-VersionProperty 'Net110PackageVersion' 'ManualVersions.props'
+    if ([string]::IsNullOrEmpty($net110Version)) {
+        throw 'Missing Net110PackageVersion in eng/ManualVersions.props.'
+    }
+    $net110WorkloadPatch = Get-VersionProperty 'VersionFeature110ForWorkloads' 'Versions.props'
+    if ($net110WorkloadPatch -eq '$(VersionFeature110)') {
+        $net110WorkloadPatch = Get-VersionProperty 'VersionFeature110' 'Versions.props'
+    }
+    if ([string]::IsNullOrEmpty($net110WorkloadPatch)) {
+        throw 'Missing VersionFeature110ForWorkloads in eng/Versions.props.'
+    }
 
-    $specs = @()
+    # Generated test apps still target net11 even after the current runtime packs move to net12.
+    $specs = @($net110Version, "aspnetcore@$net110Version")
+    if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) {
+        $specs += "windowsdesktop@$net110Version"
+    }
+
+    # Workload devservers can require a newer net11 runtime than the app targeting packs.
+    $net110WorkloadVersion = "11.0.$net110WorkloadPatch"
+    if ($net110WorkloadVersion -ne $net110Version) {
+        $specs += $net110WorkloadVersion, "aspnetcore@$net110WorkloadVersion"
+    }
+
     if (-not [string]::IsNullOrEmpty($runtimeVersion)) {
         $specs += $runtimeVersion
     }
@@ -179,6 +201,31 @@ function Get-CurrentRuntimeToolsetSpecs() {
     }
 
     return $specs
+}
+
+function Get-RuntimeInstallVersion([string]$component, [string]$version) {
+    switch ($component) {
+        'dotnet' {
+            $productVersion = Get-VersionProperty 'MicrosoftNETCoreAppRefPackageVersion'
+            $buildVersionProperty = 'MicrosoftNETCorePlatformsPackageVersion'
+        }
+        'aspnetcore' {
+            $productVersion = Get-VersionProperty 'MicrosoftAspNetCoreAppRefPackageVersion'
+            $buildVersionProperty = 'MicrosoftAspNetCoreAppRefInternalPackageVersion'
+        }
+        default { return $version }
+    }
+
+    if ($version -ne $productVersion) {
+        return $version
+    }
+
+    $buildVersion = Get-VersionProperty $buildVersionProperty
+    if ([string]::IsNullOrEmpty($buildVersion)) {
+        throw "Missing runtime build version property '$buildVersionProperty' in eng/Version.Details.props."
+    }
+
+    return $buildVersion
 }
 
 # Maps a dotnetup component (e.g. 'aspnetcore', 'windowsdesktop' or 'dotnet')
@@ -199,7 +246,8 @@ function Get-SharedFrameworkPath([string]$dotNetRoot, [string]$component) {
 
 # Tests whether a shared framework matching $version (a major.minor channel
 # such as 6.0 or an exact version) is already present on disk for $component.
-function Test-SharedFrameworkInstalled([string]$dotNetRoot, [string]$component, [string]$version) {
+# Stabilized product folders also require a matching stamp when a build is specified.
+function Test-SharedFrameworkInstalled([string]$dotNetRoot, [string]$component, [string]$version, [string]$buildVersion = "") {
     $fxRoot = Get-SharedFrameworkPath $dotNetRoot $component
 
     # Only a major.minor channel (e.g. 6.0) should match any patch via a wildcard.
@@ -209,7 +257,18 @@ function Test-SharedFrameworkInstalled([string]$dotNetRoot, [string]$component, 
         return [bool](Test-Path -PathType Container (Join-Path $fxRoot "$version*"))
     }
 
-    return [bool](Test-Path -PathType Container (Join-Path $fxRoot $version))
+    $frameworkPath = Join-Path $fxRoot $version
+    if (-not (Test-Path -LiteralPath $frameworkPath -PathType Container)) {
+        return $false
+    }
+
+    if (-not [string]::IsNullOrEmpty($buildVersion) -and $buildVersion -ne $version) {
+        $buildVersionFile = Join-Path $frameworkPath '.sdk-runtime-build-version'
+        return (Test-Path -LiteralPath $buildVersionFile -PathType Leaf) -and
+            ((Get-Content -LiteralPath $buildVersionFile -Raw) -eq $buildVersion)
+    }
+
+    return $true
 }
 
 function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$dotNetRoot, [string]$architecture = "") {
@@ -219,7 +278,8 @@ function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$dotNetR
     # matching patch (e.g. 6.0.36) exists.
     $runtimeSpecsToInstall = @($runtimeSpecs | Where-Object {
             $component, $version = if ($_ -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $_ }
-            -not (Test-SharedFrameworkInstalled $dotnetRoot $component $version)
+            $buildVersion = Get-RuntimeInstallVersion $component $version
+            -not (Test-SharedFrameworkInstalled $dotnetRoot $component $version $buildVersion)
         })
     if ($runtimeSpecsToInstall.Count -eq 0) {
         return
@@ -234,6 +294,22 @@ function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$dotNetR
     # directly since it honors -Architecture.
     if (-not [string]::IsNullOrEmpty($architecture)) {
         InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs $runtimeSpecsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
+        return
+    }
+
+    $dotnetupSpecs = @()
+    foreach ($spec in $runtimeSpecsToInstall) {
+        $component, $version = if ($spec -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $spec }
+        if ((Get-RuntimeInstallVersion $component $version) -ne $version) {
+            # Stabilized runtimes live under build-stamped directories before the GA release is published.
+            InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs @($spec) -DotNetRoot $dotnetRoot
+        }
+        else {
+            $dotnetupSpecs += $spec
+        }
+    }
+    $runtimeSpecsToInstall = $dotnetupSpecs
+    if ($runtimeSpecsToInstall.Count -eq 0) {
         return
     }
 
@@ -266,12 +342,29 @@ function InstallDotNetSharedFrameworksWithInstallScript([string[]]$runtimeSpecs,
     $installScript = GetDotNetInstallScript $dotNetRoot
     foreach ($spec in $runtimeSpecs) {
         $component, $version = if ($spec -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $spec }
-        $installVersion = ConvertTo-DotNetInstallScriptVersion $version
+        $runtimeInstallVersion = Get-RuntimeInstallVersion $component $version
+        $installVersion = ConvertTo-DotNetInstallScriptVersion $runtimeInstallVersion
         $installArgs = @{
             Version               = $installVersion
             InstallDir            = $dotNetRoot
             Runtime               = $component
             SkipNonVersionedFiles = $true
+        }
+        if ($runtimeInstallVersion -ne $version) {
+            # The installer resolves the stabilized filename using this build's productVersion.txt.
+            $installArgs.AzureFeed = 'https://ci.dot.net/public'
+
+            # Installers skip existing versioned directories, even if they contain an older build.
+            $frameworkPath = Join-Path (Get-SharedFrameworkPath $dotNetRoot $component) $version
+            if (Test-Path -LiteralPath $frameworkPath -PathType Container) {
+                Remove-Item -LiteralPath $frameworkPath -Recurse -Force
+            }
+            if ($component -eq 'dotnet') {
+                $hostFxrPath = Join-Path $dotNetRoot "host\fxr\$version"
+                if (Test-Path -LiteralPath $hostFxrPath -PathType Container) {
+                    Remove-Item -LiteralPath $hostFxrPath -Recurse -Force
+                }
+            }
         }
         if (-not [string]::IsNullOrEmpty($architecture)) {
             $installArgs.Architecture = $architecture
@@ -286,6 +379,9 @@ function InstallDotNetSharedFrameworksWithInstallScript([string[]]$runtimeSpecs,
         if ($installScriptExitCode -ne 0 -or -not $frameworkInstalled) {
             $architectureMessage = if ([string]::IsNullOrEmpty($architecture)) { "" } else { " for architecture '$architecture'" }
             throw "Failed to install shared framework $version to '$dotNetRoot' using dotnet install script$architectureMessage (exit code '$installScriptExitCode', installed '$frameworkInstalled')."
+        }
+        if ($runtimeInstallVersion -ne $version) {
+            Set-Content -LiteralPath (Join-Path $frameworkPath '.sdk-runtime-build-version') -Value $runtimeInstallVersion -NoNewline -Encoding ASCII
         }
     }
 }

@@ -187,6 +187,43 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void RunWithProjectPathForwardedAsTestApplicationOptionValue_ShouldNotTreatItAsPositionalProject(bool useArgumentSeparator)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+                .WithSource();
+            string testProjectDirectory = Path.Combine(testInstance.Path, "TestProject");
+            List<string> arguments =
+            [
+                "--project", "TestProject.csproj",
+            ];
+
+            if (useArgumentSeparator)
+            {
+                arguments.Add("--");
+            }
+
+            arguments.AddRange(
+            [
+                "--filter", "TestProject.csproj",
+                "--ignore-exit-code", ExitCodes.ZeroTests.ToString(),
+            ]);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute([.. arguments]);
+
+            result.Should().Pass();
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("total: 0");
+                result.StdErr.Should().NotContain(CliCommandStrings.TestCommandUseProject);
+            }
+        }
+
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]
@@ -521,9 +558,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // TestProject is targeting both CurrentTargetFramework and Previous.
             // OtherTestProject is targeting CurrentTargetFramework only.
             // We invoke dotnet test with -f Current.
-            // TestProject has 1 passing test, 1 skipped test, and 4 failing.
+            // TestProject has 1 passing test, 1 skipped test, and 3 failing.
             // OtherTestProject has 1 passing test and 1 skipped.
-            // In total, 2 passing, 2 skipped, 4 failing
+            // In total, 2 passing, 2 skipped, 3 failing
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("--framework", ToolsetInfo.CurrentTargetFramework,
@@ -537,9 +574,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 result.StdOut
                  .Should().Contain("Test run summary: Failed!")
-                 .And.Contain("total: 8")
+                 .And.Contain("total: 7")
                  .And.Contain("succeeded: 2")
-                 .And.Contain("failed: 4")
+                 .And.Contain("failed: 3")
                  .And.Contain("skipped: 2");
             }
 

@@ -66,9 +66,16 @@ internal static class TestCommandOptions
             otherArgs = otherArgs.Add("--no-banner");
         }
 
+        string? projectOrSolutionOptionValue = parseResult.GetValue(definition.ProjectOrSolutionOption);
+        string? solutionOptionValue = parseResult.GetValue(definition.SolutionOption);
+        string? testModulesFilterOptionValue = parseResult.GetValue(definition.TestModulesFilterOption);
+
 #if !CLI_AOT
         var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(
             positionalArgumentCount,
+            projectOrSolutionOptionValue is not null ||
+                solutionOptionValue is not null ||
+                testModulesFilterOptionValue is not null,
             ref otherArgs);
 
         IEnumerable<string> msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
@@ -93,9 +100,6 @@ internal static class TestCommandOptions
             diagnosticOutputDirectory = Path.GetFullPath(diagnosticOutputDirectory);
         }
 
-        string? projectOrSolutionOptionValue = parseResult.GetValue(definition.ProjectOrSolutionOption);
-        string? testModulesFilterOptionValue = parseResult.GetValue(definition.TestModulesFilterOption);
-
 #if !CLI_AOT
         if ((projectOrSolutionOptionValue is not null && positionalProjectOrSolution is not null) ||
             (testModulesFilterOptionValue is not null && positionalTestModules is not null))
@@ -110,7 +114,7 @@ internal static class TestCommandOptions
 #else
             positionalProjectOrSolution ?? projectOrSolutionOptionValue,
 #endif
-            parseResult.GetValue(definition.SolutionOption),
+            solutionOptionValue,
 #if CLI_AOT
             testModulesFilterOptionValue,
 #else
@@ -141,6 +145,7 @@ internal static class TestCommandOptions
 #if !CLI_AOT
     private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(
         int positionalArgumentCount,
+        bool hasExplicitBuildPath,
         ref ImmutableArray<string> otherArgs)
     {
         string? positionalProjectOrSolution = null;
@@ -149,6 +154,7 @@ internal static class TestCommandOptions
         // This validation only improves diagnostics for inputs that would otherwise fail. Users can
         // disable it for a valid extension-specific scenario.
         bool throwOnUnexpectedFilePassedAsNonFirstPositionalArgument =
+            !hasExplicitBuildPath &&
             Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is not ("true" or "1");
 
         for (int i = 0; i < positionalArgumentCount; i++)

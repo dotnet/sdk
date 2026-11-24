@@ -25,6 +25,8 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
     private readonly IWorkloadManifestUpdater _workloadManifestUpdater;
     private readonly WorkloadInfoHelper _workloadListHelper;
 
+    internal bool IsInteractive { get; }
+
     public WorkloadListCommand(
         ParseResult parseResult,
         IReporter reporter = null,
@@ -39,10 +41,11 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
     ) : base(parseResult, reporter, tempDirPath, nugetPackageDownloader)
     {
         _machineReadableOption = parseResult.GetValue(Definition.MachineReadableOption);
+        IsInteractive = parseResult.GetValue(Definition.RestoreOptions.InteractiveOption);
 
         var resolvedReporter = _machineReadableOption ? NullReporter.Instance : Reporter;
         _workloadListHelper = new WorkloadInfoHelper(
-            parseResult.HasOption(Definition.RestoreOptions.InteractiveOption),
+            IsInteractive,
             Verbosity,
             parseResult.GetValue(Definition.VersionOption) ?? null,
             VerifySignatures,
@@ -64,7 +67,7 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
             packageSourceLocation, displayManifestUpdates: Verbosity.IsDiagnostic());
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         IEnumerable<WorkloadId> installedList = _workloadListHelper.InstalledSdkWorkloadIds;
 
@@ -72,7 +75,7 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
         {
             _workloadListHelper.CheckTargetSdkVersionIsValid();
 
-            var updateAvailable = GetUpdateAvailable(installedList);
+            var updateAvailable = GetUpdateAvailable(installedList, cancellationToken);
             var installed = installedList.Select(id => id.ToString()).ToArray();
             ListOutput listOutput = new(installed, [.. updateAvailable]);
 
@@ -139,10 +142,14 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
         return 0;
     }
 
-    internal IEnumerable<UpdateAvailableEntry> GetUpdateAvailable(IEnumerable<WorkloadId> installedList)
+    internal IEnumerable<UpdateAvailableEntry> GetUpdateAvailable(
+        IEnumerable<WorkloadId> installedList,
+        CancellationToken cancellationToken)
     {
         // This was an internal partner ask, and they do not need to support workload sets.
-        _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews).Wait();
+        _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(
+            cancellationToken,
+            _includePreviews).GetAwaiter().GetResult();
         var manifestsToUpdate = _workloadManifestUpdater.CalculateManifestUpdates();
 
         foreach ((ManifestVersionUpdate manifestUpdate, WorkloadCollection workloads) in manifestsToUpdate)

@@ -25,7 +25,8 @@ namespace Microsoft.DotNet.Cli;
 internal sealed class ReleasePropertyProjectLocator(
     ReadOnlyDictionary<string, string>? userSpecifiedExplicitMSBuildProperties,
     string propertyToCheck,
-    ReleasePropertyProjectLocator.DependentCommandOptions commandOptions)
+    ReleasePropertyProjectLocator.DependentCommandOptions commandOptions,
+    CancellationToken cancellationToken)
 {
     public readonly struct DependentCommandOptions(IEnumerable<string>? slnOrProjectArgs, string? configOption = null, string? frameworkOption = null)
     {
@@ -62,6 +63,8 @@ internal sealed class ReleasePropertyProjectLocator(
         // Detect either A) --configuration option usage OR /p:Configuration=Foo, if so, don't use these properties.
         if (commandOptions.ConfigurationOption != null || globalProperties is not null && globalProperties.ContainsKey(MSBuildPropertyNames.CONFIGURATION))
             return new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase) { [EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE] = "true" }.AsReadOnly(); // Don't throw error if publish* conflicts but global config specified.
+
+        using var activity = Activities.PerformanceSource.StartActivity("release-property-discovery");
 
         // The Shared policy is chosen because release-property discovery is short-lived and the context is discarded before the subsequent MSBuild invocation.
         EvaluationContext evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
@@ -105,7 +108,10 @@ internal sealed class ReleasePropertyProjectLocator(
         {
             if (VirtualProjectBuilder.IsValidEntryPointPath(arg))
             {
-                return new VirtualProjectBuildingCommand(Path.GetFullPath(arg), MSBuildArgs.FromProperties(globalProps))
+                return new VirtualProjectBuildingCommand(
+                    Path.GetFullPath(arg),
+                    MSBuildArgs.FromProperties(globalProps),
+                    CommandServices.CreateDefault())
                     .CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
             }
             else if (IsValidProjectFilePath(arg))
@@ -148,7 +154,11 @@ internal sealed class ReleasePropertyProjectLocator(
         SolutionModel sln;
         try
         {
-            sln = SlnFileFactory.CreateFromFileOrDirectory(slnFullPath, false, false);
+            sln = SlnFileFactory.CreateFromFileOrDirectory(
+                slnFullPath,
+                cancellationToken,
+                includeSolutionFilterFiles: false,
+                includeSolutionXmlFiles: false);
         }
         catch (GracefulException)
         {

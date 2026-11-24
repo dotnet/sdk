@@ -150,7 +150,7 @@ steps:
       echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
   - name: Checkout PR head with full history
-    uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+    uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
     with:
       ref: ${{ steps.resolve.outputs.head_sha }}
       fetch-depth: 0

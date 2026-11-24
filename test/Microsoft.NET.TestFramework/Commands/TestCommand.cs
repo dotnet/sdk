@@ -21,6 +21,14 @@ namespace Microsoft.NET.TestFramework.Commands
         public bool DisableOutputAndErrorRedirection { get; set; }
 
         /// <summary>
+        /// When true, skips test binlog capture for this command even when it is enabled
+        /// through <see cref="TestBinlogCapture.DirectoryEnvironmentVariable"/>.
+        /// </summary>
+        public bool DisableTestBinlogCapture { get; set; }
+
+        internal bool SupportsTestBinlogCapture { get; set; }
+
+        /// <summary>
         /// When true, streams all stdout/stderr lines to test output in real-time,
         /// regardless of exit code. Useful for tests that need to diagnose output
         /// from commands that succeed but produce unexpected results.
@@ -157,7 +165,7 @@ namespace Microsoft.NET.TestFramework.Commands
                     action: () => Execute(enumerableArgs),
                     shouldStopRetry: ShouldStopRetry,
                     maxRetryCount: 3,
-                    timer: () => Timer(Intervals),
+                    timer: () => Timer(Intervals, ProcessLifecycle.CancellationToken),
                     taskDescription: "Run command while retrying transient errors")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -182,6 +190,9 @@ namespace Microsoft.NET.TestFramework.Commands
         public virtual CommandResult Execute(IEnumerable<string> args)
         {
             var spec = CreateCommandSpec(args);
+            TestBinlogCapture? testBinlogCapture = SupportsTestBinlogCapture && !DisableTestBinlogCapture
+                ? TestBinlogCapture.Begin(spec, Log, GetType().Name)
+                : null;
 
             var command = spec
                 .ToCommand(_doNotEscapeArguments);
@@ -235,7 +246,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var display = $"{fileToShow} {string.Join(" ", spec.Arguments)}";
 
             Log.WriteLine($"Executing '{display}':");
-            var result = command.Execute(ProcessStartedHandler);
+            var result = command.Execute(ProcessStartedHandler, ProcessLifecycle.CancellationToken);
             Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
 
             // On failure, dump the already-captured output so the cause is visible in test logs.
@@ -268,7 +279,11 @@ namespace Microsoft.NET.TestFramework.Commands
                 }
             }
 
-            if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
+            if (testBinlogCapture is not null)
+            {
+                testBinlogCapture.Complete(result.ExitCode);
+            }
+            else if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
             {
                 var workingDir = spec.WorkingDirectory ?? Environment.CurrentDirectory;
                 var binlogFiles = Directory.GetFiles(workingDir, "*.binlog");

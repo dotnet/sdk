@@ -1,6 +1,34 @@
 <Project>
 
-  <Target Name="LayoutManifest" DependsOnTargets="Pack" Condition="'$(IsShipping)' == 'true'">
+  <!-- Pack skips when its inputs are no newer than the package. Generated manifest files keep their
+       timestamps when their content is unchanged (SkipUnchanged), so removing a file such as a
+       localization would otherwise leave it in the package. This inventory changes when package
+       membership changes, which makes Pack rerun.
+       _PackageFiles and _CalculateInputsOutputsForPack are internal to NuGet's pack targets; if
+       NuGet renames them, this target stops running and removals are missed again. -->
+  <Target Name="_TrackManifestPackageInputs"
+          BeforeTargets="_CalculateInputsOutputsForPack"
+          Condition="'$(IsPackable)' == 'true'">
+    <PropertyGroup>
+      <_ManifestPackageInputInventory>$(IntermediateOutputPath)manifest-package.inputs</_ManifestPackageInputInventory>
+    </PropertyGroup>
+    <ItemGroup>
+      <_ManifestPackageInputLine Include="@(_PackageFiles->'%(FullPath)|%(PackagePath)')" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_ManifestPackageInputInventory)"
+                      Lines="@(_ManifestPackageInputLine)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <NuGetPackInput Include="$(_ManifestPackageInputInventory)" />
+      <FileWrites Include="$(_ManifestPackageInputInventory)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetManifestLayoutInputs"
+          DependsOnTargets="Pack"
+          Condition="'$(IsShipping)' == 'true'"
+          Returns="@(_ManifestLayoutInput)">
     <PropertyGroup>
       <_manifestTargetDirectory>$(ManifestDirectory)$(BuiltinWorkloadFeatureBand)$(_workloadVersionSuffix)\$(MSBuildProjectName.Replace('.Manifest', '').ToLower())\$(Version)</_manifestTargetDirectory>
     </PropertyGroup>
@@ -8,15 +36,13 @@
     <ItemGroup>
       <_manifestFiles Include="@(None->WithMetadataValue('PackagePath', 'data'))" />
       <_manifestFilesLocalize Include="@(None->WithMetadataValue('PackagePath', 'data\localize'))" />
+      <_ManifestLayoutInput Include="@(_manifestFiles->'%(FullPath)')">
+        <DestinationPath>$([MSBuild]::NormalizePath('$(_manifestTargetDirectory)', '%(_manifestFiles.Filename)%(_manifestFiles.Extension)'))</DestinationPath>
+      </_ManifestLayoutInput>
+      <_ManifestLayoutInput Include="@(_manifestFilesLocalize->'%(FullPath)')">
+        <DestinationPath>$([MSBuild]::NormalizePath('$(_manifestTargetDirectory)', 'localize', '%(_manifestFilesLocalize.Filename)%(_manifestFilesLocalize.Extension)'))</DestinationPath>
+      </_ManifestLayoutInput>
     </ItemGroup>
-
-    <Copy SourceFiles="@(_manifestFiles)"
-          DestinationFolder="$(_manifestTargetDirectory)"
-          SkipUnchangedFiles="true" />
-
-    <Copy SourceFiles="@(_manifestFilesLocalize)"
-          DestinationFolder="$(_manifestTargetDirectory)\localize"
-          SkipUnchangedFiles="true" />
   </Target>
 
   <Import Project="..\..\..\Directory.Build.targets" />

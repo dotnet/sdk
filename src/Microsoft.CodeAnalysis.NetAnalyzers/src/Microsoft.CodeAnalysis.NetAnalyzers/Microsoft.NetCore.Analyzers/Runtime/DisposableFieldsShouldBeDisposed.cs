@@ -172,7 +172,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         {
                             if (lazyPointsToAnalysisResult == null)
                             {
-                                var cfg = operationBlockStartContext.OperationBlocks.GetControlFlowGraph();
+                                var cfg = operationBlockStartContext.GetControlFlowGraph();
                                 if (cfg == null)
                                 {
                                     hasErrors = true;
@@ -217,7 +217,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var disposableFields = disposeAnalysisHelper.GetDisposableFields(containingMethod.ContainingType);
                     if (!disposableFields.IsEmpty)
                     {
-                        if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockStartContext.OperationBlocks, containingMethod,
+                        if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockStartContext.GetControlFlowGraph(), containingMethod,
                             operationBlockStartContext.Options, Rule, PointsToAnalysisKind.Complete, trackInstanceFields: true, trackExceptionPaths: false, disposeAnalysisResult: out var disposeAnalysisResult,
                             pointsToAnalysisResult: out var pointsToAnalysisResult))
                         {

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
 using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -46,7 +47,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (PublishCommand)PublishCommand.FromArgs(args, msbuildPath);
+                var command = (PublishCommand)PublishCommand.FromArgs(args, TestContext.CancellationToken, msbuildPath, TestCommandServices.CreateNonLLM());
 
                 command.SeparateRestoreCommand
                     .Should()
@@ -63,7 +64,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void MsbuildInvocationIsCorrectForSeparateRestore(string[] args, string[] expectedAdditionalArgs)
         {
             var msbuildPath = "<msbuildpath>";
-            var command = (PublishCommand)PublishCommand.FromArgs(args, msbuildPath);
+            var command = (PublishCommand)PublishCommand.FromArgs(args, TestContext.CancellationToken, msbuildPath, TestCommandServices.CreateNonLLM());
 
             var restoreTokens =
                 command.SeparateRestoreCommand! // for this scenario, we expect a separate restore command
@@ -88,7 +89,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void MsbuildInvocationIsCorrectForNoBuild()
         {
             var msbuildPath = "<msbuildpath>";
-            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "--no-build" }, msbuildPath);
+            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "--no-build" }, TestContext.CancellationToken, msbuildPath, TestCommandServices.CreateNonLLM());
 
             command.SeparateRestoreCommand
                    .Should()
@@ -103,12 +104,44 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void CommandAcceptsMultipleCustomProperties()
         {
             var msbuildPath = "<msbuildpath>";
-            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "/p:Prop1=prop1", "/p:Prop2=prop2" }, msbuildPath);
+            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "/p:Prop1=prop1", "/p:Prop2=prop2" }, TestContext.CancellationToken, msbuildPath, TestCommandServices.CreateNonLLM());
 
             command.GetArgumentTokensToMSBuild()
                .Should()
                .Contain(["--property:Prop1=prop1", "--property:Prop2=prop2"]);
         }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void CustomMSBuildPathIsForwarded(bool separateRestore)
+        {
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: separateRestore.ToString()).Path;
+            var projectPath = Path.Combine(testDirectory, "project.csproj");
+            File.WriteAllText(projectPath, "<Project />");
+            var msbuildPath = Path.Combine(testDirectory, "custom msbuild.dll");
+            File.WriteAllText(msbuildPath, "");
+
+            string[] args = [projectPath, "--configuration", "Debug", .. separateRestore ? new[] { "--framework", "tfm" } : []];
+            var command = (PublishCommand)PublishCommand.FromArgs(args, TestContext.CancellationToken, msbuildPath, TestCommandServices.CreateNonLLM());
+
+            // MSBuild is a managed DLL, so the dotnet host executes the custom path.
+            var expectedArgumentPrefix = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(["exec", msbuildPath]) + " ";
+            var startInfo = command.GetProcessStartInfo();
+            startInfo.FileName.Should().Be(new Muxer().MuxerPath);
+            startInfo.Arguments.Should().StartWith(expectedArgumentPrefix);
+
+            if (separateRestore)
+            {
+                command.SeparateRestoreCommand.Should().NotBeNull();
+                var restoreStartInfo = command.SeparateRestoreCommand!.GetProcessStartInfo();
+                restoreStartInfo.FileName.Should().Be(startInfo.FileName);
+                restoreStartInfo.Arguments.Should().StartWith(expectedArgumentPrefix);
+            }
+            else
+            {
+                command.SeparateRestoreCommand.Should().BeNull();
+            }
+        }
     }
 }
-
