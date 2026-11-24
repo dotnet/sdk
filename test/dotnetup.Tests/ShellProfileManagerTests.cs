@@ -477,6 +477,10 @@ public class ShellProfileManagerTests : IDisposable
     [TestMethod]
     [DataRow("/tmp/dotnet\n# dotnetup: end\nrest", "/usr/local/bin/dotnetup")]
     [DataRow("/tmp/data\rcache/dotnet", "/usr/local/bin/dotnetup")]
+    [DataRow("/tmp/data\fcache/dotnet", "/usr/local/bin/dotnetup")]
+    [DataRow("/tmp/data\u0085cache/dotnet", "/usr/local/bin/dotnetup")]
+    [DataRow("/tmp/data\u2028cache/dotnet", "/usr/local/bin/dotnetup")]
+    [DataRow("/tmp/data\u2029cache/dotnet", "/usr/local/bin/dotnetup")]
     [DataRow("/tmp/dotnet", "/usr/local/bin\nother/dotnetup")]
     public void GenerateProfileEntry_RejectsPathsWithLineBreaks(string installPath, string dotnetupPath)
     {

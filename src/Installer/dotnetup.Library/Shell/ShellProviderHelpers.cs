@@ -53,7 +53,8 @@ internal static class ShellProviderHelpers
         // characters when line endings are normalized or form a fake end marker for the block.
         foreach (string path in (string[])[installPath, dotnetupDir])
         {
-            if (path.AsSpan().IndexOfAny('\r', '\n') >= 0)
+            // Matches exactly what ReplaceLineEndings treats as a line break (CR, LF, FF, NEL, LS, PS).
+            if (path.ReplaceLineEndings(string.Empty).Length != path.Length)
             {
                 throw new DotnetInstallException(
                     DotnetInstallErrorCode.ContextResolutionFailed,
