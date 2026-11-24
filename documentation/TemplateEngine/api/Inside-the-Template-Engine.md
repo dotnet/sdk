@@ -206,9 +206,9 @@ Template engine also provides [default non-managed provider
 implementation](../../../src/TemplateEngine/Microsoft.TemplateEngine.Utils/DefaultTemplatePackageProvider.cs)
 that can be used by other hosts to build simple providers or base implementation
 on. Here are two examples:
-[SdkTemplates](../../../src/Cli/dotnet/commands/dotnet-new/BuiltInTemplatePackageProvider.cs)
+[SdkTemplates](../../../src/Cli/dotnet/Commands/New/BuiltInTemplatePackageProvider.cs)
 and
-[OptionalWorkloads](../../../src/Cli/dotnet/commands/dotnet-new/OptionalWorkloadProvider.cs).
+[OptionalWorkloads](../../../src/Cli/dotnet/Commands/New/OptionalWorkloadProvider.cs).
 
 ### Prioritizing the providers
 

@@ -1,0 +1,396 @@
+# Potentially stale reference discovery
+
+This maintenance workflow finds ignored tests, actionable TODOs, and temporary
+workarounds whose referenced GitHub blockers may have been resolved. It creates
+and updates revalidation tasks, not claims that tests pass or code can safely be
+removed.
+
+The [driver](../workflows/stale-reference-check.yml) runs on its configured
+target branch. It never creates more than **five** total open tracking issues
+(labeled `stale-issue-detection`); once that many are open, creation halts until
+a human closes some of them, but eligible additions to existing blocker-set
+issues can still be appended. It never changes source,
+opens a pull request, comments on an existing issue, or removes an Ignore.
+Generated tracking issues and interpretation caches use the workflow's target
+branch rather than assuming `main`.
+
+## Deterministic processing and the agent boundary
+
+1. [`collect.mjs`](collect.mjs) uses tracked-source grep to locate relevant
+   constructs and collect numbered context, including URLs on adjacent lines.
+2. [`interpretations.mjs`](interpretations.mjs) restores compatible cached
+   classifications and selects a bounded batch of new or changed source.
+3. The [reusable interpreter](../workflows/stale-reference-interpret.md) identifies
+   the actual action, owning declaration/test, and relevant blocking URLs. It
+   does not query GitHub or write issues. A host-side submission tool validates
+   results against private source snapshots while the agent can still correct
+   errors. Recording revalidates against a separate trusted checkout.
+4. [`github.mjs`](github.mjs) deduplicates reference lookups and obtains current
+   issue/PR states. [`finalize.mjs`](finalize.mjs) checks live tracking issues and
+   creates or appends fixed-template tasks. [`workflow.mjs`](workflow.mjs) connects these
+   stages, including the route that skips the agent completely.
+
+The compiler's standard threat-detection stage remains enabled. It checks agent
+output rather than performing a second semantic investigation of references.
+It retains the runtime's `detection` model alias rather than inheriting the
+interpreter's pinned model.
+Recording requires successful detection and source validation. The compiler's
+conclusion job is disabled because this compiler version can otherwise create
+diagnostic issues outside the filing limit and preview guard. Native job results,
+logs, and the deterministic decision report provide diagnostics instead.
+
+## Scope and bounds
+
+Discovery scans repository-owned source, real tests, scripts, and build files.
+Documentation and prompt text, test-input fixtures, snapshots, localization,
+generated files, `eng/common`, and manifest-declared vendored files are excluded.
+The checker's own synthetic test cases are also excluded from discovery.
+The collector is deliberately not a general-purpose parser of every language.
+Ignore validation understands C# MSTest declarations only; Visual Basic
+sources are not collected.
+The host also checks the ordered namespace and containing-type chain against the
+verified full source using the lexer in [source-anchors.mjs](source-anchors.mjs).
+Sibling declarations cannot supply a fictitious parent type or namespace.
+Fresh snapshot submissions and restored cache results receive the same check
+before filing. Supplied-evidence requirements still apply; ambiguous ownership
+or unsupported generic containing types must be deferred, not guessed.
+Array initializers within attributes remain part of the declaration header,
+including `DataRow` attributes before or after the `Ignore`.
+
+Files without any GitHub issue/PR URL are eliminated before interpretation.
+Initial context is 20 lines on either side of a hit. Overlapping ranges are
+expanded to include adjacent hits, but each candidate retains its own complete
+context; there is no shared-context representation. Each batch contains at most
+25 windows and 64 KiB of initial context, including repeated context.
+
+The reader presents that batch as consecutive, labeled text pages rather than
+one large batch object. Every text response is at most 12 KiB including the
+[pinned MCP adapter's JSON string encoding](https://github.com/github/gh-aw/blob/v0.89.21/actions/setup/js/mcp_handler_process.cjs#L143-L160),
+with an explicit next-page number. The adapter can expose escaped newlines even
+for string results; native calls and bounded pages eliminate the need for shell
+extraction, not the runtime's JSON encoding.
+Read all pages: a candidate, or an unusually long source line, can span pages.
+Paging does not remove candidates, truncate source, or change the batch artifacts.
+Declaration lookup hints give line numbers for nearby syntactic matches, not
+proof of ownership or additional source evidence. Use them to target a necessary
+context expansion, not to guess a fully qualified name. Non-Ignore anchors supplied
+by the model are hints, not trusted identities. The host replaces them with a
+deterministic [lexical source-site path](source-anchors.mjs) derived from the verified complete file:
+C# namespace/declaration/block headers, or XML element names and sorted attributes.
+Other collected formats use a source-owned textual anchor: a hash of the nearest
+nonblank line before and after the seed, with indentation trimmed. This preserves
+script and other non-C#/XML discovery without interpreting those files as XML or
+trusting a model-supplied owner. It does not prove comment syntax or semantic ownership;
+the interpreter must still establish an actionable source construct. Blank-line
+insertions and indentation changes preserve this anchor, but changes to either
+neighbor can change it. Identical normalized seeds with identical neighborhoods are
+ambiguous and must be deferred rather than assigned line-based identities.
+This is not a compiler symbol or proof of semantic ownership. Comments preceding
+declarations/elements use the following structural site; other comments use their
+containing scope. Unsupported or ambiguous structures, including indistinguishable
+repeated comments, fail validation rather than acquiring model-chosen identities.
+This host computation does not expand the model's source evidence allowance.
+
+The interpreter may request up to two additional windows of at most 80 lines
+and 10 KiB of source per candidate. A response also reports the remaining
+expansion allowance. Cases that cannot be identified confidently within those
+bounds are explicitly deferred, not guessed.
+
+Historical references and retained compatibility behavior are not cleanup tasks.
+Distinct nearby comments can depend on different URLs. A class-level Ignore
+requires complete identification of the affected tests; ambiguous coverage is
+deferred. Data rows do not create separate tracking issues.
+
+The interpreter uses native MCP calls, not shell-based CLI proxies. Bash and
+file editing are disabled; it has no source checkout, general-purpose Node
+execution, or GitHub tools. Native tool schemas define the input arguments,
+including the object-valued `payload` for `prepare_interpretations`. The agent
+passes the object directly; trusted MCP script code serializes it once for the
+private host service. This avoids generating escaped JSON inside another JSON
+document, without repairing malformed submissions or weakening validation.
+The agent never needs temporary files or shell pipelines to submit its results.
+That tool validates the entire batch synchronously, using the same
+[`interpretations.mjs`](interpretations.mjs) checks as the recording job. Invalid
+shapes, missing candidates, unsupported URLs, and unsupported source claims return
+errors while the agent is still running. The host permits three submission
+attempts and a 512 KiB serialized-payload limit, with no partial acceptance.
+The native schema declares an object; the host validator, not that type
+declaration alone, enforces the complete nested result contract.
+
+An accepted payload is frozen in the private host process. The tool returns a
+SHA-256 receipt; repeating the identical accepted submission returns the same
+receipt, while replacing it is rejected. A trusted post-step inserts the full
+validated payload and receipt into `agent_output.json` before the agent artifact
+is uploaded, so threat detection inspects the actual results, not just a hash.
+It also exports `submission.json` with the context evidence. After successful
+threat detection, a trusted recording job downloads the exact agent artifact
+that detection inspected and verifies its payload and receipt against
+`submission.json` before rerunning validation against committed blobs. Preflight
+acceptance and threat detection alone never authorize filing.
+
+The source-specific recorder uses the compiler's native
+`safe-outputs.jobs.record-interpretations` custom job. The job preserves the
+safe-output boundary by requiring both successful threat detection and a
+matching trusted payload; the agent cannot invoke the job directly or write
+its result. Because the interpreter workflow does not need a repository-write
+safe output such as `create-issue`, the compiler's internal `safe_outputs` and
+`conclusion` jobs need no elevated permissions and the disabled `conclusion`
+job declares `issues: none`; the interpreter call requires no `issues: write`
+grant from the driver.
+
+Run `gh aw compile` for this workflow on Linux or macOS (for example, WSL);
+compiling on Windows fails because of a compiler path-separator bug. See
+[KNOWN_ISSUES](../memory/KNOWN_ISSUES.md#gh-aw-compile-must-run-on-linux-or-macos-never-windows).
+
+The gh-aw v0.89.21 compiler defaults to MCP gateway v0.4.25, which the protocol
+smoke test validates for native clients' stateful fallback initialization. Strict
+mode, sandboxing, and permissions remain unchanged. The generated lock pins that
+compiler-selected image to an immutable digest.
+
+The interpreter does not pin a model (uses the Copilot CLI default) and permits at most 64 agent turns and
+150 AI credits, retaining the 20-minute agent-execution timeout. The generated
+job has a separate 60-minute ceiling for setup, execution, and post-processing.
+The credit limit is enforced
+by the runtime API proxy, not a dollar-cost estimate. These are initial operational
+guardrails, not measured performance targets; a hosted run is still needed to
+calibrate them after the transport changes.
+The bounded reader in
+[`source-tools.mjs`](source-tools.mjs) runs on the host; its private input artifact
+is outside the agent's filesystem mounts. Only selected batch/context results
+cross that boundary. The host enforces the expansion and response-size limits.
+Because the pinned
+[gh-aw runtime](https://github.com/github/gh-aw/blob/v0.89.21/actions/setup/js/mcp_server_core.cjs)
+launches a fresh process per MCP script call, a private loopback reader retains the shared
+budget and accepted submission. Source calls only read source; submission calls
+validate and retain one payload without GitHub access or issue/cache writes.
+A trusted post-agent step exports the served window receipts. Recording verifies
+them against source, and the cache retains the verified expansion evidence for
+later runners. The private artifact packages both validator and collector modules;
+preflight reads the snapshot and does not invoke Git or need a source checkout.
+
+## Fresh runners and interpretation caching
+
+GitHub Actions cache persists validated interpretations between runners. Each
+entry is associated with its source identity, entire file blob, and collector/
+validation/prompt rule hash. Changing a declaration elsewhere in the file
+invalidates the interpretation even when its initial snippet is unchanged.
+
+The cache contains **interpretations, not authoritative GitHub states**. Every
+retained actionable reference is checked again on later runs, even when there is
+no new context for the agent. Deleted and changed entries are pruned. Deliberately
+irrelevant classifications are reusable; incomplete or invalid outputs are not.
+Batch continuation prevents one unresolved context from monopolizing discovery.
+
+Cache eviction is safe: the workflow interprets a bounded batch again and still
+checks live tracking issues before filing. Corrupt cache data is reported and
+discarded. Only the trusted main-branch workflow saves production cache entries;
+preview runs do not.
+
+## Eligibility and duplicate protection
+
+Supported references are public GitHub issue and pull-request URLs, including
+cross-repository blockers. Fragments and query strings do not produce duplicate
+lookups. References through `/issues/` that identify a PR are checked as PRs.
+Code links (`/blob/`, `/tree/`), commits, repository homepages, and documentation
+may explain a workaround but cannot be submitted as blockers, even alongside a
+valid issue/PR. Both synchronous submission validation and final recording reject
+the entire batch if any unsupported URL slips through.
+
+An issue qualifies only when closed **as completed**. A PR qualifies only when
+**merged**. All identified blockers for an action must qualify. Open/reopened
+issues, not-planned or unknown closure reasons, closed-unmerged PRs, unavailable
+references, and incomplete duplicate listings cannot authorize filing.
+
+Additional source conditions, such as consuming a fixed dependency version,
+remain explicit unverified prerequisites. A tracking task asks the assignee to
+check them before changing code.
+
+Durable identity is separate from interpretation-cache identity:
+
+- Ignored test: repository path plus fully qualified test declaration, independent
+  of line number, source commit, data rows, and original reference.
+- TODO/workaround: repository path, source-derived structural anchor, and
+  normalized seed comment, not model anchor spelling or model-selected span.
+  For non-C#/XML formats the anchor is the textual neighborhood described above;
+  changing a neighboring nonblank line can change the target identity. Other
+  surrounding excerpt changes alone do not append another evidence block.
+  Cached comment anchors are recomputed and checked against committed source
+  before filing; these identity rules invalidate earlier interpretation caches.
+
+Code creates versioned body markers and visible identity fields. Duplicate
+interpretations of the same target are merged before eligibility checks so all
+their blockers and additional prerequisites are retained. This checks each
+target's recorded blockers, not whether proposed code changes are independent.
+Open issues are
+fully paginated and compared locally, without relying on hidden-marker search
+indexing, mutable titles, or labels. Conservative checks also recognize existing
+unmarked tasks with the same exact test/source identity. A shared upstream URL
+alone does not mean that an existing issue covers a particular finding.
+
+Eligible references to the same resolved blocker share one open tracking issue
+across files, including ignored tests, TODOs, and workarounds. A target that
+depends on multiple blockers is grouped by that exact canonical blocker set;
+other targets anchored to the same set share its issue. Unrelated blockers are
+never combined merely because their references occur in one file. Every blocker
+in a set must qualify before its findings can be filed.
+
+New issues have one shared repository/branch header, verified blocker-resolution
+section, and follow-up section. Only the Findings section contains the individual
+source paths, target identities, pinned excerpts, unverified prerequisites, and
+previous tracking history. Target IDs remain independent of this grouping.
+Ignored-test evidence also carries a per-test fingerprint so a class-wide ignore
+can add uncovered members without suppressing them because another member is
+already tracked.
+Evidence fingerprints for both ignored tests and comments use the verified,
+normalized seed text, not the model-selected excerpt range. Selecting a wider or
+narrower excerpt on a fresh interpretation does not append unchanged evidence;
+changed seed text, prerequisites, or blocker-resolution state remain distinct.
+
+Blocker-container identity is separate from source-target identity and uses
+canonical GitHub repository/number keys, so URL aliases identify the same blocker.
+Later findings or changed prerequisites are inserted inside the marked Findings
+section, preserving existing finding text, human notes, titles, and labels. Missing,
+reversed, or duplicate section boundaries defer updates with a diagnostic. Changed
+shared blocker-resolution evidence also defers updates for review rather than
+silently retaining outdated resolution dates.
+
+A legacy marked task can be adopted without rewriting its content only when its
+recorded findings all prove the exact same blocker set. Old mixed-blocker file
+issues remain readable for site-specific duplicate and closure checks, but are
+not adopted to append unrelated references. Legacy bodies are not automatically
+flattened because they may contain human edits. Multiple matching open containers
+or oversized bodies defer additions rather than picking a container arbitrarily
+or splitting a blocker set into another issue.
+
+Closing a tracking issue as completed does not establish that all of its targets
+were fixed. Subsequent runs re-evaluate current source and file any remaining
+eligible targets, or append them to a suitable open issue, retaining the closed
+issue as history. A `not_planned` (won't-fix) closure suppresses the canonical
+targets covered by that issue, even if their prerequisites change. It does not
+suppress unrelated new targets for the same blocker. Missing or unknown closure reasons
+defer affected targets. Closed-history lookup uses the existing
+`agentic-workflows` label; removing that label can remove this protection. Open
+duplicate detection is not label-dependent.
+
+The workflow serializes its runs, refreshes tracking before mutations, reads the
+latest issue before appending, and reconciles ambiguous creation/update errors
+before any further action. Mutations are not automatically retried. An uncertain
+append is accepted only when its complete evidence blocks are present remotely,
+not just its identity markers. Updates are allowed at the five-open-issue cap,
+which limits creation, not additions to existing issues.
+
+GitHub does not enforce unique issue-body keys atomically. These checks protect
+against this workflow's repeated and concurrent runs, but cannot prevent an
+unrelated human or automation from creating the same task at the same instant.
+Issue-body updates are not atomic compare-and-swap operations; a human edit
+between the final read and update can still be overwritten.
+
+## Filed tasks and Issue Monster
+
+Each issue includes the stable identifier, exact source excerpt, commit-pinned
+source link, original references, verified resolution information, and explicit
+unknowns. Titles and bodies are generated by code, not by the model.
+
+Issues receive `cookie`, `agentic-workflows`, and `stale-issue-detection`. The
+last one marks issues that count toward the total-open-issue filing cap
+described above; removing it from an open issue frees a filing slot even
+though the issue itself is still open. The existing
+[Issue Monster](../workflows/issue-monster.md) scheduled queue handles
+assignment, so creation does not depend on an issue event from `GITHUB_TOKEN`
+triggering another workflow.
+
+For ignored tests, the task starts by removing the relevant Ignore and following
+the [`run-tests` skill](../skills/run-tests/SKILL.md) for the smallest appropriate
+selection on the required platform. The test must actually execute. A passing
+test can be re-enabled; a newly exposed failure belongs in the tracking task.
+
+## Preview, refresh, and diagnostics
+
+Manually dispatch **Check potentially stale references** from `main`:
+
+- `dry_run: true` is the default. It produces proposed create/update payloads and decisions
+  without changing issues or the production cache.
+- `refresh_cache: true` ignores cached interpretations for collection. Batch
+  limits still apply.
+- Scheduled runs are live and retain validated interpretations.
+
+The run's `stale-reference-report-*` artifact records created/updated/proposed/skipped
+decisions, deferred context, remaining interpretations, and per-batch counts
+computed from source-validated results. The recording job also writes
+`summary.json` beside `interpretations.json`; the agent's narrative is not a
+source of counts.
+
+Model usage (requests, tokens, and AI credits) for the interpreter and threat
+detection comes from gh-aw's own per-job summaries; this workflow adds no
+separate usage accounting. An always-run agent post-step appends a
+**Source reader usage** table to the agent job summary with counts the gh-aw
+summaries cannot see: context expansions, context-budget failures, submission
+attempts, rejected submissions, and whether a submission was accepted. These
+counts are observational and never authorize filing.
+
+A failure is explicit,
+not a successful empty result. API failures do not establish that a blocker was
+resolved. Failed/cancelled interpretation jobs cannot authorize the filing job.
+Artifact consumers use the successful collection job's artifact ID, rather than
+the current attempt number. Partial reruns can therefore reuse successful
+producers without searching for an unrelated latest artifact.
+
+For local, deterministic source collection without GitHub access or inference:
+
+```powershell
+node .github\stale-reference-check\cli.mjs collect
+node .github\stale-reference-check\cli.mjs read-batch
+node .github\stale-reference-check\cli.mjs read-batch 2
+```
+
+Temporary input, cache, and report files live in the git-ignored
+`.stale-reference-check` directory. Collection alone never files issues.
+
+## Development
+
+The helpers use Node built-ins and the Octokit instance from
+`actions/github-script`; there is no package installation or SDK build.
+Run fixture and mocked-API tests with:
+
+```powershell
+node --test .github\stale-reference-check\test\*.test.mjs
+```
+
+The [helper test workflow](../workflows/stale-reference-check-tests.yml) runs
+these tests on relevant pull requests without invoking the interpreter or
+granting issue-write permissions.
+It also triggers on changes to the [Issue Monster search script](../scripts/issue-monster-search.js)
+and runs its [regression tests](../scripts/issue-monster-search.test.js) with the
+workflow-helper suite.
+It also runs an independent Docker-backed
+[`gateway-smoke.mjs`](test/gateway-smoke.mjs) protocol check against the pinned
+image. With Docker running (Linux containers), run it locally using:
+
+```powershell
+node .github\stale-reference-check\test\gateway-smoke.mjs
+```
+
+This check downloads the public pinned gateway image if needed, uses an
+authenticated synthetic MCP fixture, and verifies stateless-probe rejection,
+legacy session initialization, tool discovery, and source/output-shaped tool
+calls. It uses no Copilot PAT, GitHub API, or model inference and removes its
+uniquely named container on completion. An optional digest-pinned gateway image
+argument allows checking a previous version against the same assertions.
+The fast fixture tests remain independent of Docker. The protocol check does not
+replace an end-to-end hosted preview of the interpreter.
+
+Edit the interpreter Markdown, never its generated lock file. The checked-in
+workflow is compiled with gh-aw v0.89.21 and its matching immutable runtime:
+
+```powershell
+gh aw compile stale-reference-interpret --action-mode action --action-tag v0.89.21
+```
+
+When changing the compiler/runtime together, regenerate only this workflow and
+inspect its job dependencies, artifact handoff, action pins, and permissions.
+The caller's Actions-write ceiling is required by the compiler's disabled
+conclusion job; every executing interpreter job explicitly uses read-only
+Actions permissions, and none can write issues.
+The source interpreter uses the repository's existing Copilot PAT pool only for
+Copilot authentication; deterministic GitHub operations use the job token.
+No new secrets are required.

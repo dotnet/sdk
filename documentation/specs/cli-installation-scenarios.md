@@ -108,7 +108,7 @@ This, however, does have one specific constraint: **newer versions must be insta
 
 `*` PKG cannot specify and automatically install native dependencies
 
-A list of dependencies can be found on [dependency list](TBD). 
+A list of dependencies is not yet available.
 
 ## Channels
 Channels represent a way for users who are getting the CLI to reason about the stability and quality of the bits they are getting. This is one more way for the user to be fully aware of the state the bits that are being installed are in and to set proper expectations on first use. 
