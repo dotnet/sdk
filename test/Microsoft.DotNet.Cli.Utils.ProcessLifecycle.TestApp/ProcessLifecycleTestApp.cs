@@ -63,7 +63,12 @@ public static partial class ProcessLifecycleTestApp
 
         using IDisposable processLifecycle = ProcessLifecycle.Initialize();
         CancellationToken cancellationToken = ProcessLifecycle.CancellationToken;
-        using CancellationTokenRegistration registration = childMode is "uncooperative" or "repeated"
+        using IDisposable softCancellationTimeout =
+            childMode is "repeated" or "extended-grace"
+                ? ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan)
+                : null!;
+        using CancellationTokenRegistration registration =
+            childMode is "cooperative" or "uncooperative" or "repeated" or "extended-grace"
             ? cancellationToken.Register(() => WriteMarker(markerPath, "signal-cancelled"))
             : default;
 
@@ -71,8 +76,6 @@ public static partial class ProcessLifecycleTestApp
 
         if (childMode == "repeated")
         {
-            using IDisposable softCancellationTimeout =
-                ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan);
             Thread.Sleep(Timeout.Infinite);
         }
 
@@ -83,17 +86,16 @@ public static partial class ProcessLifecycleTestApp
 
         if (childMode == "forceful-cooperative")
         {
+            using CancellationTokenRegistration forcefulRegistration =
+                ProcessLifecycle.ForcefulCancellationToken.Register(
+                    () => WriteMarker(markerPath, "forceful-cancelled"));
             ProcessLifecycle.ForcefulCancellationToken.WaitHandle.WaitOne();
-            WriteMarker(markerPath, "forceful-cancelled");
             return GetSignalExitCode(cancellationToken);
         }
 
         if (childMode == "extended-grace")
         {
             cancellationToken.WaitHandle.WaitOne();
-            using IDisposable softCancellationTimeout =
-                ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan);
-            WriteMarker(markerPath, "signal-cancelled");
             Thread.Sleep(TimeSpan.FromMilliseconds(750));
             WriteMarker(markerPath, "override-completed");
             return GetSignalExitCode(cancellationToken);
@@ -111,6 +113,8 @@ public static partial class ProcessLifecycleTestApp
         using FileStream stream = new(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
         using StreamWriter writer = new(stream);
         writer.Write(value);
+        writer.Flush();
+        File.WriteAllText(path + "." + value, "");
     }
 
     private static void RunReaperParent(string[] args, string markerPath, string childMode)

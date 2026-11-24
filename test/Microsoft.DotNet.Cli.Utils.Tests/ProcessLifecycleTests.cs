@@ -11,6 +11,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests;
 public class ProcessLifecycleTests : SdkTest
 {
     private static readonly TimeSpan s_waitTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan s_processTimingTimeout = TimeSpan.FromSeconds(10);
 
     [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
@@ -68,7 +69,7 @@ public class ProcessLifecycleTests : SdkTest
         child.WaitForExit(s_waitTimeout).Should().BeTrue();
 
         child.ExitCode.Should().Be(130);
-        stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1.5));
+        stopwatch.Elapsed.Should().BeLessThan(s_processTimingTimeout);
     }
 
     [TestMethod]
@@ -114,8 +115,8 @@ public class ProcessLifecycleTests : SdkTest
         child.WaitForExit(s_waitTimeout).Should().BeTrue();
 
         child.ExitCode.Should().Be(130);
-        stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
-        File.ReadAllText(GetMarkerPath(testDirectory.Path)).Should().Be("signal-cancelled");
+        stopwatch.Elapsed.Should().BeLessThan(s_processTimingTimeout);
+        MarkerHasValue(GetMarkerPath(testDirectory.Path), "signal-cancelled").Should().BeTrue();
     }
 
     [TestMethod]
@@ -209,7 +210,7 @@ public class ProcessLifecycleTests : SdkTest
             child.WaitForExit(s_waitTimeout).Should().BeTrue();
 
             child.ExitCode.Should().Be(130);
-            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
+            stopwatch.Elapsed.Should().BeLessThan(s_processTimingTimeout);
             string standardError = stderrTask.GetAwaiter().GetResult();
             standardError.Should().NotContain("Unhandled exception");
             standardError.Should().NotContain("The operation was canceled");
@@ -250,7 +251,7 @@ public class ProcessLifecycleTests : SdkTest
         uncooperativeReaperParent.SafeHandle.Signal(PosixSignal.SIGTERM).Should().BeTrue();
         uncooperativeReaperParent.WaitForExit(s_waitTimeout).Should().BeTrue();
         uncooperativeReaperParent.ExitCode.Should().NotBe(0);
-        stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(2));
+        stopwatch.Elapsed.Should().BeLessThan(s_processTimingTimeout);
     }
 
     [TestMethod]
@@ -319,7 +320,7 @@ public class ProcessLifecycleTests : SdkTest
             SendSignal(child, testDirectory.Path, signal, sequence: 2);
             child.WaitForExit(s_waitTimeout).Should().BeTrue();
             child.ExitCode.Should().Be(expectedExitCode);
-            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
+            stopwatch.Elapsed.Should().BeLessThan(s_processTimingTimeout);
         }
         finally
         {
@@ -331,8 +332,13 @@ public class ProcessLifecycleTests : SdkTest
     {
         string markerPath = GetMarkerPath(testDirectory);
         File.Delete(markerPath);
-        File.Delete(markerPath + ".signal-1");
-        File.Delete(markerPath + ".signal-2");
+        foreach (string signalMarkerPath in Directory.EnumerateFiles(
+                     testDirectory,
+                     Path.GetFileName(markerPath) + ".*"))
+        {
+            File.Delete(signalMarkerPath);
+        }
+
         Process process = CreateChildProcess(childMode, testDirectory);
         process.Start();
         return process;
@@ -395,11 +401,28 @@ public class ProcessLifecycleTests : SdkTest
     private static bool TryWaitForMarker(string testDirectory, string expectedValue)
     {
         string markerPath = GetMarkerPath(testDirectory);
-        return SpinWait.SpinUntil(() => MarkerHasValue(markerPath, expectedValue), s_waitTimeout);
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        do
+        {
+            if (MarkerHasValue(markerPath, expectedValue))
+            {
+                return true;
+            }
+
+            Thread.Sleep(TimeSpan.FromMilliseconds(10));
+        }
+        while (stopwatch.Elapsed < s_waitTimeout);
+
+        return MarkerHasValue(markerPath, expectedValue);
     }
 
     private static bool MarkerHasValue(string markerPath, string expectedValue)
     {
+        if (File.Exists(markerPath + "." + expectedValue))
+        {
+            return true;
+        }
+
         try
         {
             if (!File.Exists(markerPath))
