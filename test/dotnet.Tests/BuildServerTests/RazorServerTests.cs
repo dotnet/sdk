@@ -17,6 +17,8 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
     [TestClass]
     public class RazorServerTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         [TestMethod]
         public void GivenAFailedShutdownCommandItThrows()
         {
@@ -47,7 +49,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 commandFactory: CreateCommandFactoryMock(serverPath, PipeName, exitCode: 1, stdErr: ErrorMessage).Object,
                 fileSystem: fileSystemMock);
 
-            Action a = () => server.Shutdown();
+            Action a = () => server.Shutdown(TestContext.CancellationToken);
 
             a.Should().Throw<BuildServerException>().WithMessage(
                 string.Format(
@@ -86,7 +88,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 commandFactory: CreateCommandFactoryMock(serverPath, PipeName).Object,
                 fileSystem: fileSystemMock);
 
-            server.Shutdown();
+            server.Shutdown(TestContext.CancellationToken);
 
             fileSystemMock.File.Exists(pidFilePath).Should().BeFalse();
         }
@@ -120,7 +122,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 commandFactory: commandFactoryMock.Object,
                 fileSystem: fileSystemMock);
 
-            Action a = () => server.Shutdown();
+            Action a = () => server.Shutdown(TestContext.CancellationToken);
 
             a.Should().NotThrow();
             commandFactoryMock.Verify(c => c.Create(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<NuGetFramework>(), It.IsAny<string>()), Times.Never);
@@ -133,7 +135,9 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
             var commandMock = new Mock<ICommand>(MockBehavior.Strict);
             commandMock.Setup(c => c.CaptureStdOut()).Returns(commandMock.Object);
             commandMock.Setup(c => c.CaptureStdErr()).Returns(commandMock.Object);
-            commandMock.Setup(c => c.Execute()).Returns(new CommandResult(null, exitCode, "", stdErr));
+            commandMock
+                .Setup(c => c.Execute(It.IsAny<CancellationToken>()))
+                .Returns(new CommandResult(null, exitCode, "", stdErr));
 
             var commandFactoryMock = new Mock<ICommandFactory>(MockBehavior.Strict);
             commandFactoryMock

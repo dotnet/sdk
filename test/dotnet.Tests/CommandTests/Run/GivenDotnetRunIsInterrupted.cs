@@ -27,7 +27,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")
-                .WithWorkingDirectory(asset.Path);
+                .WithWorkingDirectory(asset.Path)
+                .WithEnvironmentVariable("DOTNET_TEST_WINEXE_CLOSE_DELAY_MS", "1000");
 
             // Launch dotnet run in a new process group so that GenerateConsoleCtrlEvent
             // targets only the child group and does not propagate to the test host.

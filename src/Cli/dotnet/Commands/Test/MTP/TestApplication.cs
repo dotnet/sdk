@@ -105,13 +105,14 @@ internal sealed class TestApplication(
         {
             Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{GetArgumentsForLogging(processStartInfo.Arguments)}'.");
 
-            process = Process.Start(processStartInfo)!;
+            process = ctrlC.StartAndRegister(() => Process.Start(processStartInfo));
+            if (process is null)
+            {
+                return ExitCode.TestSessionAborted;
+            }
+
             _testRunPolicy?.OnTestApplicationStarted();
             testApplicationStarted = true;
-
-            // Register with the Ctrl+C manager so a force-exit (second Ctrl+C) kills this process
-            // tree even if the child's own cooperative cancellation hangs.
-            ctrlC.Register(process);
 
             // Reading from process stdout/stderr is done on separate threads to avoid blocking IO on the threadpool.
             // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with

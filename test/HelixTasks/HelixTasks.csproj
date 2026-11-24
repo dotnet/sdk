@@ -8,11 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime;buildTransitive" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime;buildTransitive" />
-    <PackageReference Include="Newtonsoft.Json" />
+    <!-- Compile against the bootstrap .NET task host, not the shipping MSBuild packages.
+         Use NetCoreSdkRoot because these tasks run with Runtime="NET" even under Full Framework MSBuild. -->
+    <Reference Include="$(NetCoreSdkRoot)Microsoft.Build.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)Microsoft.Build.Framework.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)Microsoft.Build.Utilities.Core.dll" Private="false" />
+    <Reference Include="$(NetCoreSdkRoot)NuGet.Frameworks.dll" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
-    <PackageReference Include="NuGet.ProjectModel" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">

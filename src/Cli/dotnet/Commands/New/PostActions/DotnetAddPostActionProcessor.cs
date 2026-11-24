@@ -10,11 +10,11 @@ using Microsoft.TemplateEngine.Utils;
 namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
 internal class DotnetAddPostActionProcessor(
-    Func<string, string, string?, bool>? addPackageReferenceCallback = null,
-    Func<string, string, bool>? addProjectReferenceCallback = null) : PostActionProcessorBase
+    Func<string, string, string?, CancellationToken, bool>? addPackageReferenceCallback = null,
+    Func<string, string, CancellationToken, bool>? addProjectReferenceCallback = null) : PostActionProcessorBase
 {
-    private readonly Func<string, string, string?, bool> _addPackageReferenceCallback = addPackageReferenceCallback ?? DotnetCommandCallbacks.AddPackageReference;
-    private readonly Func<string, string, bool> _addProjectReferenceCallback = addProjectReferenceCallback ?? DotnetCommandCallbacks.AddProjectReference;
+    private readonly Func<string, string, string?, CancellationToken, bool> _addPackageReferenceCallback = addPackageReferenceCallback ?? DotnetCommandCallbacks.AddPackageReference;
+    private readonly Func<string, string, CancellationToken, bool> _addProjectReferenceCallback = addProjectReferenceCallback ?? DotnetCommandCallbacks.AddProjectReference;
 
     public override Guid Id => ActionProcessorId;
 
@@ -32,7 +32,7 @@ internal class DotnetAddPostActionProcessor(
         }
     }
 
-    protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction action, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath)
+    protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction action, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath, CancellationToken cancellationToken)
     {
         IReadOnlyList<string>? projectsToProcess = GetConfiguredFiles(action.Args, creationEffects, "targetFiles", outputBasePath);
 
@@ -80,7 +80,7 @@ internal class DotnetAddPostActionProcessor(
         bool success = true;
         foreach (string projectFile in projectsToProcess)
         {
-            success &= AddReference(action, projectFile, outputBasePath, creationEffects);
+            success &= AddReference(action, projectFile, outputBasePath, creationEffects, cancellationToken);
 
             if (!success)
             {
@@ -111,7 +111,7 @@ internal class DotnetAddPostActionProcessor(
         return foundFiles ?? [];
     }
 
-    private bool AddReference(IPostAction actionConfig, string projectFile, string outputBasePath, ICreationEffects creationEffects)
+    private bool AddReference(IPostAction actionConfig, string projectFile, string outputBasePath, ICreationEffects creationEffects, CancellationToken cancellationToken)
     {
         if (actionConfig.Args == null || !actionConfig.Args.TryGetValue("reference", out string? referenceToAdd))
         {
@@ -132,12 +132,12 @@ internal class DotnetAddPostActionProcessor(
             string relativeProjectReference = referenceNameChange ?? referenceToAdd;
 
             referenceToAdd = Path.GetFullPath(relativeProjectReference, outputBasePath);
-            return AddProjectReference(projectFile, referenceToAdd);
+            return AddProjectReference(projectFile, referenceToAdd, cancellationToken);
         }
         else if (string.Equals(referenceType, "package", StringComparison.OrdinalIgnoreCase))
         {
             actionConfig.Args.TryGetValue("version", out string? version);
-            return AddPackageReference(projectFile, referenceToAdd, version);
+            return AddPackageReference(projectFile, referenceToAdd, version, cancellationToken);
         }
         else if (string.Equals(referenceType, "framework", StringComparison.OrdinalIgnoreCase))
         {
@@ -151,7 +151,7 @@ internal class DotnetAddPostActionProcessor(
         }
     }
 
-    private bool AddPackageReference(string projectPath, string packageName, string? version)
+    private bool AddPackageReference(string projectPath, string packageName, string? version, CancellationToken cancellationToken)
     {
         try
         {
@@ -163,7 +163,7 @@ internal class DotnetAddPostActionProcessor(
             {
                 Reporter.Output.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddPackageReference_WithVersion, packageName, version, projectPath));
             }
-            bool succeeded = _addPackageReferenceCallback(projectPath, packageName, version);
+            bool succeeded = _addPackageReferenceCallback(projectPath, packageName, version, cancellationToken);
             if (succeeded)
             {
                 Reporter.Output.WriteLine(CliCommandStrings.PostAction_AddReference_Succeeded);
@@ -174,19 +174,19 @@ internal class DotnetAddPostActionProcessor(
             }
             return succeeded;
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddPackageReference_Failed, e.Message));
             return false;
         }
     }
 
-    private bool AddProjectReference(string projectPath, string projectToAdd)
+    private bool AddProjectReference(string projectPath, string projectToAdd, CancellationToken cancellationToken)
     {
         try
         {
             Reporter.Output.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddProjectReference, projectToAdd, projectPath));
-            bool succeeded = _addProjectReferenceCallback(projectPath, projectToAdd);
+            bool succeeded = _addProjectReferenceCallback(projectPath, projectToAdd, cancellationToken);
             if (succeeded)
             {
                 Reporter.Output.WriteLine(CliCommandStrings.PostAction_AddReference_Succeeded);
@@ -197,7 +197,7 @@ internal class DotnetAddPostActionProcessor(
             }
             return succeeded;
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddProjectReference_Failed, e.Message));
             return false;

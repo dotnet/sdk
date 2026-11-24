@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void WhenRunWithPackageIdItShouldRemoveFromManifestFile()
         {
-            _defaultToolUninstallLocalCommand.Execute().Should().Be(0);
+            _defaultToolUninstallLocalCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _fileSystem.File.ReadAllText(_manifestFilePath).Should().Be(_entryRemovedJsonContent);
         }
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void GivenNoManifestFileItShouldThrow()
         {
             _fileSystem.File.Delete(_manifestFilePath);
-            Action a = () => _defaultToolUninstallLocalCommand.Execute().Should().Be(0);
+            Action a = () => _defaultToolUninstallLocalCommand.Execute(CancellationToken.None).Should().Be(0);
 
             a.Should().Throw<GracefulException>()
                .And.Message.Should()
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Delete(_manifestFilePath);
             _fileSystem.File.WriteAllText(_manifestFilePath, _jsonContentContainNoPackageId);
 
-            Action a = () => _defaultToolUninstallLocalCommand.Execute().Should().Be(0);
+            Action a = () => _defaultToolUninstallLocalCommand.Execute(CancellationToken.None).Should().Be(0);
 
             a.Should().Throw<GracefulException>()
                .And.Message.Should()
@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _toolManifestEditor,
                 _reporter);
 
-            toolUninstallLocalCommand.Execute().Should().Be(0);
+            toolUninstallLocalCommand.Execute(CancellationToken.None).Should().Be(0);
             _fileSystem.File.ReadAllText(explicitManifestFilePath).Should().Be(_entryRemovedJsonContent);
         }
 
@@ -120,7 +120,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 parseResult,
                 toolUninstallLocalCommand: toolUninstallLocalCommand);
 
-            toolUninstallCommand.Execute().Should().Be(0);
+            toolUninstallCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _fileSystem.File.ReadAllText(_manifestFilePath).Should().Be(_entryRemovedJsonContent);
         }
@@ -128,7 +128,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void WhenRunWithPackageIdItShouldShowSuccessMessage()
         {
-            _defaultToolUninstallLocalCommand.Execute();
+            _defaultToolUninstallLocalCommand.Execute(CancellationToken.None);
             _reporter.Lines.Single()
                 .Should().Contain(
                     string.Format(
@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parentManifestFilePath = Path.Combine(_temporaryDirectoryParent, "dotnet-tools.json");
             _fileSystem.File.WriteAllText(parentManifestFilePath, _jsonContent);
 
-            _defaultToolUninstallLocalCommand.Execute();
+            _defaultToolUninstallLocalCommand.Execute(CancellationToken.None);
 
             _fileSystem.File.ReadAllText(_manifestFilePath).Should().Be(_entryRemovedJsonContent, "Change the closest one");
             _fileSystem.File.ReadAllText(parentManifestFilePath).Should().Be(_jsonContent, "Do not change the manifest layer above");
@@ -155,8 +155,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parentManifestFilePath = Path.Combine(_temporaryDirectoryParent, "dotnet-tools.json");
             _fileSystem.File.WriteAllText(parentManifestFilePath, _jsonContent);
 
-            _defaultToolUninstallLocalCommand.Execute();
-            _defaultToolUninstallLocalCommand.Execute();
+            _defaultToolUninstallLocalCommand.Execute(CancellationToken.None);
+            _defaultToolUninstallLocalCommand.Execute(CancellationToken.None);
 
             _fileSystem.File.ReadAllText(parentManifestFilePath).Should().Be(
                 _entryRemovedJsonContent,
@@ -169,7 +169,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parentManifestFilePath = Path.Combine(_temporaryDirectoryParent, "dotnet-tools.json");
             _fileSystem.File.WriteAllText(parentManifestFilePath, _jsonContent);
 
-            _defaultToolUninstallLocalCommand.Execute();
+            _defaultToolUninstallLocalCommand.Execute(CancellationToken.None);
 
             _reporter.Lines[0].Should().Contain(parentManifestFilePath);
             _reporter.Lines[0].Should().NotContain(_manifestFilePath);

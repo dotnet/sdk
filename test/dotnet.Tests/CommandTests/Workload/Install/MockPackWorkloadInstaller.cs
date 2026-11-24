@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             new List<(ManifestVersionUpdate manifestUpdate, DirectoryPath?)>();
         public string CachePath;
         public bool GarbageCollectionCalled = false;
+        public bool ShutdownCalled = false;
         public bool InstallWorkloadSetCalled = false;
         public MockInstallationRecordRepository InstallationRecordRepository;
         public bool FailingRollback;
@@ -80,8 +81,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
         }
 
-        public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
+        public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, CancellationToken cancellationToken, DirectoryPath? offlineCache = null)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             List<PackInfo> packs = new();
 
             transactionContext.Run(action: () =>
@@ -119,10 +121,15 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             });
         }
 
-        public WorkloadSet GetWorkloadSetContents(string workloadSetVersion) => WorkloadSet.FromJson(workloadSetContents[workloadSetVersion], new SdkFeatureBand("6.0.100"));
-
-        public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
+        public WorkloadSet GetWorkloadSetContents(string workloadSetVersion, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            return WorkloadSet.FromJson(workloadSetContents[workloadSetVersion], new SdkFeatureBand("6.0.100"));
+        }
+
+        public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, CancellationToken cancellationToken, DirectoryPath? offlineCache = null)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
             InstallWorkloadSetCalled = true;
             InstalledWorkloadSet = WorkloadSet.FromJson(workloadSetContents[workloadSetVersion], new SdkFeatureBand("6.0.100"));
             InstalledWorkloadSet.Version = workloadSetVersion;
@@ -139,14 +146,16 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return HistoryRecords;
         }
 
-        public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null)
+        public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, CancellationToken cancellationToken, DirectoryPath? offlineCache = null)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             // Repair is essentially a reinstall of existing workloads
-            CliTransaction.RunNew(context => InstallWorkloads(workloadIds, sdkFeatureBand, context, offlineCache));
+            CliTransaction.RunNew(context => InstallWorkloads(workloadIds, sdkFeatureBand, context, cancellationToken, offlineCache));
         }
 
-        public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
+        public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, CancellationToken cancellationToken, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (FailingGarbageCollection)
             {
                 throw new Exception("Failing garbage collection");
@@ -161,8 +170,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return InstallationRecordRepository;
         }
 
-        public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
+        public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, CancellationToken cancellationToken, DirectoryPath? offlineCache = null)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             InstalledManifests.Add((manifestUpdate, offlineCache));
 
             // Also create the actual manifest file on disk so that SdkDirectoryWorkloadManifestProvider can find it
@@ -202,7 +212,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         public void Shutdown()
         {
-
+            ShutdownCalled = true;
         }
 
         public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)
@@ -212,8 +222,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         public List<(string nupkgPath, string targetPath)> ExtractCallParams = new();
 
-        public Task ExtractManifestAsync(string nupkgPath, string targetPath)
+        public Task ExtractManifestAsync(string nupkgPath, string targetPath, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             ExtractCallParams.Add((nupkgPath, targetPath));
 
             if (Directory.Exists(targetPath))

@@ -25,7 +25,8 @@ namespace Microsoft.DotNet.Cli;
 internal sealed class ReleasePropertyProjectLocator(
     ReadOnlyDictionary<string, string>? userSpecifiedExplicitMSBuildProperties,
     string propertyToCheck,
-    ReleasePropertyProjectLocator.DependentCommandOptions commandOptions)
+    ReleasePropertyProjectLocator.DependentCommandOptions commandOptions,
+    CancellationToken cancellationToken)
 {
     public readonly struct DependentCommandOptions(IEnumerable<string>? slnOrProjectArgs, string? configOption = null, string? frameworkOption = null)
     {
@@ -34,8 +35,8 @@ internal sealed class ReleasePropertyProjectLocator(
         public readonly string? ConfigurationOption = configOption;
     }
 
-    private const string SolutionFolderGuid = "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
-    private const string SharedProjectGuid = "{D954291E-2A0B-460D-934E-DC6B0785DB48}";
+    private static readonly Guid SolutionFolderGuid = new("2150E333-8FDC-42A3-9474-1A3956D46DE8");
+    private static readonly Guid SharedProjectGuid = new("D954291E-2A0B-460D-934E-DC6B0785DB48");
 
     private bool _isHandlingSolution = false;
 
@@ -148,7 +149,11 @@ internal sealed class ReleasePropertyProjectLocator(
         SolutionModel sln;
         try
         {
-            sln = SlnFileFactory.CreateFromFileOrDirectory(slnFullPath, false, false);
+            sln = SlnFileFactory.CreateFromFileOrDirectory(
+                slnFullPath,
+                cancellationToken,
+                includeSolutionFilterFiles: false,
+                includeSolutionXmlFiles: false);
         }
         catch (GracefulException)
         {
@@ -237,7 +242,7 @@ internal sealed class ReleasePropertyProjectLocator(
     /// <returns>True if the project is not supported by ProjectInstance class or appears to be invalid.</returns>
     private bool IsUnanalyzableProjectInSolution(SolutionProjectModel project, string projectFullPath)
     {
-        return project.TypeId.ToString() == SolutionFolderGuid || project.TypeId.ToString() == SharedProjectGuid || !IsValidProjectFilePath(projectFullPath);
+        return project.TypeId == SolutionFolderGuid || project.TypeId == SharedProjectGuid || !IsValidProjectFilePath(projectFullPath);
     }
 
     /// <returns>Creates a ProjectInstance if the project is valid, elsewise, fails.</returns>

@@ -62,6 +62,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -89,6 +90,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             {
                 package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                     packageId: TestPackageId,
+                    cancellationToken: TestContext.CancellationToken,
                     verbosity: TestVerbosity,
                     versionRange: VersionRange.Parse(TestPackageVersion),
                     targetFramework: _testTargetframework,
@@ -114,6 +116,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -157,6 +160,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.InstallPackage(
                 new PackageLocation(rootConfigDirectory: subDirectory),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -225,6 +229,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.InstallPackage(
                 new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
@@ -246,6 +251,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 isGlobalTool: true,
@@ -269,6 +275,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -303,6 +310,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.InstallPackage(
                 new PackageLocation(additionalFeeds: new[] {relativePath}),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -330,6 +338,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(
                 new PackageLocation(additionalFeeds: new[] { new Uri(source).AbsoluteUri }), packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -356,6 +365,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config"),
                     additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -388,6 +398,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 {
                     downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
+                        cancellationToken: TestContext.CancellationToken,
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
@@ -423,6 +434,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 {
                     Action first = () => downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
+                        cancellationToken: TestContext.CancellationToken,
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
@@ -433,6 +445,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
                     downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
+                        cancellationToken: TestContext.CancellationToken,
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
@@ -482,6 +495,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 {
                     downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
+                        cancellationToken: TestContext.CancellationToken,
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
@@ -538,6 +552,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 {
                     downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
+                        cancellationToken: TestContext.CancellationToken,
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
@@ -546,6 +561,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
                     downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
+                        cancellationToken: TestContext.CancellationToken,
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
@@ -574,6 +590,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -584,6 +601,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             Action secondCall = () => downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -628,6 +646,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -655,6 +674,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.InstallPackage(
                 new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -691,6 +711,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -721,6 +742,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: new PackageId("GlObAl.TooL.coNsoLe.DemO"),
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
@@ -744,6 +766,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     () => downloader.InstallPackage(
                         new PackageLocation(additionalFeeds: [source]),
                         packageId: TestPackageId,
+                        cancellationToken: TestContext.CancellationToken,
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
@@ -797,7 +820,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     blockingDownloader,
                     packagesRoot.Value,
                     packageVersion,
-                    packageSourceLocation),
+                    packageSourceLocation,
+                    TestContext.CancellationToken),
                 TestContext.CancellationToken);
 
             try
@@ -842,7 +866,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     downloader.CreatePackageDownloader(),
                     packagesRoot.Value,
                     packageVersion,
-                    packageSourceLocation),
+                    packageSourceLocation,
+                    TestContext.CancellationToken),
                 TestContext.CancellationToken);
 
             try
@@ -878,6 +903,113 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string expectedContentHash = reader.GetContentHash(CancellationToken.None, () => expectedPackageHash);
             string metadataPath = pathResolver.GetNupkgMetadataPath(TestPackageId.ToString(), packageVersion);
             NupkgMetadataFileFormat.Read(metadataPath).ContentHash.Should().Be(expectedContentHash);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task GivenMetadataPublicationFailsItPreservesThePackageForAnotherInstall(bool metadataPublished)
+        {
+            string source = GetTestLocalFeedPath();
+            var root = TestAssetsManager.CreateTestDirectory(identifier: metadataPublished.ToString());
+            var packagesRoot = new DirectoryPath(Path.Combine(root.Path, "packages"));
+            string runtimeJsonPath = Path.Combine(
+                SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest,
+                "RuntimeIdentifierGraph.json");
+            var packageVersion = NuGetVersion.Parse(TestPackageVersion);
+            var packageSourceLocation = new PackageSourceLocation(additionalSourceFeeds: [source], basePath: root.Path);
+            var pathResolver = new VersionFolderPathResolver(packagesRoot.Value);
+            string hashPath = pathResolver.GetHashPath(TestPackageId.ToString(), packageVersion);
+            string metadataPath = pathResolver.GetNupkgMetadataPath(TestPackageId.ToString(), packageVersion);
+            var metadataPublicationReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var continuePublication = new ManualResetEventSlim(initialState: false);
+            Action failPublication = () =>
+            {
+                metadataPublicationReached.SetResult();
+                continuePublication.Wait(TestContext.CancellationToken);
+                throw new IOException("Simulated metadata publication failure.");
+            };
+            using var downloader = new TestableToolPackageDownloader(
+                new ToolPackageStoreAndQuery(new DirectoryPath(Path.Combine(root.Path, "tools"))),
+                runtimeJsonPath,
+                root.Path,
+                beforeMetadataPublication: metadataPublished ? null : failPublication,
+                afterMetadataPublication: metadataPublished ? failPublication : null);
+            using var reusingDownloader = new TestableToolPackageDownloader(
+                new ToolPackageStoreAndQuery(new DirectoryPath(Path.Combine(root.Path, "reusing-tools"))),
+                runtimeJsonPath,
+                root.Path);
+
+            Task<NuGetVersion> download = Task.Run(() =>
+            {
+                using FileStream installLock = ToolPackageDownloaderBase.AcquireToolInstallLock(
+                    packagesRoot, TestPackageId, packageVersion, cancellationToken: TestContext.CancellationToken);
+                return downloader.DownloadAndExtract(
+                    TestPackageId,
+                    downloader.CreatePackageDownloader(),
+                    packagesRoot.Value,
+                    packageVersion,
+                    packageSourceLocation,
+                    TestContext.CancellationToken);
+            }, TestContext.CancellationToken);
+
+            Task<IToolPackage> reuse;
+            string publishedHash;
+            try
+            {
+                Task firstCompleted = await Task.WhenAny(metadataPublicationReached.Task, download)
+                    .WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+                firstCompleted.Should().Be(metadataPublicationReached.Task);
+                publishedHash = File.ReadAllText(hashPath);
+                File.Exists(metadataPath).Should().Be(metadataPublished);
+                reuse = Task.Run(() => reusingDownloader.InstallFromCache(
+                    TestPackageId,
+                    packageVersion,
+                    packagesRoot,
+                    packageSourceLocation,
+                    _testTargetframework,
+                    TestContext.CancellationToken), TestContext.CancellationToken);
+                if (metadataPublished)
+                {
+                    IToolPackage acceptedPackage = await reuse.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+                    File.Exists(acceptedPackage.Command.Executable.Value).Should().BeTrue();
+                }
+                else
+                {
+                    (await Task.WhenAny(reuse, Task.Delay(TimeSpan.FromMilliseconds(250), TestContext.CancellationToken)))
+                        .Should().NotBe(reuse, "NuGet must wait for the writer before it can repair the missing metadata");
+                }
+            }
+            finally
+            {
+                continuePublication.Set();
+            }
+
+            Func<Task> awaitDownload = async () => await download;
+            await awaitDownload.Should().ThrowAsync<IOException>()
+                .WithMessage("Simulated metadata publication failure.");
+            IToolPackage reusedPackage = await reuse.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+            File.Exists(reusedPackage.Command.Executable.Value).Should().BeTrue(
+                "metadata publication failure must not delete a package accepted by another install");
+            File.ReadAllText(hashPath).Should().Be(publishedHash);
+            File.Exists(metadataPath).Should().BeTrue(
+                "NuGet must preserve published metadata or repair it after the writer releases its lock");
+            var packageDownloader = new StaticPackagePathNuGetPackageDownloader("must-not-download");
+            reusingDownloader.DownloadAndExtract(
+                TestPackageId,
+                packageDownloader,
+                packagesRoot.Value,
+                packageVersion,
+                packageSourceLocation,
+                TestContext.CancellationToken).Should().Be(packageVersion);
+            packageDownloader.ExtractCalled.Should().BeFalse();
+            File.ReadAllText(hashPath).Should().Be(publishedHash);
+            File.Exists(reusedPackage.Command.Executable.Value).Should().BeTrue();
+            using FileStream packageStream = File.OpenRead(
+                pathResolver.GetPackageFilePath(TestPackageId.ToString(), packageVersion));
+            using PackageArchiveReader reader = new(packageStream);
+            NupkgMetadataFileFormat.Read(metadataPath).ContentHash.Should().Be(
+                reader.GetContentHash(CancellationToken.None, () => publishedHash));
         }
 
         [TestMethod]
@@ -918,7 +1050,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     blockingDownloader,
                     packagesRoot.Value,
                     packageVersion,
-                    packageSourceLocation),
+                    packageSourceLocation,
+                    TestContext.CancellationToken),
                 TestContext.CancellationToken);
 
             Task firstCompleted = await Task.WhenAny(
@@ -976,7 +1109,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 packageDownloader,
                 packagesRoot.Value,
                 packageVersion,
-                new PackageSourceLocation(basePath: root.Path));
+                new PackageSourceLocation(basePath: root.Path),
+                TestContext.CancellationToken);
 
             download.Should().Throw<PackagingException>()
                 .WithMessage($"*'{actualIdentity}'*'{new PackageIdentity(TestPackageId.ToString(), packageVersion)}'*");
@@ -1008,6 +1142,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             downloader.InstallPackage(
                 packageLocation,
                 TestPackageId,
+                TestContext.CancellationToken,
                 TestVerbosity,
                 packageVersion,
                 _testTargetframework,
@@ -1033,6 +1168,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 downloader.InstallPackage(
                     packageLocation,
                     TestPackageId,
+                    TestContext.CancellationToken,
                     TestVerbosity,
                     packageVersion,
                     _testTargetframework,
@@ -1078,6 +1214,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 () => failingDownloader.InstallPackage(
                     packageLocation,
                     TestPackageId,
+                    TestContext.CancellationToken,
                     TestVerbosity,
                     packageVersion,
                     _testTargetframework,
@@ -1096,6 +1233,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 reusedPackage = reusingDownloader.InstallPackage(
                     packageLocation,
                     TestPackageId,
+                    TestContext.CancellationToken,
                     TestVerbosity,
                     packageVersion,
                     _testTargetframework,
@@ -1227,6 +1365,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -1255,6 +1394,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config"),
                     additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
+                cancellationToken: TestContext.CancellationToken,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse("1.0.0-rc*"),
                 targetFramework: _testTargetframework,
@@ -1294,6 +1434,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         nugetConfig: testDir.WithFile("NuGet.config"),
                         additionalFeeds: new[] { emptySource }),
                     packageId: packageId,
+                    cancellationToken: TestContext.CancellationToken,
                     verbosity: TestVerbosity,
                     versionRange: VersionRange.Parse(packageVersion),
                     targetFramework: _testTargetframework,
@@ -1463,6 +1604,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private sealed class TestableToolPackageDownloader : ToolPackageDownloader, IDisposable
         {
             private readonly bool _pauseHashPublication;
+            private readonly Action _beforeMetadataPublication;
+            private readonly Action _afterMetadataPublication;
             private readonly TaskCompletionSource _hashMoveStarted =
                 new(TaskCreationOptions.RunContinuationsAsynchronously);
             private readonly ManualResetEventSlim _continueHashMove = new(initialState: false);
@@ -1471,10 +1614,14 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 IToolPackageStore store,
                 string runtimeJsonPathForTests,
                 string currentWorkingDirectory,
-                bool pauseHashPublication = false)
+                bool pauseHashPublication = false,
+                Action beforeMetadataPublication = null,
+                Action afterMetadataPublication = null)
                 : base(store, runtimeJsonPathForTests, currentWorkingDirectory)
             {
                 _pauseHashPublication = pauseHashPublication;
+                _beforeMetadataPublication = beforeMetadataPublication;
+                _afterMetadataPublication = afterMetadataPublication;
             }
 
             public Task HashMoveStarted => _hashMoveStarted.Task;
@@ -1490,17 +1637,47 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 INuGetPackageDownloader packageDownloader,
                 string packagesRootPath,
                 NuGetVersion packageVersion,
-                PackageSourceLocation packageSourceLocation) =>
+                PackageSourceLocation packageSourceLocation,
+                CancellationToken cancellationToken) =>
                 DownloadAndExtractPackage(
                     packageId,
                     packageDownloader,
                     packagesRootPath,
                     packageVersion,
+                    cancellationToken,
                     packageSourceLocation,
                     TestVerbosity);
 
             public bool IsInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath) =>
                 IsPackageInstalled(packageId, packageVersion, packagesRootPath);
+
+            public IToolPackage InstallFromCache(
+                PackageId packageId,
+                NuGetVersion packageVersion,
+                DirectoryPath packagesRoot,
+                PackageSourceLocation packageSourceLocation,
+                string targetFramework,
+                CancellationToken cancellationToken)
+            {
+                DownloadTool(
+                    packagesRoot,
+                    packageId,
+                    packageVersion,
+                    cancellationToken,
+                    CreatePackageDownloader(),
+                    packageSourceLocation,
+                    givenSpecificVersion: true,
+                    assetFileDirectory: _localToolAssetDir,
+                    acquireInstallLock: true,
+                    targetFramework,
+                    TestVerbosity);
+                return new ToolPackageInstance(
+                    packageId,
+                    packageVersion,
+                    packagesRoot,
+                    _localToolAssetDir,
+                    _fileSystem);
+            }
 
             public void ContinueHashMove() => _continueHashMove.Set();
 
@@ -1513,6 +1690,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 }
 
                 base.MovePackageHash(temporaryHashPath, hashPath);
+            }
+
+            protected override void MovePackageMetadata(string temporaryMetadataPath, string metadataPath)
+            {
+                _beforeMetadataPublication?.Invoke();
+                base.MovePackageMetadata(temporaryMetadataPath, metadataPath);
+                _afterMetadataPublication?.Invoke();
             }
 
             public void Dispose() => _continueHashMove.Dispose();
@@ -1588,15 +1772,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             public void ContinueExtraction() => _continueExtraction.Set();
 
-            public async Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
+            public async Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder, CancellationToken cancellationToken)
             {
                 _extractionStarted.SetResult();
                 _continueExtraction.Wait();
-                return await _inner.ExtractPackageAsync(packagePath, targetFolder);
+                return await _inner.ExtractPackageAsync(packagePath, targetFolder, cancellationToken);
             }
 
             public Task<string> DownloadPackageAsync(
                 PackageId packageId,
+                CancellationToken cancellationToken,
                 NuGetVersion packageVersion = null,
                 PackageSourceLocation packageSourceLocation = null,
                 bool includePreview = false,
@@ -1605,6 +1790,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 PackageSourceMapping packageSourceMapping = null) =>
                 _inner.DownloadPackageAsync(
                     packageId,
+                    cancellationToken,
                     packageVersion,
                     packageSourceLocation,
                     includePreview,
@@ -1614,40 +1800,44 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             public Task<string> GetPackageUrl(
                 PackageId packageId,
+                CancellationToken cancellationToken,
                 NuGetVersion packageVersion = null,
                 PackageSourceLocation packageSourceLocation = null,
                 bool includePreview = false) =>
-                _inner.GetPackageUrl(packageId, packageVersion, packageSourceLocation, includePreview);
+                _inner.GetPackageUrl(packageId, cancellationToken, packageVersion, packageSourceLocation, includePreview);
 
             public Task<NuGetVersion> GetLatestPackageVersion(
                 PackageId packageId,
+                CancellationToken cancellationToken,
                 PackageSourceLocation packageSourceLocation = null,
                 bool includePreview = false) =>
-                _inner.GetLatestPackageVersion(packageId, packageSourceLocation, includePreview);
+                _inner.GetLatestPackageVersion(packageId, cancellationToken, packageSourceLocation, includePreview);
 
             public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(
                 PackageId packageId,
                 int numberOfResults,
+                CancellationToken cancellationToken,
                 PackageSourceLocation packageSourceLocation = null,
                 bool includePreview = false) =>
-                _inner.GetLatestPackageVersions(packageId, numberOfResults, packageSourceLocation, includePreview);
+                _inner.GetLatestPackageVersions(packageId, numberOfResults, cancellationToken, packageSourceLocation, includePreview);
 
             public Task<NuGetVersion> GetBestPackageVersionAsync(
                 PackageId packageId,
                 VersionRange versionRange,
+                CancellationToken cancellationToken,
                 PackageSourceLocation packageSourceLocation = null) =>
-                _inner.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation);
+                _inner.GetBestPackageVersionAsync(packageId, versionRange, cancellationToken, packageSourceLocation);
 
             public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
                 PackageId packageId,
                 VersionRange versionRange,
-                PackageSourceLocation packageSourceLocation = null,
-                CancellationToken cancellationToken = default) =>
+                CancellationToken cancellationToken,
+                PackageSourceLocation packageSourceLocation = null) =>
                 _inner.GetBestPackageVersionAndSourceAsync(
                     packageId,
                     versionRange,
-                    packageSourceLocation,
-                    cancellationToken);
+                    cancellationToken,
+                    packageSourceLocation);
 
             public void Dispose() => _continueExtraction.Dispose();
         }
@@ -1658,6 +1848,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             public Task<string> DownloadPackageAsync(
                 PackageId packageId,
+                CancellationToken cancellationToken,
                 NuGetVersion packageVersion = null,
                 PackageSourceLocation packageSourceLocation = null,
                 bool includePreview = false,
@@ -1666,7 +1857,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 PackageSourceMapping packageSourceMapping = null) =>
                 Task.FromResult(packagePath);
 
-            public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
+            public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder, CancellationToken cancellationToken)
             {
                 ExtractCalled = true;
                 throw new InvalidOperationException("Extraction should not run for a mismatched package identity.");
@@ -1674,6 +1865,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             public Task<string> GetPackageUrl(
                 PackageId packageId,
+                CancellationToken cancellationToken,
                 NuGetVersion packageVersion = null,
                 PackageSourceLocation packageSourceLocation = null,
                 bool includePreview = false) =>
@@ -1681,6 +1873,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             public Task<NuGetVersion> GetLatestPackageVersion(
                 PackageId packageId,
+                CancellationToken cancellationToken,
                 PackageSourceLocation packageSourceLocation = null,
                 bool includePreview = false) =>
                 throw new NotSupportedException();
@@ -1688,6 +1881,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(
                 PackageId packageId,
                 int numberOfResults,
+                CancellationToken cancellationToken,
                 PackageSourceLocation packageSourceLocation = null,
                 bool includePreview = false) =>
                 throw new NotSupportedException();
@@ -1695,14 +1889,15 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             public Task<NuGetVersion> GetBestPackageVersionAsync(
                 PackageId packageId,
                 VersionRange versionRange,
+                CancellationToken cancellationToken,
                 PackageSourceLocation packageSourceLocation = null) =>
                 throw new NotSupportedException();
 
             public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
                 PackageId packageId,
                 VersionRange versionRange,
-                PackageSourceLocation packageSourceLocation = null,
-                CancellationToken cancellationToken = default) =>
+                CancellationToken cancellationToken,
+                PackageSourceLocation packageSourceLocation = null) =>
                 throw new NotSupportedException();
         }
 

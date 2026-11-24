@@ -69,15 +69,16 @@ public static class ExponentialRetry
     }
 
     public static async Task<T> ExecuteWithRetryOnFailure<T>(Func<Task<T>> action,
+        CancellationToken cancellationToken,
         int maxRetryCount = 3,
         Func<IEnumerable<Task>>? timer = null)
     {
-        timer = timer ?? (() => Timer(Intervals));
+        timer ??= () => Timer(Intervals, cancellationToken);
         return await ExecuteAsyncWithRetry(action, result => result != null && !result.Equals(default), maxRetryCount, timer);
     }
 
-    public static IEnumerable<Task> Timer(IEnumerable<TimeSpan> interval)
+    public static IEnumerable<Task> Timer(IEnumerable<TimeSpan> interval, CancellationToken cancellationToken)
     {
-        return interval.Select(Task.Delay);
+        return interval.Select(delay => Task.Delay(delay, cancellationToken));
     }
 }

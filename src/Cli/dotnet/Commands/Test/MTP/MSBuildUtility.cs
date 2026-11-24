@@ -31,11 +31,13 @@ internal static class MSBuildUtility
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromSolution(
         string solutionFilePath,
         BuildOptions buildOptions,
-        MSBuildSession buildSession)
+        MSBuildSession buildSession,
+        CancellationToken cancellationToken)
     {
         using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
 
-        int buildExitCode = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
+        solutionFilePath = Path.GetFullPath(solutionFilePath, buildSession.WorkingDirectory);
+        int buildExitCode = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions, buildSession, cancellationToken);
 
         if (buildExitCode != 0)
         {
@@ -74,7 +76,7 @@ internal static class MSBuildUtility
 
         var collection = buildSession.ProjectCollection;
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, globalProperties, buildSession);
+        var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, globalProperties, buildSession, cancellationToken);
 
         return (projects, deviceBuildExitCode != 0 ? deviceBuildExitCode : buildExitCode);
     }
@@ -83,9 +85,12 @@ internal static class MSBuildUtility
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromProject(
         string projectFilePath,
         BuildOptions buildOptions,
-        MSBuildSession buildSession)
+        MSBuildSession buildSession,
+        CancellationToken cancellationToken)
     {
         using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+
+        projectFilePath = Path.GetFullPath(projectFilePath, buildSession.WorkingDirectory);
 
         // Pre-build device selection: evaluate the project to select devices BEFORE building,
         // so that device-provided RuntimeIdentifiers are included in the build.
@@ -103,10 +108,10 @@ internal static class MSBuildUtility
 
         if (deviceSelection is not null)
         {
-            return BuildPerTfmWithDevices(projectFilePath, buildOptions, deviceSelection, buildSession);
+            return BuildPerTfmWithDevices(projectFilePath, buildOptions, deviceSelection, buildSession, cancellationToken);
         }
 
-        int buildExitCode = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
+        int buildExitCode = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions, buildSession, cancellationToken);
 
         if (buildExitCode != 0)
         {
@@ -134,6 +139,7 @@ internal static class MSBuildUtility
         BuildOptions buildOptions,
         SolutionAndProjectUtility.DeviceSelectionResult deviceSelection,
         MSBuildSession buildSession,
+        CancellationToken cancellationToken,
         string? configuration = null,
         string? platform = null)
     {
@@ -175,7 +181,7 @@ internal static class MSBuildUtility
                 Device = device,
             };
 
-            int exitCode = BuildOrRestoreProjectOrSolution(projectFilePath, perTfmBuildOptions);
+            int exitCode = BuildOrRestoreProjectOrSolution(projectFilePath, perTfmBuildOptions, buildSession, cancellationToken);
             if (exitCode != 0)
             {
                 return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), exitCode);
@@ -394,7 +400,11 @@ internal static class MSBuildUtility
     }
 
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
+    private static int BuildOrRestoreProjectOrSolution(
+        string filePath,
+        BuildOptions buildOptions,
+        MSBuildSession buildSession,
+        CancellationToken cancellationToken)
     {
         if (buildOptions.HasNoBuild)
         {
@@ -442,7 +452,17 @@ internal static class MSBuildUtility
                 }
             }
 
-            return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
+            var command = new RestoringCommand(
+                parsedMSBuildArgs,
+                buildOptions.HasNoRestore,
+                msbuildPath: null,
+                userProfileDir: null,
+                advertiseWorkloadUpdates: null,
+                workingDirectory: buildSession.WorkingDirectory);
+
+            return buildSession.RequiresOutOfProcessBuild
+                ? command.ExecuteOutOfProc(buildSession.WorkingDirectory, cancellationToken)
+                : command.Execute(cancellationToken);
         }
         finally
         {
@@ -457,7 +477,8 @@ internal static class MSBuildUtility
         IEnumerable<(string ProjectFilePath, string? Configuration, string? Platform)> projects,
         BuildOptions buildOptions,
         IReadOnlyDictionary<string, string> globalProperties,
-        MSBuildSession buildSession)
+        MSBuildSession buildSession,
+        CancellationToken cancellationToken)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
         var solutionProjects = projects.ToArray();
@@ -485,7 +506,10 @@ internal static class MSBuildUtility
                         buildSession,
                         evaluationContext,
                         project.Configuration,
-                        project.Platform);
+                        project.Platform,
+                        // The solution was already restored and built above, so IsTestingPlatformApplication
+                        // imported from NuGet packages is reliable here.
+                        requireTestingPlatformApplication: true);
 
                     if (evaluation?.SupportsDeviceSelection == true)
                     {
@@ -548,6 +572,7 @@ internal static class MSBuildUtility
                     buildOptions,
                     deviceSelection,
                     buildSession,
+                    cancellationToken,
                     project.Configuration,
                     project.Platform);
                 if (exitCode != 0)

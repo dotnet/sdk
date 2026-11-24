@@ -187,6 +187,7 @@ which are [ignored][ignored-directives] by the C# language but recognized by the
 #:project ../MyLibrary
 #:ref ../lib/lib.cs
 #:include ./**/*.cs
+#:include appsettings.json CopyToOutputDirectory=PreserveNewest
 ```
 
 Each directive has a kind (e.g., `package`), a name (e.g., `System.CommandLine`), a separator (e.g., `@`), and a value (e.g., the package version).
@@ -205,7 +206,7 @@ Verbatim (`@"..."`) and raw (`"""..."""`) string literals are not supported.
 Quotes can only enclose a whole value, so `#:property A=B` and `#:property A="B"` are allowed, but `#:property A=B"C"` is an error.
 It is an error if a quote is left unterminated or if a quoted value contains an invalid escape sequence (e.g., `"a\q"`).
 
-`#:package`, `#:project`, and `#:ref` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
+`#:package`, `#:project`, `#:ref`, and `#:include` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
 e.g., `#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all`.
 Each metadata name must be a unique valid XML element name; each metadata value can be quoted to contain whitespace.
 When a `#:package` directive specifies its version after `@`, it cannot also specify `Version` metadata.
@@ -225,7 +226,7 @@ For backward compatibility, a directive whose value contains no double quotes is
 when its trailing whitespace-separated tokens cannot be parsed as the new metadata form:
 the entire remainder after the name and separator is taken verbatim as a single value (including any internal whitespace),
 matching how these directives behaved before quoting and metadata were supported.
-For `#:package`, `#:project`, and `#:ref`, if every trailing token is valid `Name=Value` metadata,
+For `#:package`, `#:project`, `#:ref`, and `#:include`, if every trailing token is valid `Name=Value` metadata,
 those tokens are treated as metadata instead; for example, `#:project path A=B` has the value `path` and the metadata `A=B`.
 Analyzer [CA2267](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2267)
 flags legacy directives and offers a code fix to rewrite them into the quoted form.
@@ -281,9 +282,14 @@ The directives are processed as follows:
 
   It is an error if the value is empty.
 
+  Any trailing `Name=Value` metadata is injected as child elements of the inferred item, e.g.,
+  `#:include appsettings.json CopyToOutputDirectory=PreserveNewest` produces
+  `<None Include="appsettings.json"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></None>`.
+
   Relative paths are resolved relative to the file containing the directive.
 
 - Each `#:exclude` is injected similarly to `#:include` but with `Remove="{0}"` instead of `Include="{0}"`.
+  It does not support trailing metadata because MSBuild does not allow metadata on `Remove` items.
 
 - Other directive kinds result in an error, reserving them for future use.
 

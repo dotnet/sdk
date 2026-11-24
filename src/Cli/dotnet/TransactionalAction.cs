@@ -43,6 +43,9 @@ public sealed class TransactionalAction
 
         public void Rollback(Enlistment enlistment)
         {
+            using IDisposable softCancellationTimeout =
+                ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan);
+
             if (_rollback != null)
             {
                 _rollback();

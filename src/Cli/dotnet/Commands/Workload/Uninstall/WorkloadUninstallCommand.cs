@@ -26,7 +26,8 @@ internal sealed class WorkloadUninstallCommand : WorkloadCommandBase<WorkloadUni
         ParseResult parseResult,
         IReporter reporter = null,
         IWorkloadResolverFactory workloadResolverFactory = null,
-        INuGetPackageDownloader nugetPackageDownloader = null)
+        INuGetPackageDownloader nugetPackageDownloader = null,
+        IInstaller workloadInstaller = null)
         : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
     {
         _workloadIds = parseResult.GetValue(Definition.WorkloadIdArgument)
@@ -46,12 +47,12 @@ internal sealed class WorkloadUninstallCommand : WorkloadCommandBase<WorkloadUni
         _userProfileDir = creationResult.UserProfileDir;
 
         var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
-        _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, creationResult.WorkloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath);
+        _workloadInstaller = workloadInstaller ?? WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, creationResult.WorkloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath);
         _recorder = new(_workloadResolverFactory.Create().WorkloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
         _recorder.HistoryRecord.CommandName = "uninstall";
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         try
         {
@@ -74,12 +75,19 @@ internal sealed class WorkloadUninstallCommand : WorkloadCommandBase<WorkloadUni
                         .DeleteWorkloadInstallationRecord(workloadId, featureBand);
                 }
 
-                _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
+                _workloadInstaller.GarbageCollect(
+                    workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion),
+                    cancellationToken);
 
                 Reporter.WriteLine();
                 Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadUninstallUninstallSucceeded, string.Join(" ", _workloadIds)));
                 Reporter.WriteLine();
             });
+        }
+        catch (OperationCanceledException)
+        {
+            _workloadInstaller.Shutdown();
+            throw;
         }
         catch (Exception e)
         {

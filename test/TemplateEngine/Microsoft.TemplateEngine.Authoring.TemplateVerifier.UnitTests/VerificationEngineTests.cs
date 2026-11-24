@@ -137,7 +137,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             string snapshotsDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
-            A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
+            A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._, A<CancellationToken>._))
                 .Returns(new CommandResultData(20, "stdout content", "stderr content", workingDir));
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "made-up-template")
@@ -164,7 +164,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
-            A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
+            A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._, A<CancellationToken>._))
                 .Returns(new CommandResultData(20, "stdout content", "stderr content", workingDir));
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "made-up-template")
@@ -187,7 +187,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
-            A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
+            A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._, A<CancellationToken>._))
                 .Returns(new CommandResultData(0, "different stdout content", "another stderr content", workingDir));
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "made-up-template")

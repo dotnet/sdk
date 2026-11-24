@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 "--unique-for",
                 "RuntimeAndVersion");
 
-            cmd.Execute()
+            cmd.Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith((int)TemplateVerificationErrorCode.VerificationFailed)
                 .And.HaveStdOutContaining("Verification Failed.");
@@ -109,7 +109,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 "--unique-for",
                 "RuntimeAndVersion");
 
-            cmd2.Execute()
+            cmd2.Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass()
                 .And.HaveStdOutContaining("Running the verification of console.")
@@ -150,7 +150,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 snapshotsDir,
                 "--disable-diff-tool");
 
-            cmd.Execute()
+            cmd.Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith((int)TemplateVerificationErrorCode.VerificationFailed)
                 .And.HaveStdOutContaining("Verification Failed.");
@@ -198,7 +198,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 "--snapshots-directory",
                 snapshotsDir);
 
-            cmd2.Execute()
+            cmd2.Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass()
                 .And.HaveStdOutContaining(string.Format("Running the verification of {0}.", templateShortName))

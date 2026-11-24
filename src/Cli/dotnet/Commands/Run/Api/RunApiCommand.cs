@@ -20,25 +20,42 @@ namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 internal sealed class RunApiCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    public override int Execute()
-    {
-        for (string? line; (line = Console.ReadLine()) != null;)
-        {
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                continue;
-            }
+    public override int Execute(CancellationToken cancellationToken) =>
+        ExecuteAsync(cancellationToken).GetAwaiter().GetResult();
 
-            try
+    internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var inputHandle = Console.OpenStandardInputHandle();
+            using Stream inputStream = inputHandle.IsInvalid ? Stream.Null : new FileStream(inputHandle, FileAccess.Read);
+            using var inputReader = new StreamReader(inputStream, Console.InputEncoding, detectEncodingFromByteOrderMarks: false);
+            // Unix FileStream cancellation cannot interrupt a read already blocked in the OS.
+            for (string? line; (line = await inputReader.ReadLineAsync(cancellationToken).AsTask()
+                .WaitAsync(cancellationToken).ConfigureAwait(false)) != null;)
             {
-                RunApiInput input = JsonSerializer.Deserialize(line, RunFileApiJsonSerializerContext.Default.RunApiInput)!;
-                RunApiOutput output = input.Execute();
-                Respond(output);
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    RunApiInput input = JsonSerializer.Deserialize(line, RunFileApiJsonSerializerContext.Default.RunApiInput)!;
+                    RunApiOutput output = input.Execute();
+                    Respond(output);
+                }
+                catch (Exception ex)
+                {
+                    Respond(new RunApiOutput.Error { Message = ex.Message, Details = ex.ToString() });
+                }
             }
-            catch (Exception ex)
-            {
-                Respond(new RunApiOutput.Error { Message = ex.Message, Details = ex.ToString() });
-            }
+        }
+        catch (OperationCanceledException) when (
+            cancellationToken.IsCancellationRequested &&
+            !ProcessLifecycle.IsSignalTerminationRequested)
+        {
+            // A standalone caller cancelled the stdin read; exit the loop gracefully.
         }
 
         return 0;

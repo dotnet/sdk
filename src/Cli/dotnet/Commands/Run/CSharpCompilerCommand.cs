@@ -77,22 +77,32 @@ internal sealed partial class CSharpCompilerCommand
     /// <param name="fallbackToNormalBuild">
     /// Whether the returned error code should not cause the build to fail but instead fallback to full MSBuild.
     /// </param>
-    public int Execute(out bool fallbackToNormalBuild)
+    public int Execute(CancellationToken cancellationToken, out bool fallbackToNormalBuild)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         // Write .rsp file and other intermediate build outputs.
         PrepareAuxiliaryFiles(out string rspPath);
 
         // Ensure the compiler is launched with the correct dotnet.
         Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
 
+        List<string> arguments = ["/noconfig", "/nologo", $"@{EscapeSingleArg(rspPath)}"];
+
+        // Set PreferredUILang for csc-only fast path. In csc-after-msbuild, this is populated by the msbuild task.
+        if (CscArguments.IsDefaultOrEmpty && 
+            Environment.GetEnvironmentVariable("PreferredUILang") is { Length: > 0 } preferredUILang)
+        {
+            arguments.Add($"/preferreduilang:{preferredUILang}");
+        }
+
         // Create a request for the compiler server
         // (this is much faster than starting a csc.dll process, especially on Windows).
         var buildRequest = BuildServerConnection.CreateBuildRequest(
             requestId: EntryPointFileFullPath,
             language: RequestLanguage.CSharpCompile,
-            arguments: ["/noconfig", "/nologo", $"@{EscapeSingleArg(rspPath)}"],
+            arguments: arguments,
             workingDirectory: BaseDirectory,
-            tempDirectory: Path.GetTempPath(),
             keepAlive: null,
             libDirectory: null,
             compilerHash: GetCompilerCommitHash());
@@ -112,12 +122,13 @@ internal sealed partial class CSharpCompilerCommand
             clientDirectory: ClientDirectory,
             buildEnvironment: StandardBuildEnvironment.Instance,
             logger,
-            cancellationToken: default);
+            cancellationToken);
 
         // Process the response.
-        var exitCode = ProcessBuildResponse(responseTask.Result, out fallbackToNormalBuild);
+        var exitCode = ProcessBuildResponse(responseTask.GetAwaiter().GetResult(), out fallbackToNormalBuild);
 
         // Copy from obj to bin only if the build succeeded.
+        cancellationToken.ThrowIfCancellationRequested();
         if (exitCode == 0 &&
             BuildResultFile != null &&
             CSharpCommandLineParser.Default.Parse(CscArguments, BaseDirectory, sdkDirectory: null) is { OutputFileName: { } outputFileName } parsedArgs)

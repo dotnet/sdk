@@ -32,7 +32,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--packagesPath",
                 Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v")
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0);
 
@@ -51,7 +51,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                     .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                    .Execute()
+                    .Execute(TestContext.CancellationToken)
                     .Should()
                     .ExitWith(0)
                     .And.NotHaveStdErr();
@@ -61,7 +61,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                     .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                    .Execute()
+                    .Execute(TestContext.CancellationToken)
                     .Should()
                     .ExitWith(0)
                     .And.NotHaveStdErr()
@@ -73,7 +73,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                       .WithoutTelemetry()
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                       .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                      .Execute()
+                      .Execute(TestContext.CancellationToken)
                       .Should()
                       .ExitWith(0)
                       .And.NotHaveStdErr();
@@ -83,7 +83,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                     .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                    .Execute()
+                    .Execute(TestContext.CancellationToken)
                     .Should()
                     .ExitWith(0)
                     .And.NotHaveStdErr()
@@ -107,7 +107,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--packagesPath",
                 Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v")
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0);
 
@@ -132,7 +132,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--packagesPath",
                 Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v")
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0);
 
@@ -155,7 +155,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--packagesPath",
                 Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v")
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0);
 
@@ -182,7 +182,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "-v",
                 "--diff",
                 "false")
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining(
@@ -223,7 +223,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "true",
                 "--diff-override-cache",
                 cacheV2Path)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining(
@@ -270,7 +270,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "-v",
                 "--diff",
                 "false")
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining(
@@ -309,7 +309,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "true",
                 "--diff-override-cache",
                 cacheV2Path)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining(
@@ -357,7 +357,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "-v",
                 "--diff",
                 "false")
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining(
@@ -396,7 +396,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "true",
                 "--diff-override-cache",
                 cacheV2Path)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining(
@@ -444,7 +444,7 @@ Package Test.Templates was unlisted.");
                 "--packagesPath",
                 Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v")
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0);
 
@@ -475,7 +475,7 @@ Package Test.Templates was unlisted.");
                 "-v",
                 "--diff",
                 "false")
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0);
 
@@ -500,7 +500,7 @@ Package Test.Templates was unlisted.");
                 "true",
                 "--diff-override-cache",
                 Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json"))
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining("not changed: 1");
@@ -523,7 +523,7 @@ Package Test.Templates was unlisted.");
                       .WithoutTelemetry()
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                       .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                      .Execute()
+                      .Execute(TestContext.CancellationToken)
                       .Should()
                       .ExitWith(0)
                       .And.NotHaveStdErr();
@@ -533,7 +533,7 @@ Package Test.Templates was unlisted.");
                     .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                    .Execute()
+                    .Execute(TestContext.CancellationToken)
                     .Should()
                     .ExitWith(0)
                     .And.NotHaveStdErr()
@@ -546,7 +546,7 @@ Package Test.Templates was unlisted.");
                      .WithoutTelemetry()
                      .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                      .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                     .Execute()
+                     .Execute(TestContext.CancellationToken)
                      .Should()
                      .ExitWith(0)
                      .And.NotHaveStdErr()
@@ -559,7 +559,7 @@ Package Test.Templates was unlisted.");
                     .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                    .Execute()
+                    .Execute(TestContext.CancellationToken)
                     .Should()
                     .ExitWith(0)
                     .And.NotHaveStdErr()
@@ -572,7 +572,7 @@ Package Test.Templates was unlisted.");
                     .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                    .Execute()
+                    .Execute(TestContext.CancellationToken)
                     .Should().Fail();
             }
         }

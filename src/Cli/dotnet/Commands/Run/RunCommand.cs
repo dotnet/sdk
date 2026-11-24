@@ -141,7 +141,7 @@ public class RunCommand
         EnvironmentVariables = environmentVariables;
     }
 
-    public int Execute()
+    public int Execute(CancellationToken cancellationToken)
     {
         // Create a single logger for all MSBuild operations (device selection + build/run)
         // File-based runs (.cs files) don't support device selection and should use the existing logger behavior
@@ -198,7 +198,8 @@ public class RunCommand
                     out projectBuilder,
                     selector?.IntermediateOutputPath,
                     selector?.HasRuntimeEnvironmentVariableSupport ?? false,
-                    requiresProjectExpansion);
+                    requiresProjectExpansion,
+                    cancellationToken);
                 runPropertiesFromEvaluation = projectBuilder?.LastBuild.Level == BuildLevel.All;
             }
             else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
@@ -245,7 +246,7 @@ public class RunCommand
             // Ignore Ctrl-C for the remainder of the command's execution
             Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
 
-            return targetCommand.Execute().ExitCode;
+            return targetCommand.Execute(cancellationToken).ExitCode;
         }
         catch (InvalidProjectFileException e)
         {
@@ -518,13 +519,14 @@ public class RunCommand
         out VirtualProjectBuildingCommand? projectBuilder,
         string? intermediateOutputPath,
         bool hasRuntimeEnvironmentVariableSupport,
-        bool requiresProjectExpansion)
+        bool requiresProjectExpansion,
+        CancellationToken cancellationToken)
     {
         int buildResult;
         if (EntryPointFileFullPath is not null)
         {
             projectBuilder = CreateProjectBuilder();
-            buildResult = projectBuilder.Execute();
+            buildResult = projectBuilder.Execute(cancellationToken);
             projectFactory = requiresProjectExpansion || !CanUseRunPropertiesForCscBuiltProgram(projectBuilder.LastBuild.Level, projectBuilder.LastBuild.Cache?.PreviousEntry)
                 ? projectBuilder.CreateProjectInstance
                 : null;
@@ -552,7 +554,7 @@ public class RunCommand
                     buildArgs,
                     NoRestore || _restoreDoneForDeviceSelection,
                     advertiseWorkloadUpdates: false
-                ).Execute();
+                ).Execute(cancellationToken);
             }
             finally
             {
@@ -1075,11 +1077,11 @@ public class RunCommand
         }
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult).Execute(cancellationToken);
     }
 
     public static ParseResult ModifyParseResultForShorthandProjectOption(ParseResult parseResult)

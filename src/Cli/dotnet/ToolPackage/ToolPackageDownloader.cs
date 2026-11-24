@@ -56,6 +56,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         INuGetPackageDownloader nugetPackageDownloader,
         string packagesRootPath,
         NuGetVersion packageVersion,
+        CancellationToken cancellationToken,
         PackageSourceLocation packageSourceLocation,
         VerbosityOptions verbosity,
         bool includeUnlisted = false
@@ -80,7 +81,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
                 string packageHash = File.ReadAllText(hashPath);
                 using FileStream packageStream = File.OpenRead(targetNupkgPath);
                 using PackageArchiveReader reader = new(packageStream);
-                string contentHash = reader.GetContentHash(CancellationToken.None, () => packageHash);
+                string contentHash = reader.GetContentHash(cancellationToken, () => packageHash);
                 PublishPackageMetadata(metadataPath, contentHash);
                 return;
             }
@@ -91,6 +92,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
                 _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
                 string packagePath = nugetPackageDownloader.DownloadPackageAsync(
                     packageId,
+                    cancellationToken,
                     packageVersion,
                     packageSourceLocation,
                     includeUnlisted: includeUnlisted,
@@ -111,7 +113,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
                             $"The downloaded package identity '{actualIdentity}' does not match the requested package identity '{expectedIdentity}'.");
                     }
 
-                    contentHash = reader.GetContentHash(CancellationToken.None, () => packageHash);
+                    contentHash = reader.GetContentHash(cancellationToken, () => packageHash);
                 }
 
                 if (verbosity.IsDetailedOrDiagnostic())
@@ -120,7 +122,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
                 }
 
                 var _extractActivity = Activities.Source.StartActivity("extract-tool");
-                nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(packageDirectory)).ConfigureAwait(false).GetAwaiter().GetResult();
+                nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(packageDirectory), cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
                 _extractActivity?.Stop();
 
                 // NuGet readers treat these files as completion markers, so publish them only after extraction succeeds.
@@ -129,8 +131,8 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             }
             catch
             {
-                // If something fails, don't leave a folder with partial contents.
-                if (Directory.Exists(packageDirectory))
+                // A completion marker can expose the package to other installs. Preserve it so NuGet can repair missing metadata.
+                if (!File.Exists(hashPath) && !File.Exists(metadataPath) && Directory.Exists(packageDirectory))
                 {
                     Directory.Delete(packageDirectory, true);
                 }
@@ -176,7 +178,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
     /// Publishes NuGet's canonical completion marker so other NuGet writers preserve the completed package.
     /// </summary>
     /// <remarks>The metadata is written to a sibling temporary file and moved last while the NuGet package lock is held.</remarks>
-    private static void PublishPackageMetadata(string metadataPath, string contentHash)
+    private void PublishPackageMetadata(string metadataPath, string contentHash)
     {
         string metadataDirectory = Path.GetDirectoryName(metadataPath)!;
         Directory.CreateDirectory(metadataDirectory);
@@ -190,12 +192,17 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
                 {
                     ContentHash = contentHash
                 });
-            File.Move(temporaryMetadataPath, metadataPath, overwrite: true);
+            MovePackageMetadata(temporaryMetadataPath, metadataPath);
         }
         finally
         {
             File.Delete(temporaryMetadataPath);
         }
+    }
+
+    protected virtual void MovePackageMetadata(string temporaryMetadataPath, string metadataPath)
+    {
+        File.Move(temporaryMetadataPath, metadataPath, overwrite: true);
     }
 
     protected override bool IsPackageInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath)

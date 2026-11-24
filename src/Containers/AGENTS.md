@@ -20,6 +20,9 @@ feature (`Microsoft.NET.Build.Containers`).
   also carry a legacy `SDK_CONTAINER_*` alias; newer ones (e.g. the push/pull
   credentials, `DOTNET_CONTAINER_INSECURE_REGISTRIES`) are `DOTNET_CONTAINER_*`-only.
   Check the existing constant before assuming an alias exists.
+- **Runtime probes and foreground process operations require the task cancellation token.**
+  Propagate `OperationCanceledException`; do not convert cancellation into an unavailable
+  runtime, an insecure-registry result, or another fallback value.
 
 ## Tests
 
