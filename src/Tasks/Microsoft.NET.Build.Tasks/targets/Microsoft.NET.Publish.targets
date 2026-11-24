@@ -173,9 +173,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Native AOT is currently the only publish mode that supports optimized publish. -->
     <_UseOptimizedPublish Condition="'$(PublishAot)' == 'true' and '$(UseOptimizedPublish)' == 'true'">true</_UseOptimizedPublish>
     <_BeforeOptimizedPublishTargets Condition="'$(_UseOptimizedPublish)' == 'true'">
+      _CheckForInvalidConfigurationAndPlatform;
       BuildOnlySettings;
       PrepareForBuild;
+      PreBuildEvent;
+      ResolveReferences;
       PrepareResources;
+      ResolveKeySource;
       Compile;
       CreateSatelliteAssemblies;
     </_BeforeOptimizedPublishTargets>
@@ -191,7 +195,14 @@ Copyright (c) .NET Foundation. All rights reserved.
        publish targets that consume its outputs. -->
   <Target Name="_PublishOptimizedBuildAlternative"
           Condition="'$(NoBuild)' != 'true' and '$(_UseOptimizedPublish)' == 'true'"
-          DependsOnTargets="$(_BeforeOptimizedPublishTargets);$(_AdditionalOptimizedPublishTargets);$(_CorePublishTargets)" />
+          DependsOnTargets="_BuildForOptimizedPublish;$(_CorePublishTargets)" />
+
+  <!-- Keep build cleanup before publish post-processing, matching CoreBuild's successful and
+       failed build bookkeeping without copying managed outputs to the build directory. -->
+  <Target Name="_BuildForOptimizedPublish"
+          DependsOnTargets="$(_BeforeOptimizedPublishTargets);$(_AdditionalOptimizedPublishTargets);IncrementalClean">
+    <OnError ExecuteTargets="_CleanRecordFileWrites" />
+  </Target>
 
   <Target Name="_PublishNoBuildAlternative"
           Condition="'$(NoBuild)' == 'true'"
@@ -670,9 +681,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Copy the xml documentation (if enabled) -->
       <ResolvedFileToPublish Include="@(FinalDocFile)"
-                              Condition="'$(PublishDocumentationFile)' == 'true' and
+                              Condition="'$(_UseOptimizedPublish)' != 'true' and
+                                         '$(PublishDocumentationFile)' == 'true' and
                                          '$(CopyDocumentationFileToOutputDirectory)' != 'false'">
         <RelativePath>@(FinalDocFile->'%(Filename)%(Extension)')</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+      <ResolvedFileToPublish Include="@(DocFileItem)"
+                              Condition="'$(_UseOptimizedPublish)' == 'true' and
+                                         '$(PublishDocumentationFile)' == 'true' and
+                                         '$(CopyDocumentationFileToOutputDirectory)' != 'false'">
+        <RelativePath>@(DocFileItem->'%(Filename)%(Extension)')</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
 
@@ -791,6 +810,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     Computes the files from both project and package references.
     ============================================================
   -->
+  <Import Project="Microsoft.NET.Publish.ReferenceSatellites.targets" />
+
   <Target Name="_ComputeResolvedCopyLocalPublishAssets"
           DependsOnTargets="_ResolveCopyLocalAssetsForPublish;
                             _FilterSatelliteResourcesForPublish">
@@ -1341,6 +1362,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkWarning Condition="'$(IncludeAllContentForSelfExtract)' == 'true'"
                    ResourceName="IncludeAllContentForSelfExtractIsLegacy" />
 
+    <NETSdkError Condition="'$(NoBuild)' == 'true' and !Exists('%(FilesToBundle.Identity)')"
+                 ResourceName="PublishInputFileNotFound"
+                 FormatArguments="$([MSBuild]::Escape('%(FilesToBundle.FullPath)'))" />
+
     <!-- Bundle the files in FilesToBundle (excluded files were already filtered out by PrepareForBundle) -->
     <GenerateBundle FilesToBundle="@(FilesToBundle)"
                     AppHostName="$(PublishedSingleFileName)"
@@ -1504,7 +1529,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(TargetFramework)))"
+      PackagedShimOutputDirectory="$(_PackagedShimOutputDirectory)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)"
       >

@@ -622,6 +622,118 @@ public class Program
             DoesImageHaveR2RInfo(classLibDll).Should().BeTrue();
         }
 
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        public void It_recompiles_readytorun_images_when_crossgen2_arguments_change(string targetFramework)
+        {
+            var projectName = "CrossgenArgsIncremental";
+
+            var testProject = CreateTestProjectForR2RTesting(
+                targetFramework,
+                projectName,
+                "ClassLib");
+
+            testProject.AdditionalProperties["PublishReadyToRun"] = "True";
+            testProject.SelfContained = "False";
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var publishCommand = new PublishCommand(testProjectInstance);
+            var r2rImage = new FileInfo(Path.Combine(
+                publishCommand.GetIntermediateDirectory(targetFramework, "Debug", testProject.RuntimeIdentifier).FullName,
+                "R2R",
+                $"{projectName}.dll"));
+
+            DateTime Publish(string extraArgs)
+            {
+                new PublishCommand(testProjectInstance)
+                    .Execute($"-p:PublishReadyToRunCrossgen2ExtraArgs={extraArgs}")
+                    .Should().Pass();
+                r2rImage.Refresh();
+                return r2rImage.LastWriteTimeUtc;
+            }
+
+            DateTime initial = Publish("");
+            Publish("").Should().Be(initial, "an unchanged publish should not recompile");
+
+            DateTime changed = Publish("--Ot");
+            changed.Should().NotBe(initial, "changing the crossgen2 arguments should recompile");
+
+            Publish("").Should().NotBe(changed, "restoring the previous crossgen2 arguments should recompile");
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        public void It_recompiles_composite_image_when_a_component_output_is_missing(string targetFramework)
+        {
+            var projectName = "CrossgenCompositeIncremental";
+
+            var testProject = CreateTestProjectForR2RTesting(
+                targetFramework,
+                projectName,
+                "ClassLib");
+
+            testProject.AdditionalProperties["PublishReadyToRun"] = "True";
+            testProject.AdditionalProperties["PublishReadyToRunUseCrossgen2"] = "True";
+            testProject.AdditionalProperties["PublishReadyToRunComposite"] = "True";
+            testProject.SelfContained = "True";
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var publishCommand = new PublishCommand(testProjectInstance);
+            string r2rDirectory = Path.Combine(
+                publishCommand.GetIntermediateDirectory(targetFramework, "Debug", testProject.RuntimeIdentifier).FullName,
+                "R2R");
+            var compositeImage = new FileInfo(Path.Combine(r2rDirectory, $"{projectName}.r2r.dll"));
+            var component = new FileInfo(Path.Combine(r2rDirectory, "ClassLib.dll"));
+
+            DateTime Publish()
+            {
+                new PublishCommand(testProjectInstance).Execute().Should().Pass();
+                compositeImage.Refresh();
+                return compositeImage.LastWriteTimeUtc;
+            }
+
+            DateTime initial = Publish();
+            Publish().Should().Be(initial, "an unchanged publish should not recompile");
+
+            component.Delete();
+            Publish().Should().NotBe(initial, "a missing component output should recompile the composite image");
+            component.Refresh();
+            component.Should().Exist();
+            DoesImageHaveR2RInfo(component.FullName).Should().BeTrue();
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        public void It_passes_PublishReadyToRunInstructionSet_to_crossgen2(string targetFramework)
+        {
+            var testProject = CreateTestProjectForR2RTesting(
+                targetFramework,
+                "CrossgenInstructionSet",
+                "ClassLib");
+
+            testProject.AdditionalProperties["PublishReadyToRun"] = "True";
+            testProject.SelfContained = "False";
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            new PublishCommand(testProjectInstance)
+                .Execute("-p:PublishReadyToRunCrossgen2ExtraArgs=--Ot")
+                .Should().Pass();
+
+            // An instruction set that is invalid on every architecture shows that the property reaches crossgen2,
+            // including when the extra args are a global property, and that changing it reruns the compiler after
+            // an up-to-date publish.
+            new PublishCommand(testProjectInstance)
+                .Execute("-p:PublishReadyToRunCrossgen2ExtraArgs=--Ot", "-p:PublishReadyToRunInstructionSet=not-an-instruction-set")
+                .Should().Fail()
+                .And.HaveStdOutContaining("not-an-instruction-set");
+        }
+
         public static bool DoesImageHaveR2RInfo(string path)
         {
             using (FileStream fs = new(path, FileMode.Open, FileAccess.Read))

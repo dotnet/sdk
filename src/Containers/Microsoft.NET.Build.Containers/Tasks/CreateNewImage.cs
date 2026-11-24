@@ -53,6 +53,10 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             Task.Run(() => ExecuteAsync(_cancellationTokenSource.Token)).GetAwaiter().GetResult();
         }
+        catch (InvalidAuthRealmConfigurationException ex)
+        {
+            Log.LogErrorWithCodeFromResources(ex.ResourceName, ex.EnvironmentVariableName, ex.InvalidValue);
+        }
         catch (TaskCanceledException ex)
         {
             Log.LogWarningFromException(ex);
@@ -152,7 +156,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         CancellationToken cancellationToken)
     {
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
-        Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
+        Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode, cancellationToken);
         SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag, BaseImageDigest);
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
@@ -161,9 +165,10 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             msbuildLoggerFactory,
             ArchiveOutputPath,
             OutputRegistry,
-            LocalRegistry);
+            LocalRegistry,
+            cancellationToken);
 
-        var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
+        var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log, cancellationToken);
 
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
@@ -240,7 +245,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         imageBuilder.ManifestMediaType = ContainerHelpers.GetManifestMediaType(
             imageBuilder.ManifestMediaType,
             requestedImageFormat,
-            destinationImageReference);
+            destinationImageReference,
+            cancellationToken);
         DateTime createdAt = sourceDateEpoch ?? DateTime.UtcNow;
         var userId = imageBuilder.IsWindows ? null : ContainerHelpers.TryParseUserId(ContainerUser);
         Layer newLayer = Layer.FromDirectory(

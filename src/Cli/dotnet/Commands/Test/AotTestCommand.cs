@@ -4,6 +4,7 @@
 #if CLI_AOT
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -20,11 +21,11 @@ internal static class AotTestCommand
     {
         if (command is TestCommandDefinition.MicrosoftTestingPlatform mtp)
         {
-            mtp.SetAction(Execute);
+            mtp.SetAction((parseResult, cancellationToken) => Execute(parseResult, cancellationToken));
         }
     }
 
-    internal static int Execute(ParseResult parseResult)
+    internal static int Execute(ParseResult parseResult, CancellationToken cancellationToken)
     {
         if (parseResult.CommandResult.Command is not TestCommandDefinition.MicrosoftTestingPlatform definition
             || string.IsNullOrWhiteSpace(parseResult.GetValue(definition.TestModulesFilterOption))
@@ -36,7 +37,7 @@ internal static class AotTestCommand
         }
 
         Reporter.Verbose.WriteLine("AOT test tier: TestModules.");
-        return new MicrosoftTestingPlatformTestCommand().Run(parseResult, isHelp: false);
+        return new MicrosoftTestingPlatformTestCommand().Run(parseResult, isHelp: false, cancellationToken);
     }
 
     private static bool HasUnsupportedRootOption(ParseResult parseResult)

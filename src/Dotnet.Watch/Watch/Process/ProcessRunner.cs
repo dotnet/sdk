@@ -342,7 +342,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
 
     private static void TerminateWindowsProcess(Process process, ProcessState state, ILogger logger, bool force)
     {
-        var signalName = force ? "Kill" : "Ctrl+C";
+        var signalName = force ? "Kill" : "Ctrl+Break";
         logger.Log(MessageDescriptor.TerminatingProcess, state.ProcessId, signalName);
 
         if (force)
@@ -358,7 +358,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
         }
         else
         {
-            var error = ProcessUtilities.SendWindowsCtrlCEvent(state.ProcessId);
+            var error = ProcessUtilities.SendWindowsCtrlBreakEvent(state.ProcessId);
             if (error != null)
             {
                 logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, error);

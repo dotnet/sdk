@@ -3,8 +3,6 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.Versioning;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
@@ -41,21 +39,15 @@ internal sealed class ProjectGraphFactory(
 
     public ILogger Logger => logger;
 
-    private static string GetProductTargetFramework()
-    {
-        var attribute = typeof(VirtualProjectBuilder).Assembly.GetCustomAttribute<TargetFrameworkAttribute>() ?? throw new InvalidOperationException();
-        var version = new FrameworkName(attribute.FrameworkName).Version;
-        return $"net{version.Major}.{version.Minor}";
-    }
-
     /// <summary>
     /// Tries to create a project graph by running the build evaluation phase on root projects.
     /// </summary>
-    public LoadedProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, string? virtualProjectTargetFramework, CancellationToken cancellationToken)
+    public LoadedProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, string? virtualProjectTargetFramework, CancellationToken cancellationToken, ImmutableDictionary<string, string>? additionalBuildProperties = null)
     {
-        virtualProjectTargetFramework ??= GetProductTargetFramework();
+        virtualProjectTargetFramework ??= $"net{FileBasedProgramDefaults.TargetFrameworkVersion}";
 
-        var entryPoints = rootProjects.Select(p => new ProjectGraphEntryPoint(p.ProjectGraphPath, buildProperties));
+        var globalProperties = additionalBuildProperties != null ? buildProperties.SetItems(additionalBuildProperties) : buildProperties;
+        var entryPoints = rootProjects.Select(p => new ProjectGraphEntryPoint(p.ProjectGraphPath, globalProperties));
         try
         {
             var stopwatch = Stopwatch.StartNew();

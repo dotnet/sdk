@@ -21,7 +21,10 @@ internal class ShellShimRepository(
     private readonly IAppHostShellShimMaker _appHostShellShimMaker = appHostShellShimMaker ?? new AppHostShellShimMaker(appHostSourceDirectory: appHostSourceDirectory);
     private readonly IFilePermissionSetter _filePermissionSetter = filePermissionSetter ?? new FilePermissionSetter();
 
-    public void CreateShim(ToolCommand toolCommand, IReadOnlyList<FilePath> packagedShims = null)
+    public void CreateShim(
+        ToolCommand toolCommand,
+        CancellationToken cancellationToken,
+        IReadOnlyList<FilePath> packagedShims = null)
     {
         if (string.IsNullOrEmpty(toolCommand.Executable.Value))
         {
@@ -51,13 +54,14 @@ internal class ShellShimRepository(
                         if (TryGetPackagedShim(packagedShims, toolCommand, out FilePath? packagedShim))
                         {
                             _fileSystem.File.Copy(packagedShim.Value.Value, GetShimPath(toolCommand).Value);
-                            _filePermissionSetter.SetUserExecutionPermission(GetShimPath(toolCommand).Value);
+                            _filePermissionSetter.SetUserExecutionPermission(GetShimPath(toolCommand).Value, cancellationToken);
                         }
                         else
                         {
                             _appHostShellShimMaker.CreateApphostShellShim(
                                 toolCommand.Executable,
-                                GetShimPath(toolCommand));
+                                GetShimPath(toolCommand),
+                                cancellationToken);
                         }
                     }
                     else if (toolCommand.Runner == "executable")
@@ -76,7 +80,7 @@ internal class ShellShimRepository(
                         else
                         {
                             File.CreateSymbolicLink(shimPath, relativePathToExe);
-                            _filePermissionSetter.SetUserExecutionPermission(shimPath);
+                            _filePermissionSetter.SetUserExecutionPermission(shimPath, cancellationToken);
                         }
                     }
                     else

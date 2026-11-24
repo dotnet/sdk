@@ -34,7 +34,8 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 internal class WindowsMsiManifestInstaller(
     INuGetPackageDownloader nugetPackageDownloader,
     ISetupLogger? log = null,
-    Action<uint, string>? logError = null) : IWorkloadManifestInstaller
+    Action<uint, string>? logError = null,
+    Action<string>? verifyPackageSignature = null) : IWorkloadManifestInstaller
 {
     private static readonly object s_msiAdminInstallLock = new();
 
@@ -81,7 +82,10 @@ internal class WindowsMsiManifestInstaller(
         }
     }
 
-    public async Task ExtractManifestAsync(string nupkgPath, string targetPath)
+    public async Task ExtractManifestAsync(
+        string nupkgPath,
+        string targetPath,
+        CancellationToken cancellationToken)
     {
         log?.LogMessage($"ExtractManifestAsync: Extracting '{nupkgPath}' to '{targetPath}'");
         string extractionPath = TemporaryDirectory.CreateSubdirectory();
@@ -89,7 +93,10 @@ internal class WindowsMsiManifestInstaller(
         try
         {
             log?.LogMessage($"ExtractManifestAsync: Temporary extraction path: '{extractionPath}'");
-            await nugetPackageDownloader.ExtractPackageAsync(nupkgPath, new DirectoryPath(extractionPath));
+            await nugetPackageDownloader.ExtractPackageAsync(
+                nupkgPath,
+                new DirectoryPath(extractionPath),
+                cancellationToken);
             if (Directory.Exists(targetPath))
             {
                 Directory.Delete(targetPath, true);
@@ -111,6 +118,8 @@ internal class WindowsMsiManifestInstaller(
                 }
                 string resolvedMsiPath = msiPath!;
                 string msiExtractionPath = Path.Combine(extractionPath, "msi");
+
+                verifyPackageSignature?.Invoke(resolvedMsiPath);
 
                 lock (s_msiAdminInstallLock)
                 {

@@ -23,16 +23,12 @@ internal sealed class ToolInstallLocalInstaller(
     private readonly IToolPackageDownloader _toolPackageDownloader = toolPackageDownloader
         ?? ToolPackageFactory.CreateToolPackageStoresAndDownloader(runtimeJsonPathForTests: runtimeJsonPathForTests).downloader;
 
-    public IToolPackage Install(FilePath manifestFile, PackageId packageId, VersionRange? versionRange)
+    public IToolPackage Install(
+        FilePath manifestFile,
+        PackageId packageId,
+        VersionRange? versionRange,
+        CancellationToken cancellationToken)
     {
-        if (!string.IsNullOrEmpty(configFilePath) && !File.Exists(configFilePath))
-        {
-            throw new GracefulException(
-                string.Format(
-                    CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
-                    Path.GetFullPath(configFilePath)));
-        }
-
         FilePath? configFile = null;
         if (!string.IsNullOrEmpty(configFilePath))
         {
@@ -54,6 +50,7 @@ internal sealed class ToolInstallLocalInstaller(
                         additionalFeeds: sources,
                         rootConfigDirectory: rootConfigDirectory),
                     packageId,
+                    cancellationToken,
                     verbosity: verbosity,
                     versionRange,
                     TargetFrameworkToInstall,

@@ -350,10 +350,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute("--no-restore")
                 .Should().Pass();
 
-            // Keep MSBuild output from interleaving with the console logger's test-result lines.
+            // Keep MSBuild logging from interleaving with VSTest's separately configured console logger.
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
-                                        .Execute("--no-build", "-v", verbosity);
+                                        .Execute("--no-build", "-v", verbosity, "-clp:Verbosity=Quiet");
 
             // Verify
             if (!SdkTestContext.IsLocalized())

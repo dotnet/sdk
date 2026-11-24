@@ -34,7 +34,12 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
             return null;
         }
 
-        return WebServerProcessStateObserver.GetObserver(projectNode, url =>
+        // Workaround for Aspire dashboard launching: scan for "Login to the dashboard at " prefix in the output and use the URL.
+        // TODO: https://github.com/dotnet/sdk/issues/9038
+        // Share launch profile processing logic as implemented in VS with dotnet-run and implement browser launching there.
+        bool isAspireHost = projectNode.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability);
+
+        return WebServerProcessStateObserver.GetObserver(isAspireHost, url =>
         {
             if (projectOptions.IsMainProject &&
                 ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, key) => set.Add(key), projectNode.ProjectInstance.GetId()))

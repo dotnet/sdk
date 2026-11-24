@@ -7,7 +7,10 @@ namespace Microsoft.NET.Build.Containers;
 
 internal class RegistrySettings
 {
-    public RegistrySettings(string? registryName = null, IEnvironmentProvider? environment = null)
+    public RegistrySettings(
+        CancellationToken cancellationToken,
+        string? registryName = null,
+        IEnvironmentProvider? environment = null)
     {
         environment ??= new EnvironmentProvider();
 
@@ -22,7 +25,7 @@ internal class RegistrySettings
 
         if (registryName is not null)
         {
-            IsInsecure = IsInsecureRegistry(environment, registryName);
+            IsInsecure = IsInsecureRegistry(environment, registryName, cancellationToken);
         }
     }
 
@@ -66,9 +69,25 @@ internal class RegistrySettings
         internal const string ParallelUploadEnabledLegacy = "SDK_CONTAINER_REGISTRY_PARALLEL_UPLOAD";
 
         internal const string InsecureRegistries = "DOTNET_CONTAINER_INSECURE_REGISTRIES";
+
+        /// <summary>
+        /// SSRF protection policy for bearer-token (realm) requests: Public (default; public addresses plus
+        /// <see cref="AuthRealmAllowedAddresses"/>), AllowlistOnly (only <see cref="AuthRealmAllowedAddresses"/>),
+        /// or None (no address restrictions).
+        /// </summary>
+        internal const string AuthRealmPolicy = "DOTNET_CONTAINER_AUTH_REALM_POLICY";
+
+        /// <summary>
+        /// Semicolon-separated IP addresses and CIDR ranges that bearer-token (realm) requests may connect to,
+        /// as governed by <see cref="AuthRealmPolicy"/>.
+        /// </summary>
+        internal const string AuthRealmAllowedAddresses = "DOTNET_CONTAINER_AUTH_REALM_ALLOWED_ADDRESSES";
     }
 
-    private static bool IsInsecureRegistry(IEnvironmentProvider environment, string registryName)
+    private static bool IsInsecureRegistry(
+        IEnvironmentProvider environment,
+        string registryName,
+        CancellationToken cancellationToken)
     {
         // Always allow insecure access to 'localhost'.
         if (registryName.StartsWith("localhost:", StringComparison.OrdinalIgnoreCase) ||
@@ -88,6 +107,6 @@ internal class RegistrySettings
             }
         }
 
-        return DockerContainerRuntime.IsInsecureRegistry(registryName);
+        return DockerContainerRuntime.IsInsecureRegistry(registryName, cancellationToken);
     }
 }

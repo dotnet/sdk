@@ -7,9 +7,9 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands
 {
     internal class CommandRunner : ICommandRunner
     {
-        public CommandResultData RunCommand(TestCommand testCommand)
+        public CommandResultData RunCommand(TestCommand testCommand, CancellationToken cancellationToken)
         {
-            return new CommandResultData(testCommand.Execute());
+            return new CommandResultData(testCommand.Execute(cancellationToken));
         }
     }
 }

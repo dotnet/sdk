@@ -4,6 +4,9 @@
 ###############################################################################
 *           text=auto
 
+# Normalize trusted-root bundle line endings without changing certificate data.
+/src/Layout/redist/trustedroots/*.pem text eol=lf
+
 ###############################################################################
 # Set default behavior to:
 #   collapse these files in PRs

@@ -147,8 +147,9 @@ internal class MSBuildProject : IProject
             GetLockFilePathFromIntermediateBaseOutputPath();
 
         return new LockFileFormat()
-            .ReadWithLock(lockFilePath)
-            .Result;
+            .ReadWithLock(lockFilePath, ProcessLifecycle.CancellationToken)
+            .GetAwaiter()
+            .GetResult();
     }
 
     public bool TryGetLockFile(out LockFile lockFile)
@@ -169,8 +170,9 @@ internal class MSBuildProject : IProject
         }
 
         lockFile = new LockFileFormat()
-            .ReadWithLock(lockFilePath)
-            .Result;
+            .ReadWithLock(lockFilePath, ProcessLifecycle.CancellationToken)
+            .GetAwaiter()
+            .GetResult();
         return true;
     }
 

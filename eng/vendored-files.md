@@ -28,9 +28,9 @@ differ".
 
 > **Source of truth.** For the shared `dotnet test` source, `microsoft/testfx`
 > is the source of truth. It enumerates the exact same set of files via
-> `src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/DotnetTestProtocolContract.props`
+> `src/MTP/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/DotnetTestProtocolContract.props`
 > and
-> `src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalReporterContract.props`,
+> `src/MTP/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalReporterContract.props`,
 > so testfx contributors can see which files are consumed here.
 
 ## Files involved
@@ -81,10 +81,10 @@ are reconciled to the entry's current area-label set while retaining unrelated
 labels.
 
 A single local file may declare multiple upstream sources. For example the
-terminal reporter is one file in this repo
-(`src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.cs`) but many
-partial files upstream (`TerminalTestReporter.*.cs`), so its entry lists each
-upstream partial as a separate source. Each source is tracked independently.
+terminal reporter's entry owns the class rooted at
+`src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.cs`, including its
+SDK partial files, and lists each upstream `TerminalTestReporter.*.cs` partial
+as a separate source. Each source is tracked independently.
 
 > **`sources` is append-only.** The tracking issue marker embeds the source's
 > *index* in the array (`<!-- vendored-sync:id={id}:{source-index} -->`), so

@@ -22,7 +22,9 @@ internal partial class MicrosoftTestingPlatformTestCommand : ICustomHelp
             WriteHelpOptions(context);
             Console.WriteLine(CliCommandStrings.HelpWaitingForOptionsAndExtensions);
 
-            Run(context.ParseResult, isHelp: true);
+            // This help-rendering path is invoked synchronously from System.CommandLine's HelpBuilder
+            // override, so use the process-wide token that tracks Ctrl+C and process shutdown.
+            Run(context.ParseResult, isHelp: true, Utils.ProcessLifecycle.CancellationToken);
 
             if (_commandLineOptionNameToModuleNames.IsEmpty)
             {
@@ -231,7 +233,17 @@ internal partial class MicrosoftTestingPlatformTestCommand : ICustomHelp
         {
             if (option.IsHidden != true)
             {
-                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description ?? string.Empty));
+                string description = option.Description ?? string.Empty;
+                if (option.IsBuiltIn == true)
+                {
+                    description = option.Name switch
+                    {
+                        "show-stdout" => CommandDefinitionStrings.CmdTestShowStdoutDescription,
+                        "show-stderr" => CommandDefinitionStrings.CmdTestShowStderrDescription,
+                        _ => description,
+                    };
+                }
+                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", description));
             }
         }
 

@@ -112,8 +112,9 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         }
 
         protected override NuGetVersion DownloadAndExtractPackage(PackageId packageId, INuGetPackageDownloader nugetPackageDownloader, string packagesRootPath,
-            NuGetVersion packageVersion, PackageSourceLocation packageSourceLocation, Cli.Utils.VerbosityOptions verbosity, bool includeUnlisted = false)
+            NuGetVersion packageVersion, CancellationToken cancellationToken, PackageSourceLocation packageSourceLocation, Cli.Utils.VerbosityOptions verbosity, bool includeUnlisted = false)
         {
+            cancellationToken.ThrowIfCancellationRequested();
 
             var package = GetPackage(packageId, packageVersion);
             if (package == null)
@@ -134,7 +135,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
             var fakeExecutablePath = Path.Combine(fakeExecutableSubDirectory, FakeEntrypointName);
 
-            TransactionalAction.Run(() =>
+            try
             {
                 _fileSystem.Directory.CreateDirectory(fakeExecutableSubDirectory);
                 _fileSystem.File.CreateEmptyFile(fakeExecutablePath);
@@ -161,14 +162,16 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 {
                     DownloadCallback();
                 }
-
-            }, rollback: () =>
+            }
+            catch
             {
                 if (_fileSystem.Directory.Exists(nupkgDir))
                 {
                     _fileSystem.Directory.Delete(nupkgDir, true);
                 }
-            });
+
+                throw;
+            }
 
             return resolvedVersion;
         }

@@ -22,7 +22,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [DataRow(new string[] { }, new string[] { })]
         [DataRow(new string[] { "-o", "<packageoutputpath>" }, new string[] { "--property:PackageOutputPath=<cwd><packageoutputpath>" })]
         [DataRow(new string[] { "--output", "<packageoutputpath>" }, new string[] { "--property:PackageOutputPath=<cwd><packageoutputpath>" })]
+        [DataRow(new string[] { "--output", "out;put" }, new string[] { "--property:PackageOutputPath=<cwd>out%3bput" })]
         [DataRow(new string[] { "--artifacts-path", "foo" }, new string[] { "--property:ArtifactsPath=<cwd>foo" })]
+        [DataRow(new string[] { "--artifacts-path", "fo%3Bo" }, new string[] { "--property:ArtifactsPath=<cwd>fo%253Bo" })]
         [DataRow(new string[] { "--no-build" }, new string[] { "--property:NoBuild=true" })]
         [DataRow(new string[] { "--include-symbols" }, new string[] { "--property:IncludeSymbols=true" })]
         [DataRow(new string[] { "--include-source" }, new string[] { "--property:IncludeSource=true" })]
@@ -45,7 +47,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (PackCommand)PackCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
+                var command = (PackCommand)PackCommand.FromArgs(args, TestContext.CancellationToken, msbuildPath, TestCommandServices.CreateNonLLM());
                 var expectedPrefix = args.FirstOrDefault() == "--no-build" ? ExpectedNoBuildPrefix : [.. ExpectedPrefix, .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore];
 
                 command.SeparateRestoreCommand.Should().BeNull();

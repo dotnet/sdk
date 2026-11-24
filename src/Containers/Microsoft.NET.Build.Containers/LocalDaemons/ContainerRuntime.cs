@@ -24,7 +24,7 @@ internal sealed class ContainerRuntime : ILocalRegistry
 
     private readonly ILogger _logger;
     private readonly ContainerRuntimeOperations _operations;
-    private readonly Func<bool> _isPodmanAlias;
+    private readonly Func<CancellationToken, bool> _isPodmanAlias;
     private readonly bool _isWindows;
     private readonly bool _isMacOS;
     private readonly TimeSpan _probeTimeout;
@@ -58,7 +58,7 @@ internal sealed class ContainerRuntime : ILocalRegistry
         string? command,
         ILoggerFactory loggerFactory,
         Func<string, string, CancellationToken, Task<bool>> tryRunCommand,
-        Func<bool> isPodmanAlias,
+        Func<CancellationToken, bool> isPodmanAlias,
         bool isWindows,
         bool isMacOS,
         TimeSpan? probeTimeout = null)
@@ -115,7 +115,7 @@ internal sealed class ContainerRuntime : ILocalRegistry
         {
             return await runtime.IsAvailableAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogInformation(Strings.LocalDocker_FailedToGetConfig, ex.Message);
             _logger.LogTrace("Full information: {0}", ex);
@@ -123,15 +123,14 @@ internal sealed class ContainerRuntime : ILocalRegistry
         }
     }
 
-    /// <inheritdoc />
-    public bool IsAvailable()
-        => IsAvailableAsync(default).GetAwaiter().GetResult();
+    internal ContainerRuntimeKind GetTelemetryValue(CancellationToken cancellationToken)
+        => GetRuntimeAsync(cancellationToken).GetAwaiter().GetResult()?.GetTelemetryValue() ?? ContainerRuntimeKind.Unknown;
 
-    internal ContainerRuntimeKind GetTelemetryValue()
-        => GetRuntimeAsync(default).GetAwaiter().GetResult()?.GetTelemetryValue() ?? ContainerRuntimeKind.Unknown;
-
-    internal string GetManifestMediaType(string defaultManifestMediaType, KnownImageFormats? imageFormat)
-        => GetRuntimeAsync(default).GetAwaiter().GetResult()?.GetManifestMediaType(defaultManifestMediaType, imageFormat)
+    internal string GetManifestMediaType(
+        string defaultManifestMediaType,
+        KnownImageFormats? imageFormat,
+        CancellationToken cancellationToken)
+        => GetRuntimeAsync(cancellationToken).GetAwaiter().GetResult()?.GetManifestMediaType(defaultManifestMediaType, imageFormat)
             ?? ContainerRuntimeBase.GetDefaultManifestMediaType(defaultManifestMediaType, imageFormat);
 
     public override string ToString()
@@ -172,7 +171,7 @@ internal sealed class ContainerRuntime : ILocalRegistry
 
         await Task.WhenAll(podmanAvailable, dockerAvailable).ConfigureAwait(false);
 
-        if (dockerAvailable.Result && podmanAvailable.Result && _isPodmanAlias())
+        if (dockerAvailable.Result && podmanAvailable.Result && _isPodmanAlias(cancellationToken))
         {
             _runtime = podmanRuntime;
         }

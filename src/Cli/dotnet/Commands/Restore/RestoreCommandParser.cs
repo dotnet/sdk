@@ -10,6 +10,8 @@ internal static class RestoreCommandParser
 {
     public static void ConfigureCommand(RestoreCommandDefinition command)
     {
+        command.ArtifactsPathOption.ForwardAsLiteralPathProperty("ArtifactsPath");
+        command.ImplicitRestoreOptions.ForwardPathsAsLiterals();
         command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RuntimesFromProjectFile);
         command.SetAction(RestoreCommand.Run);
     }

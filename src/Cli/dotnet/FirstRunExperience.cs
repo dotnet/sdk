@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+#if CLI_AOT
+using Microsoft.DotNet.Cli.Commands.Hidden.Complete;
+#endif
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.ShellShim;
@@ -57,6 +60,15 @@ internal static class FirstRunExperience
         {
             return true;
         }
+
+#if CLI_AOT
+        // Native completion must remain free of first-use output and mutations. Command-specific
+        // completion falls back before producing output so the managed CLI owns its first-run work.
+        if (parseResult.CommandResult.Command is CompleteCommandDefinition)
+        {
+            return true;
+        }
+#endif
 
         using var activity = Activities.Source.StartActivity("first-time-use");
         IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel();
@@ -152,7 +164,7 @@ internal static class FirstRunExperience
             {
                 WorkloadIntegrityChecker.RunFirstUseCheck(reporter);
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 // If the workload check fails for any reason, we want to eat the failure and continue running the command.
                 reporter.WriteLine(CliStrings.WorkloadIntegrityCheckError.Yellow());

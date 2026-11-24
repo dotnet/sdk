@@ -52,8 +52,8 @@ internal sealed class PhysicalConsole : IConsole
                     string? error;
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        Console.WriteLine($"Sending Ctrl+C to {processId}");
-                        error = ProcessUtilities.SendWindowsCtrlCEvent(processId);
+                        Console.WriteLine($"Sending Ctrl+Break to {processId}");
+                        error = ProcessUtilities.SendWindowsCtrlBreakEvent(processId);
                     }
                     else
                     {

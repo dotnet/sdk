@@ -77,15 +77,6 @@ namespace TestProjectWithNetFM
 			Properties = new PropertyBag(new ErrorTestNodeStateProperty(new Exception("this is an exception"), "")),
 		}));
 
-		await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
-		{
-			Uid = "Test5",
-			DisplayName = "Test5",
-#pragma warning disable CS0618 // Type or member is obsolete
-			Properties = new PropertyBag(new CancelledTestNodeStateProperty(new Exception("this is a cancelled exception"), "")),
-#pragma warning restore CS0618 // Type or member is obsolete
-		}));
-		
 		context.Complete();
 		}
 	}

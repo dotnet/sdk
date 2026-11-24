@@ -16,10 +16,8 @@ namespace Microsoft.DotNet.Tests
         {
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
-        //  ailed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), 
         [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [RequiresSpecificFramework("netcoreapp2.2")]
         [DataRow("AppWithDirectAndToolDep")]
         [DataRow("AppWithToolDependency")]
         public void TestProjectToolIsAvailableThroughDriver(string appName)
@@ -83,7 +81,9 @@ namespace Microsoft.DotNet.Tests
         {
             string toolName = "dotnet-portable-v1";
 
-            var testInstance = TestAssetsManager.CopyTestAsset("AppWithToolDependency")
+            var testInstance = TestAssetsManager.CopyTestAsset(
+                    "AppWithToolDependency",
+                    testDestinationDirectory: Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Tool"))
                 .WithSource();
 
             NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
@@ -135,9 +135,8 @@ namespace Microsoft.DotNet.Tests
                 .And.HaveStdOutContaining("I'm running on shared framework version");
         }
 
-        // Old .net tool test that doesn't work off Windows
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
+        [RequiresSpecificFramework("netcoreapp2.2")]
         public void CanInvokeToolWhosePackageNameIsDifferentFromDllName()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("AppWithDepOnToolWithOutputName")
@@ -172,10 +171,8 @@ namespace Microsoft.DotNet.Tests
                         string.Format(LocalizableStrings.NoExecutableFoundMatchingCommand, "dotnet-nonexistingtool"));
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
-        //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
         [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [RequiresSpecificFramework("netcoreapp2.2")]
         public void ItRunsToolRestoredToSpecificPackageDir()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("ToolWithRandomPackageName", testAssetSubdirectory: "NonRestoredTestProjects")
@@ -215,10 +212,8 @@ namespace Microsoft.DotNet.Tests
                 .And.NotHaveStdErr();
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
-        //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
         [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [RequiresSpecificFramework("netcoreapp2.2")]
         public void ToolsCanAccessDependencyContextProperly()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("DependencyContextFromTool")

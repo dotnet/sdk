@@ -29,7 +29,7 @@ internal sealed class ToolListLocalCommand : CommandBase<ToolListCommandDefiniti
                                  new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var packageIdArgument = _parseResult.GetValue(Definition.PackageIdArgument);
         PackageId? packageId = string.IsNullOrWhiteSpace(packageIdArgument) ? null : new(packageIdArgument);
