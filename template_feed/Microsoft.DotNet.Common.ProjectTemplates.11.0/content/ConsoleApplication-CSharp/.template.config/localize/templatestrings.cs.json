@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Konzolová aplikace",
   "description": "Projekt pro vytvoření prázdné aplikace příkazového řádku, která běží na platformě .NET v systémech Windows, Linux a macOS",

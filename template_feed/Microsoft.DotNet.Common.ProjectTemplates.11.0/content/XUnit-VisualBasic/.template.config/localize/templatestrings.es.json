@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Proyecto de prueba de xUnit",
   "description": "Proyecto que contiene xUnit.net pruebas que se pueden ejecutar en .NET en Windows, Linux y macOS",

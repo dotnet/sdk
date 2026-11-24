@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "MSBuild Directory.Packages.props 文件",
   "description": "一个空的 Directory.Packages.props 文件，可用于集中指定包版本",

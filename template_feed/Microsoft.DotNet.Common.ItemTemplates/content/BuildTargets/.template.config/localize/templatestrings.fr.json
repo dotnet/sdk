@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Fichier MSBuild Directory.Build.targets",
   "description": "Fichier Directory.Build.targets vide qui peut être utilisé pour spécifier des tâches et des cibles MSBuild pour un dossier entier",

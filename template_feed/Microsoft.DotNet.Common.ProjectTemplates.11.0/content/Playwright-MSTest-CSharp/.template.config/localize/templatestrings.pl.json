@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Projekt testowy MSTest Playwright",
   "description": "Projekt, który zawiera testy Playwright wykorzystujące strukturę testową MSTest, który można uruchomić na platformie .NET w systemach Windows, Linux i MacOS.",
