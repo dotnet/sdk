@@ -548,18 +548,18 @@
     <!-- KEEP IN SYNC: the following testfx packages (Microsoft.Testing.Platform, MSTest, MSTest.Sdk) must
          stay on the SAME testfx build/Sha. The MSTest.Sdk source generator emits registrations against the
          MSTest.TestFramework runtime, so a version skew breaks the NativeAOT CLI test build. See #55302. -->
-    <Dependency Name="Microsoft.Testing.Platform" Version="3.0.0-preview.26563.12">
+    <Dependency Name="Microsoft.Testing.Platform" Version="3.0.0-preview.26571.1">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>c13a89ea4ba21cf01b4e9286dd5f5c4710570847</Sha>
+      <Sha>b14bf5bdeb2bb2333bbb0dbb43fa4321a7226265</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="5.0.0-preview.26563.12">
+    <Dependency Name="MSTest" Version="5.0.0-preview.26571.1">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>c13a89ea4ba21cf01b4e9286dd5f5c4710570847</Sha>
+      <Sha>b14bf5bdeb2bb2333bbb0dbb43fa4321a7226265</Sha>
     </Dependency>
     <!-- MSTest.Sdk is consumed from global.json's msbuild-sdks (not as a PackageReference). -->
-    <Dependency Name="MSTest.Sdk" Version="5.0.0-preview.26563.12">
+    <Dependency Name="MSTest.Sdk" Version="5.0.0-preview.26571.1">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>c13a89ea4ba21cf01b4e9286dd5f5c4710570847</Sha>
+      <Sha>b14bf5bdeb2bb2333bbb0dbb43fa4321a7226265</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="11.0.1">
       <Uri>https://github.com/dotnet/dotnet</Uri>
