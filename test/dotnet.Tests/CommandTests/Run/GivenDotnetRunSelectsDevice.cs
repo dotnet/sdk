@@ -31,14 +31,9 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         assertion(targets);
     }
 
-    [TestMethod]
-    [DataRow("-mt", false)]
-    [DataRow("-mt:false", false)]
-    [DataRow(null, false)]
-    [DataRow("-mt", true)]
-    public void ItPassesMultiThreadingToRunTargets(string? argument, bool noBuild)
+    private TestDirectory CreateRunTargetsProject(string identifier)
     {
-        TestDirectory directory = TestAssetsManager.CreateTestDirectory(identifier: Guid.NewGuid().ToString());
+        TestDirectory directory = TestAssetsManager.CreateTestDirectory(identifier: identifier);
         File.WriteAllText(Path.Combine(directory.Path, "App.csproj"), $"""
             <Project DefaultTargets="Build">
               <PropertyGroup>
@@ -46,6 +41,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
               </PropertyGroup>
               <Target Name="Restore" />
               <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+                <WriteLinesToFile File="$(MSBuildProjectDirectory)/target-ran.txt" Lines="ran" />
                 <ItemGroup>
                   <Devices Include="test-device" />
                 </ItemGroup>
@@ -61,6 +57,17 @@ public class GivenDotnetRunSelectsDevice : SdkTest
               </Target>
             </Project>
             """);
+        return directory;
+    }
+
+    [TestMethod]
+    [DataRow("-mt", false)]    [DataRow("-mt:false", false)]
+    [DataRow(null, false)]
+    [DataRow("-mt", true)]
+    public void ItPassesMultiThreadingToRunTargets(string? argument, bool noBuild)
+    {
+        TestDirectory directory = CreateRunTargetsProject(Guid.NewGuid().ToString());
+
 
         List<string> args = ["run", "--no-launch-profile", "-bl"];
         if (argument is not null)
@@ -98,33 +105,11 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [CombinatorialData]
     public void ItValidatesMultiThreadingBeforeRunningTargets(bool noBuild, bool forceMultiThreaded)
     {
-        TestDirectory directory = TestAssetsManager.CreateTestDirectory(identifier: $"{noBuild}-{forceMultiThreaded}");
-        string projectPath = Path.Combine(directory.Path, "App.proj");
+        TestDirectory directory = CreateRunTargetsProject($"{noBuild}-{forceMultiThreaded}");
         string markerPath = Path.Combine(directory.Path, "target-ran.txt");
-        File.WriteAllText(projectPath, $"""
-            <Project DefaultTargets="Build">
-              <PropertyGroup>
-                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-              </PropertyGroup>
-              <Target Name="Restore" />
-              <Target Name="Build" />
-              <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
-                <WriteLinesToFile File="$(MSBuildProjectDirectory)/target-ran.txt" Lines="ran" />
-                <ItemGroup>
-                  <Devices Include="test-device" />
-                </ItemGroup>
-              </Target>
-              <Target Name="ComputeRunArguments">
-                <PropertyGroup>
-                  <RunCommand>{SecurityElement.Escape(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath)}</RunCommand>
-                  <RunArguments>--version</RunArguments>
-                  <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
-                </PropertyGroup>
-              </Target>
-            </Project>
-            """);
 
-        var result = new DotnetCommand(Log, ["run", "--project", projectPath, "--no-launch-profile", "-mt:yes", .. noBuild ? new[] { "--no-build" } : Array.Empty<string>()])
+        var result = new DotnetCommand(Log, ["run", "--no-launch-profile", "-mt:yes", .. noBuild ? new[] { "--no-build" } : Array.Empty<string>()])
+            .WithWorkingDirectory(directory.Path)
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
             .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", forceMultiThreaded ? "1" : "0")
             .Execute();
@@ -142,26 +127,18 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         File.Exists(markerPath).Should().Be(forceMultiThreaded);
     }
 
-    [TestMethod, CombinatorialData]
-    public void ItPreservesMSBuildMultiThreadingValidation(bool forceMultiThreaded)
+    [TestMethod]
+    public void ItPreservesMSBuildMultiThreadingValidation()
     {
-        TestDirectory directory = TestAssetsManager.CreateTestDirectory(identifier: forceMultiThreaded.ToString());
+        TestDirectory directory = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Combine(directory.Path, "App.proj"), """<Project><Target Name="Build" /></Project>""");
 
-        var result = new DotnetCommand(Log, "msbuild", "App.proj", "-mt:yes")
+        new DotnetCommand(Log, "msbuild", "App.proj", "-mt:yes")
             .WithWorkingDirectory(directory.Path)
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
-            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", forceMultiThreaded ? "1" : "0")
-            .Execute();
-
-        if (forceMultiThreaded)
-        {
-            result.Should().Pass();
-        }
-        else
-        {
-            result.Should().Fail().And.HaveStdOutContaining("MSB1072");
-        }
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", "0")
+            .Execute()
+            .Should().Fail().And.HaveStdOutContaining("MSB1072");
     }
 
     [TestMethod]

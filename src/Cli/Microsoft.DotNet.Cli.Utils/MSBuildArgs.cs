@@ -197,9 +197,7 @@ public sealed class MSBuildArgs
 
     public static MSBuildArgs FromOtherArgs(params ReadOnlySpan<string> args)
     {
-        string[] arguments = args.ToArray();
-        return new MSBuildArgs(null, null, null, null, null, null, null, null, noLogo: false, arguments,
-            ParseMultiThreadedSwitch(arguments));
+        return new MSBuildArgs(null, null, null, null, null, null, null, null, noLogo: false, args.ToArray());
     }
     public static MSBuildArgs FromVerbosity(VerbosityOptions verbosity)
     {
@@ -224,7 +222,7 @@ public sealed class MSBuildArgs
             otherMSBuildArgs: newArgs,
             noLogo: NoLogo,
             verbosity: Verbosity,
-            multiThreadedValue: ParseMultiThreadedSwitch(newArgs));
+            multiThreadedValue: _multiThreadedValue);
     }
 
     /// <summary>
@@ -249,7 +247,18 @@ public sealed class MSBuildArgs
                 _multiThreadedValue);
         }
 
-        return CloneWithExplicitArgs([.. OtherMSBuildArgs, .. additionalArgs]);
+        return new MSBuildArgs(
+            GlobalProperties,
+            RestoreGlobalProperties,
+            RequestedTargets,
+            GetProperty,
+            GetItem,
+            GetTargetResult,
+            GetResultOutputFile,
+            Verbosity,
+            NoLogo,
+            [.. OtherMSBuildArgs, .. additionalArgs],
+            _multiThreadedValue);
     }
 
     public MSBuildArgs CloneWithAdditionalRestoreProperties(ReadOnlyDictionary<string, string>? additionalRestoreProperties)

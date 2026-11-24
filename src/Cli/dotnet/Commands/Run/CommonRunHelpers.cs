@@ -233,6 +233,7 @@ internal static class CommonRunHelpers
         out IDictionary<string, TargetResult> targetOutputs)
     {
         ILogger[] buildLoggers = loggers.ToArray();
+        bool diagnostic = buildLoggers.Any(logger => logger.Verbosity == LoggerVerbosity.Diagnostic);
         var parameters = new BuildParameters(collection)
         {
             Loggers = buildLoggers,
@@ -240,8 +241,8 @@ internal static class CommonRunHelpers
             MultiThreaded = multiThreaded,
             EnableNodeReuse = false,
         };
-        parameters.LogTaskInputs |= buildLoggers.Any(logger => logger.Verbosity == LoggerVerbosity.Diagnostic);
-        parameters.EnableTargetOutputLogging |= buildLoggers.Any(logger => logger.Verbosity == LoggerVerbosity.Diagnostic);
+        parameters.LogTaskInputs |= diagnostic;
+        parameters.EnableTargetOutputLogging |= diagnostic;
 
         BuildResult result = BuildManager.DefaultBuildManager.Build(
             parameters, new BuildRequestData(project, targets, hostServices: null, BuildRequestDataFlags.None));

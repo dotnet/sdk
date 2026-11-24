@@ -778,8 +778,7 @@ public class RunCommand
                 loggersForBuild.Add(logger);
             }
 
-            bool multiThreaded = MSBuildArgs.IsMultiThreadedEnabled;
-            if (!CommonRunHelpers.BuildProject(project, collection, [Constants.ComputeRunArguments], multiThreaded, loggersForBuild, out _))
+            if (!CommonRunHelpers.BuildProject(project, collection, [Constants.ComputeRunArguments], MSBuildArgs.IsMultiThreadedEnabled, loggersForBuild, out _))
             {
                 throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, Constants.ComputeRunArguments);
             }
