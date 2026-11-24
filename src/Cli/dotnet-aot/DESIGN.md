@@ -122,7 +122,7 @@ graph TD
         AotCheck{"DOTNET_CLI_ENABLEAOT<br/>not disabled?"}
         Parse["Parser.Parse(args)"]
         Fast{"Command handled<br/>by AOT path?"}
-        Invoke["Parser.Invoke()"]
+        Invoke["Parser.InvokeAsync(..., lifecycleToken)"]
         HostInit["ManagedHost.RunApp()"]
         Entry --> AotCheck
         AotCheck -- "Yes" --> Parse --> Fast
@@ -167,11 +167,14 @@ A NativeAOT shared library (`NativeLib=Shared`) that exports a single
 the dual-path dispatch logic.
 
 **Fast path** — Unless `DOTNET_CLI_ENABLEAOT` is explicitly disabled, the AOT
-bridge builds the
-**full** command tree (the same `DotNetCommandDefinition` used by the managed
-CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
-can run entirely in AOT (`--version`, `--info`, root command and option shell
-completion, the AOT-capable `sln` subcommands, the narrow file-based run path, and build-free
+bridge normally builds the **full** command tree (the same `DotNetCommandDefinition`
+used by the managed CLI). Exact top-level `<command> <help-alias>` invocations instead
+build a minimal root containing only the selected static command definition. Dynamic
+`new`, `test`, and `package` help still defers to the managed CLI. `completions` help
+remains on the full AOT tree because its managed configuration is not in the AOT
+dependency closure. Commands that can run entirely in AOT (`--version`, `--info`,
+root command and option shell completion, the AOT-capable `sln` subcommands, the narrow
+file-based run path, and build-free
 `test --test-modules` invocations described below) execute immediately and return.
 The [shared completion implementation](../dotnet/Commands/Hidden/Complete/CompleteCommand.cs)
 parses the cursor-normalized input once and falls back before enumerating or writing
@@ -185,9 +188,9 @@ the bridge catches it (and any unexpected parse-time failure) and transparently
 falls through to the managed CLI.
 
 Before parsing or first-run setup, the bridge applies the same
-`UILanguageOverride` as the managed entry point. The Configurer satellite assemblies
-are supplied to ILC so localized first-run resources are available inside the native
-image. UI culture is not an AOT eligibility condition; only behavior unavailable in
+`UILanguageOverride` as the managed entry point. The Configurer translations
+come from the deployed satellites in `ExternalLocalized` and from the native image
+in `Embedded`. UI culture is not an AOT eligibility condition; only behavior unavailable in
 the native closure triggers managed fallback.
 
 **External command path** — When the parsed command is not a built-in
@@ -198,7 +201,7 @@ command, ...) or an implicit file-based app (`dotnet app.cs`). The bridge's
 the managed CLI uses — minus the MSBuild/NuGet project-tools resolver — via
 `CommandResolver.TryResolveCommandSpec(new DefaultCommandResolverPolicy(), ...)`,
 then invokes the resolved `CommandSpec` out-of-process through
-`CommandFactoryUsingResolver` + `Command.Execute()`. The resolution step is
+`CommandFactoryUsingResolver` + `Command.Execute(lifecycleToken)`. The resolution step is
 side-effect free, so the bridge defers to the managed CLI whenever it cannot
 handle the invocation: unsupported implicit file-based shapes, commands that only the full
 project-tools resolver can find, anything that does
@@ -271,11 +274,11 @@ sequenceDiagram
     alt DOTNET_CLI_ENABLEAOT enabled (default)
         aot->>aot: Parser.Parse(args)
         alt Built-in command handled by AOT
-            aot->>aot: Parser.Invoke(parseResult)
+            aot->>aot: Parser.InvokeAsync(parseResult, lifecycleToken)
             aot-->>dn: exit code
         else External command that resolves in AOT (tool / PATH / app-base)
             aot->>aot: TryInvokeExternalCommand → TryResolveCommandSpec
-            aot->>tool: Command.Execute() (out of process)
+            aot->>tool: Command.Execute(lifecycleToken) (out of process)
             tool-->>aot: exit code
             aot-->>dn: exit code
         else Command not handled, unresolved, or unsupported file-based shape
@@ -302,6 +305,80 @@ workload management, NuGet integration, and everything else the SDK supports.
 It runs on CoreCLR with full runtime capabilities (reflection, JIT, dynamic
 assembly loading, hot reload).
 
+## Localized resource modes
+
+`dotnet-aot` has three private build modes selected by
+`_DotnetAotResourceMode`:
+
+| Mode | Native payload | Localized source |
+|---|---|---|
+| `Embedded` | Neutral resources and the satellites supplied to ILC | ILC-embedded satellites |
+| `ExternalLocalized` | Neutral CLI resources and non-CLI satellites | Existing managed SDK satellite assemblies for CLI resource families |
+| `ExternalAll` | Package/runtime resources only; SDK-owned neutral CLI tables are substituted out | Existing managed owner assemblies and satellites |
+
+`ExternalLocalized` is the default. `ExternalAll` is retained for measurement
+only. The property is an unsupported internal build contract; an unknown value
+is an error.
+
+SDK-generated resource classes call a process-wide manager factory exactly
+once per generated class. `NativeEntryPoint` registers that factory after the
+versioned SDK directory is resolved and before telemetry, first-run work,
+parser construction, or output:
+
+- `Embedded` uses the platform `ResourceManager`: reference satellites are
+  marked as resources and filtered by `SatelliteResourceLanguages` before ILC
+  sees them. The bootstrap build imports the same publish target until the
+  bootstrap SDK ships it.
+- `ExternalLocalized` reads culture satellites as PE data without loading or
+  executing them. Missing, malformed, unreadable, unsupported, or
+  identity-mismatched localized candidates continue through the parent chain
+  and then use the embedded neutral table.
+- `ExternalAll` strictly preflights every managed owner assembly and neutral
+  resource before registering the provider. Any failure enters managed
+  fallback before telemetry ownership, parsing, output, or mutation. Successful
+  lookup reads both neutral and localized tables from the managed SDK layout.
+
+External PE identity checks cover simple name, culture, version, and public-key
+token. The three tables compiled directly into `dotnet-aot` use `dotnet.dll`
+and `dotnet.resources.dll` externally; only the simple-name component is
+aliased, while version and signing identity remain anchored to the generated
+native owner. Resource lookup is string-only and never activates serialized
+types.
+
+The provider reuses the shared [CoreUtils resource runtime](../Microsoft.DotNet.Cli.CoreUtils/Resources/StringResourceManager.cs).
+Managers retain successfully loaded tables, not decoded strings, and retry
+failed loads on the next lookup. The [generated accessors](../Microsoft.DotNet.Cli.Resources.Generator/CSharpResourceRenderer.cs)
+own property-value caching and replace that cache when their effective culture
+changes. With no explicit `Culture`, each property lookup follows the calling
+thread's `CurrentUICulture`. The cached value and lookup culture come from the
+same cache snapshot, so concurrent callers cannot populate another culture's
+cache.
+No additional table-cache or reader-synchronization wrappers are needed in
+the AOT integration.
+
+The native test runners default to the shipping `ExternalLocalized` mode and
+use `PrepareTestSdk.proj` to stage a host-native installation from the
+pre-crossgen SDK content on every run, including `NoBuild` runs. The candidate
+native library replaces the copy under `sdk/<version>`, and the published
+per-mode binaries are kept outside the staged installation.
+The SDK directory
+passed by `dn` must be the directory containing the library it loads, including
+when testing a non-default resource mode. Preserve hidden deployment files,
+especially the SDK's `.version`, so native and managed cache validation use the
+same SDK identity in CI.
+
+`AotResources.targets` removes CLI-owned satellite inputs before ILC writes the
+response file in both external modes. Package satellites stay embedded for
+callers using their original resource managers. `ExternalAllSubstitutions.xml`
+removes the nine SDK-owned neutral CLI resource tables. A content hash in the copied
+substitution filename makes edits invalidate native compilation. The final SDK
+continues to ship one managed copy of each owner and satellite family and no
+`dotnet-aot.resources.dll`.
+
+The resource runtime is adapted into `Microsoft.DotNet.Cli.CoreUtils`; the
+analyzer-only generator lives in `Microsoft.DotNet.Cli.Resources.Generator`.
+Neither component adds a runtime assembly or an external package dependency.
+
 ## Source Sharing and Conditional Compilation
 
 The `dotnet-aot` project does not duplicate source files. Instead, it links
@@ -319,7 +396,10 @@ the appropriate implementation:
 In the shared files:
 
 - **`Parser.cs`** — A single shared `Parser` class builds the same full
-  `DotNetCommandDefinition` tree in both modes. Only the action wiring differs,
+  `DotNetCommandDefinition` tree in both modes for ordinary parsing. Exact static
+  top-level help may use a minimal root containing one command; managed-only dynamic
+  augmentation and the AOT exclusions above keep its output aligned with the full path.
+  Full-tree action wiring differs,
   isolated to small inline `#if CLI_AOT` regions: the managed build wires the
   real command handlers, while the AOT build attaches a managed-fallback handler
   to every command (overriding it with real implementations where AOT can run
@@ -344,10 +424,18 @@ The two projects have **different entry-point shapes and do not share a
   per-invocation telemetry/signal/first-run setup. It has no managed `Main` and
   does not compile any `Program.cs`.
 - **`src/Cli/dotnet/Program.cs`** — the managed CLI entry point with telemetry,
-  signal handlers, and workload checks. It carries no `#if CLI_AOT` branches and
+  finalization, and workload checks. It carries no `#if CLI_AOT` branches and
   is not linked into the AOT build. (The `hostfxr_run_app` fallback above invokes
   *this* `Program.Main` from the managed `dotnet.dll` at runtime — not from the
   AOT binary.)
+- **`Microsoft.DotNet.Cli.Utils.ProcessLifecycle`** — the shared managed/AOT
+  owner for Ctrl+C, SIGTERM, and process-exit cancellation. The first signal
+  cancels the token passed through command invocation and starts a two-second
+  forced-termination fallback; a repeated signal retains the operating system's
+  immediate termination behavior. While a launched child owns signal handling,
+  `ProcessReaper` suppresses lifecycle cancellation so Ctrl+C remains with the
+  child and SIGTERM is forwarded during process exit; an unresponsive child is
+  terminated after the same two-second timeout.
 
 Code that genuinely needs to be identical between the two entry points lives in
 `src/Cli/dotnet/CommandInvocation.cs` (`ExecuteInternalCommand`), which both

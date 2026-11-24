@@ -11,7 +11,7 @@ internal sealed class TemporaryFileManager : IDisposable
 {
     internal readonly struct TemporaryFile(FileStream stream) : IDisposable
     {
-        public FileStream Stream => stream;
+        public string FilePath => stream.Name;
 
         public void Dispose()
         {
@@ -57,10 +57,39 @@ internal sealed class TemporaryFileManager : IDisposable
         }
     }
 
-    public TemporaryFile Create(string extension, FileShare share)
-        => new(new FileStream(
-            path: Path.Combine(_directory, Interlocked.Increment(ref _uniqueFileId) + extension),
-            mode: FileMode.CreateNew,
-            access: FileAccess.ReadWrite,
-            share: share));
+    /// <summary>
+    /// Creates a new temporary file with content produced by <paramref name="writeContent"/>.
+    /// The returned file keeps a read-only handle open until disposed, so other processes can read the file
+    /// (e.g. using <see cref="File.OpenRead(string)"/>). On Windows, the handle also prevents the file from being
+    /// modified or deleted. On Unix, file sharing is only advisory, so the owner-only directory protects the file instead.
+    /// </summary>
+    public TemporaryFile Create(string extension, Action<Stream> writeContent)
+    {
+        var path = Path.Combine(_directory, Interlocked.Increment(ref _uniqueFileId) + extension);
+
+        try
+        {
+            using (var writeStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                writeContent(writeStream);
+            }
+
+            // Readers that request FileShare.Read (such as File.OpenRead) fail if any handle has write access,
+            // so the write handle must be closed before the file is handed out.
+            return new(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read));
+        }
+        catch
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch
+            {
+                // Best effort cleanup.
+            }
+
+            throw;
+        }
+    }
 }

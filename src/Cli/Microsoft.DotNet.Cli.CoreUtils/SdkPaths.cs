@@ -36,8 +36,7 @@ internal static class SdkPaths
     /// <summary>
     ///  The <see cref="System.AppContext"/> data name the Native AOT bridge uses to publish the resolved
     ///  versioned SDK directory for the assemblies compiled into it. An AppContext value is process-local
-    ///  (unlike an environment variable it is not inherited by child processes) and can also be supplied
-    ///  through a <c>runtimeconfig.json</c> <c>configProperties</c> entry.
+    ///  (unlike an environment variable it is not inherited by child processes).
     /// </summary>
     public const string DataName = "Microsoft.DotNet.Sdk.Root";
 

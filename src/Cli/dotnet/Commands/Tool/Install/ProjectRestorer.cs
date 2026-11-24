@@ -20,6 +20,7 @@ internal class ProjectRestorer(IReporter reporter = null,
 
     public void Restore(FilePath project,
         PackageLocation packageLocation,
+        CancellationToken cancellationToken,
         string verbosity = null)
     {
         List<string> argsToPassToRestore = [project.Value];
@@ -48,7 +49,7 @@ internal class ProjectRestorer(IReporter reporter = null,
                 .OnErrorLine(line => WriteLine(_errorReporter, line, project));
         }
 
-        var result = command.Execute();
+        var result = command.Execute(cancellationToken);
         if (result.ExitCode != 0)
         {
             throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);

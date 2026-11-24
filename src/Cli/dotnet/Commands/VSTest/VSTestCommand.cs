@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Commands.VSTest;
 
 public class VSTestCommand
 {
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
 
@@ -32,10 +32,18 @@ public class VSTestCommand
 
         VSTestForwardingApp vsTestforwardingApp = new(args);
 
-        int exitCode = vsTestforwardingApp.Execute();
+        int exitCode = vsTestforwardingApp.Execute(cancellationToken);
 
         // We run post processing also if execution is failed for possible partial successful result to post process.
-        exitCode |= TestCommand.RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, diag: null, FeatureFlag.Instance);
+        exitCode |= TestCommand.RunArtifactPostProcessingIfNeeded(
+            testSessionCorrelationId,
+            diag: null,
+            FeatureFlag.Instance,
+            cancellationToken);
+
+        // Reached only when the invocation completed, whether the tests passed or failed. An invocation that
+        // throws or is interrupted deliberately leaves the artifacts on disk for diagnosis.
+        VSTestArtifactsDirectory.Delete();
 
         return exitCode;
     }

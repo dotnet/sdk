@@ -17,14 +17,25 @@ namespace Microsoft.DotNet.Tools.Sdk.Check
             _path = path;
         }
 
-        public ProductCollection GetProductCollection(Uri uri = null, string filePath = null)
+        public ProductCollection GetProductCollection(
+            CancellationToken cancellationToken,
+            Uri uri = null,
+            string filePath = null)
         {
-            return ProductCollection.GetFromFileAsync(Path.Combine(_path, "releases-index.json"), false).Result;
+            cancellationToken.ThrowIfCancellationRequested();
+            return ProductCollection.GetFromFileAsync(Path.Combine(_path, "releases-index.json"), false)
+                .GetAwaiter()
+                .GetResult();
         }
 
-        public IEnumerable<ProductRelease> GetProductReleases(Product product)
+        public IEnumerable<ProductRelease> GetProductReleases(
+            Product product,
+            CancellationToken cancellationToken)
         {
-            return product.GetReleasesAsync(Path.Combine(_path, product.ProductVersion, "releases.json"), false).Result;
+            cancellationToken.ThrowIfCancellationRequested();
+            return product.GetReleasesAsync(Path.Combine(_path, product.ProductVersion, "releases.json"), false)
+                .GetAwaiter()
+                .GetResult();
         }
     }
 }

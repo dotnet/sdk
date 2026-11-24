@@ -111,8 +111,8 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
         }
     }
 
-    public override int Execute()
-        => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+    public override int Execute(CancellationToken cancellationToken)
+        => ExecuteAsync(cancellationToken).GetAwaiter().GetResult();
 
     internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
@@ -140,7 +140,7 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
         }
         else
         {
-            return _toolUpdateLocalCommand.Execute();
+            return _toolUpdateLocalCommand.Execute(cancellationToken);
         }
     }
 }

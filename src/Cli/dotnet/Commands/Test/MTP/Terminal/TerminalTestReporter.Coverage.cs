@@ -135,7 +135,7 @@ internal sealed partial class TerminalTestReporter
                 ? summary.ScopeName is null
                 : !merged && summary.ScopeLevel == 1 && !string.IsNullOrWhiteSpace(summary.ScopeName));
 
-    private void AppendCoverageSummary(ITerminal terminal, int? exitCode)
+    private void AppendCoverageSummary(ITerminal terminal, int? exitCode, bool contextual = false)
     {
         KeyValuePair<CoverageSummaryKey, ApplicationCoverageSummary>[] applications;
         MergedCoverageSummary[] merged;
@@ -250,10 +250,32 @@ internal sealed partial class TerminalTestReporter
             return;
         }
 
-        terminal.AppendLine();
-        terminal.AppendLine($"{SingleIndentation}{CliCommandStrings.CodeCoverageSummary}");
         var metricCounts = rows.GroupBy(row => (row.Scope, row.Summary.Metric, row.Summary.CustomMetricName))
             .ToDictionary(group => group.Key, group => group.Count());
+        terminal.AppendLine();
+        if (contextual)
+        {
+            terminal.Append($"##[group]{CliCommandStrings.CodeCoverageSummary}");
+            if (useMergedTotal || useApplicationTotal)
+            {
+                foreach ((string scope, CoverageSummaryMessage summary) in rows)
+                {
+                    if (scope == CliCommandStrings.CoverageScopeOverall &&
+                        summary.Metric != (int)CoverageMetric.Custom &&
+                        metricCounts[(scope, summary.Metric, summary.CustomMetricName)] == 1)
+                    {
+                        terminal.Append($" {GetCoverageMetricLabel(summary)}: {GetCoverageValue(summary)}");
+                    }
+                }
+            }
+
+            terminal.AppendLine();
+        }
+        else
+        {
+            terminal.AppendLine($"{SingleIndentation}{CliCommandStrings.CodeCoverageSummary}");
+        }
+
         foreach ((string scope, CoverageSummaryMessage summary) in rows)
         {
             string metric = GetCoverageMetricLabel(summary);
@@ -264,12 +286,19 @@ internal sealed partial class TerminalTestReporter
                     metric, NormalizeCoverageLabel(summary.ProducerId!));
             }
 
-            string value = summary.CoverableCount > 0
-                ? $"{(100m * summary.CoveredCount!.Value / summary.CoverableCount!.Value).ToString("F1", CultureInfo.InvariantCulture)}%"
-                : CliCommandStrings.CoverageNoData;
-            terminal.AppendLine($"{DoubleIndentation}{NormalizeCoverageLabel(scope)} - {metric}: {value}");
+            terminal.AppendLine($"{DoubleIndentation}{NormalizeCoverageLabel(scope)} - {metric}: {GetCoverageValue(summary)}");
+        }
+
+        if (contextual)
+        {
+            terminal.AppendLine("##[endgroup]");
         }
     }
+
+    private static string GetCoverageValue(CoverageSummaryMessage summary)
+        => summary.CoverableCount > 0
+            ? $"{(100m * summary.CoveredCount!.Value / summary.CoverableCount!.Value).ToString("F1", CultureInfo.InvariantCulture)}%"
+            : CliCommandStrings.CoverageNoData;
 
     private bool CoversAllCoverageSources(
         IReadOnlySet<string> inputPaths,

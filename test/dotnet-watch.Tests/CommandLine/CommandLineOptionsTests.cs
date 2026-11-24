@@ -685,4 +685,16 @@ public class CommandLineOptionsTests
         var options = VerifyOptions(["run", .. args]);
         AssertEx.SequenceEqual(buildArgs, options.BuildArguments);
     }
+
+    [TestMethod]
+    public void ForwardedBuildOptions_OutputPath()
+    {
+        var path = Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "out;put") + Path.DirectorySeparatorChar;
+
+        var args = new[] { "--output", path };
+        var buildArgs = new[] { NugetInteractiveProperty, "--property:OutputPath=" + path, "--property:_CommandLineDefinedOutputPath=true", "--nologo" };
+
+        var options = VerifyOptions(["build", .. args]);
+        AssertEx.SequenceEqual(buildArgs, options.BuildArguments);
+    }
 }

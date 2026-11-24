@@ -9,5 +9,5 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader;
 
 public interface IFirstPartyNuGetPackageSigningVerifier
 {
-    bool Verify(FilePath nupkgToVerify, out string commandOutput);
+    bool Verify(FilePath nupkgToVerify, CancellationToken cancellationToken, out string commandOutput);
 }

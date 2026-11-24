@@ -94,17 +94,17 @@ imports:
 
 environment: copilot-pat-pool
 
-# Pin the apply_patch replay fix and immutable images (github/gh-aw-firewall#8944).
+# Pin a firewall release with the apply_patch replay fix and a reviewed installer checksum.
 # Keep in sync with build-failure-analysis.md.
 sandbox:
   agent:
     id: awf
-    version: "v0.28.66"
+    version: "v0.29.11"
     images:
-      agent: "ghcr.io/github/gh-aw-firewall/agent:0.28.66@sha256:69ca942c4cc616d89ab3fdb832d258d686a7226ae25d786eac5cc59ba5262fa5"
-      api-proxy: "ghcr.io/github/gh-aw-firewall/api-proxy:0.28.66@sha256:d4f7800524e6aca169ce4d153b3bfd4c008ef4b656069949907b13e26827795a"
-      cli-proxy: "ghcr.io/github/gh-aw-firewall/cli-proxy:0.28.66@sha256:c94782367d77dc9be38071213e71edf87978937ccf60ed8b208e4e962e7009aa"
-      squid: "ghcr.io/github/gh-aw-firewall/squid:0.28.66@sha256:2661fc7dd99f332fa6da2f6de9fd64fa6f3b07dc35eb038c538c52ad552b0527"
+      agent: "ghcr.io/github/gh-aw-firewall/agent:0.29.11@sha256:8774a73c351395b41d2ad0af4ddb4689007c67de3cd08bd9f43bb8a0e300690e"
+      api-proxy: "ghcr.io/github/gh-aw-firewall/api-proxy:0.29.11@sha256:88d2d0e315a504d93fd4fb8847fd0f6b7f4469f41a6fc6047b3dc9654c56ab2c"
+      cli-proxy: "ghcr.io/github/gh-aw-firewall/cli-proxy:0.29.11@sha256:97782bc0d8ff7f80f19ae2fdc5e1668517aa732a6fa077e64b8d3919238496d2"
+      squid: "ghcr.io/github/gh-aw-firewall/squid:0.29.11@sha256:861739ecf924dd2db5e5fb652db2ad82aaafd1615623297ddabc8f41a36b2847"
 
 engine:
   id: copilot

@@ -17,6 +17,56 @@ namespace dotnet.Tests.CommandTests.Test;
 public class TerminalTestReporterTests
 {
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void ModuleIdentity_AppendsNormalizedLabelAsOneString(bool trailingSpace)
+    {
+        var terminal = new Mock<ITerminal>();
+        string path = new string('a', 200) + "\nTests.dll";
+
+        TerminalTestReporter.AppendModuleIdentity(
+            terminal.Object, path, "net9.0\t", "x64", null, static (assembly, _) => assembly, trailingSpace);
+
+        terminal.Verify(t => t.Append($"[{new string('a', 200)}\u240aTests.dll net9.0\u2409|x64]"), Times.Once);
+        terminal.Verify(t => t.Append(It.IsAny<string>()), Times.Once);
+        terminal.Verify(t => t.Append(It.IsAny<char>()), trailingSpace ? Times.Once : Times.Never);
+        terminal.Verify(t => t.Append(' '), trailingSpace ? Times.Once : Times.Never);
+    }
+
+    [TestMethod]
+    public void ModuleIdentity_WithoutFramework_AppendsUnmodifiedLabelAsOneString()
+    {
+        var terminal = new Mock<ITerminal>();
+
+        TerminalTestReporter.AppendModuleIdentity(terminal.Object, "Tests.dll", null, null, null, null, trailingSpace: false);
+
+        terminal.Verify(t => t.Append("[Tests.dll]"), Times.Once);
+        terminal.Verify(t => t.Append(It.IsAny<string>()), Times.Once);
+        terminal.Verify(t => t.Append(It.IsAny<char>()), Times.Never);
+    }
+
+    [TestMethod]
+    public void ContextualSummary_ClearsIncompleteModuleStateBetweenRuns()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ContextualModuleOutput = true,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.MarkModuleExecutionIncomplete();
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.GenericFailure);
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.AssemblyRunStarted("Successful.dll", "net9.0", "x64", "success", "instance");
+        reporter.AssemblyRunCompleted("success", 0, null, null);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain("##[group]Test run summary:" + Environment.NewLine)
+            .And.Contain("##[group]Test run summary: 1 passed, 0 failed");
+    }
+
+    [TestMethod]
     [DataRow(40, false)]
     [DataRow(80, true)]
     [DataRow(120, true)]
@@ -168,6 +218,8 @@ public class TerminalTestReporterTests
         reporter.AssemblyRunStarted("Crashed.dll", "net9.0", "x64", "crash", "instance");
         reporter.AssemblyRunCompleted("crash", 7, "host crash context", null);
         reporter.ArtifactAdded(false, "Successful.dll", "net9.0", "x64", "success", null, "original.trx");
+        reporter.ArtifactAdded(false, "Successful.dll", "net9.0", "x64", "success", null, "coverage.cobertura");
+        reporter.ArtifactAdded(true, "Crashed.dll", "net9.0", "x64", "crash", null, "crash.dmp");
 
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, 7);
 
@@ -176,6 +228,8 @@ public class TerminalTestReporterTests
         summary.IndexOf("failed: 0", StringComparison.Ordinal).Should().BeLessThan(summary.IndexOf("original.trx", StringComparison.Ordinal));
         summary.IndexOf("Errored assemblies:", StringComparison.Ordinal).Should().BeLessThan(summary.IndexOf("original.trx", StringComparison.Ordinal));
         summary.Should().Contain("Crashed.dll").And.Contain("host crash context");
+        summary.Should().Contain("In process file artifacts produced: 2")
+            .And.Contain("Out of process file artifacts produced: 1");
         if (showCompletion)
         {
             summary.Should().NotContain("Successful.dll");

@@ -61,12 +61,25 @@ public class PersistentStorageTelemetryE2ETests : SdkTest
         ExpireLeases(storageDir);
         FindPersistedTelemetry(storageDir, writerSessionId).Should().EndWith(".blob");
 
-        // A failing command gives the shutdown drain a budget, so the drainer reliably starts draining before exit.
+        // A failing command gives the shutdown drain a budget, so the drainer usually starts draining before exit.
         // The upload fails because of the unreachable proxy, which leaves every blob the drain picked up leased.
         // Its own telemetry may not be persisted within the bounded shutdown, so only check the writer's blob.
-        CreateCommand(testDir, storageDir, Guid.NewGuid().ToString(), managed: !writerIsManaged, "solution", "list").Execute().Should().ExitWith(1);
+        // The drain runs on background threads that race process exit, and persisting the drainer's own telemetry
+        // consumes part of the budget, so a slow machine can exit before leasing. Retry a bounded number of times;
+        // an entry point that doesn't share the storage directory would never lease the blob.
+        const int maxDrainAttempts = 5;
+        string? writerBlob = null;
+        for (int attempt = 0; attempt < maxDrainAttempts; attempt++)
+        {
+            CreateCommand(testDir, storageDir, Guid.NewGuid().ToString(), managed: !writerIsManaged, "solution", "list").Execute().Should().ExitWith(1);
 
-        string? writerBlob = FindPersistedTelemetry(storageDir, writerSessionId);
+            writerBlob = FindPersistedTelemetry(storageDir, writerSessionId);
+            if (writerBlob is null || writerBlob.EndsWith(".lock", StringComparison.Ordinal))
+            {
+                break;
+            }
+        }
+
         writerBlob.Should().NotBeNull("the writer's telemetry should remain persisted after the failed upload")
             .And.EndWith(".lock", "the other entry point should have leased the blob to upload it");
     }

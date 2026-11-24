@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             IEnumerable<ScannedTemplateInfo> filteredTemplates = loadedTemplates.Where(t => !exceptions.Contains(t.ConfigurationModel.Identity));
 
-            Assert.IsTrue(filteredTemplates.All(t => t.IsValid));
+            Assert.ContainsOnly(t => t.IsValid, filteredTemplates);
         }
 
         [TestMethod]
@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = environmentSettings.MountPath(SampleTemplatesLocation);
             RunnableProjectGenerator generator = new();
             IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, TestContext.CancellationToken);
-            Assert.IsTrue(loadedTemplates.All(t => t.IsValid));
+            Assert.ContainsOnly(t => t.IsValid, loadedTemplates);
         }
 
         [TestMethod]

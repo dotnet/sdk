@@ -21,13 +21,13 @@ public class NuGetForwardingApp
         NuGetSignatureVerificationEnabler.ConditionallyEnable(_forwardingApp);
     }
 
-    public int Execute()
+    public int Execute(CancellationToken cancellationToken)
     {
         // Ignore Ctrl-C for the remainder of the command's execution
         // Forwarding commands will just spawn the child process and exit
         Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
 
-        return _forwardingApp.Execute();
+        return _forwardingApp.Execute(cancellationToken);
     }
 
     public NuGetForwardingApp WithEnvironmentVariable(string name, string value)

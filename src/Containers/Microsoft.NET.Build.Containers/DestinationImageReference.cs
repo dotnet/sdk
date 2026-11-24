@@ -66,7 +66,8 @@ internal readonly record struct DestinationImageReference
         ILoggerFactory loggerFactory,
         string? archiveOutputPath,
         string? outputRegistry,
-        string? localRegistryCommand)
+        string? localRegistryCommand,
+        CancellationToken cancellationToken)
     {
         DestinationImageReference destinationImageReference;
         if (!string.IsNullOrEmpty(archiveOutputPath))
@@ -76,7 +77,7 @@ internal readonly record struct DestinationImageReference
         else if (!string.IsNullOrEmpty(outputRegistry))
         {
             destinationImageReference = new DestinationImageReference(
-                new Registry(outputRegistry, loggerFactory.CreateLogger<Registry>(), RegistryMode.Push),
+                new Registry(outputRegistry, loggerFactory.CreateLogger<Registry>(), RegistryMode.Push, cancellationToken),
                 repository,
                 imageTags);
         }

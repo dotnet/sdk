@@ -1692,6 +1692,16 @@ Jeśli polecenie zostanie określone bez argumentu, zostanie wyświetlona lista 
         <target state="translated">PROJEKT | PLIK</target>
         <note />
       </trans-unit>
+      <trans-unit id="PropertyArgumentName">
+        <source>NAME=VALUE</source>
+        <target state="new">NAME=VALUE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyOptionDescription">
+        <source>Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</source>
+        <target state="new">Set one or more MSBuild properties. Separate multiple properties with semicolons, or repeat the option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Wydawca dla platformy .NET.</target>
@@ -1942,8 +1952,10 @@ Wartość domyślna to „false”. Jednak w przypadku, gdy docelową jest platf
         <note />
       </trans-unit>
       <trans-unit id="StoreAppDescription">
-        <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
-        <target state="translated">Przechowuje określone zestawy platformy .NET. Domyślnie są one optymalizowane pod kątem docelowego środowiska uruchomieniowego i platformy docelowej.</target>
+        <source>Warning: The dotnet store command and the runtime package store feature are deprecated and no longer supported.
+
+Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
+        <target state="needs-review-translation">Przechowuje określone zestawy platformy .NET. Domyślnie są one optymalizowane pod kątem docelowego środowiska uruchomieniowego i platformy docelowej.</target>
         <note />
       </trans-unit>
       <trans-unit id="StoreFrameworkOptionDescription">
