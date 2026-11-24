@@ -91,8 +91,9 @@ and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.c
   Normal exports before shutdown remain network-first; this is not synchronous
   persistence of every ended span, and abrupt termination can lose queued spans. An upload already in flight
   can still delay shutdown. Successful local shutdown gives the trace batch processor 100 ms to finalize
-  persistence; the zero drain budget prevents waiting for the subsequent upload. This is long enough for a cold
-  exporter to complete its atomic file write without reintroducing an unbounded exit delay. Failed-command
+  persistence; the zero drain budget prevents waiting for the subsequent upload. A positive
+  `DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS` overrides this local persistence allowance (including `ForceFlush`),
+  so tests can allow extra time for serialization and storage writes without changing the product default. Failed-command
   persistence is subject to the 300-ms timeout.
 2. **Subsequent invocations.** Azure schedules an eager background drain after a 50-ms startup delay; actual
   start time also depends on thread scheduling and storage work. The two-minute periodic retry timer remains.
