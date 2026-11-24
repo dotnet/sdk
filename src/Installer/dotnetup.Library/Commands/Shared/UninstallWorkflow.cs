@@ -53,9 +53,9 @@ internal class UninstallWorkflow
         foreach (var spec in matchingSpecs)
         {
             var resolution = InstallSpecResolver.Resolve(spec, root.Installations);
-            if (resolution.Error is not null)
+            if (resolution.Failure is { } failure)
             {
-                Console.Error.WriteLine(resolution.Error);
+                Console.Error.WriteLine(failure.Message);
                 if (resolution.UsesLastKnownRequirement)
                 {
                     Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture,

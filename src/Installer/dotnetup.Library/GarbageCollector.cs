@@ -102,9 +102,9 @@ internal class GarbageCollector
                 root.InstallSpecs.Remove(spec);
                 continue;
             }
-            if (resolution.Error is not null)
+            if (resolution.Failure is { } failure)
             {
-                Console.Error.WriteLine(resolution.Error);
+                Console.Error.WriteLine(failure.Message);
                 skipCollection |= resolution.Spec is null;
                 if (resolution.UsesLastKnownRequirement)
                 {

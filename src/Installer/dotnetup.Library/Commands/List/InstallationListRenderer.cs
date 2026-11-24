@@ -79,9 +79,9 @@ internal static class InstallationListRenderer
             Component = spec.Component,
             Spec = spec,
             Installation = selected,
-            SpecDisplay = resolution.Error is null || resolution.UsesLastKnownRequirement ? display : Strings.ListUnavailable,
+            SpecDisplay = resolution.Failure is null || resolution.UsesLastKnownRequirement ? display : Strings.ListUnavailable,
             SourceDisplay = source,
-            Error = resolution.Error
+            Error = resolution.Failure?.Message
         };
     }
 

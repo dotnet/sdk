@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using System.Runtime.ExceptionServices;
-using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
@@ -233,13 +232,13 @@ internal class UpdateWorkflow
     {
         var evaluation = InstallSpecResolver.Evaluate(spec);
         usesLastKnownRequirement = evaluation.UsesLastKnownRequirement;
-        if (evaluation.Error is not null)
+        if (evaluation.Failure is { } failure)
         {
             if (!usesLastKnownRequirement)
             {
-                throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error);
+                throw failure;
             }
-            AnsiConsole.MarkupLine(DotnetupTheme.Warning(evaluation.Error.EscapeMarkup()));
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(failure.Message.EscapeMarkup()));
             AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
                 Strings.RepositoryUsingLastKnownRequirement, spec.GlobalJsonPath).EscapeMarkup()));
         }
@@ -251,20 +250,12 @@ internal class UpdateWorkflow
     /// </summary>
     private static bool UpdateGlobalJsonFile(string globalJsonPath, ReleaseVersion latestVersion)
     {
-        try
+        if (GlobalJsonHelper.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
         {
-            if (GlobalJsonHelper.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
-            {
-                AnsiConsole.MarkupLine($"  Updated {DotnetupTheme.Dim(globalJsonPath.EscapeMarkup())} to {latestVersion}.");
-                return true;
-            }
-            return false;
+            AnsiConsole.MarkupLine($"  Updated {DotnetupTheme.Dim(globalJsonPath.EscapeMarkup())} to {latestVersion}.");
+            return true;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
-        {
-            throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed,
-                $"Failed to update '{globalJsonPath}': {ex.Message}", ex);
-        }
+        return false;
     }
 
     /// <summary>

@@ -199,6 +199,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>A Windows installer bundle request was skipped because a newer request in the same batch would replace it.</summary>
     SupersededInBatch,
+
+    /// <summary>A global.json file that the command needs to read is not valid JSON or has invalid SDK settings.</summary>
+    MalformedGlobalJson,
 }
 
 /// <summary>

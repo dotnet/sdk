@@ -91,8 +91,9 @@ public class UpdateWorkflowTests
 
         var update = () => new UpdateWorkflow(new ChannelVersionResolver())
             .Execute(testEnv.ManifestPath, root.Path, InstallComponent.SDK, noProgress: true);
-        update.Should().Throw<DotnetInstallException>()
-            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        var failure = update.Should().Throw<DotnetInstallException>().Which;
+        failure.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
+        failure.Message.Should().Contain(invalidPath);
         var remaining = manifest.GetInstallSpecs(root).ToList();
         remaining.Should().HaveCount(2);
         remaining.Should().Contain(s => s.GlobalJsonPath == invalidPath);
@@ -231,7 +232,7 @@ public class UpdateWorkflowTests
             .Execute(env.ManifestPath, root.Path, InstallComponent.SDK, noProgress: true, updateGlobalJson: true);
 
         var failure = update.Should().Throw<DotnetInstallException>().Which;
-        failure.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        failure.ErrorCode.Should().Be(deleteFile ? DotnetInstallErrorCode.ContextResolutionFailed : DotnetInstallErrorCode.MalformedGlobalJson);
         failure.Message.Should().Contain(path);
         if (deleteFile)
         {

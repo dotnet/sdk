@@ -365,7 +365,7 @@ public class InitWorkflowTests : IDisposable
     [DataRow("{broken")]
     [DataRow("""{"sdk":{"version":"invalid"}}""")]
     [DataRow("""{"sdk":{"version":"10.0.103","rollForward":"invalid"}}""")]
-    public void ResolveFormDefaults_ReportsMalformedGlobalJsonAsContextResolutionFailure(string contents)
+    public void ResolveFormDefaults_ReportsMalformedGlobalJson(string contents)
     {
         File.WriteAllText(Path.Combine(_tempDir, "global.json"), contents);
         var mock = new MockDotnetInstallManager(defaultInstallPath: _tempDir, existingSystemInstalls: []);
@@ -374,7 +374,7 @@ public class InitWorkflowTests : IDisposable
         var resolve = () => RunFromTempDirectory(() => InitDefaultsResolver.ResolveFormDefaults(command, null, mock));
 
         resolve.Should().Throw<DotnetInstallException>()
-            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
     }
 
     [TestMethod]

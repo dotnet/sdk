@@ -541,12 +541,12 @@ public class GarbageCollectorTests
         Directory.Exists(Path.Combine(testEnv.InstallPath, "sdk", "10.0.105")).Should().Be(hasError);
         if (hasError)
         {
-            error.ToString().Should().Contain(path).And.Contain("Warning: Cannot read")
+            error.ToString().Should().Contain(path).And.Contain(state == "malformed" ? "is malformed" : "Warning: Cannot read")
                 .And.Contain("Skipping garbage collection");
         }
         else
         {
-            error.ToString().Should().NotContain("Warning: Cannot read");
+            error.ToString().Should().NotContain("Warning: Cannot read").And.NotContain("is malformed");
         }
     }
 }

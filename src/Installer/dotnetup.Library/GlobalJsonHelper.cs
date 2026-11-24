@@ -14,6 +14,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 public static class GlobalJsonHelper
 {
+    private const int MaxMalformedDetailLength = 256;
+
     /// <summary>
     /// Reads UTF-8 global.json files, allowing comments but not trailing commas, like the muxer.
     /// SDK version and roll-forward validation belongs to the channel resolver.
@@ -24,13 +26,11 @@ public static class GlobalJsonHelper
     }
 
     /// <summary>
-    /// Searches for a global.json file starting from <paramref name="initialDirectory"/>
-    /// and walking up the directory tree. Returns the parsed contents and path if found.
+    /// Searches for a global.json file starting from <paramref name="initialDirectory"/> and walking up
+    /// the directory tree. Only the location is returned; the file is not read, so a malformed global.json
+    /// does not fail commands that never use its contents. Use <see cref="LoadGlobalJson"/> to parse it.
     /// </summary>
-    /// <exception cref="DotnetInstallException">
-    /// The file cannot be read or parsed. The error code is <see cref="DotnetInstallErrorCode.ContextResolutionFailed"/>.
-    /// </exception>
-    public static GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
+    public static string? FindGlobalJsonPath(string initialDirectory)
     {
         string? directory = initialDirectory;
         while (!string.IsNullOrEmpty(directory))
@@ -38,33 +38,92 @@ public static class GlobalJsonHelper
             string globalJsonPath = Path.Combine(directory, "global.json");
             if (File.Exists(globalJsonPath))
             {
-                GlobalJsonContents contents;
-                try
-                {
-                    contents = ReadGlobalJson(globalJsonPath);
-                }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
-                {
-                    throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed,
-                        string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError, globalJsonPath, ex.Message), ex);
-                }
-                return new GlobalJsonInfo
-                {
-                    GlobalJsonPath = globalJsonPath,
-                    GlobalJsonContents = contents
-                };
+                return globalJsonPath;
             }
 
-            var parent = Directory.GetParent(directory);
-            if (parent == null)
-            {
-                break;
-            }
-
-            directory = parent.FullName;
+            directory = Directory.GetParent(directory)?.FullName;
         }
 
-        return new GlobalJsonInfo();
+        return null;
+    }
+
+    /// <summary>Reads and parses the global.json file at <paramref name="globalJsonPath"/>.</summary>
+    /// <exception cref="DotnetInstallException">
+    /// The file cannot be read or parsed. See <see cref="WrapGlobalJsonErrors"/>.
+    /// </exception>
+    public static GlobalJsonInfo LoadGlobalJson(string globalJsonPath) =>
+        new()
+        {
+            GlobalJsonPath = globalJsonPath,
+            GlobalJsonContents = WrapGlobalJsonErrors(globalJsonPath, () => ReadGlobalJson(globalJsonPath))
+        };
+
+    /// <summary>
+    /// Finds the global.json file that applies to <paramref name="initialDirectory"/> and parses it.
+    /// Returns <see langword="null"/> when there is no global.json file.
+    /// </summary>
+    /// <exception cref="DotnetInstallException">
+    /// The file cannot be read or parsed. See <see cref="WrapGlobalJsonErrors"/>.
+    /// </exception>
+    public static GlobalJsonInfo? FindAndLoadGlobalJson(string initialDirectory) =>
+        FindGlobalJsonPath(initialDirectory) is { } globalJsonPath ? LoadGlobalJson(globalJsonPath) : null;
+
+    /// <summary>
+    /// Verifies that <see cref="UpdateGlobalJson"/> can update the file, so commands can fail before
+    /// doing expensive work (such as installing an SDK) that would be followed by a failed update.
+    /// </summary>
+    /// <exception cref="DotnetInstallException">
+    /// The file cannot be read or parsed, or contains duplicate SDK versions. See <see cref="WrapGlobalJsonErrors"/>.
+    /// </exception>
+    public static void ValidateGlobalJsonIsUpdatable(string globalJsonPath) =>
+        WrapGlobalJsonErrors(globalJsonPath, () =>
+        {
+            var (_, fileText, _) = ReadGlobalJsonFile(globalJsonPath);
+            // The replacement is discarded; this only runs the same validation the update performs.
+            return ReplaceGlobalJsonSdkVersion(fileText, string.Empty);
+        });
+
+    /// <summary>
+    /// Runs a global.json operation, converting failures to user-facing errors.
+    /// </summary>
+    /// <exception cref="DotnetInstallException">
+    /// <see cref="DotnetInstallErrorCode.MalformedGlobalJson"/> when the file is not valid global.json, or
+    /// <see cref="DotnetInstallErrorCode.ContextResolutionFailed"/> when it cannot be read or written.
+    /// </exception>
+    private static T WrapGlobalJsonErrors<T>(string globalJsonPath, Func<T> operation)
+    {
+        try
+        {
+            return operation();
+        }
+        catch (JsonException ex)
+        {
+            throw CreateMalformedGlobalJsonException(globalJsonPath, ex);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            throw CreateUnreadableGlobalJsonException(globalJsonPath, ex);
+        }
+    }
+
+    /// <summary>Creates the user-facing error for a global.json file that cannot be read or written.</summary>
+    internal static DotnetInstallException CreateUnreadableGlobalJsonException(string? globalJsonPath, Exception ex) =>
+        new(DotnetInstallErrorCode.ContextResolutionFailed,
+            string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError, globalJsonPath, ex.Message), ex);
+
+    /// <summary>
+    /// Creates the user-facing error for a global.json file that is not valid JSON or has invalid SDK settings.
+    /// The parse detail is truncated so a large invalid value cannot flood the console.
+    /// </summary>
+    internal static DotnetInstallException CreateMalformedGlobalJsonException(string globalJsonPath, JsonException ex)
+    {
+        string detail = ex.Message.Length <= MaxMalformedDetailLength
+            ? ex.Message
+            : string.Concat(ex.Message.AsSpan(0, MaxMalformedDetailLength), "...");
+        return new DotnetInstallException(
+            DotnetInstallErrorCode.MalformedGlobalJson,
+            string.Format(CultureInfo.InvariantCulture, Strings.MalformedGlobalJson, globalJsonPath, detail),
+            ex);
     }
 
     /// <summary>
@@ -72,7 +131,10 @@ public static class GlobalJsonHelper
     /// <paramref name="sdkVersion"/> is null or the file does not exist.
     /// The file must be UTF-8 JSON with optional comments and no trailing commas.
     /// </summary>
-    /// <exception cref="JsonException">The file cannot be parsed or contains duplicate SDK versions; it is left unchanged.</exception>
+    /// <exception cref="DotnetInstallException">
+    /// The file cannot be read, parsed, or written, or contains duplicate SDK versions; it is left unchanged
+    /// unless the write itself fails. See <see cref="WrapGlobalJsonErrors"/>.
+    /// </exception>
     public static void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null)
     {
         if (sdkVersion is null)
@@ -85,8 +147,11 @@ public static class GlobalJsonHelper
             return;
         }
 
-        var (_, fileText, encoding) = ReadGlobalJsonFile(globalJsonPath);
-        WriteGlobalJsonSdkVersion(globalJsonPath, sdkVersion, fileText, encoding);
+        WrapGlobalJsonErrors(globalJsonPath, () =>
+        {
+            var (_, fileText, encoding) = ReadGlobalJsonFile(globalJsonPath);
+            return WriteGlobalJsonSdkVersion(globalJsonPath, sdkVersion, fileText, encoding);
+        });
     }
 
     private static bool WriteGlobalJsonSdkVersion(string globalJsonPath, string sdkVersion, string fileText, Encoding encoding)
@@ -126,21 +191,25 @@ public static class GlobalJsonHelper
     /// recorded in the file (or when the current version cannot be parsed).
     /// </summary>
     /// <returns><see langword="true"/> if the file was updated; otherwise <see langword="false"/>.</returns>
-    /// <exception cref="JsonException">The file contains malformed JSON or duplicate SDK versions; it is left unchanged.</exception>
-    public static bool UpdateGlobalJsonIfNewer(string globalJsonPath, ReleaseVersion latestVersion)
-    {
-        var (contents, fileText, encoding) = ReadGlobalJsonFile(globalJsonPath);
-        string? currentVersionString = contents.Sdk?.Version;
-
-        if (currentVersionString is not null
-            && ReleaseVersion.TryParse(currentVersionString, out var currentVersion)
-            && latestVersion <= currentVersion)
+    /// <exception cref="DotnetInstallException">
+    /// The file cannot be read, parsed, or written, or contains duplicate SDK versions; it is left unchanged
+    /// unless the write itself fails. See <see cref="WrapGlobalJsonErrors"/>.
+    /// </exception>
+    public static bool UpdateGlobalJsonIfNewer(string globalJsonPath, ReleaseVersion latestVersion) =>
+        WrapGlobalJsonErrors(globalJsonPath, () =>
         {
-            return false;
-        }
+            var (contents, fileText, encoding) = ReadGlobalJsonFile(globalJsonPath);
+            string? currentVersionString = contents.Sdk?.Version;
 
-        return WriteGlobalJsonSdkVersion(globalJsonPath, latestVersion.ToString(), fileText, encoding);
-    }
+            if (currentVersionString is not null
+                && ReleaseVersion.TryParse(currentVersionString, out var currentVersion)
+                && latestVersion <= currentVersion)
+            {
+                return false;
+            }
+
+            return WriteGlobalJsonSdkVersion(globalJsonPath, latestVersion.ToString(), fileText, encoding);
+        });
 
     /// <summary>
     /// Replaces the "version" value inside the "sdk" section of a global.json string,
