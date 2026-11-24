@@ -495,13 +495,23 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         //  Also download RID-specific package if needed
         if (ResolveRidSpecificPackage(packageId, packageVersion, packageDownloadDir, assetFileDirectory, verbosity) is PackageId ridSpecificPackage)
         {
+            // If package source mapping was applied, packageSourceLocation.PackageSourceOverrides will be set to the mapped feed for the primary package
+            // So we create a new package source location for the RID-specific package without PackageSourceOverrides set, so that package source
+            // mapping can be applied independently for the RID-specific package.
+            var ridSpecificPackageSourceLocation = new PackageSourceLocation(
+                packageSourceLocation.NugetConfig,
+                packageSourceLocation.RootConfigDirectory,
+                packageSourceLocation.SourceFeedOverrides,
+                packageSourceLocation.AdditionalSourceFeed,
+                _currentWorkingDirectory);
+
             EnsurePackageInstalled(
                 packageDownloadDir,
                 ridSpecificPackage,
                 packageVersion,
                 cancellationToken,
                 nugetPackageDownloader,
-                packageSourceLocation,
+                ridSpecificPackageSourceLocation,
                 includeUnlisted: true,
                 acquireInstallLock,
                 verbosity);

@@ -179,10 +179,8 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         if (toolPackage is null &&
             !_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion!, targetFramework: null, verbosity: _verbosity, out toolPackage))
         {
-            //  We've already determined which source we will use and will use it to download the package.
-            //  So set the package location here to override the source feeds to just the source we already resolved to.
-            //  This does mean that we won't work with feeds that have a primary package but where the RID-specific packages are on
-            //  other feeds, but this is probably OK.
+            //  We've already determined which source we will use for the primary package.
+            //  Package source mapping (if applicable) for RID-specific packages will be handled when those are downloaded (see ToolPackageDownloaderBase.DownloadTool)
             var downloadPackageLocation = new PackageLocation(
                 nugetConfig: _configFile != null ? new(_configFile) : null,
                 sourceFeedOverrides: _sources,
