@@ -62,7 +62,7 @@ stages:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals build.azurelinux.3.amd64.open
         os: linux
-      helixTargetQueue: ubuntu.2204.amd64.open
+      helixTargetQueue: AzureLinux.4.Amd64.Open
 
   ############### MACOS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
