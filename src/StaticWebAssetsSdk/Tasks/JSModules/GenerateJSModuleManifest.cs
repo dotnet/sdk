@@ -7,11 +7,15 @@ using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Build.Framework;
+using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class GenerateJSModuleManifest : Task
+[MSBuildMultiThreadableTask]
+public class GenerateJSModuleManifest : Task, IMultiThreadableTask
 {
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     private static readonly JsonSerializerOptions ManifestSerializationOptions = new()
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
@@ -42,26 +46,27 @@ public class GenerateJSModuleManifest : Task
 #else
         var currentHash = SHA256.HashData(data);
 #endif
-        Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
+        Directory.CreateDirectory(TaskEnvironment.GetAbsolutePathPreservingInvalidArguments(Path.GetDirectoryName(OutputFile)));
+        AbsolutePath outputFile = TaskEnvironment.GetAbsolutePath(OutputFile);
 
-        var fileExists = File.Exists(OutputFile);
+        var fileExists = File.Exists(outputFile);
         var existingManifestHash = fileExists ?
 #if !NET9_0_OR_GREATER
-            sha256.ComputeHash(File.ReadAllBytes(OutputFile)) :
+            sha256.ComputeHash(File.ReadAllBytes(outputFile)) :
 #else
-            SHA256.HashData(File.ReadAllBytes(OutputFile)) :
+            SHA256.HashData(File.ReadAllBytes(outputFile)) :
 #endif
             [];
 
         if (!fileExists)
         {
             Log.LogMessage(MessageImportance.Low, $"Creating manifest because manifest file '{OutputFile}' does not exist.");
-            File.WriteAllBytes(OutputFile, data);
+            File.WriteAllBytes(outputFile, data);
         }
         else if (!currentHash.SequenceEqual(existingManifestHash))
         {
             Log.LogMessage(MessageImportance.Low, $"Updating manifest because manifest version '{Convert.ToBase64String(currentHash)}' is different from existing manifest hash '{Convert.ToBase64String(existingManifestHash)}'.");
-            File.WriteAllBytes(OutputFile, data);
+            File.WriteAllBytes(outputFile, data);
         }
         else
         {
