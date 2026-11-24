@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
@@ -61,7 +62,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return defaultValue;
                 }
 
-                var pointToResult = DataFlowAnalysisContext.PointsToAnalysisResult[parameterOrLocalReferenceOperation.Kind, parameterOrLocalReferenceOperation.Syntax];
+                var pointToResult = DataFlowAnalysisContext.PointsToAnalysisResult[parameterOrLocalReferenceOperation];
                 if (pointToResult.Kind != PointsToAbstractValueKind.KnownLocations)
                 {
                     return defaultValue;
@@ -167,11 +168,21 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 //       a.ElementAt(10);
                 // }
                 var queue = new Queue<IOperation>();
+                using var visits = PooledDictionary<IOperation, int>.GetInstance(ReferenceEqualityComparer.Instance);
                 queue.Enqueue(parameterOrLocalOperation);
                 var resultAnalysisValue = defaultValue;
                 while (queue.Count > 0)
                 {
                     var currentOperation = queue.Dequeue();
+                    visits.TryGetValue(currentOperation, out var visitCount);
+                    // Counts saturate at two and operation sites form a set. Two expansions
+                    // retain multiplicity without repeatedly unfolding shared deferred paths.
+                    if (visitCount == (int)EnumerationCount.TwoOrMoreTime)
+                    {
+                        continue;
+                    }
+
+                    visits[currentOperation] = visitCount + 1;
                     if (currentOperation is IParameterReferenceOperation or ILocalReferenceOperation)
                     {
                         var result = pointsToAnalysisResult[currentOperation];
@@ -323,17 +334,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 GlobalFlowStateDictionaryAnalysisValue defaultValue,
                 EnumerationCount enumerationCount)
             {
-                var operationsSetBuilder = PooledHashSet<IOperation>.GetInstance();
-                operationsSetBuilder.Add(parameterOrLocalReferenceOperation);
                 var newInvocationSet = new TrackingEnumerationSet(
-                    operationsSetBuilder.ToImmutableAndFree(),
+                    ImmutableHashSet.Create(parameterOrLocalReferenceOperation),
                     enumerationCount);
 
-                var trackedEntitiesBuilder = PooledDictionary<IDeferredTypeEntity, TrackingEnumerationSet>.GetInstance();
-                trackedEntitiesBuilder.Add(entity, newInvocationSet);
-
                 var analysisValue = new GlobalFlowStateDictionaryAnalysisValue(
-                    trackedEntitiesBuilder.ToImmutableDictionaryAndFree(),
+                    GlobalFlowStateDictionaryAnalysisValue.Empty.TrackedEntities.Add(entity, newInvocationSet),
                     GlobalFlowStateDictionaryAnalysisValueKind.Known);
 
                 return defaultValue.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known
