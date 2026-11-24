@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-install" "1" "2026-08-28" "" ".NET Documentation"
+.TH "dotnet-new-install" "1" "2026-09-29" "" ".NET Documentation"
 .hy
 .SH dotnet new install
 .PP
@@ -26,7 +26,7 @@ dotnet-new-install - installs a template package.
 .IP
 .nf
 \f[C]
-dotnet new install <PATH|NUGET_ID>  [--interactive] [--add-source|--nuget-source <SOURCE>] [--force]
+dotnet new install <PATH|NUGET_ID>  [--interactive] [--add-source|--nuget-source <SOURCE>] [--force] [--prerelease]
     [-d|--diagnostics] [--verbosity <LEVEL>] [-h|--help]
 \f[R]
 .fi
@@ -39,7 +39,7 @@ By default, \f[V]dotnet new\f[R] passes * for the version, which represents the 
 For more information, see the Examples section.
 .PP
 If a version of the template package was already installed when you run this command, the template package will be updated to the specified version.
-If no version is specified, the package is updated to the latest stable version.
+If no version is specified, the package is updated to the latest stable version unless you specify the \f[V]--prerelease\f[R] option.
 Starting with .NET SDK 6.0.100, if the argument specifies the version, and that version of the NuGet package is already installed, it won\[cq]t be reinstalled.
 If the argument is a \f[V]PATH\f[R] and it\[cq]s already installed, it won\[cq]t be reinstalled.
 .PP
@@ -124,6 +124,14 @@ Prints out a description of how to use the command.
 .PP
 Allows the command to stop and wait for user input or action.
 For example, to complete authentication.
+.IP \[bu] 2
+\f[B]\f[VB]--prerelease\f[B]\f[R]
+.RS 2
+.PP
+Selects the latest available version, including prerelease versions, when you don\[cq]t specify a template package version.
+If you specify a package version, such as \f[V]Contoso.Templates\[at]2.0.0-preview.3\f[R], the command selects that exact version.
+Available since .NET SDK 11.
+.RE
 .PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
 .PP

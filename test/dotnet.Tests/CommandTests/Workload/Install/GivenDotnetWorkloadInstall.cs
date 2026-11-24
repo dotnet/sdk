@@ -43,6 +43,28 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .HaveStdErrContaining(string.Format(CliCommandStrings.WorkloadNotRecognized, "fake"));
         }
 
+        [Fact]
+        public void GivenWorkloadInstallItGracefullyErrorsOnInvalidWorkloadName()
+        {
+            const string invalidWorkloadId = "../fake";
+            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var dotnetRoot = Path.Combine(testDirectory, "dotnet");
+            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, "6.0.100", workloadResolver);
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", invalidWorkloadId, "--skip-manifest-update" });
+            var command = new WorkloadInstallCommand(
+                parseResult,
+                reporter: _reporter,
+                workloadResolverFactory,
+                workloadInstaller: new MockPackWorkloadInstaller(),
+                nugetPackageDownloader: new MockNuGetPackageDownloader(dotnetRoot),
+                workloadManifestUpdater: new MockWorkloadManifestUpdater(),
+                tempDirPath: testDirectory);
+
+            var exceptionThrown = Assert.Throws<GracefulException>(() => command.Execute());
+            exceptionThrown.Message.Should().Be(string.Format(CliCommandStrings.WorkloadNotRecognized, invalidWorkloadId));
+        }
+
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/26624")]
         public void ItErrorUsingSkipManifestAndRollback()
         {
