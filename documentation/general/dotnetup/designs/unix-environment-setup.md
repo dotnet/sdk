@@ -95,31 +95,16 @@ end
 # dotnetup: begin
 if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')
 {
-    $dotnetupFound = [System.IO.File]::Exists('/path/to/dotnetup')
+    if ([System.IO.File]::Exists('/path/to/dotnetup')) { . ([scriptblock]::Create((& '/path/to/dotnetup' print-env-script --shell pwsh) -join "`n")) }
 }
-else
+elseif (Test-Path -LiteralPath '/path/to/dotnetup' -PathType Leaf)
 {
-    $dotnetupFound = Test-Path -LiteralPath '/path/to/dotnetup' -PathType Leaf
-}
-if ($dotnetupFound)
-{
-    $dotnetupScript = (& '/path/to/dotnetup' print-env-script --shell pwsh) -join [System.Environment]::NewLine
-    if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))
-    {
-        if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')
-        {
-            . ([scriptblock]::Create($dotnetupScript))
-        }
-        else
-        {
-            Invoke-Expression $dotnetupScript
-        }
-    }
+    Invoke-Expression ((& '/path/to/dotnetup' print-env-script --shell pwsh | Out-String) + ';')
 }
 # dotnetup: end
 ```
 
-In FullLanguage mode the PowerShell entry uses .NET APIs instead of `Test-Path`, `Out-String` and `Invoke-Expression`. Those cmdlets load modules on first use, which noticeably slows every new PowerShell session. ConstrainedLanguage mode (for example under WDAC or AppLocker) blocks the .NET method calls, so the entry falls back to the cmdlets there.
+In FullLanguage mode the PowerShell entry uses .NET APIs instead of `Test-Path`, `Out-String` and `Invoke-Expression`. Those cmdlets load modules on first use, which noticeably slows every new PowerShell session. ConstrainedLanguage mode (for example under WDAC or AppLocker) blocks the .NET method calls, so the entry falls back to the cmdlets there. The trailing `;` keeps `Invoke-Expression` from failing when the output is empty.
 
 The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`). The `--dotnet-install-path` argument is only included in generated profile entries when dotnetup is configured to use a non-default install root.
 

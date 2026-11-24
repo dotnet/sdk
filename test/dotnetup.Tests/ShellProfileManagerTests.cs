@@ -522,10 +522,9 @@ public class ShellProfileManagerTests : IDisposable
         entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
         entry.Should().Contain("if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')");
-        entry.Should().Contain($"$dotnetupFound = [System.IO.File]::Exists('{FakeDotnetupPath}')");
-        entry.Should().Contain($"$dotnetupFound = Test-Path -LiteralPath '{FakeDotnetupPath}' -PathType Leaf");
-        entry.Should().Contain(". ([scriptblock]::Create($dotnetupScript))");
-        entry.Should().Contain("Invoke-Expression $dotnetupScript");
+        entry.Should().Contain($"if ([System.IO.File]::Exists('{FakeDotnetupPath}')) {{ . ([scriptblock]::Create(");
+        entry.Should().Contain($"elseif (Test-Path -LiteralPath '{FakeDotnetupPath}' -PathType Leaf)");
+        entry.Should().Contain("| Out-String) + ';')");
         entry.Should().Contain("--shell pwsh");
         entry.Should().NotContain("--dotnetup-only");
     }

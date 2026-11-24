@@ -266,10 +266,9 @@ public class EnvShellProviderTests
         var profileEntry = provider.GenerateProfileEntry("/test/dotnetup");
         var activationCommand = provider.GenerateActivationCommand("/test/dotnetup");
 
-        profileEntry.Should().Contain("$dotnetupScript = (& '/test/dotnetup' env script --shell pwsh --dotnet --dotnetup) -join [System.Environment]::NewLine");
-        profileEntry.Should().Contain("if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))");
-        profileEntry.Should().Contain(". ([scriptblock]::Create($dotnetupScript))");
-        profileEntry.Should().NotContain("Out-String");
+        profileEntry.Should().Contain("if ([System.IO.File]::Exists('/test/dotnetup')) { . ([scriptblock]::Create((& '/test/dotnetup' env script --shell pwsh --dotnet --dotnetup) -join \"`n\")) }");
+        profileEntry.Should().Contain("elseif (Test-Path -LiteralPath '/test/dotnetup' -PathType Leaf)");
+        profileEntry.Should().Contain("Invoke-Expression ((& '/test/dotnetup' env script --shell pwsh --dotnet --dotnetup | Out-String) + ';')");
 
         activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' env script | Out-String)");
     }
@@ -279,6 +278,7 @@ public class EnvShellProviderTests
     [DataRow("empty", false)]
     [DataRow("missing", false)]
     [DataRow("multiline", true)]
+    [DataRow("empty", true)]
     [DataRow("missing", true)]
     public void PowerShellProvider_ProfileEntryRunsInPowerShell(string scenario, bool constrainedLanguage)
     {
