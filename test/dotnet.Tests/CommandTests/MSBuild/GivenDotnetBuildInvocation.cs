@@ -57,6 +57,12 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [DataRow(new string[] { "--logger:xyz" }, new string[] { "--logger:xyz" })]
         [DataRow(new string[] { "-l", "xyz" }, new string[] { "--logger:xyz" })]
         [DataRow(new string[] { "-l:xyz" }, new string[] { "--logger:xyz" })]
+        [DataRow(new string[] { "--l:xyz" }, new string[] { "--logger:xyz" })]
+        [DataRow(new string[] { "-logger:xyz" }, new string[] { "--logger:xyz" })]
+        [DataRow(new string[] { "/logger:xyz" }, new string[] { "--logger:xyz" })]
+        [DataRow(new string[] { "/logger", "xyz" }, new string[] { "--logger:xyz" })]
+        [DataRow(new string[] { "/l:xyz" }, new string[] { "--logger:xyz" })]
+        [DataRow(new string[] { "/l", "xyz" }, new string[] { "--logger:xyz" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -87,6 +93,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 yield return [commandName, AddConfigurationAndProgram("--logger:xyz")];
                 yield return [commandName, AddConfigurationAndProgram("-l", "xyz")];
                 yield return [commandName, AddConfigurationAndProgram("-l:xyz")];
+                yield return [commandName, AddConfigurationAndProgram("/logger:xyz")];
+                yield return [commandName, AddConfigurationAndProgram("/l:xyz")];
             }
         }
 
@@ -105,13 +113,14 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
                 CommandDirectoryContext.PerformActionWithBasePath(workingDirectory, () =>
                 {
+                    var services = TestCommandServices.CreateNonLLM();
                     var command = commandName switch
                     {
-                        "build" => BuildCommand.FromArgs(args),
-                        "clean" => CleanCommand.FromArgs(args),
-                        "pack" => PackCommand.FromArgs(args),
-                        "publish" => PublishCommand.FromArgs(args),
-                        "restore" => RestoreCommand.FromArgs(args),
+                        "build" => BuildCommand.FromArgs(args, msbuildPath: null, services),
+                        "clean" => CleanCommand.FromArgs(args, msbuildPath: null, services),
+                        "pack" => PackCommand.FromArgs(args, CancellationToken.None, msbuildPath: null, services),
+                        "publish" => PublishCommand.FromArgs(args, CancellationToken.None, msbuildPath: null, services),
+                        "restore" => RestoreCommand.FromArgs(args, msbuildPath: null, services),
                         _ => throw new InvalidOperationException($"Unexpected command name '{commandName}'.")
                     };
 

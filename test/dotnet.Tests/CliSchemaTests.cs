@@ -199,7 +199,11 @@ public class CliSchemaTests : SdkTest
     "--logger": {
       "hidden": true,
       "aliases": [
-        "-l"
+        "--l",
+        "-l",
+        "-logger",
+        "/l",
+        "/logger"
       ],
       "valueType": "System.Collections.Generic.IEnumerable<System.String>",
       "hasDefaultValue": false,
@@ -973,7 +977,11 @@ public class CliSchemaTests : SdkTest
     "--logger": {
       "hidden": true,
       "aliases": [
-        "-l"
+        "--l",
+        "-l",
+        "-logger",
+        "/l",
+        "/logger"
       ],
       "valueType": "System.Collections.Generic.IEnumerable<System.String>",
       "hasDefaultValue": false,
