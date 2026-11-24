@@ -26,29 +26,62 @@ public static class GlobalJsonHelper
     }
 
     /// <summary>
-    /// Searches for a global.json file starting from <paramref name="initialDirectory"/>
-    /// and walking up the directory tree. Returns the path if found and, only when
-    /// <paramref name="parseContents"/> is set, the parsed contents. Callers must opt in to
-    /// parsing so a malformed global.json does not fail commands that never use its contents.
+    /// Searches for a global.json file starting from <paramref name="initialDirectory"/> and walking up
+    /// the directory tree. Only the location is returned; the file is not read, so a malformed global.json
+    /// does not fail commands that never use its contents. Use <see cref="LoadGlobalJson"/> to parse it.
     /// </summary>
-    /// <exception cref="DotnetInstallException">
-    /// <paramref name="parseContents"/> is set and the file cannot be read or parsed.
-    /// See <see cref="WrapGlobalJsonErrors"/>.
-    /// </exception>
-    public static GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory, bool parseContents)
+    public static string? FindGlobalJsonPath(string initialDirectory)
     {
-        string? globalJsonPath = FindGlobalJsonPath(initialDirectory);
-        if (globalJsonPath is null)
+        string? directory = initialDirectory;
+        while (!string.IsNullOrEmpty(directory))
         {
-            return new GlobalJsonInfo();
+            string globalJsonPath = Path.Combine(directory, "global.json");
+            if (File.Exists(globalJsonPath))
+            {
+                return globalJsonPath;
+            }
+
+            directory = Directory.GetParent(directory)?.FullName;
         }
 
-        return new GlobalJsonInfo
+        return null;
+    }
+
+    /// <summary>Reads and parses the global.json file at <paramref name="globalJsonPath"/>.</summary>
+    /// <exception cref="DotnetInstallException">
+    /// The file cannot be read or parsed. See <see cref="WrapGlobalJsonErrors"/>.
+    /// </exception>
+    public static GlobalJsonInfo LoadGlobalJson(string globalJsonPath) =>
+        new()
         {
             GlobalJsonPath = globalJsonPath,
-            GlobalJsonContents = parseContents ? WrapGlobalJsonErrors(globalJsonPath, () => ReadGlobalJson(globalJsonPath)) : null
+            GlobalJsonContents = WrapGlobalJsonErrors(globalJsonPath, () => ReadGlobalJson(globalJsonPath))
         };
-    }
+
+    /// <summary>
+    /// Finds the global.json file that applies to <paramref name="initialDirectory"/> and parses it.
+    /// Returns <see langword="null"/> when there is no global.json file.
+    /// </summary>
+    /// <exception cref="DotnetInstallException">
+    /// The file cannot be read or parsed. See <see cref="WrapGlobalJsonErrors"/>.
+    /// </exception>
+    public static GlobalJsonInfo? FindAndLoadGlobalJson(string initialDirectory) =>
+        FindGlobalJsonPath(initialDirectory) is { } globalJsonPath ? LoadGlobalJson(globalJsonPath) : null;
+
+    /// <summary>
+    /// Verifies that <see cref="UpdateGlobalJson"/> can update the file, so commands can fail before
+    /// doing expensive work (such as installing an SDK) that would be followed by a failed update.
+    /// </summary>
+    /// <exception cref="DotnetInstallException">
+    /// The file cannot be read or parsed, or contains duplicate SDK versions. See <see cref="WrapGlobalJsonErrors"/>.
+    /// </exception>
+    public static void ValidateGlobalJsonIsUpdatable(string globalJsonPath) =>
+        WrapGlobalJsonErrors(globalJsonPath, () =>
+        {
+            var (_, fileText, _) = ReadGlobalJsonFile(globalJsonPath);
+            // The replacement is discarded; this only runs the same validation the update performs.
+            return ReplaceGlobalJsonSdkVersion(fileText, string.Empty);
+        });
 
     /// <summary>
     /// Runs a global.json operation, converting failures to user-facing errors.
@@ -91,23 +124,6 @@ public static class GlobalJsonHelper
             DotnetInstallErrorCode.MalformedGlobalJson,
             string.Format(CultureInfo.InvariantCulture, Strings.MalformedGlobalJson, globalJsonPath, detail),
             ex);
-    }
-
-    private static string? FindGlobalJsonPath(string initialDirectory)
-    {
-        string? directory = initialDirectory;
-        while (!string.IsNullOrEmpty(directory))
-        {
-            string globalJsonPath = Path.Combine(directory, "global.json");
-            if (File.Exists(globalJsonPath))
-            {
-                return globalJsonPath;
-            }
-
-            directory = Directory.GetParent(directory)?.FullName;
-        }
-
-        return null;
     }
 
     /// <summary>

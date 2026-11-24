@@ -85,11 +85,11 @@ internal static class InstallSpecResolver
     }
 
     /// <summary>
-    /// Evaluates the SDK requirement of the global.json file a command relies on, using
-    /// <paramref name="contents"/> when already parsed. Returns null when the file has no SDK version.
+    /// Evaluates the SDK requirement of the global.json file a command relies on, using its already
+    /// parsed <paramref name="contents"/>. Returns null when the file has no SDK version.
     /// </summary>
-    /// <exception cref="DotnetInstallException">The file cannot be read or is malformed.</exception>
-    public static UpdateChannel? EvaluateGlobalJsonForCommand(string globalJsonPath, GlobalJsonContents? contents)
+    /// <exception cref="DotnetInstallException">The file has invalid SDK settings.</exception>
+    public static UpdateChannel? EvaluateGlobalJsonForCommand(string globalJsonPath, GlobalJsonContents contents)
     {
         var evaluation = Evaluate(new InstallSpec
         {

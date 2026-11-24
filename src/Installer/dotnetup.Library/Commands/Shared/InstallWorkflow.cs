@@ -152,9 +152,16 @@ internal class InstallWorkflow
         MinimalInstallSpec[] componentSpecs,
         DotnetAccessMode? selectedAccessMode = null)
     {
-        var globalJson = GlobalJsonHelper.GetGlobalJsonInfo(
-            Environment.CurrentDirectory,
-            parseContents: NeedsGlobalJsonContents(componentSpecs, _command.InstallPath));
+        string? globalJsonPath = GlobalJsonHelper.FindGlobalJsonPath(Environment.CurrentDirectory);
+        if (globalJsonPath is not null && _command.UpdateGlobalJson)
+        {
+            // Fail before downloading and installing anything when the post-install update would fail.
+            GlobalJsonHelper.ValidateGlobalJsonIsUpdatable(globalJsonPath);
+        }
+
+        GlobalJsonInfo? globalJson = globalJsonPath is not null && NeedsGlobalJsonContents(componentSpecs, _command.InstallPath)
+            ? GlobalJsonHelper.LoadGlobalJson(globalJsonPath)
+            : null;
 
         DotnetAccessMode? accessMode = selectedAccessMode ?? DotnetupConfig.ReadEffectiveAccessMode();
         var target = accessMode == DotnetAccessMode.Admin
@@ -164,7 +171,7 @@ internal class InstallWorkflow
         var requests = new List<ResolvedInstallRequest>();
         foreach (var spec in componentSpecs)
         {
-            var resolved = ResolveSpec(spec, target, globalJson);
+            var resolved = ResolveSpec(spec, target, globalJsonPath, globalJson);
             requests.Add(resolved);
         }
 
@@ -216,8 +223,7 @@ internal class InstallWorkflow
     /// </summary>
     private InstallTarget ResolveAdminModeInstallTarget(GlobalJsonInfo? globalJson, bool untrackedAcknowledged)
     {
-        if (globalJson?.GlobalJsonPath is not null
-            && globalJson.SdkPath is string globalJsonSdkPath
+        if (globalJson?.SdkPath is string globalJsonSdkPath
             && !InstallPathClassifier.IsAdminInstallPath(globalJsonSdkPath))
         {
             // The signed manifest is always preferred, and `BlockUnsignedDownloads` is enforced elsewhere - don't block a local repo with a daily SDK.
@@ -258,9 +264,14 @@ internal class InstallWorkflow
     /// Resolves a single <see cref="MinimalInstallSpec"/> to a <see cref="ResolvedInstallRequest"/>
     /// by inferring the channel (from global.json or "latest"), resolving the version, and recording telemetry.
     /// </summary>
+    /// <param name="spec">The component and optional version or channel to install.</param>
+    /// <param name="target">Where and how the install is performed.</param>
+    /// <param name="globalJsonPath">The global.json that applies to the current directory, if any.</param>
+    /// <param name="globalJson">The parsed global.json, when its contents are needed for this install.</param>
     private ResolvedInstallRequest ResolveSpec(
         MinimalInstallSpec spec,
         InstallTarget target,
+        string? globalJsonPath,
         GlobalJsonInfo? globalJson)
     {
         var component = spec.Component;
@@ -289,7 +300,7 @@ internal class InstallWorkflow
                 ManifestPath = _command.ManifestPath,
                 RequireMuxerUpdate = _command.RequireMuxerUpdate,
                 InstallSource = isFromGlobalJson ? InstallSource.GlobalJson : InstallSource.Explicit,
-                GlobalJsonPath = (isFromGlobalJson || _command.UpdateGlobalJson) ? globalJson?.GlobalJsonPath : null,
+                GlobalJsonPath = (isFromGlobalJson || _command.UpdateGlobalJson) ? globalJsonPath : null,
                 Untracked = _command.Untracked || target.Untracked,
                 Verbosity = _command.Verbosity,
                 InstallMechanism = target.Mechanism,
@@ -309,7 +320,7 @@ internal class InstallWorkflow
 
         RecordInstallTelemetry(
             component, explicitChannel,
-            _command.InstallPath, globalJson,
+            _command.InstallPath, globalJsonPath,
             target.PathResolution, channel.Name, resolved);
 
         return resolved;
@@ -330,9 +341,9 @@ internal class InstallWorkflow
             return (new UpdateChannel(explicitChannel), false);
         }
 
-        if (component == InstallComponent.SDK && globalJson?.GlobalJsonPath is { } globalJsonPath)
+        if (component == InstallComponent.SDK && globalJson is not null)
         {
-            if (InstallSpecResolver.EvaluateGlobalJsonForCommand(globalJsonPath, globalJson.GlobalJsonContents) is { } channelFromGlobalJson)
+            if (InstallSpecResolver.EvaluateGlobalJsonForCommand(globalJson.GlobalJsonPath, globalJson.GlobalJsonContents) is { } channelFromGlobalJson)
             {
                 SpectreAnsiConsole.MarkupLine(string.Format(
                     CultureInfo.InvariantCulture,
@@ -340,7 +351,7 @@ internal class InstallWorkflow
                     DotnetupTheme.Current.Dim,
                     component.GetDisplayName(),
                     channelFromGlobalJson.Name,
-                    globalJsonPath));
+                    globalJson.GlobalJsonPath));
                 return (channelFromGlobalJson, true);
             }
         }
@@ -411,14 +422,14 @@ internal class InstallWorkflow
         InstallComponent component,
         string? requestedVersionOrChannel,
         string? explicitInstallPath,
-        GlobalJsonInfo? globalJson,
+        string? globalJsonPath,
         InstallPathResolver.InstallPathResolutionResult pathResolution,
         string resolvedChannel,
         ResolvedInstallRequest resolved)
     {
         string requestSource = requestedVersionOrChannel is not null
             ? "explicit"
-            : globalJson?.GlobalJsonPath is not null
+            : globalJsonPath is not null
                 ? "default-globaljson"
                 : "default-latest";
 
@@ -427,7 +438,7 @@ internal class InstallWorkflow
         _command.SetCommandTag(TelemetryTagNames.InstallComponent, component.ToString());
         _command.SetCommandTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(requestedVersionOrChannel));
         _command.SetCommandTag(TelemetryTagNames.InstallPathExplicit, (explicitInstallPath is not null).ToString());
-        _command.SetCommandTag(TelemetryTagNames.InstallHasGlobalJson, (globalJson?.GlobalJsonPath is not null).ToString());
+        _command.SetCommandTag(TelemetryTagNames.InstallHasGlobalJson, (globalJsonPath is not null).ToString());
         _command.SetCommandTag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot is null ? "none" : InstallPathClassifier.ClassifyInstallPath(currentInstallRoot.Path));
         _command.SetCommandTag(TelemetryTagNames.InstallPathType, InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource));
         _command.SetCommandTag(TelemetryTagNames.InstallPathSource, pathResolution.PathSource.ToString().ToLowerInvariant());

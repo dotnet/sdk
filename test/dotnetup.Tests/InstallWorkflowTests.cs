@@ -54,7 +54,7 @@ public class InstallWorkflowTests : IDisposable
         File.WriteAllText(path, $$$"""{"sdk":{"version":"10.0.103","allowPrerelease":false{{{policyProperty}}}}}""");
 
         var (channel, fromFile) = InstallWorkflow.ResolveChannel(
-            InstallComponent.SDK, null, GlobalJsonHelper.GetGlobalJsonInfo(_tempDir, parseContents: true));
+            InstallComponent.SDK, null, GlobalJsonHelper.FindAndLoadGlobalJson(_tempDir)!);
 
         fromFile.Should().BeTrue();
         channel.Name.Should().Be(expectedChannel);
@@ -70,7 +70,7 @@ public class InstallWorkflowTests : IDisposable
     {
         var path = Path.Combine(_tempDir, "global.json");
         File.WriteAllText(path, """{"sdk":{"version":"10.0.103","allowPrerelease":false}}""");
-        var globalJson = GlobalJsonHelper.GetGlobalJsonInfo(_tempDir, parseContents: true);
+        var globalJson = GlobalJsonHelper.FindAndLoadGlobalJson(_tempDir)!;
         if (replacement is null)
         {
             File.Delete(path);
@@ -98,7 +98,7 @@ public class InstallWorkflowTests : IDisposable
         File.WriteAllText(path, contents);
 
         var resolve = () => InstallWorkflow.ResolveChannel(
-            InstallComponent.SDK, null, GlobalJsonHelper.GetGlobalJsonInfo(_tempDir, parseContents: true));
+            InstallComponent.SDK, null, GlobalJsonHelper.FindAndLoadGlobalJson(_tempDir)!);
 
         var error = resolve.Should().Throw<DotnetInstallException>().Which;
         error.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
@@ -174,6 +174,32 @@ public class InstallWorkflowTests : IDisposable
             requests[0].ResolvedVersion.ToString().Should().Be("10.0.103");
             requests[0].Request.Options.InstallSource.Should().Be(InstallSource.Explicit);
             requests[0].Request.Options.GlobalJsonPath.Should().BeNull();
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDirectory;
+        }
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    [DataRow("{ malformed")]
+    [DataRow("""{"sdk":{"version":"10.0.100","version":"10.0.103"}}""")]
+    public void GenerateInstallRequests_RejectsGlobalJsonThatCannotBeUpdated_BeforeInstalling(string contents)
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "global.json"), contents);
+        using var testEnv = new TestEnvironment();
+        var command = new SdkInstallCommand(Parser.Parse(
+            ["sdk", "install", "10.0.103", "--install-path", testEnv.InstallPath, "--manifest-path", testEnv.ManifestPath, "--update-global-json"]));
+        string originalDirectory = Environment.CurrentDirectory;
+        try
+        {
+            Environment.CurrentDirectory = _tempDir;
+
+            var generate = () => new InstallWorkflow(command).GenerateInstallRequests([new(InstallComponent.SDK, "10.0.103")]);
+
+            generate.Should().Throw<DotnetInstallException>()
+                .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
         }
         finally
         {

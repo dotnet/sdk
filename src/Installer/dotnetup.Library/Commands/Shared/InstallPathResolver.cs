@@ -43,12 +43,9 @@ internal class InstallPathResolver
         string? explicitInstallPath,
         GlobalJsonInfo? globalJsonInfo)
     {
-        string? installPathFromGlobalJson = globalJsonInfo?.GlobalJsonPath is not null
-            ? globalJsonInfo.SdkPath
-            : null;
+        string? installPathFromGlobalJson = globalJsonInfo?.SdkPath;
 
-        bool globalJsonUsesDefaultHostLocation = globalJsonInfo?.GlobalJsonPath is not null
-            && globalJsonInfo.UsesDefaultHostLocation;
+        bool globalJsonUsesDefaultHostLocation = globalJsonInfo?.UsesDefaultHostLocation == true;
 
         if (explicitInstallPath is not null)
         {

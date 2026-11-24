@@ -333,7 +333,7 @@ public class GlobalJsonUpdateTests : IDisposable
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public void GetGlobalJsonInfo_ReadsCorrectVersion_WithUtf8(bool emitBom)
+    public void FindAndLoadGlobalJson_ReadsCorrectVersion_WithUtf8(bool emitBom)
     {
         var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: emitBom);
         var json = """
@@ -346,7 +346,7 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, json, encoding);
 
-        var info = GlobalJsonHelper.GetGlobalJsonInfo(_testDir, parseContents: true);
+        var info = GlobalJsonHelper.FindAndLoadGlobalJson(_testDir)!;
 
         info.GlobalJsonContents.Should().NotBeNull();
         info.GlobalJsonContents!.Sdk.Should().NotBeNull();
@@ -356,7 +356,7 @@ public class GlobalJsonUpdateTests : IDisposable
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public void GetGlobalJsonInfo_AndChannelResolver_ReadTheSameSettings(bool emitBom)
+    public void FindAndLoadGlobalJson_AndChannelResolver_ReadTheSameSettings(bool emitBom)
     {
         var json = """
             {
@@ -373,7 +373,7 @@ public class GlobalJsonUpdateTests : IDisposable
         File.WriteAllText(path, json, new UTF8Encoding(encoderShouldEmitUTF8Identifier: emitBom));
         var childDirectory = Directory.CreateDirectory(Path.Combine(_testDir, "child"));
 
-        var info = GlobalJsonHelper.GetGlobalJsonInfo(childDirectory.FullName, parseContents: true);
+        var info = GlobalJsonHelper.FindAndLoadGlobalJson(childDirectory.FullName)!;
         var sdk = GlobalJsonChannelResolver.ReadSdkSection(path);
 
         info.GlobalJsonPath.Should().Be(path);
@@ -395,12 +395,12 @@ public class GlobalJsonUpdateTests : IDisposable
     [DataRow("null")]
     [DataRow("""{"sdk":[]}""")]
     [DataRow("""{"sdk":{"allowPrerelease":"false"}}""")]
-    public void GetGlobalJsonInfo_ReportsMalformedContents(string contents)
+    public void FindAndLoadGlobalJson_ReportsMalformedContents(string contents)
     {
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, contents);
 
-        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir, parseContents: true);
+        var read = () => GlobalJsonHelper.FindAndLoadGlobalJson(_testDir);
 
         var error = read.Should().Throw<DotnetInstallException>().Which;
         error.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
@@ -409,20 +409,17 @@ public class GlobalJsonUpdateTests : IDisposable
     }
 
     [TestMethod]
-    public void GetGlobalJsonInfo_ReturnsPathWithoutParsing_WhenContentsAreNotRequested()
+    public void FindGlobalJsonPath_ReturnsPathWithoutParsing()
     {
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, "{ malformed");
         var childDirectory = Directory.CreateDirectory(Path.Combine(_testDir, "child"));
 
-        var info = GlobalJsonHelper.GetGlobalJsonInfo(childDirectory.FullName, parseContents: false);
-
-        info.GlobalJsonPath.Should().Be(path);
-        info.GlobalJsonContents.Should().BeNull();
+        GlobalJsonHelper.FindGlobalJsonPath(childDirectory.FullName).Should().Be(path);
     }
 
     [TestMethod]
-    public void GetGlobalJsonInfo_AcceptsCommentedOutSdkSettings()
+    public void FindAndLoadGlobalJson_AcceptsCommentedOutSdkSettings()
     {
         // https://github.com/dotnet/sdk/issues/54961
         File.WriteAllText(Path.Combine(_testDir, "global.json"), """
@@ -433,7 +430,7 @@ public class GlobalJsonUpdateTests : IDisposable
             }
             """);
 
-        var info = GlobalJsonHelper.GetGlobalJsonInfo(_testDir, parseContents: true);
+        var info = GlobalJsonHelper.FindAndLoadGlobalJson(_testDir)!;
 
         info.GlobalJsonContents!.Sdk.Should().NotBeNull();
         info.SdkVersion.Should().BeNull();
@@ -536,7 +533,7 @@ public class GlobalJsonUpdateTests : IDisposable
         byte[] contents = [..(emitBom ? encoding.GetPreamble() : []), ..encoding.GetBytes("""{"sdk":{"version":"10.0.103"}}""")];
         File.WriteAllBytes(path, contents);
 
-        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir, parseContents: true);
+        var read = () => GlobalJsonHelper.FindAndLoadGlobalJson(_testDir);
         var readSdk = () => GlobalJsonChannelResolver.ReadSdkSection(path);
         var update = () => GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
         var updateIfNewer = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
@@ -561,7 +558,7 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, contents);
 
-        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir, parseContents: true);
+        var read = () => GlobalJsonHelper.FindAndLoadGlobalJson(_testDir);
         var readSdk = () => GlobalJsonChannelResolver.ReadSdkSection(path);
         var update = () => GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
         var updateIfNewer = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
@@ -607,7 +604,7 @@ public class GlobalJsonUpdateTests : IDisposable
         File.WriteAllBytes(path, contents);
 
         var readFile = () => GlobalJsonHelper.ReadGlobalJson(path);
-        var read = () => GlobalJsonHelper.GetGlobalJsonInfo(_testDir, parseContents: true);
+        var read = () => GlobalJsonHelper.FindAndLoadGlobalJson(_testDir);
         var readSdk = () => GlobalJsonChannelResolver.ReadSdkSection(path);
         var update = () => GlobalJsonHelper.UpdateGlobalJson(path, "10.0.105");
         var updateIfNewer = () => GlobalJsonHelper.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
