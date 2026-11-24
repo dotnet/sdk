@@ -242,6 +242,12 @@ Template engine provides two installer implementations:
 You can use them when implementing your own providers, they are available from
 IComponentManager.
 
+When package verification is enabled, downloaded signed NuGet packages are
+verified using `dotnet nuget verify --all` before installation. Unsigned packages
+are accepted only when NuGet's `signatureValidationMode` is `accept` and the
+source does not declare `allRepositorySigned=true`. A client policy of `require`
+or a repository signing requirement rejects unsigned packages.
+
 ## [Mount point](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Mount/IMountPoint.cs)
 
 Template package location is represented by mount point URI. Mount point that
