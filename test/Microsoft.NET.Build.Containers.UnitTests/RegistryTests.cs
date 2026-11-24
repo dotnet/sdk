@@ -38,7 +38,7 @@ public class RegistryTests : IDisposable
     public void CheckIfGoogleArtifactRegistry(string registryName, bool expectedIsGoogleArtifactRegistry)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CheckIfGoogleArtifactRegistry));
-        Registry registry = new(registryName, logger, RegistryMode.Push);
+        Registry registry = new(registryName, logger, RegistryMode.Push, TestContext.CancellationToken);
         Assert.AreEqual(expectedIsGoogleArtifactRegistry, registry.IsGoogleArtifactRegistry);
     }
 
@@ -46,7 +46,7 @@ public class RegistryTests : IDisposable
     public void DockerIoAlias()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(DockerIoAlias));
-        Registry registry = new("docker.io", logger, RegistryMode.Push);
+        Registry registry = new("docker.io", logger, RegistryMode.Push, TestContext.CancellationToken);
         Assert.IsTrue(registry.IsDockerHub);
         Assert.AreEqual("docker.io", registry.RegistryName);
         Assert.AreEqual("registry-1.docker.io", registry.BaseUri.Host);
@@ -110,7 +110,7 @@ public class RegistryTests : IDisposable
 
         Mock<IRegistryAPI> api = new(MockBehavior.Strict);
         api.SetupGet(a => a.Manifest).Returns(manifestOperations.Object);
-        Registry registry = new("example.com", logger, api.Object);
+        Registry registry = new("example.com", logger, api.Object, TestContext.CancellationToken);
         BuiltImage image = new()
         {
             Config = "{}",
@@ -154,7 +154,7 @@ public class RegistryTests : IDisposable
         api.SetupGet(a => a.Blob).Returns(blobOperations.Object);
         api.SetupGet(a => a.Manifest).Returns(manifestOperations.Object);
 
-        Registry registry = new("example.com", logger, api.Object);
+        Registry registry = new("example.com", logger, api.Object, TestContext.CancellationToken);
         BuiltImage image = new()
         {
             Config = "{}",
@@ -194,7 +194,7 @@ public class RegistryTests : IDisposable
         api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(uploadPath)));
         api.Setup(api => api.Blob.Upload.UploadAtomicallyAsync(uploadPath, It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(new FinalizeUploadInformation(uploadPath)));
 
-        Registry registry = new("public.ecr.aws", logger, api.Object);
+        Registry registry = new("public.ecr.aws", logger, api.Object, TestContext.CancellationToken);
         await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
 
         api.Verify(api => api.Blob.Upload.UploadChunkAsync(uploadPath, It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Never());
@@ -228,7 +228,7 @@ public class RegistryTests : IDisposable
             return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
         });
 
-        Registry registry = new(registryUri, logger, api.Object);
+        Registry registry = new(registryUri, logger, api.Object, TestContext.CancellationToken);
         await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
 
         api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
@@ -263,7 +263,7 @@ public class RegistryTests : IDisposable
             return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
         });
 
-        Registry registry = new(registryUri, logger, api.Object);
+        Registry registry = new(registryUri, logger, api.Object, TestContext.CancellationToken);
         await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
 
         api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
@@ -298,14 +298,14 @@ public class RegistryTests : IDisposable
             return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
         });
 
-        RegistrySettings settings = new()
+        RegistrySettings settings = new(TestContext.CancellationToken)
         {
             ParallelUploadEnabled = false,
             ForceChunkedUpload = false,
             ChunkedUploadSizeBytes = chunkSize,
         };
 
-        Registry registry = new(registryUri, logger, api.Object, settings);
+        Registry registry = new(registryUri, logger, api.Object, TestContext.CancellationToken, settings);
         await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
 
         api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
@@ -334,7 +334,7 @@ public class RegistryTests : IDisposable
         api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(uploadPath)));
         api.Setup(api => api.Blob.Upload.UploadAtomicallyAsync(uploadPath, It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(new FinalizeUploadInformation(uploadPath)));
 
-        Registry registry = new("public.ecr.aws", logger, api.Object);
+        Registry registry = new("public.ecr.aws", logger, api.Object, TestContext.CancellationToken);
         await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
 
         Assert.IsNotEmpty(loggedMessages);
@@ -372,14 +372,14 @@ public class RegistryTests : IDisposable
             return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
         });
 
-        RegistrySettings settings = new()
+        RegistrySettings settings = new(TestContext.CancellationToken)
         {
             ParallelUploadEnabled = false,
             ForceChunkedUpload = true,
             ChunkedUploadSizeBytes = chunkSize,
         };
 
-        Registry registry = new(registryUri, logger, api.Object, settings);
+        Registry registry = new(registryUri, logger, api.Object, TestContext.CancellationToken, settings);
         await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
 
         api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Never());
@@ -472,14 +472,14 @@ public class RegistryTests : IDisposable
             return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
         });
 
-        RegistrySettings settings = new()
+        RegistrySettings settings = new(TestContext.CancellationToken)
         {
             ParallelUploadEnabled = false,
             ForceChunkedUpload = false,
             ChunkedUploadSizeBytes = chunkSize,
         };
 
-        Registry registry = new(registryUri, logger, api.Object, settings);
+        Registry registry = new(registryUri, logger, api.Object, TestContext.CancellationToken, settings);
         await registry.UploadBlobChunkedAsync(testStream, new StartUploadInformation(absoluteUploadUri), CancellationToken.None);
 
         api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(5));
@@ -507,14 +507,14 @@ public class RegistryTests : IDisposable
             throw preparedException;
         });
 
-        RegistrySettings settings = new()
+        RegistrySettings settings = new(TestContext.CancellationToken)
         {
             ParallelUploadEnabled = false,
             ForceChunkedUpload = false,
             ChunkedUploadSizeBytes = chunkSize,
         };
 
-        Registry registry = new(registryUri, logger, api.Object, settings);
+        Registry registry = new(registryUri, logger, api.Object, TestContext.CancellationToken, settings);
         ApplicationException receivedException = await Assert.ThrowsExactlyAsync<ApplicationException>(() => registry.UploadBlobChunkedAsync(testStream, new StartUploadInformation(absoluteUploadUri), CancellationToken.None));
 
         Assert.AreEqual(preparedException, receivedException);
@@ -586,11 +586,11 @@ public class RegistryTests : IDisposable
             }
         }, TestContext.CancellationToken);
 
-        RegistrySettings settings = new()
+        RegistrySettings settings = new(TestContext.CancellationToken)
         {
             IsInsecure = isInsecureRegistry
         };
-        Registry registry = new(registryUri, logger, RegistryMode.Pull, settings: settings);
+        Registry registry = new(registryUri, logger, RegistryMode.Pull, TestContext.CancellationToken, settings);
 
         // Make a request.
         Task getManifest = registry.GetImageManifestAsync(repositoryName: "dotnet/runtime", reference: "latest", runtimeIdentifier: "linux-x64", manifestPicker: null!, cancellationToken: default!);
@@ -667,7 +667,10 @@ public class RegistryTests : IDisposable
             environment["DOTNET_CONTAINER_INSECURE_REGISTRIES"] = insecureRegistriesEnvvar;
         }
 
-        var registrySettings = new RegistrySettings(registryName, new MockEnvironmentProvider(environment));
+        var registrySettings = new RegistrySettings(
+            TestContext.CancellationToken,
+            registryName,
+            new MockEnvironmentProvider(environment));
 
         Assert.AreEqual(expectedInsecure, registrySettings.IsInsecure);
     }
@@ -692,7 +695,7 @@ public class RegistryTests : IDisposable
             .ThrowsAsync(new Exception("Simulated failure 2")) // Second attempt fails
             .ReturnsAsync(new MemoryStream(responseBytes)); // Third attempt succeeds
 
-        Registry registry = new(repoName, logger, mockRegistryAPI.Object, null, () => TimeSpan.Zero);
+        Registry registry = new(repoName, logger, mockRegistryAPI.Object, cancellationToken, null, () => TimeSpan.Zero);
 
         string? result = null;
         try
@@ -735,7 +738,7 @@ public class RegistryTests : IDisposable
             .ThrowsAsync(new Exception("Simulated failure 4"))
             .ThrowsAsync(new Exception("Simulated failure 5"));
 
-        Registry registry = new(repoName, logger, mockRegistryAPI.Object, null, () => TimeSpan.Zero);
+        Registry registry = new(repoName, logger, mockRegistryAPI.Object, cancellationToken, null, () => TimeSpan.Zero);
 
         // Act & Assert
         await Assert.ThrowsExactlyAsync<UnableToDownloadFromRepositoryException>(async () =>

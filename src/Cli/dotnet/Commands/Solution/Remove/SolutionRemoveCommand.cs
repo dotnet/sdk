@@ -25,7 +25,7 @@ internal sealed class SolutionRemoveCommand : CommandBase<SolutionRemoveCommandD
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Remove);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
         if (_projects.Count == 0)
@@ -46,15 +46,15 @@ internal sealed class SolutionRemoveCommand : CommandBase<SolutionRemoveCommandD
             // Check if we're working with a solution filter file
             if (solutionFileFullPath.HasExtension(SlnfFileHelper.SlnfExtension))
             {
-                RemoveProjectsFromSolutionFilter(solutionFileFullPath, relativeProjectPaths);
+                RemoveProjectsFromSolutionFilter(solutionFileFullPath, relativeProjectPaths, cancellationToken);
             }
             else
             {
-                RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+                RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, cancellationToken).GetAwaiter().GetResult();
             }
             return 0;
         }
-        catch (Exception ex) when (ex is not GracefulException)
+        catch (Exception ex) when (ex is not GracefulException and not OperationCanceledException)
         {
             if (ex is SolutionException || ex.InnerException is SolutionException)
             {
@@ -66,7 +66,7 @@ internal sealed class SolutionRemoveCommand : CommandBase<SolutionRemoveCommandD
 
     private static async Task RemoveProjectsAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
     {
-        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
+        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath, cancellationToken);
         ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
 
         // set UTF-8 BOM encoding for .sln
@@ -139,10 +139,13 @@ internal sealed class SolutionRemoveCommand : CommandBase<SolutionRemoveCommandD
         await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
     }
 
-    private static void RemoveProjectsFromSolutionFilter(string slnfFileFullPath, IEnumerable<string> projectPaths)
+    private static void RemoveProjectsFromSolutionFilter(
+        string slnfFileFullPath,
+        IEnumerable<string> projectPaths,
+        CancellationToken cancellationToken)
     {
         // Load the filtered solution to get the parent solution path and existing projects
-        SolutionModel filteredSolution = SlnFileFactory.CreateFromFilteredSolutionFile(slnfFileFullPath);
+        SolutionModel filteredSolution = SlnFileFactory.CreateFromFilteredSolutionFile(slnfFileFullPath, cancellationToken);
         string parentSolutionPath = filteredSolution.Description!; // The parent solution path is stored in Description
 
         // Get existing projects in the filter

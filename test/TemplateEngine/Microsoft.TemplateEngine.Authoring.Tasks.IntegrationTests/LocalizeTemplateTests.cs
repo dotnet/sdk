@@ -25,14 +25,14 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             new DotnetCommand(Log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             new DotnetCommand(Log, "build")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
@@ -55,14 +55,14 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             new DotnetCommand(Log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             new DotnetCommand(Log, "build")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
@@ -86,14 +86,14 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             new DotnetCommand(Log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             new DotnetCommand(Log, "build")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
@@ -118,14 +118,14 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             new DotnetCommand(Log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             new DotnetCommand(Log, "build")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Fail()
                 .And.HaveStdOutContaining("Build FAILED.")

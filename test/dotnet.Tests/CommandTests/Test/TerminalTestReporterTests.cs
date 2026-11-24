@@ -124,6 +124,17 @@ public class TerminalTestReporterTests
     }
 
     [TestMethod]
+    [DataRow(TestExitCode.Success, true, TestExitCode.TestSessionAborted)]
+    [DataRow(TestExitCode.Success, false, TestExitCode.Success)]
+    [DataRow(TestExitCode.GenericFailure, true, TestExitCode.GenericFailure)]
+    public void GetExitCodeForReporting_UsesAbortedForCancelledSuccessfulRun(
+        int exitCode,
+        bool cancellationRequested,
+        int expectedExitCode)
+        => MicrosoftTestingPlatformTestCommand.GetExitCodeForReporting(exitCode, cancellationRequested)
+            .Should().Be(expectedExitCode);
+
+    [TestMethod]
     public void AnsiTerminal_StopUpdate_WritesStringBuilder()
     {
         var console = new Mock<IConsole>(MockBehavior.Strict);

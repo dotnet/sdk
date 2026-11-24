@@ -30,6 +30,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// </remarks>
 internal class ProcessReaper : IDisposable
 {
+    private static readonly TimeSpan s_forcefulSigTermGracePeriod = TimeSpan.FromSeconds(1);
     private readonly Process _process;
 
 #if TARGET_WINDOWS
@@ -67,6 +68,17 @@ internal class ProcessReaper : IDisposable
             {
                 _job = AssignProcessToJobObject((HANDLE)_process.Handle);
             }
+        }
+
+        public override void TerminateProcess()
+        {
+            if (_job is not null &&
+                PInvoke.TerminateJobObject((HANDLE)_job.DangerousGetHandle(), uint.MaxValue))
+            {
+                return;
+            }
+
+            base.TerminateProcess();
         }
 
         private static SafeWaitHandle? AssignProcessToJobObject(HANDLE process)
@@ -135,6 +147,8 @@ internal class ProcessReaper : IDisposable
 #if !TARGET_WINDOWS && NET
     private sealed class UnixProcessReaper : ProcessReaper
     {
+        private readonly PosixSignalRegistration _sigTermRegistration;
+
         // Coordinates Dispose (typically the main thread) with HandleProcessExit,
         // which is raised on the AppDomain.ProcessExit thread when the CLI itself is
         // shutting down (for example when a SIGTERM handler calls Environment.Exit).
@@ -147,14 +161,29 @@ internal class ProcessReaper : IDisposable
         // ProcessExit callback that starts after Dispose has run simply becomes a no-op.
         private readonly Lock _shutdownLock = new();
         private bool _shuttingDown;
+        private int _sigTermRequested;
 
         public UnixProcessReaper(Process process) : base(process)
         {
             AppDomain.CurrentDomain.ProcessExit += HandleProcessExit;
+            _sigTermRegistration = PosixSignalRegistration.Create(
+                PosixSignal.SIGTERM,
+                context =>
+                {
+                    if (ProcessLifecycle.IsInitialized)
+                    {
+                        return;
+                    }
+
+                    context.Cancel = true;
+                    Volatile.Write(ref _sigTermRequested, 1);
+                    Environment.Exit(143);
+                });
         }
 
         public override void Dispose()
         {
+            _sigTermRegistration.Dispose();
             AppDomain.CurrentDomain.ProcessExit -= HandleProcessExit;
 
             // If a ProcessExit driven shutdown is already running on another thread,
@@ -184,18 +213,34 @@ internal class ProcessReaper : IDisposable
 
                 try
                 {
-                    // If the target is still running, forward SIGTERM so it can shut
-                    // down as well. Signal returns false if the process already exited,
-                    // and throws Win32Exception if the signal could not be delivered.
-                    if (!_process.WaitForExit(0))
+                    ProcessExitStatus? exitStatus = null;
+                    bool forwardSigTermWithGrace =
+                        ProcessLifecycle.IsSigTermRequested ||
+                        Volatile.Read(ref _sigTermRequested) != 0;
+
+                    if (ProcessLifecycle.IsForcefulCancellationRequested &&
+                        !ProcessLifecycle.IsSigTermRequested)
                     {
-                        _process.SafeHandle.Signal(PosixSignal.SIGTERM);
+                        TerminateProcess();
+                    }
+                    else
+                    {
+                        // Forward SIGTERM before escalating so the child observes the
+                        // same hard-shutdown signal as the CLI.
+                        if (_process.Signal(PosixSignal.SIGTERM) &&
+                            forwardSigTermWithGrace &&
+                            !_process.TryWaitForExitStatus(s_forcefulSigTermGracePeriod, out exitStatus))
+                        {
+                            TerminateProcess();
+                        }
                     }
 
-                    // If SIGTERM was ignored by the target, then we'll still wait.
-                    _process.WaitForExit();
+                    exitStatus ??= _process.WaitForExitStatus();
 
-                    Environment.ExitCode = _process.ExitCode;
+                    if (!ProcessLifecycle.IsSignalTerminationRequested)
+                    {
+                        Environment.ExitCode = exitStatus.ExitCode;
+                    }
                 }
                 catch (InvalidOperationException)
                 {
@@ -250,9 +295,107 @@ internal class ProcessReaper : IDisposable
     /// </summary>
     public virtual void NotifyProcessStarted() { }
 
+    public virtual void TerminateProcess()
+    {
+#if NET
+        _process.Kill(entireProcessTree: true);
+#else
+        _process.Kill();
+#endif
+    }
+
     public virtual void Dispose()
     {
         Console.CancelKeyPress -= HandleCancelKeyPress;
+    }
+
+    internal static void ForwardSigTermAndTerminate(IEnumerable<Process> processes)
+    {
+#if !TARGET_WINDOWS && NET
+        var activeProcesses = new List<Process>();
+        foreach (Process process in processes)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    activeProcesses.Add(process);
+                }
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+            {
+                Reporter.Verbose.WriteLine($"Exception checking child process state during SIGTERM forwarding:\n{ex}");
+            }
+        }
+
+        var signaledProcesses = new HashSet<Process>();
+
+        foreach (Process process in activeProcesses)
+        {
+            try
+            {
+                if (process.Signal(PosixSignal.SIGTERM))
+                {
+                    signaledProcesses.Add(process);
+                }
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+            {
+                Reporter.Verbose.WriteLine($"Exception forwarding SIGTERM to child process:\n{ex}");
+            }
+        }
+
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        foreach (Process process in activeProcesses)
+        {
+            if (signaledProcesses.Contains(process))
+            {
+                TimeSpan remaining = s_forcefulSigTermGracePeriod - stopwatch.Elapsed;
+                if (remaining > TimeSpan.Zero)
+                {
+                    try
+                    {
+                        if (process.WaitForExit((int)Math.Ceiling(remaining.TotalMilliseconds)))
+                        {
+                            continue;
+                        }
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Reporter.Verbose.WriteLine($"Exception waiting for child process after SIGTERM:\n{ex}");
+                        continue;
+                    }
+                }
+            }
+
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+            {
+                Reporter.Verbose.WriteLine($"Exception killing child process after SIGTERM grace period:\n{ex}");
+            }
+        }
+#else
+        foreach (Process process in processes)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill();
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                Reporter.Verbose.WriteLine($"Exception killing child process:\n{ex}");
+            }
+        }
+#endif
     }
 
     private void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)

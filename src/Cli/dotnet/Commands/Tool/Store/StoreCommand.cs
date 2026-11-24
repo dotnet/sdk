@@ -44,10 +44,10 @@ public sealed class StoreCommand : MSBuildForwardingApp
         return new StoreCommand(msbuildArgs, msbuildPath);
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult).Execute(cancellationToken);
     }
 }

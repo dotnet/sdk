@@ -99,7 +99,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             int exitCode = TestCommand.RunArtifactPostProcessingIfNeeded(
                 NewCorrelationId(),
                 diag: null,
-                FeatureFlag.Instance);
+                FeatureFlag.Instance,
+                CancellationToken.None);
 
             exitCode.Should().Be(0);
         }

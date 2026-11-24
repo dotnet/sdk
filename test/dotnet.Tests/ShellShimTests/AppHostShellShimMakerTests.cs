@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             a.Should().NotThrow("It should skip copying PE bits without throw");
         }
 
-        private static string CreateApphostAndReturnShimPath()
+        private string CreateApphostAndReturnShimPath()
         {
             var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(tempDirectory);
@@ -42,7 +42,8 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             appHostShellShimMaker.CreateApphostShellShim(
                 new FilePath(Path.GetFullPath(Path.Combine("WpfBinaryTestAssets", "testwpf.dll"))),
-                new FilePath(shimPath));
+                new FilePath(shimPath),
+                TestContext.CancellationToken);
             return shimPath;
         }
     }

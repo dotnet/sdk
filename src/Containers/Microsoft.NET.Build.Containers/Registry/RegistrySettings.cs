@@ -7,7 +7,10 @@ namespace Microsoft.NET.Build.Containers;
 
 internal class RegistrySettings
 {
-    public RegistrySettings(string? registryName = null, IEnvironmentProvider? environment = null)
+    public RegistrySettings(
+        CancellationToken cancellationToken,
+        string? registryName = null,
+        IEnvironmentProvider? environment = null)
     {
         environment ??= new EnvironmentProvider();
 
@@ -22,7 +25,7 @@ internal class RegistrySettings
 
         if (registryName is not null)
         {
-            IsInsecure = IsInsecureRegistry(environment, registryName);
+            IsInsecure = IsInsecureRegistry(environment, registryName, cancellationToken);
         }
     }
 
@@ -68,7 +71,10 @@ internal class RegistrySettings
         internal const string InsecureRegistries = "DOTNET_CONTAINER_INSECURE_REGISTRIES";
     }
 
-    private static bool IsInsecureRegistry(IEnvironmentProvider environment, string registryName)
+    private static bool IsInsecureRegistry(
+        IEnvironmentProvider environment,
+        string registryName,
+        CancellationToken cancellationToken)
     {
         // Always allow insecure access to 'localhost'.
         if (registryName.StartsWith("localhost:", StringComparison.OrdinalIgnoreCase) ||
@@ -88,6 +94,6 @@ internal class RegistrySettings
             }
         }
 
-        return DockerContainerRuntime.IsInsecureRegistry(registryName);
+        return DockerContainerRuntime.IsInsecureRegistry(registryName, cancellationToken);
     }
 }

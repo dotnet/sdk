@@ -13,6 +13,8 @@ namespace dotnet.Tests.CommandTests.Test;
 [TestClass]
 public class CtrlCCancellationManagerTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     [TestMethod]
     public void FirstCtrlC_CancelsTokenAndInvokesUiCallbackExactlyOnce()
     {
@@ -52,6 +54,67 @@ public class CtrlCCancellationManagerTests
     }
 
     [TestMethod]
+    public void CooperativeLifecycleCancellation_CancelsTokenAndInvokesUiCallback()
+    {
+        int callbackCount = 0;
+        using var cooperativeCancellation = new CancellationTokenSource();
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => Interlocked.Increment(ref callbackCount),
+            exitAction: _ => Assert.Fail("Cooperative cancellation must not exit."),
+            subscribeToConsole: false,
+            cooperativeCancellationToken: cooperativeCancellation.Token);
+
+        cooperativeCancellation.Cancel();
+
+        manager.Token.IsCancellationRequested.Should().BeTrue();
+        callbackCount.Should().Be(1);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ForcefulLifecycleCancellation_KillsChildrenWithoutOwningProcessExit(
+        bool cancelCooperativelyFirst)
+    {
+        int exitCount = 0;
+        using var cooperativeCancellation = new CancellationTokenSource();
+        using var forcefulCancellation = new CancellationTokenSource();
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => { },
+            exitAction: _ => Interlocked.Increment(ref exitCount),
+            subscribeToConsole: false,
+            cooperativeCancellationToken: cooperativeCancellation.Token,
+            forcefulCancellationToken: forcefulCancellation.Token);
+        using var process = CreateLongRunningProcess();
+        try
+        {
+            manager.StartAndRegister(() =>
+            {
+                process.Start();
+                return process;
+            }).Should().BeSameAs(process);
+
+            if (cancelCooperativelyFirst)
+            {
+                cooperativeCancellation.Cancel();
+                process.HasExited.Should().BeFalse("cooperative cancellation must leave the child running");
+            }
+
+            forcefulCancellation.Cancel();
+
+            process.WaitForExit(TimeSpan.FromSeconds(10)).Should().BeTrue();
+            exitCount.Should().Be(0, "ProcessLifecycle owns the host exit for forceful signals");
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+            }
+        }
+    }
+
+    [TestMethod]
     public void ThirdAndSubsequentCtrlC_AreNoOps()
     {
         int callbackCount = 0;
@@ -71,7 +134,7 @@ public class CtrlCCancellationManagerTests
     }
 
     [TestMethod]
-    public void Register_AfterForcing_KillsTheProcessImmediately()
+    public void StartAndRegister_AfterForcing_DoesNotStartTheProcess()
     {
         int exitCount = 0;
         using var manager = new CtrlCCancellationManager(
@@ -83,26 +146,20 @@ public class CtrlCCancellationManagerTests
         manager.SimulateCtrlC();
         exitCount.Should().Be(1);
 
-        using var process = StartLongRunningProcess();
-        try
+        using var process = CreateLongRunningProcess();
+        manager.StartAndRegister(() =>
         {
-            manager.Register(process);
+            process.Start();
+            return process;
+        }).Should().BeNull();
 
-            // The manager should have killed the process immediately because we are in the Forcing state.
-            process.WaitForExit(TimeSpan.FromSeconds(10)).Should().BeTrue("Register after Forcing must kill the registered process");
-            process.HasExited.Should().BeTrue();
-        }
-        finally
-        {
-            if (!process.HasExited)
-            {
-                try { process.Kill(entireProcessTree: true); } catch { }
-            }
-        }
+        Action getProcessId = () => _ = process.Id;
+        getProcessId.Should().Throw<InvalidOperationException>(
+            "process startup must not race after forceful cancellation begins");
     }
 
     [TestMethod]
-    public void Register_BeforeForcing_KillsTheProcessOnSecondCtrlC()
+    public void StartAndRegister_BeforeForcing_KillsTheProcessOnSecondCtrlC()
     {
         int exitCount = 0;
         using var manager = new CtrlCCancellationManager(
@@ -110,10 +167,14 @@ public class CtrlCCancellationManagerTests
             exitAction: _ => Interlocked.Increment(ref exitCount),
             subscribeToConsole: false);
 
-        using var process = StartLongRunningProcess();
+        using var process = CreateLongRunningProcess();
         try
         {
-            manager.Register(process);
+            manager.StartAndRegister(() =>
+            {
+                process.Start();
+                return process;
+            }).Should().BeSameAs(process);
 
             manager.SimulateCtrlC();
             process.HasExited.Should().BeFalse("first Ctrl+C must not kill registered processes");
@@ -140,10 +201,14 @@ public class CtrlCCancellationManagerTests
             exitAction: _ => Interlocked.Increment(ref exitCount),
             subscribeToConsole: false);
 
-        using var process = StartLongRunningProcess();
+        using var process = CreateLongRunningProcess();
         try
         {
-            manager.Register(process);
+            manager.StartAndRegister(() =>
+            {
+                process.Start();
+                return process;
+            }).Should().BeSameAs(process);
             manager.Unregister(process);
 
             manager.SimulateCtrlC();
@@ -153,6 +218,57 @@ public class CtrlCCancellationManagerTests
             // Give it a moment in case the kill is asynchronous, then check.
             Thread.Sleep(200);
             process.HasExited.Should().BeFalse("unregistered processes must not be killed by force-exit");
+            exitCount.Should().Be(1);
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task ForcefulCancellation_WaitsForStartupRegistrationAndKillsTheProcess()
+    {
+        int exitCount = 0;
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => { },
+            exitAction: _ => Interlocked.Increment(ref exitCount),
+            subscribeToConsole: false);
+        using var startEntered = new ManualResetEventSlim();
+        using var allowStart = new ManualResetEventSlim();
+
+        Task<Process?> startTask = Task.Run(() => manager.StartAndRegister(() =>
+        {
+            startEntered.Set();
+            allowStart.Wait(TestContext.CancellationToken);
+            return StartLongRunningProcess();
+        }), TestContext.CancellationToken);
+
+        startEntered.Wait(TestContext.CancellationToken);
+        Task forceTask = Task.Run(() =>
+        {
+            manager.SimulateCtrlC();
+            manager.SimulateCtrlC();
+        }, TestContext.CancellationToken);
+
+        bool forcefulCancellationStarted = SpinWait.SpinUntil(
+            () => manager.IsForcing,
+            TimeSpan.FromSeconds(10));
+        allowStart.Set();
+        forcefulCancellationStarted.Should().BeTrue(
+            "forceful cancellation should begin while process startup owns the registration lock");
+
+        Process? startedProcess = await startTask;
+        startedProcess.Should().NotBeNull();
+        using Process process = startedProcess!;
+        try
+        {
+            await forceTask;
+            process.WaitForExit(TimeSpan.FromSeconds(10)).Should().BeTrue(
+                "forceful cancellation must include a process that starts during shutdown");
             exitCount.Should().Be(1);
         }
         finally
@@ -223,7 +339,7 @@ public class CtrlCCancellationManagerTests
         act.Should().NotThrow("a Ctrl+C arriving after Dispose must not surface as an unhandled exception");
     }
 
-    private static Process StartLongRunningProcess()
+    private static Process CreateLongRunningProcess()
     {
         // Spawn a platform-appropriate long-running process so we have a real OS process to
         // register/kill in tests. The actual program is irrelevant — we only need a process tree
@@ -246,7 +362,13 @@ public class CtrlCCancellationManagerTests
             CreateNoWindow = true,
         };
 
-        var process = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start long-running helper process");
+        return new Process { StartInfo = psi };
+    }
+
+    private static Process StartLongRunningProcess()
+    {
+        Process process = CreateLongRunningProcess();
+        process.Start();
 
         // Sanity-check that the helper is actually alive before handing it back. If it exited
         // immediately the assertions on HasExited downstream would silently produce false failures

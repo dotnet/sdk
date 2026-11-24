@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
     [TestClass]
     public class DotnetRestorePostActionTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         private IEngineEnvironmentSettings _engineEnvironmentSettings = null!;
 
         [TestInitialize]
@@ -40,7 +42,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(projFileFullPath, callback.Target);
         }
@@ -65,16 +68,43 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(projFileFullPath, callback.Target);
+        }
+
+        [TestMethod]
+        public void DotnetRestorePropagatesCancellation()
+        {
+            using CancellationTokenSource cancellationTokenSource = new();
+            cancellationTokenSource.Cancel();
+            DotnetRestorePostActionProcessor actionProcessor = new(
+                (_, cancellationToken) => throw new OperationCanceledException(cancellationToken));
+
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            var args = new Dictionary<string, string>() { { "files", "MyApp.csproj" } };
+            var postAction = new MockPostAction(default, default, default, default, default!) { ActionId = actionProcessor.Id, Args = args };
+            MockCreationEffects creationEffects = new MockCreationEffects()
+                .WithFileChange(new MockFileChange("./MyApp.csproj", "./MyApp.csproj", ChangeKind.Create));
+
+            OperationCanceledException exception = Assert.ThrowsExactly<OperationCanceledException>(
+                () => actionProcessor.Process(
+                    _engineEnvironmentSettings,
+                    postAction,
+                    creationEffects,
+                    new MockCreationResult(),
+                    targetBasePath,
+                    cancellationTokenSource.Token));
+
+            Assert.AreEqual(cancellationTokenSource.Token, exception.CancellationToken);
         }
 
         private class MockDotnetRestoreCallback
         {
             public string? Target { get; private set; }
 
-            public bool RestoreProject(string target)
+            public bool RestoreProject(string target, CancellationToken cancellationToken = default)
             {
                 Target = target;
                 return true;
