@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                           Path.GetFullPath("Microsoft.TemplateEngine.Authoring.CLI.dll"),
                           "validate",
                           Path.Combine(TestTemplatesLocation, "Invalid"))
-                .Execute();
+                .Execute(TestContext.CancellationToken);
 
             commandResult
                 .Should()

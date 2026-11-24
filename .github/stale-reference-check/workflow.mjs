@@ -10,7 +10,7 @@ import {
     validateInterpretations,
 } from "./interpretations.mjs";
 import { finalize } from "./finalize.mjs";
-import { formatContext, getSourceTools, submissionReceipt, verifySubmission } from "./source-tools.mjs";
+import { formatContext, getSourceTools, maxSubmissionBytes, submissionReceipt, verifySubmission } from "./source-tools.mjs";
 
 const inputPath = (repoRoot) => path.resolve(repoRoot, process.env.STALE_REFERENCE_INPUT ?? ".stale-reference-check/input");
 const statePath = (repoRoot) => path.join(repoRoot, ".stale-reference-check/state/cache.json");
@@ -203,7 +203,8 @@ export async function record(repoRoot, outputFile)
     }
     const submission = await readJson(path.join(inputPath(repoRoot), "submission.json"));
     const payload = verifySubmission(submission, items[0].receipt);
-    if (!items[0].payload || submissionReceipt(items[0].payload) !== items[0].receipt)
+    if (typeof items[0].payload !== "string" || Buffer.byteLength(items[0].payload, "utf8") > maxSubmissionBytes ||
+        submissionReceipt(JSON.parse(items[0].payload)) !== items[0].receipt)
     {
         throw new Error("The payload inspected by threat detection does not match the validated submission.");
     }

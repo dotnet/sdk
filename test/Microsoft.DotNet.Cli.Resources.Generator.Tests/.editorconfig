@@ -1,0 +1,8 @@
+# C# files
+[*.cs]
+
+# CS1591: Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = none
+
+# CA1852: Seal internal types
+dotnet_diagnostic.CA1852.severity = none

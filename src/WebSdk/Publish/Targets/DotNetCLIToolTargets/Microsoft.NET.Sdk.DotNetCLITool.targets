@@ -36,7 +36,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
   <Target Name ="_DotNetCLIPrePublish"
           DependsOnTargets="$(_DotNetCLIPrePublishDependsOn)"
           BeforeTargets="PrepareForPublish"
-          Condition="'$(DeployOnBuild)' != 'true'">
+          Condition="'$(IsPublishable)' == 'true' And '$(DeployOnBuild)' != 'true'">
   </Target>
 
   <PropertyGroup>
@@ -68,7 +68,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
   <Target Name ="_DotNetCLIPostPublish"
           DependsOnTargets="$(_DotNetCLIPostPublishDependsOn)"
           AfterTargets="Publish"
-          Condition="'$(DeployOnBuild)' != 'true'">
+          Condition="'$(IsPublishable)' == 'true' And '$(DeployOnBuild)' != 'true'">
   </Target>
 
 

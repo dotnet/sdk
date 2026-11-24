@@ -34,7 +34,7 @@ public class RegistryTests : SdkTest, IDisposable
         containerTag ??= "latest";
 
         ILogger logger = LoggerFactory.CreateLogger(nameof(CanReadManifestFromRegistry));
-        Registry registry = new(containerRegistry, logger, RegistryMode.Pull);
+        Registry registry = new(containerRegistry, logger, RegistryMode.Pull, TestContext.CancellationToken);
 
         var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
 

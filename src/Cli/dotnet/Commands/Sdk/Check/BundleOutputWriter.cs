@@ -12,13 +12,16 @@ namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 internal class BundleOutputWriter(
     ProductCollection productCollection,
     IProductCollectionProvider productCollectionProvider,
-    IReporter reporter)
+    IReporter reporter,
+    CancellationToken cancellationToken)
 {
     protected ProductCollection _productCollection = productCollection;
 
     protected readonly IProductCollectionProvider _productCollectionProvider = productCollectionProvider;
 
     protected readonly IReporter _reporter = reporter;
+
+    protected readonly CancellationToken _cancellationToken = cancellationToken;
 
     protected bool? BundleIsMaintenance(INetBundleInfo bundle)
     {

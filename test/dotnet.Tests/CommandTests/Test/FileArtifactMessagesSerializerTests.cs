@@ -74,4 +74,40 @@ public class FileArtifactMessagesSerializerTests
 
         deserialize.Should().Throw<InvalidDataException>();
     }
+
+    [TestMethod]
+    public void RoundTrip_PreservesMergedCoverageCountsAndProvenance()
+    {
+        CoverageSummaryMessage[] summary =
+        [
+            new(null, "collector.postprocessor", 0, null, (int)CoverageMetric.Line, null, 184, 186),
+        ];
+        var original = new FileArtifactMessages(
+            "merge-execution", "merge-instance",
+            [new("merged.cobertura.xml", null, null, null, null, null, "microsoft.codecoverage", ["first.coverage", "second.coverage"], summary)]);
+        var serializer = new FileArtifactMessagesSerializer();
+        using var stream = new MemoryStream();
+
+        serializer.Serialize(original, stream);
+        stream.Position = 0;
+        var actual = (FileArtifactMessages)serializer.Deserialize(stream);
+
+        actual.FileArtifacts[0].CoverageSummary.Should().Equal(summary);
+        actual.FileArtifacts[0].InputArtifactPaths.Should().Equal("first.coverage", "second.coverage");
+    }
+
+    [TestMethod]
+    public void RoundTrip_LegacyArtifactHasNoCoverageSummary()
+    {
+        var original = new FileArtifactMessages(
+            "execution", "instance", [new("report.coverage", null, null, null, null, null, "microsoft.codecoverage")]);
+        var serializer = new FileArtifactMessagesSerializer();
+        using var stream = new MemoryStream();
+
+        serializer.Serialize(original, stream);
+        stream.Position = 0;
+        var actual = (FileArtifactMessages)serializer.Deserialize(stream);
+
+        actual.FileArtifacts[0].CoverageSummary.Should().BeNull();
+    }
 }

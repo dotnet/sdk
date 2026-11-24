@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.ShellShim;
 
 internal interface IShellShimRepository
 {
-    void CreateShim(ToolCommand toolCommand, IReadOnlyList<FilePath> packagedShims = null);
+    void CreateShim(ToolCommand toolCommand, CancellationToken cancellationToken, IReadOnlyList<FilePath> packagedShims = null);
 
     void RemoveShim(ToolCommand toolCommand);
 }

@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import {mkdtemp, readFile, rm} from "node:fs/promises";
+import {tmpdir} from "node:os";
+import path from "node:path";
 import test from "node:test";
 import { BuildCandidateSelector } from "../build-candidate-selector.mjs";
 
@@ -25,7 +28,8 @@ import {
   summarizeSharedTestMechanism,
   shouldRunAgent,
   suppressTrackedIssueCandidates,
-  selectUnprocessedFailures
+  selectUnprocessedFailures,
+  writeGitHubOutputs
 } from "../collect-ci-evidence.mjs";
 
 test("timeout evidence excludes identifiers but retains explicit timeout messages", () => {
@@ -124,6 +128,21 @@ test("parseArguments requires registry and output", () => {
     { registry: "pipelines.json", output: "dossier.json" });
   assert.throws(() => parseArguments(["--registry", "pipelines.json"]), /required/);
   assert.throws(() => parseArguments(["registry", "pipelines.json"]), /Invalid argument/);
+});
+
+test("large dossiers do not enter size-limited GitHub job outputs", async context => {
+  const directory = await mkdtemp(path.join(tmpdir(), "ci-quality-outputs-"));
+  context.after(() => rm(directory, {recursive: true, force: true}));
+  const outputPath = path.join(directory, "outputs");
+  const dossier = {
+    bootstrap: false,
+    pipelineHealth: [{actionable: true}, {actionable: false}],
+    failures: [{issueCandidates: [{evidence: "x".repeat(1_048_577)}]}]
+  };
+
+  await writeGitHubOutputs(outputPath, dossier);
+
+  assert.equal(await readFile(outputPath, "utf8"), "should_run=true\nfailure_count=2\n");
 });
 
 test("normalizeEvidenceText removes volatile values and bounds output", () => {

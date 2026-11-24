@@ -228,6 +228,7 @@ internal static class FileBasedAppRunPlan
             cache.CurrentEntry.CscArguments = cache.PreviousEntry.CscArguments;
             cache.CurrentEntry.BuildResultFile = cache.PreviousEntry.BuildResultFile;
             cache.CurrentEntry.Run = cache.PreviousEntry.Run;
+            cache.CurrentEntry.BuildOutputs = cache.PreviousEntry.BuildOutputs;
             return BuildLevel.Csc;
         }
 
@@ -448,6 +449,15 @@ internal static class FileBasedAppRunPlan
 
         cache.PreviousEntry = previousCacheEntry;
         RunFileBuildCacheEntry cacheEntry = cache.CurrentEntry;
+        foreach (string outputPath in previousCacheEntry.BuildOutputs)
+        {
+            if (!File.Exists(outputPath))
+            {
+                Reporter.Verbose.WriteLine("Building because a build output is missing: " + outputPath);
+                return true;
+            }
+        }
+
         if (previousCacheEntry.Run is { Command: { } previousRunCommand } &&
             Path.IsPathFullyQualified(previousRunCommand) &&
             !File.Exists(previousRunCommand))

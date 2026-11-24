@@ -79,6 +79,42 @@ public class GivenDotnetTestBuildsAndRunsArtifactPostProcessingMTP : SdkTest
     }
 
     [TestMethod]
+    public void ParallelAzureRun_ReportsMergedCoverageInTheFinalGroupBeforeTheVerdict()
+    {
+        TestAsset testInstance = TestAssetsManager
+            .CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString())
+            .WithSource();
+        string solutionPath = CreateMultiProjectCoverageSolution(testInstance);
+        string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+        Microsoft.NET.TestFramework.Commands.TestCommand command = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("TF_BUILD", "true");
+        command.EnvironmentToRemove.Add("TESTINGPLATFORM_DOTNETTEST_EXECUTIONID");
+
+        CommandResult result = command.Execute(
+            "--solution", solutionPath, "--coverage", "--results-directory", resultsDirectory,
+            "--configuration", TestingConstants.Debug, "--max-parallel-test-modules", "2",
+            "--no-ansi", "--no-progress");
+
+        AssertTestFailures(result);
+        string mergedCoveragePath = GetReportedCoveragePaths(result).Should().ContainSingle().Subject;
+        File.Exists(mergedCoveragePath).Should().BeTrue();
+        Directory.GetFiles(resultsDirectory, "*.coverage", SearchOption.AllDirectories)
+            .Should().HaveCount(3).And.Contain(mergedCoveragePath);
+
+        string output = result.StdOut ?? string.Empty;
+        int groupStart = output.IndexOf("##[group]", StringComparison.Ordinal);
+        int groupEnd = output.LastIndexOf("##[endgroup]", StringComparison.Ordinal);
+        int artifact = output.IndexOf(mergedCoveragePath, StringComparison.Ordinal);
+        groupStart.Should().BeGreaterThanOrEqualTo(0);
+        artifact.Should().BeGreaterThan(groupStart).And.BeLessThan(groupEnd);
+        if (!SdkTestContext.IsLocalized())
+        {
+            output.LastIndexOf("Test run summary: Failed!", StringComparison.Ordinal).Should().BeGreaterThan(groupEnd);
+        }
+    }
+
+    [TestMethod]
     public void MultiProjectRun_WithNoArtifactPostProcessing_KeepsOneReportPerTestApplication()
     {
         TestAsset testInstance = TestAssetsManager
@@ -194,6 +230,53 @@ public class GivenDotnetTestBuildsAndRunsArtifactPostProcessingMTP : SdkTest
         TotalCount(mergedTrxPath).Should().Be(
             individualTotal,
             "the merged report accounts for every test from each per-module report");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void MultiProjectRun_WithDiagnostics_PreservesWorkerDiagnosticsAndMergesTrxArtifacts(bool useTestModules)
+    {
+        TestAsset testInstance = TestAssetsManager
+            .CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+            .WithSource();
+        EnableTrxReport(testInstance.Path);
+        string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+        string diagnosticDirectory = Path.Combine(testInstance.Path, "diagnostic logs");
+        string[] selectionArguments = ["--configuration", TestingConstants.Debug];
+        if (useTestModules)
+        {
+            new BuildCommand(testInstance, "TestProject").Execute().Should().Pass();
+            new BuildCommand(testInstance, "OtherTestProject").Execute().Should().Pass();
+            selectionArguments =
+            [
+                "--test-modules",
+                $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/*TestProject.dll".Replace('/', Path.DirectorySeparatorChar),
+            ];
+        }
+
+        CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(
+            [
+                .. selectionArguments,
+                "--report-trx",
+                "--results-directory", resultsDirectory,
+                "--diagnostic",
+                "--diagnostic-output-directory", diagnosticDirectory,
+                "--diagnostic-verbosity", "trace",
+                "--diagnostic-file-prefix", "reporting-regression",
+                "--diagnostic-synchronous-write",
+            ]);
+
+        string mergedTrxPath = GetMergedTrxPath(result);
+        File.Exists(mergedTrxPath).Should().BeTrue();
+        Directory.GetFiles(resultsDirectory, "*.trx", SearchOption.AllDirectories)
+            .Should().HaveCount(3, "the originals remain available alongside the successfully merged report");
+        result.StdOut.Should().NotContain("requires --diagnostic");
+        Directory.GetFiles(diagnosticDirectory, "reporting-regression*", SearchOption.AllDirectories)
+            .Should().Contain(path => File.ReadAllText(path).Contains(CliConstants.ArtifactPostProcessingToolName, StringComparison.Ordinal),
+                "the relaunched artifact worker must retain diagnostic enablement and the requested file prefix");
     }
 
     private CommandResult Run(string workingDirectory, string resultsDirectory, params string[] additionalArguments)

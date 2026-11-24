@@ -16,7 +16,8 @@ internal sealed class TestProgressState(
     TestResultVisibility testResultVisibility = TestResultVisibility.All,
     int slowestTestsCount = 0,
     bool showFlakyTests = true,
-    bool isRetry = false)
+    bool isRetry = false,
+    string? runtimeFramework = null)
 {
     private readonly Lock _lock = new();
     private readonly Dictionary<string, TestNodeInfoEntry> _testUidToResults = new();
@@ -69,6 +70,8 @@ internal sealed class TestProgressState(
     public string? TargetFramework { get; } = targetFramework;
 
     public string? Architecture { get; } = architecture;
+
+    public string? RuntimeFramework { get; } = runtimeFramework;
 
     public IStopwatch Stopwatch { get; } = stopwatch;
 
@@ -238,9 +241,15 @@ internal sealed class TestProgressState(
 
     public int? ExitCode { get; internal set; }
 
+    public bool HasIncompleteTestResults { get; internal set; }
+
     public bool IsDiscovery { get; } = isDiscovery;
 
     public TestResultVisibility TestResultVisibility { get; } = testResultVisibility;
+
+    public OutputShowMode ShowStdout { get; init; } = OutputShowMode.Failed;
+
+    public OutputShowMode ShowStderr { get; init; } = OutputShowMode.Failed;
 
     public int SlowestTestsCount { get; } = slowestTestsCount;
 
@@ -265,6 +274,14 @@ internal sealed class TestProgressState(
             {
                 return _tryCount;
             }
+        }
+    }
+
+    internal IReadOnlySet<string> GetInstanceIds()
+    {
+        lock (_lock)
+        {
+            return new HashSet<string>(_instanceIdToAttemptNumber.Keys, StringComparer.Ordinal);
         }
     }
 
