@@ -65,9 +65,11 @@ internal static class MigrationWorkflow
         var deduped = new List<MigrationSelection>();
         var seenChannels = new HashSet<(InstallComponent Component, string Channel)>();
 
-        foreach (var install in systemInstalls.OrderBy(i => i.Component).ThenByDescending(i => i.Version))
+        // Channels and example versions come from the on-disk version: an SDK's build identity, such as
+        // 10.0.403-servicing.26523.112, is not in the signed release channels that migration installs from.
+        foreach (var install in systemInstalls.OrderBy(i => i.Component).ThenByDescending(i => i.LayoutVersion))
         {
-            string channelName = DotnetupUtilities.VersionToPatchBasedChannel(install.Version, install.Component);
+            string channelName = DotnetupUtilities.VersionToPatchBasedChannel(install.LayoutVersion, install.Component);
             var key = (install.Component, GetTrackedMigrationChannelName(install.Component, channelName));
             if (trackedChannels.Contains(key))
             {
@@ -82,7 +84,7 @@ internal static class MigrationWorkflow
             deduped.Add(new MigrationSelection(
                 install.Component,
                 new UpdateChannel(channelName),
-                install.Version,
+                install.LayoutVersion,
                 install.InstallRoot.Architecture));
         }
 
@@ -337,13 +339,13 @@ internal static class MigrationWorkflow
 
     /// <summary>
     /// Builds the <see cref="InstallRequestOptions"/> used for migration install requests.
-    /// Migrations only need the command-wide flags (untracked/verbosity/manifest/muxer) — they do not carry
-    /// global.json or InstallSource information because migrations originate from disk discovery, not from
-    /// user-supplied specs or global.json.
+    /// Migrations carry their own source and the command-wide flags (untracked/verbosity/manifest/muxer),
+    /// not the primary request's global.json or command-line origin.
     /// </summary>
     private static InstallRequestOptions BuildMigrationInstallOptions(InstallCommand? command, string? manifestPath) =>
         new()
         {
+            InstallSource = InstallSource.Migration,
             ManifestPath = manifestPath,
             Untracked = command?.Untracked ?? false,
             Verbosity = command?.Verbosity ?? Verbosity.Normal,

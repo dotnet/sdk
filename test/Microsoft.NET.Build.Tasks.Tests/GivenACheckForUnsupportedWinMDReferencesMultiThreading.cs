@@ -6,7 +6,6 @@ using Microsoft.Build.Framework;
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class GivenACheckForUnsupportedWinMDReferencesMultiThreading
     {
         [TestMethod]

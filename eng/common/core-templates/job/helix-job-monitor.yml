@@ -94,12 +94,13 @@ parameters:
   type: boolean
   default: false
 
-# When true (the default), test results are reported to Azure DevOps using the fully qualified test
-# name (Namespace.Type.Method) as the stable automatedTestName and the visible title is qualified as
-# well (--use-fully-qualified-test-name). Set to false to preserve framework-provided display names.
+# When true, test results are reported to Azure DevOps using the fully qualified test name
+# (Namespace.Type.Method) as the stable automatedTestName and the visible title is qualified as
+# well (--use-fully-qualified-test-name). Opt-in because it changes AzDO test identity and display;
+# primarily useful for frameworks like MSTest whose display name is only the method name.
 - name: useFullyQualifiedTestName
   type: boolean
-  default: true
+  default: false
 
 # Controls per-test output attachments. Defaults to Failed.
 - name: testResultAttachmentMode
@@ -135,20 +136,6 @@ jobs:
   displayName: Monitor Helix Jobs
   timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
   continueOnError: ${{ parameters.continueOnError }}
-  variables:
-    HELIX_MONITOR_BASE_URI: ${{ parameters.helixBaseUri }}
-    HELIX_MONITOR_USE_ENTRA_AUTHENTICATION: ${{ parameters.useEntraAuthentication }}
-    HELIX_MONITOR_POLLING_INTERVAL_SECONDS: ${{ parameters.pollingIntervalSeconds }}
-    HELIX_MONITOR_FAIL_ON_FAILED_TESTS: ${{ parameters.failWorkItemsWithFailedTests }}
-    HELIX_MONITOR_ALLOW_NO_HELIX_JOBS: ${{ parameters.allowNoHelixJobs }}
-    HELIX_MONITOR_USE_FULLY_QUALIFIED_TEST_NAME: ${{ parameters.useFullyQualifiedTestName }}
-    HELIX_MONITOR_TIMEOUT_IN_MINUTES: ${{ parameters.timeoutInMinutes }}
-    HELIX_MONITOR_TEST_RESULT_UPLOAD_PARALLELISM: ${{ parameters.testResultUploadParallelism }}
-    HELIX_MONITOR_ORGANIZATION: ${{ parameters.organization }}
-    HELIX_MONITOR_REPOSITORY: ${{ parameters.repository }}
-    HELIX_MONITOR_TEST_RESULT_ATTACHMENT_MODE: ${{ parameters.testResultAttachmentMode }}
-    HELIX_MONITOR_TOOL_NUPKG_ARTIFACT_NAME: ${{ parameters.toolNupkgArtifactName }}
-    HELIX_MONITOR_TOOL_COMMAND: ${{ parameters.toolCommand }}
   ${{ if ne(length(parameters.dependsOn), 0) }}:
     dependsOn: ${{ parameters.dependsOn }}
   ${{ if ne(parameters.condition, '') }}:
@@ -238,16 +225,8 @@ jobs:
     - bash: ./eng/common/dotnet.sh tool restore
       displayName: Restore Helix Job Monitor
 
-  - ${{ if eq(parameters.useEntraAuthentication, true) }}:
-    - task: AzureCLI@2
-      displayName: Monitor Helix Jobs
-      inputs:
-        azureSubscription: ${{ parameters.azureSubscription }}
-        keepAzSessionActive: true
-        scriptType: bash
-        scriptLocation: inlineScript
-        inlineScript: |
-          set -euo pipefail
+  - bash: |
+      set -euo pipefail
 
           # AzureCLI@2 replaces SYSTEM_ACCESSTOKEN with the service connection token.
           export SYSTEM_ACCESSTOKEN="$HELIX_AZDO_ACCESSTOKEN"

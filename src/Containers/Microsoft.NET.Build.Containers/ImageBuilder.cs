@@ -52,8 +52,6 @@ internal sealed class ImageBuilder
     // For tests
     internal string ManifestConfigDigest => _manifest.Config.digest;
 
-    internal string BaseImageManifestDigest => _baseImageManifest.GetDigest();
-
     /// <summary>
     /// Builds the image configuration <see cref="BuiltImage"/> ready for further processing.
     /// </summary>

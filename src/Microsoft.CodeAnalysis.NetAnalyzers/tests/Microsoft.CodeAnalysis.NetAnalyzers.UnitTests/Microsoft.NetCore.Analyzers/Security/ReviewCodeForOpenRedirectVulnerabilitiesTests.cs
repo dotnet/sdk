@@ -24,19 +24,17 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System;
 
-                            using System;
-
-                            public partial class WebForm : System.Web.UI.Page
-                            {
-                                protected void Page_Load(object sender, EventArgs e)
-                                {
-                                    string input = Request.Form["url"];
-                                    this.Response.Redirect(input);
-                                }
-                            }
-                            """,
+public partial class WebForm : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string input = Request.Form[""url""];
+        this.Response.Redirect(input);
+    }
+}",
                     },
                     ExpectedDiagnostics =
                     {
@@ -56,19 +54,17 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+Imports System
 
-                            Imports System
+Partial Public Class WebForm
+    Inherits System.Web.UI.Page
 
-                            Partial Public Class WebForm
-                                Inherits System.Web.UI.Page
-
-                                Protected Sub Page_Load(sender As Object, eventArgs As EventArgs)
-                                    Dim input As String = Me.Request.Form("url")
-                                    Me.Response.Redirect(input)
-                                End Sub
-                            End Class
-                            """,
+    Protected Sub Page_Load(sender As Object, eventArgs As EventArgs)
+        Dim input As String = Me.Request.Form(""url"")
+        Me.Response.Redirect(input)
+    End Sub
+End Class",
                     },
                     ExpectedDiagnostics =
                     {
@@ -81,21 +77,20 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
-                using System;
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
 
-                public partial class WebForm : System.Web.UI.Page
-                {
-                    protected void Page_Load(object sender, EventArgs e)
-                    {
-                        string input = Request.Form["in"];
-                        if (String.IsNullOrWhiteSpace(input))
-                        {
-                            this.Response.Redirect("https://example.org/login.html");
-                        }
-                    }
-                }
-                """);
+public partial class WebForm : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string input = Request.Form[""in""];
+        if (String.IsNullOrWhiteSpace(input))
+        {
+            this.Response.Redirect(""https://example.org/login.html"");
+        }
+    }
+}");
         }
 
         [TestMethod]
@@ -108,20 +103,19 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            Imports System
+                        @"
+Imports System
 
-                            Partial Public Class WebForm
-                                Inherits System.Web.UI.Page
+Partial Public Class WebForm
+    Inherits System.Web.UI.Page
 
-                                Protected Sub Page_Load(sender As Object, eventArgs As EventArgs)
-                                    Dim input As String = Me.Request.Form("in")
-                                    If String.IsNullOrWhiteSpace(input) Then
-                                        Me.Response.Redirect("https://example.org/login.html")
-                                    End If
-                                End Sub
-                            End Class
-                            """
+    Protected Sub Page_Load(sender As Object, eventArgs As EventArgs)
+        Dim input As String = Me.Request.Form(""in"")
+        If String.IsNullOrWhiteSpace(input) Then
+            Me.Response.Redirect(""https://example.org/login.html"")
+        End If
+    End Sub
+End Class"
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -130,40 +124,36 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task HttpResponse_RedirectToRoutePermanent_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using System.Web;
 
-                using System;
-                using System.Web;
-
-                public partial class WebForm : System.Web.UI.Page
-                {
-                    protected void Page_Load(object sender, EventArgs e)
-                    {
-                        string input = Request.Form["in"];
-                        this.Response.RedirectToRoutePermanent(input);
-                    }
-                }
-                """,
+public partial class WebForm : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string input = Request.Form[""in""];
+        this.Response.RedirectToRoutePermanent(input);
+    }
+}",
                 GetCSharpResultAt(10, 9, 9, 24, "void HttpResponse.RedirectToRoutePermanent(string routeName)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
         [TestMethod]
         public async Task HttpResponseBase_RedirectLocation_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync("""
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using System.Web;
 
-                using System;
-                using System.Web;
-
-                public partial class WebForm : System.Web.UI.Page
-                {
-                    protected void Page_Load(object sender, EventArgs e)
-                    {
-                        string input = Request.Form["in"];
-                        new HttpResponseWrapper(this.Response).RedirectLocation = input;
-                    }
-                }
-                """,
+public partial class WebForm : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string input = Request.Form[""in""];
+        new HttpResponseWrapper(this.Response).RedirectLocation = input;
+    }
+}",
                 GetCSharpResultAt(10, 9, 9, 24, "string HttpResponseWrapper.RedirectLocation", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
     }

@@ -2,6 +2,46 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../Strings.resx">
     <body>
+      <trans-unit id="AccessModeAdminDescription">
+        <source>Installs can be managed by other tools alongside dotnetup in a shared system folder.</source>
+        <target state="new">Installs can be managed by other tools alongside dotnetup in a shared system folder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AccessModeAdminDetails">
+        <source>Installs .NET with the official Windows installer, which asks for administrator approval.</source>
+        <target state="new">Installs .NET with the official Windows installer, which asks for administrator approval.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeArgumentDisplayName">
+        <source>The argument '&lt;{0}&gt;'</source>
+        <target state="new">The argument '&lt;{0}&gt;'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeCommandNotSupported">
+        <source>'{0}' is not available in admin mode. Run 'dotnetup env set &lt;mode&gt;' to leave admin mode.</source>
+        <target state="new">'{0}' is not available in admin mode. Run 'dotnetup env set &lt;mode&gt;' to leave admin mode.</target>
+        <note>{0} is the command name. {Locked="dotnetup env set"}</note>
+      </trans-unit>
+      <trans-unit id="AdminModeInfoInstallationsNotShown">
+        <source>System installations are not yet listed by dotnetup in admin mode. Use 'dotnet --info' to view them.</source>
+        <target state="new">System installations are not yet listed by dotnetup in admin mode. Use 'dotnet --info' to view them.</target>
+        <note>{Locked="dotnetup"} {Locked="dotnet --info"}</note>
+      </trans-unit>
+      <trans-unit id="AdminModeListNotSupported">
+        <source>The list command is not yet supported in admin mode. Use 'dotnet --list-sdks', 'dotnet --list-runtimes', or 'dotnet --info' to view system installations.</source>
+        <target state="new">The list command is not yet supported in admin mode. Use 'dotnet --list-sdks', 'dotnet --list-runtimes', or 'dotnet --info' to view system installations.</target>
+        <note>{Locked="dotnetup"} {Locked="dotnet --list-sdks"} {Locked="dotnet --list-runtimes"} {Locked="dotnet --info"}</note>
+      </trans-unit>
+      <trans-unit id="AdminModeOptionDisplayName">
+        <source>The option '{0}'</source>
+        <target state="new">The option '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeSymbolNotSupported">
+        <source>{0} is not available for '{1}' in admin mode.</source>
+        <target state="new">{0} is not available for '{1}' in admin mode.</target>
+        <note>{0} describes an option or argument; {1} is the command name.</note>
+      </trans-unit>
       <trans-unit id="CommandDone">
         <source>Done.</source>
         <target state="new">Done.</target>
@@ -130,6 +170,16 @@ Or open a new terminal.</target>
         <source>Open a new terminal for the change to take effect.</source>
         <target state="new">Open a new terminal for the change to take effect.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="EnvOutcomeAdminDotnetupOffPath">
+        <source>dotnetup is not added to your PATH. System .NET PATH configuration is managed by the Windows installer.</source>
+        <target state="new">dotnetup is not added to your PATH. System .NET PATH configuration is managed by the Windows installer.</target>
+        <note>{Locked="dotnetup"}{Locked="PATH"}</note>
+      </trans-unit>
+      <trans-unit id="EnvOutcomeAdminDotnetupOnPath">
+        <source>dotnetup is on your PATH. System .NET PATH configuration is managed by the Windows installer.</source>
+        <target state="new">dotnetup is on your PATH. System .NET PATH configuration is managed by the Windows installer.</target>
+        <note>{Locked="dotnetup"}{Locked="PATH"}</note>
       </trans-unit>
       <trans-unit id="EnvOutcomeBothOnPath">
         <source>dotnet and dotnetup are on your PATH.</source>
@@ -331,6 +381,36 @@ Or open a new terminal.</target>
         <target state="new">Removing unused installations...</target>
         <note />
       </trans-unit>
+      <trans-unit id="GarbageCollectionSkippedUnreadableRequirement">
+        <source>Warning: Skipping garbage collection for {0} because a repository requirement could not be read and has no saved requirement.</source>
+        <target state="new">Warning: Skipping garbage collection for {0} because a repository requirement could not be read and has no saved requirement.</target>
+        <note>0: dotnet installation root.</note>
+      </trans-unit>
+      <trans-unit id="GlobalJsonDuplicateSdkVersion">
+        <source>Cannot update global.json because it contains more than one sdk.version property.</source>
+        <target state="new">Cannot update global.json because it contains more than one sdk.version property.</target>
+        <note>{Locked="global.json"} {Locked="sdk.version"}</note>
+      </trans-unit>
+      <trans-unit id="GlobalJsonInvalidContents">
+        <source>Expected a JSON object.</source>
+        <target state="new">Expected a JSON object.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GlobalJsonInvalidRollForward">
+        <source>Invalid rollForward policy: '{0}'.</source>
+        <target state="new">Invalid rollForward policy: '{0}'.</target>
+        <note>{Locked="rollForward"}</note>
+      </trans-unit>
+      <trans-unit id="GlobalJsonInvalidSdkVersion">
+        <source>Invalid SDK version: '{0}'.</source>
+        <target state="new">Invalid SDK version: '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GlobalJsonMissingPath">
+        <source>The {0} install spec '{1}' does not contain a global.json path.</source>
+        <target state="new">The {0} install spec '{1}' does not contain a global.json path.</target>
+        <note>{Locked="global.json"} {0}: component display name. {1}: saved version or channel.</note>
+      </trans-unit>
       <trans-unit id="HelpConfigCommandsTitle">
         <source>Configuration Commands:</source>
         <target state="new">Configuration Commands:</target>
@@ -386,29 +466,114 @@ Or open a new terminal.</target>
         <target state="new">Display dotnetup information.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitAcceptAndInstall">
+        <source>Accept and install</source>
+        <target state="new">Accept and install</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InitCommandDescription">
         <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>
         <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="InitInstallConfirmation">
+        <source>Install .NET with these settings?</source>
+        <target state="new">Install .NET with these settings?</target>
+        <note>{Locked=".NET"}</note>
+      </trans-unit>
+      <trans-unit id="InitInstallLocation">
+        <source>dotnetup will install .NET SDKs and runtimes in {0}.</source>
+        <target state="new">dotnetup will install .NET SDKs and runtimes in {0}.</target>
+        <note>{Locked="dotnetup"}{Locked=".NET"} {0} is the install directory path.</note>
+      </trans-unit>
+      <trans-unit id="InitMigrationNotSupportedInAdminMode">
+        <source>Not supported in admin mode</source>
+        <target state="new">Not supported in admin mode</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstallCancelledBeforeStart">
+        <source>Installation was cancelled before {0} {1} was installed.</source>
+        <target state="new">Installation was cancelled before {0} {1} was installed.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the component version.</note>
+      </trans-unit>
+      <trans-unit id="InstallLayoutConflict">
+        <source>{0} {1} replaces {0} {2} because they share the on-disk version {3}. {4}</source>
+        <target state="new">{0} {1} replaces {0} {2} because they share the on-disk version {3}. {4}</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the requested version. {2} is the installed version. {3} is the version folder name on disk. {4} is the action the user should take.</note>
+      </trans-unit>
+      <trans-unit id="InstallLayoutConflictRemoveFolder">
+        <source>No install spec keeps {0} {1}. Remove '{2}' first to proceed.</source>
+        <target state="new">No install spec keeps {0} {1}. Remove '{2}' first to proceed.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is one or more installed versions. {2} is the folder path on disk.</note>
+      </trans-unit>
+      <trans-unit id="InstallLayoutConflictRunCommand">
+        <source>Run {0} first to proceed.</source>
+        <target state="new">Run {0} first to proceed.</target>
+        <note>{0} is one or more quoted dotnetup uninstall commands.</note>
+      </trans-unit>
+      <trans-unit id="InstallSpecRequirementError">
+        <source>Warning: Cannot read {0}: {1}</source>
+        <target state="new">Warning: Cannot read {0}: {1}</target>
+        <note>0: global.json path, 1: error details.</note>
       </trans-unit>
       <trans-unit id="InstallSpecSource">
         <source>(source: {0})</source>
         <target state="new">(source: {0})</target>
         <note>{0} is an install-source identifier or a global.json path.</note>
       </trans-unit>
+      <trans-unit id="InstallValidationFailed">
+        <source>Installation validation failed: {0}</source>
+        <target state="new">Installation validation failed: {0}</target>
+        <note>{0} is the reason the installation validation failed.</note>
+      </trans-unit>
+      <trans-unit id="ListAspNetCoreRuntimeComponent">
+        <source>ASP.NET Core Runtime</source>
+        <target state="new">ASP.NET Core Runtime</target>
+        <note>{Locked="ASP.NET Core"}</note>
+      </trans-unit>
       <trans-unit id="ListCommandDescription">
         <source>List installed .NET SDKs and runtimes managed by dotnetup.</source>
         <target state="new">List installed .NET SDKs and runtimes managed by dotnetup.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListHeaderSubtitle">
-        <source>(managed by dotnetup)</source>
-        <target state="new">(managed by dotnetup)</target>
+      <trans-unit id="ListCommandLineSource">
+        <source>Command</source>
+        <target state="new">Command</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListHeaderTitle">
-        <source>Installations</source>
-        <target state="new">Installations</target>
+      <trans-unit id="ListComponentColumn">
+        <source>Component</source>
+        <target state="new">Component</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListDesktopRuntimeComponent">
+        <source>.NET Desktop Runtime</source>
+        <target state="new">.NET Desktop Runtime</target>
+        <note>{Locked=".NET"}</note>
+      </trans-unit>
+      <trans-unit id="ListInstallationCount">
+        <source>{0} installations</source>
+        <target state="new">{0} installations</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListInstalledVersionColumn">
+        <source>Installed version</source>
+        <target state="new">Installed version</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListInvalidInstallation">
+        <source>{0} (invalid)</source>
+        <target state="new">{0} (invalid)</target>
+        <note>0: installed version.</note>
+      </trans-unit>
+      <trans-unit id="ListLastKnownRequirement">
+        <source>{0} (last known; minimum: {1}, allowPrerelease: {2})</source>
+        <target state="new">{0} (last known; minimum: {1}, allowPrerelease: {2})</target>
+        <note>0: saved channel, 1: minimum SDK version, 2: prerelease eligibility. {Locked="allowPrerelease"}</note>
+      </trans-unit>
+      <trans-unit id="ListMigrationSource">
+        <source>Migration</source>
+        <target state="new">Migration</target>
         <note />
       </trans-unit>
       <trans-unit id="ListNoInstallations">
@@ -421,10 +586,90 @@ Or open a new terminal.</target>
         <target state="new">Skip verifying that each installation is valid.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListTotal">
-        <source>Total</source>
-        <target state="new">Total</target>
+      <trans-unit id="ListNotInstalled">
+        <source>Not installed</source>
+        <target state="new">Not installed</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ListOneInstallation">
+        <source>1 installation</source>
+        <target state="new">1 installation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListOneRuntime">
+        <source>1 runtime</source>
+        <target state="new">1 runtime</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListOneSdk">
+        <source>1 SDK</source>
+        <target state="new">1 SDK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListOneSpec">
+        <source>1 install spec</source>
+        <target state="new">1 install spec</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListRuntimeComponent">
+        <source>.NET Runtime</source>
+        <target state="new">.NET Runtime</target>
+        <note>{Locked=".NET"}</note>
+      </trans-unit>
+      <trans-unit id="ListRuntimeCount">
+        <source>{0} runtimes</source>
+        <target state="new">{0} runtimes</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListSdkCount">
+        <source>{0} SDKs</source>
+        <target state="new">{0} SDKs</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListSourceColumn">
+        <source>Source</source>
+        <target state="new">Source</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListSpecColumn">
+        <source>Install spec</source>
+        <target state="new">Install spec</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListSpecCount">
+        <source>{0} install specs</source>
+        <target state="new">{0} install specs</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListSummary">
+        <source>{0}; {1} ({2}, {3})</source>
+        <target state="new">{0}; {1} ({2}, {3})</target>
+        <note>Formatted counts including labels: 0: install specs, 1: distinct installations, 2: SDKs, 3: runtimes.</note>
+      </trans-unit>
+      <trans-unit id="ListUnavailable">
+        <source>Unavailable</source>
+        <target state="new">Unavailable</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListUnknown">
+        <source>Unknown</source>
+        <target state="new">Unknown</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListValidationError">
+        <source>Warning: {0} {1} is invalid: {2}</source>
+        <target state="new">Warning: {0} {1} is invalid: {2}</target>
+        <note>0: component, 1: version, 2: validation failure.</note>
+      </trans-unit>
+      <trans-unit id="MalformedGlobalJson">
+        <source>The global.json file '{0}' is malformed: {1}</source>
+        <target state="new">The global.json file '{0}' is malformed: {1}</target>
+        <note>{Locked="global.json"} {0} is the path to the global.json file. {1} is a short description of the parse or validation failure.</note>
+      </trans-unit>
+      <trans-unit id="ManifestSchemaVersionTooNew">
+        <source>The dotnetup manifest at '{0}' uses schema version {1}, but this version of dotnetup supports up to version {2}. Update dotnetup to read this manifest.</source>
+        <target state="new">The dotnetup manifest at '{0}' uses schema version {1}, but this version of dotnetup supports up to version {2}. Update dotnetup to read this manifest.</target>
+        <note>{0} is the manifest path; {1} is the manifest schema version; {2} is the highest supported schema version.</note>
       </trans-unit>
       <trans-unit id="PathGuidanceEverywhere">
         <source>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</source>
@@ -440,6 +685,11 @@ Or open a new terminal.</target>
         <source>Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</source>
         <target state="new">Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RepositoryUsingLastKnownRequirement">
+        <source>Warning: Using the last known SDK requirement from {0}.</source>
+        <target state="new">Warning: Using the last known SDK requirement from {0}.</target>
+        <note>0: global.json path.</note>
       </trans-unit>
       <trans-unit id="RootCommandDescription">
         <source>.NET toolchain manager for user level installs.</source>
@@ -662,9 +912,9 @@ Or open a new terminal.</target>
         <note>{0} is a component name; {1} is a highlighted version or channel; {2} is the formatted install-source description.</note>
       </trans-unit>
       <trans-unit id="UninstallNoMatchingInstallations">
-        <source>No tracked installations matched component={0}, version='{1}', source={2} at {3}.</source>
-        <target state="new">No tracked installations matched component={0}, version='{1}', source={2} at {3}.</target>
-        <note>{0} is a component identifier; {1} is a version or channel; {2} is an install-source identifier; {3} is the installation root path.</note>
+        <source>No command-line or migration install spec found for {0} '{1}' at {2}.</source>
+        <target state="new">No command-line or migration install spec found for {0} '{1}' at {2}.</target>
+        <note>{0} is a component name; {1} is a version or channel; {2} is the installation root path.</note>
       </trans-unit>
       <trans-unit id="UninstallNoTrackedInstallations">
         <source>No tracked installations found at {0}.</source>
@@ -676,25 +926,15 @@ Or open a new terminal.</target>
         <target state="new">Install spec '{0}' ({1}; source: {2}) will be removed from tracking.</target>
         <note>{0} is a highlighted version or channel; {1} is a component name; {2} is an install-source identifier or a global.json path.</note>
       </trans-unit>
+      <trans-unit id="UninstallRepositoryRequirement">
+        <source>To change or remove a repository SDK requirement, update or delete its global.json file:</source>
+        <target state="new">To change or remove a repository SDK requirement, update or delete its global.json file:</target>
+        <note>{Locked="global.json"}</note>
+      </trans-unit>
       <trans-unit id="UninstallRetainedInstallation">
         <source>{0} will [bold]not[/] be uninstalled because it has other install specs that require it:</source>
         <target state="new">{0} will [bold]not[/] be uninstalled because it has other install specs that require it:</target>
         <note>{0} is a highlighted component name and installed version. {Locked="[bold]"}{Locked="[/]"}</note>
-      </trans-unit>
-      <trans-unit id="UninstallSourceNotFound">
-        <source>No [bold]{0}[/] {1} install spec found for '{2}', but matching specs exist with other sources:</source>
-        <target state="new">No [bold]{0}[/] {1} install spec found for '{2}', but matching specs exist with other sources:</target>
-        <note>{0} is an install-source identifier; {1} is a component name; {2} is a version or channel. {Locked="[bold]"}{Locked="[/]"}</note>
-      </trans-unit>
-      <trans-unit id="UninstallSpecNotFound">
-        <source>No {0} install spec found for '{1}' at {2}.</source>
-        <target state="new">No {0} install spec found for '{1}' at {2}.</target>
-        <note>{0} is a component name; {1} is a version or channel; {2} is the installation root path.</note>
-      </trans-unit>
-      <trans-unit id="UninstallSpecNotFoundWithOtherSources">
-        <source>No {0} install spec found for '{1}', but matching specs exist with other sources:</source>
-        <target state="new">No {0} install spec found for '{1}', but matching specs exist with other sources:</target>
-        <note>{0} is a component name; {1} is a version or channel.</note>
       </trans-unit>
       <trans-unit id="UninstallUnexpectedAdditionalRemoval">
         <source>{0} will [bold]also[/] be [bold]uninstalled[/] because it is no longer referenced by any install specs.</source>
@@ -706,10 +946,100 @@ Or open a new terminal.</target>
         <target state="new">{0} will be [bold]uninstalled[/] because it is no longer referenced by any install specs.</target>
         <note>{0} is a highlighted component name and installed version. {Locked="[bold]"}{Locked="[/]"}</note>
       </trans-unit>
-      <trans-unit id="UninstallUseAllSources">
-        <source>Use {0} {1} to target these specs.</source>
-        <target state="new">Use {0} {1} to target these specs.</target>
-        <note>{0} is the source option name; {1} is the install-source value that selects every source.</note>
+      <trans-unit id="WindowsInstallerBusy">
+        <source>Another installation is already in progress (installer exit code {0}). Wait for it to finish, then run the command again.</source>
+        <target state="new">Another installation is already in progress (installer exit code {0}). Wait for it to finish, then run the command again.</target>
+        <note>{0} is the numeric installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerCancellationRequested">
+        <source>Cannot cancel this installer. Waiting; skipping remaining installs.</source>
+        <target state="new">Cannot cancel this installer. Waiting; skipping remaining installs.</target>
+        <note>Shown after Ctrl+C while a Windows installer is running. Keep this notice short enough for an 80-column terminal.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerCancelled">
+        <source>The installation of {0} was cancelled (installer exit code {1}).</source>
+        <target state="new">The installation of {0} was cancelled (installer exit code {1}).</target>
+        <note>{0} is the component display name and version. {1} is the numeric installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerDownloadFailed">
+        <source>Failed to download the .NET installer for version {0}: {1}</source>
+        <target state="new">Failed to download the .NET installer for version {0}: {1}</target>
+        <note>{0} is the component version. {1} is the download error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerElevationRequired">
+        <source>The installer for {0} requires administrator privileges but could not elevate (installer exit code {1}). Run the command from an account that can approve the administrator (UAC) prompt.</source>
+        <target state="new">The installer for {0} requires administrator privileges but could not elevate (installer exit code {1}). Run the command from an account that can approve the administrator (UAC) prompt.</target>
+        <note>{Locked="UAC"} {0} is the component display name and version. {1} is the numeric installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerFailed">
+        <source>The installer for {0} failed with exit code {1} (0x{2:X8}).</source>
+        <target state="new">The installer for {0} failed with exit code {1} (0x{2:X8}).</target>
+        <note>{0} is the component display name and version. {1} and {2} are the decimal and hexadecimal forms of the installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerHashMismatch">
+        <source>The downloaded installer for {0} does not match its expected hash; it may have been modified after it was downloaded. Run the command again.</source>
+        <target state="new">The downloaded installer for {0} does not match its expected hash; it may have been modified after it was downloaded. Run the command again.</target>
+        <note>{0} is the component display name and version.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerNewerVersionInstalled">
+        <source>{0} {1} is already installed, and the installer cannot install the older {0} {2}. Uninstall {0} {1} first (with Visual Studio Installer if Visual Studio installed it), or use {1} or later.</source>
+        <target state="new">{0} {1} is already installed, and the installer cannot install the older {0} {2}. Uninstall {0} {1} first (with Visual Studio Installer if Visual Studio installed it), or use {1} or later.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the installed newer version. {2} is the requested older version.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerNewerVersionInstalledExitCode">
+        <source>The installer for {0} did not install it because a newer version of the same product is already installed (installer exit code {1}). Uninstall the newer version first, or use it instead.</source>
+        <target state="new">The installer for {0} did not install it because a newer version of the same product is already installed (installer exit code {1}). Uninstall the newer version first, or use it instead.</target>
+        <note>{0} is the component display name and version. {1} is the numeric installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerOpenFailed">
+        <source>Could not open the downloaded installer for {0}: {1}</source>
+        <target state="new">Could not open the downloaded installer for {0}: {1}</target>
+        <note>{0} is the component display name and version. {1} is the operating system error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerPostInstallVerificationFailed">
+        <source>The Windows installer reported success, but the installation could not be verified: {0}</source>
+        <target state="new">The Windows installer reported success, but the installation could not be verified: {0}</target>
+        <note>{0} is the reason the installation could not be verified.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerProcessStartFailed">
+        <source>Could not start the installer for {0}: {1}</source>
+        <target state="new">Could not start the installer for {0}: {1}</target>
+        <note>{0} is the component display name and version. {1} is the operating system error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerRepairingMissingFiles">
+        <source>The installer finished, but the files for {0} are missing. Running a repair with the installer. Approve the administrator prompt if asked.</source>
+        <target state="new">The installer finished, but the files for {0} are missing. Running a repair with the installer. Approve the administrator prompt if asked.</target>
+        <note>{0} is the component display name and version.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerReplacedInBatch">
+        <source>{0} {1} was already installed, but installing {0} {2} in this request replaced it.</source>
+        <target state="new">{0} {1} was already installed, but installing {0} {2} in this request replaced it.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the older version that was already installed. {2} is the newer version installed by the same command.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerRestartInitiated">
+        <source>A restart has been initiated and is required to finish installing {0}.</source>
+        <target state="new">A restart has been initiated and is required to finish installing {0}.</target>
+        <note>{0} is the component display name and version.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerRestartRequired">
+        <source>You must restart your computer to finish installing {0}. dotnetup will not restart it automatically.</source>
+        <target state="new">You must restart your computer to finish installing {0}. dotnetup will not restart it automatically.</target>
+        <note>{Locked="dotnetup"} {0} is the component display name and version.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerSignatureVerificationFailed">
+        <source>The installer for {0} failed Authenticode signature verification: {1}</source>
+        <target state="new">The installer for {0} failed Authenticode signature verification: {1}</target>
+        <note>{Locked="Authenticode"} {0} is the component display name and version. {1} is the signature verification error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerSupersededInBatch">
+        <source>Skipped {0} {1} because this request also installs {0} {2}, and the installer cannot install {1} once {2} is installed.</source>
+        <target state="new">Skipped {0} {1} because this request also installs {0} {2}, and the installer cannot install {1} once {2} is installed.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the skipped older version. {2} is the newer version requested in the same command.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerWrongFileExtension">
+        <source>Expected a Windows installer (.exe) for {0}, but the download resolved to '{1}'.</source>
+        <target state="new">Expected a Windows installer (.exe) for {0}, but the download resolved to '{1}'.</target>
+        <note>{Locked=".exe"} {0} is the component display name and version. {1} is the downloaded file name.</note>
       </trans-unit>
     </body>
   </file>

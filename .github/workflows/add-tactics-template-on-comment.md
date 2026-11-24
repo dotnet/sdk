@@ -4,9 +4,6 @@ permissions:
   issues: read
   pull-requests: read
 
-env:
-  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
-
 network: defaults
 
 tools:

@@ -1,5 +1,8 @@
 # dotnetup --info Command
 
+> Historical design: the installation listing now uses the relationship-based
+> table documented in the [list command reference](../reference/dotnetup-list.md).
+
 ## Overview
 
 The `--info` option displays diagnostic information about the dotnetup tool, including its version, build architecture, commit information, and installed .NET SDKs/runtimes. This is useful for troubleshooting, bug reports, and verifying the installed version.

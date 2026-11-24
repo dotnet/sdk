@@ -29,14 +29,10 @@
 .PARAMETER ResultsDirectory
     Directory for the TRX report when -Trx is specified.
 
-.PARAMETER Filter
-    Optional test filter expression, for example FullyQualifiedName~CommandServicesTests.
-
 .EXAMPLE
     ./run-aot-tests.ps1
     ./run-aot-tests.ps1 -Configuration Release
     ./run-aot-tests.ps1 -RuntimeIdentifier linux-x64
-    ./run-aot-tests.ps1 -Filter "FullyQualifiedName~CommandServicesTests" -Trx
 #>
 
 param(
@@ -44,19 +40,15 @@ param(
     [string]$RuntimeIdentifier,
     [switch]$NoBuild,
     [switch]$Trx,
-    [string]$ResultsDirectory,
-    [string]$Filter
+    [string]$ResultsDirectory
 )
 
 $ErrorActionPreference = "Stop"
 
 # Resolve paths
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..") | Select-Object -ExpandProperty Path
-$dotnetName = if ($IsWindows -or $env:OS -eq "Windows_NT") { "dotnet.exe" } else { "dotnet" }
-$dotnet = [System.IO.Path]::Combine($repoRoot, ".dotnet", $dotnetName)
+$dotnet = [System.IO.Path]::Combine($repoRoot, ".dotnet", "dotnet")
 $testProject = Join-Path $PSScriptRoot "dotnet-aot.Tests.csproj"
-$productProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dotnet-aot", "dotnet-aot.csproj")
-$dnProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dn", "dn.csproj")
 
 # Auto-detect RID
 if (-not $RuntimeIdentifier) {
@@ -75,16 +67,8 @@ if (-not $RuntimeIdentifier) {
 }
 
 $publishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "aot-tests", $Configuration, $RuntimeIdentifier)
-$aotPublishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "dotnet-aot", $Configuration, $RuntimeIdentifier)
-$dnPublishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "dn", $Configuration, $RuntimeIdentifier)
 $exeName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.Tests.exe" } else { "dotnet-aot.Tests" }
-$aotLibraryName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.dll" }
-                  elseif ($RuntimeIdentifier.StartsWith("osx")) { "libdotnet-aot.dylib" }
-                  else { "libdotnet-aot.so" }
-$dnName = if ($RuntimeIdentifier.StartsWith("win")) { "dn.exe" } else { "dn" }
 $exePath = Join-Path $publishDir $exeName
-$aotLibraryPath = Join-Path $aotPublishDir $aotLibraryName
-$dnPath = Join-Path $dnPublishDir $dnName
 
 Write-Host "=== dotnet-aot NativeAOT Test Runner ===" -ForegroundColor Cyan
 Write-Host "  Configuration: $Configuration"
@@ -184,28 +168,14 @@ if (-not $sdkDirectory) {
     exit 1
 }
 
-$environment = @{
-    DOTNET_AOT_LIBRARY_DIR = $aotPublishDir
-    DOTNET_AOT_SDK_DIR = $sdkDirectory
-    DOTNET_AOT_TEST_DN_PATH = $dnPath
-    DOTNET_AOT_TEST_MANAGED_TEST_MODULE = $managedTestModule
-    DOTNET_AOT_TEST_NUGET_CONFIG = [System.IO.Path]::Combine($repoRoot, "NuGet.config")
-    DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
-    DOTNET_HOST_PATH = $dotnet
-    DOTNET_ROOT = [System.IO.Path]::Combine($repoRoot, ".dotnet")
-}
-$previousEnvironment = @{}
-foreach ($entry in $environment.GetEnumerator()) {
-    $previousEnvironment[$entry.Key] = [Environment]::GetEnvironmentVariable($entry.Key)
-    [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value)
-}
+$previousTestSdkDirectory = $env:DOTNET_AOT_TEST_SDK_DIRECTORY
+$previousDotnetHostPath = $env:DOTNET_HOST_PATH
+$env:DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
+$env:DOTNET_HOST_PATH = $dotnet
 
 # When -Trx is set, emit a TRX report (the AOT test binary is a Microsoft.Testing.Platform
 # app, so it accepts the --report-trx options) so CI can publish the results.
 $runArgs = @()
-if ($Filter) {
-    $runArgs += @("--filter", $Filter)
-}
 if ($Trx) {
     if (-not $ResultsDirectory) {
         $ResultsDirectory = [System.IO.Path]::Combine($repoRoot, "artifacts", "TestResults", $Configuration)
@@ -219,9 +189,8 @@ try {
     $testExitCode = $LASTEXITCODE
 }
 finally {
-    foreach ($entry in $previousEnvironment.GetEnumerator()) {
-        [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value)
-    }
+    $env:DOTNET_AOT_TEST_SDK_DIRECTORY = $previousTestSdkDirectory
+    $env:DOTNET_HOST_PATH = $previousDotnetHostPath
 }
 
 Write-Host ""

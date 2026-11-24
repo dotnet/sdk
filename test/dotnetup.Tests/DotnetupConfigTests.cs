@@ -51,6 +51,36 @@ public class DotnetupConfigTests : IDisposable
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Read_AcceptsUtf8WithOrWithoutBom(bool emitBom)
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, """{"schemaVersion":"1","accessMode":"shell"}""",
+            new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: emitBom));
+
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Shell);
+    }
+
+    [TestMethod]
+    [DataRow("utf-16")]
+    [DataRow("utf-16BE")]
+    [DataRow("utf-32")]
+    public void Read_AcceptsBomEncodedConfigAndPreservesSettingsOnUpdate(string encodingName)
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, """{"schemaVersion":"1","accessMode":"shell"}""",
+            System.Text.Encoding.GetEncoding(encodingName));
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Shell);
+
+        DotnetupConfig.SetUpdateNotifications(false);
+
+        var updated = DotnetupConfig.Read();
+        updated!.AccessMode.Should().Be(DotnetAccessMode.Shell);
+        updated.UpdateNotifications.Should().BeFalse();
+    }
+
+    [TestMethod]
     public void Write_SerializesAccessModeAsLowercaseString()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Everywhere });
@@ -64,6 +94,7 @@ public class DotnetupConfigTests : IDisposable
     [DataRow(DotnetAccessMode.None)]
     [DataRow(DotnetAccessMode.Shell)]
     [DataRow(DotnetAccessMode.Everywhere)]
+    [DataRow(DotnetAccessMode.Admin)]
     internal void ReadAccessMode_ReturnsStoredPreference_WhenConfigExists(DotnetAccessMode accessMode)
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = accessMode });
@@ -230,5 +261,57 @@ public class DotnetupConfigTests : IDisposable
         // Integer access-mode values are no longer accepted (allowIntegerValues: false), so a
         // numeric value is surfaced as a corrupt config.
         DotnetupConfig.Read().Should().BeNull();
+    }
+
+    [TestMethod]
+    public void WriteAccessSettings_Admin_PreservesUnrelatedSettings()
+    {
+        DotnetupConfig.SetUpdateNotifications(false);
+
+        DotnetupConfig.WriteAccessSettings(DotnetAccessMode.Admin, dotnetupOnPath: true);
+
+        DotnetupConfig.Read().Should().BeEquivalentTo(new DotnetupConfigData
+        {
+            AccessMode = DotnetAccessMode.Admin,
+            UpdateNotifications = false,
+        });
+        File.ReadAllText(DotnetupPaths.ConfigPath).Should().Contain("\"accessMode\": \"admin\"");
+    }
+
+    [TestMethod]
+    public void Write_Admin_RoundTrips()
+    {
+        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin };
+
+        DotnetupConfig.Write(config);
+
+        DotnetupConfig.Read().Should().BeEquivalentTo(config);
+    }
+
+    [TestMethod]
+    public void Read_AdminAccessMode_IsConfigured()
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(
+            DotnetupPaths.ConfigPath,
+            """{ "schemaVersion": "1", "accessMode": "admin", "updateNotifications": false }""");
+
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.ReadAccessMode().Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.ReadAccessModeSilently().Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.Exists().Should().BeTrue();
+        DotnetupConfig.ReadUpdateNotificationsEnabled().Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void SetUpdateNotifications_AdminAccessMode_PreservesAdmin()
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, """{ "schemaVersion": "1", "accessMode": "admin" }""");
+
+        DotnetupConfig.SetUpdateNotifications(false);
+
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.Read()!.UpdateNotifications.Should().BeFalse();
     }
 }

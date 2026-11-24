@@ -16,8 +16,9 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
     private const int MaxBodyBytes = 4 * 1024 * 1024;
     private readonly TcpListener _listener = new(IPAddress.Loopback, 0);
     private readonly CancellationTokenSource _cancellation = new();
-    private readonly TaskCompletionSource _requestReceived = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly SemaphoreSlim _requestReceived = new(0);
     private readonly Task _serverTask;
+    private int _responseStatusCode = (int)HttpStatusCode.OK;
 
     public MockTelemetryIngestionServer()
     {
@@ -31,7 +32,22 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
     public string IngestionEndpoint { get; }
     public ConcurrentQueue<string> Payloads { get; } = new();
 
-    public Task WaitForRequestAsync(TimeSpan timeout) => _requestReceived.Task.WaitAsync(timeout);
+    public HttpStatusCode ResponseStatusCode
+    {
+        get => (HttpStatusCode)Volatile.Read(ref _responseStatusCode);
+        set => Volatile.Write(ref _responseStatusCode, (int)value);
+    }
+
+    public Task WaitForRequestAsync(TimeSpan timeout) => WaitForRequestCountAsync(1, timeout);
+
+    public async Task WaitForRequestCountAsync(int count, TimeSpan timeout)
+    {
+        using var cancellation = new CancellationTokenSource(timeout);
+        while (Payloads.Count < count)
+        {
+            await _requestReceived.WaitAsync(cancellation.Token);
+        }
+    }
 
     public void Dispose()
     {
@@ -54,7 +70,7 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
                 }
 
                 await ServeRequestAsync(client);
-                _requestReceived.TrySetResult();
+                _requestReceived.Release();
             }
         }
         catch (OperationCanceledException)
@@ -92,8 +108,15 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
         using var reader = new StreamReader(decoded, Encoding.UTF8);
         Payloads.Enqueue(await reader.ReadToEndAsync());
 
+        HttpStatusCode statusCode = ResponseStatusCode;
+        string reasonPhrase = statusCode switch
+        {
+            HttpStatusCode.OK => "OK",
+            HttpStatusCode.ServiceUnavailable => "Service Unavailable",
+            _ => "Error",
+        };
         byte[] response = Encoding.ASCII.GetBytes(
-            "HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+            $"HTTP/1.1 {(int)statusCode} {reasonPhrase}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
         await stream.WriteAsync(response);
         await stream.FlushAsync();
         client.Client.Shutdown(SocketShutdown.Send);

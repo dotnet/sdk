@@ -12,6 +12,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class TelemetryDrainE2ETests
 {
     private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(20);
+    private static readonly TimeSpan s_storageRetryTimeout = TimeSpan.FromMinutes(4.5);
 
     [TestMethod]
     public async Task DrainMode_UploadsAndDeletesSdkPersistedTelemetry()
@@ -29,8 +30,34 @@ public class TelemetryDrainE2ETests
         drainer.HasExited.Should().BeFalse("the child retains its bounded lifetime after the first upload");
         environment.TelemetryBlobPaths.Should().BeEmpty("accepted telemetry blobs should be deleted");
         server.Payloads.Should().Contain(payload => payload.Contains("dotnetup/drain-fixture", StringComparison.Ordinal));
-        drainer.WaitForExit(200_000).Should().BeTrue("the detached process must terminate after its bounded lifetime");
-        drainer.ExitCode.Should().Be(0);
+    }
+
+    [TestMethod]
+    [Timeout(360_000, CooperativeCancellation = true)]
+    public async Task DrainMode_UploadsAndDeletesDotnetupPersistedTelemetry()
+    {
+        using var server = new MockTelemetryIngestionServer();
+        server.ResponseStatusCode = System.Net.HttpStatusCode.ServiceUnavailable;
+        using var environment = new TelemetryTestEnvironment(server.IngestionEndpoint);
+
+        (int fixtureExitCode, string fixtureOutput) = environment.RunWithoutDetachedDrainer(["--help"]);
+        fixtureExitCode.Should().Be(0, fixtureOutput);
+        await server.WaitForRequestAsync(s_timeout);
+        environment.TelemetryBlobPaths.Should().NotBeEmpty(
+            "the real persistent exporter should write the telemetry fixture");
+        environment.TelemetryBlobPaths.Select(File.ReadAllText).Should().Contain(
+            blob => blob.Contains("dotnetup.access_mode", StringComparison.Ordinal),
+            "persisted records must carry the producing process's access mode because the drainer uploads them verbatim");
+        server.ResponseStatusCode = System.Net.HttpStatusCode.OK;
+        using var drainer = environment.StartDrainer();
+        await environment.WaitForDrainerStartedAsync(s_timeout);
+        await server.WaitForRequestCountAsync(2, s_storageRetryTimeout);
+        await environment.WaitForTelemetryBlobsDeletedAsync(s_timeout);
+        server.Payloads.Should().Contain(
+            payload => payload.Contains("dotnetup.access_mode", StringComparison.Ordinal),
+            "the drain command should upload the telemetry persisted by the fixture process");
+        environment.TelemetryBlobPaths.Should().BeEmpty("accepted telemetry blobs should be deleted");
+        drainer.HasExited.Should().BeFalse("the drainer remains available for the retry after the shutdown-created lease expires");
     }
 
     [TestMethod]
@@ -75,7 +102,7 @@ public class TelemetryDrainE2ETests
     }
 
     [TestMethod]
-    public void EnvScript_UsesShellStartupShutdownBudget()
+    public void EnvScript_DoesNotRecordTelemetry()
     {
         using var server = new MockTelemetryIngestionServer();
         using var environment = new TelemetryTestEnvironment(server.IngestionEndpoint);
@@ -85,7 +112,8 @@ public class TelemetryDrainE2ETests
 
         exitCode.Should().Be(0, output);
         output.Should().NotBeEmpty("env script should emit the requested PowerShell environment script");
-        File.ReadAllText(environment.ShutdownBudgetPath).Should().Be("ShutdownBudgetMs=10");
+        environment.TelemetryBlobPaths.Should().BeEmpty("env script runs on every shell start and skips telemetry");
+        File.Exists(environment.ShutdownBudgetPath).Should().BeFalse("telemetry should not be set up or flushed for env script");
         File.Exists(environment.DrainerProcessPath).Should().BeFalse();
     }
 

@@ -4,9 +4,7 @@
 #nullable disable
 
 using System.Reflection;
-using System.Text.Json.Nodes;
 using Microsoft.Build.Framework;
-using Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial;
 using static Microsoft.NET.Build.Tasks.ResolvePackageAssets;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -76,106 +74,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             newHash.Should().BeEquivalentTo(oldHash,
                 because: $"{nameof(task.DesignTimeBuild)} should not be included in hash.");
-        }
-
-        [TestMethod]
-        public void It_reads_analyzer_assets_from_lock_file_when_enabled()
-        {
-            ExecuteAnalyzerAssetsTest(
-                restoreEnableAnalyzerAssets: true,
-                includeAnalyzerAssetsGroup: true)
-                .Should().Equal(AnalyzerAssetPath);
-        }
-
-        [TestMethod]
-        public void It_does_not_fall_back_to_package_file_scanning_when_analyzer_assets_are_enabled()
-        {
-            ExecuteAnalyzerAssetsTest(
-                restoreEnableAnalyzerAssets: true,
-                includeAnalyzerAssetsGroup: false)
-                .Should().BeEmpty();
-        }
-
-        [TestMethod]
-        public void It_preserves_package_file_analyzer_scanning_when_analyzer_assets_are_disabled()
-        {
-            ExecuteAnalyzerAssetsTest(
-                restoreEnableAnalyzerAssets: false,
-                includeAnalyzerAssetsGroup: false)
-                .Should().Equal(AnalyzerAssetPath);
-        }
-
-        [TestMethod]
-        public void It_applies_language_selection_to_analyzer_assets_from_the_group()
-        {
-            // NuGet lists analyzers for every language in the group; the SDK selects the language-appropriate
-            // ones, so a C# project must not pick up the VB analyzer.
-            string[] selected = ResolveGroupAnalyzers(
-                projectLanguage: "C#",
-                compilerApiVersion: null,
-                analyzerPaths: new[]
-                {
-                    "analyzers/dotnet/cs/CSharpAnalyzer.dll",
-                    "analyzers/dotnet/vb/VisualBasicAnalyzer.dll",
-                });
-
-            selected.Should().Equal("analyzers/dotnet/cs/CSharpAnalyzer.dll");
-        }
-
-        [TestMethod]
-        public void It_uses_analyzer_metadata_instead_of_the_asset_path()
-        {
-            string[] selected = ResolveGroupAnalyzers(
-                projectLanguage: "C#",
-                compilerApiVersion: null,
-                analyzerPaths: new[] { "analyzers/dotnet/cs/CSharpAnalyzer.dll" },
-                analyzerMetadata: _ => @"""codeLanguage"": ""vb""");
-
-            selected.Should().BeEmpty();
-        }
-
-        [TestMethod]
-        public void It_applies_compiler_version_selection_to_analyzer_assets_from_the_group()
-        {
-            // The group lists every compiler-version variant; the SDK picks the highest version that is still
-            // applicable to the current compiler (roslyn3.9 -> roslyn3.8, never roslyn4.0).
-            string[] selected = ResolveGroupAnalyzers(
-                projectLanguage: "C#",
-                compilerApiVersion: "roslyn3.9",
-                analyzerPaths: new[]
-                {
-                    "analyzers/dotnet/roslyn3.8/cs/OldAnalyzer.dll",
-                    "analyzers/dotnet/roslyn4.0/cs/NewAnalyzer.dll",
-                });
-
-            selected.Should().Equal("analyzers/dotnet/roslyn3.8/cs/OldAnalyzer.dll");
-        }
-
-        [TestMethod]
-        public void It_ignores_analyzer_metadata_and_uses_legacy_scanning_when_feature_flag_is_disabled()
-        {
-            // An F# analyzer is excluded by the metadata-based selection for a C# project (its codeLanguage is
-            // "fs"), but the legacy path-based scan includes it (it is not a VB analyzer). This asserts that the
-            // metadata-based selection only applies when the feature flag is enabled.
-            string[] expected = new[] { "analyzers/dotnet/fs/FSharpAnalyzer.dll" };
-
-            string[] selectedWithFlag = ResolveGroupAnalyzers(
-                projectLanguage: "C#",
-                compilerApiVersion: null,
-                analyzerPaths: expected,
-                restoreEnableAnalyzerAssets: true);
-
-            // Feature flag on: metadata-based selection excludes the F# analyzer for a C# project.
-            selectedWithFlag.Should().BeEmpty();
-
-            string[] selectedWithoutFlag = ResolveGroupAnalyzers(
-                projectLanguage: "C#",
-                compilerApiVersion: null,
-                analyzerPaths: expected,
-                restoreEnableAnalyzerAssets: false);
-
-            // Feature flag off: legacy path scanning is used and the F# analyzer is included.
-            selectedWithoutFlag.Should().Equal(expected);
         }
 
         [TestMethod]
@@ -806,134 +704,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [TestMethod]
         public void It_warns_on_incorrectly_cased_culture_codes_of_resources(string tfm, bool shouldHaveWarnings)
         {
-            WithResourceAssetsTask(tfm, "ru-ru", task =>
-            {
-                task.Execute().Should().BeTrue();
-                AssertResourceMetadata(task, "ru-ru", "ru-RU");
-                var engine = (MockBuildEngine)task.BuildEngine;
-
-                var invalidContextWarnings = engine.Warnings.Where(msg => msg.Code == "NETSDK1187");
-                invalidContextWarnings.Should().HaveCount(shouldHaveWarnings ? 1 : 0);
-
-                var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1187" && msg.Importance == MessageImportance.Low);
-                invalidContextMessages.Should().HaveCount(shouldHaveWarnings ? 0 : 1);
-            });
-        }
-
-        [TestMethod]
-        [CombinatorialData]
-        public void It_normalizes_pseudo_locales_without_casing_diagnostics(
-            [CombinatorialValues("net6.0", "net7.0")] string tfm,
-            [CombinatorialValues("qps-ploc", "qps-Ploc", "QPS-PLOC",
-                "qps-plocm", "qps-Plocm", "qps-PLOCM",
-                "qps-ploca", "qps-Ploca", "QPS-PLOCA")] string locale,
-            bool filter)
-        {
-            WithResourceAssetsTask(tfm, locale, task =>
-            {
-                if (filter)
-                {
-                    task.SatelliteResourceLanguages = [new MockTaskItem { ItemSpec = locale.ToUpperInvariant() }];
-                }
-
-                task.Execute().Should().BeTrue();
-                AssertResourceMetadata(task, locale, locale.ToLowerInvariant());
-                var engine = (MockBuildEngine)task.BuildEngine;
-                engine.Warnings.Should().BeEmpty();
-                engine.Messages.Where(msg => msg.Code is "NETSDK1187" or "NETSDK1188").Should().BeEmpty();
-
-                byte[] cache = File.ReadAllBytes(task.ProjectAssetsCacheFile);
-                DateTime cacheTime = File.GetLastWriteTimeUtc(task.ProjectAssetsCacheFile);
-                task.BuildEngine = new MockBuildEngine();
-                task.Execute().Should().BeTrue();
-                AssertResourceMetadata(task, locale, locale.ToLowerInvariant());
-                File.ReadAllBytes(task.ProjectAssetsCacheFile).Should().Equal(cache);
-                File.GetLastWriteTimeUtc(task.ProjectAssetsCacheFile).Should().Be(cacheTime);
-                engine = (MockBuildEngine)task.BuildEngine;
-                engine.Warnings.Should().BeEmpty();
-                engine.Messages.Where(msg => msg.Code is "NETSDK1187" or "NETSDK1188").Should().BeEmpty();
-            });
-        }
-
-        [TestMethod]
-        public void It_invalidates_caches_from_before_pseudo_locale_normalization()
-        {
-            WithResourceAssetsTask("net7.0", "qps-Ploc", task =>
-            {
-                task.Execute().Should().BeTrue();
-                using (var stream = File.OpenWrite(task.ProjectAssetsCacheFile))
-                using (var writer = new BinaryWriter(stream))
-                {
-                    stream.Position = sizeof(int);
-                    writer.Write(12);
-                }
-
-                task.BuildEngine = new MockBuildEngine();
-                task.Execute().Should().BeTrue();
-                AssertResourceMetadata(task, "qps-Ploc", "qps-ploc");
-                using var reader = new BinaryReader(File.OpenRead(task.ProjectAssetsCacheFile));
-                reader.ReadInt32();
-                reader.ReadInt32().Should().BeGreaterThan(12);
-            });
-        }
-
-        private void WithResourceAssetsTask(string tfm, string locale, Action<ResolvePackageAssets> test)
-        {
-            string testRoot = Path.Combine(Path.GetTempPath(), "rpa-resources-" + Guid.NewGuid().ToString("N"));
-            string packagesPath = Path.Combine(testRoot, "packages");
-            string packagePath = Path.Combine(packagesPath, "javascriptengineswitcher.core", "3.3.0");
-            Directory.CreateDirectory(packagePath);
-            try
-            {
-                File.WriteAllText(Path.Combine(packagePath, "javascriptengineswitcher.core.3.3.0.nupkg.sha512"), "abc123");
-                var assets = JsonNode.Parse(AssetsFileWithResourceLocale(tfm, locale));
-                assets["packageFolders"] = new JsonObject { [packagesPath] = new JsonObject() };
-                assets["libraries"] = JsonNode.Parse("""
-                    {
-                      "JavaScriptEngineSwitcher.Core/3.3.0": {
-                        "type": "package",
-                        "path": "javascriptengineswitcher.core/3.3.0",
-                        "files": []
-                      }
-                    }
-                    """);
-                var task = InitializeTask(out _);
-                task.ProjectAssetsFile = Path.Combine(testRoot, "project.assets.json");
-                task.ProjectAssetsCacheFile = Path.Combine(testRoot, "project.assets.cache");
-                task.ProjectPath = Path.Combine(testRoot, "test.csproj");
-                task.TargetFramework = tfm;
-                File.WriteAllText(task.ProjectAssetsFile, assets.ToJsonString());
-                File.SetLastWriteTimeUtc(task.ProjectAssetsFile, DateTime.UtcNow.AddMinutes(-1));
-                test(task);
-            }
-            finally
-            {
-                Directory.Delete(testRoot, recursive: true);
-            }
-        }
-
-        private static void AssertResourceMetadata(ResolvePackageAssets task, string originalLocale, string outputLocale)
-        {
-            var resource = task.ResourceAssemblies.Should().ContainSingle().Subject;
-            const string assemblyName = "JavaScriptEngineSwitcher.Core.resources.dll";
-            resource.ItemSpec.Should().EndWith(Path.Combine("lib", "netstandard2.0", originalLocale, assemblyName));
-            resource.GetMetadata(MetadataKeys.PathInPackage).Should().Be($"lib/netstandard2.0/{originalLocale}/{assemblyName}");
-            resource.GetMetadata(MetadataKeys.Culture).Should().Be(outputLocale);
-            resource.GetMetadata(MetadataKeys.DestinationSubDirectory).Should().Be(outputLocale + Path.DirectorySeparatorChar);
-            resource.GetMetadata(MetadataKeys.DestinationSubPath).Should().Be(Path.Combine(outputLocale, assemblyName));
-        }
-
-        [DataRow("net7.0", "ckb")]
-        [DataRow("net7.0", "ckb-IQ")]
-        [DataRow("net6.0", "ckb")]
-        [DataRow("net6.0", "ckb-IQ")]
-        [TestMethod]
-        public void It_does_not_warn_for_remapped_resource_cultures(string tfm, string locale)
-        {
             string projectAssetsJsonPath = Path.GetTempFileName();
             try
             {
-                File.WriteAllText(projectAssetsJsonPath, AssetsFileWithResourceLocale(tfm, locale));
+                File.WriteAllText(projectAssetsJsonPath, AssetsFileWithResourceLocale(tfm, "ru-ru"));
                 var task = InitializeTask(out _);
                 task.ProjectAssetsFile = projectAssetsJsonPath;
                 task.TargetFramework = tfm;
@@ -941,8 +715,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 using var stream = writer.WriteToMemoryStream();
                 var engine = (MockBuildEngine)task.BuildEngine;
 
-                engine.Warnings.Where(msg => msg.Code == "NETSDK1187").Should().BeEmpty();
-                engine.Messages.Where(msg => msg.Code == "NETSDK1187").Should().BeEmpty();
+                engine.Warnings.Where(msg => msg.Code == "NETSDK1187")
+                    .Should().HaveCount(shouldHaveWarnings ? 1 : 0);
+                engine.Messages.Where(msg => msg.Code == "NETSDK1187" && msg.Importance == MessageImportance.Low)
+                    .Should().HaveCount(shouldHaveWarnings ? 0 : 1);
             }
             finally
             {

@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         public ChunkStreamReadTests()
         {
-            _engineEnvironmentSettings = CreateEnvironment(s_environmentSettingsHelper, GetType().Name);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
 
         [TestMethod]

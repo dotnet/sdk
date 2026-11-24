@@ -13,7 +13,6 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class GivenAGenerateDepsFilePathResolution : IDisposable
     {
         private readonly List<string> _tempDirs = new();

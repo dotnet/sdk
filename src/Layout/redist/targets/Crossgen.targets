@@ -44,8 +44,7 @@
       <BlazorWasmTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
       <RazorSourceGenerators>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\source-generators\</RazorSourceGenerators>
       <RazorTasks>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\$(DefaultToolTfm)\</RazorTasks>
-      <!-- NetTFMUpdate: Restore $(DefaultToolTfm) when the WindowsDesktop SDK package targets net12.0. -->
-      <WindowsDesktopTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\net11.0\</WindowsDesktopTools>
+      <WindowsDesktopTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\$(DefaultToolTfm)\</WindowsDesktopTools>
       <PublishTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\$(DefaultToolTfm)\</PublishTools>
       <WebTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\$(DefaultToolTfm)\</WebTools>
       <ProjectSystemTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\$(DefaultToolTfm)\</ProjectSystemTools>
@@ -69,8 +68,6 @@
       <RemainingFiles Remove="$(InstallerOutputDirectory)Extensions\dump*\**\*" />
       <RemainingFiles Remove="$(InstallerOutputDirectory)Sdks\**\*" />
       <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
-      <!-- Removing Microsoft.Diagnostics.NETCore.Client from crossgen as its EmbeddedAttribute causes code generation failures -->
-      <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.Diagnostics.NETCore.Client.dll" />
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
       <RemainingFiles Include="$(NetSdkAnalyzers)**\*" />

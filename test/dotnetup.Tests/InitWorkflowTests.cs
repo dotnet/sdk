@@ -10,6 +10,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -197,12 +198,14 @@ public class InitWorkflowTests : IDisposable
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void GetDefaultAccessMode_ReturnsConfiguredEverywhereModeOnWindows()
+    [DataRow(DotnetAccessMode.Everywhere)]
+    [DataRow(DotnetAccessMode.Admin)]
+    internal void GetDefaultAccessMode_ReturnsConfiguredWindowsMode(DotnetAccessMode accessMode)
     {
         InitDefaultsResolver.GetDefaultAccessMode(
             shellProvider: null,
-            configuredAccessMode: DotnetAccessMode.Everywhere)
-            .Should().Be(DotnetAccessMode.Everywhere);
+            configuredAccessMode: accessMode)
+            .Should().Be(accessMode);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
@@ -310,6 +313,69 @@ public class InitWorkflowTests : IDisposable
     }
 
     // ── ResolveDefaultMigrations ──
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void ResolveFormDefaults_AcceptsComments()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "global.json"), """
+            {
+              // SDK policy
+              "sdk": {
+                "version": "10.0.103",
+                "rollForward": "latestPatch",
+                "paths": ["$host$"]
+              }
+            }
+            """);
+        var mock = new MockDotnetInstallManager(defaultInstallPath: _tempDir, existingSystemInstalls: []);
+        var command = new InitCommand(Parser.Parse(["init"]));
+
+        var defaults = RunFromTempDirectory(() => InitDefaultsResolver.ResolveFormDefaults(command, null, mock));
+
+        defaults.ChannelDisplay.ChannelLabel.Should().Be("10.0.1xx");
+        defaults.InstallRoot.Path.Should().Be(_tempDir);
+        RunFromTempDirectory(InitWorkflows.HasLocalSdkPathGlobalJson).Should().BeFalse();
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void ResolveFormDefaults_ReusesParsedGlobalJsonForPathAndChannel()
+    {
+        var path = Path.Combine(_tempDir, "global.json");
+        File.WriteAllText(path, """{"sdk":{"version":"10.0.103","paths":[".dotnet"]}}""");
+        var mock = new MockDotnetInstallManager(defaultInstallPath: _tempDir, existingSystemInstalls: [])
+        {
+            BeforeGetExistingSystemInstalls = () => File.WriteAllText(path,
+                """{"sdk":{"version":"11.0.100","paths":["other-dotnet"]}}""")
+        };
+        var command = new InitCommand(Parser.Parse(["init"]));
+
+        var (defaults, currentDirectory) = RunFromTempDirectory(() =>
+            (InitDefaultsResolver.ResolveFormDefaults(command, null, mock), Environment.CurrentDirectory));
+
+        mock.GetExistingSystemInstallsCallCount.Should().Be(1);
+        defaults.InstallRoot.Path.Should().Be(Path.Combine(currentDirectory, ".dotnet"));
+        defaults.ChannelDisplay.ChannelLabel.Should().Be("10.0.1xx");
+        defaults.ChannelDisplay.GlobalJsonPath.Should().Be(Path.Combine(currentDirectory, "global.json"));
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    [DataRow("{broken")]
+    [DataRow("""{"sdk":{"version":"invalid"}}""")]
+    [DataRow("""{"sdk":{"version":"10.0.103","rollForward":"invalid"}}""")]
+    public void ResolveFormDefaults_ReportsMalformedGlobalJson(string contents)
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "global.json"), contents);
+        var mock = new MockDotnetInstallManager(defaultInstallPath: _tempDir, existingSystemInstalls: []);
+        var command = new InitCommand(Parser.Parse(["init"]));
+
+        var resolve = () => RunFromTempDirectory(() => InitDefaultsResolver.ResolveFormDefaults(command, null, mock));
+
+        resolve.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
+    }
 
     [TestMethod]
     public void ResolveDefaultMigrations_ReturnsCandidates()

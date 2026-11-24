@@ -71,7 +71,6 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType : SdkTes
         };
 
         testProject.AdditionalProperties["RoslynCompilerType"] = "FrameworkPackage";
-        testProject.AdditionalProperties["LangVersion"] = "preview";
 
         var testAsset = TestAssetsManager.CreateTestProject(testProject);
 

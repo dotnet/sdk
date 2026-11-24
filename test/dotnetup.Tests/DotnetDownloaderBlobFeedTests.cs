@@ -16,6 +16,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
 using Spectre.Console;
@@ -29,18 +30,18 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// not list the requested version (e.g. daily/preview builds).
 /// </summary>
 [TestClass]
-public class DotnetDownloaderBlobFeedTests : IDisposable
+public class DotnetDownloaderBlobFeedTests
 {
     private readonly ITestOutputHelper _log;
+    private readonly FakeDotnetupPolicyStore _policyStore = new();
+    private readonly DotnetupPolicy _policy;
+    private readonly List<HttpClient> _httpClients = [];
 
     public DotnetDownloaderBlobFeedTests(TestContext testContext)
     {
         _log = new TestContextOutputHelper(testContext);
-        // Defensive: clear any IT-policy override leaked from an earlier test.
-        UnsignedSourcePolicy.OverrideForTesting = null;
+        _policy = new DotnetupPolicy(_policyStore);
     }
-
-    public void Dispose() => UnsignedSourcePolicy.OverrideForTesting = null;
 
     private const string DotnetupVersion = "0.1.0-preview.1.26359.118";
     private const string DotnetupUrl = "https://ci.dot.net/public/dotnetup/" + DotnetupVersion + "/dotnetup-win-x64.exe";
@@ -78,12 +79,10 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             },
         };
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"), policy: _policy);
         var originalConsole = AnsiConsole.Console;
-        var originalPolicy = UnsignedSourcePolicy.OverrideForTesting;
         try
         {
-            UnsignedSourcePolicy.OverrideForTesting = () => false;
             AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings
             {
                 Ansi = AnsiSupport.No,
@@ -110,7 +109,6 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         finally
         {
             AnsiConsole.Console = originalConsole;
-            UnsignedSourcePolicy.OverrideForTesting = originalPolicy;
         }
     }
 
@@ -142,12 +140,10 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             },
         };
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"), policy: _policy);
         var originalConsole = AnsiConsole.Console;
-        var originalPolicy = UnsignedSourcePolicy.OverrideForTesting;
         try
         {
-            UnsignedSourcePolicy.OverrideForTesting = () => false;
             AnsiConsole.Console = CreateConsole(output);
             AnsiConsole.Profile.Width = int.MaxValue;
             using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, installedVersion);
@@ -163,7 +159,6 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         finally
         {
             AnsiConsole.Console = originalConsole;
-            UnsignedSourcePolicy.OverrideForTesting = originalPolicy;
         }
     }
 
@@ -199,13 +194,11 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             [location.ChecksumUrl] = (HttpStatusCode.OK, new string('0', 128)),
         }, history, new() { [channelUrl] = location.ArchiveUrl });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"), policy: _policy);
         var originalConsole = AnsiConsole.Console;
         var originalError = Console.Error;
-        var originalPolicy = UnsignedSourcePolicy.OverrideForTesting;
         try
         {
-            UnsignedSourcePolicy.OverrideForTesting = () => false;
             AnsiConsole.Console = CreateConsole(stdout);
             Console.SetError(stderr);
             using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, installedVersion);
@@ -235,7 +228,6 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         {
             AnsiConsole.Console = originalConsole;
             Console.SetError(originalError);
-            UnsignedSourcePolicy.OverrideForTesting = originalPolicy;
         }
     }
 
@@ -256,7 +248,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         using var handler = new RecordingHandler(responses, history, redirects);
         using var http = new HttpClient(handler);
         string cacheDirectory = Path.Combine(testEnv.TempRoot, "cache");
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory, policy: _policy);
         var download = downloader.ResolveDotnetupDownload("win-x64");
         redirects[DotnetupDailyUrl] = DotnetupUrl.Replace(DotnetupVersion, "0.1.0-preview.2", StringComparison.Ordinal);
         string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
@@ -298,7 +290,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             [checksumUrl] = (HttpStatusCode.OK, $"{hash}  dotnetup-{rid}{extension}\n"),
         }, history, new() { [dailyUrl] = url });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ThrowingReleaseManifest(DotnetInstallErrorCode.ManifestFetchFailed), http, testEnv.TempRoot);
+        var downloader = new DotnetDownloader(new ThrowingReleaseManifest(DotnetInstallErrorCode.ManifestFetchFailed), http, testEnv.TempRoot, policy: _policy);
 
         ResolvedDownload download = downloader.ResolveDotnetupDownload(rid);
 
@@ -337,7 +329,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             [DotnetupChecksumUrl] = (status, content),
         }, history, new() { [DotnetupDailyUrl] = DotnetupUrl });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot, policy: _policy);
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.ResolveDotnetupDownload("win-x64"));
 
@@ -362,7 +354,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             [metadataUrl] = metadataUrl.Replace(DotnetupVersion, "0.1.0-preview.2", StringComparison.Ordinal),
         });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot, policy: _policy);
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.ResolveDotnetupDownload("win-x64"));
 
@@ -373,10 +365,8 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     public void ResolveDotnetupDownload_BlockedPolicyMakesNoRequests()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var (handler, history) = BuildHandler(new());
-        using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot);
-        UnsignedSourcePolicy.OverrideForTesting = () => true;
+        var (downloader, history) = CreateFakeBlobFeed(manifest: new ReleaseManifest(), cacheDirectory: testEnv.TempRoot);
+        _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.ResolveDotnetupDownload("win-x64"));
 
@@ -393,13 +383,11 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         string hash = DotnetDownloader.ComputeFileHash(seed);
         string cacheDirectory = Path.Combine(testEnv.TempRoot, "cache");
         new DownloadCache(cacheDirectory).AddToCache(DotnetupUrl, seed);
-        var (handler, history) = BuildHandler(new());
-        using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
+        var (downloader, history) = CreateFakeBlobFeed(manifest: new ReleaseManifest(), cacheDirectory: cacheDirectory);
         var download = new ResolvedDownload(new Uri(DotnetupUrl), hash, "win-x64",
             new ReleaseVersion(DotnetupVersion), IsUnsigned: true, IsDotnetup: true);
         string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
-        UnsignedSourcePolicy.OverrideForTesting = () => true;
+        _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.DownloadWithVerification(download, destination));
 
@@ -420,7 +408,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         var history = new List<string>();
         using var handler = new RecordingHandler(new() { [DotnetupUrl] = (HttpStatusCode.OK, content) }, history, new() { [DotnetupUrl] = redirectUrl });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(testEnv.TempRoot, "cache"));
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(testEnv.TempRoot, "cache"), policy: _policy);
         var download = new ResolvedDownload(new Uri(DotnetupUrl), hash, "win-x64",
             new ReleaseVersion(DotnetupVersion), IsUnsigned: true, IsDotnetup: true);
         string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
@@ -445,9 +433,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         string seed = Path.Combine(testEnv.TempRoot, "seed");
         File.WriteAllText(seed, corruptCache ? "corrupt" : content);
         new DownloadCache(cacheDirectory).AddToCache(url, seed);
-        var (handler, history) = BuildHandler(new() { [url] = (HttpStatusCode.OK, content) });
-        using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
+        var (downloader, history) = CreateFakeBlobFeed(new() { [url] = (HttpStatusCode.OK, content) }, manifest: new ReleaseManifest(), cacheDirectory: cacheDirectory);
         var download = new ResolvedDownload(new Uri(url), expectedHash, "win-x64", new ReleaseVersion("0.1.0-preview.1"));
         string destination = Path.Combine(testEnv.TempRoot, "nested", "dotnetup.exe.new");
 
@@ -465,9 +451,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         const string url = "https://example.test/dotnetup-win-x64.exe";
         string cacheDirectory = Path.Combine(testEnv.TempRoot, "cache");
-        var (handler, _) = BuildHandler(new() { [url] = (HttpStatusCode.OK, "corrupt") });
-        using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
+        var (downloader, _) = CreateFakeBlobFeed(new() { [url] = (HttpStatusCode.OK, "corrupt") }, manifest: new ReleaseManifest(), cacheDirectory: cacheDirectory);
         var download = new ResolvedDownload(new Uri(url), new string('a', 128), "win-x64", new ReleaseVersion("0.1.0-preview.1"));
         string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
 
@@ -563,13 +547,10 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
         string ext = DotnetupTestUtilities.DefaultArchiveFileExtension;
         string expectedHash = new string('d', 128);
-        var (handler, history) = BuildHandler(new()
+        var (downloader, history) = CreateFakeBlobFeed(new()
         {
             [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-{version}-{rid}{ext}.sha512"] = (HttpStatusCode.OK, expectedHash + "\n"),
         });
-
-        using var http = new HttpClient(handler);
-        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version));
 
@@ -586,10 +567,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     public void ResolveManifestEntry_DoesNotFallback_ForStableVersion()
     {
         const string version = "10.0.100";
-        var (handler, history) = BuildHandler(new());
-
-        using var http = new HttpClient(handler);
-        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var (downloader, history) = CreateFakeBlobFeed();
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
@@ -607,10 +585,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     {
         const string channel = "preview";
         const string resolved = "10.0.100-preview.4.25216.37";
-        var (handler, history) = BuildHandler(new());
-
-        using var http = new HttpClient(handler);
-        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var (downloader, history) = CreateFakeBlobFeed();
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(channel, InstallComponent.SDK), new ReleaseVersion(resolved)));
@@ -628,10 +603,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     {
         const string channel = "preview";
         const string resolved = "10.0.100-preview.4.25216.37";
-        var (handler, _) = BuildHandler(new());
-
-        using var http = new HttpClient(handler);
-        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.ReleaseNotFound);
+        var (downloader, _) = CreateFakeBlobFeed(manifestThrows: DotnetInstallErrorCode.ReleaseNotFound);
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(channel, InstallComponent.SDK), new ReleaseVersion(resolved)));
@@ -652,10 +624,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     {
         // A specific Windows Desktop Runtime version whose release lists only .exe installers.
         const string version = "3.1.32";
-        var (handler, _) = BuildHandler(new());
-
-        using var http = new HttpClient(handler);
-        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.NoUserInstallableArtifact);
+        var (downloader, _) = CreateFakeBlobFeed(manifestThrows: DotnetInstallErrorCode.NoUserInstallableArtifact);
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.WindowsDesktop), new ReleaseVersion(version)));
@@ -677,14 +646,14 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     /// <summary>
     /// End-to-end: parse a real Windows Desktop Runtime release (via the deployment library)
     /// whose manifest lists only .exe installers — no .tar.gz and no .zip — then drive the full
-    /// download entry point <see cref="DotnetDownloader.DownloadArchiveWithVerification"/>.
+    /// download entry point <see cref="DotnetDownloader.DownloadVerifiedArtifact"/>.
     /// The resolve-then-download path must surface the user-actionable
     /// <see cref="DotnetInstallErrorCode.NoUserInstallableArtifact"/> error and must NOT issue any
     /// HTTP download (it fails during manifest resolution, before touching the network).
     /// Windows-only because the RID and .zip fallback are Windows-specific.
     /// </summary>
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void DownloadArchiveWithVerification_WindowsDesktopRuntimeWithOnlyExeInstallers_FailsWithUserError_AndDoesNotDownload()
+    public void DownloadVerifiedArtifact_WindowsDesktopRuntimeWithOnlyExeInstallers_FailsWithUserError_AndDoesNotDownload()
     {
         const string version = "3.1.32";
 
@@ -693,15 +662,13 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         // user-installable (xcopy) archive.
         ReleaseComponent windowsDesktop = ParseWindowsDesktopComponentWithOnlyExeInstallers(version);
 
-        var (handler, history) = BuildHandler(new());
-        using var http = new HttpClient(handler);
         var cacheDir = Path.Combine(Path.GetTempPath(), "dotnetup-test-cache-" + Guid.NewGuid().ToString("N"));
-        var downloader = new DotnetDownloader(new FixtureReleaseManifest(windowsDesktop), http, cacheDir);
+        var (downloader, history) = CreateFakeBlobFeed(manifest: new FixtureReleaseManifest(windowsDesktop), cacheDirectory: cacheDir);
 
         string destinationBase = Path.Combine(cacheDir, "windowsdesktop-runtime");
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
-            downloader.DownloadArchiveWithVerification(
+            downloader.DownloadVerifiedArtifact(
                 BuildRequest(version, InstallComponent.WindowsDesktop),
                 new ReleaseVersion(version),
                 destinationBase));
@@ -771,10 +738,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     public void ResolveManifestEntry_BlobFeed404_ThrowsVersionNotFound()
     {
         const string version = "10.0.100-preview.4.25216.37";
-        var (handler, history) = BuildHandler(new());
-
-        using var http = new HttpClient(handler);
-        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var (downloader, history) = CreateFakeBlobFeed();
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
@@ -782,8 +746,8 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.VersionNotFound);
         ex.Message.Should().Contain(version);
 
-        // On Windows, both tar.gz and zip are probed; on other platforms only tar.gz
-        int expectedProbes = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 2 : 1;
+        // Each extension is probed with both the build and release-version filename.
+        int expectedProbes = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 4 : 2;
         history.Should().HaveCount(expectedProbes);
     }
 
@@ -796,20 +760,17 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         const string version = "10.0.100-preview.4.25216.37";
         string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
         string expectedHash = new string('f', 128);
-        var (handler, history) = BuildHandler(new()
+        var (downloader, history) = CreateFakeBlobFeed(new()
         {
             // tar.gz checksum not available (404), zip checksum is available
             [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-{version}-{rid}.zip.sha512"] = (HttpStatusCode.OK, expectedHash + "\n"),
         });
 
-        using var http = new HttpClient(handler);
-        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
-
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version));
 
         url.Should().Be($"https://ci.dot.net/public/Sdk/{version}/dotnet-sdk-{version}-{rid}.zip");
         hash.Should().Be(expectedHash);
-        history.Should().HaveCount(2, "should probe tar.gz first, then fall back to zip");
+        history.Should().HaveCount(3, "should probe both tar.gz filenames first, then fall back to zip");
     }
 
     /// <summary>
@@ -822,13 +783,10 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
         string ext = DotnetupTestUtilities.DefaultArchiveFileExtension;
         string expectedHash = new string('e', 128);
-        var (handler, _) = BuildHandler(new()
+        var (downloader, _) = CreateFakeBlobFeed(new()
         {
             [$"https://ci.dot.net/public-checksums/Runtime/{version}/dotnet-runtime-{version}-{rid}{ext}.sha512"] = (HttpStatusCode.OK, expectedHash),
         });
-
-        using var http = new HttpClient(handler);
-        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.Runtime), new ReleaseVersion(version));
 
@@ -837,6 +795,171 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     }
 
     // --- UnsignedSourcePolicy coverage ---
+
+    [TestMethod]
+    [DataRow("11.0.1xx-daily", "11.0.100-rtm.26552.115", "11.0.100", InstallComponent.SDK, "Sdk", "dotnet-sdk")]
+    [DataRow("10.0.115-servicing.26552.102", "10.0.115-servicing.26552.102", "10.0.115", InstallComponent.SDK, "Sdk", "dotnet-sdk")]
+    [DataRow("11.0-daily", "11.0.0-rtm.26552.115", "11.0.0", InstallComponent.Runtime, "Runtime", "dotnet-runtime")]
+    [DataRow("11.0-daily", "11.0.0-rtm.26552.115", "11.0.0", InstallComponent.ASPNETCore, "aspnetcore/Runtime", "aspnetcore-runtime")]
+    [DataRow("11.0-daily", "11.0.0-rtm.26552.115", "11.0.0", InstallComponent.WindowsDesktop, "WindowsDesktop", "windowsdesktop-runtime")]
+    public void DownloadVerifiedArtifact_UsesReleaseFilenameInBuildDirectory(
+        string channel, string buildVersion, string productVersion, InstallComponent component, string directory, string prefix)
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        const string content = "daily archive bytes";
+        string archiveUrl = BlobArchiveUrl(directory, buildVersion, prefix, productVersion);
+        string checksumUrl = BlobChecksumUrl(directory, buildVersion, prefix, productVersion);
+        string expectedHash = Sha512Hex(content);
+        var (downloader, history) = CreateFakeBlobFeed(new()
+        {
+            [checksumUrl] = (HttpStatusCode.OK, expectedHash),
+            [archiveUrl] = (HttpStatusCode.OK, content),
+        }, cacheDirectory: Path.Combine(testEnv.TempRoot, "cache"));
+        string destinationBase = Path.Combine(testEnv.TempRoot, "archive");
+
+        VerifiedDownload download = downloader.DownloadVerifiedArtifact(BuildRequest(channel, component), new ReleaseVersion(buildVersion), destinationBase);
+
+        download.ExpectedHash.Should().Be(expectedHash);
+        download.IsUnsigned.Should().BeTrue();
+        download.ProductVersion.Should().Be(new ReleaseVersion(productVersion));
+        File.ReadAllText(download.Path).Should().Be(content);
+        history.Should().Equal(
+            BlobChecksumUrl(directory, buildVersion, prefix, buildVersion),
+            checksumUrl,
+            archiveUrl);
+    }
+
+    [TestMethod]
+    public void ResolveManifestEntry_PrefersBuildFilename_WhenBothChecksumsExist()
+    {
+        string expectedHash = new string('a', 128);
+        string checksumUrl = RtmSdkChecksumUrl(RtmSdkBuildVersion);
+        var (downloader, history) = CreateFakeBlobFeed(new()
+        {
+            [checksumUrl] = (HttpStatusCode.OK, expectedHash),
+            [RtmSdkChecksumUrl(RtmSdkProductVersion)] = (HttpStatusCode.OK, new string('b', 128)),
+        });
+
+        var (url, hash) = InvokeResolveManifestEntry(downloader, RtmSdkRequest(), new ReleaseVersion(RtmSdkBuildVersion));
+
+        url.Should().Be(RtmSdkArchiveUrl(RtmSdkBuildVersion));
+        hash.Should().Be(expectedHash);
+        history.Should().Equal(checksumUrl);
+    }
+
+    [TestMethod]
+    [DataRow(HttpStatusCode.ServiceUnavailable, "unavailable", DotnetInstallErrorCode.NetworkError)]
+    [DataRow(HttpStatusCode.OK, "invalid hash", DotnetInstallErrorCode.ManifestParseFailed)]
+    public void ResolveManifestEntry_ChecksumError_DoesNotTryReleaseFilename(
+        HttpStatusCode status, string content, DotnetInstallErrorCode expectedError)
+    {
+        string checksumUrl = RtmSdkChecksumUrl(RtmSdkBuildVersion);
+        var (downloader, history) = CreateFakeBlobFeed(new()
+        {
+            [checksumUrl] = (status, content),
+            [RtmSdkChecksumUrl(RtmSdkProductVersion)] = (HttpStatusCode.OK, new string('a', 128)),
+        });
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            InvokeResolveManifestEntry(downloader, RtmSdkRequest(), new ReleaseVersion(RtmSdkBuildVersion)));
+
+        ex.ErrorCode.Should().Be(expectedError);
+        history.Should().Equal(checksumUrl);
+    }
+
+    [TestMethod]
+    public void DownloadVerifiedArtifact_ReleaseFilenameHashMismatch_FailsClosed()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var (downloader, _) = CreateFakeBlobFeed(new()
+        {
+            [RtmSdkChecksumUrl(RtmSdkProductVersion)] = (HttpStatusCode.OK, new string('0', 128)),
+            [RtmSdkArchiveUrl(RtmSdkProductVersion)] = (HttpStatusCode.OK, "tampered archive"),
+        }, cacheDirectory: Path.Combine(testEnv.TempRoot, "cache"));
+        string destinationBase = Path.Combine(testEnv.TempRoot, "archive");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            downloader.DownloadVerifiedArtifact(RtmSdkRequest(), new ReleaseVersion(RtmSdkBuildVersion), destinationBase));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.HashMismatch);
+        File.Exists(destinationBase + ".tar.gz").Should().BeFalse();
+        File.Exists(destinationBase + ".tar.gz.download").Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Installer bundle requests only accept the .exe bundle from the blob feed; archives are never probed.
+    /// </summary>
+    [TestMethod]
+    public void ResolveManifestEntry_BundleMechanism_ProbesOnlyExeOnBlobFeed()
+    {
+        const string version = "10.0.100-preview.4.25216.37";
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
+        string expectedHash = new string('d', 128);
+        var (downloader, history) = CreateFakeBlobFeed(new()
+        {
+            [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-{version}-{rid}.exe.sha512"] = (HttpStatusCode.OK, expectedHash),
+        });
+
+        var (url, hash) = InvokeResolveManifestEntry(downloader, BuildBundleRequest(version, InstallComponent.SDK), new ReleaseVersion(version));
+
+        url.Should().Be($"https://ci.dot.net/public/Sdk/{version}/dotnet-sdk-{version}-{rid}.exe");
+        hash.Should().Be(expectedHash);
+        history.Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// A bundle that falls back to the blob feed is reported as unsigned together with the hash it was
+    /// verified against, so the installer artifact can decide the Authenticode allowance from the real source.
+    /// </summary>
+    [TestMethod]
+    public void DownloadVerifiedArtifact_BlobFeedBundle_ReportsUnsignedSourceAndVerifiedHash()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        const string version = "10.0.100-preview.4.25216.37";
+        const string content = "unsigned installer bytes";
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
+        string bundleUrl = $"https://ci.dot.net/public/Sdk/{version}/dotnet-sdk-{version}-{rid}.exe";
+        string expectedHash = Convert.ToHexStringLower(System.Security.Cryptography.SHA512.HashData(Encoding.UTF8.GetBytes(content)));
+        var (downloader, _) = CreateFakeBlobFeed(new()
+        {
+            [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-{version}-{rid}.exe.sha512"] = (HttpStatusCode.OK, expectedHash),
+            [bundleUrl] = (HttpStatusCode.OK, content),
+        }, cacheDirectory: Path.Combine(testEnv.TempRoot, "cache"));
+        string destinationBase = Path.Combine(testEnv.TempRoot, "bundle");
+
+        VerifiedDownload download = downloader.DownloadVerifiedArtifact(BuildBundleRequest(version, InstallComponent.SDK), new ReleaseVersion(version), destinationBase);
+
+        download.Path.Should().Be(destinationBase + ".exe");
+        download.ExpectedHash.Should().Be(expectedHash);
+        download.IsUnsigned.Should().BeTrue();
+        File.ReadAllText(download.Path).Should().Be(content);
+    }
+
+    [TestMethod]
+    public void ResolveManifestEntry_BundleMechanism_BlobFeed404_ThrowsVersionNotFoundAfterSingleProbe()
+    {
+        const string version = "10.0.0-preview.4.25216.10";
+        var (downloader, history) = CreateFakeBlobFeed();
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            InvokeResolveManifestEntry(downloader, BuildBundleRequest(version, InstallComponent.Runtime), new ReleaseVersion(version)));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.VersionNotFound);
+        history.Should().HaveCount(2).And.OnlyContain(url => url.EndsWith(".exe.sha512", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void ResolveManifestEntry_BundleMechanism_NoBundleInManifest_ThrowsNoUserInstallableArtifact()
+    {
+        const string version = "9.0.0";
+        var (downloader, _) = CreateFakeBlobFeed(manifestThrows: DotnetInstallErrorCode.NoUserInstallableArtifact);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            InvokeResolveManifestEntry(downloader, BuildBundleRequest(version, InstallComponent.Runtime), new ReleaseVersion(version)));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NoUserInstallableArtifact);
+        ex.Message.Should().Contain("Windows installer");
+    }
 
     [TestMethod]
     [DataRow("daily", true)]                          // bare daily channel
@@ -859,19 +982,20 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     [TestMethod]
     public void ResolveManifestEntry_BlockedByPolicy_ThrowsClearError()
     {
-        UnsignedSourcePolicy.OverrideForTesting = () => true;
+        _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
 
         const string version = "10.0.100-preview.4.25216.37";
-        var (handler, history) = BuildHandler(new());
-
-        using var http = new HttpClient(handler);
-        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var (downloader, history) = CreateFakeBlobFeed();
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy);
-        ex.Message.Should().Contain(version);
+        string expectedLocation = OperatingSystem.IsWindows()
+            ? @"HKLM\SOFTWARE\Policies\Microsoft\dotnet\Dotnetup\BlockUnsignedDownloads"
+            : "/etc/dotnet/dnup-block-unsigned-downloads";
+        ex.Message.Should().Be(
+            $"Current Machine Policy requires signature verification. Installing daily or unsigned prerelease builds is thus blocked. Remove {expectedLocation} to continue.");
         history.Should().BeEmpty("policy check must short-circuit before any blob-feed probe");
     }
 
@@ -880,6 +1004,28 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     {
         ErrorCategoryClassifier.ClassifyInstallError(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy)
             .Should().Be(ErrorCategory.User, "IT-policy blocks are user/environment errors, not product bugs");
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void ResolveManifestEntry_RequestExpectsReleasesJsonSignature_RejectsUnsignedSource(bool policyBlocks, bool bundle)
+    {
+        _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = policyBlocks;
+        const string version = "10.0.100-preview.4.25216.37";
+        var (downloader, history) = CreateFakeBlobFeed();
+        var request = bundle ? BuildBundleRequest(version, InstallComponent.SDK) : BuildRequest(version, InstallComponent.SDK);
+        request = request with { Options = request.Options with { RequireReleasesJsonSignature = true } };
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            InvokeResolveManifestEntry(downloader, request, new ReleaseVersion(version)));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeSignatureRequired);
+        exception.Message.Should().Be("Signature validation is required when using admin mode.");
+        ErrorCategoryClassifier.ClassifyInstallError(exception.ErrorCode).Should().Be(ErrorCategory.User);
+        history.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -929,13 +1075,64 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         return new DotnetInstallRequest(root, new UpdateChannel(channel), component, new InstallRequestOptions());
     }
 
-    private static DotnetDownloader CreateDownloader(HttpClient http, DotnetInstallErrorCode manifestThrows)
+    private static DotnetInstallRequest BuildBundleRequest(string channel, InstallComponent component)
     {
-        var manifest = new ThrowingReleaseManifest(manifestThrows);
-        // Use a per-test cache directory so we don't pollute the user cache.
-        var cacheDir = Path.Combine(Path.GetTempPath(), "dotnetup-test-cache-" + Guid.NewGuid().ToString("N"));
-        return new DotnetDownloader(manifest, http, cacheDir);
+        var root = new DotnetInstallRoot(@"C:\dotnet-test", InstallArchitecture.x64);
+        return new DotnetInstallRequest(
+            root,
+            new UpdateChannel(channel),
+            component,
+            new InstallRequestOptions { Untracked = true, InstallMechanism = InstallMechanism.WindowsInstallerBundle });
     }
+
+    /// <summary>
+    /// Creates a downloader backed by a recording fake HTTP feed. By default the release manifest throws
+    /// <paramref name="manifestThrows"/> so resolution falls through to the blob feed.
+    /// </summary>
+    private (DotnetDownloader Downloader, List<string> History) CreateFakeBlobFeed(
+        Dictionary<string, (HttpStatusCode, string)>? responses = null,
+        DotnetInstallErrorCode manifestThrows = DotnetInstallErrorCode.VersionNotFound,
+        ReleaseManifest? manifest = null,
+        string? cacheDirectory = null)
+    {
+        var history = new List<string>();
+        var http = new HttpClient(new RecordingHandler(responses ?? [], history));
+        _httpClients.Add(http);
+        // Use a per-test cache directory so we don't pollute the user cache.
+        cacheDirectory ??= Path.Combine(Path.GetTempPath(), "dotnetup-test-cache-" + Guid.NewGuid().ToString("N"));
+        var downloader = new DotnetDownloader(manifest ?? new ThrowingReleaseManifest(manifestThrows), http, cacheDirectory, policy: _policy);
+        return (downloader, history);
+    }
+
+    [TestCleanup]
+    public void DisposeHttpClients()
+    {
+        foreach (var http in _httpClients)
+        {
+            http.Dispose();
+        }
+    }
+
+    private const string RtmSdkChannel = "11.0.1xx-daily";
+    private const string RtmSdkBuildVersion = "11.0.100-rtm.26552.115";
+    private const string RtmSdkProductVersion = "11.0.100";
+
+    private static readonly string s_rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
+
+    private static string BlobArchiveUrl(string directory, string buildVersion, string prefix, string fileVersion) =>
+        $"https://ci.dot.net/public/{directory}/{buildVersion}/{prefix}-{fileVersion}-{s_rid}.tar.gz";
+
+    private static string BlobChecksumUrl(string directory, string buildVersion, string prefix, string fileVersion) =>
+        $"https://ci.dot.net/public-checksums/{directory}/{buildVersion}/{prefix}-{fileVersion}-{s_rid}.tar.gz.sha512";
+
+    private static string RtmSdkArchiveUrl(string fileVersion) => BlobArchiveUrl("Sdk", RtmSdkBuildVersion, "dotnet-sdk", fileVersion);
+
+    private static string RtmSdkChecksumUrl(string fileVersion) => BlobChecksumUrl("Sdk", RtmSdkBuildVersion, "dotnet-sdk", fileVersion);
+
+    private static DotnetInstallRequest RtmSdkRequest() => BuildRequest(RtmSdkChannel, InstallComponent.SDK);
+
+    private static string Sha512Hex(string content) =>
+        Convert.ToHexStringLower(System.Security.Cryptography.SHA512.HashData(Encoding.UTF8.GetBytes(content)));
 
     private static (string DownloadUrl, string ExpectedHash) InvokeResolveManifestEntry(
         DotnetDownloader downloader,
@@ -949,21 +1146,13 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         try
         {
             var result = method!.Invoke(downloader, new object[] { request, resolvedVersion });
-            // Tuple comes back as ValueTuple<string, string>; unpack via reflection-friendly cast.
-            var tuple = ((string DownloadUrl, string ExpectedHash))result!;
-            return tuple;
+            var entry = ((string DownloadUrl, string ExpectedHash, ReleaseVersion ProductVersion))result!;
+            return (entry.DownloadUrl, entry.ExpectedHash);
         }
         catch (TargetInvocationException tie) when (tie.InnerException != null)
         {
             throw tie.InnerException;
         }
-    }
-
-    private static (RecordingHandler Handler, List<string> History) BuildHandler(Dictionary<string, (HttpStatusCode, string)> responses)
-    {
-        var history = new List<string>();
-        var handler = new RecordingHandler(responses, history);
-        return (handler, history);
     }
 
     private static IAnsiConsole CreateConsole(StringWriter output) => AnsiConsole.Create(new AnsiConsoleSettings

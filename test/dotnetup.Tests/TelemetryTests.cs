@@ -6,6 +6,8 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Microsoft.DotNet.Tools.Dotnetup.Tests;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using UrlSanitizer = Microsoft.Dotnet.Installation.Internal.UrlSanitizer;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Tests;
@@ -96,6 +98,40 @@ public class TelemetryCommonPropertiesTests
         Assert.Contains("ci.detected", attributes.Keys);
         Assert.Contains("dotnetup.version", attributes.Keys);
         Assert.Contains("dev.build", attributes.Keys);
+        Assert.Contains("dotnetup.access_mode", attributes.Keys);
+    }
+
+    [TestMethod]
+    [DataRow(DotnetAccessMode.Admin, "admin")]
+    [DataRow(DotnetAccessMode.Shell, "shell")]
+    [DataRow(DotnetAccessMode.None, "none")]
+    [DataRow(DotnetAccessMode.Everywhere, "everywhere")]
+    [DataRow(null, "unset")]
+    internal void GetCommonAttributes_TagsResolvedAccessMode(DotnetAccessMode? mode, string expectedMode)
+    {
+
+        using var environment = new AdminModeTestEnvironment();
+        if (mode is DotnetAccessMode configuredMode)
+        {
+            DotnetupConfig.Write(new DotnetupConfigData { AccessMode = configuredMode });
+        }
+
+        var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
+            .ToDictionary(kv => kv.Key, kv => kv.Value);
+
+        Assert.AreEqual(expectedMode, attributes[TelemetryTagNames.AccessMode]);
+    }
+
+    [TestMethod]
+    public void GetCommonAttributes_ConfigWithoutAccessMode_TagsAccessModeAsUnset()
+    {
+        using var environment = new AdminModeTestEnvironment();
+        DotnetupConfig.SetUpdateNotifications(false);
+
+        var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
+            .ToDictionary(kv => kv.Key, kv => kv.Value);
+
+        Assert.AreEqual("unset", attributes[TelemetryTagNames.AccessMode]);
     }
 
     [TestMethod]
@@ -338,30 +374,23 @@ public class DotnetupTelemetryTests : IDisposable
     }
 
     [TestMethod]
-    public void GetLocalShutdownBudgetMs_UsesShortBudgetForSuccessfulShellStartup()
+    public void Disabled_TurnsTelemetryOffEvenWhenNotOptedOut()
     {
-        using var telemetry = new DotnetupTelemetry(_ => "1");
-        telemetry.IsShellStartupCommand = true;
+        using var telemetry = new DotnetupTelemetry(_ => null, disabled: true);
 
-        Assert.AreEqual(10, telemetry.GetLocalShutdownBudgetMs(0));
+        Assert.IsFalse(telemetry.Enabled);
     }
 
     [TestMethod]
-    public void GetLocalShutdownBudgetMs_UsesFailureBudgetForFailedShellStartup()
+    public void GetLocalShutdownBudgetMs_UsesFailureBudgetForFailedCommands()
     {
-        using var telemetry = new DotnetupTelemetry(_ => "1");
-        telemetry.IsShellStartupCommand = true;
-
-        Assert.AreEqual(400, telemetry.GetLocalShutdownBudgetMs(1));
+        Assert.AreEqual(400, DotnetupTelemetry.GetLocalShutdownBudgetMs(1));
     }
 
     [TestMethod]
     public void GetLocalShutdownBudgetMs_UsesDefaultBudgetForSuccessfulCommands()
     {
-        using var telemetry = new DotnetupTelemetry(_ => "1");
-        telemetry.StartTrackedCommand("install");
-
-        Assert.AreEqual(200, telemetry.GetLocalShutdownBudgetMs(0));
+        Assert.AreEqual(200, DotnetupTelemetry.GetLocalShutdownBudgetMs(0));
     }
 
     [TestMethod]

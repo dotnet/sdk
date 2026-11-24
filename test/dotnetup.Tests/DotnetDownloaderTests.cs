@@ -182,6 +182,18 @@ public class DotnetDownloaderTests
     }
 
     [TestMethod]
+    public void IsAcceptedArtifactHash_MatchesDownloadVerificationRules()
+    {
+        const string expected = "af1cb62e29c69648ebe334e651c2703cd5e87fa0bb28c670bacb3b3dd1608aeae35ae53402c5eb4ed8bf34abd831a08ccb5ef84e5ec70617d9f8d9969fe7b8fa";
+        const string knownAlternate = "5eb176f4df5ea0795cf29f01661913cf1f5b8c8b889e80c175de8fe7984cb8db4d8aa188556832e9fcd9973b1a4ca065545ce1db9a2e3fc492466b931a58554b";
+
+        DotnetDownloader.IsAcceptedArtifactHash(expected, expected.ToUpperInvariant()).Should().BeTrue();
+        DotnetDownloader.IsAcceptedArtifactHash(knownAlternate, expected).Should().BeTrue();
+        DotnetDownloader.IsAcceptedArtifactHash(new string('0', 128), expected).Should().BeFalse();
+        Assert.ThrowsExactly<ArgumentException>(() => DotnetDownloader.IsAcceptedArtifactHash(expected, ""));
+    }
+
+    [TestMethod]
     public void DownloadWithVerification_VerifiesHashAcrossMultipleBuffers()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();

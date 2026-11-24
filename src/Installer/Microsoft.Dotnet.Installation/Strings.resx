@@ -137,9 +137,12 @@
     <value>⚠  Daily builds are not code-signed. Only the SHA-512 hash is verified.</value>
     <comment>Warning shown up-front when an install batch may pull from the public blob feed (daily channel or unknown prerelease version) where no detached CMS signature is published.</comment>
   </data>
+  <data name="AdminModeSignatureRequired" xml:space="preserve">
+    <value>Signature validation is required when using admin mode.</value>
+  </data>
   <data name="UnsignedDownloadBlockedByPolicy" xml:space="preserve">
-    <value>An IT policy on this machine requires code-signed downloads. Installing daily or unsigned prerelease builds of {0} {1} is blocked. Choose a released version, or have an administrator clear the policy (registry value HKLM\{2}\{3} on Windows, file {4} on Linux/macOS).</value>
-    <comment>{0}=component name (e.g. SDK), {1}=resolved version, {2}=Windows registry key path, {3}=Windows registry value name, {4}=Unix policy file path.</comment>
+    <value>Current Machine Policy requires signature verification. Installing daily or unsigned prerelease builds is thus blocked. Remove {0} to continue.</value>
+    <comment>{0}=OS-specific policy location: the full registry value path (e.g. HKLM\SOFTWARE\Policies\Microsoft\dotnet\Dotnetup\BlockUnsignedDownloads) on Windows, or the policy file path (e.g. /etc/dotnet/dnup-block-unsigned-downloads) on Linux/macOS.</comment>
   </data>
   <data name="NoUserInstallableArtifact" xml:space="preserve">
     <value>.NET {0} {1} has no released artifacts for user-level installation. Choose a different version or install it at the system level.</value>
@@ -167,5 +170,41 @@
   <data name="NativeTarExtractionFailed" xml:space="preserve">
     <value>Native TAR executable '{0}' exited with code {1} while extracting '{2}' to '{3}'.{4}</value>
     <comment>{0}=native TAR executable name or path, {1}=exit code, {2}=archive path, {3}=staging destination, {4}=optional standard-error details.</comment>
+  </data>
+  <data name="ArchiveDownloadFailed" xml:space="preserve">
+    <value>Failed to download .NET archive for version {0}: {1}</value>
+    <comment>{0}=resolved version, {1}=underlying error message.</comment>
+  </data>
+  <data name="ArchiveCorrupted" xml:space="preserve">
+    <value>Archive is corrupted or truncated for version {0}: {1}</value>
+    <comment>{0}=resolved version, {1}=underlying error message.</comment>
+  </data>
+  <data name="ArchiveReadPermissionDenied" xml:space="preserve">
+    <value>Permission denied while trying to read .NET files for version {0}: {1}</value>
+    <comment>{0}=resolved version, {1}=underlying error message. Shown when reading .version files from the archive or install root fails.</comment>
+  </data>
+  <data name="ArchiveReadFailed" xml:space="preserve">
+    <value>Failed to read .NET files for version {0}: {1}</value>
+    <comment>{0}=resolved version, {1}=underlying error message. Shown when reading .version files from the archive or install root fails.</comment>
+  </data>
+  <data name="ArchiveExtractPermissionDenied" xml:space="preserve">
+    <value>Permission denied while extracting .NET archive for version {0}: {1}</value>
+    <comment>{0}=resolved version, {1}=underlying error message.</comment>
+  </data>
+  <data name="ArchiveExtractFailed" xml:space="preserve">
+    <value>Failed to extract .NET archive for version {0}: {1}</value>
+    <comment>{0}=resolved version, {1}=underlying error message.</comment>
+  </data>
+  <data name="ExistingLayoutMissingVersionFile" xml:space="preserve">
+    <value>'{0}' has no .version file to verify it holds the same build as {1} {2} includes, and installing would keep the existing files. Remove '{0}' or uninstall the component that installed it first to proceed.</value>
+    <comment>{0}=existing SDK or framework folder path, {1}=component display name, {2}=resolved version.</comment>
+  </data>
+  <data name="ExistingLayoutDifferentBuild" xml:space="preserve">
+    <value>'{0}' holds a different build than {1} {2} includes, and installing would keep the existing files. Remove '{0}' or uninstall the component that installed it first to proceed.</value>
+    <comment>{0}=existing SDK or framework folder path, {1}=component display name, {2}=resolved version.</comment>
+  </data>
+  <data name="InvalidReleaseIndexProductVersion" xml:space="preserve">
+    <value>Warning: Skipping release-index entry with invalid product version '{0}'.</value>
+    <comment>{0}=invalid product version from the release index.</comment>
   </data>
 </root>

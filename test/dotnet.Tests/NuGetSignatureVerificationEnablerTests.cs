@@ -90,10 +90,7 @@ namespace Microsoft.DotNet.Tests
         public void GivenAnMSBuildForwardingAppAndAnEnvironmentVariableValueThatIsNotFalseSetsTrueOnLinux(string? value)
         {
             Mock<IEnvironmentProvider> environmentProvider = CreateEnvironmentProvider(value);
-            MSBuildForwardingApp forwardingApp = new(
-                Array.Empty<string>(),
-                FakeFilePath,
-                CommandServices.CreateDefault());
+            MSBuildForwardingApp forwardingApp = new(Array.Empty<string>(), FakeFilePath);
 
             NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp, environmentProvider.Object);
 
@@ -108,10 +105,7 @@ namespace Microsoft.DotNet.Tests
         public void GivenAnMSBuildForwardingAppAndAnEnvironmentVariableValueThatIsFalseSetsFalseOnLinux(string value)
         {
             Mock<IEnvironmentProvider> environmentProvider = CreateEnvironmentProvider(value);
-            MSBuildForwardingApp forwardingApp = new(
-                Array.Empty<string>(),
-                FakeFilePath,
-                CommandServices.CreateDefault());
+            MSBuildForwardingApp forwardingApp = new(Array.Empty<string>(), FakeFilePath);
 
             NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp, environmentProvider.Object);
 
@@ -139,10 +133,7 @@ namespace Microsoft.DotNet.Tests
         public void GivenAnMSBuildForwardingAppDoesNothingOnMacOs()
         {
             var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
-            MSBuildForwardingApp forwardingApp = new(
-                Array.Empty<string>(),
-                FakeFilePath,
-                CommandServices.CreateDefault());
+            MSBuildForwardingApp forwardingApp = new(Array.Empty<string>(), FakeFilePath);
 
             NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp, environmentProvider.Object);
 

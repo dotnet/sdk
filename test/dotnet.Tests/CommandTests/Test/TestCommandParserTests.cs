@@ -145,7 +145,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
-        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandHonorsDotnetNoLogoEnvironmentVariable()
         {
             string? previousValue = Environment.GetEnvironmentVariable("DOTNET_NOLOGO");
@@ -238,51 +237,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var parseResult = command.Parse(["--maximum-failed-tests", value]);
 
             parseResult.Errors.Should().NotBeEmpty();
-        }
-
-        [TestMethod]
-        [DataRow("0")]
-        [DataRow("-1")]
-        public void MTPCommandRejectsNonPositiveMaximumParallelTestModules(string value)
-        {
-            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
-            var parseResult = command.Parse(["--max-parallel-test-modules", value]);
-
-            parseResult.Errors.Should().NotBeEmpty();
-        }
-
-        [TestMethod]
-        public void MTPCommandCapsMaximumParallelTestModulesToTheModuleCount()
-        {
-            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
-            var parseResult = command.Parse(["--max-parallel-test-modules", int.MaxValue.ToString()]);
-
-            parseResult.Errors.Should().BeEmpty();
-            MicrosoftTestingPlatformTestCommand.GetDegreeOfParallelism(
-                parseResult,
-                collectTestMap: false,
-                testModuleCount: 3).Should().Be(3);
-        }
-
-        [TestMethod]
-        public void MTPCommandRejectsRootDirectoryWithoutTestModules()
-        {
-            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
-            var parseResult = command.Parse(["--root-directory", "artifacts"]);
-
-            parseResult.Errors.Should().ContainSingle()
-                .Which.Message.Should().Contain("--test-modules");
-        }
-
-        [TestMethod]
-        public void MTPCommandAcceptsRootDirectoryWithTestModules()
-        {
-            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
-            var parseResult = command.Parse([
-                "--test-modules", "**/*.dll",
-                "--root-directory", "artifacts"]);
-
-            parseResult.Errors.Should().BeEmpty();
         }
 
         [TestMethod]
@@ -409,7 +363,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
-        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         [DataRow("--collect-test-map")]
         [DataRow("--affected-tests")]
         public void MTPCommandAcceptsAffectedTestOptions(string option)
@@ -428,7 +381,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
-        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandRejectsAffectedTestOptionsTogether()
         {
             WithAffectedTestsFeature(enabled: true, () =>
@@ -442,7 +394,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
-        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         [DataRow("--collect-test-map")]
         [DataRow("--affected-tests")]
         public void MTPCommandRejectsAffectedTestOptionsWhenFeatureIsDisabled(string option)
@@ -460,7 +411,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
-        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandRejectsCollectTestMapWithParallelModules()
         {
             WithAffectedTestsFeature(enabled: true, () =>

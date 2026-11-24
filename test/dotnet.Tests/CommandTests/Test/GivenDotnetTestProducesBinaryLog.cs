@@ -84,7 +84,6 @@ public class GivenDotnetTestProducesBinaryLog : SdkTest
 
         new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(testInstance.Path)
-            .WithEnvironmentVariable("DOTNET_TEST_PARALLELIZATION_DIRECTORY", testInstance.Path)
             .Execute("--property", "TestTfmsInParallel=false", "-bl")
             .ExitCode.Should().Be(ExitCodes.Success);
 

@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <!-- The real-Pack manifest test restores the NoTargets SDK from a local feed. global.json is the
          only place that defines its version. -->

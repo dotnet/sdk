@@ -12,9 +12,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 internal static class DotnetupTelemetryDrainProcess
 {
     /// <summary>
-    /// Upper bound on how long a detached drainer runs before giving up.
+    /// Azure Monitor leases blobs for three minutes and retries storage every two minutes.
+    /// Keep the drainer alive through the retry after a foreground shutdown leaves a leased blob.
     /// </summary>
-    private static readonly TimeSpan s_drainerLifetime = TimeSpan.FromMinutes(3);
+    private static readonly TimeSpan s_drainerLifetime = TimeSpan.FromMinutes(5);
 
     /// <summary>
     /// When this process was launched with the internal <see cref="Constants.Telemetry.DrainCommand"/>
@@ -115,16 +116,14 @@ internal static class DotnetupTelemetryDrainProcess
             var startInfo = new ProcessStartInfo
             {
                 FileName = executablePath,
-                UseShellExecute = OperatingSystem.IsWindows(),
+                UseShellExecute = false,
                 CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                RedirectStandardOutput = !OperatingSystem.IsWindows(),
-                RedirectStandardError = !OperatingSystem.IsWindows(),
-                RedirectStandardInput = !OperatingSystem.IsWindows(),
+                StartDetached = true,
+                InheritedHandles = [],
             };
             startInfo.ArgumentList.Add(Constants.Telemetry.DrainCommand);
 
-            using var _ = Process.Start(startInfo);
+            Process.StartAndForget(startInfo);
         }
         catch
         {

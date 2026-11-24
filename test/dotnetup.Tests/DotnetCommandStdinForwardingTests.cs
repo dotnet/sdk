@@ -76,8 +76,7 @@ public class DotnetCommandStdinForwardingTests
             process.StandardInput.WriteLine(testInput);
             process.StandardInput.Close();
 
-            string output = process.StandardOutput.ReadToEnd();
-            string stderr = process.StandardError.ReadToEnd();
+            var (output, _) = process.ReadAllText();
             process.WaitForExit();
 
             // The child process should have received and echoed our input

@@ -393,23 +393,19 @@ namespace Microsoft.NET.Publish.Tests
                 var rid = "win-arm64";
 
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
+                testProject.RecordProperties("BundledNETCoreAppPackageVersion");
+                testProject.RecordPropertiesBeforeTarget("Publish");
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
-                GetKnownILCompilerPackVersion(testAsset, targetFramework, out string expectedVersion);
-
-                testAsset.WithProjectChanges(project =>
+                // This will add a reference to a package that will also be automatically imported by the SDK
+                testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", "$(BundledNETCoreAppPackageVersion)"));
+                testProject.AddItem("PackageDownload", new Dictionary<string, string>
                 {
-                    var ns = project.Root.Name.Namespace;
-                    project.Root.Add(new XElement(ns + "ItemGroup",
-                        // These duplicate references verify that explicit and SDK-generated items are collated.
-                        new XElement(ns + "PackageReference",
-                            new XAttribute("Include", "Microsoft.DotNet.ILCompiler"),
-                            new XAttribute("Version", expectedVersion)),
-                        new XElement(ns + "PackageDownload",
-                            new XAttribute("Include", "Microsoft.NETCore.App.Runtime.NativeAOT.win-arm64"),
-                            new XAttribute("Version", $"[{expectedVersion}]"))));
+                    { "Include", "Microsoft.NETCore.App.Runtime.NativeAOT.win-arm64" },
+                    { "Version", $"[$(BundledNETCoreAppPackageVersion)]" }
                 });
+
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -419,13 +415,16 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning")
                 .And.HaveStdOutContaining("Microsoft.DotNet.ILCompiler");
 
+                var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
+                var targetVersion = buildProperties["BundledNETCoreAppPackageVersion"];
+
                 var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
                 var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
                 var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
                 File.Exists(publishedDll).Should().BeFalse();
                 File.Exists(publishedExe).Should().BeTrue();
 
-                CheckIlcVersions(testAsset, targetFramework, rid, expectedVersion, useRuntimePackLayout: true);
+                CheckIlcVersions(testAsset, targetFramework, rid, targetVersion, useRuntimePackLayout: true);
             }
         }
 

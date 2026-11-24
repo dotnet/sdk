@@ -127,7 +127,5 @@ public class ArtifactPostProcessingTelemetryTests
             "net10.0",
             "x64",
             new HashSet<string>(StringComparer.Ordinal) { "microsoft.testing.trx" },
-            new HashSet<string>(StringComparer.Ordinal),
-            new HashSet<string>(StringComparer.Ordinal),
             new HashSet<string>(StringComparer.Ordinal));
 }

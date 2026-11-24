@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
@@ -143,7 +144,7 @@ internal class UpdateWorkflow
     /// Processes a single install spec: checks for updates, installs if newer version available,
     /// and optionally updates the corresponding global.json.
     /// </summary>
-    /// <returns>True if the spec was updated to a newer version.</returns>
+    /// <returns>True if installations changed or repository requirements need garbage collection.</returns>
     /// <exception cref="DotnetInstallException">Thrown when the installation fails.</exception>
     private bool UpdateSpec(
         InstallSpec spec,
@@ -154,10 +155,26 @@ internal class UpdateWorkflow
         bool updateGlobalJson,
         Verbosity verbosity)
     {
-        var channel = new UpdateChannel(spec.VersionOrChannel);
-
-        // Skip fully-specified versions — they can't be updated
-        if (channel.IsFullySpecifiedVersion())
+        var channel = GetChannelToUpdate(spec, out bool usesLastKnownRequirement);
+        if (channel is null)
+        {
+            new DotnetupSharedManifest(manifestPath).RemoveInstallSpec(installRoot, spec);
+            return true;
+        }
+        bool globalJsonRequirementChanged = false;
+        if (spec.InstallSource == InstallSource.GlobalJson && !usesLastKnownRequirement)
+        {
+            globalJsonRequirementChanged = spec.VersionOrChannel != channel.Name
+                || spec.MinimumVersion != channel.MinimumVersion?.ToString()
+                || spec.AllowPrerelease != channel.AllowPrerelease;
+            spec.VersionOrChannel = channel.Name;
+            spec.MinimumVersion = channel.MinimumVersion?.ToString();
+            spec.AllowPrerelease = channel.AllowPrerelease;
+            new DotnetupSharedManifest(manifestPath).AddInstallSpec(installRoot, spec);
+        }
+        // Skip standalone exact-version specs. Exact global.json specs still need processing
+        // because the requested version may have changed in the file.
+        if (channel.IsFullySpecifiedVersion() && spec.InstallSource != InstallSource.GlobalJson)
         {
             return false;
         }
@@ -167,8 +184,8 @@ internal class UpdateWorkflow
         string displayName = spec.Component.GetDisplayName();
         if (latestVersion is null)
         {
-            AnsiConsole.MarkupLine(DotnetupTheme.Warning($"Could not resolve latest version for {displayName} '{spec.VersionOrChannel.EscapeMarkup()}'."));
-            return false;
+            throw new DotnetInstallException(DotnetInstallErrorCode.VersionNotFound,
+                $"Could not resolve channel '{channel.Name}' to a .NET version for {displayName}.");
         }
 
         // Check if this version is already installed (in the manifest)
@@ -179,9 +196,8 @@ internal class UpdateWorkflow
         // If the manifest says it's installed, validate on disk. If missing, remove the stale record.
         if (alreadyInstalled)
         {
-            var install = new DotnetInstall(installRoot, latestVersion, spec.Component);
-            ArchiveInstallationValidator validator = new();
-            if (!validator.Validate(install))
+            InstallationValidator validator = new();
+            if (!validator.Validate(existingInstallation!.ToDotnetInstall(installRoot)))
             {
                 var manifest = new DotnetupSharedManifest(manifestPath);
                 manifest.RemoveInstallation(installRoot, new Installation
@@ -198,25 +214,48 @@ internal class UpdateWorkflow
         // Update global.json if requested and this spec came from a global.json,
         // but only if the latest version is newer than what's already specified.
         if (updateGlobalJson
+            && !usesLastKnownRequirement
             && spec.InstallSource == InstallSource.GlobalJson
             && spec.GlobalJsonPath is not null
             && spec.Component == InstallComponent.SDK)
         {
-            UpdateGlobalJsonFile(spec.GlobalJsonPath, latestVersion);
+            globalJsonRequirementChanged |= UpdateGlobalJsonFile(spec.GlobalJsonPath, latestVersion);
         }
 
-        return updated;
+        // A repository edit can release an older SDK even when the selected SDK is already installed.
+        return updated || globalJsonRequirementChanged;
+    }
+
+    internal static UpdateChannel? GetChannelToUpdate(InstallSpec spec) => GetChannelToUpdate(spec, out _);
+
+    private static UpdateChannel? GetChannelToUpdate(InstallSpec spec, out bool usesLastKnownRequirement)
+    {
+        var evaluation = InstallSpecResolver.Evaluate(spec);
+        usesLastKnownRequirement = evaluation.UsesLastKnownRequirement;
+        if (evaluation.Failure is { } failure)
+        {
+            if (!usesLastKnownRequirement)
+            {
+                throw failure;
+            }
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(failure.Message.EscapeMarkup()));
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
+                Strings.RepositoryUsingLastKnownRequirement, spec.GlobalJsonPath).EscapeMarkup()));
+        }
+        return evaluation.Spec;
     }
 
     /// <summary>
     /// Updates a global.json file to the latest version if it's newer than the current one.
     /// </summary>
-    private static void UpdateGlobalJsonFile(string globalJsonPath, ReleaseVersion latestVersion)
+    private static bool UpdateGlobalJsonFile(string globalJsonPath, ReleaseVersion latestVersion)
     {
-        if (GlobalJsonModifier.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
+        if (GlobalJsonHelper.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
         {
             AnsiConsole.MarkupLine($"  Updated {DotnetupTheme.Dim(globalJsonPath.EscapeMarkup())} to {latestVersion}.");
+            return true;
         }
+        return false;
     }
 
     /// <summary>
@@ -238,11 +277,11 @@ internal class UpdateWorkflow
 
         if (alreadyInstalled)
         {
-            AnsiConsole.MarkupLine(DotnetupTheme.Warning($"{displayName} {spec.VersionOrChannel} is already up to date ({latestVersion})."));
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning($"{displayName} {channel.Name} is already up to date ({latestVersion})."));
             return false;
         }
 
-        AnsiConsole.MarkupLine($"Updating {displayName} {spec.VersionOrChannel} to {DotnetupTheme.Accent(latestVersion.ToString())}...");
+        AnsiConsole.MarkupLine($"Updating {displayName} {channel.Name} to {DotnetupTheme.Accent(latestVersion.ToString())}...");
 
         var installRequest = new DotnetInstallRequest(
             installRoot,
@@ -258,7 +297,7 @@ internal class UpdateWorkflow
         }
 
         InstallerOrchestratorSingleton.Instance.Install(resolvedRequest, noProgress);
-        AnsiConsole.MarkupLine(DotnetupTheme.Success($"Updated {displayName} {spec.VersionOrChannel} to {latestVersion}."));
+        AnsiConsole.MarkupLine(DotnetupTheme.Success($"Updated {displayName} {channel.Name} to {latestVersion}."));
         return true;
     }
 }

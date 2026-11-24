@@ -19,6 +19,9 @@ internal class ElevatedSystemPathCommand : CommandBase
         _dotnetDir = result.GetValue(ElevatedSystemPathCommandParser.DotnetDir);
     }
 
+    /// <inheritdoc/>
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
+
     private void Log(string message)
     {
         Console.WriteLine(message);

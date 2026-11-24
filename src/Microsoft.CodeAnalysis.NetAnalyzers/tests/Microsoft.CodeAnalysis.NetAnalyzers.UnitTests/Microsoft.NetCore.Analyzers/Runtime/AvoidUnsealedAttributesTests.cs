@@ -20,22 +20,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task CA1813CSharpDiagnosticProviderTestFiredAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                using System;
+public class C
+{
+    public class AttributeClass: Attribute
+    {
+    }
 
-                public class C
-                {
-                    public class AttributeClass: Attribute
-                    {
-                    }
-
-                    private class AttributeClass2: Attribute
-                    {
-                    }
-                }
-
-                """,
+    private class AttributeClass2: Attribute
+    {
+    }
+}
+",
             GetCSharpResultAt(6, 18),
             GetCSharpResultAt(10, 19));
         }
@@ -43,56 +41,53 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task CA1813CSharpDiagnosticProviderTestFiredWithScopeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                public class [|AttributeClass|]: Attribute
-                {
-                }
+public class [|AttributeClass|]: Attribute
+{
+}
 
-                public class Outer
-                {
-                    private class [|AttributeClass2|]: Attribute
-                    {
-                    }
-                }
-                """);
+public class Outer
+{
+    private class [|AttributeClass2|]: Attribute
+    {
+    }
+}
+");
         }
 
         [TestMethod]
         public async Task CA1813CSharpDiagnosticProviderTestNotFiredAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                public sealed class AttributeClass: Attribute
-                {
-                    private abstract class AttributeClass2: Attribute
-                    {
-                        public abstract void F();
-                    }
-                }
-                """);
+public sealed class AttributeClass: Attribute
+{
+    private abstract class AttributeClass2: Attribute
+    {
+        public abstract void F();
+    }
+}");
         }
 
         [TestMethod]
         public async Task CA1813VisualBasicDiagnosticProviderTestFiredAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Imports System
+Public Class AttributeClass
+    Inherits Attribute
+End Class
 
-                Public Class AttributeClass
-                    Inherits Attribute
-                End Class
-
-                Public Class Outer
-                    Private Class AttributeClass2
-                        Inherits Attribute
-                    End Class
-                End Class
-
-                """,
+Public Class Outer
+    Private Class AttributeClass2
+        Inherits Attribute
+    End Class
+End Class
+",
             GetBasicResultAt(4, 14),
             GetBasicResultAt(9, 19));
         }
@@ -100,36 +95,36 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task CA1813VisualBasicDiagnosticProviderTestFiredwithScopeAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Public Class [|AttributeClass|]
-                    Inherits Attribute
-                End Class
+Public Class [|AttributeClass|]
+    Inherits Attribute
+End Class
 
-                Public Class Outer
-                    Private Class [|AttributeClass2|]
-                        Inherits Attribute
-                    End Class
-                End Class
-                """);
+Public Class Outer
+    Private Class [|AttributeClass2|]
+        Inherits Attribute
+    End Class
+End Class
+");
         }
 
         [TestMethod]
         public async Task CA1813VisualBasicDiagnosticProviderTestNotFiredAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                Public NotInheritable Class AttributeClass
-                    Inherits Attribute
+Public NotInheritable Class AttributeClass
+    Inherits Attribute
 
-                    Private MustInherit Class AttributeClass2
-                        Inherits Attribute
-                        MustOverride Sub F()
-                    End Class
-                End Class
-                """);
+    Private MustInherit Class AttributeClass2
+        Inherits Attribute
+        MustOverride Sub F()
+    End Class
+End Class
+");
         }
 
         #endregion

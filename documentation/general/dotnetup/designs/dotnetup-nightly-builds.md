@@ -232,7 +232,7 @@ public static string StripDailySuffix(string scopedDailyChannelName)
     => scopedDailyChannelName.Substring(0, scopedDailyChannelName.Length - "-daily".Length);
 ```
 
-The `Matches()` method for daily channels matches any version that would match the base channel.
+The `IsSatisfiedBy()` method for daily channels matches any version that would match the base channel.
 For example, `10.0-daily` matches any `10.0.x` version, just like `10.0` does today. The
 difference is only in how versions are **resolved** (blob feed vs release manifest) and
 **tracked** (daily install specs vs release install specs).
@@ -324,9 +324,9 @@ or otherwise unsigned daily builds.
 
 This is the simplest starting point — the user provides the exact version, so no version discovery
 is needed. We just need the blob-feed download path:
-- Extend `IArchiveDownloader` / `DotnetDownloader` to handle versions that aren't in the
+- Extend `IArtifactDownloader` / `DotnetDownloader` to handle versions that aren't in the
   release manifest — construct the download URL from the blob feed and fetch the hash from the
-  `{url}.sha512` companion file (`InstallWorkflow` already calls `DownloadArchiveWithVerification`
+  `{url}.sha512` companion file (the archive extractor already calls `DownloadVerifiedArtifact`
   — it doesn't need to know where the archive comes from)
 - Add host allowlist for blob feed redirect validation
 - Modify version resolution to fall back to blob storage when the release manifest doesn't

@@ -281,8 +281,6 @@ internal sealed class TestApplicationHandler
             HandshakeMessagePropertyNames.AttemptNumber => nameof(HandshakeMessagePropertyNames.AttemptNumber),
             HandshakeMessagePropertyNames.SupportedPostProcessorKinds => nameof(HandshakeMessagePropertyNames.SupportedPostProcessorKinds),
             HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy),
-            HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds => nameof(HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds),
-            HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy),
             _ => string.Empty,
         };
 
@@ -419,28 +417,13 @@ internal sealed class TestApplicationHandler
             throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(TestInProgressMessages)));
         }
 
-        if (!_receivedTestHostHandshake)
-        {
-            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutTestHostHandshake, nameof(TestInProgressMessages)));
-        }
-
-        string executionId = ValidateRequiredMessageProperty(
-            testInProgressMessages.ExecutionId,
-            nameof(TestInProgressMessages.ExecutionId),
-            nameof(TestInProgressMessages));
-
-        if (executionId != _handshakeInfo.Value.ExecutionId)
+        if (testInProgressMessages.ExecutionId != _handshakeInfo.Value.ExecutionId)
         {
             // Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.
-            throw new InvalidOperationException(string.Format(CliCommandStrings.DotnetTestMismatchingExecutionId, executionId, nameof(TestInProgressMessages), _handshakeInfo.Value.ExecutionId));
+            throw new InvalidOperationException(string.Format(CliCommandStrings.DotnetTestMismatchingExecutionId, testInProgressMessages.ExecutionId, nameof(TestInProgressMessages), _handshakeInfo.Value.ExecutionId));
         }
 
         var handshakeInfo = _handshakeInfo.Value;
-        string instanceId = ValidateRequiredMessageProperty(
-            testInProgressMessages.InstanceId,
-            nameof(TestInProgressMessages.InstanceId),
-            nameof(TestInProgressMessages));
-
         foreach (TestInProgressMessage inProgressMessage in testInProgressMessages.InProgressMessages)
         {
             _output.TestInProgress(
@@ -448,9 +431,9 @@ internal sealed class TestApplicationHandler
                 handshakeInfo.TargetFramework,
                 handshakeInfo.Architecture,
                 handshakeInfo.ExecutionId,
-                instanceId,
-                ValidateRequiredMessageProperty(inProgressMessage.Uid, nameof(TestInProgressMessage.Uid), nameof(TestInProgressMessage)),
-                ValidateRequiredMessageProperty(inProgressMessage.DisplayName, nameof(TestInProgressMessage.DisplayName), nameof(TestInProgressMessage)));
+                testInProgressMessages.InstanceId!,
+                inProgressMessage.Uid!,
+                inProgressMessage.DisplayName!);
         }
     }
 
@@ -681,6 +664,8 @@ internal sealed class TestApplicationHandler
 
         if (_receivedTestHostHandshake && _handshakeInfo.HasValue)
         {
+            // If we received a handshake from TestHostController but not from TestHost,
+            // call HandshakeFailure instead of AssemblyRunCompleted
             _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData);
         }
         else if (exitCode != ExitCode.Success ||
@@ -688,9 +673,6 @@ internal sealed class TestApplicationHandler
             _receivedIncompleteHandshake ||
             !(_receivedAffectedTestsOrchestratorHandshake || (_options.CollectTestMap && !_handshakeInfo.HasValue)))
         {
-            // Mapping collection and affected runs with no selected tests can finish in their
-            // recognized orchestrator without starting a TestHost. Legacy collection can also
-            // suppress all handshakes. Neither path excuses rejected or partial handshakes.
             _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputData, errorData);
         }
 
@@ -815,8 +797,7 @@ internal sealed class TestApplicationHandler
         {
             logMessageBuilder.AppendLine($"FileArtifact: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
                 $"{fileArtifactMessage.Description}, {fileArtifactMessage.TestUid}, {fileArtifactMessage.TestDisplayName}, " +
-                $"{fileArtifactMessage.SessionUid}, {fileArtifactMessage.Kind}, " +
-                $"InputArtifactPaths=[{string.Join(", ", fileArtifactMessage.InputArtifactPaths ?? [])}]");
+                $"{fileArtifactMessage.SessionUid}, {fileArtifactMessage.Kind}");
         }
 
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());

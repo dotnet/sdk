@@ -64,7 +64,7 @@ namespace Microsoft.NET.Publish.Tests
                 "./msbuild.binlog";
 
             // Publish as a single file
-            var publishCommand = new PublishCommand(testAsset).WithWorkingDirectory(testAsset.Path) as PublishCommand;
+            var publishCommand = new PublishCommand(testAsset);
             publishCommand
                 .Execute(@"/p:PublishSingleFile=true", $"-bl:{binlogDestPath}")
                 .Should()

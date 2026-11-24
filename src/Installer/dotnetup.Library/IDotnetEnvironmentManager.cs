@@ -56,18 +56,23 @@ internal interface IDotnetEnvironmentManager
     /// Updates the global.json file to reflect the installed SDK version,
     /// if a global.json exists and the install was global.json-sourced.
     /// </summary>
-    void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests);
+    /// <param name="requests">The resolved install requests.</param>
+    /// <param name="installs">The completed installs, which carry the on-disk version global.json must reference.</param>
+    void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests, IReadOnlyList<InstallResult> installs);
 }
 
+/// <summary>
+/// A global.json file that has been located and successfully parsed.
+/// </summary>
 public class GlobalJsonInfo
 {
-    public string? GlobalJsonPath { get; set; }
-    public GlobalJsonContents? GlobalJsonContents { get; set; }
+    public required string GlobalJsonPath { get; init; }
+    public required GlobalJsonContents GlobalJsonContents { get; init; }
 
     // Convenience properties for compatibility
-    public string? SdkVersion => GlobalJsonContents?.Sdk?.Version;
-    public bool? AllowPrerelease => GlobalJsonContents?.Sdk?.AllowPrerelease;
-    public string? RollForward => GlobalJsonContents?.Sdk?.RollForward;
+    public string? SdkVersion => GlobalJsonContents.Sdk?.Version;
+    public bool? AllowPrerelease => GlobalJsonContents.Sdk?.AllowPrerelease;
+    public string? RollForward => GlobalJsonContents.Sdk?.RollForward;
     /// <summary>
     /// The "$host$" sentinel in <c>sdk.paths</c> means "use the default host location"
     /// rather than a literal directory. See
@@ -82,7 +87,7 @@ public class GlobalJsonInfo
     /// how the .NET host resolver consumes the list.
     /// </summary>
     private string? FirstSdkPathEntry =>
-        GlobalJsonContents?.Sdk?.Paths is { Length: > 0 } paths
+        GlobalJsonContents.Sdk?.Paths is { Length: > 0 } paths
             ? Array.Find(paths, p => !string.IsNullOrWhiteSpace(p))
             : null;
 

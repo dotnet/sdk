@@ -285,8 +285,7 @@ internal sealed class MSBuildSession : IDisposable
             // These builds only select devices, deploy and compute run arguments, so keep them quiet -
             // at this verbosity MSBuild still reports errors and warnings.
             loggers.Add(CommonRunHelpers.GetConsoleLogger(
-                _msbuildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", .. _msbuildArgs.OtherMSBuildArgs]),
-                CommandServices.CreateDefault()));
+                _msbuildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", .. _msbuildArgs.OtherMSBuildArgs])));
         }
 
         return loggers;

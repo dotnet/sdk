@@ -51,10 +51,10 @@ internal sealed class TestApplication(
         output,
         module,
         testOptions,
-        artifactPostProcessingManager: artifactPostProcessingManager,
-        artifactPostProcessingInvocation: artifactPostProcessingInvocation,
-        testRunPolicy: testRunPolicy,
-        testApplicationSettings: testApplicationSettings ?? TestApplicationSettings.Default);
+        artifactPostProcessingManager,
+        artifactPostProcessingInvocation,
+        testRunPolicy,
+        testApplicationSettings);
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
     private readonly TestRunPolicy? _testRunPolicy = testRunPolicy;
     private readonly CancellationTokenSource _pipeCancellationTokenSource = new();
@@ -605,24 +605,11 @@ internal sealed class TestApplication(
         {
             while (!token.IsCancellationRequested)
             {
-                NamedPipeServer? pipeConnection = new(
-                    _pipeName,
-                    OnRequest,
-                    NamedPipeServerStream.MaxAllowedServerInstances,
-                    token,
-                    skipUnknownMessages: true);
-                try
-                {
-                    pipeConnection.RegisterAllSerializers();
+                var pipeConnection = new NamedPipeServer(_pipeName, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
+                pipeConnection.RegisterAllSerializers();
 
-                    await pipeConnection.WaitConnectionAsync(token);
-                    AddPipeConnection(pipeConnection);
-                    pipeConnection = null;
-                }
-                finally
-                {
-                    pipeConnection?.Dispose();
-                }
+                await pipeConnection.WaitConnectionAsync(token);
+                AddPipeConnection(pipeConnection);
             }
         }
         catch (OperationCanceledException ex)

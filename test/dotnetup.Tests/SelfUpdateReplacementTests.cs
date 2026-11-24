@@ -160,10 +160,9 @@ public class SelfUpdateReplacementTests
             CreateNoWindow = true,
             Arguments = $"/d /c mklink /J \"{junction}\" \"{target.FullName}\"",
         };
-        using var process = Process.Start(startInfo);
-        Assert.IsNotNull(process);
-        Assert.IsTrue(process.WaitForExit(10_000));
-        Assert.AreEqual(0, process.ExitCode);
+        var status = Process.Run(startInfo, TimeSpan.FromSeconds(10));
+        Assert.IsFalse(status.Canceled);
+        Assert.AreEqual(0, status.ExitCode);
         try
         {
             if (location == "parent")

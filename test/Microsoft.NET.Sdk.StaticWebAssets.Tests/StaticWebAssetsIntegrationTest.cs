@@ -580,17 +580,12 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        // Both assets target the same 'wwwroot/file.txt' path and have identical content, so compression
-        // produces a single physical file for the build and the publish variant. Build only compresses the
-        // build asset and publish only compresses the publish asset, each into its own compressed asset
-        // folder, so neither manifest ends up with duplicate compressed assets or endpoints.
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
-        public void DoesNotFailToCompress_TwoAssetsWith_TheSameContent(bool publish)
+        public void Build_DoesNotFailToCompress_TwoAssetsWith_TheSameContent()
         {
+            var expectedManifest = LoadBuildManifest();
             var testAsset = "RazorComponentApp";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: publish.ToString())
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
                 .WithProjectChanges(document =>
                 {
                     document.Root.AddFirst(new XElement("ItemGroup",
@@ -608,39 +603,25 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             File.WriteAllText(Path.Combine(ProjectDirectory.Path, "wwwroot", "file.build.txt"), "file1");
             File.WriteAllText(Path.Combine(ProjectDirectory.Path, "wwwroot", "file.publish.txt"), "file1");
 
-            MSBuildCommand command = publish ? CreatePublishCommand(ProjectDirectory) : CreateBuildCommand(ProjectDirectory);
-            ExecuteCommand(command).Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
-            var intermediateOutputPath = command.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var outputPath = command.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
-            // GenerateStaticWebAssetsManifest should generate the build manifest file.
-            var buildManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
-            new FileInfo(buildManifestPath).Should().Exist();
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(path).Should().Exist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+            AssertManifest(manifest, expectedManifest);
 
-            if (publish)
-            {
-                var publishManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
-                new FileInfo(publishManifestPath).Should().Exist();
-                var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(publishManifestPath));
-                AssertManifest(publishManifest, LoadPublishManifest());
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(outputPath, "ComponentApp.staticwebassets.runtime.json");
+            new FileInfo(finalPath).Should().Exist();
 
-                // The publish only asset is compressed during publish even though build no longer compresses
-                // publish assets, so the compressed file still makes it to the publish output.
-                new FileInfo(Path.Combine(outputPath, "wwwroot", "file.txt.gz")).Should().Exist();
-
-                AssertPublishAssets(publishManifest, outputPath, intermediateOutputPath);
-            }
-            else
-            {
-                var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(buildManifestPath));
-                AssertManifest(manifest, LoadBuildManifest());
-
-                // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-                new FileInfo(Path.Combine(outputPath, "ComponentApp.staticwebassets.runtime.json")).Should().Exist();
-
-                AssertBuildAssets(manifest, outputPath, intermediateOutputPath);
-            }
+            var manifest1 = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
+            AssertManifest(manifest1, expectedManifest);
+            AssertBuildAssets(manifest1, outputPath, intermediateOutputPath);
         }
     }
 

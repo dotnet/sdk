@@ -9,9 +9,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
 /// Resolves the defaults and supporting context used by the init form. Resolution here is
-/// side-effect-free: it performs no network calls, writes no console output, and does not throw on
-/// an unresolvable channel. The actual install requests are resolved separately (and only once the
-/// user accepts the form) via <see cref="ResolveDefaultRequests"/>, so simply viewing or exiting
+/// side-effect-free: it performs no network calls and writes no console output. Invalid repository
+/// requirements are reported as errors. The actual install requests are resolved separately (and
+/// only once the user accepts the form) via <see cref="ResolveDefaultRequests"/>, so viewing or exiting
 /// the form never triggers version resolution.
 /// </summary>
 internal static class InitDefaultsResolver
@@ -33,10 +33,9 @@ internal static class InitDefaultsResolver
         // Dry-run previews the form as it would look in an ordinary directory, so global.json (which
         // could pin a local install path or channel) is ignored.
         var globalJson = ignoreGlobalJson
-            ? new GlobalJsonInfo()
-            : GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
-        var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(
-            command.InstallPath, globalJson);
+            ? null
+            : GlobalJsonHelper.FindAndLoadGlobalJson(Environment.CurrentDirectory);
+        var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(command.InstallPath, globalJson);
 
         if (preResolvedRequests is { Count: > 0 })
         {
@@ -92,11 +91,11 @@ internal static class InitDefaultsResolver
 
     private static string? GetInstallRootGlobalJsonPath(
         InstallPathResolver.InstallPathResolutionResult pathResolution,
-        GlobalJsonInfo globalJson,
+        GlobalJsonInfo? globalJson,
         DotnetInstallRoot installRoot)
         => pathResolution.PathSource is PathSource.GlobalJson
             && DotnetupUtilities.PathsEqual(pathResolution.ResolvedInstallPath, installRoot.Path)
-                ? globalJson.GlobalJsonPath
+                ? globalJson?.GlobalJsonPath
                 : null;
 
     /// <summary>
@@ -107,29 +106,32 @@ internal static class InitDefaultsResolver
     /// </summary>
     public static List<ResolvedInstallRequest> ResolveDefaultRequests(
         InstallCommand command,
-        List<ResolvedInstallRequest>? requests)
+        List<ResolvedInstallRequest>? requests,
+        DotnetAccessMode? selectedAccessMode = null)
     {
-        return requests ?? GenerateSdkInstallRequests(command, channel: null);
+        return requests ?? GenerateSdkInstallRequests(command, channel: null, selectedAccessMode);
     }
 
     /// <summary>
     /// Generates a single SDK install request for the given channel (or the default channel when
     /// null), resolving the path, global.json, version, and validation through the install workflow.
     /// </summary>
-    public static List<ResolvedInstallRequest> GenerateSdkInstallRequests(InstallCommand command, string? channel)
+    public static List<ResolvedInstallRequest> GenerateSdkInstallRequests(InstallCommand command, string? channel, DotnetAccessMode? selectedAccessMode = null)
     {
-        return GenerateInstallRequests(command, [new MinimalInstallSpec(InstallComponent.SDK, channel)]);
+        return GenerateInstallRequests(command, [new MinimalInstallSpec(InstallComponent.SDK, channel)], selectedAccessMode);
     }
 
     /// <summary>
-    /// Generates resolved install requests for the supplied component specifications.
+    /// Generates resolved install requests for the supplied component specifications. When
+    /// <paramref name="selectedAccessMode"/> is supplied, it overrides the saved access mode.
     /// </summary>
     public static List<ResolvedInstallRequest> GenerateInstallRequests(
         InstallCommand command,
-        MinimalInstallSpec[] componentSpecs)
+        MinimalInstallSpec[] componentSpecs,
+        DotnetAccessMode? selectedAccessMode = null)
     {
         var workflow = new InstallWorkflow(command);
-        return workflow.GenerateInstallRequests(componentSpecs);
+        return workflow.GenerateInstallRequests(componentSpecs, selectedAccessMode);
     }
 
     /// <summary>
@@ -185,12 +187,12 @@ internal static class InitDefaultsResolver
     /// Resolves the default channel label directly from global.json (or "latest") without resolving
     /// a concrete version, so displaying the form never triggers a network call.
     /// </summary>
-    private static DefaultChannelDisplay ResolveChannelDisplay(GlobalJsonInfo globalJson)
+    private static DefaultChannelDisplay ResolveChannelDisplay(GlobalJsonInfo? globalJson)
     {
-        if (globalJson.GlobalJsonPath is not null
-            && GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath) is { } channel)
+        if (globalJson is not null
+            && InstallSpecResolver.EvaluateGlobalJsonForCommand(globalJson.GlobalJsonPath, globalJson.GlobalJsonContents) is { } channel)
         {
-            return new DefaultChannelDisplay(channel, globalJson.GlobalJsonPath);
+            return new DefaultChannelDisplay(channel.Name, globalJson.GlobalJsonPath);
         }
 
         return new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, null);

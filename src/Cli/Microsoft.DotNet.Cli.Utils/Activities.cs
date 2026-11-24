@@ -33,7 +33,6 @@ public static class Activities
     private static readonly ActivityListener s_metricsListener = new()
     {
         ShouldListenTo = source => source.Name == Source.Name || source.Name == PerformanceSource.Name,
-        // Collect metrics on demand.
         Sample = (ref ActivityCreationOptions<ActivityContext> _) =>
             s_activityDuration.Enabled ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
         ActivityStopped = activity =>

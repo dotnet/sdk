@@ -2,10 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
+using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
 using Microsoft.NET.TestFramework;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -17,31 +21,21 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// cannot be sandboxed cleanly in CI.
 /// </summary>
 [TestClass]
+[DoNotParallelize]
 public class EnvCommandTests : IDisposable
 {
-    private readonly string _tempDir;
+    private readonly AdminModeTestEnvironment _environment = new();
+    private string _tempDir => _environment.TempRoot;
+    private FakeDotnetupPolicyStore _store => _environment.Store;
     private readonly MockDotnetInstallManager _env;
     private readonly FakeEnvironmentStateInspector _inspector = new();
 
     public EnvCommandTests()
     {
-        _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-env-cmd-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(_tempDir);
-
-        // The override is thread-local ([ThreadStatic] in DotnetupPaths). Each xunit test case runs
-        // start-to-finish on a single thread, so parallel execution across tests doesn't cross-
-        // contaminate. (Thread-local state would not flow across async continuations, but these
-        // tests are synchronous.)
-        DotnetupPaths.SetTestDataDirectoryOverride(_tempDir);
-
         _env = new MockDotnetInstallManager(defaultInstallPath: Path.Combine(_tempDir, "dotnet"));
     }
 
-    public void Dispose()
-    {
-        DotnetupPaths.ClearTestDataDirectoryOverride();
-        try { Directory.Delete(_tempDir, recursive: true); } catch { /* best-effort cleanup */ }
-    }
+    public void Dispose() => _environment.Dispose();
 
     // ── EnvSetCommand ──
 
@@ -107,6 +101,16 @@ public class EnvCommandTests : IDisposable
         DotnetupConfig.Read().Should().BeNull();
     }
 
+    [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void EnvSet_Admin_OnNonWindows_RejectedByParser()
+    {
+        var parseResult = Parser.Parse(["env", "set", "admin"]);
+
+        parseResult.Errors.Should().NotBeEmpty();
+        parseResult.Errors.Should().Contain(e => e.Message.Contains("Windows", StringComparison.Ordinal));
+        DotnetupConfig.Read().Should().BeNull();
+    }
+
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void EnvSet_Everywhere_FromNone_OnWindows_AppliesAndPersists()
     {
@@ -152,6 +156,152 @@ public class EnvCommandTests : IDisposable
         exitCode.Should().Be(1);
     }
 
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_Admin_PersistsModeWithoutChangingUnsignedDownloadPolicy()
+    {
+        var parseResult = Parser.Parse(["env", "set", "admin", "--shell", "bash"]);
+        parseResult.Errors.Should().BeEmpty();
+
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
+
+        exitCode.Should().Be(0);
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        _env.LastDotnetupOnUserPathEnabled.Should().BeTrue();
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_Admin_PreservesOtherSettings()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = false, UpdateNotifications = false });
+        int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "admin"]), _env, _inspector).Execute();
+
+        exitCode.Should().Be(0);
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.Read()!.DotnetupOnPath.Should().BeFalse();
+        DotnetupConfig.Read()!.UpdateNotifications.Should().BeFalse();
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_Admin_FromShell_CompletesWithoutChangingPolicy()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = false });
+        var parseResult = Parser.Parse(["env", "set", "admin", "--shell", "bash"]);
+        parseResult.Errors.Should().BeEmpty();
+
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
+
+        exitCode.Should().Be(0);
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.Read()!.DotnetupOnPath.Should().BeFalse();
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_ShellWhileAdmin_LeavesPolicyUnchanged()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin, DotnetupOnPath = true });
+        _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
+        var parseResult = Parser.Parse(["env", "set", "shell", "--shell", "bash"]);
+        parseResult.Errors.Should().BeEmpty();
+
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
+
+        exitCode.Should().Be(0);
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeTrue();
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Shell);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_WithoutModeWhileAdmin_ResynchronizesAdminMode()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin, DotnetupOnPath = true });
+
+        int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "--shell", "bash"]), _env, _inspector).Execute();
+
+        exitCode.Should().Be(0);
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+        _env.LastIncludeDotnetForTerminalProfileModifications.Should().BeFalse();
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void EnvSet_Admin_HonorsPathOptionAndRepairsEnvironment(bool alreadyAdmin, bool dotnetupOnPath)
+    {
+        DotnetAccessMode previousMode = alreadyAdmin ? DotnetAccessMode.Admin : DotnetAccessMode.Everywhere;
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = previousMode, DotnetupOnPath = !dotnetupOnPath });
+        _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = alreadyAdmin;
+        var environment = new MockDotnetInstallManager(_env.GetDefaultDotnetInstallPath())
+        {
+            BeforeEnvironmentChange = () =>
+            {
+                _environment.Policy.IsUnsignedDownloadBlocked().Should().Be(alreadyAdmin);
+                DotnetupConfig.Read()!.AccessMode.Should().Be(previousMode);
+                DotnetupConfig.Read()!.DotnetupOnPath.Should().Be(!dotnetupOnPath);
+            },
+        };
+        var inspector = new FakeEnvironmentStateInspector(new ObservedEnvironmentState(
+            DotnetUserEnvVarsPresent: true,
+            DotnetUserEnvVarsComplete: true,
+            ProfileBlock: ProfileBlockState.Unknown,
+            DotnetupOnUserPath: !dotnetupOnPath));
+
+        int exitCode = new EnvSetCommand(
+            Parser.Parse(["env", "set", "admin", "--dotnetup-on-path", dotnetupOnPath ? "true" : "false", "--shell", "bash"]),
+            environment, inspector).Execute();
+
+        exitCode.Should().Be(0);
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.Read()!.DotnetupOnPath.Should().Be(dotnetupOnPath);
+        environment.ApplyEnvironmentModificationsSystemCallCount.Should().Be(1);
+        environment.LastDotnetupOnUserPathEnabled.Should().Be(dotnetupOnPath);
+        environment.ApplyTerminalProfileModificationsCallCount.Should().Be(dotnetupOnPath ? 1 : 0);
+        if (dotnetupOnPath)
+        {
+            environment.LastIncludeDotnetForTerminalProfileModifications.Should().BeFalse();
+        }
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_AdminEnvironmentFailure_DoesNotPersistMode()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None });
+        var environment = new MockDotnetInstallManager(_env.GetDefaultDotnetInstallPath())
+        {
+            BeforeEnvironmentChange = () => throw new IOException("Environment write failed"),
+        };
+
+        int exitCode = new EnvSetCommand(
+            Parser.Parse(["env", "set", "admin", "--shell", "bash"]), environment, _inspector).Execute();
+
+        exitCode.Should().Be(1);
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.None);
+    }
+
+    [TestMethod]
+    public void EnvSet_ShellWhileNotAdmin_DoesNotTouchPolicy()
+    {
+        var parseResult = Parser.Parse(["env", "set", "shell", "--shell", "bash"]);
+
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
+
+        exitCode.Should().Be(0);
+    }
+
+    private void AssertNoEnvironmentOrConfigChanges()
+    {
+        DotnetupConfig.Exists().Should().BeFalse();
+        _env.GetExistingSystemInstallsCallCount.Should().Be(0);
+        _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+        _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        _env.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
+    }
+
     // ── EnvClearCommand ──
 
     [TestMethod]
@@ -169,6 +319,41 @@ public class EnvCommandTests : IDisposable
         config!.AccessMode.Should().Be(DotnetAccessMode.None);
         config.DotnetupOnPath.Should().BeFalse();
         _env.LastDotnetupOnUserPathEnabled.Should().BeFalse();
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void EnvClear_AndExplicitNoneWhileAdmin_LeavePolicyUnchanged(bool clear)
+    {
+        DotnetupConfig.Write(new DotnetupConfigData
+        {
+            AccessMode = DotnetAccessMode.Admin,
+            UpdateNotifications = false,
+        });
+        _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
+        var environment = new MockDotnetInstallManager(_env.GetDefaultDotnetInstallPath())
+        {
+            BeforeEnvironmentChange = () =>
+            {
+                _environment.Policy.IsUnsignedDownloadBlocked().Should().BeTrue();
+                DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+            },
+        };
+
+        int exitCode = clear
+            ? new EnvClearCommand(Parser.Parse(["env", "clear"]), environment, _inspector).Execute()
+            : new EnvSetCommand(Parser.Parse(["env", "set", "none", "--dotnetup-on-path", "false"]),
+                environment, _inspector).Execute();
+
+        exitCode.Should().Be(0);
+        DotnetupConfig.Read().Should().BeEquivalentTo(new DotnetupConfigData
+        {
+            AccessMode = DotnetAccessMode.None,
+            DotnetupOnPath = false,
+            UpdateNotifications = false,
+        });
+        environment.LastDotnetupOnUserPathEnabled.Should().BeFalse();
     }
 
     // ── EnvShowCommand ──

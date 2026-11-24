@@ -3,7 +3,7 @@
 
 #nullable disable
 
-using Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial;
+using Combinatorial.MSTest;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 

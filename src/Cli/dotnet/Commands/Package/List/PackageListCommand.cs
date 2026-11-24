@@ -53,8 +53,7 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
                 msbuildArgs: MSBuildArgs.FromProperties(new Dictionary<string, string>
                 {
                     ["NuGetInteractive"] = interactive.ToString(),
-                }.AsReadOnly()),
-                services: CommandServices.CreateDefault())
+                }.AsReadOnly()))
             {
                 NoCache = true,
                 NoBuild = true,
@@ -77,10 +76,7 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
 
             args.Add($"-interactive:{interactive.ToString().ToLower()}");
 
-            command = new MSBuildForwardingApp(
-                rawMSBuildArgs: args,
-                msbuildPath: null,
-                services: CommandServices.CreateDefault());
+            command = new MSBuildForwardingApp(rawMSBuildArgs: args);
         }
 
         int exitCode = 0;

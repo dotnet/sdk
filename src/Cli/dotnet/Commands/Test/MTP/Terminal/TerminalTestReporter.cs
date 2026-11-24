@@ -53,7 +53,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
     /// </summary>
     private readonly bool _showActiveTests;
 
-    private readonly ConcurrentQueue<HandshakeFailureRecord> _handshakeFailures = new();
+    private int _handshakeFailuresCount;
+
+    private readonly object _handshakeFailuresLock = new();
+    private readonly List<HandshakeFailureRecord> _handshakeFailures = new();
 
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
@@ -67,7 +70,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private volatile bool _wasCancelled;
 
-    public bool HasHandshakeFailure => !_handshakeFailures.IsEmpty;
+    public bool HasHandshakeFailure => _handshakeFailuresCount > 0;
     public int TotalTests => _assemblies.Values.Sum(a => a.TotalTests);
     public int SkippedTests => _assemblies.Values.Sum(a => a.SkippedTests);
 
@@ -138,10 +141,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
     }
 
     public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId)
-        => AssemblyRunStarted(assembly, targetFramework, architecture, executionId, instanceId, attemptNumber: null, settings: null);
+        => AssemblyRunStarted(assembly, targetFramework, architecture, executionId, instanceId, attemptNumber: null);
 
     public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId, int attemptNumber)
-        => AssemblyRunStarted(assembly, targetFramework, architecture, executionId, instanceId, attemptNumber, settings: null);
+        => AssemblyRunStarted(assembly, targetFramework, architecture, executionId, instanceId, (int?)attemptNumber);
 
     internal void AssemblyRunStarted(
         string assembly,
@@ -160,7 +163,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string executionId,
         string instanceId,
         int? attemptNumber,
-        TestApplicationSettings? settings)
+        TestApplicationSettings? settings = null)
     {
         var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId, settings);
         if (attemptNumber.HasValue)
@@ -259,7 +262,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
         _assemblies.Clear();
-        _handshakeFailures.Clear();
+        lock (_handshakeFailuresLock)
+        {
+            _handshakeFailures.Clear();
+        }
+        _handshakeFailuresCount = 0;
         _buildErrorsCount = 0;
         _testExecutionStartTime = null;
         _testExecutionEndTime = null;
@@ -406,7 +413,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // In addition, failing to handshake is also considered as an error.
         // Note: In case of handshake failure, we shouldn't add any entries to _assemblies dictionary.
         // So, this line cannot be double-counting handshake failures twice.
-        int error = failedAssembliesWithoutFailedTests + _handshakeFailures.Count;
+        int error = failedAssembliesWithoutFailedTests + _handshakeFailuresCount;
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
         bool colorizeFailed = failed > 0;
@@ -660,10 +667,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // diagnostic output before the summary — the user sees the actionable failure context
         // (assembly, exit code, stdout, stderr) at the end of the run rather than having to scroll
         // back. See https://github.com/dotnet/sdk/issues/51608.
-        HandshakeFailureRecord[] failures = _handshakeFailures.ToArray();
-        if (failures.Length == 0)
+        HandshakeFailureRecord[] failures;
+        lock (_handshakeFailuresLock)
         {
-            return;
+            if (_handshakeFailures.Count == 0)
+            {
+                return;
+            }
+
+            failures = _handshakeFailures.ToArray();
         }
 
         terminal.AppendLine();
@@ -1156,7 +1168,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        _handshakeFailures.Enqueue(new HandshakeFailureRecord(assemblyPath, targetFramework, exitCode, outputData, errorData));
+        Interlocked.Increment(ref _handshakeFailuresCount);
+        lock (_handshakeFailuresLock)
+        {
+            _handshakeFailures.Add(new HandshakeFailureRecord(assemblyPath, targetFramework, exitCode, outputData, errorData));
+        }
 
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
@@ -1413,7 +1429,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         var assemblies = _assemblies.Select(asm => asm.Value).OrderBy(a => a.Assembly).Where(a => a is not null).ToList();
 
         int totalTests = _assemblies.Values.Sum(a => a.TotalTests);
-        bool runFailed = _wasCancelled || totalTests < 1 || exitCode != ExitCode.Success;
+        bool runFailed = _wasCancelled || totalTests < 1;
 
         foreach (TestProgressState assembly in assemblies)
         {

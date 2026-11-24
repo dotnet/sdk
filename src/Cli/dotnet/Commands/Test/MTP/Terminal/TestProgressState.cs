@@ -257,6 +257,14 @@ internal sealed class TestProgressState(
         }
     }
 
+    internal void EnableRetry()
+    {
+        lock (_lock)
+        {
+            _isRetry = true;
+        }
+    }
+
     public int TryCount
     {
         get
@@ -265,14 +273,6 @@ internal sealed class TestProgressState(
             {
                 return _tryCount;
             }
-        }
-    }
-
-    internal void EnableRetry()
-    {
-        lock (_lock)
-        {
-            _isRetry = true;
         }
     }
 

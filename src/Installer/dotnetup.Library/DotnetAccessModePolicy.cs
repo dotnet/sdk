@@ -26,12 +26,13 @@ internal static class DotnetAccessModePolicy
 
     /// <summary>
     /// Returns true when the mode can only be applied on Windows. <see cref="DotnetAccessMode.Everywhere"/>
-    /// edits user-level env-var PATH/DOTNET_ROOT, which dotnetup only manages on Windows today. This is
+    /// edits user-level env-var PATH/DOTNET_ROOT, which dotnetup only manages on Windows today, and
+    /// <see cref="DotnetAccessMode.Admin"/> relies on the Windows installer and machine policy. This is
     /// the single source of truth for the platform constraint — every entry point that validates a mode
     /// should consult it rather than re-deriving the assumption.
     /// </summary>
     public static bool RequiresWindows(DotnetAccessMode accessMode) =>
-        accessMode is DotnetAccessMode.Everywhere;
+        accessMode is DotnetAccessMode.Everywhere or DotnetAccessMode.Admin;
 
     /// <summary>
     /// Returns true when the mode can be applied on the current platform.

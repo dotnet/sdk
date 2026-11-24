@@ -41,6 +41,8 @@ internal sealed class InitFormModel
     private readonly IReadOnlyList<MigrationWorkflow.MigrationSelection> _migrationCandidates;
     private readonly IReadOnlyList<MinimalInstallSpec> _defaultInstallSpecs;
 
+    private readonly DotnetInstallRoot _installRoot;
+    private readonly AdminInstallRootResolver _adminInstallRootResolver;
     private readonly IReadOnlyList<string> _profilePaths;
 
     private InitFormModel(
@@ -54,7 +56,8 @@ internal sealed class InitFormModel
         FormField? migrateField,
         IReadOnlyList<MigrationWorkflow.MigrationSelection> migrationCandidates,
         IReadOnlyList<MinimalInstallSpec> defaultInstallSpecs,
-        string installPath,
+        DotnetInstallRoot installRoot,
+        AdminInstallRootResolver adminInstallRootResolver,
         IReadOnlyList<string> profilePaths)
     {
         Fields = fields;
@@ -67,7 +70,8 @@ internal sealed class InitFormModel
         _migrateField = migrateField;
         _migrationCandidates = migrationCandidates;
         _defaultInstallSpecs = defaultInstallSpecs;
-        InstallPath = installPath;
+        _installRoot = installRoot;
+        _adminInstallRootResolver = adminInstallRootResolver;
         _profilePaths = profilePaths;
     }
 
@@ -90,12 +94,17 @@ internal sealed class InitFormModel
     /// <summary>The access mode the user chose.</summary>
     public DotnetAccessMode SelectedAccessMode() => _accessModes[_accessModeField.SelectedIndex];
 
-    /// <summary>Whether the user chose to migrate existing system installs.</summary>
+    /// <summary>Whether the user chose to migrate existing system installs. Admin mode never migrates.</summary>
     public bool MigrateSelected() =>
-        _migrateField is { IsVisible: true } && _migrateField.SelectedIndex == YesIndex;
+        _migrateField is { IsVisible: true, IsLocked: false } && _migrateField.SelectedIndex == YesIndex;
 
-    /// <summary>Where dotnetup installs .NET; shown once at the top of the form.</summary>
-    public string InstallPath { get; }
+    /// <summary>
+    /// Where the selected access mode installs .NET. Keep the user's root so leaving Admin mode
+    /// restores it without losing an explicit path or a path resolved from global.json.
+    /// </summary>
+    public string InstallPath => SelectedAccessMode() == DotnetAccessMode.Admin
+        ? _adminInstallRootResolver.Resolve(_installRoot.Architecture).Path
+        : _installRoot.Path;
 
     /// <summary>
     /// Computes the derived informational lines for the given field's value at
@@ -134,6 +143,9 @@ internal sealed class InitFormModel
         {
             case DotnetAccessMode.None:
                 return [];
+
+            case DotnetAccessMode.Admin:
+                return [new DetailLine(Strings.AccessModeAdminDetails)];
 
             case DotnetAccessMode.Shell:
             {
@@ -209,13 +221,16 @@ internal sealed class InitFormModel
     /// migrate field. The <paramref name="shellProvider"/> supplies the profile file(s) shown in the
     /// access-mode detail; it may be null when no supported shell is detected.
     /// </summary>
-    public static InitFormModel Create(InitFormDefaults defaults, IEnvShellProvider? shellProvider)
+    public static InitFormModel Create(
+        InitFormDefaults defaults,
+        IEnvShellProvider? shellProvider,
+        AdminInstallRootResolver? adminInstallRootResolver = null)
     {
-        (FormField channelField, IReadOnlyList<string?> channelTokens, int globalJsonChannelIndex) =
-            BuildChannelField(defaults.ChannelDisplay);
-
         (FormField accessModeField, IReadOnlyList<DotnetAccessMode> accessModes) =
             BuildAccessModeField(defaults.AccessMode);
+
+        (FormField channelField, IReadOnlyList<string?> channelTokens, int globalJsonChannelIndex) =
+            BuildChannelField(defaults.ChannelDisplay);
 
         FormField? migrateField = null;
         if (defaults.Migrations.Count > 0)
@@ -224,7 +239,8 @@ internal sealed class InitFormModel
                 defaults.MigrateSystemInstalls,
                 isVisible: () =>
                 {
-                    return MigrationWorkflow.FilterMigrationSelections(
+                    return accessModes[accessModeField.SelectedIndex] != DotnetAccessMode.Admin
+                        && MigrationWorkflow.FilterMigrationSelections(
                         defaults.Migrations,
                         GetCurrentInstallSpecs(channelField, channelTokens, defaults.DefaultInstallSpecs)).Count > 0;
                 });
@@ -247,7 +263,8 @@ internal sealed class InitFormModel
             migrateField,
             defaults.Migrations,
             defaults.DefaultInstallSpecs,
-            defaults.InstallRoot.Path,
+            defaults.InstallRoot,
+            adminInstallRootResolver ?? new AdminInstallRootResolver(),
             shellProvider?.GetProfilePaths() ?? []);
     }
 
@@ -312,14 +329,16 @@ internal sealed class InitFormModel
         var modes = new List<DotnetAccessMode> { DotnetAccessMode.None, DotnetAccessMode.Shell };
         var choices = new List<FieldChoice>
         {
-            new(AccessModeTitle(DotnetAccessMode.None), "Run .NET with 'dotnetup dotnet'. dotnet isn't added to your PATH, so your existing installs are unaffected."),
-            new(AccessModeTitle(DotnetAccessMode.Shell), "Configure your shell profile so shell sessions use dotnetup's .NET installs."),
+            new(AccessModeTitle(DotnetAccessMode.None), AccessModeDescription(DotnetAccessMode.None)),
+            new(AccessModeTitle(DotnetAccessMode.Shell), AccessModeDescription(DotnetAccessMode.Shell)),
         };
 
         if (isWindows)
         {
             modes.Add(DotnetAccessMode.Everywhere);
-            choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Everywhere), "Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation)."));
+            choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Everywhere), AccessModeDescription(DotnetAccessMode.Everywhere)));
+            modes.Add(DotnetAccessMode.Admin);
+            choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Admin), AccessModeDescription(DotnetAccessMode.Admin)));
         }
 
         int defaultIndex = Math.Max(0, modes.IndexOf(recommended));
@@ -334,6 +353,16 @@ internal sealed class InitFormModel
     // The access-mode value shown to the user, capitalized (None / Shell / Everywhere), matching the
     // 'dotnetup env' vocabulary.
     private static string AccessModeTitle(DotnetAccessMode mode) => mode.ToString();
+
+    // The help text shown beneath each access-mode choice.
+    internal static string AccessModeDescription(DotnetAccessMode mode) => mode switch
+    {
+        DotnetAccessMode.None => "Run .NET with 'dotnetup dotnet'. dotnet isn't added to your PATH, so your existing installs are unaffected.",
+        DotnetAccessMode.Shell => "Configure your shell profile so shell sessions use dotnetup's .NET installs.",
+        DotnetAccessMode.Everywhere => "Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation).",
+        DotnetAccessMode.Admin => Strings.AccessModeAdminDescription,
+        _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
+    };
 
     private static FormField BuildMigrateField(bool migrateByDefault, Func<bool> isVisible)
     {

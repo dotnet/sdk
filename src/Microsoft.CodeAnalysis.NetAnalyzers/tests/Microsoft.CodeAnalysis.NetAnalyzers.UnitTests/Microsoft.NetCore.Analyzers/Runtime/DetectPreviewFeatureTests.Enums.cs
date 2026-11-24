@@ -13,32 +13,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestEnumValue()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
 
-                        using System.Runtime.Versioning; using System;
-                        namespace Preview_Feature_Scratch
-                        {
+            enum AnEnum
+            {
+                [RequiresPreviewFeatures(""Lib is in preview."", Url = ""https://aka.ms/aspnet/kestrel/http3reqs"")]
+                Foo,
+                Bar
+            }
 
-                            enum AnEnum
-                            {
-                                [RequiresPreviewFeatures("Lib is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
-                                Foo,
-                                Bar
-                            }
+            class Program
+            {
+                public Program()
+                {
+                }
 
-                            class Program
-                            {
-                                public Program()
-                                {
-                                }
-
-                                static void Main(string[] args)
-                                {
-                                    AnEnum fooEnum = {|#0:AnEnum.Foo|};
-                                }
-                            }
-                        }
-                """;
+                static void Main(string[] args)
+                {
+                    AnEnum fooEnum = {|#0:AnEnum.Foo|};
+                }
+            }
+        }";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRuleWithCustomMessage).WithLocation(0).WithArguments("Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
@@ -48,32 +46,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestEnumValue_NoDiagnostic()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
 
-                        using System.Runtime.Versioning; using System;
-                        namespace Preview_Feature_Scratch
-                        {
+            enum AnEnum
+            {
+                Foo,
+                [RequiresPreviewFeatures]
+                Bar
+            }
 
-                            enum AnEnum
-                            {
-                                Foo,
-                                [RequiresPreviewFeatures]
-                                Bar
-                            }
+            class Program
+            {
+                public Program()
+                {
+                }
 
-                            class Program
-                            {
-                                public Program()
-                                {
-                                }
-
-                                static void Main(string[] args)
-                                {
-                                    AnEnum fooEnum = AnEnum.Foo;
-                                }
-                            }
-                        }
-                """;
+                static void Main(string[] args)
+                {
+                    AnEnum fooEnum = AnEnum.Foo;
+                }
+            }
+        }";
 
             var test = TestCS(csInput);
             await test.RunAsync(CancellationToken.None);
@@ -82,33 +78,31 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestEnum()
         {
-            var csInput = """
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
 
-                        using System.Runtime.Versioning; using System;
-                        namespace Preview_Feature_Scratch
-                        {
+            [RequiresPreviewFeatures]
+            enum AnEnum
+            {
+                Foo,
+                Bar
+            }
 
-                            [RequiresPreviewFeatures]
-                            enum AnEnum
-                            {
-                                Foo,
-                                Bar
-                            }
+            class Program
+            {
+                public Program()
+                {
+                }
 
-                            class Program
-                            {
-                                public Program()
-                                {
-                                }
-
-                                static void Main(string[] args)
-                                {
-                                    AnEnum fooEnum = {|#0:AnEnum.Foo|};
-                                    AnEnum barEnum = {|#1:AnEnum.Bar|};
-                                }
-                            }
-                        }
-                """;
+                static void Main(string[] args)
+                {
+                    AnEnum fooEnum = {|#0:AnEnum.Foo|};
+                    AnEnum barEnum = {|#1:AnEnum.Bar|};
+                }
+            }
+        }";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Foo", DetectPreviewFeatureAnalyzer.DefaultURL));

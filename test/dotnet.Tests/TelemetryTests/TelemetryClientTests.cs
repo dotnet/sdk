@@ -110,8 +110,6 @@ public class TelemetryClientTests : SdkTest
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
     [DynamicData(nameof(CommandsWithExitCode))]
-    // The build-server shutdown row affects per-user servers that tests throughout this project can use.
-    [DoNotParallelize]
     public void ItProcessesTelemetryData(string[] commandArgs, string exitCodeExpected)
     {
         var testDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -155,7 +153,6 @@ public class TelemetryClientTests : SdkTest
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    // The process-wide MSBuild server can also be used by tests that cannot participate in a resource lock.
     [DoNotParallelize]
     public void ItProcessesMSBuildTelemetryWithTheServerEnabled()
     {
@@ -227,7 +224,6 @@ public class TelemetryClientTests : SdkTest
     }
 
     [TestMethod]
-    // TelemetryClient static state is process-wide and is accessed by code that cannot participate in a resource lock.
     [DoNotParallelize]
     public void DisabledForTestsDoesNotInitializeTelemetry()
     {
@@ -249,7 +245,6 @@ public class TelemetryClientTests : SdkTest
     }
 
     [TestMethod]
-    // TelemetryClient static state is process-wide and is accessed by code that cannot participate in a resource lock.
     [DoNotParallelize]
     public void MSBuildLoggerDoesNotReinitializeDisabledTelemetry()
     {
@@ -278,7 +273,6 @@ public class TelemetryClientTests : SdkTest
     }
 
     [TestMethod]
-    // TelemetryClient static state is process-wide and is accessed by code that cannot participate in a resource lock.
     [DoNotParallelize]
     public void ItSeedsCurrentSessionIdFromEnvironmentWhenSessionIdIsNotProvided()
     {
@@ -309,7 +303,6 @@ public class TelemetryClientTests : SdkTest
     }
 
     [TestMethod]
-    // TelemetryClient static state is process-wide and is accessed by code that cannot participate in a resource lock.
     [DoNotParallelize]
     public void ItPrefersExplicitSessionIdOverEnvironmentSeed()
     {

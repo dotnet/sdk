@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [TestMethod]
-        public void AddReferenceHasInteractiveOption()
+        public void AddReferenceHasInteractiveFlag()
         {
             var result = Parser.Parse(["dotnet", "add", "reference", "my.csproj", "--interactive"]);
 
@@ -35,17 +35,6 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             result.GetValue(command.InteractiveOption)
                 .Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AddReferenceCanDisableInteractiveOption()
-        {
-            var result = Parser.Parse(["dotnet", "add", "reference", "my.csproj", "--interactive", "false"]);
-
-            var command = Assert.IsExactInstanceOfType<AddReferenceCommandDefinition>(result.CommandResult.Command);
-
-            result.GetValue(command.InteractiveOption)
-                .Should().BeFalse();
         }
 
         [TestMethod]

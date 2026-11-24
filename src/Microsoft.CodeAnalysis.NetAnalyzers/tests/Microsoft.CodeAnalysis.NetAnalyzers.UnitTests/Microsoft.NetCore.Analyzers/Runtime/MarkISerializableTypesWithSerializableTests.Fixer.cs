@@ -24,18 +24,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        """
-
-                            using System;
-                            using System.Runtime.Serialization;
-                            public class CA2237SerializableMissingAttr : ISerializable
-                            {
-                                public void GetObjectData(SerializationInfo info, StreamingContext context)
-                                {
-                                    throw new NotImplementedException();
-                                }
-                            }
-                            """,
+                        @"
+using System;
+using System.Runtime.Serialization;
+public class CA2237SerializableMissingAttr : ISerializable
+{
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        throw new NotImplementedException();
+    }
+}",
                     },
                     ExpectedDiagnostics =
                     {
@@ -46,20 +44,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System;
+using System.Runtime.Serialization;
 
-                            using System;
-                            using System.Runtime.Serialization;
-
-                            [Serializable]
-                            public class CA2237SerializableMissingAttr : ISerializable
-                            {
-                                public void GetObjectData(SerializationInfo info, StreamingContext context)
-                                {
-                                    throw new NotImplementedException();
-                                }
-                            }
-                            """,
+[Serializable]
+public class CA2237SerializableMissingAttr : ISerializable
+{
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        throw new NotImplementedException();
+    }
+}",
                     },
                 }
             }.RunAsync(CancellationToken.None);
@@ -70,21 +66,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+Imports System
+Imports System.Runtime.Serialization
+Public Class CA2237SerializableMissingAttr
+    Implements ISerializable
 
-                            Imports System
-                            Imports System.Runtime.Serialization
-                            Public Class CA2237SerializableMissingAttr
-                                Implements ISerializable
+    Protected Sub New(context As StreamingContext, info As SerializationInfo)
+    End Sub
 
-                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
-                                End Sub
-
-                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-                                    throw new NotImplementedException()
-                                End Sub
-                            End Class
-                            """,
+    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+        throw new NotImplementedException()
+    End Sub
+End Class",
                     },
                     ExpectedDiagnostics =
                     {
@@ -95,23 +89,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+Imports System
+Imports System.Runtime.Serialization
 
-                            Imports System
-                            Imports System.Runtime.Serialization
+<Serializable>
+Public Class CA2237SerializableMissingAttr
+    Implements ISerializable
 
-                            <Serializable>
-                            Public Class CA2237SerializableMissingAttr
-                                Implements ISerializable
+    Protected Sub New(context As StreamingContext, info As SerializationInfo)
+    End Sub
 
-                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
-                                End Sub
-
-                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-                                    throw new NotImplementedException()
-                                End Sub
-                            End Class
-                            """
+    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+        throw new NotImplementedException()
+    End Sub
+End Class"
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -126,26 +118,24 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System;
+using System.Runtime.Serialization;
+public class First : ISerializable
+{
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        throw new NotImplementedException();
+    }
+}
 
-                            using System;
-                            using System.Runtime.Serialization;
-                            public class First : ISerializable
-                            {
-                                public void GetObjectData(SerializationInfo info, StreamingContext context)
-                                {
-                                    throw new NotImplementedException();
-                                }
-                            }
-
-                            public class Second : ISerializable
-                            {
-                                public void GetObjectData(SerializationInfo info, StreamingContext context)
-                                {
-                                    throw new NotImplementedException();
-                                }
-                            }
-                            """,
+public class Second : ISerializable
+{
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        throw new NotImplementedException();
+    }
+}",
                     },
                     ExpectedDiagnostics =
                     {
@@ -157,29 +147,27 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System;
+using System.Runtime.Serialization;
 
-                            using System;
-                            using System.Runtime.Serialization;
+[Serializable]
+public class First : ISerializable
+{
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        throw new NotImplementedException();
+    }
+}
 
-                            [Serializable]
-                            public class First : ISerializable
-                            {
-                                public void GetObjectData(SerializationInfo info, StreamingContext context)
-                                {
-                                    throw new NotImplementedException();
-                                }
-                            }
-
-                            [Serializable]
-                            public class Second : ISerializable
-                            {
-                                public void GetObjectData(SerializationInfo info, StreamingContext context)
-                                {
-                                    throw new NotImplementedException();
-                                }
-                            }
-                            """,
+[Serializable]
+public class Second : ISerializable
+{
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        throw new NotImplementedException();
+    }
+}",
                     },
                 }
             }.RunAsync(CancellationToken.None);
@@ -194,32 +182,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+Imports System
+Imports System.Runtime.Serialization
+Public Class First
+    Implements ISerializable
 
-                            Imports System
-                            Imports System.Runtime.Serialization
-                            Public Class First
-                                Implements ISerializable
+    Protected Sub New(context As StreamingContext, info As SerializationInfo)
+    End Sub
 
-                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
-                                End Sub
+    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+        throw new NotImplementedException()
+    End Sub
+End Class
 
-                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-                                    throw new NotImplementedException()
-                                End Sub
-                            End Class
+Public Class Second
+    Implements ISerializable
 
-                            Public Class Second
-                                Implements ISerializable
+    Protected Sub New(context As StreamingContext, info As SerializationInfo)
+    End Sub
 
-                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
-                                End Sub
-
-                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-                                    throw new NotImplementedException()
-                                End Sub
-                            End Class
-                            """,
+    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+        throw new NotImplementedException()
+    End Sub
+End Class",
                     },
                     ExpectedDiagnostics =
                     {
@@ -231,35 +217,33 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+Imports System
+Imports System.Runtime.Serialization
 
-                            Imports System
-                            Imports System.Runtime.Serialization
+<Serializable>
+Public Class First
+    Implements ISerializable
 
-                            <Serializable>
-                            Public Class First
-                                Implements ISerializable
+    Protected Sub New(context As StreamingContext, info As SerializationInfo)
+    End Sub
 
-                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
-                                End Sub
+    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+        throw new NotImplementedException()
+    End Sub
+End Class
 
-                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-                                    throw new NotImplementedException()
-                                End Sub
-                            End Class
+<Serializable>
+Public Class Second
+    Implements ISerializable
 
-                            <Serializable>
-                            Public Class Second
-                                Implements ISerializable
+    Protected Sub New(context As StreamingContext, info As SerializationInfo)
+    End Sub
 
-                                Protected Sub New(context As StreamingContext, info As SerializationInfo)
-                                End Sub
-
-                                Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
-                                    throw new NotImplementedException()
-                                End Sub
-                            End Class
-                            """
+    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+        throw new NotImplementedException()
+    End Sub
+End Class"
                     },
                 },
             }.RunAsync(CancellationToken.None);

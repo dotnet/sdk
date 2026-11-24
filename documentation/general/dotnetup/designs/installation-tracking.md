@@ -25,11 +25,21 @@ We will store the manifest in json format.  At the top level it should have a sc
 - Version, channel, or version range
 - Source: explicit install command, global.json, or previous (non-dotnetup) install
 - Global.json path
+- Optional `minimumVersion` and `allowPrerelease` constraints for repository specs.
+  Together with `versionOrChannel`, these store the last known complete requirement.
+  Both constraints are absent for standalone specs and older channel-only registrations.
 
 ### Installation
 - Component
-- Version (this is the exact version that is installed)
+- Version (the exact release version or daily build identity that was requested)
+- Optional productVersion (the on-disk payload version, when it differs from Version)
 - Subcomponents
+
+RTM and servicing daily builds can have a build identity such as
+`11.0.100-rtm.26552.115` but install into `sdk/11.0.100`. In that case, the manifest keeps:
+
+- `version` as `11.0.100-rtm.26552.115` for channel matching and updates
+- `productVersion` as `11.0.100` for layout validation and stale-entry pruning.
 
 ### Subcomponent
 
@@ -51,7 +61,7 @@ We could represent the dotnet roots in the manifest as a node which has properti
 
 ```json
 {
-  "schemaVersion": "1",
+  "schemaVersion": "2",
   "dotnetRoots": [
     {
       "path": "C:\\Users\\Daniel\\AppData\\Local\\dotnet",
@@ -122,6 +132,7 @@ We could represent the dotnet roots in the manifest as a node which has properti
 
 - Go through all install specs in the manifest.
   - For install specs that came from a global.json file, update the versions in them if the global.json file has changed.  Delete those specs if the global.json file has been deleted (or no longer specifies a version).
+  - Save the complete requirement after a successful read. If the file is unreadable or invalid, warn and use the saved requirement. If none was saved, skip garbage collection for this dotnet root.
   - For each install spec, find the latest installation record that matches.  Mark that installation record to keep for this garbage collection.
 - Delete all installation records from the manifest which weren't marked.
 - Iterate through all components installed in the dotnet root.  Remove any which are no longer listed under an installation record in the manifest.

@@ -30,7 +30,7 @@ internal sealed class TelemetryTestEnvironment : IDisposable
             [Constants.Telemetry.DisableTraceExportEnvVar] = "0",
             ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED"] = "true",
             ["APPLICATIONINSIGHTS_SDKSTATS_DISABLED_ALL"] = "true",
-            ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = Path.Combine(TempRoot, "data"),
+            ["DOTNET_DOTNETUP_DATA_DIR"] = Path.Combine(TempRoot, "data"),
             [Constants.Telemetry.E2EConnectionStringEnvVar] =
                 $"InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint={ingestionEndpoint}",
             ["NO_PROXY"] = "127.0.0.1",
@@ -60,6 +60,22 @@ internal sealed class TelemetryTestEnvironment : IDisposable
     public (int exitCode, string output) RunEnvScript() =>
         RunDotnetup(
             ["env", "script", "--shell", "pwsh", "--dotnet-install-path", _testEnvironment.InstallPath]);
+
+    /// <summary>
+    /// Runs dotnetup so it persists telemetry but leaves the blobs on disk for the test to drain.
+    /// </summary>
+    public (int exitCode, string output) RunWithoutDetachedDrainer(string[] args)
+    {
+        EnvironmentVariables[Constants.Telemetry.TestSkipDetachedDrainerEnvVar] = "1";
+        try
+        {
+            return RunDotnetup(args);
+        }
+        finally
+        {
+            EnvironmentVariables.Remove(Constants.Telemetry.TestSkipDetachedDrainerEnvVar);
+        }
+    }
 
     public void ConfigureShutdownBudgetObservation() =>
         EnvironmentVariables[Constants.Telemetry.TestShutdownBudgetPathEnvVar] = ShutdownBudgetPath;

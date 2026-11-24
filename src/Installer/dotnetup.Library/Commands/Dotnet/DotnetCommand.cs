@@ -112,10 +112,9 @@ internal class DotnetCommand : CommandBase
         var currentPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
         startInfo.Environment["PATH"] = dotnetRoot + Path.PathSeparator + currentPath;
 
-        Process? process;
         try
         {
-            process = Process.Start(startInfo);
+            return Process.Run(startInfo).ExitCode;
         }
         catch (Exception ex)
         {
@@ -124,17 +123,5 @@ internal class DotnetCommand : CommandBase
                 Strings.DotnetCommandDotnetStartFailed,
                 ex);
         }
-
-        if (process is null)
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.ProcessStartFailed,
-                Strings.DotnetCommandDotnetStartFailed);
-        }
-
-        using var _ = process;
-
-        process.WaitForExit();
-        return process.ExitCode;
     }
 }

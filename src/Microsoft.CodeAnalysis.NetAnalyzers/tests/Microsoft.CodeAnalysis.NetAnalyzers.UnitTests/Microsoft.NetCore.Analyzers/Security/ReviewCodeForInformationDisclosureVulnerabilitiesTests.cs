@@ -24,26 +24,24 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System;
 
-                            using System;
-
-                            public partial class WebForm : System.Web.UI.Page
-                            {
-                                protected void Page_Load(object sender, EventArgs eventArgs)
-                                {
-                                    try
-                                    {
-                                        object o = null;
-                                        o.ToString();
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        this.Response.Write(e.ToString());
-                                    }
-                                }
-                            }
-                            """,
+public partial class WebForm : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs eventArgs)
+    {
+        try
+        {
+            object o = null;
+            o.ToString();
+        }
+        catch (Exception e)
+        {
+            this.Response.Write(e.ToString());
+        }
+    }
+}",
                     },
                     ExpectedDiagnostics =
                     {
@@ -63,23 +61,21 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+Imports System
 
-                            Imports System
+Partial Public Class WebForm 
+    Inherits System.Web.UI.Page
 
-                            Partial Public Class WebForm
-                                Inherits System.Web.UI.Page
-
-                                Protected Sub Page_Load(sender As Object, eventArgs As EventArgs)
-                                    Try
-                                        Dim o As Object = Nothing
-                                        o.ToString()
-                                    Catch e As Exception
-                                        Me.Response.Write(e.ToString())
-                                    End Try
-                                End Sub
-                            End Class
-                            """,
+    Protected Sub Page_Load(sender As Object, eventArgs As EventArgs)
+        Try
+            Dim o As Object = Nothing
+            o.ToString()
+        Catch e As Exception
+            Me.Response.Write(e.ToString())
+        End Try
+    End Sub
+End Class",
                     },
                     ExpectedDiagnostics =
                     {
@@ -99,25 +95,24 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            using System;
+                        @"
+using System;
 
-                            public partial class WebForm : System.Web.UI.Page
-                            {
-                                protected void Page_Load(object sender, EventArgs eventArgs)
-                                {
-                                    try
-                                    {
-                                        object o = null;
-                                        o.ToString();
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        this.Response.Write("An error occurred. Please try again later.");
-                                    }
-                                }
-                            }
-                            """,
+public partial class WebForm : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs eventArgs)
+    {
+        try
+        {
+            object o = null;
+            o.ToString();
+        }
+        catch (Exception e)
+        {
+            this.Response.Write(""An error occurred. Please try again later."");
+        }
+    }
+}",
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -133,22 +128,21 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            Imports System
+                        @"
+Imports System
 
-                            Partial Public Class WebForm
-                                Inherits System.Web.UI.Page
+Partial Public Class WebForm 
+    Inherits System.Web.UI.Page
 
-                                Protected Sub Page_Load(sender As Object, eventArgs As EventArgs)
-                                    Try
-                                        Dim o As Object = Nothing
-                                        o.ToString()
-                                    Catch e As Exception
-                                        Me.Response.Write("An error occurred. Please try again later.")
-                                    End Try
-                                End Sub
-                            End Class
-                            """,
+    Protected Sub Page_Load(sender As Object, eventArgs As EventArgs)
+        Try
+            Dim o As Object = Nothing
+            o.ToString()
+        Catch e As Exception
+            Me.Response.Write(""An error occurred. Please try again later."")
+        End Try
+    End Sub
+End Class",
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -157,25 +151,25 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task ExceptionToString_ConsoleOutWriteLineAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                public class Class
-                {
-                    public void Blah()
-                    {
-                        try
-                        {
-                            object o = null;
-                            o.ToString();
-                        }
-                        catch (Exception e)
-                        {
-                            Console.Out.WriteLine(e.ToString());
-                        }
-                    }
-                }
-                """);
+public class Class
+{
+    public void Blah()
+    {
+        try
+        {
+            object o = null;
+            o.ToString();
+        }
+        catch (Exception e)
+        {
+            Console.Out.WriteLine(e.ToString());
+        }
+    }
+}
+");
         }
 
         [TestMethod]
@@ -188,28 +182,26 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System;
+using System.Web;
 
-                            using System;
-                            using System.Web;
-
-                            public class Class
-                            {
-                                public void Blah(HttpResponse response)
-                                {
-                                    try
-                                    {
-                                        object o = null;
-                                        o.ToString();
-                                    }
-                                    catch (NullReferenceException nre)
-                                    {
-                                        response.Write(nre.ToString());
-                                    }
-                                }
-                            }
-
-                            """,
+public class Class
+{
+    public void Blah(HttpResponse response)
+    {
+        try
+        {
+            object o = null;
+            o.ToString();
+        }
+        catch (NullReferenceException nre)
+        {
+            response.Write(nre.ToString());
+        }
+    }
+}
+",
                     },
                     ExpectedDiagnostics =
                     {
@@ -229,29 +221,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System;
+using System.Web.UI.HtmlControls;
 
-                            using System;
-                            using System.Web.UI.HtmlControls;
-
-                            public class Class
-                            {
-                                public HtmlSelect Select;
-                                public void Blah()
-                                {
-                                    try
-                                    {
-                                        object o = null;
-                                        o.ToString();
-                                    }
-                                    catch (NullReferenceException nre)
-                                    {
-                                        Select.InnerHtml = nre.Message;
-                                    }
-                                }
-                            }
-
-                            """,
+public class Class
+{
+    public HtmlSelect Select;
+    public void Blah()
+    {
+        try
+        {
+            object o = null;
+            o.ToString();
+        }
+        catch (NullReferenceException nre)
+        {
+            Select.InnerHtml = nre.Message;
+        }
+    }
+}
+",
                     },
                     ExpectedDiagnostics =
                     {
@@ -271,29 +261,27 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using System;
+using System.Web.UI.WebControls;
 
-                            using System;
-                            using System.Web.UI.WebControls;
-
-                            public class Class
-                            {
-                                public BulletedList BulletedList;
-                                public void Blah()
-                                {
-                                    try
-                                    {
-                                        object o = null;
-                                        o.ToString();
-                                    }
-                                    catch (NullReferenceException nre)
-                                    {
-                                        this.BulletedList.Text = nre.StackTrace;
-                                    }
-                                }
-                            }
-
-                            """,
+public class Class
+{
+    public BulletedList BulletedList;
+    public void Blah()
+    {
+        try
+        {
+            object o = null;
+            o.ToString();
+        }
+        catch (NullReferenceException nre)
+        {
+            this.BulletedList.Text = nre.StackTrace;
+        }
+    }
+}
+",
                     },
                     ExpectedDiagnostics =
                     {
@@ -313,55 +301,55 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            using System;
-                            using System.IO;
-                            using System.Threading.Tasks;
-                            using System.Web.UI.WebControls;
+                        @"
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using System.Web.UI.WebControls;
 
-                            public class Class
-                            {
-                                public BulletedList BulletedList;
+public class Class
+{
+    public BulletedList BulletedList;
 
-                                public async Task DoSomethingNotReallyAsync(Stream stream)
-                                {
-                                    try
-                                    {
-                                        using (stream)
-                                        {
-                                            try
-                                            {
-                                                using (StreamWriter sw = new StreamWriter(stream))
-                                                {
-                                                    ValidateStreamIsNotMemoryStream(stream);
-                                                    sw.Write("Hello world!");
-                                                }
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Console.Write(ex.Message);
-                                            }
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Console.WriteLine(e.Message);
-                                    }
-                                    finally
-                                    {
+    public async Task DoSomethingNotReallyAsync(Stream stream)
+    {
+        try
+        {
+            using (stream)
+            {
+                try
+                {
+                    using (StreamWriter sw = new StreamWriter(stream))
+                    {
+                        ValidateStreamIsNotMemoryStream(stream);
+                        sw.Write(""Hello world!"");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Write(ex.Message);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        finally
+        {
+            
+        }
+    }
 
-                                    }
-                                }
-
-                                private static void ValidateStreamIsNotMemoryStream(Stream stream)
-                                {
-                                    if (stream is MemoryStream)
-                                    {
-                                        throw new ArgumentException(nameof(stream));
-                                    }
-                                }
-                            }
-                            """,
+    private static void ValidateStreamIsNotMemoryStream(Stream stream)
+    {
+        if (stream is MemoryStream)
+        {
+            throw new ArgumentException(nameof(stream));
+        }
+    }
+}
+",
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -377,45 +365,44 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            using System;
-                            using System.Web.UI.WebControls;
+                        @"
+using System;
+using System.Web.UI.WebControls;
 
-                            public class Class
-                            {
-                                public int? AProperty { get; set; }
+public class Class
+{
+    public int? AProperty { get; set; }
 
-                                public void Blah()
-                                {
-                                    try
-                                    {
-                                        Class c = new Class();
-                                        Second(c);
-                                        object o = null;
-                                        o.ToString();
-                                    }
-                                    catch (NullReferenceException nre)
-                                    {
-                                        Console.WriteLine(nre.StackTrace);
-                                    }
-                                }
+    public void Blah()
+    {
+        try
+        {
+            Class c = new Class();
+            Second(c);
+            object o = null;
+            o.ToString();
+        }
+        catch (NullReferenceException nre)
+        {
+            Console.WriteLine(nre.StackTrace);
+        }
+    }
 
-                                public void Second(Class c)
-                                {
-                                    if (c == null)
-                                    {
-                                        throw new ArgumentNullException(nameof(c));
-                                    }
+    public void Second(Class c)
+    {
+        if (c == null)
+        {
+            throw new ArgumentNullException(nameof(c));
+        }
 
-                                    Third(c);
-                                }
+        Third(c);
+    }
 
-                                public void Third(Class c)
-                                {
-                                    Console.WriteLine("c was null = {0}, c.AProperty = {1}", c == null, c == null ? "(null)" : c.AProperty.GetValueOrDefault(-1).ToString());
-                                }
-                            }
-                            """,
+    public void Third(Class c)
+    {
+        Console.WriteLine(""c was null = {0}, c.AProperty = {1}"", c == null, c == null ? ""(null)"" : c.AProperty.GetValueOrDefault(-1).ToString());
+    }
+}",
                     },
                 },
             }.RunAsync(CancellationToken.None);

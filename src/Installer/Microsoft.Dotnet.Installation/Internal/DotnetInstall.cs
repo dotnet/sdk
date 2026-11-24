@@ -8,11 +8,29 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// <summary>
 /// Represents a .NET installation with a fully specified version.
 /// The MuxerDirectory is the directory of the corresponding .NET host that has visibility into this .NET installation.
+/// <see cref="Version"/> is the tracked build identity; use <see cref="LayoutVersion"/> for on-disk paths.
 /// </summary>
 internal record DotnetInstall(
     DotnetInstallRoot InstallRoot,
     ReleaseVersion Version,
-    InstallComponent Component);
+    InstallComponent Component,
+    ReleaseVersion? ProductVersion = null)
+{
+    /// <summary>The version folder on disk, which is also what <c>dotnet --version</c> reports.</summary>
+    public ReleaseVersion LayoutVersion => ProductVersion ?? Version;
+
+    /// <summary>The install's folder relative to the install root, such as <c>sdk/10.0.100</c>.</summary>
+    public string LayoutPath => Component.GetLayoutPath(LayoutVersion.ToString());
+
+    /// <summary>The install's folder on disk.</summary>
+    public string ComponentDirectory => Path.Combine(InstallRoot.Path!, LayoutPath.Replace('/', Path.DirectorySeparatorChar));
+
+    /// <summary>Records the payload's product version, keeping it null when it matches <see cref="Version"/>.</summary>
+    public DotnetInstall WithProductVersion(ReleaseVersion? productVersion) =>
+        productVersion is null || productVersion.Equals(Version)
+            ? this
+            : this with { ProductVersion = productVersion };
+}
 
 /// <summary>
 /// A lightweight specification for an install request before path resolution and
@@ -44,7 +62,11 @@ internal record DotnetInstallRequest(
 /// </summary>
 internal record ResolvedInstallRequest(
     DotnetInstallRequest Request,
-    ReleaseVersion ResolvedVersion);
+    ReleaseVersion ResolvedVersion)
+{
+    /// <summary>The install this request produces.</summary>
+    public DotnetInstall ToInstall() => new(Request.InstallRoot, ResolvedVersion, Request.Component);
+}
 
 internal record InstallRequestOptions()
 {
@@ -61,7 +83,7 @@ internal record InstallRequestOptions()
     /// The source of this install request.
     /// Used when recording install specs in the manifest.
     /// </summary>
-    public InstallRequestSource InstallSource { get; init; } = InstallRequestSource.Explicit;
+    public InstallSource InstallSource { get; init; } = InstallSource.Explicit;
 
     /// <summary>
     /// The path to the global.json file that triggered this install, if applicable.
@@ -86,6 +108,31 @@ internal record InstallRequestOptions()
     /// Corresponds to the <c>--verbosity</c> CLI option.
     /// </summary>
     public Verbosity Verbosity { get; init; }
+
+    /// <summary>
+    /// How the installation is performed. Defaults to <see cref="InstallMechanism.Archive"/>;
+    /// admin mode requests use <see cref="InstallMechanism.WindowsInstallerBundle"/>.
+    /// </summary>
+    public InstallMechanism InstallMechanism { get; init; } = InstallMechanism.Archive;
+
+    /// <summary>
+    /// If true, the download must be covered by the signed releases.json manifest; downloads trusted
+    /// only by a published hash (such as daily or blob-feed builds) are rejected. This is separate from
+    /// Authenticode verification and from the machine BlockUnsignedDownloads policy. Set for admin mode installs.
+    /// </summary>
+    public bool RequireReleasesJsonSignature { get; init; }
+}
+
+/// <summary>
+/// The mechanism used to lay down a .NET installation.
+/// </summary>
+internal enum InstallMechanism
+{
+    /// <summary>Download an archive and extract it into the install root.</summary>
+    Archive = 0,
+
+    /// <summary>Run the Windows installer bundle (.exe) into the shared system folder.</summary>
+    WindowsInstallerBundle = 1,
 }
 
 /// <summary>
@@ -100,13 +147,4 @@ internal enum Verbosity
     Normal = 1,
     Detailed = 2,
     // Future: Diagnostic = 3,
-}
-
-/// <summary>
-/// The source that triggered an install request.
-/// </summary>
-internal enum InstallRequestSource
-{
-    Explicit,
-    GlobalJson,
 }

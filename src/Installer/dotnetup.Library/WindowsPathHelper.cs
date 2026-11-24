@@ -132,78 +132,77 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Gets the default Program Files dotnet installation path(s) by reading from the registry.
-    /// For each architecture subkey under HKLM\SOFTWARE\dotnet\Setup\InstalledVersions\{arch}:
-    ///   1. First checks {arch}\sharedhost → Path value (preferred, set by the .NET host installer)
-    ///   2. Falls back to {arch} → InstallLocation value
-    /// If the registry yields no results, falls back to %ProgramFiles%\dotnet if it exists.
-    /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
-    /// See https://github.com/dotnet/runtime/issues/109974
+    /// Gets the existing default Program Files dotnet roots of every architecture this OS supports, native first:
+    /// Program Files\dotnet, Program Files (x86)\dotnet, and Program Files\dotnet\x64 on Arm64 Windows.
+    /// Installs in a custom location (the installer's DOTNETHOME property) are not detected; the registry is not read.
+    /// See get_default_installation_dir_for_arch in
+    /// https://github.com/dotnet/runtime/blob/main/src/native/corehost/hostmisc/pal.windows.cpp
     /// </summary>
-    public static List<string> GetProgramFilesDotnetPaths()
+    public static List<string> GetProgramFilesDotnetPaths() => GetProgramFilesDotnetPaths(new AdminInstallRootResolver());
+
+    internal static List<string> GetProgramFilesDotnetPaths(AdminInstallRootResolver resolver) =>
+        [.. resolver.ResolveSupported()
+            .Select(root => GetExistingDirectory(root.Path))
+            .OfType<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase)];
+
+    /// <summary>
+    /// Gets the existing default Program Files dotnet root for <paramref name="architecture"/>, or null when it does not exist.
+    /// </summary>
+    public static DotnetInstallRoot? GetProgramFilesDotnetRoot(InstallArchitecture architecture) =>
+        GetProgramFilesDotnetRoot(new AdminInstallRootResolver(), architecture);
+
+    /// <summary>
+    /// The folder the .NET installer uses for <paramref name="architecture"/>, if it exists: Program Files\dotnet for the
+    /// OS architecture, Program Files (x86)\dotnet for x86, and Program Files\dotnet\x64 for x64 on Arm64 Windows. Returns
+    /// null when the folder is missing, the combination is unsupported, or the Program Files folder is unknown.
+    /// </summary>
+    internal static DotnetInstallRoot? GetProgramFilesDotnetRoot(AdminInstallRootResolver resolver, InstallArchitecture architecture)
     {
-        var paths = new List<string>();
-
-        // Read from registry to find actual dotnet installations.
-        // Use 32-bit registry hive to ensure we get the correct view on WoW64.
-        using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-        using var key = baseKey.OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions");
-        if (key != null)
+        DotnetInstallRoot root;
+        try
         {
-            foreach (var archName in key.GetSubKeyNames())
-            {
-                using var archKey = key.OpenSubKey(archName);
-                if (archKey == null)
-                {
-                    continue;
-                }
-
-                // Prefer sharedhost\Path — this is the canonical location set by the host installer.
-                string? installPath = null;
-                using (var sharedHostKey = archKey.OpenSubKey("sharedhost"))
-                {
-                    installPath = sharedHostKey?.GetValue("Path") as string;
-                }
-
-                // Fallback to the InstallLocation value on the architecture key.
-                installPath ??= archKey.GetValue("InstallLocation") as string;
-
-                if (!string.IsNullOrEmpty(installPath))
-                {
-                    var normalized = installPath.TrimEnd(Path.DirectorySeparatorChar);
-                    if (Directory.Exists(normalized) && !paths.Contains(normalized, StringComparer.OrdinalIgnoreCase))
-                    {
-                        paths.Add(normalized);
-                    }
-                }
-            }
+            root = resolver.Resolve(architecture);
+        }
+        catch (DotnetInstallException ex) when (ex.ErrorCode == DotnetInstallErrorCode.PlatformNotSupported)
+        {
+            return null;
         }
 
-        // Fallback: if registry yielded nothing, check the default Program Files location.
-        if (paths.Count == 0)
+        return GetExistingDirectory(root.Path) is { } path ? root with { Path = path } : null;
+    }
+
+    private static string? GetExistingDirectory(string? path)
+    {
+        if (string.IsNullOrEmpty(path))
         {
-            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            if (!string.IsNullOrEmpty(programFiles))
-            {
-                var defaultPath = Path.Combine(programFiles, "dotnet");
-                if (Directory.Exists(defaultPath))
-                {
-                    paths.Add(defaultPath);
-                }
-            }
+            return null;
         }
 
-        return paths;
+        var normalized = Path.TrimEndingDirectorySeparator(path);
+        return Directory.Exists(normalized) ? normalized : null;
     }
 
     /// <summary>
-    /// Splits a PATH string into entries.
-    /// Uses EnvironmentProvider's SplitPaths for proper processing.
+    /// Splits a PATH string into entries: trims quotes, drops empty entries, and expands a
+    /// leading <c>~/</c> using <c>HOME</c>, matching the SDK's EnvironmentProvider PATH handling.
     /// </summary>
     public static List<string> SplitPath(string path)
     {
-        var envProvider = new Microsoft.DotNet.Cli.Utils.EnvironmentProvider();
-        return [.. envProvider.SplitPaths(path)];
+        string home = Environment.GetEnvironmentVariable("HOME") ?? string.Empty;
+        return [.. path
+            .Split(Path.PathSeparator)
+            .Select(p => p.Trim('"'))
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => ExpandTildeSlash(p, home))];
+    }
+
+    private static string ExpandTildeSlash(string path, string home)
+    {
+        const string TildeSlash = "~/";
+        return path.StartsWith(TildeSlash, StringComparison.Ordinal) && !string.IsNullOrEmpty(home)
+            ? Path.Combine(home, path[TildeSlash.Length..])
+            : path;
     }
 
     /// <summary>

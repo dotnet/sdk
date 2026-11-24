@@ -64,17 +64,12 @@ To apply the change to this terminal now, run:
 Or open a new terminal.
 
 > dotnetup list
-Installations (managed by dotnetup):
+C:\dotnet (x64)
+Component  Installed version   Install spec  Source
+---------  ------------------  ------------  -------
+.NET SDK   <resolved-version>  latest        Command
 
-  <default-installation-root>
-
-    Tracked channels:
-      SDK latest  (source: explicit)
-
-    Installed versions:
-      SDK <resolved-version>  (<architecture>)
-
-Total: 1
+1 install spec; 1 installation (1 SDK, 0 runtimes)
 
 > dotnet --version
 <resolved-version>

@@ -10,9 +10,9 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal static class TelemetryDiskLogger
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = false };
+    private static readonly JsonSerializerOptions s_jsonOptions;
 
-    private static readonly TelemetryDiskLoggerJsonSerializerContext s_jsonContext = new(s_jsonOptions);
+    private static readonly TelemetryDiskLoggerJsonSerializerContext s_jsonContext;
 
     public record EventModel(
         string name,
@@ -40,6 +40,12 @@ internal static class TelemetryDiskLogger
         SourceModel source,
         Dictionary<string, string?> tags,
         EventModel[] events);
+
+    static TelemetryDiskLogger()
+    {
+        s_jsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = false };
+        s_jsonContext = new(s_jsonOptions);
+    }
 
     public static bool WriteLog(string logPath, IEnumerable<Activity> activities)
     {
@@ -79,13 +85,13 @@ internal static class TelemetryDiskLogger
         source: new(
             name: activity.Source.Name,
             version: activity.Source.Version,
-            tags: activity.Source.Tags?.ToDictionary(StringComparer.OrdinalIgnoreCase)
+            tags: activity.Source.Tags?.ToDictionary()
         ),
-        tags: activity.Tags.ToDictionary(StringComparer.OrdinalIgnoreCase),
+        tags: activity.Tags.ToDictionary(),
         events: [.. activity.Events.Select(e => new EventModel(
             name: e.Name,
             timestamp: e.Timestamp,
-            tags: e.Tags.ToDictionary(StringComparer.OrdinalIgnoreCase)
+            tags: e.Tags.ToDictionary()
         ))]
     );
 }

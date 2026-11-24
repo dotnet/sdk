@@ -21,13 +21,25 @@ internal class InstallWorkflow
 {
     private readonly InstallCommand _command;
     private readonly InstallPathResolver _installPathResolver;
+    private readonly AdminInstallRootResolver _adminInstallRootResolver;
+    private readonly InitWorkflows? _initWorkflows;
 
     private readonly Lazy<DotnetInstallRootConfiguration?> _currentInstallRoot;
 
     public InstallWorkflow(InstallCommand command)
+        : this(command, new AdminInstallRootResolver())
+    {
+    }
+
+    internal InstallWorkflow(
+        InstallCommand command,
+        AdminInstallRootResolver adminInstallRootResolver,
+        InitWorkflows? initWorkflows = null)
     {
         _command = command;
         _installPathResolver = new InstallPathResolver(command.DotnetEnvironment);
+        _adminInstallRootResolver = adminInstallRootResolver;
+        _initWorkflows = initWorkflows;
         _currentInstallRoot = new Lazy<DotnetInstallRootConfiguration?>(
             command.DotnetEnvironment.GetCurrentPathConfiguration);
     }
@@ -42,7 +54,7 @@ internal class InstallWorkflow
     /// </summary>
     public void Execute(MinimalInstallSpec[] componentSpecs)
     {
-        bool runOnboarding = ShouldRunFirstUseOnboarding(_command.Interactive, _command.InstallPath, _command.MigrateFromSystem)
+        bool runOnboarding = ShouldRunFirstUseOnboarding(DotnetupConfig.ReadEffectiveAccessMode(), _command.Interactive, _command.InstallPath, _command.MigrateFromSystem)
             && !InitWorkflows.HasLocalSdkPathGlobalJson();
         bool promptForStarterChannel = ShouldPromptForStarterChannel(runOnboarding, componentSpecs);
         List<ResolvedInstallRequest> requests;
@@ -52,8 +64,13 @@ internal class InstallWorkflow
             // Pre-resolve the user's requests unless we still need to prompt for a starter channel
             // (in which case the walkthrough generates them after the prompt).
             var initialRequests = promptForStarterChannel ? null : GenerateInstallRequests(componentSpecs);
-            var workflows = new InitWorkflows(_command.DotnetEnvironment);
+            var workflows = _initWorkflows
+                ?? new InitWorkflows(_command.DotnetEnvironment);
             requests = workflows.InitWalkthrough(_command, initialRequests);
+            if (requests.Count == 0)
+            {
+                return;
+            }
         }
         else
         {
@@ -74,7 +91,7 @@ internal class InstallWorkflow
         // flags control whether the global.json file is mutated.
         if (_command.UpdateGlobalJson)
         {
-            _command.DotnetEnvironment.ApplyGlobalJsonModifications(requests);
+            _command.DotnetEnvironment.ApplyGlobalJsonModifications(requests, _command.CompletedInstalls);
         }
 
     }
@@ -122,15 +139,70 @@ internal class InstallWorkflow
     /// Generates resolved install requests for the given component specifications.
     /// Handles path resolution, global.json channel inference (for SDK when no channel specified),
     /// install path validation, and version resolution via the channel version resolver.
+    /// In admin mode, requests target the shared system location and use the Windows installer bundle
+    /// (which requires <c>--untracked</c>), unless global.json sdk paths select a local, non-system
+    /// directory; that directory receives an ordinary archive install instead.
     /// </summary>
+    /// <param name="componentSpecs">The components and channels to install.</param>
+    /// <param name="selectedAccessMode">
+    /// The access mode the user just selected in the init form, which takes precedence over the saved mode.
+    /// Accepting admin mode in the form stands in for <c>--untracked</c>. When null, the saved mode is used.
+    /// </param>
     public List<ResolvedInstallRequest> GenerateInstallRequests(
-        MinimalInstallSpec[] componentSpecs)
+        MinimalInstallSpec[] componentSpecs,
+        DotnetAccessMode? selectedAccessMode = null)
     {
-        var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        string? globalJsonPath = GlobalJsonHelper.FindGlobalJsonPath(Environment.CurrentDirectory);
+        if (globalJsonPath is not null && _command.UpdateGlobalJson)
+        {
+            // Fail before downloading and installing anything when the post-install update would fail.
+            GlobalJsonHelper.ValidateGlobalJsonIsUpdatable(globalJsonPath);
+        }
 
-        var pathResolution = _installPathResolver.Resolve(
-            _command.InstallPath,
-            globalJson);
+        GlobalJsonInfo? globalJson = globalJsonPath is not null && NeedsGlobalJsonContents(componentSpecs, _command.InstallPath)
+            ? GlobalJsonHelper.LoadGlobalJson(globalJsonPath)
+            : null;
+
+        DotnetAccessMode? accessMode = selectedAccessMode ?? DotnetupConfig.ReadEffectiveAccessMode();
+        var target = accessMode == DotnetAccessMode.Admin
+            ? ResolveAdminModeInstallTarget(globalJson, untrackedAcknowledged: _command.Untracked || selectedAccessMode is not null)
+            : ResolveUserInstallTarget(globalJson);
+
+        var requests = new List<ResolvedInstallRequest>();
+        foreach (var spec in componentSpecs)
+        {
+            var resolved = ResolveSpec(spec, target, globalJsonPath, globalJson);
+            requests.Add(resolved);
+        }
+
+        return requests;
+    }
+
+    /// <summary>
+    /// The global.json contents are needed only to choose the install path (no explicit path) or the
+    /// SDK channel (an SDK spec without a channel). Otherwise only the file's location is used, so a
+    /// malformed global.json does not block an install that never relies on it.
+    /// </summary>
+    internal static bool NeedsGlobalJsonContents(MinimalInstallSpec[] componentSpecs, string? installPath)
+        => installPath is null
+            || componentSpecs.Any(spec => spec.Component == InstallComponent.SDK && spec.VersionOrChannel is null);
+
+    /// <summary>Where install requests are directed and how they are installed.</summary>
+    /// <param name="InstallRoot">The root that receives the install.</param>
+    /// <param name="PathResolution">How the root was chosen, for telemetry.</param>
+    /// <param name="Mechanism">Whether .NET is extracted from an archive or installed by the Windows installer bundle.</param>
+    /// <param name="Untracked">Whether the target forces untracked installs regardless of <c>--untracked</c>.</param>
+    /// <param name="RequireReleasesJsonSignature">Whether downloads must be covered by the signed releases.json manifest.</param>
+    private sealed record InstallTarget(
+        DotnetInstallRoot InstallRoot,
+        InstallPathResolver.InstallPathResolutionResult PathResolution,
+        InstallMechanism Mechanism,
+        bool Untracked,
+        bool RequireReleasesJsonSignature);
+
+    private InstallTarget ResolveUserInstallTarget(GlobalJsonInfo? globalJson)
+    {
+        var pathResolution = _installPathResolver.Resolve(_command.InstallPath, globalJson);
 
         ValidateInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource, _command.ManifestPath);
 
@@ -138,22 +210,45 @@ internal class InstallWorkflow
             pathResolution.ResolvedInstallPath,
             InstallerUtilities.GetDefaultInstallArchitecture());
 
-        var requests = new List<ResolvedInstallRequest>();
-        foreach (var spec in componentSpecs)
-        {
-            var resolved = ResolveSpec(spec, installRoot, globalJson, pathResolution);
-            requests.Add(resolved);
-        }
-
-        return requests;
+        return new InstallTarget(installRoot, pathResolution, InstallMechanism.Archive, Untracked: false, RequireReleasesJsonSignature: false);
     }
 
-    internal static bool ShouldRunFirstUseOnboarding(bool interactive, string? installPath, bool migrateFromSystem = false)
+    /// <summary>
+    /// Resolves the target in admin mode. When global.json sdk paths name a literal directory outside the
+    /// system .NET location, .NET is extracted there from the archive, as in user mode, because the Windows
+    /// installer bundle cannot install to that directory; that install is tracked unless <c>--untracked</c>
+    /// is passed. Otherwise, including for the <c>$host$</c> sentinel, the bundle installs to the shared
+    /// Program Files location, which requires <c>--untracked</c> (or an admin selection in the init form).
+    /// Explicit install paths are rejected earlier by the admin mode command gate.
+    /// </summary>
+    private InstallTarget ResolveAdminModeInstallTarget(GlobalJsonInfo? globalJson, bool untrackedAcknowledged)
+    {
+        if (globalJson?.SdkPath is string globalJsonSdkPath
+            && !InstallPathClassifier.IsAdminInstallPath(globalJsonSdkPath))
+        {
+            // The signed manifest is always preferred, and `BlockUnsignedDownloads` is enforced elsewhere - don't block a local repo with a daily SDK.
+            return ResolveUserInstallTarget(globalJson);
+        }
+
+        if (!untrackedAcknowledged)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.AdminModeRequiresUntracked,
+                "dotnetup is in admin mode, which installs .NET system-wide with the official Windows installers and does not track those installations. " +
+                "Run the command again with --untracked.");
+        }
+
+        var installRoot = _adminInstallRootResolver.Resolve(InstallerUtilities.GetDefaultInstallArchitecture());
+        var systemPathResolution = new InstallPathResolver.InstallPathResolutionResult(installRoot.Path, InstallPathFromGlobalJson: null, PathSource.Default);
+        return new InstallTarget(installRoot, systemPathResolution, InstallMechanism.WindowsInstallerBundle, Untracked: true, RequireReleasesJsonSignature: true);
+    }
+
+    internal static bool ShouldRunFirstUseOnboarding(DotnetAccessMode? accessMode, bool interactive, string? installPath, bool migrateFromSystem = false)
     {
         return !migrateFromSystem &&
             interactive &&
             installPath is null &&
-            DotnetupConfig.ReadAccessMode() is null;
+            accessMode is null;
     }
 
     internal static bool ShouldPromptForStarterChannel(bool runOnboarding, MinimalInstallSpec[] componentSpecs)
@@ -169,11 +264,15 @@ internal class InstallWorkflow
     /// Resolves a single <see cref="MinimalInstallSpec"/> to a <see cref="ResolvedInstallRequest"/>
     /// by inferring the channel (from global.json or "latest"), resolving the version, and recording telemetry.
     /// </summary>
+    /// <param name="spec">The component and optional version or channel to install.</param>
+    /// <param name="target">Where and how the install is performed.</param>
+    /// <param name="globalJsonPath">The global.json that applies to the current directory, if any.</param>
+    /// <param name="globalJson">The parsed global.json, when its contents are needed for this install.</param>
     private ResolvedInstallRequest ResolveSpec(
         MinimalInstallSpec spec,
-        DotnetInstallRoot installRoot,
-        GlobalJsonInfo? globalJson,
-        InstallPathResolver.InstallPathResolutionResult pathResolution)
+        InstallTarget target,
+        string? globalJsonPath,
+        GlobalJsonInfo? globalJson)
     {
         var component = spec.Component;
         var explicitChannel = spec.VersionOrChannel;
@@ -183,27 +282,29 @@ internal class InstallWorkflow
         // Validate the channel format before any network calls so bogus inputs (e.g. "preview-daily",
         // "100-daily", typos) fail fast with a clean InvalidChannel error instead of bubbling up as
         // a 404 from the release manifest or aka.ms redirect.
-        if (!ChannelVersionResolver.IsValidChannelFormat(channel))
+        if (!ChannelVersionResolver.IsValidChannelFormat(channel.Name))
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.InvalidChannel,
-                $"'{channel}' is not a recognized .NET version or channel for {component.GetDisplayName()}. "
+                $"'{channel.Name}' is not a recognized .NET version or channel for {component.GetDisplayName()}. "
                 + "Use a channel like 'latest', 'lts', 'preview', a version scope like '10.0' or '10.0.1xx', "
                 + "a daily-build scope like '10.0-daily' or '10.0.1xx-daily', or a fully-qualified version like '10.0.103'.");
         }
 
         var request = new DotnetInstallRequest(
-            installRoot,
-            new UpdateChannel(channel),
+            target.InstallRoot,
+            channel,
             component,
             new InstallRequestOptions
             {
                 ManifestPath = _command.ManifestPath,
                 RequireMuxerUpdate = _command.RequireMuxerUpdate,
-                InstallSource = isFromGlobalJson ? InstallRequestSource.GlobalJson : InstallRequestSource.Explicit,
-                GlobalJsonPath = (isFromGlobalJson || _command.UpdateGlobalJson) ? globalJson?.GlobalJsonPath : null,
-                Untracked = _command.Untracked,
-                Verbosity = _command.Verbosity
+                InstallSource = isFromGlobalJson ? InstallSource.GlobalJson : InstallSource.Explicit,
+                GlobalJsonPath = (isFromGlobalJson || _command.UpdateGlobalJson) ? globalJsonPath : null,
+                Untracked = _command.Untracked || target.Untracked,
+                Verbosity = _command.Verbosity,
+                InstallMechanism = target.Mechanism,
+                RequireReleasesJsonSignature = target.RequireReleasesJsonSignature,
             });
 
         var resolvedVersion = _command.ChannelVersionResolver.GetLatestVersionForChannel(request.Channel, request.Component, request.InstallRoot.Architecture);
@@ -212,15 +313,15 @@ internal class InstallWorkflow
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.VersionNotFound,
-                $"Could not resolve channel '{channel}' to a .NET version for {component.GetDisplayName()}.");
+                $"Could not resolve channel '{channel.Name}' to a .NET version for {component.GetDisplayName()}.");
         }
 
         var resolved = new ResolvedInstallRequest(request, resolvedVersion);
 
         RecordInstallTelemetry(
             component, explicitChannel,
-            _command.InstallPath, globalJson,
-            pathResolution, channel, resolved);
+            _command.InstallPath, globalJsonPath,
+            target.PathResolution, channel.Name, resolved);
 
         return resolved;
     }
@@ -230,33 +331,32 @@ internal class InstallWorkflow
     /// For SDK installs with no explicit channel, tries to infer from global.json.
     /// Falls back to "latest" if nothing else applies.
     /// </summary>
-    private static (string Channel, bool IsFromGlobalJson) ResolveChannel(
+    internal static (UpdateChannel Channel, bool IsFromGlobalJson) ResolveChannel(
         InstallComponent component,
         string? explicitChannel,
         GlobalJsonInfo? globalJson)
     {
         if (explicitChannel is not null)
         {
-            return (explicitChannel, false);
+            return (new UpdateChannel(explicitChannel), false);
         }
 
-        if (component == InstallComponent.SDK && globalJson?.GlobalJsonPath is not null)
+        if (component == InstallComponent.SDK && globalJson is not null)
         {
-            string? channelFromGlobalJson = GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath);
-            if (channelFromGlobalJson is not null)
+            if (InstallSpecResolver.EvaluateGlobalJsonForCommand(globalJson.GlobalJsonPath, globalJson.GlobalJsonContents) is { } channelFromGlobalJson)
             {
                 SpectreAnsiConsole.MarkupLine(string.Format(
                     CultureInfo.InvariantCulture,
                     "[{0}]{1} {2} will be installed since {3} specifies that version.[/]",
                     DotnetupTheme.Current.Dim,
                     component.GetDisplayName(),
-                    channelFromGlobalJson,
+                    channelFromGlobalJson.Name,
                     globalJson.GlobalJsonPath));
                 return (channelFromGlobalJson, true);
             }
         }
 
-        return (ChannelVersionResolver.LatestChannel, false);
+        return (new UpdateChannel(ChannelVersionResolver.LatestChannel), false);
     }
 
     /// <summary>
@@ -322,14 +422,14 @@ internal class InstallWorkflow
         InstallComponent component,
         string? requestedVersionOrChannel,
         string? explicitInstallPath,
-        GlobalJsonInfo? globalJson,
+        string? globalJsonPath,
         InstallPathResolver.InstallPathResolutionResult pathResolution,
         string resolvedChannel,
         ResolvedInstallRequest resolved)
     {
         string requestSource = requestedVersionOrChannel is not null
             ? "explicit"
-            : globalJson?.GlobalJsonPath is not null
+            : globalJsonPath is not null
                 ? "default-globaljson"
                 : "default-latest";
 
@@ -338,10 +438,11 @@ internal class InstallWorkflow
         _command.SetCommandTag(TelemetryTagNames.InstallComponent, component.ToString());
         _command.SetCommandTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(requestedVersionOrChannel));
         _command.SetCommandTag(TelemetryTagNames.InstallPathExplicit, (explicitInstallPath is not null).ToString());
-        _command.SetCommandTag(TelemetryTagNames.InstallHasGlobalJson, (globalJson?.GlobalJsonPath is not null).ToString());
+        _command.SetCommandTag(TelemetryTagNames.InstallHasGlobalJson, (globalJsonPath is not null).ToString());
         _command.SetCommandTag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot is null ? "none" : InstallPathClassifier.ClassifyInstallPath(currentInstallRoot.Path));
         _command.SetCommandTag(TelemetryTagNames.InstallPathType, InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource));
         _command.SetCommandTag(TelemetryTagNames.InstallPathSource, pathResolution.PathSource.ToString().ToLowerInvariant());
+        _command.SetCommandTag(TelemetryTagNames.InstallMechanism, resolved.Request.Options.InstallMechanism.ToString().ToLowerInvariant());
         _command.SetCommandTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion.ToString());
         _command.SetCommandTag(TelemetryTagNames.DotnetRequestSource, requestSource);
         _command.SetCommandTag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(resolvedChannel));

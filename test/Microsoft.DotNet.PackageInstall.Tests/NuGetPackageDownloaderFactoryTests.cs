@@ -65,7 +65,6 @@ public class NuGetPackageDownloaderFactoryTests : SdkTest
     }
 
     [TestMethod]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public void Constructor_WhenVerifyRequestedButPlatformUnsupported_LogsMessage()
     {
         // On non-Windows, requesting verification without the env var should log a message.

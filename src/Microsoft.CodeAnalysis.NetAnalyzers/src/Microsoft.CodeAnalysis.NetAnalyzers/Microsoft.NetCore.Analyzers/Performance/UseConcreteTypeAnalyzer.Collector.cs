@@ -34,7 +34,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
             public ConcurrentDictionary<IMethodSymbol, bool> MethodsAssignedToDelegate { get; } = new(SymbolEqualityComparer.Default);
 
             public INamedTypeSymbol? Void { get; private set; }
-            public INamedTypeSymbol? Unknown { get; private set; }
             private Func<ISymbol, bool>? _checkVisibility;
 
             private Collector()
@@ -58,7 +57,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 MethodsAssignedToDelegate.Clear();
 
                 Void = null;
-                Unknown = null;
                 _checkVisibility = null;
 
                 static void DrainDictionary<T, U>(ConcurrentDictionary<T, PooledConcurrentSet<U>> d)
@@ -73,11 +71,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
             }
 
-            public static Collector GetInstance(INamedTypeSymbol voidType, INamedTypeSymbol unknownType, Func<ISymbol, bool> visibilityChecker)
+            public static Collector GetInstance(INamedTypeSymbol voidType, Func<ISymbol, bool> visibilityChecker)
             {
                 var c = _pool.Allocate();
                 c.Void = voidType;
-                c.Unknown = unknownType;
                 c._checkVisibility = visibilityChecker;
                 return c;
             }
@@ -125,7 +122,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             case OperationKind.PropertyReference:
                                 {
                                     var propertyRef = (IPropertyReferenceOperation)instance;
-                                    if (CanUpgrade(propertyRef.Property))
+                                    if (CanUpgrade(propertyRef.Property, false))
                                     {
                                         RecordVirtualDispatch(propertyRef.Property, targetMethod);
                                     }
@@ -186,7 +183,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             case OperationKind.PropertyReference:
                                 {
                                     var propertyRef = (IPropertyReferenceOperation)instance;
-                                    if (CanUpgrade(propertyRef.Property))
+                                    if (CanUpgrade(propertyRef.Property, false))
                                     {
                                         RecordVirtualDispatch(propertyRef.Property, op.TargetMethod);
                                     }
@@ -347,7 +344,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         foreach (var property in op.InitializedProperties)
                         {
-                            if (CanUpgrade(property))
+                            if (CanUpgrade(property, false))
                             {
                                 RecordAssignment(property, valueType);
                             }
@@ -403,7 +400,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         if (methodSym.AssociatedSymbol is IPropertySymbol propertySym)
                         {
-                            if (CanUpgrade(propertySym))
+                            if (CanUpgrade(propertySym, false))
                             {
                                 var valueTypes = GetValueTypes(op.ReturnedValue);
                                 foreach (var valueType in valueTypes)
@@ -447,9 +444,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         }
 
                     case OperationKind.Literal:
-                    case OperationKind.DefaultValue:
                         {
-                            if (op.HasNullConstantValue() && !op.Type.IsNullableValueType())
+                            if (op.HasNullConstantValue())
                             {
                                 // use 'void' as a marker for a null assignment
                                 values.Add(Void!);
@@ -491,17 +487,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             var oldCount = values.Count;
                             GetValueTypes(values, colOp.Value);
 
-                            for (var i = values.Count - 1; i >= oldCount; i--)
+                            if (values.Count > oldCount)
                             {
-                                // Null values on the left select the right-hand value instead.
-                                if (SymbolEqualityComparer.Default.Equals(values[i], Void))
-                                {
-                                    values.RemoveAt(i);
-                                }
-                                else
-                                {
-                                    values[i] = values[i].WithNullableAnnotation(CodeAnalysis.NullableAnnotation.NotAnnotated);
-                                }
+                                // erase any potential nullable annotations of the left-hand value since when the value is null, it doesn't get used
+                                values[^1] = values[^1].WithNullableAnnotation(CodeAnalysis.NullableAnnotation.NotAnnotated);
                             }
 
                             GetValueTypes(values, colOp.WhenNull);
@@ -511,7 +500,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     case OperationKind.Invocation:
                     case OperationKind.ArrayElementReference:
                     case OperationKind.ObjectCreation:
-                    case OperationKind.AnonymousObjectCreation:
                     case OperationKind.ParameterReference:
                     case OperationKind.PropertyReference:
                     case OperationKind.MethodReference:
@@ -551,17 +539,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             }
 
                             break;
-                        }
-
-                    case OperationKind.Throw:
-                        // A throw expression produces no value to assign or return.
-                        return;
-
-                    default:
-                        {
-                            // Unhandled operations must disqualify the candidate instead of silently disappearing.
-                            values.Add(Unknown!);
-                            return;
                         }
                 }
             }
@@ -749,16 +726,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
             /// <summary>
             /// Trivial reject for properties that can't be upgraded in order to avoid wasted work.
             /// </summary>
-            private bool CanUpgrade(IPropertySymbol propSym)
+            private bool CanUpgrade(IPropertySymbol propSym, bool setter)
             {
-                var m = propSym.GetMethod!;
+                var m = setter ? propSym.SetMethod! : propSym.GetMethod!;
 
                 return _checkVisibility!(m)
                     && !m.IsImplementationOfAnyInterfaceMember()
                     && !m.IsOverride
                     && !m.IsVirtual
-                    && m.PartialDefinitionPart == null &&
-                    m.DeclaredAccessibility >= (propSym.SetMethod?.DeclaredAccessibility ?? default);
+                    && m.PartialDefinitionPart == null;
             }
 
             private void RecordVirtualDispatch(IFieldSymbol field, IMethodSymbol target) => VirtualDispatchFields.GetOrAdd(field, _ => PooledConcurrentSet<IMethodSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(target);

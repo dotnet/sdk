@@ -261,6 +261,25 @@ public class UninstallPreviewTests
         output.Should().Contain(".NET SDK 9.0.100 will also be uninstalled");
     }
 
+    [TestMethod]
+    [ResourceLock(WellKnownResources.Console)]
+    public void Display_UnexpectedRemovalWithRtmDailyTarget_SaysAlso()
+    {
+        var daily = new Installation
+        {
+            Component = InstallComponent.SDK, Version = "11.0.100-rtm.26552.115", ProductVersion = "11.0.100",
+            Subcomponents = ["sdk/11.0.100"]
+        };
+        var unexpected = new Installation { Component = InstallComponent.SDK, Version = "9.0.100", Subcomponents = ["sdk/9.0.100"] };
+        var plan = CreatePlan([], [daily, unexpected], ["sdk/11.0.100", "sdk/9.0.100"]);
+
+        var output = Render(plan, [daily], InstallComponent.SDK, "11-daily", out var warned);
+
+        warned.Should().BeTrue();
+        output.Should().Contain(".NET SDK 9.0.100 will also be uninstalled");
+        output.Should().NotContain("11.0.100 will");
+    }
+
     private static GarbageCollectionPlan CreatePlan(
         Dictionary<Installation, List<InstallSpec>> installSpecsByInstallation, List<Installation> removals, List<string> paths)
     {

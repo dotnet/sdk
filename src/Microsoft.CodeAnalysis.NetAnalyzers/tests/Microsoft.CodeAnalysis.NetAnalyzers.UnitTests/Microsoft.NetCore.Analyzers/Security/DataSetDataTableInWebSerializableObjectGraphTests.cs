@@ -16,80 +16,74 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task WebServiceDirectlyReferencesAsync()
         {
-            await VerifyWebServicesCSharpAsync("""
+            await VerifyWebServicesCSharpAsync(@"
+using System;
+using System.Data;
+using System.Web.Services;
 
-                using System;
-                using System.Data;
-                using System.Web.Services;
-
-                [WebService(Namespace = "http://contoso.example.com/")]
-                public class MyService : WebService
-                {
-                    [WebMethod]
-                    public string MyWebMethod(DataTable dataTable)
-                    {
-                        return null;
-                    }
-                }
-
-                """,
+[WebService(Namespace = ""http://contoso.example.com/"")]
+public class MyService : WebService
+{
+    [WebMethod]
+    public string MyWebMethod(DataTable dataTable)
+    {
+        return null;
+    }
+}
+",
                 GetCSharpResultAt(10, 31, "DataTable", "DataTable"));
         }
 
         [TestMethod]
         public async Task WebServiceIndirectlyReferencesAsync()
         {
-            await VerifyWebServicesCSharpAsync("""
+            await VerifyWebServicesCSharpAsync(@"
+using System;
+using System.Data;
+using System.Web.Services;
 
-                using System;
-                using System.Data;
-                using System.Web.Services;
+[WebService(Namespace = ""http://contoso.example.com/"")]
+public class MyService : WebService
+{
+    [WebMethod]
+    public string MyWebMethod(MyType boo)
+    {
+        return null;
+    }
+}
 
-                [WebService(Namespace = "http://contoso.example.com/")]
-                public class MyService : WebService
-                {
-                    [WebMethod]
-                    public string MyWebMethod(MyType boo)
-                    {
-                        return null;
-                    }
-                }
-
-                public class MyType
-                {
-                    public DataSet DS { get; set; }
-                }
-
-                """,
+public class MyType
+{
+    public DataSet DS { get; set; }
+}
+",
                 GetCSharpResultAt(10, 31, "DataSet", "DataSet MyType.DS"));
         }
 
         [TestMethod]
         public async Task OperationContractAsync()
         {
-            await VerifyServiceModelCSharpAsync("""
+            await VerifyServiceModelCSharpAsync(@"
+using System;
+using System.Data;
+using System.ServiceModel;
 
-                using System;
-                using System.Data;
-                using System.ServiceModel;
+[ServiceContract(Namespace = ""http://contoso.example.com/"")]
+public interface IMyContract
+{
+    [OperationContract]
+    string MyMethod(DataTable dataTable);
+    [OperationContract]
+    string MyOtherMethod(MyClass data);
+}
 
-                [ServiceContract(Namespace = "http://contoso.example.com/")]
-                public interface IMyContract
-                {
-                    [OperationContract]
-                    string MyMethod(DataTable dataTable);
-                    [OperationContract]
-                    string MyOtherMethod(MyClass data);
-                }
-
-                public class MyClass
-                {
-                    // Property of type DataSet, automatically serialized and
-                    // deserialized as part of the overall MyClass payload.
-                    public DataSet MyDataSet { get; set; }
-                }
-
-                """,
+public class MyClass
+{
+    // Property of type DataSet, automatically serialized and
+    // deserialized as part of the overall MyClass payload.
+    public DataSet MyDataSet { get; set; }
+}
+",
                 GetCSharpResultAt(10, 21, "DataTable", "DataTable"),
                 GetCSharpResultAt(12, 26, "DataSet", "DataSet MyClass.MyDataSet"));
         }

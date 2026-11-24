@@ -35,16 +35,15 @@ public class RestoringCommand : MSBuildForwardingApp
     public RestoringCommand(
         MSBuildArgs msbuildArgs,
         bool noRestore,
-        string? msbuildPath,
-        string? userProfileDir,
-        bool? advertiseWorkloadUpdates,
-        CommandServices services)
-        : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath, services)
+        string? msbuildPath = null,
+        string? userProfileDir = null,
+        bool? advertiseWorkloadUpdates = null)
+        : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath)
     {
         userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
         Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir));
         SdkVulnerabilityNotifier.BackgroundUpdateCacheIfNeeded();
-        SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath, Services);
+        SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath);
         AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.OtherMSBuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
 
         if (!noRestore)
@@ -102,8 +101,7 @@ public class RestoringCommand : MSBuildForwardingApp
     private static MSBuildForwardingApp? GetSeparateRestoreCommand(
         MSBuildArgs msbuildArgs,
         bool noRestore,
-        string? msbuildPath,
-        CommandServices services)
+        string? msbuildPath)
     {
         // if the user asked for no restores, or there are no properties that would trigger a separate restore,
         // then we don't need to create a separate restore command. This is mututally exclusive with the similar
@@ -132,7 +130,7 @@ public class RestoringCommand : MSBuildForwardingApp
         {
             restoreMSBuildArgs = restoreMSBuildArgs.CloneWithVerbosity(verbosity);
         }
-        return RestoreCommand.CreateForwarding(restoreMSBuildArgs, msbuildPath, services);
+        return RestoreCommand.CreateForwarding(restoreMSBuildArgs, msbuildPath);
     }
 
     private static bool HasPropertyToExcludeFromRestore(MSBuildArgs msbuildArgs)

@@ -4,7 +4,6 @@
 using System.CommandLine;
 using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
-using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
@@ -27,10 +26,10 @@ internal class EnvScriptCommand : CommandBase
         _dotnetupOnly = result.GetValue(EnvScriptCommandParser.DotnetupOnlyOption);
     }
 
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
+
     protected override void ExecuteCore()
     {
-        DotnetupTelemetry.Instance.IsShellStartupCommand = true;
-
         // Check if shell provider was successfully determined
         if (_shellProvider == null)
         {

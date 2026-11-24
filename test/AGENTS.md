@@ -13,9 +13,17 @@ Guidance for changes under `test/`.
 
 - **Derive from `SdkTest`** (in `Microsoft.NET.TestFramework.MSTest`). This gives you
   `TestAssetsManager`, `Log` (wired to MSTest's `TestContext`), and
-  `BinLogArgument(...)` for binlog paths collected by Helix. It also initializes the
-  SDK/MSBuild environment before in-process MSBuild APIs such as `ProjectCollection`
-  cache toolset paths.
+  `BinLogArgument(...)` for binlog paths collected by Helix.
+  **Exception: standalone `dotnetup.Tests` classes must not inherit `SdkTest`.**
+  The [dotnetup pipeline](../eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml)
+  builds dotnetup without the SDK redist, which `SdkTest` requires at construction.
+  Use [DotnetupTestUtilities](dotnetup.Tests/Utilities/DotnetupTestUtilities.cs) for
+  the executable under test and
+  [SelfUpdateTestFiles.DotnetHostPath](dotnetup.Tests/Utilities/SelfUpdateTestFiles.cs)
+  when a test needs the bootstrap host.
+  Managed-host process tests build the
+  [ManagedDotnetup fixture](TestAssets/Dotnetup/ManagedDotnetup/ManagedDotnetup.csproj);
+  do not rely on a managed application DLL being present after NativeAOT publishing.
 - **Use `SdkTestContext.Current` for paths** — never hardcode paths or manually discover
   locations at runtime (e.g. walking up directories):
 
@@ -31,16 +39,15 @@ Guidance for changes under `test/`.
   installed one.
 - **Test asset placement.** Put test inputs (projects, packages, workloads, etc.) in
   `test/TestAssets/`. They are automatically deployed to Helix via `test/UnitTests.proj`.
-- **Audit before raising parallelism.** New MSTest projects are repo-defaulted to `None`
-  in `test/Directory.Build.props` until their shared resources have been audited.
-  Runnable test projects override that default with `ClassLevel` or `MethodLevel` when
-  safe; keep `None` only when the whole assembly depends on one inherently serial
-  resource. Raising the scope without an audit causes Helix over-subscription/timeouts
-  and test interference.
+- **Don't raise parallelism.** MSTest is repo-defaulted to `None` in
+  `test/Directory.Build.props` because of concurrency flakiness; a few projects opt
+  into `ClassLevel` or `MethodLevel` after auditing their shared resources. Cranking it
+  up without that audit causes Helix over-subscription/timeouts and test interference.
 - **In parallelized projects, prefer `[ResourceLock]` over `[DoNotParallelize]`.** In the
-  projects that opt in, MSTest's parallel-safety analyzers
-  (MSTEST0073–MSTEST0077) are active, and `MSTestAnalysisMode=Recommended` plus
-  `TreatWarningsAsErrors` makes them build errors.
+  projects that do opt in (`Microsoft.NET.Build.Tests`, `dotnet-watch.Tests`,
+  `Microsoft.NET.Build.Containers.UnitTests`, `Microsoft.TemplateEngine.Cli.UnitTests`),
+  MSTest's parallel-safety analyzers (MSTEST0073–MSTEST0077) are active, and
+  `MSTestAnalysisMode=Recommended` plus `TreatWarningsAsErrors` makes them build errors.
   Fix them in this order:
   1. **Eliminate the shared state** — pass an environment variable to the child process
      via `TestCommand.WithEnvironmentVariable(...)` instead of
@@ -61,16 +68,19 @@ Guidance for changes under `test/`.
 - **MSTest output is live.** `test/testconfig.json` is copied beside each MSTest
   test executable as `<AssemblyName>.testconfig.json`, so console, trace, and
   `TestContext` output is both captured in the result and shown while the test runs.
-- **Use MSTest's built-in combinatorial data support.** Import
-  `Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial` for
-  `[CombinatorialData]`, `[CombinatorialValues]`, and `[CombinatorialRange]`; do not add
-  the third-party `Combinatorial.MSTest` package.
-- **Run all local tests through `run-tests`.** It selects and executes the appropriate
-  test platform while preserving actionable output and diagnostics.
+- **Control Spectre console capabilities in rendering tests.** Set
+  `Enrichment = new ProfileEnrichment { UseDefaultEnrichers = false }` when a test
+  explicitly selects interactive or ANSI output. Spectre's
+  [Azure Pipelines enricher](https://github.com/spectreconsole/spectre.console/blob/0.54.0/src/Spectre.Console/Enrichment/CI/AzurePipelinesEnricher.cs)
+  overrides those settings when `TF_BUILD` is present. Inject `EnvironmentVariables`
+  into the test console to cover CI profiles without changing process-wide state;
+  see [BundleProcessRunnerTests](dotnetup.Tests/BundleProcessRunnerTests.cs).
+- **Run focused tests through `targeted-test`.** It runs the smallest relevant tests and
+  preserves actionable output and diagnostics when a local run fails.
 - **Map new substantive test areas for targeted testing.** Prefer adding a
   `ConditionalTestScope` when reliable trigger paths can be defined. When the area is too
   broad for practical conditional filtering, add its primary project to the fallback
-  table in the `run-tests` skill.
+  table in the `targeted-test` skill.
 - **Skips must point to a tracking issue URL** — `[Ignore("https://github.com/dotnet/sdk/issues/N")]`.
 - **Verify (approval) snapshots**: `*.verified.*` is checked in; the runner writes a
   `*.received.*` on mismatch — promote received → verified when you change output

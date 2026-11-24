@@ -5,6 +5,7 @@ using System.Net.Http;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -12,11 +13,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [TestClass]
 public class SelfUpdateDownloadIntegrationTests
 {
-    [TestInitialize]
-    public void AllowUnsignedSource() => UnsignedSourcePolicy.OverrideForTesting = () => false;
-
-    [TestCleanup]
-    public void ResetUnsignedSourcePolicy() => UnsignedSourcePolicy.OverrideForTesting = null;
+    private readonly FakeDotnetupPolicyStore _policyStore = new();
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
@@ -126,7 +123,7 @@ public class SelfUpdateDownloadIntegrationTests
         cache.AddToCache(handler.ArtifactUri.AbsoluteUri, files.ReplacementPath);
         Assert.IsNotNull(cache.GetCachedFilePath(handler.ArtifactUri.AbsoluteUri));
         byte[] originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
-        var workflow = CreateWorkflow(files, downloader, () => UnsignedSourcePolicy.OverrideForTesting = () => true);
+        var workflow = CreateWorkflow(files, downloader, () => _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true);
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(workflow));
 
@@ -137,8 +134,8 @@ public class SelfUpdateDownloadIntegrationTests
         Assert.IsFalse(File.Exists(files.Paths.StagedPath + ".download"));
     }
 
-    private static DotnetDownloader CreateDownloader(NativeSelfUpdateFiles files, HttpClient http)
-        => new(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
+    private DotnetDownloader CreateDownloader(NativeSelfUpdateFiles files, HttpClient http)
+        => new(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"), new DotnetupPolicy(_policyStore));
 
     private static SelfUpdateWorkflow CreateWorkflow(NativeSelfUpdateFiles files, DotnetDownloader downloader, Action? afterResolution = null)
         => new(files.Paths, () =>

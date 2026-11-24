@@ -132,11 +132,6 @@
         <target state="translated">'--collect-test-map' 옵션은 '--max-parallel-test-modules'와 결합할 수 없습니다. 테스트 맵은 한 번에 하나의 모듈로 수집됩니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdDeviceOptionsNotSupportedForFileBasedApps">
-        <source>The '--device' and '--list-devices' options are not supported for C# file-based apps.</source>
-        <target state="new">The '--device' and '--list-devices' options are not supported for C# file-based apps.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdDeviceOptionsRequireProject">
         <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
         <target state="translated">'--device' 및 '--list-devices' 옵션은 프로젝트가 필요하며 '--test-modules'와 함께 사용할 수 없습니다.</target>

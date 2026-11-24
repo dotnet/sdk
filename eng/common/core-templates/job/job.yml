@@ -28,7 +28,6 @@ parameters:
   enablePublishTestResults: false
   enablePublishing: false
   enableBuildRetry: false
-  enableAstred: false
   mergeTestResults: false
   testRunTitle: ''
   testResultsFormat: ''
@@ -74,6 +73,14 @@ jobs:
     templateContext: ${{ parameters.templateContext }}
 
   variables:
+  - name: AllowPtrToDetectTestRunRetryFiles
+    value: true
+  # Component Governance detection and CodeQL are not run in the public project
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - name: skipComponentGovernanceDetection
+      value: true
+    - name: Codeql.SkipTaskAutoInjection
+      value: true
   - ${{ if ne(parameters.enableTelemetry, 'false') }}:
     - name: DOTNET_CLI_TELEMETRY_PROFILE
       value: '$(Build.Repository.Uri)'
@@ -236,8 +243,3 @@ jobs:
       condition: always()
   - ${{ each step in parameters.artifactPublishSteps }}:
     - ${{ step }}
-
-  - ${{ if and(eq(parameters.enableAstred, true), eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - template: /eng/common/core-templates/steps/astred-artifacts.yml
-      parameters:
-        binlogDir: $(MSBUILDDEBUGPATH)

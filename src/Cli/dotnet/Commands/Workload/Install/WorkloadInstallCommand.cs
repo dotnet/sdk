@@ -82,7 +82,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
         _shouldShutdownInstaller = _workloadInstallerFromConstructor != null;
 
         _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, _workloadResolver, PackageDownloader, _userProfileDir,
-            _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDiagnostic());
+            _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
     }
 
     private IReadOnlyCollection<string> GetValidWorkloadIds()

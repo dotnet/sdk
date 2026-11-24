@@ -11,7 +11,6 @@ using NuGet.Packaging.Signing;
 namespace Microsoft.NET.Restore.Tests
 {
     [TestClass]
-    [ResourceLock(RestoreTestResources.NuGetCache)]
     public class GivenThatWeWantToRestoreProjectsUsingNuGetConfigProperties : SdkTest
     {
         [TestMethod]

@@ -93,8 +93,8 @@ public enum DotnetInstallErrorCode
     InstallPathHasUntrackedArtifacts,
 
     /// <summary>
-    /// Failed to start a child <c>dotnet</c> process (Process.Start returned null
-    /// or threw). Distinct from <see cref="Unknown"/> so the telemetry classifier
+    /// Failed to start a child <c>dotnet</c> process.
+    /// Distinct from <see cref="Unknown"/> so the telemetry classifier
     /// can route this to the Product category with a stable signal name.
     /// </summary>
     ProcessStartFailed,
@@ -166,6 +166,42 @@ public enum DotnetInstallErrorCode
 
     /// <summary>The user declined confirmation of an operation.</summary>
     OperationCancelled,
+
+    /// <summary>The invoked command is not supported while dotnetup is in admin mode.</summary>
+    AdminModeCommandNotSupported,
+
+    /// <summary>An option or argument passed to the command is not supported while dotnetup is in admin mode.</summary>
+    AdminModeSymbolNotSupported,
+
+    /// <summary>The operation requires <c>--untracked</c> while dotnetup is in admin mode.</summary>
+    AdminModeRequiresUntracked,
+
+    /// <summary>Another Windows Installer (MSI) installation is in progress (exit code 1618).</summary>
+    InstallerBusy,
+
+    /// <summary>The Windows installer bundle returned a failure exit code.</summary>
+    InstallerFailed,
+
+    /// <summary>The Windows installer bundle reported success, but the expected installation could not be verified afterwards.</summary>
+    InstallerPostInstallVerificationFailed,
+
+    /// <summary>The download resolved for a Windows installer bundle does not have the expected <c>.exe</c> file extension.</summary>
+    WrongInstallerFileExtension,
+
+    /// <summary>Admin mode will not use a download without signature validation until we add interactive agreement.</summary>
+    AdminModeSignatureRequired,
+
+    /// <summary>The install would overwrite a different build of the same component that uses the same on-disk version folder.</summary>
+    InstallLayoutConflict,
+
+    /// <summary>A newer build that the Windows installer would not downgrade is already installed (or the installer exited with 1638).</summary>
+    NewerVersionInstalled,
+
+    /// <summary>A Windows installer bundle request was skipped because a newer request in the same batch would replace it.</summary>
+    SupersededInBatch,
+
+    /// <summary>A global.json file that the command needs to read is not valid JSON or has invalid SDK settings.</summary>
+    MalformedGlobalJson,
 }
 
 /// <summary>

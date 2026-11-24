@@ -49,8 +49,8 @@
     <!-- We don't need to code sign most .js files because they are coming from other repos and are already signed -->
     <FileExtensionSignInfo Update=".js" CertificateName="None" />
 
-    <FileSignInfo Include="dotnet-watch-browser-tools.js" CertificateName="MicrosoftDotNet500" />
-    <FileSignInfo Include="Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js" CertificateName="MicrosoftDotNet500" />
+    <FileSignInfo Include="HotReload-browser-tools.js" CertificateName="MicrosoftDotNet500" />
+    <FileSignInfo Include="Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js" CertificateName="MicrosoftDotNet500" />
 
     <!-- Skip signing .py files because they are already signed -->
     <FileExtensionSignInfo Update=".py" CertificateName="None" />
@@ -213,6 +213,15 @@
     <!-- The '*' wildcard is for the TargetFramework, which isn't set when evaluating this file. -->
     <_DotnetupPublishedBinary Include="$(ArtifactsBinDir)dotnetup\$(Configuration)\*\$(TargetRid)\publish\dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
     <Artifact Include="@(_DotnetupPublishedBinary)" Kind="Blob">
+      <ChecksumPath>%(FullPath).sha512</ChecksumPath>
+    </Artifact>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotnetupBuildVariant)' == 'daily'">
+    <_DotnetupCandidateBinary Include="$(ArtifactsDir)preview\bin\dotnetup\$(Configuration)\*\$(TargetRid)\publish\dotnetup-$(TargetRid)$(_DotnetupNativeExt);
+                                      $(ArtifactsDir)ga\bin\dotnetup\$(Configuration)\*\$(TargetRid)\publish\dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
+    <!-- SkipPublish is Arcade's existing sign-only contract: these never enter BAR. -->
+    <Artifact Include="@(_DotnetupCandidateBinary)" Kind="Blob" SkipPublish="true">
       <ChecksumPath>%(FullPath).sha512</ChecksumPath>
     </Artifact>
   </ItemGroup>

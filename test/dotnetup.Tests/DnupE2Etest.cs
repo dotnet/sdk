@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
@@ -251,16 +250,17 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         Directory.CreateDirectory(tempRoot);
 
         // Run the script
-        using var process = new Process();
-        process.StartInfo.FileName = shellExecutable;
-        process.StartInfo.Arguments = shell == "pwsh" ? $"-File \"{scriptPath}\"" : $"\"{scriptPath}\"";
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.RedirectStandardOutput = true;
-        process.StartInfo.RedirectStandardError = true;
-        process.StartInfo.WorkingDirectory = tempRoot;
+        var startInfo = new ProcessStartInfo(shellExecutable)
+        {
+            Arguments = shell == "pwsh" ? $"-File \"{scriptPath}\"" : $"\"{scriptPath}\"",
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            WorkingDirectory = tempRoot,
+        };
 
         // Suppress .NET welcome message / first-run experience in test output
-        process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
+        startInfo.Environment["DOTNET_NOLOGO"] = "1";
 
         // When running the managed (non-AOT) dotnetup AppHost, DOTNET_ROOT must be set
         // so it can locate the runtime. When running the native AOT binary this is
@@ -270,37 +270,15 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
             ?? (Environment.ProcessPath is string processPath ? Path.GetDirectoryName(processPath) : null);
         if (currentDotnetRoot != null)
         {
-            process.StartInfo.Environment["DOTNET_ROOT"] = currentDotnetRoot;
+            startInfo.Environment["DOTNET_ROOT"] = currentDotnetRoot;
         }
 
-        var outputBuilder = new StringBuilder();
-        var errorBuilder = new StringBuilder();
-
-        process.OutputDataReceived += (sender, e) =>
-        {
-            if (e.Data != null)
-            {
-                outputBuilder.AppendLine(e.Data);
-            }
-        };
-        process.ErrorDataReceived += (sender, e) =>
-        {
-            if (e.Data != null)
-            {
-                errorBuilder.AppendLine(e.Data);
-            }
-        };
-
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-        process.WaitForExit();
-
-        string scriptOutput = outputBuilder.ToString();
-        string scriptError = errorBuilder.ToString();
+        var result = Process.RunAndCaptureTextAsync(startInfo).GetAwaiter().GetResult();
+        string scriptOutput = result.StandardOutput;
+        string scriptError = result.StandardError;
 
         // Verify the script succeeded
-        process.ExitCode.Should().Be(0, $"Script execution failed for {shell}. Output:\n{scriptOutput}\nError:\n{scriptError}");
+        result.ExitStatus.ExitCode.Should().Be(0, $"Script execution failed for {shell}. Output:\n{scriptOutput}\nError:\n{scriptError}");
 
         // Parse the output lines
         var outputLines = scriptOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
@@ -381,10 +359,12 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     /// from the blob feed → install completes and is recorded in the manifest.
     /// </summary>
     [TestMethod]
-    public void SdkInstall_DailyChannel()
+    [DataRow("daily")]
+    [DataRow("11-daily")]
+    public void SdkInstall_DailyChannel(string channel)
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var args = DotnetupTestUtilities.BuildSdkArguments("daily", testEnv.InstallPath, testEnv.ManifestPath);
+        var args = DotnetupTestUtilities.BuildSdkArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
 
@@ -396,6 +376,7 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
             install.Version.Should().NotBeNullOrEmpty();
             // Daily versions are always prerelease.
             install.Version.Should().Contain("-", "daily-channel installs should resolve to a prerelease version");
+            VerifyLayoutExists(testEnv, install);
         });
     }
 
@@ -408,10 +389,12 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     /// non-existent runtime archive from the blob feed.
     /// </summary>
     [TestMethod]
-    public void RuntimeInstall_DailyChannel()
+    [DataRow("daily")]
+    [DataRow("11.0-daily")]
+    public void RuntimeInstall_DailyChannel(string channel)
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var args = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec("daily", testEnv.InstallPath, testEnv.ManifestPath);
+        var args = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(channel, testEnv.InstallPath, testEnv.ManifestPath);
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
 
@@ -419,6 +402,7 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         {
             install.Version.Should().NotBeNullOrEmpty();
             install.Version.Should().Contain("-", "daily-channel installs should resolve to a prerelease version");
+            VerifyLayoutExists(testEnv, install);
         });
     }
 
@@ -513,6 +497,14 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         additionalAssertions?.Invoke(matchingInstall);
     }
 
+    // RTM and servicing daily builds lay down an untagged folder (e.g. sdk/11.0.100) for a tagged build version.
+    private static void VerifyLayoutExists(TestEnvironment testEnv, Installation install)
+    {
+        string componentDirectory = Path.Combine(testEnv.InstallPath, install.LayoutPath);
+        Directory.Exists(componentDirectory).Should().BeTrue(
+            $"'{componentDirectory}' should exist for tracked version '{install.Version}' (productVersion '{install.ProductVersion}')");
+    }
+
     /// <summary>
     /// Resolves a PowerShell executable, preferring pwsh (PowerShell Core) over powershell.exe (Windows PowerShell 5.1).
     /// Returns null if neither is found.
@@ -524,16 +516,20 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         {
             try
             {
-                using var probe = new Process();
-                probe.StartInfo.FileName = candidate;
-                probe.StartInfo.Arguments = "-NoProfile -Command \"exit 0\"";
-                probe.StartInfo.UseShellExecute = false;
-                probe.StartInfo.RedirectStandardOutput = true;
-                probe.StartInfo.RedirectStandardError = true;
-                probe.StartInfo.CreateNoWindow = true;
-                probe.Start();
-                probe.WaitForExit(5000);
-                return candidate;
+                var startInfo = new ProcessStartInfo(candidate)
+                {
+                    Arguments = "-NoProfile -Command \"exit 0\"",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                };
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var result = Process.RunAndCaptureTextAsync(startInfo, timeout.Token).GetAwaiter().GetResult();
+                if (!result.ExitStatus.Canceled)
+                {
+                    return candidate;
+                }
             }
             catch (Exception)
             {

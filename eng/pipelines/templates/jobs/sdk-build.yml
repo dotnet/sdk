@@ -7,7 +7,8 @@ parameters:
     publishTaskPrefix: ''
   container: ''
   helixTargetContainer: ''
-  categoryName: Build
+  categoryName: ''
+  platformName: ''
   runTests: true
   testExecutionMode: helix
   testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
@@ -26,7 +27,7 @@ parameters:
   # These publish the test assembly as a NativeAOT binary and run it on the same architecture,
   # validating the AOT CLI entry-point code under NativeAOT compilation. Only enabled where the
   # agent architecture matches the target (the produced native binary must run on the agent);
-  # cross-arch AoT legs leave it false.
+  # cross-arch AOT legs leave it false.
   runNativeAotCliTests: false
   ### MSBUILD ###
   targetArchitecture: x64
@@ -35,6 +36,7 @@ parameters:
   # MSBuild /p:Projects argument used to scope the build to specific projects (e.g. a .slnf).
   # Defaults to empty, which builds the repo's default solution.
   projectsArgument: ''
+  buildVariants: ['']
   pgoInstrument: false
   enableDefaultArtifacts: false
   runtimeIdentifier: linux-x64
@@ -48,12 +50,12 @@ parameters:
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
   parameters:
-    ${{ if eq(parameters.container, '') }}:
-      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.targetArchitecture }}
-      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.targetArchitecture }})'
+    ${{ if eq(parameters.categoryName, '') }}:
+      name: ${{ parameters.platformName }}_${{ parameters.targetArchitecture }}
+      displayName: '${{ parameters.platformName }} ${{ parameters.targetArchitecture }}'
     ${{ else }}:
-      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.targetArchitecture }}_${{ parameters.container }}
-      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.targetArchitecture }}) [${{ parameters.container }}]'
+      name: ${{ parameters.platformName }}_${{ parameters.targetArchitecture }}_${{ parameters.categoryName }}
+      displayName: '${{ parameters.platformName }} ${{ parameters.targetArchitecture }} ${{ parameters.categoryName }}'
     pool: ${{ parameters.pool }}
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
@@ -67,10 +69,13 @@ jobs:
     enableMicrobuild: true
     enablePublishBuildAssets: true
     enableTelemetry: true
-    enablePublishUsingPipelines: true
+    publishingVersion: 4
+    enablePublishing: true
     enableSbom: ${{ parameters.enableSbom }}
     variables:
     - ${{ insert }}: ${{ parameters.variables }}
+    - name: SkippedTestScopes
+      value: ''
     dependsOn: ${{ parameters.dependsOn }}
     preSteps: ${{ parameters.preSteps }}
     templateContext:
@@ -105,52 +110,59 @@ jobs:
         displayName: 🟣 Download Manifest MSI Packages
 
     ############### BUILDING ###############
-    - ${{ if eq(parameters.pool.os, 'windows') }}:
-      - powershell: eng/common/build.ps1
-          -restore -build -pack -ci -nativeToolsOnMachine
-          -configuration $(buildConfiguration)
-          ${{ parameters.publishArgument }}
-          ${{ parameters.signArgument }}
-          ${{ parameters.projectsArgument }}
-          /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
-          /p:TargetArchitecture=${{ parameters.targetArchitecture }}
-          /p:PgoInstrument=${{ parameters.pgoInstrument }}
-          ${{ parameters.osProperties }}
-          ${{ parameters.runtimeSourceProperties }}
-          ${{ parameters.officialBuildProperties }}
-          /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        displayName: 🟣 Build
-        env:
-          BuildConfig: $(buildConfiguration)
-          TestFullMSBuild: ${{ parameters.testFullMSBuild }}
-          MSBUILDALWAYSRETRY: true
+    - ${{ each variant in parameters.buildVariants }}:
+      - ${{ if eq(parameters.pool.os, 'windows') }}:
+        - powershell: eng/common/build.ps1
+            -restore -build -pack -ci -nativeToolsOnMachine
+            -configuration $(buildConfiguration)
+            ${{ iif(ne(variant, ''), format('-binaryLogName Build-{0}.binlog', variant), '') }}
+            ${{ parameters.projectsArgument }}
+            /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
+            /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+            /p:PgoInstrument=${{ parameters.pgoInstrument }}
+            ${{ parameters.osProperties }}
+            ${{ parameters.runtimeSourceProperties }}
+            ${{ parameters.officialBuildProperties }}
+            /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+            ${{ iif(or(eq(variant, ''), eq(variant, 'daily')), parameters.publishArgument, '') }}
+            ${{ iif(or(eq(variant, ''), eq(variant, 'daily')), parameters.signArgument, '') }}
+            ${{ iif(ne(variant, ''), format('/p:DotnetupBuildVariant={0}', variant), '') }}
+            ${{ iif(and(ne(variant, ''), ne(variant, 'daily')), format('/p:ArtifactsDir=$(Build.SourcesDirectory)/artifacts/{0}/', variant), '') }}
+          displayName: 🟣 Build ${{ variant }}
+          env:
+            BuildConfig: $(buildConfiguration)
+            TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+            MSBUILDALWAYSRETRY: true
 
-    - ${{ else }}:
-      - script: |
-          source $(Build.SourcesDirectory)/eng/common/native/init-os-and-arch.sh
-          source $(Build.SourcesDirectory)/eng/common/native/init-distro-rid.sh
-          initDistroRidGlobal "$os" "$arch" ""
+      - ${{ else }}:
+        - script: |
+            source $(Build.SourcesDirectory)/eng/common/native/init-os-and-arch.sh
+            source $(Build.SourcesDirectory)/eng/common/native/init-distro-rid.sh
+            initDistroRidGlobal "$os" "$arch" ""
 
-          . $(Build.SourcesDirectory)/eng/common/build.sh \
-          -restore -build -pack -ci \
-          -configuration $(buildConfiguration) \
-          ${{ parameters.publishArgument }} \
-          ${{ parameters.signArgument }} \
-          ${{ parameters.projectsArgument }} \
-          /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
-          /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
-          /p:PgoInstrument=${{ parameters.pgoInstrument }} \
-          /p:TargetRid=${{ parameters.runtimeIdentifier }} \
-          ${{ parameters.osProperties }} \
-          ${{ parameters.runtimeSourceProperties }} \
-          ${{ parameters.officialBuildProperties }} \
-          /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        displayName: 🟣 Build
-        env:
-          BuildConfig: $(buildConfiguration)
-          OPENSSL_ENABLE_SHA1_SIGNATURES: 1
-          MSBUILDALWAYSRETRY: true
-          TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
+            . $(Build.SourcesDirectory)/eng/common/build.sh \
+            -restore -build -pack -ci \
+            -configuration $(buildConfiguration) \
+            ${{ iif(ne(variant, ''), format('-binaryLogName Build-{0}.binlog', variant), '') }} \
+            ${{ iif(or(eq(variant, ''), eq(variant, 'daily')), parameters.publishArgument, '') }} \
+            ${{ iif(or(eq(variant, ''), eq(variant, 'daily')), parameters.signArgument, '') }} \
+            ${{ parameters.projectsArgument }} \
+            /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
+            /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
+            /p:PgoInstrument=${{ parameters.pgoInstrument }} \
+            /p:TargetRid=${{ parameters.runtimeIdentifier }} \
+            ${{ parameters.osProperties }} \
+            ${{ parameters.runtimeSourceProperties }} \
+            ${{ parameters.officialBuildProperties }} \
+            /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) \
+            ${{ iif(ne(variant, ''), format('/p:DotnetupBuildVariant={0}', variant), '') }} \
+            ${{ iif(and(ne(variant, ''), ne(variant, 'daily')), format('/p:ArtifactsDir=$(Build.SourcesDirectory)/artifacts/{0}/', variant), '') }}
+          displayName: 🟣 Build ${{ variant }}
+          env:
+            BuildConfig: $(buildConfiguration)
+            OPENSSL_ENABLE_SHA1_SIGNATURES: 1
+            MSBUILDALWAYSRETRY: true
+            TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
@@ -287,6 +299,13 @@ jobs:
           condition: always()
 
     ############### POST ###############
+    - ${{ if or(eq(parameters.categoryName, 'Dotnetup'), eq(parameters.categoryName, 'DotnetupMusl')) }}:
+      - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
+        displayName: Publish dotnetup daily, preview, and GA candidates
+        inputs:
+          targetPath: $(Build.SourcesDirectory)/artifacts/dotnetup-release
+          artifactName: Build_$(System.PhaseName)
+
     - task: CopyFiles@2
       displayName: 🟣 Copy Logs
       inputs:
@@ -317,34 +336,10 @@ jobs:
       continueOnError: true
       condition: always()
 
-    # Publish the leg's Shipping packages as a <JobName>_Assets pipeline artifact, but only when
-    # there's something to publish. A scoped build (e.g. the dotnetup build, which builds only
-    # dotnetup via /p:Projects) produces no Shipping packages, and 1ES.PublishPipelineArtifact
-    # fails hard on a missing targetPath (it doesn't honor continueOnError there), so guard the
-    # step on the directory actually containing files.
-    - ${{ if eq(parameters.pool.os, 'windows') }}:
-      - powershell: |
-          $dir = "$(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping"
-          $hasAssets = (Test-Path $dir) -and ((Get-ChildItem -Path $dir -File -Recurse -ErrorAction SilentlyContinue | Measure-Object).Count -gt 0)
-          Write-Host "##vso[task.setvariable variable=HasBuiltAssets]$($hasAssets.ToString().ToLowerInvariant())"
-        displayName: 🟣 Check for built assets
-        condition: not(canceled())
-    - ${{ else }}:
-      - bash: |
-          dir="$(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping"
-          if [ -d "$dir" ] && [ -n "$(find "$dir" -type f -print -quit)" ]; then
-            echo "##vso[task.setvariable variable=HasBuiltAssets]true"
-          else
-            echo "##vso[task.setvariable variable=HasBuiltAssets]false"
-          fi
-        displayName: 🟣 Check for built assets
-        condition: not(canceled())
-
-    # Only the AoT legs build the dotnet-aot NativeAOT library, so only they produce the
-    # size-analysis files. Gate on the AoT category so these steps run on every AoT leg (including
-    # the build-only cross-arch legs) and never upload empty artifacts on non-AoT legs like the
-    # TestBuild/FullFramework jobs.
-    - ${{ if eq(parameters.categoryName, 'AoT') }}:
+    # Only the AOT legs build the dotnet-aot NativeAOT library, so only they produce the
+    # size-analysis files. Gate on the AOT category so these steps run on every AOT leg (including
+    # the build-only cross-arch legs) and never upload empty artifacts on non-AOT legs.
+    - ${{ if eq(parameters.categoryName, 'AOT') }}:
       - task: CopyFiles@2
         displayName: 🟣 Copy NativeAOT Size Analysis Files
         inputs:
@@ -369,6 +364,29 @@ jobs:
           targetPath: $(Build.ArtifactStagingDirectory)/aot-size-analysis
           artifactName: $(System.PhaseName)_AotSizeAnalysis
         continueOnError: true
+        condition: not(canceled())
+
+    # Publish the leg's Shipping packages as a <JobName>_Assets pipeline artifact, but only when
+    # there's something to publish. A scoped build (e.g. the dotnetup build, which builds only
+    # dotnetup via /p:Projects) produces no Shipping packages, and 1ES.PublishPipelineArtifact
+    # fails hard on a missing targetPath (it doesn't honor continueOnError there), so guard the
+    # step on the directory actually containing files.
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - powershell: |
+          $dir = "$(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping"
+          $hasAssets = (Test-Path $dir) -and ((Get-ChildItem -Path $dir -File -Recurse -ErrorAction SilentlyContinue | Measure-Object).Count -gt 0)
+          Write-Host "##vso[task.setvariable variable=HasBuiltAssets]$($hasAssets.ToString().ToLowerInvariant())"
+        displayName: 🟣 Check for built assets
+        condition: not(canceled())
+    - ${{ else }}:
+      - bash: |
+          dir="$(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping"
+          if [ -d "$dir" ] && [ -n "$(find "$dir" -type f -print -quit)" ]; then
+            echo "##vso[task.setvariable variable=HasBuiltAssets]true"
+          else
+            echo "##vso[task.setvariable variable=HasBuiltAssets]false"
+          fi
+        displayName: 🟣 Check for built assets
         condition: not(canceled())
 
     - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1

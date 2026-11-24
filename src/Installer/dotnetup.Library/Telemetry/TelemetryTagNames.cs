@@ -37,17 +37,36 @@ internal static class TelemetryTagNames
     public const string InstallSetDefault = "install.set_default";
     public const string InstallResolvedVersion = "install.resolved_version";
     public const string InstallResult = "install.result";
+
+    /// <summary>
+    /// Set only when an install needed an automatic repair: <c>succeeded:N,failed:M</c> counts installs that
+    /// succeeded because of a repair and installs whose repair did not fix them.
+    /// </summary>
+    public const string InstallRepair = "install.repair";
     public const string InstallMutexLockFailed = "install.mutex_lock_failed";
     public const string InstallMutexLockPhase = "install.mutex_lock_phase";
     public const string InstallMigratingFromAdmin = "install.migrating_from_admin";
     public const string InstallAdminVersionCopied = "install.admin_version_copied";
+    public const string InstallMechanism = "install.mechanism";
+
+    // Access mode tags
+    public const string AccessMode = "dotnetup.access_mode";
+
+    /// <summary>The access mode selected in the init form, which can differ from the saved mode in <see cref="AccessMode"/>.</summary>
+    public const string InitSelectedAccessMode = "init.selected_access_mode";
 
     // Environment / config tags
     public const string ConfigCorrupted = "config.corrupted";
     public const string ConfigCorruptedError = "config.corrupted_error";
-    public const string HostfxrEnumerationFailed = "hostfxr.enumeration_failed";
-    public const string HostfxrEnumerationError = "hostfxr.enumeration_error";
-    public const string HostfxrEnumerationPath = "hostfxr.enumeration_path";
+    public const string SystemInstallEnumerationFailed = "system_install.enumeration_failed";
+    public const string SystemInstallEnumerationError = "system_install.enumeration_error";
+    public const string SystemInstallEnumerationPath = "system_install.enumeration_path";
+
+    /// <summary>
+    /// Set when an SDK's optional <c>.version</c> file could not be read during install discovery; the value is the
+    /// exception type. Discovery continues with the folder version for that install.
+    /// </summary>
+    public const string LayoutVersionFileReadError = "system_install.version_file_read_error";
 
     // Dotnet request tags
     public const string DotnetRequestSource = "dotnet.request_source";

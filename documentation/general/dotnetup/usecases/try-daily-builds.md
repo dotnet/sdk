@@ -27,6 +27,22 @@ dotnetup sdk install 11.0.1xx-daily
 dotnetup sdk install 11.0.1xx-preview.5-daily
 ```
 
+RTM and servicing daily builds can report a release version such as `11.0.100`
+from `dotnet --version`, even though dotnetup tracks a build identity such as
+`11.0.100-rtm.26552.115`. The build identity lets daily-channel updates distinguish
+successive builds with the same release-version filename.
+
+Successive RTM or servicing daily builds, and the matching stable release, install
+into the same folder. When the stable release was built from the same commit as the
+installed daily build, dotnetup installs it alongside the daily build, since the files
+are identical. Otherwise dotnetup doesn't install one build over another; uninstall
+the existing one first, for example `dotnetup sdk uninstall 11.0.1xx-daily`,
+and then install the newer build.
+
+With `--update-global-json`, dotnetup writes the version the folder uses, such as
+`11.0.100`, because that's what the host resolves `global.json` against. Installing
+from that `global.json` later uses the daily build already in the folder.
+
 ## Isolate a daily SDK
 
 Use a separate installation root when you do not want daily and stable

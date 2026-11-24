@@ -9,8 +9,9 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
-// ResourceLock cannot protect unrelated tests that implicitly read the process current directory which this test mutates.
-[DoNotParallelize]
+// Test parallelization is disabled assembly-wide: the MSTest.Sdk project sets
+// MSTestParallelizeScope=None, which emits [assembly: DoNotParallelize] and runs
+// tests sequentially, isolating the process-CWD mutation this test performs.
 [TestClass]
 public class FilterStaticWebAssetEndpointsMultiThreadingTest
 {

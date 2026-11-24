@@ -38,21 +38,9 @@ public class SelfUpdateManagedHostProcessTests
             startInfo.ArgumentList.Add(argument);
         }
 
-        using var process = Process.Start(startInfo);
-        Assert.IsNotNull(process);
-        try
-        {
-            Assert.IsTrue(process.WaitForExit(120_000), "Managed dotnetup asset build timed out.");
-            Assert.AreEqual(0, process.ExitCode, "Managed dotnetup asset build failed.");
-        }
-        finally
-        {
-            if (!process.HasExited)
-            {
-                process.Kill(entireProcessTree: true);
-                process.WaitForExit(10_000);
-            }
-        }
+        var result = ChildProcessRunner.Run(startInfo, TimeSpan.FromMinutes(2));
+        Assert.IsFalse(result.TimedOut, "Managed dotnetup asset build timed out.");
+        Assert.AreEqual(0, result.ExitCode, "Managed dotnetup asset build failed.");
 
         s_assemblyPath = Path.Combine(outputDirectory, "dotnetup.dll");
     }

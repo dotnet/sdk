@@ -19,6 +19,15 @@ public class EnvSettingsWriterTests
     private static EnvTerminalState NeedsAdditions => new(NeedsAdditions: true, NeedsRemovals: false);
 
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void DescribeOutcome_Admin_DescribesInstallerOwnershipWithoutArchiveGuidance(bool dotnetupOnPath)
+    {
+        EnvSettingsWriter.DescribeOutcome(DotnetAccessMode.Admin, dotnetupOnPath).Should()
+            .Be(dotnetupOnPath ? Strings.EnvOutcomeAdminDotnetupOnPath : Strings.EnvOutcomeAdminDotnetupOffPath);
+    }
+
+    [TestMethod]
     public void BuildEffectMessage_ActiveAndUnchanged_ReturnsNull()
     {
         EnvSettingsWriter.BuildEffectMessage(Active, changedPersistedEnvironment: false, activationCommand: null)

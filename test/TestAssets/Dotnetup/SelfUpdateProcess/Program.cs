@@ -12,6 +12,13 @@ if (args is ["--wait"])
     return 0;
 }
 
+if (args is ["--sleep-child", var childPidPath])
+{
+    File.WriteAllText(childPidPath, Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
+    await Task.Delay(TimeSpan.FromMinutes(5));
+    return 0;
+}
+
 var executable = Environment.ProcessPath!;
 var version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
 
@@ -46,8 +53,25 @@ if (mode == "private-contract" &&
 {
     return 93;
 }
-if (mode == "timeout")
+if (mode is "timeout" or "tree-timeout")
 {
+    if (mode == "tree-timeout")
+    {
+        // The descendant inherits this process's standard handles, so it also holds any redirected pipes open.
+        var grandchildPidPath = executable + ".child.pid";
+        var child = new System.Diagnostics.ProcessStartInfo(executable) { UseShellExecute = false };
+        child.ArgumentList.Add("--sleep-child");
+        child.ArgumentList.Add(grandchildPidPath);
+        using (System.Diagnostics.Process.Start(child))
+        {
+        }
+
+        while (!File.Exists(grandchildPidPath))
+        {
+            await Task.Delay(50);
+        }
+    }
+
     File.WriteAllText(executable + ".pid", Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
     await Task.Delay(TimeSpan.FromMinutes(5));
     return 0;

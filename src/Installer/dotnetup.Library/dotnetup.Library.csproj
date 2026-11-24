@@ -19,7 +19,9 @@
     <RootNamespace>Microsoft.DotNet.Tools.Bootstrapper</RootNamespace>
 
     <!-- Strong naming not needed on .NET Core -->
-    <NoWarn>$(NoWarn);CS8002;CS1591</NoWarn>
+    <!-- CA1810: linked SDK source (src/Cli/dotnet/Telemetry/TelemetryDiskLogger.cs) uses a static constructor;
+         it is kept identical to the SDK, so the rule is suppressed here rather than in shared code. -->
+    <NoWarn>$(NoWarn);CS8002;CS1591;CA1810</NoWarn>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
@@ -66,6 +68,9 @@
 
   <ItemGroup>
     <Using Include="Microsoft.Dotnet.Installation" />
+    <!-- Linked Microsoft.DotNet.Cli.Utils sources rely on that project's global usings. -->
+    <Using Include="System.Diagnostics.Debug" Alias="Debug" />
+    <Using Include="System.Diagnostics.CodeAnalysis" />
   </ItemGroup>
 
   <ItemGroup>
