@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Plik Directory.Packages.props platformy MSBuild",
   "description": "Pusty plik Directory.Packages.props, którego można użyć do centralnego określenia wersji pakietu",

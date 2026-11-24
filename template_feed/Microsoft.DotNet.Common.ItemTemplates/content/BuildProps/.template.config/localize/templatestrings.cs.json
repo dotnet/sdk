@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Soubor MSBuild Directory.Build.props",
   "description": "Prázdný soubor Directory.Build.props, který lze použít k určení vlastností MSBuild pro celou složku",

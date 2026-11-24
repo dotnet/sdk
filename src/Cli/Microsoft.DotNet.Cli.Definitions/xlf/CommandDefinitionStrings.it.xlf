@@ -1959,12 +1959,12 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
       </trans-unit>
       <trans-unit id="TestCmdMTPNoLogo">
         <source>Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</source>
-        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</target>
+        <target state="translated">Esegui test senza visualizzare il banner di Microsoft.Testing.Platform (MTP)</target>
         <note>{Locked="Microsoft.Testing.Platform"}{Locked="MTP"}</note>
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
-        <target state="needs-review-translation">Esegui test senza visualizzare il banner di Microsoft Testplatform</target>
+        <target state="translated">Esegui test senza visualizzare il banner di Microsoft Test Platform</target>
         <note>{Locked="Microsoft Test Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">

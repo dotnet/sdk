@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Datei \"MSBuild Directory.Build.props\"",
   "description": "Eine leere \"Directory.Build.props\"-Datei, die zum Angeben von MSBuild-Eigenschaften für einen gesamten Ordner verwendet werden kann.",

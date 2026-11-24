@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "MSBuild Directory.Build.props dosyası",
   "description": "Bir klasörün tamamı için MSBuild özelliklerini belirtmek üzere kullanılabilecek boş bir Directory.Build.props dosyası",

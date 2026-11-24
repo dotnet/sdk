@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "MSBuild Directory.Build.props 檔案",
   "description": "空的 Directory.Build.props 檔案，可用來指定整個資料夾的 MSBuild 屬性",

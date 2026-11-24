@@ -2610,7 +2610,7 @@ As ampliação e conversões definidas pelo usuário não são compatíveis com 
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesMessage">
         <source>'{0}' overrides array-based '{1}' but does not override memory-based '{2}'. Consider overriding memory-based '{2}' to improve performance.</source>
-        <target state="translated">'{0}' substitui '{1}', mas não substitui '{2}' baseado em memória. Considere substituir baseado em memória '{2}' para melhorar o desempenho.</target>
+        <target state="translated">'{0}' substitui '{1}' baseado em matriz, mas não substitui '{2}' baseado em memória. Considere substituir baseado em memória '{2}' para melhorar o desempenho.</target>
         <note>0 = type that subclasses Stream directly, 1 = array-based method, 2 = memory-based method</note>
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesTitle">

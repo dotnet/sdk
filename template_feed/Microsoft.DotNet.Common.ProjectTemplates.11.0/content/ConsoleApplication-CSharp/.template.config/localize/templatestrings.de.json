@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Konsolen-App",
   "description": "Ein Projekt zum Erstellen einer leeren Befehlszeilenanwendung, die unter .NET unter Windows, Linux und macOS ausgeführt werden kann",

@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Майкрософт",
   "name": "Файл Directory.Build.targets MSBuild",
   "description": "Пустой файл Directory.Build.targets, который можно использовать для указания задач и целей MSBuild для всей папки",

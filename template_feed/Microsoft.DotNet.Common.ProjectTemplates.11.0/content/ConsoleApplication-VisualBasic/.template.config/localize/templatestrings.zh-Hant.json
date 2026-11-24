@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "主控台應用程式",
   "description": "專案，用於建立可在 Windows、Linux 及 macOS 於 .NET 執行的空白命令列應用程式",

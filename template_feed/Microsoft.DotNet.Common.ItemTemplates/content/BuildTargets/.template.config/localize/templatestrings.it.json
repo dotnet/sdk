@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "File MSBuild Directory.Build.targets",
   "description": "File Directory.Build.targets vuoto che può essere usato per specificare le attività e le destinazioni di MSBuild per un'intera cartella",

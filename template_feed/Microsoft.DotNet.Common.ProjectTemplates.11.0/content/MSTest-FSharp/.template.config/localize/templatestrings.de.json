@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "MSTest-Testprojekt",
   "description": "Ein Projekt, das MSTest-Tests enthält, die auf .NET unter Windows, Linux und macOS ausgeführt werden können.",
