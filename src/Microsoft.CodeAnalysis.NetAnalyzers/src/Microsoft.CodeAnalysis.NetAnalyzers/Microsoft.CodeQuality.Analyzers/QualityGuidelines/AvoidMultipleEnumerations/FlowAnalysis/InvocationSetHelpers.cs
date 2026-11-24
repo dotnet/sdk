@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Immutable;
-using Microsoft.CodeAnalysis;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
@@ -11,25 +9,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         public static TrackingEnumerationSet Merge(TrackingEnumerationSet set1, TrackingEnumerationSet set2)
         {
-            var builder = ImmutableHashSet.CreateBuilder<IOperation>();
             var totalCount = AddInvocationCount(set1.EnumerationCount, set2.EnumerationCount);
-            foreach (var operation in set1.Operations)
-            {
-                builder.Add(operation);
-            }
+            var operations = set1.Operations.Union(set2.Operations);
 
-            foreach (var operation in set2.Operations)
-            {
-                builder.Add(operation);
-            }
-
-            return new TrackingEnumerationSet(builder.ToImmutable(), totalCount);
+            return ReferenceEquals(operations, set1.Operations) && totalCount == set1.EnumerationCount
+                ? set1
+                : new TrackingEnumerationSet(operations, totalCount, set1, set2);
         }
 
         public static TrackingEnumerationSet Intersect(TrackingEnumerationSet set1, TrackingEnumerationSet set2)
         {
-            var builder = ImmutableHashSet.CreateBuilder<IOperation>();
-
             // Get the min of two count.
             // Example:
             // if (a)
@@ -43,17 +32,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // }
             // Then 'Bar' is only guaranteed to be enumerated once after the if-else statement
             var totalCount = Min(set1.EnumerationCount, set2.EnumerationCount);
-            foreach (var operation in set1.Operations)
-            {
-                builder.Add(operation);
-            }
+            var operations = set1.Operations.Union(set2.Operations);
 
-            foreach (var operation in set2.Operations)
-            {
-                builder.Add(operation);
-            }
-
-            return new TrackingEnumerationSet(builder.ToImmutable(), totalCount);
+            return ReferenceEquals(operations, set1.Operations) && totalCount == set1.EnumerationCount
+                ? set1
+                : new TrackingEnumerationSet(operations, totalCount, set1, set2);
         }
 
         private static EnumerationCount Min(EnumerationCount count1, EnumerationCount count2)

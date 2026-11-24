@@ -5,8 +5,8 @@ namespace Analyzer.Utilities
 {
     /// <summary>
     /// Provides bounded cache for analyzers.
-    /// Acts as a good alternative to <see cref="System.Runtime.CompilerServices.ConditionalWeakTable{TKey, TValue}"/>
-    /// when the cached value has a cyclic reference to the key preventing early garbage collection of entries.
+    /// Entries remain available while their cached key is alive, subject to the capacity bound.
+    /// Conditional ownership allows otherwise unreachable key/value cycles to be collected.
     /// </summary>
     internal sealed class BoundedCache<TKey, TValue> : BoundedCacheWithFactory<TKey, TValue>
         where TKey : class

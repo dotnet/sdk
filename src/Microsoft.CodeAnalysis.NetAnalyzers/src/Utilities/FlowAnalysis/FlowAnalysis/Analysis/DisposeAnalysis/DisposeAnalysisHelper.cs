@@ -11,6 +11,7 @@ using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.DisposeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
@@ -119,7 +120,7 @@ namespace Analyzer.Utilities
         }
 
         public bool TryGetOrComputeResult(
-            ImmutableArray<IOperation> operationBlocks,
+            ControlFlowGraph? cfg,
             IMethodSymbol containingMethod,
             AnalyzerOptions analyzerOptions,
             DiagnosticDescriptor rule,
@@ -131,7 +132,6 @@ namespace Analyzer.Utilities
             InterproceduralAnalysisPredicate? interproceduralAnalysisPredicate = null,
             bool defaultDisposeOwnershipTransferAtConstructor = false)
         {
-            var cfg = operationBlocks.GetControlFlowGraph();
             if (cfg != null && IDisposable != null)
             {
                 disposeAnalysisResult = DisposeAnalysis.TryGetOrComputeResult(cfg, containingMethod, _wellKnownTypeProvider,
