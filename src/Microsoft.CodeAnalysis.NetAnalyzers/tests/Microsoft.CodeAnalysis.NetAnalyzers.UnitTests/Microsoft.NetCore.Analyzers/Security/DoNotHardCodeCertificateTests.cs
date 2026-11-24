@@ -14,6 +14,17 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => DoNotHardCodeCertificate.Rule;
 
         [TestMethod]
+        public async Task ConstantSeedXorshiftWithReachableSinkAsync()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = XorshiftGeneratorWithSink("new X509Certificate2(bytes);"),
+                LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            };
+            await VerifyCS.RunTestAsync(test);
+        }
+
+        [TestMethod]
         public async Task SinkReachedThroughConstructorInitializerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync("""

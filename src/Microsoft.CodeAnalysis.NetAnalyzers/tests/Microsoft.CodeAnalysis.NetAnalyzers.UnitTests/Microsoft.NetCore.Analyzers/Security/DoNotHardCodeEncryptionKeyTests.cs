@@ -15,6 +15,17 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => DoNotHardCodeEncryptionKey.Rule;
 
         [TestMethod]
+        public async Task ConstantSeedXorshiftWithReachableSinkAsync()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = XorshiftGeneratorWithSink("algorithm.Key = bytes;"),
+                LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            };
+            await VerifyCS.RunTestAsync(test);
+        }
+
+        [TestMethod]
         public async Task LiteralSourceOnInfeasibleBranch_CSharp_NoDiagnosticAsync()
         {
             var counts = await GetCSharpFlowCountsAsync("""
