@@ -475,16 +475,18 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [TestMethod]
-    public void BashProvider_GenerateProfileEntry_KeepsMultilinePathIntact()
+    [DataRow("/tmp/dotnet\n# dotnetup: end\nrest", "/usr/local/bin/dotnetup")]
+    [DataRow("/tmp/data\rcache/dotnet", "/usr/local/bin/dotnetup")]
+    [DataRow("/tmp/dotnet", "/usr/local/bin\nother/dotnetup")]
+    public void GenerateProfileEntry_RejectsPathsWithLineBreaks(string installPath, string dotnetupPath)
     {
-        const string multilinePath = "/tmp/dotnet\n# path";
-        var provider = new BashEnvShellProvider();
+        foreach (IEnvShellProvider provider in ShellDetection.s_supportedShells)
+        {
+            var act = () => provider.GenerateProfileEntry(dotnetupPath, dotnetInstallPath: installPath);
 
-        var entry = provider.GenerateProfileEntry(FakeDotnetupPath, dotnetInstallPath: multilinePath);
-
-        entry.Should().Contain($"\nexport DOTNET_ROOT='{multilinePath}'\n");
-        entry.Should().Contain($":'{multilinePath}':$PATH\n");
-        (entry.Count(c => c == '\'') % 2).Should().Be(0, "every quoted value should be closed");
+            act.Should().Throw<DotnetInstallException>()
+                .And.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        }
     }
 
     [TestMethod]
@@ -541,10 +543,7 @@ public class ShellProfileManagerTests : IDisposable
 
         entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
-        entry.Should().StartWith("if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')");
-        entry.Should().Contain($"$dotnetupFound = [System.IO.File]::Exists('{FakeDotnetupPath}')");
-        entry.Should().Contain($"$dotnetupFound = Test-Path -LiteralPath '{FakeDotnetupPath}' -PathType Leaf");
-        entry.Should().Contain("if ($dotnetupFound)");
+        entry.Should().StartWith($"if ($(if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage') {{ [System.IO.File]::Exists('{FakeDotnetupPath}') }} else {{ Test-Path -LiteralPath '{FakeDotnetupPath}' -PathType Leaf }}))\n{{\n");
         entry.Should().Contain($"\n$env:DOTNET_ROOT = '{FakeDotnetInstallPath}'");
         entry.Should().Contain($"\n$env:PATH = '{FakeDotnetupDir}' + [IO.Path]::PathSeparator + '{FakeDotnetInstallPath}'");
         entry.Should().EndWith("}");

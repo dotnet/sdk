@@ -32,8 +32,7 @@ internal static class ShellProviderHelpers
     /// Returns the script a managed profile block runs for the given settings: what <c>env script</c>
     /// prints, minus its one-line header comment. The block holds this directly instead of running
     /// <c>env script</c>, because that would start a process on every shell start. <c>env set</c>
-    /// rewrites the block when the settings change. The rest of the script is kept verbatim, since
-    /// a quoted path may itself span lines.
+    /// rewrites the block when the settings change. Paths that contain a line break are rejected.
     /// </summary>
     /// <param name="provider">The shell provider that generates the env script.</param>
     /// <param name="dotnetupPath">The full path to the dotnetup binary.</param>
@@ -49,6 +48,18 @@ internal static class ShellProviderHelpers
     {
         string installPath = string.IsNullOrEmpty(dotnetInstallPath) ? DotnetupPaths.DefaultDotnetInstallPath : dotnetInstallPath;
         string dotnetupDir = includeDotnetup ? Path.GetDirectoryName(dotnetupPath) ?? string.Empty : string.Empty;
+
+        // The paths are written into the profile file, so a line break in one could change other
+        // characters when line endings are normalized or form a fake end marker for the block.
+        foreach (string path in (string[])[installPath, dotnetupDir])
+        {
+            if (path.AsSpan().IndexOfAny('\r', '\n') >= 0)
+            {
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.ContextResolutionFailed,
+                    $"Cannot write the shell profile entry because the path '{path.ReplaceLineEndings(" ")}' contains a line break.");
+            }
+        }
 
         string script = provider.GenerateEnvScript(installPath, dotnetupDir, includeDotnet).ReplaceLineEndings("\n");
 
@@ -102,22 +113,11 @@ internal static class ShellProviderHelpers
         // Test-Path loads a module first, which noticeably slows down every PowerShell start.
         // ConstrainedLanguage mode (e.g. under WDAC / AppLocker) blocks the .NET method call, so
         // fall back to Test-Path there. The env script itself only uses CLM-safe syntax.
-        string opening = string.Join(
-            "\n",
-            "if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')",
-            "{",
-            $"    $dotnetupFound = [System.IO.File]::Exists('{escapedPath}')",
-            "}",
-            "else",
-            "{",
-            $"    $dotnetupFound = Test-Path -LiteralPath '{escapedPath}' -PathType Leaf",
-            "}",
-            "if ($dotnetupFound)",
-            "{");
+        string opening =
+            $"if ($(if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage') {{ [System.IO.File]::Exists('{escapedPath}') }} else {{ Test-Path -LiteralPath '{escapedPath}' -PathType Leaf }}))\n{{";
         return BuildGuardedEntry(opening, envScript, "}");
     }
 
-    // The script is not indented, since indenting would change any quoted value that spans lines.
     // Joined with '\n' so the entry doesn't depend on this file's line endings.
     private static string BuildGuardedEntry(string opening, string envScript, string closing)
         => $"{opening}\n{envScript}\n{closing}";
