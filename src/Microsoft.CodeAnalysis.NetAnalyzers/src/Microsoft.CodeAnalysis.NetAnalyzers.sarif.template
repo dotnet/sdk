@@ -4812,8 +4812,8 @@
         },
         "CA2259": {
           "id": "CA2259",
-          "shortDescription": "'ThreadStatic' only affects static fields",
-          "fullDescription": "'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.",
+          "shortDescription": "Attribute has no effect",
+          "fullDescription": "Some attributes only take effect in certain places. 'ThreadStatic', 'ContextStatic' and 'FixedAddressValueType' only affect static fields, 'FixedAddressValueType' also needs the field to be of a struct type that is not a primitive or an enum, and 'SuppressGCTransition' only affects P/Invoke methods. Anywhere else they have no impact on behavior.",
           "defaultLevel": "warning",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259",
           "properties": {
