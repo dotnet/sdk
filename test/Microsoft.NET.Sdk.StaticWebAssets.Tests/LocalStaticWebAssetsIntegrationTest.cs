@@ -91,17 +91,22 @@ public class LocalStaticWebAssetsIntegrationTest : AspNetSdkTest
     }
 
     [TestMethod]
-    [DataRow("Default", false)]
-    [DataRow("Root", false)]
-    [DataRow("SelfContained", false)]
-    [DataRow("Default", true)]
-    [DataRow("Root", true)]
-    [DataRow("SelfContained", true)]
-    public void BuildAndPublish_LocalAssetsStayInTheirProject(string projectMode, bool precompressed)
+    [DataRow("Default", false, false)]
+    [DataRow("Root", false, false)]
+    [DataRow("SelfContained", false, false)]
+    [DataRow("Default", true, false)]
+    [DataRow("Root", true, false)]
+    [DataRow("SelfContained", true, false)]
+    [DataRow("Default", true, true)]
+    [DataRow("Root", true, true)]
+    [DataRow("SelfContained", true, true)]
+    public void BuildAndPublish_LocalAssetsStayInTheirProject(string projectMode, bool precompressed, bool disableBuildCompression)
     {
-        var projectDirectory = CreateAspNetSdkTestAsset("RazorComponentAppWithReferenceMultitarget", identifier: $"{projectMode}_{precompressed}")
+        var projectDirectory = CreateAspNetSdkTestAsset("RazorComponentAppWithReferenceMultitarget", identifier: $"{projectMode}_{precompressed}_{disableBuildCompression}")
             .WithProjectChanges((path, document) =>
             {
+                document.Root.Add(new XElement("PropertyGroup",
+                    new XElement("DisableBuildCompression", disableBuildCompression)));
                 if (Path.GetFileName(path) == "RazorComponentLibrary.csproj")
                 {
                     document.Descendants("TargetFrameworks").Single()
@@ -149,6 +154,14 @@ public class LocalStaticWebAssetsIntegrationTest : AspNetSdkTest
         localAssets.Should().OnlyContain(a => a.AssetMode == StaticWebAsset.AssetModes.Local);
         localAssets.Should().ContainSingle(a => a.IsPrimaryAsset());
         localAssets.Should().Contain(a => a.IsAlternativeAsset() && a.AssetTraitValue == "gzip");
+        if (precompressed)
+        {
+            localAssets.Should().Contain(a => a.IsAlternativeAsset() && a.AssetTraitValue == "br");
+        }
+        if (disableBuildCompression)
+        {
+            libraryManifest.Assets.Should().NotContain(a => a.IsAlternativeAsset() && a.IsComputed());
+        }
         AssertLocalEndpoints(libraryIntermediate, "build");
         AssertNotExported(ReadManifest(appIntermediate, "build"));
 
@@ -165,6 +178,13 @@ public class LocalStaticWebAssetsIntegrationTest : AspNetSdkTest
         AssertNotExported(ReadManifest(appIntermediate, "publish"));
         Directory.GetFiles(appPublish.GetOutputDirectory(DefaultTfm, "Debug").ToString(),
             "local*", SearchOption.AllDirectories).Should().BeEmpty();
+        if (disableBuildCompression)
+        {
+            ExecuteCommand(CreatePublishCommand(projectDirectory, "RazorComponentApp"), "/p:NoBuild=true").Should().Pass();
+            AssertNotExported(ReadManifest(appIntermediate, "publish"));
+            Directory.GetFiles(appPublish.GetOutputDirectory(DefaultTfm, "Debug").ToString(),
+                "local*", SearchOption.AllDirectories).Should().BeEmpty();
+        }
 
         void AssertNotExported(StaticWebAssetsManifest manifest)
         {

@@ -264,6 +264,12 @@ marks checked-in gzip and Brotli alternatives `Local` when their primary is `Loc
 even if the compressed file has the default `All` mode. It preserves those files'
 original item identities so reference publish cleanup also removes their `Content`
 items instead of copying them outside the static web assets pipeline.
+The independent `ResolvePrecompressedStaticWebAssets` target in
+[`Compression.targets`](Targets/Microsoft.NET.Sdk.StaticWebAssets.Compression.targets)
+runs this normalization even when `DisableBuildCompression=true`. That switch skips
+generating new compressed files, not resolving checked-in alternatives and their
+serving endpoints. Publish, including no-build publish, resumes from the normalized
+build manifest.
 
 Development discovery patterns cannot express per-file exclusions.
 [`ComputeReferenceStaticWebAssetItems`](Tasks/ComputeReferenceStaticWebAssetItems.cs)

@@ -73,7 +73,9 @@ These invariants must hold at all times. Violating any of them is a bug.
 - **Endpoint validity**: Every `StaticWebAssetEndpoint` must point to an existing `StaticWebAsset` via `AssetFile`. There must be no endpoints referencing non-existent assets.
 - **Endpoint uniqueness**: Endpoints are unique by the `(Route, AssetFile)` pair. No two endpoints share the same route and asset file combination.
 - **Local visibility**: Checked-in compressed alternatives of `Local` primaries must also
-  be `Local`. Do not export discovery patterns whose physical root contains `Local`
+  be `Local`, including when `DisableBuildCompression=true`. Precompressed discovery
+  must remain independent of optional compression generation.
+  Do not export discovery patterns whose physical root contains `Local`
   files: runtime discovery has no exclusion list. Shared files retain explicit manifest
   entries, but newly added shared files in affected roots require a rebuild. Keep the
   owning project's discovery and unrelated roots unchanged. See
