@@ -19,11 +19,12 @@ internal sealed class HttpTestHostGateway : IDisposable
     private readonly Func<IRequest, Task<IResponse>> _callback;
     private readonly HttpListener _listener;
     private readonly ProtocolMessageSerializer _serializer = new();
+    private readonly CancellationTokenSource _shutdownCancellation;
     private readonly CancellationTokenRegistration _cancellationRegistration;
     private readonly Task _listenerTask;
     private readonly Lock _originLock = new();
     private string? _allowedOrigin;
-    private bool _disposed;
+    private int _disposed;
 
     public HttpTestHostGateway(
         Func<IRequest, Task<IResponse>> callback,
@@ -36,10 +37,11 @@ internal sealed class HttpTestHostGateway : IDisposable
 
         Token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         (_listener, Endpoint) = StartListener();
-        _cancellationRegistration = cancellationToken.Register(
+        _shutdownCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _cancellationRegistration = _shutdownCancellation.Token.Register(
             static state => ((HttpListener)state!).Close(),
             _listener);
-        _listenerTask = ListenAsync(cancellationToken);
+        _listenerTask = ListenAsync(_shutdownCancellation.Token);
     }
 
     public Uri Endpoint { get; }
@@ -332,11 +334,12 @@ internal sealed class HttpTestHostGateway : IDisposable
 
     public void Dispose()
     {
-        if (_disposed)
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
             return;
         }
 
+        _shutdownCancellation.Cancel();
         _cancellationRegistration.Dispose();
         _listener.Close();
         try
@@ -348,6 +351,6 @@ internal sealed class HttpTestHostGateway : IDisposable
             Logger.LogTrace($"The dotnet test HTTP gateway listener failed during shutdown: {ex}");
         }
 
-        _disposed = true;
+        _shutdownCancellation.Dispose();
     }
 }

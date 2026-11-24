@@ -159,6 +159,26 @@ public sealed class HttpTestHostGatewayTests
     }
 
     [TestMethod]
+    public async Task Dispose_StopsListenerWaitingForRequest()
+    {
+        using var cancellationSource = new CancellationTokenSource();
+        var gateway = new HttpTestHostGateway(
+            _ => Task.FromResult<IResponse>(VoidResponse.CachedInstance),
+            cancellationSource.Token);
+        Task disposeTask = Task.Run(gateway.Dispose, TestContext.CancellationToken);
+
+        try
+        {
+            await disposeTask.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+        }
+        finally
+        {
+            cancellationSource.Cancel();
+            await disposeTask.WaitAsync(TimeSpan.FromSeconds(30), CancellationToken.None);
+        }
+    }
+
+    [TestMethod]
     public async Task Post_CorruptMessage_DoesNotStopGateway()
     {
         int dispatchedRequests = 0;

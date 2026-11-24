@@ -338,7 +338,7 @@ public class RegistryTests : IDisposable
         await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
 
         Assert.IsNotEmpty(loggedMessages);
-        Assert.IsTrue(loggedMessages.All(m => m.Item1 == LogLevel.Trace));
+        Assert.ContainsOnly(m => m.Item1 == LogLevel.Trace, loggedMessages);
         var messages = loggedMessages.Select(m => m.Item2).ToList();
         Assert.Contains("Started upload session for sha256:fafafafafafafafafafafafafafafafa", messages);
         Assert.Contains("Finalized upload session for sha256:fafafafafafafafafafafafafafafafa", messages);
