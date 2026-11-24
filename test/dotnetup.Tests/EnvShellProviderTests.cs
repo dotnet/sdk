@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
@@ -189,15 +190,17 @@ public class EnvShellProviderTests
     }
 
     [TestMethod]
-    public void FishProvider_ShouldSourceEnvScriptOutput()
+    public void FishProvider_ProfileEntryWritesEnvLinesAndActivationSourcesEnvScript()
     {
         var provider = new FishEnvShellProvider();
 
-        var profileEntry = provider.GenerateProfileEntry("/test/dotnetup");
+        var profileEntry = provider.GenerateProfileEntry("/test/dotnetup", dotnetInstallPath: "/test/dotnet");
         var activationCommand = provider.GenerateActivationCommand("/test/dotnetup");
 
-        profileEntry.Should().Contain("if test -x '/test/dotnetup'");
-        profileEntry.Should().Contain("'/test/dotnetup' env script --shell fish --dotnet --dotnetup | source");
+        profileEntry.Should().StartWith("if test -x '/test/dotnetup'");
+        profileEntry.Should().Contain("\nset -gx DOTNET_ROOT '/test/dotnet'");
+        profileEntry.Should().Contain("\nfish_add_path --global --move --path");
+        profileEntry.Should().NotContain("env script");
         profileEntry.Should().EndWith("end");
 
         activationCommand.Should().Be("'/test/dotnetup' env script | source");
@@ -258,18 +261,134 @@ public class EnvShellProviderTests
     }
 
     [TestMethod]
-    public void PowerShellProvider_ShouldCaptureScriptBeforeInvokingExpression()
+    public void PowerShellProvider_ActivationCommandCapturesScriptBeforeInvokingExpression()
     {
         var provider = new PowerShellEnvShellProvider();
 
-        var profileEntry = provider.GenerateProfileEntry("/test/dotnetup");
         var activationCommand = provider.GenerateActivationCommand("/test/dotnetup");
 
-        profileEntry.Should().Contain("$dotnetupScript = & '/test/dotnetup' env script --shell pwsh --dotnet --dotnetup | Out-String");
-        profileEntry.Should().Contain("if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))");
-        profileEntry.Should().Contain("Invoke-Expression $dotnetupScript");
-
         activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' env script | Out-String)");
+    }
+
+    [TestMethod]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    public void PowerShellProvider_ProfileEntryRunsInPowerShell(bool constrainedLanguage, bool dotnetupExists)
+    {
+        string? powershell = s_powerShell.Value;
+        if (powershell is null)
+        {
+            // Windows PowerShell ships with Windows, so not finding it there means the lookup is broken.
+            if (OperatingSystem.IsWindows())
+            {
+                Assert.Fail("Could not find pwsh or Windows PowerShell.");
+            }
+
+            Assert.Inconclusive("pwsh is not on PATH.");
+        }
+
+        string dir = Path.Combine(Path.GetTempPath(), "dotnetup-pwsh-entry", Guid.NewGuid().ToString("N"), "it's here");
+        Directory.CreateDirectory(dir);
+        try
+        {
+            string dotnetup = Path.Combine(dir, "dotnetup.exe");
+            if (dotnetupExists)
+            {
+                File.WriteAllText(dotnetup, string.Empty);
+            }
+
+            string dotnetRoot = Path.Combine(dir, "dotnet");
+
+            // The entry runs from its own file so that, like a real profile, it runs entirely in the
+            // language mode set before it is loaded. ConstrainedLanguage blocks .NET method calls.
+            string entryPath = Path.Combine(dir, "entry.ps1");
+            File.WriteAllText(
+                entryPath,
+                new PowerShellEnvShellProvider().GenerateProfileEntry(dotnetup, dotnetInstallPath: dotnetRoot),
+                new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+            string languageMode = constrainedLanguage ? "$ExecutionContext.SessionState.LanguageMode = 'ConstrainedLanguage'" : string.Empty;
+            string profile = Path.Combine(dir, "profile.ps1");
+            File.WriteAllText(
+                profile,
+                $"""
+                $ErrorActionPreference = 'Stop'
+                Remove-Item Env:DOTNET_ROOT -ErrorAction Ignore
+                {languageMode}
+                . '{ShellProviderHelpers.EscapePowerShellPath(entryPath)}'
+                Write-Output "DOTNET_ROOT=$env:DOTNET_ROOT"
+                Write-Output "PATH1=$(($env:PATH -split [IO.Path]::PathSeparator)[1])"
+                """,
+                new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+
+            var startInfo = new ProcessStartInfo(powershell)
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+            };
+            foreach (var arg in new[] { "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", profile })
+            {
+                startInfo.ArgumentList.Add(arg);
+            }
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            var result = Process.RunAndCaptureTextAsync(startInfo, timeout.Token).GetAwaiter().GetResult();
+
+            result.ExitStatus.ExitCode.Should().Be(0, $"stdout:\n{result.StandardOutput}\nstderr:\n{result.StandardError}");
+            result.StandardError.Should().BeEmpty();
+            if (dotnetupExists)
+            {
+                result.StandardOutput.Should().Contain($"DOTNET_ROOT={dotnetRoot}");
+                result.StandardOutput.Should().Contain($"PATH1={dotnetRoot}");
+            }
+            else
+            {
+                result.StandardOutput.Should().Contain($"DOTNET_ROOT={Environment.NewLine}");
+            }
+        }
+        finally
+        {
+            try { Directory.Delete(Path.GetDirectoryName(dir)!, recursive: true); }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
+    }
+
+    private static readonly Lazy<string?> s_powerShell = new(FindPowerShell);
+
+    // Looks on PATH instead of starting a process, prefers pwsh, and falls back to the in-box
+    // Windows PowerShell location.
+    private static string? FindPowerShell()
+    {
+        string[] names = OperatingSystem.IsWindows() ? ["pwsh.exe", "powershell.exe"] : ["pwsh"];
+        string[] directories = (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
+            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        foreach (string name in names)
+        {
+            foreach (string directory in directories)
+            {
+                string candidate = Path.Combine(directory, name);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            string inbox = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "WindowsPowerShell", "v1.0", "powershell.exe");
+            if (File.Exists(inbox))
+            {
+                return inbox;
+            }
+        }
+
+        return null;
     }
 
     [TestMethod]

@@ -142,7 +142,7 @@ setup. Existing Everywhere-mode PATH cleanup can still require elevation.
 
 #### Limitations
 
-Selecting `admin` mode rewrites the dotnetup shell profile block so it calls `env script` with only the parameters for that mode, which do not add the user-level .NET root or set `DOTNET_ROOT`. `env script` has no admin-specific logic and honors the parameters it is given. Existing archive installs remain on disk. Open terminals may retain their previous environment until restarted.
+Selecting `admin` mode rewrites the dotnetup shell profile block so it only wires what that mode needs, which does not add the user-level .NET root or set `DOTNET_ROOT`. Existing archive installs remain on disk. Open terminals may retain their previous environment until restarted.
 
 No equivalent exists on other platforms because `admin` mode is Windows-only.
 

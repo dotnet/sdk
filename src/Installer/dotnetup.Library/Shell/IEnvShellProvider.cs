@@ -48,15 +48,16 @@ public interface IEnvShellProvider
     Encoding NewFileEncoding => new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
     /// <summary>
-    /// Generates the shell command block to append to a shell profile that will eval dotnetup's env script.
-    /// <see cref="ShellProfileManager"/> adds the surrounding marker comments when it writes the block.
-    /// The generated block bakes explicit <c>--dotnet</c> / <c>--dotnetup</c> selection flags so it
-    /// never depends on the command's no-flag default.
+    /// Generates the shell command block to append to a shell profile. The block holds the
+    /// environment assignments that <c>env script</c> would print for these settings, guarded by a
+    /// check that the dotnetup binary still exists, so shell startup doesn't have to run dotnetup.
+    /// <see cref="ShellProfileManager"/> adds the surrounding marker comments when it writes the block,
+    /// and <c>env set</c> rewrites it when the settings change.
     /// </summary>
     /// <param name="dotnetupPath">The full path to the dotnetup binary</param>
-    /// <param name="includeDotnet">When true, the script sets DOTNET_ROOT and adds the managed dotnet to PATH.</param>
-    /// <param name="includeDotnetup">When true, the script adds the dotnetup directory to PATH.</param>
-    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>env script</c>.</param>
+    /// <param name="includeDotnet">When true, the block sets DOTNET_ROOT and adds the managed dotnet to PATH.</param>
+    /// <param name="includeDotnetup">When true, the block adds the dotnetup directory to PATH.</param>
+    /// <param name="dotnetInstallPath">The .NET install path, or <c>null</c> for the default dotnetup install path.</param>
     string GenerateProfileEntry(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null);
 
     /// <summary>
