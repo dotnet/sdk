@@ -277,10 +277,16 @@ public class EnvShellProviderTests
     [DataRow(true, false)]
     public void PowerShellProvider_ProfileEntryRunsInPowerShell(bool constrainedLanguage, bool dotnetupExists)
     {
-        string? powershell = FindPowerShell();
+        string? powershell = s_powerShell.Value;
         if (powershell is null)
         {
-            Assert.Inconclusive("Neither pwsh nor powershell is available.");
+            // Windows PowerShell ships with Windows, so not finding it there means the lookup is broken.
+            if (OperatingSystem.IsWindows())
+            {
+                Assert.Fail("Could not find pwsh or Windows PowerShell.");
+            }
+
+            Assert.Inconclusive("pwsh is not on PATH.");
         }
 
         string dir = Path.Combine(Path.GetTempPath(), "dotnetup-pwsh-entry", Guid.NewGuid().ToString("N"), "it's here");
@@ -351,28 +357,34 @@ public class EnvShellProviderTests
         }
     }
 
+    private static readonly Lazy<string?> s_powerShell = new(FindPowerShell);
+
+    // Looks on PATH instead of starting a process, prefers pwsh, and falls back to the in-box
+    // Windows PowerShell location.
     private static string? FindPowerShell()
     {
-        foreach (var candidate in new[] { "pwsh", "powershell" })
+        string[] names = OperatingSystem.IsWindows() ? ["pwsh.exe", "powershell.exe"] : ["pwsh"];
+        string[] directories = (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
+            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        foreach (string name in names)
         {
-            try
+            foreach (string directory in directories)
             {
-                var startInfo = new ProcessStartInfo(candidate, "-NoProfile -NonInteractive -Command exit")
-                {
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                };
-                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-                var result = Process.RunAndCaptureTextAsync(startInfo, timeout.Token).GetAwaiter().GetResult();
-                if (!result.ExitStatus.Canceled)
+                string candidate = Path.Combine(directory, name);
+                if (File.Exists(candidate))
                 {
                     return candidate;
                 }
             }
-            catch (System.ComponentModel.Win32Exception)
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            string inbox = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "WindowsPowerShell", "v1.0", "powershell.exe");
+            if (File.Exists(inbox))
             {
+                return inbox;
             }
         }
 
