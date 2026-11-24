@@ -11,6 +11,9 @@ ms.date: 10/09/2026
 run commands. The .NET team uses this data to understand how people use the
 tool and to diagnose problems.
 
+`dotnetup env script` doesn't collect telemetry. Your shell profile runs it
+every time a shell starts, so it skips telemetry to keep startup fast.
+
 ## How to opt out
 
 Telemetry is on by default. To opt out, set the

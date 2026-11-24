@@ -374,30 +374,23 @@ public class DotnetupTelemetryTests : IDisposable
     }
 
     [TestMethod]
-    public void GetLocalShutdownBudgetMs_UsesShortBudgetForSuccessfulShellStartup()
+    public void Disabled_TurnsTelemetryOffEvenWhenNotOptedOut()
     {
-        using var telemetry = new DotnetupTelemetry(_ => "1");
-        telemetry.IsShellStartupCommand = true;
+        using var telemetry = new DotnetupTelemetry(_ => null, disabled: true);
 
-        Assert.AreEqual(10, telemetry.GetLocalShutdownBudgetMs(0));
+        Assert.IsFalse(telemetry.Enabled);
     }
 
     [TestMethod]
-    public void GetLocalShutdownBudgetMs_UsesFailureBudgetForFailedShellStartup()
+    public void GetLocalShutdownBudgetMs_UsesFailureBudgetForFailedCommands()
     {
-        using var telemetry = new DotnetupTelemetry(_ => "1");
-        telemetry.IsShellStartupCommand = true;
-
-        Assert.AreEqual(400, telemetry.GetLocalShutdownBudgetMs(1));
+        Assert.AreEqual(400, DotnetupTelemetry.GetLocalShutdownBudgetMs(1));
     }
 
     [TestMethod]
     public void GetLocalShutdownBudgetMs_UsesDefaultBudgetForSuccessfulCommands()
     {
-        using var telemetry = new DotnetupTelemetry(_ => "1");
-        telemetry.StartTrackedCommand("install");
-
-        Assert.AreEqual(200, telemetry.GetLocalShutdownBudgetMs(0));
+        Assert.AreEqual(200, DotnetupTelemetry.GetLocalShutdownBudgetMs(0));
     }
 
     [TestMethod]

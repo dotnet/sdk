@@ -38,4 +38,7 @@ internal interface IInstallArtifact : IDisposable
     /// Returns <c>false</c> when the artifact cannot be repaired.
     /// </summary>
     bool TryRepair() => false;
+
+    /// <summary>Marks the commit's progress complete once the installed payload has been validated.</summary>
+    void CompleteCommitProgress() { }
 }

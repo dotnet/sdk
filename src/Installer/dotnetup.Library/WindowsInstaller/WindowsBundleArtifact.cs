@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Deployment.DotNet.Releases;
@@ -31,6 +32,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     private readonly InstallBatchContext _batchContext;
     private readonly TextWriter _notices;
     private VerifiedDownload? _download;
+    private IProgressTask? _installTask;
 
     // Denies write and delete access from the moment the bundle is verified until this artifact is
     // disposed, so the file that was verified is the file that runs.
@@ -78,9 +80,12 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     public void Prepare()
     {
         var (reporter, downloadTask) = _progress.BeginDownload();
-        string basePath = Path.Combine(ScratchDirectory, $"{BlobFeedUrlBuilder.GetArchivePrefix(_request.Component)}-{Guid.NewGuid():N}");
+        // ScratchDirectory is unique to this artifact, so neither this name nor the bundle's published name can collide.
+        string basePath = Path.Combine(ScratchDirectory, BlobFeedUrlBuilder.GetArchiveFileName(
+            _request.Component, _version, DotnetupUtilities.GetRuntimeIdentifier(_request.InstallRoot.Architecture), extension: string.Empty));
         VerifiedDownload download = Download(basePath, reporter);
         EnsureInstallerExtension(download.Path);
+        download = RenameToOriginalFileName(download);
 
         FileStream lockedBundle = OpenLocked(download.Path);
         try
@@ -106,8 +111,17 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         EnsureMicrosoftAuthenticodeSignature(download);
         HandleExitCode(RunInstaller(download.Path, InstallArguments));
 
-        installTask.Value = installTask.MaxValue;
-        _progress.CompleteExtraction(installTask);
+        _installTask = installTask;
+    }
+
+    public void CompleteCommitProgress()
+    {
+        // Set only after a successful Commit; validation and repair run before the row shows as installed.
+        if (_installTask is { } installTask)
+        {
+            installTask.Value = installTask.MaxValue;
+            _progress.CompleteExtraction(installTask);
+        }
     }
 
     /// <summary>
@@ -194,6 +208,51 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     }
 
     /// <summary>
+    /// Renames the bundle to the file name it was published under, which the installer keeps in the Package Cache.
+    /// The name comes from the bundle's own version resource rather than the download URL or the requested version.
+    /// The bundle is re-hashed after it is locked, so a file swapped before the rename is still rejected.
+    /// </summary>
+    private static VerifiedDownload RenameToOriginalFileName(VerifiedDownload download)
+    {
+        string? originalFileName = GetOriginalFileName(download.Path);
+        if (originalFileName is null || string.Equals(originalFileName, Path.GetFileName(download.Path), StringComparison.OrdinalIgnoreCase))
+        {
+            return download;
+        }
+
+        string renamedPath = Path.Combine(Path.GetDirectoryName(download.Path)!, originalFileName);
+        try
+        {
+            File.Move(download.Path, renamedPath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return download;
+        }
+
+        return download with { Path = renamedPath };
+    }
+
+    /// <summary>
+    /// Returns the OriginalFilename from the bundle's version resource when it is a plain installer file name, or null otherwise.
+    /// </summary>
+    private static string? GetOriginalFileName(string bundlePath)
+    {
+        string? originalFileName = FileVersionInfo.GetVersionInfo(bundlePath).OriginalFilename;
+        return IsPlainInstallerFileName(originalFileName) ? originalFileName : null;
+    }
+
+    /// <summary>
+    /// Returns whether <paramref name="fileName"/> is a plain .exe file name with no directory. Bundles set OriginalFilename
+    /// to their published name, but other executables can set descriptions such as ".NET Host".
+    /// </summary>
+    internal static bool IsPlainInstallerFileName([NotNullWhen(true)] string? fileName) =>
+        !string.IsNullOrWhiteSpace(fileName)
+            && fileName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+            && fileName == Path.GetFileName(fileName)
+            && fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
+
+    /// <summary>
     /// Re-hashes the bundle through the locked handle and compares it with the hash the downloader verified,
     /// so a file swapped on disk after the download (in the scratch directory or the hard-linked download
     /// cache) is rejected.
@@ -272,6 +331,9 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         BundleExitOutcome.ElevationRequired => CreateException(
             DotnetInstallErrorCode.InstallerFailed,
             Format(Strings.WindowsInstallerElevationRequired, Describe(), exitCode)),
+        BundleExitOutcome.NewerVersionInstalled => CreateException(
+            DotnetInstallErrorCode.NewerVersionInstalled,
+            Format(Strings.WindowsInstallerNewerVersionInstalledExitCode, Describe(), exitCode)),
         _ => CreateException(
             DotnetInstallErrorCode.InstallerFailed,
             Format(Strings.WindowsInstallerFailed, Describe(), exitCode, exitCode)),

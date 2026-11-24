@@ -4,7 +4,6 @@
 using System.CommandLine;
 using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
-using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
@@ -31,8 +30,6 @@ internal class EnvScriptCommand : CommandBase
 
     protected override void ExecuteCore()
     {
-        DotnetupTelemetry.Instance.IsShellStartupCommand = true;
-
         // Check if shell provider was successfully determined
         if (_shellProvider == null)
         {

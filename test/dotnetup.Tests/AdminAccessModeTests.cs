@@ -52,6 +52,7 @@ public class AdminAccessModeTests
     [DataRow(DotnetInstallErrorCode.InstallerFailed, ErrorCategory.Product)]
     [DataRow(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed, ErrorCategory.Product)]
     [DataRow(DotnetInstallErrorCode.WrongInstallerFileExtension, ErrorCategory.Product)]
+    [DataRow(DotnetInstallErrorCode.NewerVersionInstalled, ErrorCategory.User)]
     internal void AdminModeErrorCodes_AreClassified(DotnetInstallErrorCode errorCode, ErrorCategory expected)
     {
         ErrorCategoryClassifier.ClassifyInstallError(errorCode).Should().Be(expected);
