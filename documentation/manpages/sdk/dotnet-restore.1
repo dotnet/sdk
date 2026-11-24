@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-restore" "1" "2026-08-28" "" ".NET Documentation"
+.TH "dotnet-restore" "1" "2026-11-13" "" ".NET Documentation"
 .hy
 .SH dotnet restore
 .PP
@@ -91,6 +91,16 @@ For information about how to use authenticated feeds, see Consuming packages fro
 For dependencies, you can specify where the restored packages are placed during the restore operation using the \f[V]--packages\f[R] argument.
 If not specified, the default NuGet package cache is used, which is found in the \f[V].nuget/packages\f[R] directory in the user\[cq]s home directory on all operating systems.
 For example, \f[I]/home/user1\f[R] on Linux or \f[I]C:\f[R] on Windows.
+.SS NuGet inter-process locks on Linux
+.PP
+Starting in .NET SDK 11.0.200, the default NuGet inter-process lock directory on Linux changes from \f[V]/tmp/NuGetScratch{username}/locks\f[R] to \f[V]\[ti]/.nuget/locks\f[R].
+If SDK versions older than 11.0.200 and SDK versions 11.0.200 or later restore concurrently with different lock directories, they don\[cq]t coordinate access to the global packages folder and other NuGet files.
+Failures or undefined behavior can result.
+.PP
+To ensure concurrent restores coordinate access, use .NET SDK 11.0.200 or later everywhere, even for projects that target earlier .NET versions.
+Alternatively, set the same \f[V]NUGET_SCRATCH\f[R] value for all concurrent NuGet processes.
+In every version, this variable overrides the default location and specifies the parent directory without a trailing \f[V]locks\f[R] component.
+For more information, see NuGet locks directory moved on Linux.
 .SS Project-specific tooling
 .PP
 For project-specific tooling, \f[V]dotnet restore\f[R] first restores the package in which the tool is packed, and then proceeds to restore the tool\[cq]s dependencies as specified in its project file.

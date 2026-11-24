@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-verify" "1" "2026-08-28" "" ".NET Documentation"
+.TH "dotnet-nuget-verify" "1" "2026-11-13" "" ".NET Documentation"
 .hy
 .SH dotnet nuget verify
 .PP
@@ -167,6 +167,19 @@ T}@T{
 \[u2714]\[uFE0F]
 T}
 T{
+\f[V]Author/Repository Certificate -> Certificate revocation URLs\f[R]\[S1]
+T}@T{
+\[u274C]
+T}@T{
+\[u274C]
+T}@T{
+\[u2714]\[uFE0F]
+T}@T{
+\[u2714]\[uFE0F]
+T}@T{
+\[u2714]\[uFE0F]
+T}
+T{
 \f[V]Timestamp Certificate -> Issued By\f[R]
 T}@T{
 \[u274C]
@@ -220,6 +233,19 @@ T}@T{
 T}
 T{
 \f[V]Timestamp Certificate -> Subject name\f[R]
+T}@T{
+\[u274C]
+T}@T{
+\[u274C]
+T}@T{
+\[u2714]\[uFE0F]
+T}@T{
+\[u2714]\[uFE0F]
+T}@T{
+\[u2714]\[uFE0F]
+T}
+T{
+\f[V]Timestamp Certificate -> Certificate revocation URLs\f[R]\[S1]
 T}@T{
 \[u274C]
 T}@T{
@@ -313,6 +339,8 @@ T}
 .PP
 \[u274C] indicates details that are \f[B]not\f[R] displayed.
 \[u2714]\[uFE0F] indicates details that are displayed.
+.PP
+\[S1] CRL distribution point and OCSP responder URLs require .NET SDK 10.0.400.
 .RE
 .PP
 \f[B]\f[VB]--configfile <FILE>\f[B]\f[R]

@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-environment-variables" "7" "2026-09-15" "" ".NET Documentation"
+.TH "dotnet-environment-variables" "7" "2026-11-13" "" ".NET Documentation"
 .hy
 .SH NAME
 .PP
@@ -80,7 +80,7 @@ When set to \f[V]false\f[R] or \f[V]0\f[R], disables HTTP/2 support, which is en
 \f[V]DOTNET_SYSTEM_NET_HTTP_SOCKETSHTTPHANDLER_HTTP3SUPPORT\f[R]
 .RS 2
 .IP \[bu] 2
-When set to \f[V]true\f[R] or \f[V]1\f[R], enables HTTP/3 support, which is disabled by default.
+When set to \f[V]false\f[R] or \f[V]0\f[R], disables HTTP/3 support, which is enabled by default.
 .RE
 .IP \[bu] 2
 \f[V]DOTNET_SYSTEM_NET_HTTP_SOCKETSHTTPHANDLER_HTTP2FLOWCONTROL_DISABLEDYNAMICWINDOWSIZING\f[R]
@@ -496,7 +496,7 @@ To enable it, set the variable to \f[V]true\f[R], \f[V]1\f[R], \f[V]yes\f[R], or
 To disable it and route every invocation to the managed CLI, set the variable to \f[V]false\f[R], \f[V]0\f[R], \f[V]no\f[R], or \f[V]off\f[R].
 .RS
 .PP
-Starting in .NET 11 Preview 7, this fast path is enabled by default (\f[V]true\f[R]) on all platforms.
+Starting in .NET 11, this fast path is enabled by default (\f[V]true\f[R]) on all platforms.
 To disable it, set the variable to \f[V]false\f[R], \f[V]0\f[R], \f[V]no\f[R], or \f[V]off\f[R].
 .RE
 .SS \f[V]DOTNET_GENERATE_ASPNET_CERTIFICATE\f[R]

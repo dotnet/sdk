@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-add-source" "1" "2026-08-28" "" ".NET Documentation"
+.TH "dotnet-nuget-add-source" "1" "2026-11-13" "" ".NET Documentation"
 .hy
 .SH dotnet nuget add source
 .PP
@@ -33,6 +33,7 @@ Use package sources that you trust.
 dotnet nuget add source <PACKAGE_SOURCE_PATH> [--name <SOURCE_NAME>] [--username <USER>]
     [--password <PASSWORD>] [--store-password-in-clear-text]
     [--valid-authentication-types <TYPES>] [--configfile <FILE>] [--allow-insecure-connections]
+    [--min-publish-age-hours <HOURS>]
 
 dotnet nuget add source -h|--help
 \f[R]
@@ -72,6 +73,18 @@ Available since .NET 9 SDK.
 .RS 2
 .PP
 Name of the source.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--min-publish-age-hours <HOURS>\f[B]\f[R]
+.RS 2
+.PP
+Sets the minimum package publish age for this source in nonnegative whole hours.
+When \f[V]dotnet package add\f[R] or \f[V]dotnet package update\f[R] automatically selects a version, it excludes versions from this source that haven\[cq]t reached the minimum age, unless the package matches a configured exception.
+Sets the \f[V]minPublishAgeHours\f[R] attribute in \f[I]nuget.config\f[R].
+Omit the option or set it to \f[V]0\f[R] to add a source with no minimum age.
+Available starting with .NET SDK 11.0.100.
+.PP
+For package-selection behavior, exceptions, and restore limitations, see Minimum package publish age.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-p|--password <PASSWORD>\f[B]\f[R]
@@ -121,6 +134,16 @@ dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
 .fi
 .RE
 .IP \[bu] 2
+Add \f[V]nuget.org\f[R] with a 72-hour minimum package publish age:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org --min-publish-age-hours 72
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
 Add \f[V]c:\[rs]packages\f[R] as a local source:
 .RS 2
 .IP
@@ -151,6 +174,8 @@ dotnet nuget add source https://azureartifacts.microsoft.com/myTeam -n myTeam
 .fi
 .RE
 .SH SEE ALSO
+.IP \[bu] 2
+Configure an HTTPS client certificate for a package source
 .IP \[bu] 2
 Security best practices for managing package source credentials
 .IP \[bu] 2
