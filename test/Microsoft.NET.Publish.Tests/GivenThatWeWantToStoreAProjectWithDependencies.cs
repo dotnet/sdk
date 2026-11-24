@@ -49,7 +49,6 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/49900")]
         public void compose_dependencies()
         {
             TestAsset simpleDependenciesAsset = TestAssetsManager
@@ -74,13 +73,13 @@ namespace Microsoft.NET.Publish.Tests
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.Core.dll",
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.dll",
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll"
-               };
+            };
+            AddPlatformSpecificFiles(files_on_disk);
 
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/49900")]
         public void compose_dependencies_noopt()
         {
             TestAsset simpleDependenciesAsset = TestAssetsManager
@@ -118,13 +117,13 @@ namespace Microsoft.NET.Publish.Tests
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.Core.dll",
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.dll",
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll"
-               };
+            };
+            AddPlatformSpecificFiles(files_on_disk);
 
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/49900")]
         public void compose_multifile()
         {
             TestAsset simpleDependenciesAsset = TestAssetsManager
@@ -156,7 +155,8 @@ namespace Microsoft.NET.Publish.Tests
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.Core.dll",
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.dll",
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll",
-               };
+            };
+            AddPlatformSpecificFiles(files_on_disk);
 
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
 
@@ -338,6 +338,15 @@ namespace Microsoft.NET.Publish.Tests
                     "system.configuration.configurationmanager",
                     "system.security.cryptography.protecteddata");
 
+        }
+
+        private static void AddPlatformSpecificFiles(List<string> files)
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                string extension = OperatingSystem.IsMacOS() ? "dylib" : "so";
+                files.Add($"runtime.{_runtimeRid}.runtime.native.system.security.cryptography/1.0.1/runtimes/{_runtimeRid}/native/System.Security.Cryptography.Native.{extension}");
+            }
         }
 
         private static HashSet<PackageIdentity> ParseStoreArtifacts(string path)
