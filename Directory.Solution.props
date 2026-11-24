@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- Arcade's restore passes /warnaserror on the command line, and NuGet logs restore warnings in the solution
+         metaproject's context, so WarningsNotAsErrors in Directory.Build.props does not apply there. Keep NuGet
+         audit-source outages (NU1900/NU1905) as warnings so they do not fail restore. -->
+    <MSBuildWarningsNotAsErrors>$(MSBuildWarningsNotAsErrors);NU1900;NU1905</MSBuildWarningsNotAsErrors>
+  </PropertyGroup>
+</Project>

@@ -229,7 +229,9 @@ dependency already in use. Add a new dependency only at the narrowest necessary 
   or higher in [`Directory.Build.props`](../Directory.Build.props), using the audit
   source in [`NuGet.config`](../NuGet.config). Treat `NU19xx` findings as actionable:
   update or remove the affected package rather than suppressing the warning or weakening
-  audit settings.
+  audit settings. `NU1900`/`NU1905` (audit source unavailable) are intentionally kept as
+  non-error warnings in `Directory.Build.props` and [`Directory.Solution.props`](../Directory.Solution.props)
+  so audit-service outages do not fail builds.
 
 ## Coding Style
 
