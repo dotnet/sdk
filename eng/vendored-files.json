@@ -4,14 +4,14 @@
     {
       "id": "dotnet-test-wire-contract-fieldids",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/IPC/ObjectFieldIds.cs",
-      "notes": "Named-pipe wire contract (serializer/field ids) for the 'dotnet test' <-> Microsoft.Testing.Platform protocol. MUST stay byte-aligned with testfx: ids are the on-wire identity and cannot change without a coordinated protocol break. testfx is the source of truth (its copy is packed by DotnetTestProtocolContract.props). RetryAttemptNumber and IsSuperseded are reserved in the SDK contract so newer peers can send them without conflicting ids; the SDK does not consume that metadata until its serializers and retry model support framework-level retry attempts.",
+      "notes": "Named-pipe wire contract (serializer/field ids) for the 'dotnet test' <-> Microsoft.Testing.Platform protocol. MUST stay byte-aligned with testfx: ids are the on-wire identity and cannot change without a coordinated protocol break. testfx is the source of truth (its copy is packed by DotnetTestProtocolContract.props). RetryAttemptNumber and IsSuperseded are reserved in the SDK contract so newer peers can send them without conflicting ids; the SDK does not consume that metadata until its serializers and retry model support framework-level retry attempts. ProviderUid, MinimumArity, and MaximumArity are also reserved; the SDK's command-line option serializer skips that optional metadata.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/ObjectFieldIds.cs",
-          "baseline_ref_sha": "45f54c96f143019fd1a71254fa0449888e2f83a5",
-          "baseline_blob_sha": "b895c69e438c5acbde2a44e11c92873c1f58ac2a",
+          "baseline_ref_sha": "005e8f826fcb174cb9ebaa1382a152466fada67d",
+          "baseline_blob_sha": "7592b74c90a4c2e5b989b7f3314ebc1c0ec11804",
           "scope": "entire file; ids must match exactly"
         }
       ]

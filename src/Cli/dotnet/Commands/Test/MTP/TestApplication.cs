@@ -26,7 +26,8 @@ internal sealed class TestApplication(
     Action<CommandLineOptionMessages> onHelpRequested,
     ArtifactPostProcessingManager? artifactPostProcessingManager = null,
     ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
-    TestRunPolicy? testRunPolicy = null) : IDisposable
+    TestRunPolicy? testRunPolicy = null,
+    TestApplicationSettings? testApplicationSettings = null) : IDisposable
 {
     private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
     private static readonly TimeSpan DefaultArtifactPostProcessingTimeout = TimeSpan.FromMinutes(15);
@@ -52,7 +53,8 @@ internal sealed class TestApplication(
         testOptions,
         artifactPostProcessingManager,
         artifactPostProcessingInvocation,
-        testRunPolicy);
+        testRunPolicy,
+        testApplicationSettings);
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
     private readonly TestRunPolicy? _testRunPolicy = testRunPolicy;
     private readonly CancellationTokenSource _pipeCancellationTokenSource = new();

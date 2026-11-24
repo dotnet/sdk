@@ -183,6 +183,54 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void RunAppliesReporterOptionsFromResponseFile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            string responseFilePath = Path.Join(testInstance.Path, "reporter.rsp");
+            File.WriteAllText(
+                responseFilePath,
+                "--show-test-results=passed");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, $"@{responseFilePath}");
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("passed Test0")
+                    .And.NotContain("skipped Test1");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        public void RunAppliesReporterOptionsFromConfigurationFile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            string configurationFilePath = Path.Join(testInstance.Path, "reporter.testconfig.json");
+            File.WriteAllText(
+                configurationFilePath,
+                """{"commandLineOptions":{"show-test-results":["passed"]}}""");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, "--config-file", configurationFilePath);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("passed Test0")
+                    .And.NotContain("skipped Test1");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
         public void RunAllSkippedTestsHonorsStrictPolicyFromDefaultConfigurationFile()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())

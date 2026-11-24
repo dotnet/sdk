@@ -22,6 +22,11 @@ The build pipeline is implemented as a set of MSBuild targets and tasks. Targets
 - **Endpoint validity**: Every `StaticWebAssetEndpoint` must point to an existing `StaticWebAsset` via `AssetFile`. There must be no endpoints referencing non-existent assets.
 - **Endpoint uniqueness**: Endpoints are unique by the `(Route, AssetFile)` pair. No two endpoints share the same route and asset file combination.
 
+MSBuild can log captured task inputs asynchronously, so endpoint projection must not
+modify its input item arrays. Collect retained endpoints separately and return compact
+outputs without null entries, as in
+[`ComputeEndpointsForReferenceStaticWebAssets`](Tasks/ComputeEndpointsForReferenceStaticWebAssets.cs).
+
 **Required properties (every asset must have)**
 
 - `Identity`, `SourceId`, `ContentRoot`, `BasePath`, `RelativePath`, `OriginalItemSpec` — non-empty strings.

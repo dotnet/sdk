@@ -7,13 +7,11 @@
     Publishes and runs the dotnet-aot tests as a NativeAOT binary.
 
 .DESCRIPTION
-    This script publishes the dotnet-aot.Tests project as a NativeAOT executable
-    and runs the resulting native binary. This verifies that the AOT CLI code
-    (Parser, DotnetRootResolver, NativeEntryPoint) works correctly when compiled
-    ahead-of-time.
-
-    The test project uses xUnit v3 AOT packages (xunit.v3.core.aot) which use
-    source generators for test discovery, replacing runtime reflection.
+    This script publishes the dotnet-aot.Tests project as a NativeAOT executable,
+    publishes the dotnet-aot library and dn host, and runs the resulting native
+    test binary. This verifies both the Native AOT test closure and end-to-end dn
+    integration against a complete SDK installation. The test publish retains
+    managed build output for test-module integration validation.
 
 .PARAMETER Configuration
     Build configuration (Debug or Release). Default: Debug.
@@ -82,14 +80,36 @@ Write-Host ""
 if (-not $NoBuild) {
     Write-Host "Publishing as NativeAOT..." -ForegroundColor Yellow
 
+    # Managed module integration also needs the full Build output.
     & $dotnet publish $testProject `
         -c $Configuration `
         -r $RuntimeIdentifier `
         -p:PublishAotTests=true `
+        -p:UseOptimizedPublish=false `
         -p:PublishDir=$publishDir
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: AOT publish failed with exit code $LASTEXITCODE" -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+
+    & $dotnet publish $productProject `
+        -c $Configuration `
+        -r $RuntimeIdentifier `
+        -p:PublishDir=$aotPublishDir
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: dotnet-aot publish failed with exit code $LASTEXITCODE" -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+
+    & $dotnet publish $dnProject `
+        -c $Configuration `
+        -r $RuntimeIdentifier `
+        -p:PublishDir=$dnPublishDir
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: dn publish failed with exit code $LASTEXITCODE" -ForegroundColor Red
         exit $LASTEXITCODE
     }
 
@@ -102,10 +122,35 @@ if (-not $NoBuild) {
     Write-Host ""
 }
 
+$managedTestModule = & $dotnet msbuild $testProject `
+    -p:Configuration=$Configuration `
+    -p:RuntimeIdentifier=$RuntimeIdentifier `
+    -p:PublishAotTests=true `
+    -p:UseOptimizedPublish=false `
+    -p:PublishDir=$publishDir `
+    -getProperty:TargetPath
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Could not determine the managed test module path." -ForegroundColor Red
+    exit $LASTEXITCODE
+}
+
 # Run
 if (-not (Test-Path $exePath)) {
     Write-Host "ERROR: Published binary not found at $exePath" -ForegroundColor Red
     Write-Host "Run without -NoBuild to publish first." -ForegroundColor Yellow
+    exit 1
+}
+if (-not (Test-Path $aotLibraryPath)) {
+    Write-Host "ERROR: Published native library not found at $aotLibraryPath" -ForegroundColor Red
+    exit 1
+}
+if (-not (Test-Path $dnPath)) {
+    Write-Host "ERROR: Published dn host not found at $dnPath" -ForegroundColor Red
+    exit 1
+}
+if (-not (Test-Path -LiteralPath $managedTestModule -PathType Leaf)) {
+    Write-Host "ERROR: Managed test module not found at $managedTestModule for Native AOT integration validation." -ForegroundColor Red
     exit 1
 }
 

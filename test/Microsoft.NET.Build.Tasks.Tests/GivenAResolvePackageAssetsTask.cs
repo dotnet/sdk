@@ -116,6 +116,528 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             new CacheWriter(task); // Should not error
         }
 
+        [TestMethod]
+        public void It_applies_language_agnostic_analyzer_assets_to_every_language()
+        {
+            // An analyzer with no language segment (codeLanguage "any") applies to projects of any language.
+            string[] paths =
+            {
+                "analyzers/dotnet/NeutralAnalyzer.dll",
+                "analyzers/dotnet/cs/CSharpAnalyzer.dll",
+                "analyzers/dotnet/vb/VisualBasicAnalyzer.dll",
+            };
+
+            ResolveGroupAnalyzers("C#", compilerApiVersion: null, analyzerPaths: paths)
+                .Should().Equal("analyzers/dotnet/NeutralAnalyzer.dll", "analyzers/dotnet/cs/CSharpAnalyzer.dll");
+
+            ResolveGroupAnalyzers("VB", compilerApiVersion: null, analyzerPaths: paths)
+                .Should().Equal("analyzers/dotnet/NeutralAnalyzer.dll", "analyzers/dotnet/vb/VisualBasicAnalyzer.dll");
+        }
+
+        [TestMethod]
+        public void It_applies_language_selection_for_fsharp_projects()
+        {
+            // F# projects select fs and language-agnostic analyzers, but not cs/vb analyzers.
+            string[] selected = ResolveGroupAnalyzers(
+                projectLanguage: "F#",
+                compilerApiVersion: null,
+                analyzerPaths: new[]
+                {
+                    "analyzers/dotnet/NeutralAnalyzer.dll",
+                    "analyzers/dotnet/cs/CSharpAnalyzer.dll",
+                    "analyzers/dotnet/fs/FSharpAnalyzer.dll",
+                });
+
+            selected.Should().Equal(
+                "analyzers/dotnet/NeutralAnalyzer.dll",
+                "analyzers/dotnet/fs/FSharpAnalyzer.dll");
+        }
+
+        [TestMethod]
+        public void It_applies_every_compiler_version_variant_when_the_project_compiler_version_is_unknown()
+        {
+            // F# projects (and others) have no resolved compiler API version. With an unknown project compiler
+            // version, every compiler-version variant is treated as version-agnostic and applied.
+            string[] selected = ResolveGroupAnalyzers(
+                projectLanguage: "C#",
+                compilerApiVersion: null,
+                analyzerPaths: new[]
+                {
+                    "analyzers/dotnet/roslyn3.8/cs/OldAnalyzer.dll",
+                    "analyzers/dotnet/roslyn4.0/cs/NewAnalyzer.dll",
+                });
+
+            selected.Should().Equal(
+                "analyzers/dotnet/roslyn3.8/cs/OldAnalyzer.dll",
+                "analyzers/dotnet/roslyn4.0/cs/NewAnalyzer.dll");
+        }
+
+        [TestMethod]
+        public void It_applies_all_analyzers_sharing_the_highest_applicable_compiler_version()
+        {
+            // When several analyzers share the highest applicable compiler version, all of them are applied.
+            string[] selected = ResolveGroupAnalyzers(
+                projectLanguage: "C#",
+                compilerApiVersion: "roslyn3.9",
+                analyzerPaths: new[]
+                {
+                    "analyzers/dotnet/roslyn3.8/cs/FirstAnalyzer.dll",
+                    "analyzers/dotnet/roslyn3.8/cs/SecondAnalyzer.dll",
+                    "analyzers/dotnet/roslyn4.0/cs/TooNewAnalyzer.dll",
+                });
+
+            selected.Should().Equal(
+                "analyzers/dotnet/roslyn3.8/cs/FirstAnalyzer.dll",
+                "analyzers/dotnet/roslyn3.8/cs/SecondAnalyzer.dll");
+        }
+
+        [TestMethod]
+        public void It_ignores_placeholder_analyzer_assets_in_the_group()
+        {
+            // A '_._' placeholder (an analyzer excluded by restore, e.g. via PrivateAssets) is ignored and never
+            // surfaced as an analyzer.
+            string[] selected = ResolveGroupAnalyzers(
+                projectLanguage: "C#",
+                compilerApiVersion: null,
+                analyzerPaths: new[]
+                {
+                    "analyzers/dotnet/cs/CSharpAnalyzer.dll",
+                    "analyzers/dotnet/cs/_._",
+                });
+
+            selected.Should().Equal("analyzers/dotnet/cs/CSharpAnalyzer.dll");
+        }
+
+        [TestMethod]
+        public void It_reads_analyzer_assets_for_the_current_target_framework_in_a_multi_targeted_project()
+        {
+            // In a multi-targeted project the analyzers group is written per target framework. The task must read
+            // the group for the target framework it is building (here net9.0), not another target's group.
+            string testRoot = Path.Combine(Path.GetTempPath(), "rpa-analyzers-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(testRoot);
+
+            try
+            {
+                string objDir = Path.Combine(testRoot, "obj");
+                string packagesDir = Path.Combine(testRoot, "packages");
+                Directory.CreateDirectory(objDir);
+
+                string packageDirectory = CreateAnalyzerPackage(
+                    packagesDir,
+                    "analyzers/dotnet/cs/Net8Analyzer.dll",
+                    "analyzers/dotnet/cs/Net9Analyzer.dll");
+
+                string projectPath = Path.Combine(testRoot, "test.csproj");
+                string projectAssetsJsonPath = Path.Combine(objDir, "project.assets.json");
+                File.WriteAllText(
+                    projectAssetsJsonPath,
+                    CreateMultiTargetedAnalyzerAssetsJson(projectPath, packagesDir, objDir));
+
+                ResolvePackageAssets task = CreateAnalyzerAssetsTask(
+                    testRoot,
+                    projectAssetsJsonPath,
+                    projectPath,
+                    targetFramework: "net9.0");
+
+                task.Execute().Should().BeTrue();
+
+                GetPackageRelativeAnalyzerPaths(task, packageDirectory)
+                    .Should().Equal("analyzers/dotnet/cs/Net9Analyzer.dll");
+            }
+            finally
+            {
+                try { Directory.Delete(testRoot, true); } catch { }
+            }
+        }
+
+        private static string CreateMultiTargetedAnalyzerAssetsJson(string projectPath, string packagesPath, string outputPath)
+        {
+            return $$"""
+                {
+                  "version": 5,
+                  "targets": {
+                    "net8.0": {
+                      "{{AnalyzerPackageName}}/{{AnalyzerPackageVersion}}": {
+                        "type": "package",
+                        "analyzers": {
+                          "analyzers/dotnet/cs/Net8Analyzer.dll": { "codeLanguage": "cs" }
+                        }
+                      }
+                    },
+                    "net9.0": {
+                      "{{AnalyzerPackageName}}/{{AnalyzerPackageVersion}}": {
+                        "type": "package",
+                        "analyzers": {
+                          "analyzers/dotnet/cs/Net9Analyzer.dll": { "codeLanguage": "cs" }
+                        }
+                      }
+                    }
+                  },
+                  "libraries": {
+                    "{{AnalyzerPackageName}}/{{AnalyzerPackageVersion}}": {
+                      "sha512": "abc123",
+                      "type": "package",
+                      "path": "{{AnalyzerPackageName.ToLowerInvariant()}}/{{AnalyzerPackageVersion}}",
+                      "files": [
+                        "analyzers/dotnet/cs/Net8Analyzer.dll",
+                        "analyzers/dotnet/cs/Net9Analyzer.dll",
+                        "{{AnalyzerPackageName.ToLowerInvariant()}}.{{AnalyzerPackageVersion}}.nupkg.sha512",
+                        "{{AnalyzerPackageName.ToLowerInvariant()}}.nuspec"
+                      ]
+                    }
+                  },
+                  "projectFileDependencyGroups": {
+                    "net8.0": ["{{AnalyzerPackageName}} >= {{AnalyzerPackageVersion}}"],
+                    "net9.0": ["{{AnalyzerPackageName}} >= {{AnalyzerPackageVersion}}"]
+                  },
+                  "packageFolders": { "{{JsonEscape(packagesPath)}}": {} },
+                  "project": {
+                    "version": "1.0.0",
+                    "restore": {
+                      "restoreEnableAnalyzerAssets": true,
+                      "projectUniqueName": "test",
+                      "projectName": "test",
+                      "projectPath": "{{JsonEscape(projectPath)}}",
+                      "packagesPath": "{{JsonEscape(packagesPath)}}",
+                      "outputPath": "{{JsonEscape(outputPath)}}",
+                      "projectStyle": "PackageReference",
+                      "frameworks": {
+                        "net8.0": { "targetAlias": "net8.0" },
+                        "net9.0": { "targetAlias": "net9.0" }
+                      }
+                    },
+                    "frameworks": {
+                      "net8.0": { "targetAlias": "net8.0" },
+                      "net9.0": { "targetAlias": "net9.0" }
+                    }
+                  }
+                }
+                """;
+        }
+
+        private const string AnalyzerPackageName = "Analyzer.Package";
+        private const string AnalyzerPackageVersion = "1.0.0";
+        private const string AnalyzerAssetPath = "analyzers/dotnet/cs/Analyzer.Package.dll";
+
+        private static string[] ExecuteAnalyzerAssetsTest(
+            bool restoreEnableAnalyzerAssets,
+            bool includeAnalyzerAssetsGroup)
+        {
+            string testRoot = Path.Combine(Path.GetTempPath(), "rpa-analyzers-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(testRoot);
+
+            try
+            {
+                string objDir = Path.Combine(testRoot, "obj");
+                string packagesDir = Path.Combine(testRoot, "packages");
+                Directory.CreateDirectory(objDir);
+                string packageDirectory = CreateAnalyzerPackage(packagesDir, AnalyzerAssetPath);
+
+                string projectPath = Path.Combine(testRoot, "test.csproj");
+                string projectAssetsJsonPath = Path.Combine(objDir, "project.assets.json");
+                File.WriteAllText(
+                    projectAssetsJsonPath,
+                    CreateAnalyzerAssetsJson(projectPath, packagesDir, objDir, includeAnalyzerAssetsGroup, restoreEnableAnalyzerAssets));
+
+                ResolvePackageAssets task = CreateAnalyzerAssetsTask(
+                    testRoot,
+                    projectAssetsJsonPath,
+                    projectPath);
+
+                task.Execute().Should().BeTrue();
+                return GetPackageRelativeAnalyzerPaths(task, packageDirectory);
+            }
+            finally
+            {
+                try { Directory.Delete(testRoot, true); } catch { }
+            }
+        }
+
+        private static ResolvePackageAssets CreateAnalyzerAssetsTask(
+            string testRoot,
+            string projectAssetsJsonPath,
+            string projectPath,
+            string targetFramework = "net8.0",
+            string projectLanguage = "C#",
+            string compilerApiVersion = null)
+        {
+            return new ResolvePackageAssets
+            {
+                BuildEngine = new MockBuildEngine(),
+                ProjectAssetsCacheFile = Path.Combine(Path.GetDirectoryName(projectAssetsJsonPath), "project.assets.cache"),
+                ProjectAssetsFile = projectAssetsJsonPath,
+                ProjectPath = projectPath,
+                TargetFramework = targetFramework,
+                ProjectLanguage = projectLanguage,
+                CompilerApiVersion = compilerApiVersion,
+                DotNetAppHostExecutableNameWithoutExtension = "apphost",
+                DefaultImplicitPackages = "Microsoft.NETCore.App",
+                DisablePackageAssetsCache = true,
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(testRoot)
+            };
+        }
+
+        private static string CreateAnalyzerPackage(string packagesDir, params string[] analyzerPaths)
+        {
+            string packageDirectory = Path.Combine(
+                packagesDir,
+                AnalyzerPackageName.ToLowerInvariant(),
+                AnalyzerPackageVersion);
+
+            foreach (string relativePath in analyzerPaths)
+            {
+                string analyzerPath = Path.Combine(
+                    packageDirectory,
+                    relativePath.Replace('/', Path.DirectorySeparatorChar));
+
+                Directory.CreateDirectory(Path.GetDirectoryName(analyzerPath));
+                File.WriteAllText(analyzerPath, string.Empty);
+            }
+
+            File.WriteAllText(
+                Path.Combine(packageDirectory, $"{AnalyzerPackageName.ToLowerInvariant()}.{AnalyzerPackageVersion}.nupkg.sha512"),
+                "abc123");
+            File.WriteAllText(
+                Path.Combine(packageDirectory, $"{AnalyzerPackageName.ToLowerInvariant()}.nuspec"),
+                $"<package><metadata><id>{AnalyzerPackageName}</id><version>{AnalyzerPackageVersion}</version></metadata></package>");
+
+            return packageDirectory;
+        }
+
+        private static string[] GetPackageRelativeAnalyzerPaths(
+            ResolvePackageAssets task,
+            string packageDirectory)
+        {
+            string packagePrefix = packageDirectory + Path.DirectorySeparatorChar;
+            return task.Analyzers
+                .Select(analyzer => analyzer.ItemSpec)
+                .Select(itemSpec => itemSpec.StartsWith(packagePrefix, StringComparison.OrdinalIgnoreCase)
+                    ? itemSpec.Substring(packagePrefix.Length).Replace(Path.DirectorySeparatorChar, '/')
+                    : itemSpec)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        private static string CreateAnalyzerAssetsJson(
+            string projectPath,
+            string packagesPath,
+            string outputPath,
+            bool includeAnalyzerAssetsGroup,
+            bool restoreEnableAnalyzerAssets)
+        {
+            string analyzerAssetsGroup = includeAnalyzerAssetsGroup
+                ? $@",
+                    ""analyzers"": {{
+                      ""{AnalyzerAssetPath}"": {{}}
+                    }}"
+                : "";
+
+            string restoreEnableAnalyzerAssetsMetadata = restoreEnableAnalyzerAssets
+                ? @"
+                      ""restoreEnableAnalyzerAssets"": true,"
+                : "";
+
+            return $$"""
+                {
+                  "version": 5,
+                  "targets": {
+                    "net8.0": {
+                      "{{AnalyzerPackageName}}/{{AnalyzerPackageVersion}}": {
+                        "type": "package"{{analyzerAssetsGroup}}
+                      }
+                    }
+                  },
+                  "libraries": {
+                    "{{AnalyzerPackageName}}/{{AnalyzerPackageVersion}}": {
+                      "sha512": "abc123",
+                      "type": "package",
+                      "path": "{{AnalyzerPackageName.ToLowerInvariant()}}/{{AnalyzerPackageVersion}}",
+                      "files": [
+                        "{{AnalyzerAssetPath}}",
+                        "{{AnalyzerPackageName.ToLowerInvariant()}}.{{AnalyzerPackageVersion}}.nupkg.sha512",
+                        "{{AnalyzerPackageName.ToLowerInvariant()}}.nuspec"
+                      ]
+                    }
+                  },
+                  "projectFileDependencyGroups": { "net8.0": ["{{AnalyzerPackageName}} >= {{AnalyzerPackageVersion}}"] },
+                  "packageFolders": { "{{JsonEscape(packagesPath)}}": {} },
+                  "project": {
+                    "version": "1.0.0",
+                    "restore": {{{restoreEnableAnalyzerAssetsMetadata}}
+                      "projectUniqueName": "test",
+                      "projectName": "test",
+                      "projectPath": "{{JsonEscape(projectPath)}}",
+                      "packagesPath": "{{JsonEscape(packagesPath)}}",
+                      "outputPath": "{{JsonEscape(outputPath)}}",
+                      "projectStyle": "PackageReference",
+                      "frameworks": {
+                        "net8.0": { "targetAlias": "net8.0" }
+                      }
+                    },
+                    "frameworks": { "net8.0": { "targetAlias": "net8.0" } }
+                  }
+                }
+                """;
+        }
+
+        private static string JsonEscape(string value) => value.Replace(@"\", @"\\");
+
+        // Derives the analyzer selection metadata from the asset path the same way NuGet restore does,
+        // so the hand-written assets file matches what restore would produce.
+        private static string AnalyzerMetadataJson(string path)
+        {
+            // '_._' placeholders are written without metadata, matching NuGet restore output.
+            if (path.EndsWith("_._", StringComparison.Ordinal))
+            {
+                return string.Empty;
+            }
+
+            string codeLanguage = "any";
+            string compilerApiVersion = null;
+
+            string[] segments = path.Split('/');
+            for (int i = 0; i < segments.Length - 1; i++)
+            {
+                string segment = segments[i];
+                if (segment is "cs" or "vb" or "fs")
+                {
+                    codeLanguage = segment;
+                }
+                else if (compilerApiVersion == null
+                    && segment.StartsWith("roslyn", StringComparison.OrdinalIgnoreCase)
+                    && segment.Length > "roslyn".Length
+                    && char.IsDigit(segment["roslyn".Length]))
+                {
+                    compilerApiVersion = segment;
+                }
+            }
+
+            string metadata = $@"""codeLanguage"": ""{codeLanguage}""";
+            if (compilerApiVersion != null)
+            {
+                metadata += $@", ""compilerApiVersion"": ""{compilerApiVersion}""";
+            }
+
+            return metadata;
+        }
+
+        private static string[] ResolveGroupAnalyzers(
+            string projectLanguage,
+            string compilerApiVersion,
+            string[] analyzerPaths,
+            bool restoreEnableAnalyzerAssets = true,
+            Func<string, string> analyzerMetadata = null)
+        {
+            string testRoot = Path.Combine(Path.GetTempPath(), "rpa-analyzers-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(testRoot);
+
+            try
+            {
+                string objDir = Path.Combine(testRoot, "obj");
+                string packagesDir = Path.Combine(testRoot, "packages");
+                Directory.CreateDirectory(objDir);
+
+                string packageDirectory = CreateAnalyzerPackage(packagesDir, analyzerPaths);
+
+                string projectPath = Path.Combine(testRoot, "test.csproj");
+                string projectAssetsJsonPath = Path.Combine(objDir, "project.assets.json");
+                File.WriteAllText(
+                    projectAssetsJsonPath,
+                    CreateMultiAnalyzerAssetsJson(
+                        projectPath,
+                        packagesDir,
+                        objDir,
+                        analyzerPaths,
+                        restoreEnableAnalyzerAssets,
+                        analyzerMetadata ?? AnalyzerMetadataJson));
+
+                ResolvePackageAssets task = CreateAnalyzerAssetsTask(
+                    testRoot,
+                    projectAssetsJsonPath,
+                    projectPath,
+                    projectLanguage: projectLanguage,
+                    compilerApiVersion: compilerApiVersion);
+
+                task.Execute().Should().BeTrue();
+                return GetPackageRelativeAnalyzerPaths(task, packageDirectory);
+            }
+            finally
+            {
+                try { Directory.Delete(testRoot, true); } catch { }
+            }
+        }
+
+        private static string CreateMultiAnalyzerAssetsJson(
+            string projectPath,
+            string packagesPath,
+            string outputPath,
+            string[] analyzerPaths,
+            bool restoreEnableAnalyzerAssets,
+            Func<string, string> analyzerMetadata)
+        {
+            string groupEntries = string.Join(
+                ",\r\n                      ",
+                analyzerPaths.Select(path => $@"""{path}"": {{ {analyzerMetadata(path)} }}"));
+
+            string restoreEnableAnalyzerAssetsMetadata = restoreEnableAnalyzerAssets
+                ? @"
+                      ""restoreEnableAnalyzerAssets"": true,"
+                : "";
+
+            string filesArray = string.Join(
+                ",\r\n                        ",
+                analyzerPaths
+                    .Concat(new[]
+                    {
+                        $"{AnalyzerPackageName.ToLowerInvariant()}.{AnalyzerPackageVersion}.nupkg.sha512",
+                        $"{AnalyzerPackageName.ToLowerInvariant()}.nuspec"
+                    })
+                    .Select(file => $@"""{file}"""));
+
+            return $$"""
+                {
+                  "version": 5,
+                  "targets": {
+                    "net8.0": {
+                      "{{AnalyzerPackageName}}/{{AnalyzerPackageVersion}}": {
+                        "type": "package",
+                        "analyzers": {
+                          {{groupEntries}}
+                        }
+                      }
+                    }
+                  },
+                  "libraries": {
+                    "{{AnalyzerPackageName}}/{{AnalyzerPackageVersion}}": {
+                      "sha512": "abc123",
+                      "type": "package",
+                      "path": "{{AnalyzerPackageName.ToLowerInvariant()}}/{{AnalyzerPackageVersion}}",
+                      "files": [
+                        {{filesArray}}
+                      ]
+                    }
+                  },
+                  "projectFileDependencyGroups": { "net8.0": ["{{AnalyzerPackageName}} >= {{AnalyzerPackageVersion}}"] },
+                  "packageFolders": { "{{JsonEscape(packagesPath)}}": {} },
+                  "project": {
+                    "version": "1.0.0",
+                    "restore": {{{restoreEnableAnalyzerAssetsMetadata}}
+                      "projectUniqueName": "test",
+                      "projectName": "test",
+                      "projectPath": "{{JsonEscape(projectPath)}}",
+                      "packagesPath": "{{JsonEscape(packagesPath)}}",
+                      "outputPath": "{{JsonEscape(outputPath)}}",
+                      "projectStyle": "PackageReference",
+                      "frameworks": {
+                        "net8.0": { "targetAlias": "net8.0" }
+                      }
+                    },
+                    "frameworks": { "net8.0": { "targetAlias": "net8.0" } }
+                  }
+                }
+                """;
+        }
+
         private static string AssetsFileWithResourceLocale(string tfm, string locale) => @"
 {
   `version`: 3,
@@ -183,33 +705,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public void It_warns_on_incorrectly_cased_culture_codes_of_resources(string tfm, bool shouldHaveWarnings)
         {
             string projectAssetsJsonPath = Path.GetTempFileName();
-            var assetsContent = AssetsFileWithResourceLocale(tfm, "ru-ru");
-            File.WriteAllText(projectAssetsJsonPath, assetsContent);
-            var task = InitializeTask(out _);
-            task.ProjectAssetsFile = projectAssetsJsonPath;
-            task.TargetFramework = tfm;
-            var writer = new CacheWriter(task, new MockPackageResolver());
-            writer.WriteToMemoryStream();
-            var engine = task.BuildEngine as MockBuildEngine;
-
-            var invalidContextWarnings = engine.Warnings.Where(msg => msg.Code == "NETSDK1187");
-            invalidContextWarnings.Should().HaveCount(shouldHaveWarnings ? 1 : 0);
-
-            var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1187" && msg.Importance == MessageImportance.Low);
-            invalidContextMessages.Should().HaveCount(shouldHaveWarnings ? 0 : 1);
-        }
-
-        [DataRow("net7.0", "ckb")]
-        [DataRow("net7.0", "ckb-IQ")]
-        [DataRow("net6.0", "ckb")]
-        [DataRow("net6.0", "ckb-IQ")]
-        [TestMethod]
-        public void It_does_not_warn_for_remapped_resource_cultures(string tfm, string locale)
-        {
-            string projectAssetsJsonPath = Path.GetTempFileName();
             try
             {
-                File.WriteAllText(projectAssetsJsonPath, AssetsFileWithResourceLocale(tfm, locale));
+                File.WriteAllText(projectAssetsJsonPath, AssetsFileWithResourceLocale(tfm, "ru-ru"));
                 var task = InitializeTask(out _);
                 task.ProjectAssetsFile = projectAssetsJsonPath;
                 task.TargetFramework = tfm;
@@ -217,8 +715,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 using var stream = writer.WriteToMemoryStream();
                 var engine = (MockBuildEngine)task.BuildEngine;
 
-                engine.Warnings.Where(msg => msg.Code == "NETSDK1187").Should().BeEmpty();
-                engine.Messages.Where(msg => msg.Code == "NETSDK1187").Should().BeEmpty();
+                engine.Warnings.Where(msg => msg.Code == "NETSDK1187")
+                    .Should().HaveCount(shouldHaveWarnings ? 1 : 0);
+                engine.Messages.Where(msg => msg.Code == "NETSDK1187" && msg.Importance == MessageImportance.Low)
+                    .Should().HaveCount(shouldHaveWarnings ? 0 : 1);
             }
             finally
             {

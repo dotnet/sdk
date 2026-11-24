@@ -15,7 +15,7 @@
     <PackageVersion Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <PackageVersion Include="BenchmarkDotNet.Diagnostics.Windows" Version="$(BenchmarkDotNetDiagnosticsWindowsPackageVersion)" />
     <PackageVersion Include="JsonSchema.Net" Version="7.3.2" />
-    <PackageVersion Include="MessagePack" Version="3.1.8" />
+    <PackageVersion Include="MessagePack" Version="3.1.12" />
     <PackageVersion Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostPackageVersion)" />
@@ -108,6 +108,7 @@
     <PackageVersion Include="Microsoft.Wix" Version="$(MicrosoftWixToolsetSdkVersion)" />
     <PackageVersion Include="Microsoft.WixToolset.Bal.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
     <PackageVersion Include="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
+    <PackageVersion Include="Microsoft.WixToolset.Dtf.WindowsInstaller" Version="$(MicrosoftWixToolsetSdkVersion)" />
     <PackageVersion Include="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixToolsetSdkVersion)" />
     <PackageVersion Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
     <PackageVersion Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />

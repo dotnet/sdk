@@ -144,6 +144,19 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
+    [DataRow("-mt")]
+    [DataRow("\"--mt:false\"")]
+    public void TraceWithMultiThreadedOption(string option)
+    {
+        var options = VerifyOptions(["--trace", option, "--", option]);
+
+        Assert.AreEqual(LogLevel.Trace, options.GlobalOptions.LogLevel);
+        AssertEx.SequenceEqual([NugetInteractiveProperty, option], options.BuildArguments);
+        AssertEx.SequenceEqual([option, "--", option], options.CommandArguments);
+        AssertEx.SequenceEqual(["--", option], options.CommandArgumentsForFileDiscovery);
+    }
+
+    [TestMethod]
     public void RunOptions_LaunchProfile_Watch()
     {
         var options = VerifyOptions(["-lp", "P", "run"]);

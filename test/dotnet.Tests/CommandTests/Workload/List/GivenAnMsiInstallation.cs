@@ -12,8 +12,8 @@ using Microsoft.Win32;
 namespace Microsoft.DotNet.Cli.Workload.List.Tests
 {
     [SupportedOSPlatform("windows")]
-    [TestClass]
     [OSCondition(OperatingSystems.Windows)]
+    [TestClass]
     public class GivenAnMsiInstallation : IDisposable
     {
         // Override HKLM to HKCU so we can run tests without needing elevation

@@ -9,6 +9,8 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal sealed class TestApplicationHandler
 {
     private const string RetryOrchestratorFeature = "RetryOrchestrator";
+    private const string RefreshMappingsOrchestratorFeature = "RefreshMappingsOrchestrator";
+    private const string RunAffectedTestsOrchestratorFeature = "RunAffectedTestsOrchestrator";
 
     private readonly TerminalTestReporter _output;
     private readonly TestModule _module;
@@ -16,11 +18,16 @@ internal sealed class TestApplicationHandler
     private readonly ArtifactPostProcessingManager? _artifactPostProcessingManager;
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation;
     private readonly TestRunPolicy? _testRunPolicy;
+    private readonly TestApplicationSettings _testApplicationSettings;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
     private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
     private bool _receivedTestHostHandshake;
+    private bool _receivedAffectedTestsOrchestratorHandshake;
+    private bool _receivedIncompleteHandshake;
+    private bool _handshakeRejected;
+    private bool _retryEnabled;
 
     public TestApplicationHandler(
         TerminalTestReporter output,
@@ -28,7 +35,8 @@ internal sealed class TestApplicationHandler
         TestOptions options,
         ArtifactPostProcessingManager? artifactPostProcessingManager = null,
         ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
-        TestRunPolicy? testRunPolicy = null)
+        TestRunPolicy? testRunPolicy = null,
+        TestApplicationSettings? testApplicationSettings = null)
     {
         _output = output;
         _module = module;
@@ -36,6 +44,8 @@ internal sealed class TestApplicationHandler
         _artifactPostProcessingManager = artifactPostProcessingManager;
         _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
         _testRunPolicy = testRunPolicy;
+        _testApplicationSettings = testApplicationSettings ?? TestApplicationSettings.Default;
+        _retryEnabled = _testApplicationSettings.LegacyRetryEnabled;
     }
 
     /// <summary>
@@ -120,14 +130,14 @@ internal sealed class TestApplicationHandler
             // Only test hosts represent an assembly attempt. Controllers and orchestrators must not
             // register runs, otherwise retries are counted and start messages are rendered twice.
             var handshakeInfo = _handshakeInfo.Value;
-            if (attemptNumber.HasValue)
-            {
-                _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!, attemptNumber.Value);
-            }
-            else
-            {
-                _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!);
-            }
+            _output.AssemblyRunStarted(
+                _module.TargetPath,
+                handshakeInfo.TargetFramework,
+                handshakeInfo.Architecture,
+                handshakeInfo.ExecutionId,
+                instanceId!,
+                attemptNumber,
+                _testApplicationSettings with { LegacyRetryEnabled = _retryEnabled });
         }
 
         // Validate the optional ExecutionMode property last (after AssemblyRunStarted) so that any
@@ -145,7 +155,7 @@ internal sealed class TestApplicationHandler
             return false;
         }
 
-        // Orchestrators are capability-style participants: recognize the retry orchestrator,
+        // Orchestrators are capability-style participants: recognize known orchestrators,
         // but accept missing or unknown feature values so older and future peers remain compatible.
         // This handshake arrives before the first child TestHost handshake, which lets the reporter
         // render attempt 1 as a retry attempt without relying on command-line inspection.
@@ -153,7 +163,20 @@ internal sealed class TestApplicationHandler
             handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.OrchestratorFeature, out string? orchestratorFeature) &&
             string.Equals(orchestratorFeature, RetryOrchestratorFeature, StringComparison.Ordinal))
         {
-            _output.EnableRetry();
+            _retryEnabled = true;
+        }
+
+        if (hostType != HandshakeMessageHostTypes.TestHost)
+        {
+            bool isAffectedTestsOrchestrator = hostType == HandshakeMessageHostTypes.TestHostOrchestrator &&
+                !_options.IsHelp &&
+                !_options.IsDiscovery &&
+                handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.OrchestratorFeature, out string? feature) &&
+                ((_options.CollectTestMap && feature == RefreshMappingsOrchestratorFeature) ||
+                 (_options.AffectedTests && feature == RunAffectedTestsOrchestratorFeature));
+
+            _receivedAffectedTestsOrchestratorHandshake |= isAffectedTestsOrchestrator;
+            _receivedIncompleteHandshake |= !isAffectedTestsOrchestrator;
         }
 
         if (!_options.IsArtifactPostProcessing)
@@ -195,6 +218,8 @@ internal sealed class TestApplicationHandler
     // mode) are real protocol failures and must still be surfaced even when the SDK is in help mode.
     private void ReportHandshakeFailure(string failureMessage)
     {
+        _handshakeRejected = true;
+
         if (_artifactPostProcessingInvocation is not null)
         {
             _artifactPostProcessingInvocation.RecordFailure(failureMessage);
@@ -643,7 +668,10 @@ internal sealed class TestApplicationHandler
             // call HandshakeFailure instead of AssemblyRunCompleted
             _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData);
         }
-        else
+        else if (exitCode != ExitCode.Success ||
+            _handshakeRejected ||
+            _receivedIncompleteHandshake ||
+            !(_receivedAffectedTestsOrchestratorHandshake || (_options.CollectTestMap && !_handshakeInfo.HasValue)))
         {
             _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputData, errorData);
         }

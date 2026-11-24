@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             const string invalidWorkloadId = "../fake";
             var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
-            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
+            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider([_manifestPath]), dotnetRoot);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, "6.0.100", workloadResolver);
             var parseResult = Parser.Parse(["dotnet", "workload", "install", invalidWorkloadId, "--skip-manifest-update"]);
             var command = new WorkloadInstallCommand(

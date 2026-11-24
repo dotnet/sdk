@@ -2,7 +2,6 @@
 name: Static Web Assets Agent
 description: 'Specialist agent for developing, testing, and validating changes to the Static Web Assets SDK in dotnet/sdk. USE FOR: implementing SWA task/target changes, fixing SWA test failures, regenerating baselines, patching the redist SDK, running filtered SWA tests, diagnosing pack/publish/build pipeline issues. DO NOT USE FOR: non-SWA SDK work, Blazor runtime changes, general .NET project questions.'
 tools: [execute, read, edit, search, agent, todo]
-model: 'Claude Opus 4.6'
 ---
 
 ## Persona

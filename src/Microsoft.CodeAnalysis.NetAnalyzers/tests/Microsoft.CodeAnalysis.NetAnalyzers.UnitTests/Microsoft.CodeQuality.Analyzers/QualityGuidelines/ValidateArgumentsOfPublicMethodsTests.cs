@@ -5732,7 +5732,8 @@ public static class C
 
         return exception.Message;
     }
-}");
+}
+");
         }
 
         [TestMethod, WorkItem(2327, "https://github.com/dotnet/roslyn-analyzers/issues/2327")]
@@ -5768,7 +5769,8 @@ public class Model
 {
     public int Id { get; set; }
     public string Name { get; set; }
-}");
+}
+");
         }
 
         [TestMethod, WorkItem(2280, "https://github.com/dotnet/roslyn-analyzers/issues/2280")]

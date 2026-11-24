@@ -713,6 +713,52 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        [DataRow("(a, (values[x], values[y])) = (0, (values[y], values[x]));")]
+        [DataRow("((values[x]), values[y]) = (values[y], values[x]);")]
+        public async Task SpanParameter_WrittenViaWrappedTupleAssignment_NoDiagnostic(string assignment)
+        {
+            await VerifyAnalyzerAsync($$"""
+                using System;
+
+                class C
+                {
+                    private void M(Span<char> values, int x, int y, int a)
+                    {
+                        {{assignment}}
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task SpanParameter_ReadViaTupleAssignment_ProducesDiagnostic()
+        {
+            await VerifyFixerAsync("""
+                using System;
+
+                class C
+                {
+                    private void M(Span<char> [|values|], int x, int y)
+                    {
+                        char a, b;
+                        (a, b) = (values[x], values[y]);
+                    }
+                }
+                """, """
+                using System;
+
+                class C
+                {
+                    private void M(ReadOnlySpan<char> values, int x, int y)
+                    {
+                        char a, b;
+                        (a, b) = (values[x], values[y]);
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
         public async Task SpanParameter_PassedAsRefParameter_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""

@@ -9,8 +9,8 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
-    [TestClass]
     [OSCondition(OperatingSystems.Windows)]
+    [TestClass]
     public class WorkloadTests : VMTestBase
     {
         const string RollbackRC1 = """

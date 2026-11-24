@@ -8,9 +8,6 @@ using System.Text;
 
 namespace Microsoft.DotNet.HotReload;
 
-/// <summary>
-/// Information 
-/// </summary>
 internal readonly struct HotReloadAgentInfo
 {
     internal static readonly HotReloadAgentInfo Unavailable = new() { ManagedCodeUpdateCapabilities = [] };

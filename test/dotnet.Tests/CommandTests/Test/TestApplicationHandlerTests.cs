@@ -210,6 +210,66 @@ public class TestApplicationHandlerTests : IDisposable
     }
 
     [TestMethod]
+    public void OnHandshakeReceived_WithLegacyRetrySetting_EnablesRetryBeforeFirstTestHost()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            showAssembly: true,
+            testApplicationSettings: new TestApplicationSettings(
+                default,
+                TestResultVisibility.Failed,
+                SlowestTestsCount: 0,
+                ShowFlakyTests: true,
+                LegacyRetryEnabled: true));
+
+        bool accepted = handler.OnHandshakeReceived(
+            BuildHandshake(executionMode: HandshakeMessageExecutionModes.Run),
+            gotSupportedVersion: true);
+
+        accepted.Should().BeTrue();
+        reporter.HasHandshakeFailure.Should().BeFalse();
+        console.GetOutput().Should().Contain("(try 1)");
+    }
+
+    [TestMethod]
+    public void OnTestResultsReceived_WithPerApplicationVisibility_UsesModuleSetting()
+    {
+        (TestApplicationHandler handler, _, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            testApplicationSettings: new TestApplicationSettings(
+                default,
+                TestResultVisibility.None,
+                SlowestTestsCount: 0,
+                ShowFlakyTests: true,
+                LegacyRetryEnabled: false));
+
+        handler.OnHandshakeReceived(
+            BuildHandshake(executionMode: HandshakeMessageExecutionModes.Run),
+            gotSupportedVersion: true).Should().BeTrue();
+
+        handler.OnTestResultsReceived(new TestResultMessages(
+            ExecutionId: "exec-1",
+            InstanceId: "inst-1",
+            SuccessfulTestMessages:
+            [
+                new SuccessfulTestResultMessage(
+                    Uid: "test-1",
+                    DisplayName: "Hidden passing test",
+                    State: TestStates.Passed,
+                    Duration: 1,
+                    Reason: null,
+                    StandardOutput: null,
+                    ErrorOutput: null,
+                    SessionUid: null),
+            ],
+            FailedTestMessages: []));
+
+        console.GetOutput().Should().NotContain("Hidden passing test");
+    }
+
+    [TestMethod]
     public void OnHandshakeReceived_WithArtifactPostProcessingCapabilities_RecordsApplication()
     {
         var manager = new ArtifactPostProcessingManager();
@@ -546,7 +606,8 @@ public class TestApplicationHandlerTests : IDisposable
         bool isDiscovery,
         bool showAssembly = false,
         ArtifactPostProcessingManager? artifactPostProcessingManager = null,
-        ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null)
+        ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
+        TestApplicationSettings? testApplicationSettings = null)
     {
         var capturingConsole = new CapturingConsole();
 
@@ -588,7 +649,8 @@ public class TestApplicationHandlerTests : IDisposable
                 module,
                 testOptions,
                 artifactPostProcessingManager,
-                artifactPostProcessingInvocation),
+                artifactPostProcessingInvocation,
+                testApplicationSettings: testApplicationSettings),
             reporter,
             capturingConsole);
     }

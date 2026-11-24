@@ -370,6 +370,89 @@ public class TerminalTestReporterTests
         output.Should().Contain("skipped-test");
     }
 
+    [TestMethod]
+    public void TestCompleted_WithDifferentPerAssemblyVisibility_HonorsEachModule()
+    {
+        var capturingConsole = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(capturingConsole, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+            ShowTestResults = TestResultVisibility.None,
+        });
+
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 2, isDiscovery: false, isHelp: false, isRetry: false);
+        reporter.AssemblyRunStarted(
+            "/repo/PassedVisible.Tests.dll",
+            "net9.0",
+            "x64",
+            executionId: "exec-passed",
+            instanceId: "inst-passed",
+            attemptNumber: null,
+            settings: CreateSettings(TestResultVisibility.Passed));
+        reporter.AssemblyRunStarted(
+            "/repo/FailedVisible.Tests.dll",
+            "net9.0",
+            "x64",
+            executionId: "exec-failed",
+            instanceId: "inst-failed",
+            attemptNumber: null,
+            settings: CreateSettings(TestResultVisibility.Failed));
+
+        ReportTest(reporter, "/repo/PassedVisible.Tests.dll", "exec-passed", "inst-passed", "shown-pass", TestOutcome.Passed);
+        ReportTest(reporter, "/repo/PassedVisible.Tests.dll", "exec-passed", "inst-passed", "hidden-fail", TestOutcome.Fail);
+        ReportTest(reporter, "/repo/FailedVisible.Tests.dll", "exec-failed", "inst-failed", "hidden-pass", TestOutcome.Passed);
+        ReportTest(reporter, "/repo/FailedVisible.Tests.dll", "exec-failed", "inst-failed", "shown-fail", TestOutcome.Fail);
+
+        string output = StripAnsi(capturingConsole.GetOutput());
+        output.Should().Contain("shown-pass");
+        output.Should().Contain("shown-fail");
+        output.Should().NotContain("hidden-pass");
+        output.Should().NotContain("hidden-fail");
+    }
+
+    [TestMethod]
+    public void RetryRendering_IsScopedToTheConfiguredAssembly()
+    {
+        var capturingConsole = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(capturingConsole, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+            ShowAssembly = true,
+            ShowAssemblyStartAndComplete = true,
+            ShowTestResults = TestResultVisibility.Passed,
+        });
+
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 2, isDiscovery: false, isHelp: false, isRetry: false);
+        reporter.AssemblyRunStarted(
+            "/repo/Retry.Tests.dll",
+            "net9.0",
+            "x64",
+            executionId: "exec-retry",
+            instanceId: "inst-retry",
+            attemptNumber: 1,
+            settings: CreateSettings(TestResultVisibility.Passed, legacyRetryEnabled: true));
+        reporter.AssemblyRunStarted(
+            "/repo/Normal.Tests.dll",
+            "net9.0",
+            "x64",
+            executionId: "exec-normal",
+            instanceId: "inst-normal",
+            attemptNumber: 1,
+            settings: CreateSettings(TestResultVisibility.Passed));
+
+        ReportTest(reporter, "/repo/Retry.Tests.dll", "exec-retry", "inst-retry", "retry-test", TestOutcome.Passed);
+        ReportTest(reporter, "/repo/Normal.Tests.dll", "exec-normal", "inst-normal", "normal-test", TestOutcome.Passed);
+
+        string output = StripAnsi(capturingConsole.GetOutput());
+        output.Should().Contain("(try 1) Running tests from /repo/Retry.Tests.dll");
+        output.Should().NotContain("(try 1) Running tests from /repo/Normal.Tests.dll");
+        output.Should().Contain("passed (try 1) retry-test");
+        output.Should().Contain("passed normal-test");
+        output.Should().NotContain("passed (try 1) normal-test");
+    }
+
     /// <summary>
     /// When an assembly's tests were retried, the per-assembly summary should append a
     /// "/r{N}" segment to the compact counts block so users can tell the final counts came from retries.
@@ -928,6 +1011,18 @@ public class TerminalTestReporterTests
     }
 
     private static string StripAnsi(string value) => s_ansiEscapeRegex.Replace(value, string.Empty);
+
+    private static TestApplicationSettings CreateSettings(
+        TestResultVisibility testResultVisibility,
+        int slowestTestsCount = 0,
+        bool showFlakyTests = true,
+        bool legacyRetryEnabled = false)
+        => new(
+            default,
+            testResultVisibility,
+            slowestTestsCount,
+            showFlakyTests,
+            LegacyRetryEnabled: legacyRetryEnabled);
 
     private static readonly Regex s_ansiEscapeRegex = new("\x1b\\[[0-9;]*[a-zA-Z]", RegexOptions.Compiled);
 }

@@ -15,8 +15,8 @@ using Microsoft.DotNet.Cli.Installer.Windows.Security;
 namespace Microsoft.DotNet.Tests
 {
     [SupportedOSPlatform("windows5.1.2600")]
-    [TestClass]
     [OSCondition(OperatingSystems.Windows)]
+    [TestClass]
     public class WindowsInstallerTests
     {
         private static string s_testDataPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestData");

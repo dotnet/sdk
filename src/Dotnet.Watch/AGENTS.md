@@ -15,6 +15,15 @@ Reload).
 
 ## Conventions & gotchas
 
+- **File-based defaults are not the watch tool's runtime framework.** The CLI and
+  watch source-link [`FileBasedProgramDefaults`](../Common/FileBasedProgramDefaults.cs).
+  Keep [`ProjectGraphFactory`](Watch/Build/ProjectGraphFactory.cs) aligned with
+  [`Product.TargetFrameworkVersion`](../Cli/Microsoft.DotNet.Cli.CoreUtils/Product.cs)
+  so Hot Reload evaluates the same references that `dotnet build` compiled.
+- **Targeted Windows cancellation uses Ctrl+Break.**
+  [`ProcessUtilities`](Watch/Utilities/ProcessUtilities.cs) requires a positive process-group ID.
+  [Windows does not deliver Ctrl+C to a specified process group](https://learn.microsoft.com/windows/console/generateconsolectrlevent),
+  even when the native call reports success. Never broadcast a console signal to group zero.
 - **Shared source via `.projitems`.** Several folders share code through
   `*.projitems` imported into multiple projects (not NuGet packages). Before
   refactoring shared files, check every importer.

@@ -66,11 +66,23 @@ echo ""
 if [[ "$NO_BUILD" == false ]]; then
     echo "Publishing as NativeAOT..."
 
+    # Managed module integration also needs the full Build output.
     "$DOTNET" publish "$TEST_PROJECT" \
         -c "$CONFIGURATION" \
         -r "$RID" \
         -p:PublishAotTests=true \
+        -p:UseOptimizedPublish=false \
         -p:PublishDir="$PUBLISH_DIR"
+
+    "$DOTNET" publish "$PRODUCT_PROJECT" \
+        -c "$CONFIGURATION" \
+        -r "$RID" \
+        -p:PublishDir="$AOT_PUBLISH_DIR"
+
+    "$DOTNET" publish "$DN_PROJECT" \
+        -c "$CONFIGURATION" \
+        -r "$RID" \
+        -p:PublishDir="$DN_PUBLISH_DIR"
 
     echo ""
     echo "Published: $EXE_PATH"
@@ -104,6 +116,22 @@ if [[ -z "$SDK_DIRECTORY" ]]; then
 fi
 
 export DOTNET_AOT_TEST_SDK_DIRECTORY="$SDK_DIRECTORY"
+export DOTNET_AOT_TEST_DN_PATH="$DN_PATH"
+MANAGED_TEST_MODULE=$("$DOTNET" msbuild "$TEST_PROJECT" \
+    -p:Configuration="$CONFIGURATION" \
+    -p:RuntimeIdentifier="$RID" \
+    -p:PublishAotTests=true \
+    -p:UseOptimizedPublish=false \
+    -p:PublishDir="$PUBLISH_DIR" \
+    -getProperty:TargetPath)
+if [[ ! -f "$MANAGED_TEST_MODULE" ]]; then
+    echo "ERROR: Managed test module not found at $MANAGED_TEST_MODULE for Native AOT integration validation."
+    exit 1
+fi
+export DOTNET_AOT_TEST_MANAGED_TEST_MODULE="$MANAGED_TEST_MODULE"
+export DOTNET_AOT_TEST_NUGET_CONFIG="$REPO_ROOT/NuGet.config"
+export DOTNET_AOT_SDK_DIR="$SDK_DIRECTORY"
+export DOTNET_AOT_LIBRARY_DIR="$AOT_PUBLISH_DIR"
 export DOTNET_HOST_PATH="$DOTNET"
 
 chmod +x "$EXE_PATH"

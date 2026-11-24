@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Common\FileBasedProgramDefaults.cs" Link="Common\FileBasedProgramDefaults.cs" />
     <InternalsVisibleTo Include="dotnet" />
     <InternalsVisibleTo Include="dotnet-aot" />
     <InternalsVisibleTo Include="dotnet-aot.Tests" />

@@ -786,25 +786,26 @@ public class Test
         set { }
     }
 
-    public void M1()
-    {
-        WindowsOnlyPropertyGetter = true;
-        var s = [|WindowsOnlyPropertyGetter|];
-        [|WindowsOnlyPropertyGetter|] |= true;
-        [|WindowsOnlyPropertySetter|] &= false;
-        [|WindowsOnlyPropertySetter|] = false;
-        s = WindowsOnlyPropertySetter;
-        M2([|WindowsOnlyPropertyGetter|]);
-        M2(WindowsOnlyPropertySetter);
-        var name = nameof(WindowsOnlyPropertyGetter);
-        name = nameof(WindowsOnlyPropertySetter);
+                    public void M1()
+                    {
+                        WindowsOnlyPropertyGetter = true;
+                        var s = [|WindowsOnlyPropertyGetter|];
+                        [|WindowsOnlyPropertyGetter|] |= true;
+                        [|WindowsOnlyPropertySetter|] &= false;
+                        [|WindowsOnlyPropertySetter|] = false;
+                        s = WindowsOnlyPropertySetter;
+                        M2([|WindowsOnlyPropertyGetter|]);
+                        M2(WindowsOnlyPropertySetter);
+                        var name = nameof(WindowsOnlyPropertyGetter);
+                        name = nameof(WindowsOnlyPropertySetter);
                         name = nameof(WindowsOnlyProperty); // 'nameof' does not access the property
-    }
-    public bool M2(bool option)
-    {
-        return option;
-    }
-}";
+                    }
+                    public bool M2(bool option)
+                    {
+                        return option;
+                    }
+                }
+                """;
             await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
