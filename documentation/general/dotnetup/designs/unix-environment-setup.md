@@ -93,16 +93,18 @@ end
 **PowerShell:**
 ```powershell
 # dotnetup: begin
-if (Test-Path -LiteralPath '/path/to/dotnetup' -PathType Leaf)
+if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')
 {
-    $dotnetupScript = & '/path/to/dotnetup' print-env-script --shell pwsh | Out-String
-    if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))
-    {
-        Invoke-Expression $dotnetupScript
-    }
+    if ([System.IO.File]::Exists('/path/to/dotnetup')) { . ([scriptblock]::Create((& '/path/to/dotnetup' print-env-script --shell pwsh) -join "`n")) }
+}
+elseif (Test-Path -LiteralPath '/path/to/dotnetup' -PathType Leaf)
+{
+    Invoke-Expression ((& '/path/to/dotnetup' print-env-script --shell pwsh | Out-String) + ';')
 }
 # dotnetup: end
 ```
+
+In FullLanguage mode the PowerShell entry uses .NET APIs instead of `Test-Path`, `Out-String` and `Invoke-Expression`. Those cmdlets load modules on first use, which noticeably slows every new PowerShell session. ConstrainedLanguage mode (for example under WDAC or AppLocker) blocks the .NET method calls, so the entry falls back to the cmdlets there. The trailing `;` keeps `Invoke-Expression` from failing when the output is empty.
 
 The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`). The `--dotnet-install-path` argument is only included in generated profile entries when dotnetup is configured to use a non-default install root.
 

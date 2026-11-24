@@ -111,12 +111,20 @@ internal static class ShellProviderHelpers
     {
         var escapedPath = EscapePowerShellPath(dotnetupPath);
         var command = BuildPowerShellPrintEnvCommand(dotnetupPath, shellName, flags);
-        var activationBlock = IndentLines(BuildPowerShellGuardedInvocationBlock(command), "    ");
 
+        // In FullLanguage mode use .NET APIs instead of Test-Path / Out-String / Invoke-Expression.
+        // In a new session those cmdlets trigger module autoload, which adds noticeable time to every
+        // PowerShell startup. ConstrainedLanguage mode (e.g. under WDAC / AppLocker) blocks the .NET
+        // method calls, so fall back to the cmdlets there. The script runs as one unit either way,
+        // and the trailing ';' keeps Invoke-Expression from rejecting empty output.
         return $$"""
-            if (Test-Path -LiteralPath '{{escapedPath}}' -PathType Leaf)
+            if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')
             {
-                {{activationBlock}}
+                if ([System.IO.File]::Exists('{{escapedPath}}')) { . ([scriptblock]::Create(({{command}}) -join "`n")) }
+            }
+            elseif (Test-Path -LiteralPath '{{escapedPath}}' -PathType Leaf)
+            {
+                Invoke-Expression (({{command}} | Out-String) + ';')
             }
             """;
     }
@@ -138,20 +146,6 @@ internal static class ShellProviderHelpers
         var escapedPath = EscapePowerShellPath(dotnetupPath);
         return AppendArguments($"& '{escapedPath}' env script --shell {shellName}", flags);
     }
-
-    private static string BuildPowerShellGuardedInvocationBlock(string command)
-    {
-        return $$"""
-            $dotnetupScript = {{command}} | Out-String
-            if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))
-            {
-                Invoke-Expression $dotnetupScript
-            }
-            """;
-    }
-
-    private static string IndentLines(string text, string indentation)
-        => indentation + text.ReplaceLineEndings(Environment.NewLine + indentation);
 
     internal static string BuildPosixPathExport(string escapedPath, string dotnetupDir, bool includeDotnet)
     {

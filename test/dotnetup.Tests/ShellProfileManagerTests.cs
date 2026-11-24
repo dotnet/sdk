@@ -514,15 +514,17 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [TestMethod]
-    public void PowerShellProvider_GenerateProfileEntry_ContainsInvokeExpression()
+    public void PowerShellProvider_GenerateProfileEntry_DotSourcesScriptBlock()
     {
         var provider = new PowerShellEnvShellProvider();
         var entry = provider.GenerateProfileEntry(FakeDotnetupPath);
 
         entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
-        entry.Should().Contain($"if (Test-Path -LiteralPath '{FakeDotnetupPath}' -PathType Leaf)");
-        entry.Should().Contain("Invoke-Expression");
+        entry.Should().Contain("if ($ExecutionContext.SessionState.LanguageMode -eq 'FullLanguage')");
+        entry.Should().Contain($"if ([System.IO.File]::Exists('{FakeDotnetupPath}')) {{ . ([scriptblock]::Create(");
+        entry.Should().Contain($"elseif (Test-Path -LiteralPath '{FakeDotnetupPath}' -PathType Leaf)");
+        entry.Should().Contain("| Out-String) + ';')");
         entry.Should().Contain("--shell pwsh");
         entry.Should().NotContain("--dotnetup-only");
     }
