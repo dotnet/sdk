@@ -26,6 +26,8 @@
     <!-- Pin instrumentation dependencies to the core version before NuGet downloads their older minimum versions. -->
     <PackageVersion Include="OpenTelemetry.Api" Version="$(OpenTelemetryDotnetPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Api.ProviderBuilderExtensions" Version="$(OpenTelemetryDotnetPackageVersion)" />
+    <!-- dotnetup telemetry -->
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="$(OpenTelemetryDotnetPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="$(OpenTelemetryDotnetPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryDotnetPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpPackageVersion)" />
@@ -131,6 +133,8 @@
     <PackageVersion Include="runtime.linux-musl-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
+    <!-- dotnetup analyzers -->
+    <PackageVersion Include="Meziantou.Analyzer" Version="2.0.302" />
     <PackageVersion Include="Spectre.Console" Version="0.54.0" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.54.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />

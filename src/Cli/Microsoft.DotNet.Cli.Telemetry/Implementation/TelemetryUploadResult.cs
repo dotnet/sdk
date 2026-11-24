@@ -1,0 +1,89 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace Microsoft.DotNet.Cli.Telemetry.Implementation;
+
+/// <summary>The disposition of a telemetry upload attempt.</summary>
+internal enum TelemetryUploadOutcome
+{
+    /// <summary>The server accepted the entire payload (HTTP 200, or an HTTP 206 whose
+    /// rejected items were all non-retriable). The blob can be deleted.</summary>
+    Accepted,
+
+    /// <summary>The server accepted the payload but rejected some envelopes with a retriable
+    /// status (HTTP 206). The accepted portion is done; the retriable remainder is carried in
+    /// <see cref="TelemetryUploadResult.RetryPayload"/> and should be persisted for a later retry.</summary>
+    PartiallyAccepted,
+
+    /// <summary>The server permanently rejected the payload. Retrying cannot succeed, so the
+    /// blob should be deleted to avoid blocking later telemetry.</summary>
+    PermanentlyRejected,
+
+    /// <summary>The server did not accept the payload (throttling, server error, etc.). The
+    /// blob should be retained and retried later.</summary>
+    Rejected,
+}
+
+/// <summary>
+/// The result of a single <see cref="ITelemetryUploadTransport.TryUploadAsync"/> attempt.
+/// For <see cref="TelemetryUploadOutcome.PartiallyAccepted"/>, <see cref="RetryPayload"/>
+/// holds a re-sliced NDJSON payload containing only the envelopes that failed with a
+/// retriable status code.
+/// </summary>
+internal readonly struct TelemetryUploadResult
+{
+    private TelemetryUploadResult(TelemetryUploadOutcome outcome, byte[]? retryPayload, TimeSpan? retryAfter)
+    {
+        Outcome = outcome;
+        RetryPayload = retryPayload;
+        RetryAfter = retryAfter;
+    }
+
+    public TelemetryUploadOutcome Outcome { get; }
+
+    /// <summary>
+    /// The retriable remainder to persist, present only when <see cref="Outcome"/> is
+    /// <see cref="TelemetryUploadOutcome.PartiallyAccepted"/>.
+    /// </summary>
+    public byte[]? RetryPayload { get; }
+
+    /// <summary>
+    /// The server-provided delay before another upload attempt, when present.
+    /// </summary>
+    public TimeSpan? RetryAfter { get; }
+
+    public static TelemetryUploadResult Accepted { get; } = new(TelemetryUploadOutcome.Accepted, null, null);
+
+    public static TelemetryUploadResult Rejected { get; } = new(TelemetryUploadOutcome.Rejected, null, null);
+
+    public static TelemetryUploadResult PermanentlyRejected { get; } = new(TelemetryUploadOutcome.PermanentlyRejected, null, null);
+
+    public static TelemetryUploadResult RejectedRetryAfter(TimeSpan retryAfter)
+        => new(TelemetryUploadOutcome.Rejected, null, retryAfter);
+
+    public static TelemetryUploadResult PartiallyAccepted(byte[] retryPayload, TimeSpan? retryAfter = null)
+        => new(TelemetryUploadOutcome.PartiallyAccepted, retryPayload, retryAfter);
+}
+
+/// <summary>
+/// The result of one storage drain pass.
+/// </summary>
+internal readonly struct TelemetryDrainResult
+{
+    public TelemetryDrainResult(int deletedBlobCount, bool shouldBackOff, TimeSpan? retryAfter)
+    {
+        DeletedBlobCount = deletedBlobCount;
+        ShouldBackOff = shouldBackOff;
+        RetryAfter = retryAfter;
+    }
+
+    /// <summary>
+    /// The number of source blobs removed from storage because they were uploaded, permanently
+    /// rejected, or unreadable. A positive value means the pass reduced the stored backlog.
+    /// </summary>
+    public int DeletedBlobCount { get; }
+
+    public bool ShouldBackOff { get; }
+
+    public TimeSpan? RetryAfter { get; }
+}

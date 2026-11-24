@@ -14,6 +14,16 @@ Guidance for changes under `test/`.
 - **Derive from `SdkTest`** (in `Microsoft.NET.TestFramework.MSTest`). This gives you
   `TestAssetsManager`, `Log` (wired to MSTest's `TestContext`), and
   `BinLogArgument(...)` for binlog paths collected by Helix.
+  **Exception: standalone `dotnetup.Tests` classes must not inherit `SdkTest`.**
+  The [dotnetup pipeline](../eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml)
+  builds dotnetup without the SDK redist, which `SdkTest` requires at construction.
+  Use [DotnetupTestUtilities](dotnetup.Tests/Utilities/DotnetupTestUtilities.cs) for
+  the executable under test and
+  [SelfUpdateTestFiles.DotnetHostPath](dotnetup.Tests/Utilities/SelfUpdateTestFiles.cs)
+  when a test needs the bootstrap host.
+  Managed-host process tests build the
+  [ManagedDotnetup fixture](TestAssets/Dotnetup/ManagedDotnetup/ManagedDotnetup.csproj);
+  do not rely on a managed application DLL being present after NativeAOT publishing.
 - **Use `SdkTestContext.Current` for paths** — never hardcode paths or manually discover
   locations at runtime (e.g. walking up directories):
 
@@ -58,6 +68,13 @@ Guidance for changes under `test/`.
 - **MSTest output is live.** `test/testconfig.json` is copied beside each MSTest
   test executable as `<AssemblyName>.testconfig.json`, so console, trace, and
   `TestContext` output is both captured in the result and shown while the test runs.
+- **Control Spectre console capabilities in rendering tests.** Set
+  `Enrichment = new ProfileEnrichment { UseDefaultEnrichers = false }` when a test
+  explicitly selects interactive or ANSI output. Spectre's
+  [Azure Pipelines enricher](https://github.com/spectreconsole/spectre.console/blob/0.54.0/src/Spectre.Console/Enrichment/CI/AzurePipelinesEnricher.cs)
+  overrides those settings when `TF_BUILD` is present. Inject `EnvironmentVariables`
+  into the test console to cover CI profiles without changing process-wide state;
+  see [BundleProcessRunnerTests](dotnetup.Tests/BundleProcessRunnerTests.cs).
 - **Run focused tests through `targeted-test`.** It runs the smallest relevant tests and
   preserves actionable output and diagnostics when a local run fails.
 - **Map new substantive test areas for targeted testing.** Prefer adding a

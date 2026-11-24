@@ -1,0 +1,1152 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using FluentAssertions;
+using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
+
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
+
+[TestClass]
+public class ManifestTests
+{
+    [TestMethod]
+    public void RecordRepositoryRequirementPersistsAndRefreshesFullConstraints()
+    {
+        using var env = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(env.ManifestPath);
+        var root = new DotnetInstallRoot(env.InstallPath, InstallArchitecture.x64);
+        var options = new InstallRequestOptions
+        {
+            InstallSource = InstallSource.GlobalJson,
+            GlobalJsonPath = Path.Combine(env.TempRoot, "global.json")
+        };
+        manifest.RecordInstallSpec(new DotnetInstallRequest(root,
+            new UpdateChannel("10.0.1xx", new ReleaseVersion("10.0.103"), false), InstallComponent.SDK, options));
+
+        var saved = manifest.GetInstallSpecs(root).Single();
+        saved.VersionOrChannel.Should().Be("10.0.1xx");
+        saved.MinimumVersion.Should().Be("10.0.103");
+        saved.AllowPrerelease.Should().BeFalse();
+        using var json = JsonDocument.Parse(File.ReadAllText(env.ManifestPath));
+        var jsonSpec = json.RootElement.GetProperty("dotnetRoots")[0].GetProperty("installSpecs")[0];
+        jsonSpec.GetProperty("minimumVersion").GetString().Should().Be("10.0.103");
+        jsonSpec.GetProperty("allowPrerelease").GetBoolean().Should().BeFalse();
+        jsonSpec.TryGetProperty("lastKnownRequirement", out _).Should().BeFalse();
+
+        manifest.RecordInstallSpec(new DotnetInstallRequest(root,
+            new UpdateChannel("11", new ReleaseVersion("11.0.100-preview.1"), true), InstallComponent.SDK, options));
+
+        var updated = manifest.GetInstallSpecs(root).Should().ContainSingle().Subject;
+        updated.VersionOrChannel.Should().Be("11");
+        updated.MinimumVersion.Should().Be("11.0.100-preview.1");
+        updated.AllowPrerelease.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void RepositorySpecIdentityDoesNotDependOnCachedChannel()
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+        var path = Path.Combine(testEnv.TempRoot, "global.json");
+        var original = new InstallSpec
+        {
+            Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson,
+            VersionOrChannel = "10.0.1xx", GlobalJsonPath = path,
+            MinimumVersion = "10.0.103", AllowPrerelease = false
+        };
+        manifest.AddInstallSpec(root, original);
+        manifest.AddInstallSpec(root, new InstallSpec
+        {
+            Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson,
+            VersionOrChannel = "11", GlobalJsonPath = Path.Combine(testEnv.TempRoot, ".", "global.json")
+        });
+        manifest.GetInstallSpecs(root).Should().ContainSingle().Which.VersionOrChannel.Should().Be("11");
+        manifest.GetInstallSpecs(root).Single().MinimumVersion.Should().BeNull();
+        manifest.GetInstallSpecs(root).Single().AllowPrerelease.Should().BeNull();
+
+        manifest.RemoveInstallSpec(root, original);
+        manifest.GetInstallSpecs(root).Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void NewManifestCreatesValidJson()
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        var json = File.ReadAllText(testEnv.ManifestPath);
+        var data = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+
+        data.Should().NotBeNull();
+        data!.SchemaVersion.Should().Be("2");
+        data.DotnetRoots.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void SerializationRoundTrip()
+    {
+        var original = new DotnetupManifestData
+        {
+            SchemaVersion = "2",
+            DotnetRoots =
+            [
+                new DotnetRootEntry
+                {
+                    Path = @"C:\Users\Test\AppData\Local\dotnet",
+                    Architecture = InstallArchitecture.x64,
+                    InstallSpecs =
+                    [
+                        new InstallSpec
+                        {
+                            Component = InstallComponent.SDK,
+                            VersionOrChannel = "10",
+                            InstallSource = InstallSource.Explicit
+                        },
+                        new InstallSpec
+                        {
+                            Component = InstallComponent.Runtime,
+                            VersionOrChannel = "9",
+                            InstallSource = InstallSource.Explicit
+                        }
+                    ],
+                    Installations =
+                    [
+                        new Installation
+                        {
+                            Component = InstallComponent.SDK,
+                            Version = "10.0.103",
+                            Subcomponents = ["sdk/10.0.103", "shared/Microsoft.NETCore.App/10.0.3"]
+                        },
+                        new Installation
+                        {
+                            Component = InstallComponent.Runtime,
+                            Version = "9.0.12",
+                            Subcomponents = ["shared/Microsoft.NETCore.App/9.0.12"]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        var json = JsonSerializer.Serialize(original, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+        json.Should().NotContain("minimumVersion").And.NotContain("allowPrerelease");
+        var deserialized = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+
+        deserialized.Should().NotBeNull();
+        deserialized!.SchemaVersion.Should().Be("2");
+        deserialized.DotnetRoots.Should().HaveCount(1);
+
+        var root = deserialized.DotnetRoots[0];
+        root.Path.Should().Be(@"C:\Users\Test\AppData\Local\dotnet");
+        root.Architecture.Should().Be(InstallArchitecture.x64);
+        root.InstallSpecs.Should().HaveCount(2);
+        root.Installations.Should().HaveCount(2);
+
+        root.InstallSpecs[0].Component.Should().Be(InstallComponent.SDK);
+        root.InstallSpecs[0].VersionOrChannel.Should().Be("10");
+        root.InstallSpecs[0].InstallSource.Should().Be(InstallSource.Explicit);
+
+        root.Installations[0].Component.Should().Be(InstallComponent.SDK);
+        root.Installations[0].Version.Should().Be("10.0.103");
+        root.Installations[0].Subcomponents.Should().Contain("sdk/10.0.103");
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("\"installSource\": \"Explicit\",")]
+    [DataRow("\"installSource\": 0,")]
+    public void ExistingSpecsRemainCommandLine(string sourceProperty)
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        File.WriteAllText(testEnv.ManifestPath, $$"""
+            {
+              "schemaVersion": "1",
+              "dotnetRoots": [{
+                "path": {{JsonSerializer.Serialize(testEnv.InstallPath)}},
+                "architecture": "x64",
+                "installSpecs": [{
+                  {{sourceProperty}}
+                  "component": "SDK",
+                  "versionOrChannel": "10.0.1xx"
+                }]
+              }]
+            }
+            """);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var data = manifest.ReadManifest();
+        data.SchemaVersion.Should().Be("1");
+        data.DotnetRoots.Single().InstallSpecs.Single().InstallSource.Should().Be(InstallSource.Explicit);
+
+        manifest.WriteManifest(data);
+        var updated = manifest.ReadManifest();
+        updated.SchemaVersion.Should().Be("2");
+        updated.DotnetRoots.Single().InstallSpecs.Single().InstallSource.Should().Be(InstallSource.Explicit);
+    }
+
+    [TestMethod]
+    [DataRow("3", false)]
+    [DataRow("10", false)]
+    [DataRow("3", true)]
+    [DataRow("10", true)]
+    public void NewerManifestSchemaRequiresUpdate(string version, bool incompatibleContents)
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var roots = incompatibleContents ? """[{"architecture":"future-architecture"}]""" : "[]";
+        var json = $$"""
+            {"dotnetRoots":{{roots}},"schemaVersion":"{{version}}"}
+            """;
+        File.WriteAllText(testEnv.ManifestPath, json);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        var act = () => manifest.ReadManifest();
+
+        act.Should().Throw<DotnetInstallException>()
+            .Where(e => e.ErrorCode == DotnetInstallErrorCode.LocalManifestError)
+            .WithMessage($"*schema version {version}*supports up to version 2*Update dotnetup*");
+        File.ReadAllText(testEnv.ManifestPath).Should().Be(json);
+    }
+
+    [TestMethod]
+    [DataRow(false, false, 1)]
+    [DataRow(true, false, 0)]
+    [DataRow(false, true, 0)]
+    public void RecordMigrationSpec_RespectsTrackingFlags(bool untracked, bool skipRecording, int count)
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+        var request = new DotnetInstallRequest(installRoot, new UpdateChannel("10.0.1xx"), InstallComponent.SDK,
+            new InstallRequestOptions
+            {
+                InstallSource = InstallSource.Migration,
+                Untracked = untracked,
+                SkipInstallSpecRecording = skipRecording
+            });
+
+        manifest.RecordInstallSpec(request);
+        manifest.RecordInstallSpec(request);
+
+        var specs = manifest.GetInstallSpecs(installRoot).ToList();
+        specs.Should().HaveCount(count);
+        specs.Should().OnlyContain(s => s.InstallSource == InstallSource.Migration && s.GlobalJsonPath == null);
+        if (count > 0)
+        {
+            File.ReadAllText(testEnv.ManifestPath).Should().Contain("\"installSource\": \"Migration\"");
+        }
+    }
+
+    [TestMethod]
+    public void LegacyFormatThrowsError()
+    {
+        using var testEnv = new TestEnvironment();
+
+        // Write old-format manifest (JSON array)
+        File.WriteAllText(testEnv.ManifestPath, "[{\"installRoot\":{\"path\":\"C:\\\\dotnet\",\"architecture\":\"x64\"},\"version\":\"9.0.103\",\"component\":\"SDK\"}]");
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        // Should throw because legacy format is no longer supported
+        var act = () => manifest.ReadManifest();
+        act.Should().Throw<DotnetInstallException>()
+            .Where(e => e.ErrorCode == DotnetInstallErrorCode.LocalManifestCorrupted)
+            .WithMessage("*legacy format*no longer supported*");
+    }
+
+    [TestMethod]
+    public void AddInstallSpec_RejectsUndefinedSourceValue()
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        var act = () => manifest.AddInstallSpec(root, new InstallSpec
+        {
+            Component = InstallComponent.SDK, VersionOrChannel = "10.0", InstallSource = (InstallSource)int.MaxValue
+        });
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [TestMethod]
+    public void AddAndRemoveInstallSpec()
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        var spec = new InstallSpec
+        {
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "10",
+            InstallSource = InstallSource.Explicit
+        };
+
+        manifest.AddInstallSpec(installRoot, spec);
+        manifest.GetInstallSpecs(installRoot).Should().ContainSingle();
+
+        // Adding duplicate should not create a second entry
+        manifest.AddInstallSpec(installRoot, spec);
+        manifest.GetInstallSpecs(installRoot).Should().ContainSingle();
+
+        manifest.RemoveInstallSpec(installRoot, spec);
+        manifest.GetInstallSpecs(installRoot).Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void AddAndRemoveInstallation()
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        var installation = new Installation
+        {
+            Component = InstallComponent.SDK,
+            Version = "10.0.103",
+            Subcomponents = ["sdk/10.0.103", "shared/Microsoft.NETCore.App/10.0.3"]
+        };
+
+        // Create the component directory so ReadManifest() pruning doesn't discard it.
+        testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "10.0.103"));
+
+        manifest.AddInstallation(installRoot, installation);
+        var installations = manifest.GetInstallations(installRoot).ToList();
+        installations.Should().ContainSingle();
+        installations[0].Version.Should().Be("10.0.103");
+        installations[0].Subcomponents.Should().HaveCount(2);
+
+        // Adding duplicate should not create a second entry
+        manifest.AddInstallation(installRoot, installation);
+        manifest.GetInstallations(installRoot).Should().ContainSingle();
+
+        manifest.RemoveInstallation(installRoot, installation);
+        manifest.GetInstallations(installRoot).Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void MultipleDotnetRoots()
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        // Use real temp directories so pruning doesn't discard them.
+        var root1Path = Path.Combine(testEnv.TempRoot, "dotnet-x64");
+        var root2Path = Path.Combine(testEnv.TempRoot, "dotnet-arm64");
+        var root1 = new DotnetInstallRoot(root1Path, InstallArchitecture.x64);
+        var root2 = new DotnetInstallRoot(root2Path, InstallArchitecture.arm64);
+
+        testEnv.StubComponentDirectories(root1Path, (InstallComponent.SDK, "10.0.100"));
+        testEnv.StubComponentDirectories(root2Path, (InstallComponent.SDK, "10.0.100"));
+
+        var sdk1 = new Installation { Component = InstallComponent.SDK, Version = "10.0.100" };
+        var sdk2 = new Installation { Component = InstallComponent.SDK, Version = "10.0.100" };
+
+        manifest.AddInstallation(root1, sdk1);
+        manifest.AddInstallation(root2, sdk2);
+
+        manifest.GetInstallations(root1).Should().ContainSingle();
+        manifest.GetInstallations(root2).Should().ContainSingle();
+
+        // Remove from one root shouldn't affect the other
+        manifest.RemoveInstallation(root1, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        manifest.GetInstallations(root1).Should().BeEmpty();
+        manifest.GetInstallations(root2).Should().ContainSingle();
+    }
+
+    [TestMethod]
+    public void GlobalJsonInstallSpec()
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        var spec = new InstallSpec
+        {
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "10.0.100",
+            InstallSource = InstallSource.GlobalJson,
+            GlobalJsonPath = @"C:\Projects\myapp\global.json"
+        };
+
+        manifest.AddInstallSpec(installRoot, spec);
+
+        var specs = manifest.GetInstallSpecs(installRoot).ToList();
+        specs.Should().ContainSingle();
+        specs[0].InstallSource.Should().Be(InstallSource.GlobalJson);
+        specs[0].GlobalJsonPath.Should().Be(@"C:\Projects\myapp\global.json");
+    }
+
+    [TestMethod]
+    public void AddInstallSpec_DifferentSource_CreatesDuplicate()
+    {
+        // If AddInstallSpec is called with a different InstallSource for the same
+        // component/channel, it creates a duplicate entry.
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Original spec from GlobalJson
+        manifest.AddInstallSpec(installRoot, new InstallSpec
+        {
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "9.0",
+            InstallSource = InstallSource.GlobalJson,
+            GlobalJsonPath = @"C:\Projects\myapp\global.json"
+        });
+
+        // Additional explicit spec for the same component/channel
+        manifest.AddInstallSpec(installRoot, new InstallSpec
+        {
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "9.0",
+            InstallSource = InstallSource.Explicit
+        });
+
+        // There should now be 2 specs for the same component/channel but different sources
+        manifest.GetInstallSpecs(installRoot).Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    public void Update_RecordsInstallation_WithoutDuplicatingSpec()
+    {
+        // Simulates the fixed update flow: the update adds a new installation
+        // for the channel but does NOT call AddInstallSpec (SkipInstallSpecRecording = true),
+        // so no duplicate spec is created.
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        var install100 = new Installation { Component = InstallComponent.SDK, Version = "9.0.100", Subcomponents = ["sdk/9.0.100"] };
+        var install200 = new Installation { Component = InstallComponent.SDK, Version = "9.0.200", Subcomponents = ["sdk/9.0.200"] };
+
+        // Create component directories so ReadManifest() pruning keeps them.
+        testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "9.0.100"), (InstallComponent.SDK, "9.0.200"));
+
+        // Initial state: GlobalJson spec + installation at 9.0.100
+        manifest.AddInstallSpec(installRoot, new InstallSpec
+        {
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "9.0",
+            InstallSource = InstallSource.GlobalJson,
+            GlobalJsonPath = @"C:\Projects\myapp\global.json"
+        });
+        manifest.AddInstallation(installRoot, install100);
+
+        // Simulate update: only add the new installation (no AddInstallSpec call)
+        manifest.AddInstallation(installRoot, install200);
+
+        // Should still have exactly 1 install spec (the original GlobalJson one)
+        var specs = manifest.GetInstallSpecs(installRoot).ToList();
+        specs.Should().ContainSingle();
+        specs[0].InstallSource.Should().Be(InstallSource.GlobalJson);
+
+        // Should have both installations recorded
+        manifest.GetInstallations(installRoot).Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Update_StandaloneSpec_RecordsInstallation_WithoutDuplicatingSpec(bool migrated)
+    {
+        // Updates preserve the standalone spec's original source.
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        var install100 = new Installation { Component = InstallComponent.SDK, Version = "9.0.100", Subcomponents = ["sdk/9.0.100"] };
+        var install200 = new Installation { Component = InstallComponent.SDK, Version = "9.0.200", Subcomponents = ["sdk/9.0.200"] };
+
+        // Create component directories so ReadManifest() pruning keeps them.
+        testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "9.0.100"), (InstallComponent.SDK, "9.0.200"));
+
+        // Initial state: standalone spec + installation at 9.0.100
+        manifest.AddInstallSpec(installRoot, new InstallSpec
+        {
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "9.0",
+            InstallSource = migrated ? InstallSource.Migration : InstallSource.Explicit
+        });
+        manifest.AddInstallation(installRoot, install100);
+
+        // Simulate update: only add the new installation (SkipInstallSpecRecording)
+        manifest.AddInstallation(installRoot, install200);
+
+        // Should still have exactly 1 install spec
+        manifest.GetInstallSpecs(installRoot).Should().ContainSingle();
+        manifest.GetInstallSpecs(installRoot).Single().InstallSource.Should()
+            .Be(migrated ? InstallSource.Migration : InstallSource.Explicit);
+
+        // Should have both installations
+        manifest.GetInstallations(installRoot).Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    public void FindExistingInstall_PromotedDailyAndReleaseShareFolder_ResolvesWithoutThrowing()
+    {
+        // The 10.0.100 release is byte-identical to daily build 10.0.100-rtm.25523.111, so both can record sdk/10.0.100.
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+        testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "10.0.100"));
+
+        manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.SDK, Version = "10.0.100-rtm.25523.111", ProductVersion = "10.0.100" });
+        manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        manifest.GetInstallations(installRoot).Should().HaveCount(2);
+
+        var daily = new DotnetInstall(installRoot, new ReleaseVersion("10.0.100-rtm.25523.111"), InstallComponent.SDK, new ReleaseVersion("10.0.100"));
+        var release = new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK);
+
+        manifest.FindExistingInstall(release, matchLayoutVersion: true)!.LayoutVersion.ToString().Should().Be("10.0.100");
+        manifest.FindExistingInstall(daily)!.Version.ToString().Should().Be("10.0.100-rtm.25523.111");
+        manifest.FindExistingInstall(release)!.Version.ToString().Should().Be("10.0.100");
+    }
+
+    #region Manifest Checksum Tests
+
+    [TestMethod]
+    public void ManifestChecksum_WrittenOnCreate()
+    {
+        using var testEnv = new TestEnvironment();
+        _ = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+        File.Exists(checksumPath).Should().BeTrue("checksum sidecar should be created with manifest");
+        File.ReadAllText(checksumPath).Trim().Should().NotBeNullOrWhiteSpace();
+    }
+
+    [TestMethod]
+    public void ManifestChecksum_UpdatedOnWrite()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+        var checksumBefore = File.ReadAllText(checksumPath).Trim();
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.SDK, Version = "9.0.100" });
+        }
+
+        var checksumAfter = File.ReadAllText(checksumPath).Trim();
+        checksumAfter.Should().NotBe(checksumBefore, "checksum should change after add");
+    }
+
+    [TestMethod]
+    public void ManifestCorrupted_WithValidChecksum_ThrowsLocalManifestCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        // Write valid manifest, then corrupt the content without updating the checksum.
+        // This simulates a scenario where dotnetup wrote the file but it got corrupted
+        // (e.g., disk error, partial write).
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+
+        // Write corrupt JSON that still matches the stored checksum (impossible naturally,
+        // so instead: write corrupt JSON, then rewrite checksum of the corrupt content)
+        var corruptContent = "NOT VALID JSON {{{";
+        File.WriteAllText(testEnv.ManifestPath, corruptContent);
+
+        // Compute and write checksum of corrupt content to simulate dotnetup having written it
+        var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(corruptContent));
+        File.WriteAllText(checksumPath, Convert.ToHexString(hash));
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestCorrupted,
+            "checksum matches corrupt content → product error");
+    }
+
+    [TestMethod]
+    public void ManifestCorrupted_WithMismatchedChecksum_ThrowsLocalManifestUserCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        // Manifest was written by dotnetup (checksum exists), then user edits the file
+        File.WriteAllText(testEnv.ManifestPath, "user broke this {[}");
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
+            "checksum doesn't match user-edited content → user error");
+    }
+
+    [TestMethod]
+    public void ManifestCorrupted_WithNoChecksum_ThrowsLocalManifestUserCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        // Delete checksum file and corrupt manifest — simulates user-created manifest
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+        File.Delete(checksumPath);
+        File.WriteAllText(testEnv.ManifestPath, "garbage data");
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
+            "no checksum file → assume external edit → user error");
+    }
+
+    [TestMethod]
+    public void ManifestValidation_InvalidVersion_WithChecksumMismatch_ThrowsUserCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        // Write a valid manifest first
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" });
+        }
+
+        // Now hand-edit the manifest with an invalid version (don't update checksum)
+        var json = File.ReadAllText(testEnv.ManifestPath);
+        json = json.Replace("9.0.0", "not-a-version");
+        File.WriteAllText(testEnv.ManifestPath, json);
+
+        using var mutex2 = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
+            "checksum doesn't match user-edited content with invalid version → user error");
+        ex.Message.Should().Contain("not-a-version");
+    }
+
+    [TestMethod]
+    public void ManifestValidation_InvalidVersion_WithMatchingChecksum_SkipsValidation()
+    {
+        using var testEnv = new TestEnvironment();
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+
+        // Write manifest with invalid version and compute matching checksum.
+        // When the checksum matches, we trust the data (we wrote it) and skip validation.
+        var badManifest = new DotnetupManifestData
+        {
+            DotnetRoots =
+            [
+                new DotnetRootEntry
+                {
+                    Path = testEnv.InstallPath,
+                    Architecture = InstallerUtilities.GetDefaultInstallArchitecture(),
+                    Installations =
+                    [
+                        new Installation { Component = InstallComponent.SDK, Version = "totally-invalid" }
+                    ]
+                }
+            ]
+        };
+        var json = JsonSerializer.Serialize(badManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+        File.WriteAllText(testEnv.ManifestPath, json);
+        var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(json));
+        File.WriteAllText(checksumPath, Convert.ToHexString(hash));
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+
+        // Should NOT throw — checksum matches so validation is skipped
+        var result = manifest.ReadManifestWithoutPruning();
+        result.DotnetRoots.Should().HaveCount(1);
+        result.DotnetRoots[0].Installations.Should().HaveCount(1);
+    }
+
+    [TestMethod]
+    public void ManifestValidation_EmptyVersion_ThrowsCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+
+        var badManifest = new DotnetupManifestData
+        {
+            DotnetRoots =
+            [
+                new DotnetRootEntry
+                {
+                    Path = testEnv.InstallPath,
+                    Architecture = InstallerUtilities.GetDefaultInstallArchitecture(),
+                    Installations =
+                    [
+                        new Installation { Component = InstallComponent.Runtime, Version = "" }
+                    ]
+                }
+            ]
+        };
+        var json = JsonSerializer.Serialize(badManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+        File.WriteAllText(testEnv.ManifestPath, json);
+        // Don't write a matching checksum — this simulates user edit
+        File.WriteAllText(checksumPath, "wronghash");
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
+        ex.Message.Should().Contain("empty version");
+    }
+
+    [TestMethod]
+    public void ManifestValidation_InvalidProductVersion_ThrowsUserCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var badManifest = new DotnetupManifestData
+        {
+            DotnetRoots =
+            [
+                new DotnetRootEntry
+                {
+                    Path = testEnv.InstallPath,
+                    Architecture = InstallerUtilities.GetDefaultInstallArchitecture(),
+                    Installations =
+                    [
+                        new Installation { Component = InstallComponent.SDK, Version = "11.0.100-rtm.26552.115", ProductVersion = "not-a-version" }
+                    ]
+                }
+            ]
+        };
+        File.WriteAllText(testEnv.ManifestPath, JsonSerializer.Serialize(badManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData));
+        File.WriteAllText(testEnv.ManifestPath + ".sha256", "wronghash");
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
+        ex.Message.Should().Contain("Invalid product version 'not-a-version'");
+    }
+
+    [TestMethod]
+    public void ManifestValidation_DuplicateRoot_ThrowsUserCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var architecture = InstallerUtilities.GetDefaultInstallArchitecture();
+        var badManifest = new DotnetupManifestData
+        {
+            DotnetRoots =
+            [
+                new DotnetRootEntry { Path = testEnv.InstallPath, Architecture = architecture },
+                new DotnetRootEntry { Path = testEnv.InstallPath + Path.DirectorySeparatorChar, Architecture = architecture }
+            ]
+        };
+        File.WriteAllText(testEnv.ManifestPath, JsonSerializer.Serialize(badManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData));
+        File.WriteAllText(testEnv.ManifestPath + ".sha256", "wronghash");
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
+        ex.Message.Should().Contain("listed more than once");
+    }
+
+    [TestMethod]
+    public void ManifestValidation_ValidData_DoesNotThrow()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" });
+        }
+
+        // Re-read should succeed without throwing
+        DotnetupManifestData result;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            result = manifest.ReadManifestWithoutPruning();
+        }
+
+        result.DotnetRoots.Should().HaveCount(1);
+        result.DotnetRoots[0].Installations.Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    public void ManifestValidation_InvalidComponentType_ThrowsUserCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+
+        // Write a manifest with an out-of-range component integer (simulates user hand-edit).
+        // With UseStringEnumConverter, an undefined integer like 999 still deserializes silently.
+        var json = """
+            {
+              "dotnetRoots": [
+                {
+                  "path": "PLACEHOLDER",
+                  "architecture": "x86",
+                  "installations": [
+                    { "component": 999, "version": "9.0.0" }
+                  ],
+                  "installSpecs": []
+                }
+              ]
+            }
+            """.Replace("PLACEHOLDER", testEnv.InstallPath.Replace("\\", "\\\\"));
+        File.WriteAllText(testEnv.ManifestPath, json);
+        // Write a non-matching checksum to trigger validation
+        File.WriteAllText(checksumPath, "wronghash");
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
+        ex.Message.Should().Contain("Unknown component type");
+    }
+
+    [TestMethod]
+    public void ManifestValidation_InvalidComponentString_ThrowsUserCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var checksumPath = testEnv.ManifestPath + ".sha256";
+
+        // Write a manifest with an unrecognized string component (simulates user hand-edit).
+        // System.Text.Json will throw a JsonException for an unknown string enum value.
+        var json = """
+            {
+              "dotnetRoots": [
+                {
+                  "path": "PLACEHOLDER",
+                  "architecture": "x86",
+                  "installations": [
+                    { "component": "FooBar", "version": "9.0.0" }
+                  ],
+                  "installSpecs": []
+                }
+              ]
+            }
+            """.Replace("PLACEHOLDER", testEnv.InstallPath.Replace("\\", "\\\\"));
+        File.WriteAllText(testEnv.ManifestPath, json);
+        File.WriteAllText(checksumPath, "wronghash");
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
+            "invalid string enum value should fail JSON deserialization and be detected as user edit");
+    }
+
+    #endregion
+
+    #region Manifest Tracking Tests
+
+    [TestMethod]
+    public void ManifestTracking_DifferentComponents_TrackedSeparately()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        var sdk = new Installation { Component = InstallComponent.SDK, Version = "9.0.100" };
+        var runtime = new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" };
+        var aspnet = new Installation { Component = InstallComponent.ASPNETCore, Version = "9.0.0" };
+
+        // Create component directories so ReadManifest() pruning keeps them.
+        testEnv.StubComponentDirectories(null,
+            (InstallComponent.SDK, "9.0.100"),
+            (InstallComponent.Runtime, "9.0.0"),
+            (InstallComponent.ASPNETCore, "9.0.0"));
+
+        // Add SDK, Runtime, ASPNETCore
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(installRoot, sdk);
+            manifest.AddInstallation(installRoot, runtime);
+            manifest.AddInstallation(installRoot, aspnet);
+        }
+
+        IEnumerable<Installation> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            installs = manifest.GetInstallations(installRoot).ToList();
+        }
+
+        installs.Should().HaveCount(3);
+        installs.Should().Contain(i => i.Component == InstallComponent.SDK);
+        installs.Should().Contain(i => i.Component == InstallComponent.Runtime);
+        installs.Should().Contain(i => i.Component == InstallComponent.ASPNETCore);
+    }
+
+    [TestMethod]
+    public void ManifestTracking_SameVersionDifferentComponent_BothTracked()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        var runtime = new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" };
+        var aspnet = new Installation { Component = InstallComponent.ASPNETCore, Version = "9.0.0" };
+
+        // Create component directories so ReadManifest() pruning keeps them.
+        testEnv.StubComponentDirectories(null,
+            (InstallComponent.Runtime, "9.0.0"),
+            (InstallComponent.ASPNETCore, "9.0.0"));
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(installRoot, runtime);
+            manifest.AddInstallation(installRoot, aspnet);
+        }
+
+        IEnumerable<Installation> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            installs = manifest.GetInstallations(installRoot).ToList();
+        }
+
+        installs.Should().HaveCount(2);
+    }
+
+    #endregion
+
+    #region PruneStaleInstallations
+
+    [TestMethod]
+    public void ReadManifest_PrunesInstallationWhenComponentDirectoryDeleted()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create the SDK directory so AddInstallation succeeds through ReadManifest
+        var sdkDir = Path.Combine(testEnv.InstallPath, "sdk", "10.0.100");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Combine(sdkDir, "dotnet.dll"), "fake");
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        }
+
+        // Delete the SDK directory to simulate manual deletion
+        Directory.Delete(sdkDir, recursive: true);
+
+        // ReadManifest should prune the stale entry
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest.ReadManifest();
+            var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
+            rootEntry.Should().NotBeNull();
+            rootEntry!.Installations.Should().BeEmpty("the SDK directory was deleted");
+        }
+    }
+
+    [TestMethod]
+    public void ReadManifest_KeepsInstallationWhenComponentDirectoryExists()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create the SDK directory
+        var sdkDir = Path.Combine(testEnv.InstallPath, "sdk", "10.0.100");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Combine(sdkDir, "dotnet.dll"), "fake");
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        }
+
+        // ReadManifest should keep the entry since the directory still exists
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest.ReadManifest();
+            var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
+            rootEntry.Should().NotBeNull();
+            rootEntry!.Installations.Should().ContainSingle()
+                .Which.Version.Should().Be("10.0.100");
+        }
+    }
+
+    [TestMethod]
+    public void ReadManifest_PrunesEntireRootWhenDirectoryDeleted()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        // Use a subdirectory that we can delete independently
+        var customRoot = Path.Combine(testEnv.TempRoot, "custom-dotnet");
+        Directory.CreateDirectory(customRoot);
+        var sdkDir = Path.Combine(customRoot, "sdk", "10.0.100");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Combine(sdkDir, "dotnet.dll"), "fake");
+
+        var root = new DotnetInstallRoot(customRoot, InstallArchitecture.x64);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        }
+
+        // Delete the entire root directory
+        Directory.Delete(customRoot, recursive: true);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest.ReadManifest();
+            data.DotnetRoots.Should().NotContain(r => DotnetupUtilities.PathsEqual(r.Path, customRoot),
+                "the entire root directory was deleted");
+        }
+    }
+
+    [TestMethod]
+    public void ReadManifest_PrunesRuntimeInstallationWhenDeleted()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create the runtime directory
+        var runtimeDir = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "10.0.0");
+        Directory.CreateDirectory(runtimeDir);
+        File.WriteAllText(Path.Combine(runtimeDir, "System.Runtime.dll"), "fake");
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.Runtime, Version = "10.0.0" });
+        }
+
+        // Delete the runtime directory
+        Directory.Delete(runtimeDir, recursive: true);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest.ReadManifest();
+            var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
+            rootEntry.Should().NotBeNull();
+            rootEntry!.Installations.Should().BeEmpty("the runtime directory was deleted");
+        }
+    }
+
+    [TestMethod]
+    public void ReadManifest_PrunesAspNetInstallationWhenDeleted()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create the ASP.NET Core directory
+        var aspnetDir = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.AspNetCore.App", "10.0.0");
+        Directory.CreateDirectory(aspnetDir);
+        File.WriteAllText(Path.Combine(aspnetDir, "Microsoft.AspNetCore.dll"), "fake");
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.ASPNETCore, Version = "10.0.0" });
+        }
+
+        // Delete the ASP.NET Core directory
+        Directory.Delete(aspnetDir, recursive: true);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest.ReadManifest();
+            var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
+            rootEntry.Should().NotBeNull();
+            rootEntry!.Installations.Should().BeEmpty("the ASP.NET Core directory was deleted");
+        }
+    }
+
+    [TestMethod]
+    public void ReadManifest_PrunesOnlyDeletedInstallationsKeepsOthers()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create SDK and runtime directories
+        var sdkDir = Path.Combine(testEnv.InstallPath, "sdk", "10.0.100");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Combine(sdkDir, "dotnet.dll"), "fake");
+
+        var runtimeDir = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "10.0.0");
+        Directory.CreateDirectory(runtimeDir);
+        File.WriteAllText(Path.Combine(runtimeDir, "System.Runtime.dll"), "fake");
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.Runtime, Version = "10.0.0" });
+        }
+
+        // Delete only the SDK directory
+        Directory.Delete(sdkDir, recursive: true);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest.ReadManifest();
+            var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
+            rootEntry.Should().NotBeNull();
+            rootEntry!.Installations.Should().ContainSingle()
+                .Which.Component.Should().Be(InstallComponent.Runtime);
+        }
+    }
+
+    [TestMethod]
+    public void ReadManifest_PrunePersistsToManifestFile()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create the SDK directory
+        var sdkDir = Path.Combine(testEnv.InstallPath, "sdk", "10.0.100");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Combine(sdkDir, "dotnet.dll"), "fake");
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        }
+
+        // Delete it, read once to trigger pruning
+        Directory.Delete(sdkDir, recursive: true);
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.ReadManifest();
+        }
+
+        // Read again with a fresh manifest instance — should still be pruned (persisted).
+        // Use ReadManifestWithoutPruning so we verify the prune was actually written to disk
+        // and not just re-pruned on the second read.
+        var manifest2 = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest2.ReadManifestWithoutPruning();
+            var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
+            rootEntry.Should().NotBeNull();
+            rootEntry!.Installations.Should().BeEmpty("prune should have been persisted to disk");
+        }
+    }
+
+    #endregion
+}

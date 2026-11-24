@@ -207,7 +207,7 @@ extends:
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
-            publishUsingPipelines: true
+            publishingVersion: 4
             publishAssetsImmediately: true
             isAssetlessBuild: true
             repositoryAlias: self

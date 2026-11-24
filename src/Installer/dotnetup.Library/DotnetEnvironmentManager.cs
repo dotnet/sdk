@@ -1,0 +1,379 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+using Spectre.Console;
+using CliEnvironmentProvider = Microsoft.DotNet.Cli.Utils.EnvironmentProvider;
+
+namespace Microsoft.DotNet.Tools.Bootstrapper;
+
+/// <summary>
+/// Central manager for discovering and configuring the environment.
+/// Responsibilities:
+/// - Detecting the current install type (user vs. system/admin) via PATH and registry.
+/// - Resolving the default dotnetup-managed install path.
+/// - Enumerating existing system-level .NET installs in the installers' default locations.
+/// - Delegating SDK installation and global.json management.
+/// </summary>
+internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
+{
+
+    public DotnetEnvironmentManager()
+    {
+    }
+
+    public DotnetInstallRootConfiguration? GetCurrentPathConfiguration()
+    {
+        var environmentProvider = new CliEnvironmentProvider();
+        string? foundDotnet = environmentProvider.GetCommandPath("dotnet");
+        if (string.IsNullOrEmpty(foundDotnet))
+        {
+            return null;
+        }
+
+        // On Linux/WSL, `dotnet` on PATH is often exposed through a symlink such
+        // as /usr/bin/dotnet -> /usr/lib/dotnet/dotnet. We need to classify the
+        // real install root, not the shim location, or dotnetup can mistake
+        // /usr/bin for the install directory.
+        var currentInstallRoot = new DotnetInstallRoot(
+            ResolveCurrentInstallRootPath(foundDotnet),
+            InstallerUtilities.GetDefaultInstallArchitecture());
+
+        // Report whether the resolved dotnet is a dotnetup-managed hive — an install dotnetup owns
+        // and may run or uninstall from — rather than classifying it as "system vs user". A dotnet
+        // that merely lives in a user-writable location (e.g. a hand-extracted C:\dotnet on PATH) is
+        // NOT dotnetup's and must not be treated as such. Today the only supported hive is the
+        // default install path; configurable hives are tracked in
+        // https://github.com/dotnet/sdk/issues/55346, at which point this check would also consult
+        // the persisted root.
+        //
+        // Resolve the default path's symlinks too so the comparison is symmetric: currentInstallRoot.Path
+        // is already realpath-resolved above, and the default path's base (LocalApplicationData /
+        // XDG_DATA_HOME, which is not required to be a real directory) may itself be a symlink. Without
+        // this, a symlinked data directory would make dotnetup fail to recognize its own hive.
+        string defaultInstallPath = GetDefaultDotnetInstallPath();
+        string resolvedDefaultInstallPath = ExecutablePathResolver.ResolveRealPath(defaultInstallPath) ?? defaultInstallPath;
+        bool isDotnetupHive = DotnetupUtilities.PathsEqual(currentInstallRoot.Path, resolvedDefaultInstallPath);
+        return new(currentInstallRoot, isDotnetupHive);
+    }
+
+    public string GetDefaultDotnetInstallPath()
+    {
+        return DotnetupPaths.DefaultDotnetInstallPath;
+    }
+
+    internal static string ResolveCurrentInstallRootPath(string dotnetExecutablePath)
+        => ExecutablePathResolver.ResolveRealDirectory(dotnetExecutablePath)
+            ?? throw new InvalidOperationException($"Unable to determine the install root for '{dotnetExecutablePath}'.");
+
+    public string? GetLatestInstalledSystemVersion()
+    {
+        var sdkInstalls = GetExistingSystemInstalls()
+            .Where(i => i.Component == InstallComponent.SDK)
+            .ToList();
+        return sdkInstalls.Count > 0 ? sdkInstalls[0].LayoutVersion.ToString() : null;
+    }
+
+    public List<string> GetInstalledSystemSdkVersions()
+    {
+        return [.. GetExistingSystemInstalls()
+            .Where(i => i.Component == InstallComponent.SDK)
+            .Select(i => i.LayoutVersion.ToString())];
+    }
+
+    /// <summary>
+    /// Lists the installs in the native-architecture system roots. An SDK's <see cref="DotnetInstall.Version"/>
+    /// is its build identity from <c>.version</c>; use <see cref="DotnetInstall.LayoutVersion"/> for the version
+    /// that <c>dotnet --list-sdks</c> reports and that released channels contain.
+    /// </summary>
+    public List<DotnetInstall> GetExistingSystemInstalls()
+        => GetExistingSystemInstalls(GetSystemDotnetRoots());
+
+    internal static List<DotnetInstall> GetExistingSystemInstalls(IEnumerable<DotnetInstallRoot> systemRoots)
+        => GetExistingSystemInstalls(systemRoots, InstallRootEnumerator.GetInstalls);
+
+    /// <summary>
+    /// Lists the installs in the system roots that match this process's architecture. Roots of another
+    /// architecture are skipped before they are read, so they can never displace a native install.
+    /// A root that cannot be read is reported and skipped so the remaining roots are still listed.
+    /// </summary>
+    internal static List<DotnetInstall> GetExistingSystemInstalls(
+        IEnumerable<DotnetInstallRoot> systemRoots,
+        Func<DotnetInstallRoot, IEnumerable<DotnetInstall>> enumerateRoot)
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installs = new List<DotnetInstall>();
+
+        foreach (var installRoot in systemRoots.Where(root => root.Architecture == nativeArch))
+        {
+            try
+            {
+                installs.AddRange(enumerateRoot(installRoot));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                Metrics.Tag(TelemetryTagNames.SystemInstallEnumerationFailed, "true");
+                Metrics.Tag(TelemetryTagNames.SystemInstallEnumerationError, ex.GetType().Name);
+                Metrics.Tag(TelemetryTagNames.SystemInstallEnumerationPath, installRoot.Path);
+                AnsiConsole.MarkupLine(DotnetupTheme.Dim(
+                    $"[{DotnetupTheme.Current.Warning}]Warning:[/] Could not enumerate installs at {installRoot.Path.EscapeMarkup()}: {ex.Message.EscapeMarkup()}"));
+            }
+        }
+
+        return FilterToNativeArchAndSort(installs);
+    }
+
+    /// <summary>
+    /// Filters a list of installs to only the native architecture, keeps one install per on-disk folder, and sorts
+    /// descending by on-disk version, then by build identity.
+    /// Shared between production code and test mocks to ensure consistent behavior.
+    /// </summary>
+    public static List<DotnetInstall> FilterToNativeArchAndSort(List<DotnetInstall> installs)
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var filtered = installs
+            .Where(i => i.InstallRoot.Architecture == nativeArch)
+            .DistinctBy(i => (i.Component, LayoutVersion: i.LayoutVersion.ToString(), i.InstallRoot.Architecture))
+            .ToList();
+
+        // Sort descending so newest versions appear first.
+        filtered.Sort((a, b) =>
+        {
+            int byLayout = b.LayoutVersion.CompareTo(a.LayoutVersion);
+            return byLayout != 0 ? byLayout : b.Version.CompareTo(a.Version);
+        });
+        return filtered;
+    }
+
+    /// <summary>
+    /// Returns the existing system-level .NET install roots for the current platform, each with the architecture of
+    /// the .NET it holds. Only the installers' default locations are checked; the Windows registry and macOS
+    /// /etc/dotnet/install_location files are not read, so installs in a custom location are not found.
+    /// Callers still filter by architecture because Linux roots are labeled with the OS architecture.
+    /// Windows: the default Program Files root for the process architecture (see <see cref="AdminInstallRootResolver"/>).
+    /// macOS: /usr/local/share/dotnet, or /usr/local/share/dotnet/x64 for x64 under Rosetta.
+    /// Linux: checks /usr/lib/dotnet, /usr/share/dotnet, /usr/lib64/dotnet.
+    ///
+    /// These match get_default_installation_dir_for_arch in the host's pal.windows.cpp and pal.unix.cpp:
+    /// https://github.com/dotnet/runtime/tree/main/src/native/corehost/hostmisc
+    /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
+    /// </summary>
+    internal static List<DotnetInstallRoot> GetSystemDotnetRoots()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return WindowsPathHelper.GetProgramFilesDotnetRoot(InstallerUtilities.GetDefaultInstallArchitecture()) is { } root
+                ? [root]
+                : [];
+        }
+
+        var roots = new List<DotnetInstallRoot>();
+
+        if (OperatingSystem.IsMacOS())
+        {
+            AddMacOSRoot(
+                roots,
+                "/usr/local/share/dotnet",
+                InstallerUtilities.GetDefaultInstallArchitecture(),
+                InstallerUtilities.GetOsInstallArchitecture());
+        }
+        else
+        {
+            AddLinuxRoots(roots);
+        }
+
+        return roots;
+    }
+
+    /// <summary>
+    /// Adds the macOS installer's root for <paramref name="processArch"/> under <paramref name="defaultInstallDirectory"/>:
+    /// the directory itself, or its x64 subdirectory for x64 under Rosetta on an arm64 Mac.
+    /// install_location files are not read. The installer always uses these folders, and on an arm64 Mac with only
+    /// x64 .NET installed, the arch-less legacy file points at the x64 folder, which would be mislabeled as arm64.
+    /// </summary>
+    internal static void AddMacOSRoot(
+        List<DotnetInstallRoot> roots,
+        string defaultInstallDirectory,
+        InstallArchitecture processArch,
+        InstallArchitecture osArch)
+    {
+        string path = processArch == InstallArchitecture.x64 && osArch == InstallArchitecture.arm64
+            ? Path.Combine(defaultInstallDirectory, "x64")
+            : defaultInstallDirectory;
+        TryAddRoot(roots, path, processArch);
+    }
+
+    /// <summary>
+    /// Adds Linux system dotnet roots in priority order. Package managers install the native architecture:
+    /// 1. /usr/lib/dotnet — preferred by newer distros and the .NET install docs.
+    /// 2. /usr/share/dotnet — used by some distributions (e.g., Ubuntu packages).
+    /// 3. /usr/lib64/dotnet — used by some RPM-based distributions (Fedora, RHEL).
+    ///
+    /// Note: /etc/ld.so.conf and /etc/ld.so.conf.d/* configure the dynamic linker
+    /// and may reference dotnet library paths on some distributions. The well-known
+    /// directories above cover the standard package-manager install locations.
+    /// </summary>
+    private static void AddLinuxRoots(List<DotnetInstallRoot> roots)
+    {
+        var osArch = InstallerUtilities.GetOsInstallArchitecture();
+        TryAddRoot(roots, "/usr/lib/dotnet", osArch);
+        TryAddRoot(roots, "/usr/share/dotnet", osArch);
+        TryAddRoot(roots, "/usr/lib64/dotnet", osArch);
+    }
+
+    private static void TryAddRoot(List<DotnetInstallRoot> roots, string path, InstallArchitecture architecture)
+    {
+        if (Directory.Exists(path) && !roots.Any(root => string.Equals(root.Path, path, StringComparison.Ordinal)))
+        {
+            roots.Add(new DotnetInstallRoot(path, architecture));
+        }
+    }
+
+    /// <summary>
+    /// Applies machine/user-level environment configuration (PATH and DOTNET_ROOT environment
+    /// variables) to point to either the system (Program Files) or user dotnet install location.
+    /// </summary>
+    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            // On Windows, use InstallRootManager for proper configuration
+            var installRootManager = new InstallRootManager(this);
+
+            switch (installType)
+            {
+                case InstallType.User:
+                    if (string.IsNullOrEmpty(dotnetRoot))
+                    {
+                        throw new ArgumentNullException(nameof(dotnetRoot));
+                    }
+
+                    var userChanges = installRootManager.GetUserInstallRootChanges();
+                    InstallRootManager.ApplyUserInstallRoot(
+                        userChanges,
+                        AnsiConsole.MarkupLine);
+                    break;
+
+                case InstallType.System:
+                    var systemChanges = installRootManager.GetSystemInstallRootChanges();
+                    InstallRootManager.ApplySystemInstallRoot(
+                        systemChanges,
+                        AnsiConsole.MarkupLine);
+                    break;
+
+                default:
+                    throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Writes (or rewrites) dotnetup's managed block in the current user's shell profile.
+    /// </summary>
+    public void ApplyTerminalProfileModifications(string dotnetRoot, bool includeDotnet = true, bool includeDotnetup = true, IEnvShellProvider? shellProvider = null)
+    {
+        ArgumentNullException.ThrowIfNull(dotnetRoot);
+
+        // dotnetRoot is only meaningful when wiring dotnet; require it in that case on both
+        // platforms so Windows and Unix validate identically.
+        if (includeDotnet)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(dotnetRoot);
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            ApplyTerminalProfileModificationsWindows(dotnetRoot, includeDotnet, includeDotnetup, shellProvider);
+        }
+        else
+        {
+            ApplyTerminalProfileModificationsUnix(dotnetRoot, includeDotnet, includeDotnetup, shellProvider);
+        }
+    }
+
+    private void ApplyTerminalProfileModificationsWindows(string dotnetRoot, bool includeDotnet, bool includeDotnetup, IEnvShellProvider? shellProvider)
+    {
+        var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
+        // The current shell provider on Windows is always the PowerShell provider (see
+        // ShellDetection.GetCurrentShellProvider). We accept a caller-supplied provider for
+        // testability.
+        shellProvider ??= new PowerShellEnvShellProvider();
+
+        // When the install root is the default path, omit --dotnet-install-path from the
+        // profile entry so the persisted block stays portable across machines (e.g. when a
+        // profile syncs via OneDrive to a box with a different username). Only relevant when
+        // dotnet is wired.
+        string? profileDotnetRoot = includeDotnet ? GetProfileDotnetRootOrDefault(dotnetRoot) : null;
+
+        ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, includeDotnet, includeDotnetup, profileDotnetRoot);
+    }
+
+    private void ApplyTerminalProfileModificationsUnix(string dotnetRoot, bool includeDotnet, bool includeDotnetup, IEnvShellProvider? shellProvider)
+    {
+        var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
+        shellProvider = ShellDetection.GetCurrentShellProviderOrThrow(shellProvider);
+
+        string? profileDotnetRoot = includeDotnet ? GetProfileDotnetRootOrDefault(dotnetRoot) : null;
+
+        ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, includeDotnet, includeDotnetup, profileDotnetRoot);
+    }
+
+    /// <summary>
+    /// Ensures the dotnetup directory is present/absent on the user-scope PATH (Windows only).
+    /// </summary>
+    public void ApplyDotnetupOnUserPath(bool enabled)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            // On non-Windows, dotnetup-on-PATH is handled entirely by the shell profile block.
+            return;
+        }
+
+        string dotnetupDir = ShellProviderHelpers.GetDotnetupDirectoryOrThrow();
+        string unexpandedUserPath = WindowsPathHelper.ReadUserPath(expand: false);
+        string expandedUserPath = WindowsPathHelper.ReadUserPath(expand: true);
+
+        string newUserPath = enabled
+            ? WindowsPathHelper.AddPathEntry(unexpandedUserPath, expandedUserPath, dotnetupDir, "dotnetup")
+            : WindowsPathHelper.RemovePathEntries(unexpandedUserPath, expandedUserPath, [dotnetupDir]);
+
+        if (newUserPath != unexpandedUserPath)
+        {
+            WindowsPathHelper.WriteUserPath(newUserPath);
+        }
+    }
+
+    /// <summary>
+    /// Returns null when <paramref name="dotnetRoot"/> matches the default dotnetup-managed
+    /// install path, so the value is omitted from the generated profile entry. Otherwise
+    /// returns the explicit path. See <see cref="ApplyTerminalProfileModificationsWindows"/>
+    /// for why omission keeps the entry portable across machines.
+    /// </summary>
+    private string? GetProfileDotnetRootOrDefault(string dotnetRoot) =>
+        DotnetupUtilities.PathsEqual(dotnetRoot, GetDefaultDotnetInstallPath())
+            ? null
+            : dotnetRoot;
+
+    /// <inheritdoc />
+    public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests, IReadOnlyList<InstallResult> installs)
+    {
+        foreach (var request in requests)
+        {
+            string? globalJsonPath = request.Request.Options.GlobalJsonPath;
+            if (globalJsonPath is not null && request.Request.Component == InstallComponent.SDK)
+            {
+                GlobalJsonHelper.UpdateGlobalJson(globalJsonPath, GetInstalledSdkVersion(request, installs));
+            }
+        }
+    }
+
+    // The host resolves global.json against sdk/<version>, which is untagged for RTM and servicing daily builds.
+    private static string GetInstalledSdkVersion(ResolvedInstallRequest request, IReadOnlyList<InstallResult> installs) =>
+        installs.FirstOrDefault(result => result.Install.Component == InstallComponent.SDK
+            && result.Install.Version == request.ResolvedVersion
+            && DotnetupUtilities.PathsEqual(result.Install.InstallRoot.Path, request.Request.InstallRoot.Path))?
+            .Install.LayoutVersion.ToString()
+        ?? request.ResolvedVersion.ToString();
+}

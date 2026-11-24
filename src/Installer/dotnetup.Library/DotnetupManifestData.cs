@@ -1,0 +1,82 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Globalization;
+using System.Text.Json.Serialization;
+using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation.Internal;
+
+namespace Microsoft.DotNet.Tools.Bootstrapper;
+
+/// <summary>
+/// Top-level manifest data structure for dotnetup installation tracking.
+/// </summary>
+internal class DotnetupManifestData
+{
+    public const int CurrentSchemaVersion = 2;
+
+    public string SchemaVersion { get; set; } = CurrentSchemaVersion.ToString(CultureInfo.InvariantCulture);
+    public List<DotnetRootEntry> DotnetRoots { get; set; } = [];
+}
+
+/// <summary>
+/// Represents a dotnet installation root directory with its install specs and installations.
+/// </summary>
+internal class DotnetRootEntry
+{
+    public string Path { get; set; } = string.Empty;
+    public InstallArchitecture Architecture { get; set; }
+    public List<InstallSpec> InstallSpecs { get; set; } = [];
+    public List<Installation> Installations { get; set; } = [];
+}
+
+/// <summary>
+/// Represents what the user requested to be installed (the "install spec").
+/// </summary>
+internal class InstallSpec
+{
+    public InstallComponent Component { get; set; }
+    // Repository entries use the saved channel and constraints only when GlobalJsonPath cannot be read.
+    public string VersionOrChannel { get; set; } = string.Empty;
+    public InstallSource InstallSource { get; set; }
+    public string? GlobalJsonPath { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MinimumVersion { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? AllowPrerelease { get; set; }
+}
+
+/// <summary>
+/// Represents an actual installed component with its exact version and subcomponents.
+/// </summary>
+internal class Installation
+{
+    public InstallComponent Component { get; set; }
+    public string Version { get; set; } = string.Empty;
+
+    /// <summary>The payload's product version when it differs from the tracked build identity. Use <see cref="LayoutVersion"/> for paths.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ProductVersion { get; set; }
+
+    public List<string> Subcomponents { get; set; } = [];
+
+    /// <summary>The version folder on disk.</summary>
+    [JsonIgnore]
+    public string LayoutVersion => ProductVersion ?? Version;
+
+    /// <summary>The installation's folder relative to the install root, such as <c>sdk/10.0.100</c>.</summary>
+    [JsonIgnore]
+    public string LayoutPath => Component.GetLayoutPath(LayoutVersion);
+
+    public DotnetInstall ToDotnetInstall(DotnetInstallRoot installRoot) =>
+        new(installRoot, new ReleaseVersion(Version), Component,
+            ProductVersion is null ? null : new ReleaseVersion(ProductVersion));
+
+    public static Installation FromDotnetInstall(DotnetInstall install, IEnumerable<string> subcomponents) => new()
+    {
+        Component = install.Component,
+        Version = install.Version.ToString(),
+        ProductVersion = install.ProductVersion?.ToString(),
+        Subcomponents = [.. subcomponents],
+    };
+}

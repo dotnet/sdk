@@ -1,0 +1,588 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.IO;
+using FluentAssertions;
+using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
+
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
+
+/// <summary>
+/// Tests for install path validation, repository channel resolution, and onboarding in <see cref="InstallWorkflow"/>.
+/// Regression coverage: the --untracked flag must bypass the "untracked artifacts" check
+/// so that users can install to paths with existing .NET artifacts not in the manifest.
+/// </summary>
+[TestClass]
+public class InstallWorkflowTests : IDisposable
+{
+    private readonly string _tempDir;
+
+    public InstallWorkflowTests()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-installworkflow-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_tempDir);
+
+        DotnetupPaths.SetTestDataDirectoryOverride(_tempDir);
+    }
+
+    public void Dispose()
+    {
+        DotnetupPaths.ClearTestDataDirectoryOverride();
+        try { Directory.Delete(_tempDir, recursive: true); } catch { /* cleanup best-effort */ }
+    }
+
+    [TestMethod]
+    [DataRow(null, "10.0.1xx")]
+    [DataRow("patch", "10.0.1xx")]
+    [DataRow("feature", "10.0")]
+    [DataRow("minor", "10")]
+    [DataRow("major", "latest")]
+    [DataRow("disable", "10.0.103")]
+    public void ResolveChannel_UsesGlobalJsonConstraints(string? policy, string expectedChannel)
+    {
+        var path = Path.Combine(_tempDir, "global.json");
+        var policyProperty = policy is null ? "" : $""","rollForward":"{policy}" """;
+        File.WriteAllText(path, $$$"""{"sdk":{"version":"10.0.103","allowPrerelease":false{{{policyProperty}}}}}""");
+
+        var (channel, fromFile) = InstallWorkflow.ResolveChannel(
+            InstallComponent.SDK, null, GlobalJsonHelper.FindAndLoadGlobalJson(_tempDir)!);
+
+        fromFile.Should().BeTrue();
+        channel.Name.Should().Be(expectedChannel);
+        channel.MinimumVersion!.ToString().Should().Be("10.0.103");
+        channel.AllowPrerelease.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("""{"sdk":{"version":"11.0.100","rollForward":"disable"}}""")]
+    [DataRow("{broken")]
+    public void ResolveChannel_ReusesParsedGlobalJsonAfterFileChanges(string? replacement)
+    {
+        var path = Path.Combine(_tempDir, "global.json");
+        File.WriteAllText(path, """{"sdk":{"version":"10.0.103","allowPrerelease":false}}""");
+        var globalJson = GlobalJsonHelper.FindAndLoadGlobalJson(_tempDir)!;
+        if (replacement is null)
+        {
+            File.Delete(path);
+        }
+        else
+        {
+            File.WriteAllText(path, replacement);
+        }
+
+        var (channel, fromFile) = InstallWorkflow.ResolveChannel(InstallComponent.SDK, null, globalJson);
+
+        fromFile.Should().BeTrue();
+        channel.Name.Should().Be("10.0.1xx");
+        channel.MinimumVersion!.ToString().Should().Be("10.0.103");
+        channel.AllowPrerelease.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow("{broken")]
+    [DataRow("""{"sdk":{"version":"invalid"}}""")]
+    [DataRow("""{"sdk":{"version":"10.0.103","rollForward":"invalid"}}""")]
+    public void ResolveChannel_ReportsMalformedGlobalJson(string contents)
+    {
+        var path = Path.Combine(_tempDir, "global.json");
+        File.WriteAllText(path, contents);
+
+        var resolve = () => InstallWorkflow.ResolveChannel(
+            InstallComponent.SDK, null, GlobalJsonHelper.FindAndLoadGlobalJson(_tempDir)!);
+
+        var error = resolve.Should().Throw<DotnetInstallException>().Which;
+        error.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
+        error.Message.Should().Contain(path);
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AcceptsComments()
+    {
+        var path = Path.Combine(_tempDir, "global.json");
+        File.WriteAllText(path, """
+            {
+              // Pin an exact version to avoid network resolution.
+              "sdk": {
+                "version": "10.0.103",
+                "rollForward": "disable",
+                "allowPrerelease": false
+              }
+            }
+            """);
+        using var testEnv = new TestEnvironment();
+        var command = new SdkInstallCommand(Parser.Parse(
+            ["sdk", "install", "--install-path", testEnv.InstallPath, "--manifest-path", testEnv.ManifestPath]));
+        string originalDirectory = Environment.CurrentDirectory;
+        try
+        {
+            Environment.CurrentDirectory = _tempDir;
+            string expectedGlobalJsonPath = Path.Combine(Environment.CurrentDirectory, "global.json");
+
+            var requests = new InstallWorkflow(command).GenerateInstallRequests([new(InstallComponent.SDK, null)]);
+
+            requests.Should().ContainSingle();
+            requests[0].ResolvedVersion.ToString().Should().Be("10.0.103");
+            requests[0].Request.Options.GlobalJsonPath.Should().Be(expectedGlobalJsonPath);
+            requests[0].Request.Options.InstallSource.Should().Be(InstallSource.GlobalJson);
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDirectory;
+        }
+    }
+
+    [TestMethod]
+    [DataRow(InstallComponent.SDK, "10.0.103", true, false)]
+    [DataRow(InstallComponent.Runtime, null, true, false)]
+    [DataRow(InstallComponent.SDK, null, true, true)]
+    [DataRow(InstallComponent.SDK, "10.0.103", false, true)]
+    public void NeedsGlobalJsonContents_OnlyWhenPathOrSdkChannelComesFromGlobalJson(
+        InstallComponent component, string? channel, bool explicitInstallPath, bool expected)
+    {
+        InstallWorkflow.NeedsGlobalJsonContents(
+            [new MinimalInstallSpec(component, channel)],
+            explicitInstallPath ? _tempDir : null).Should().Be(expected);
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_IgnoresMalformedGlobalJson_WhenContentsAreUnused()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "global.json"), "{ malformed");
+        using var testEnv = new TestEnvironment();
+        var command = new SdkInstallCommand(Parser.Parse(
+            ["sdk", "install", "10.0.103", "--install-path", testEnv.InstallPath, "--manifest-path", testEnv.ManifestPath]));
+        string originalDirectory = Environment.CurrentDirectory;
+        try
+        {
+            Environment.CurrentDirectory = _tempDir;
+
+            var requests = new InstallWorkflow(command).GenerateInstallRequests([new(InstallComponent.SDK, "10.0.103")]);
+
+            requests.Should().ContainSingle();
+            requests[0].ResolvedVersion.ToString().Should().Be("10.0.103");
+            requests[0].Request.Options.InstallSource.Should().Be(InstallSource.Explicit);
+            requests[0].Request.Options.GlobalJsonPath.Should().BeNull();
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDirectory;
+        }
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    [DataRow("{ malformed")]
+    [DataRow("""{"sdk":{"version":"10.0.100","version":"10.0.103"}}""")]
+    public void GenerateInstallRequests_RejectsGlobalJsonThatCannotBeUpdated_BeforeInstalling(string contents)
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "global.json"), contents);
+        using var testEnv = new TestEnvironment();
+        var command = new SdkInstallCommand(Parser.Parse(
+            ["sdk", "install", "10.0.103", "--install-path", testEnv.InstallPath, "--manifest-path", testEnv.ManifestPath, "--update-global-json"]));
+        string originalDirectory = Environment.CurrentDirectory;
+        try
+        {
+            Environment.CurrentDirectory = _tempDir;
+
+            var generate = () => new InstallWorkflow(command).GenerateInstallRequests([new(InstallComponent.SDK, "10.0.103")]);
+
+            generate.Should().Throw<DotnetInstallException>()
+                .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDirectory;
+        }
+    }
+
+    #region ValidateNoUntrackedArtifacts
+
+    [TestMethod]
+    public void ValidateNoUntrackedArtifacts_ThrowsWhenPathHasArtifactsNotInManifest()
+    {
+        using var testEnv = new TestEnvironment();
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk"));
+
+        var act = () => InstallWorkflow.ValidateNoUntrackedArtifacts(testEnv.InstallPath, testEnv.ManifestPath);
+
+        act.Should().Throw<DotnetInstallException>()
+            .WithMessage("*already contains a .NET installation that is not tracked*");
+    }
+
+    [TestMethod]
+    public void ValidateNoUntrackedArtifacts_DoesNotThrowWhenPathIsEmpty()
+    {
+        using var testEnv = new TestEnvironment();
+
+        var act = () => InstallWorkflow.ValidateNoUntrackedArtifacts(testEnv.InstallPath, testEnv.ManifestPath);
+
+        act.Should().NotThrow();
+    }
+
+    [TestMethod]
+    public void ValidateNoUntrackedArtifacts_DoesNotThrowWhenPathDoesNotExist()
+    {
+        using var testEnv = new TestEnvironment();
+        var nonExistentPath = Path.Combine(testEnv.TempRoot, "nonexistent");
+
+        var act = () => InstallWorkflow.ValidateNoUntrackedArtifacts(nonExistentPath, testEnv.ManifestPath);
+
+        act.Should().NotThrow();
+    }
+
+    #endregion
+
+    #region First-use onboarding
+
+    [TestMethod]
+    public void ShouldRunFirstUseOnboarding_ReturnsTrue_ForInteractiveInstallWithoutConfig()
+    {
+        InstallWorkflow.ShouldRunFirstUseOnboarding(ResolveAccessMode(), interactive: true, installPath: null)
+            .Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void ShouldRunFirstUseOnboarding_ReturnsFalse_WhenConfigAlreadyExists()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell });
+
+        InstallWorkflow.ShouldRunFirstUseOnboarding(ResolveAccessMode(), interactive: true, installPath: null)
+            .Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ShouldRunFirstUseOnboarding_ReturnsFalse_ForExplicitInstallPath()
+    {
+        InstallWorkflow.ShouldRunFirstUseOnboarding(ResolveAccessMode(), interactive: true, installPath: @"C:\custom\dotnet")
+            .Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ShouldRunFirstUseOnboarding_ReturnsFalse_ForNonInteractiveInstall()
+    {
+        InstallWorkflow.ShouldRunFirstUseOnboarding(ResolveAccessMode(), interactive: false, installPath: null)
+            .Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ShouldRunFirstUseOnboarding_ReturnsFalse_WhenMigrateFromSystemWasRequested()
+    {
+        InstallWorkflow.ShouldRunFirstUseOnboarding(ResolveAccessMode(), interactive: true, installPath: null, migrateFromSystem: true)
+            .Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ShouldPromptForStarterChannel_ReturnsTrue_ForFirstUseSdkInstallWithoutChannel()
+    {
+        InstallWorkflow.ShouldPromptForStarterChannel(
+            runOnboarding: true,
+            [new MinimalInstallSpec(InstallComponent.SDK, null)])
+            .Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void ShouldPromptForStarterChannel_ReturnsFalse_ForFirstUseRuntimeInstallWithoutComponent()
+    {
+        // First-run `dotnetup runtime install` (no version/channel) should NOT trigger the
+        // starter-channel prompt — that prompt is SDK-only and would otherwise silently turn
+        // a runtime install into an SDK install.
+        InstallWorkflow.ShouldPromptForStarterChannel(
+            runOnboarding: true,
+            [new MinimalInstallSpec(InstallComponent.Runtime, null)])
+            .Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ShouldPromptForStarterChannel_ReturnsFalse_ForExplicitRuntimeInstall()
+    {
+        InstallWorkflow.ShouldPromptForStarterChannel(
+            runOnboarding: true,
+            [new MinimalInstallSpec(InstallComponent.Runtime, "9.0")])
+            .Should().BeFalse();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void ShouldRunFirstUseOnboarding_ReturnsFalse_InAdminMode()
+    {
+        UseAdminMode();
+
+        InstallWorkflow.ShouldRunFirstUseOnboarding(ResolveAccessMode(), interactive: true, installPath: null)
+            .Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Admin mode
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    [DataRow(new[] { "sdk", "install", "9.0.100" })]
+    [DataRow(new[] { "sdk", "install", "9.0.100", "--untracked", "false" })]
+    public void GenerateInstallRequests_AdminModeWithoutUntracked_ThrowsAdminModeRequiresUntracked(string[] arguments)
+    {
+        UseAdminMode();
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(arguments)));
+
+        // Run outside the repository so its global.json sdk paths do not redirect to a local archive install.
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => RunInDirectory(_tempDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")])));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeRequiresUntracked);
+        ex.Message.Should().Contain("--untracked");
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AdminModeRuntimeInstallWithoutUntracked_ThrowsAdminModeRequiresUntracked()
+    {
+        UseAdminMode();
+        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0"])));
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => RunInDirectory(_tempDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.Runtime, "9.0.0")])));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeRequiresUntracked);
+        File.Exists(Path.Combine(_tempDir, "manifest.json")).Should().BeFalse();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AdminModeWithUntracked_TargetsSystemRootWithInstallerBundle()
+    {
+        UseAdminMode();
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100", "--untracked"])));
+        var expectedRoot = new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture());
+
+        // The admin root is under Program Files, which ValidateInstallPath would reject with AdminPathBlocked.
+        // Run outside the repository so its global.json sdk paths do not redirect the install.
+        var requests = RunInDirectory(_tempDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")]));
+
+        var request = requests.Should().ContainSingle().Subject.Request;
+        request.InstallRoot.Should().Be(expectedRoot);
+        InstallPathClassifier.IsAdminInstallPath(request.InstallRoot.Path).Should().BeTrue();
+        request.Options.Untracked.Should().BeTrue();
+        request.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
+        request.Options.RequireReleasesJsonSignature.Should().BeTrue();
+        File.Exists(Path.Combine(_tempDir, "manifest.json")).Should().BeFalse();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AdminMode_GlobalJsonLocalPath_UsesTrackedArchiveInstallThere()
+    {
+        UseAdminMode();
+        string projectDir = WriteGlobalJson("""[".dotnet"]""");
+
+        var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install"]);
+
+        resolved.ResolvedVersion.ToString().Should().Be("9.0.100");
+        resolved.Request.Options.InstallSource.Should().Be(InstallSource.GlobalJson);
+        resolved.Request.Channel.MinimumVersion!.ToString().Should().Be("9.0.100");
+        resolved.Request.Channel.AllowPrerelease.Should().BeFalse();
+        resolved.Request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
+        resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
+        resolved.Request.Options.Untracked.Should().BeFalse();
+        resolved.Request.Options.RequireReleasesJsonSignature.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AdminMode_GlobalJsonLocalPathWithUntracked_IsUntracked()
+    {
+        UseAdminMode();
+        string projectDir = WriteGlobalJson("""[".dotnet"]""");
+
+        var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install", "--untracked"]);
+
+        resolved.Request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
+        resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
+        resolved.Request.Options.Untracked.Should().BeTrue();
+        resolved.Request.Options.RequireReleasesJsonSignature.Should().BeFalse();
+        File.Exists(Path.Combine(_tempDir, "manifest.json")).Should().BeFalse();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AdminMode_GlobalJsonLocalPath_RuntimeInstallUsesArchiveThere()
+    {
+        UseAdminMode();
+        string projectDir = WriteGlobalJson("""[".dotnet"]""");
+        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0", "--untracked"])));
+
+        var request = RunInDirectory(projectDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.Runtime, "9.0.0")]))
+            .Should().ContainSingle().Subject.Request;
+
+        request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
+        request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
+        request.Options.Untracked.Should().BeTrue();
+        request.Options.RequireReleasesJsonSignature.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AdminMode_GlobalJsonLocalPathWithoutUntracked_DoesNotRequireUntracked()
+    {
+        UseAdminMode();
+        string projectDir = WriteGlobalJson("""[".dotnet"]""");
+        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0"])));
+
+        var request = RunInDirectory(projectDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.Runtime, "9.0.0")]))
+            .Should().ContainSingle().Subject.Request;
+
+        request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
+        request.Options.Untracked.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    [DataRow("""["$host$"]""")]
+    [DataRow("""["$host$", ".dotnet"]""")]
+    [DataRow("[]")]
+    [DataRow(null)]
+    public void GenerateInstallRequests_AdminMode_GlobalJsonWithoutLocalPath_UsesInstallerBundleAtSystemRoot(string? pathsJson)
+    {
+        UseAdminMode();
+        string projectDir = WriteGlobalJson(pathsJson);
+
+        var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install", "--untracked"]);
+
+        resolved.ResolvedVersion.ToString().Should().Be("9.0.100");
+        resolved.Request.Options.InstallSource.Should().Be(InstallSource.GlobalJson);
+        resolved.Request.Channel.MinimumVersion!.ToString().Should().Be("9.0.100");
+        resolved.Request.Channel.AllowPrerelease.Should().BeFalse();
+        resolved.Request.InstallRoot.Should().Be(new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture()));
+        resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AdminMode_GlobalJsonPathIsSystemLocation_UsesInstallerBundle()
+    {
+        UseAdminMode();
+        string systemDotnet = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet");
+        string projectDir = WriteGlobalJson($"[{System.Text.Json.JsonSerializer.Serialize(systemDotnet)}]");
+
+        var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install", "--untracked"]);
+
+        resolved.Request.InstallRoot.Should().Be(new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture()));
+        resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_SelectedAdmin_OverridesSavedModeWithoutUntracked()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None });
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100"])));
+
+        var request = RunInDirectory(_tempDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")], DotnetAccessMode.Admin))
+            .Should().ContainSingle().Subject.Request;
+
+        request.InstallRoot.Should().Be(new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture()));
+        request.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
+        request.Options.Untracked.Should().BeTrue();
+        request.Options.RequireReleasesJsonSignature.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_SelectedNonAdmin_OverridesSavedAdmin()
+    {
+        UseAdminMode();
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100"])));
+
+        var request = RunInDirectory(_tempDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")], DotnetAccessMode.Shell))
+            .Should().ContainSingle().Subject.Request;
+
+        request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
+        request.Options.Untracked.Should().BeFalse();
+        request.Options.RequireReleasesJsonSignature.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_NonAdminMode_DoesNotRequireReleasesJsonSignature()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None });
+        string projectDir = WriteGlobalJson("""[".dotnet"]""");
+
+        var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install"]);
+
+        resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
+        resolved.Request.Options.RequireReleasesJsonSignature.Should().BeFalse();
+    }
+
+    /// <summary>Writes a global.json pinning SDK 9.0.100 with the given <c>sdk.paths</c> JSON array (omitted when null).</summary>
+    private string WriteGlobalJson(string? pathsJson)
+    {
+        string projectDir = Path.Combine(_tempDir, "project");
+        Directory.CreateDirectory(projectDir);
+        string pathsProperty = pathsJson is null ? string.Empty : $",\n    \"paths\": {pathsJson}";
+        File.WriteAllText(Path.Combine(projectDir, "global.json"), $$"""
+            {
+              "sdk": {
+                "version": "9.0.100",
+                "allowPrerelease": false,
+                "rollForward": "disable"{{pathsProperty}}
+              }
+            }
+            """);
+        return projectDir;
+    }
+
+    private ResolvedInstallRequest GenerateSdkRequestFromGlobalJson(string projectDir, string[] arguments)
+    {
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(arguments)));
+        return RunInDirectory(projectDir, () => workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, null)]))
+            .Should().ContainSingle().Subject;
+    }
+
+    private static T RunInDirectory<T>(string directory, Func<T> action)
+    {
+        string originalDirectory = Environment.CurrentDirectory;
+        try
+        {
+            Environment.CurrentDirectory = directory;
+            return action();
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDirectory;
+        }
+    }
+
+    private void UseAdminMode() => DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin });
+
+    private static DotnetAccessMode? ResolveAccessMode() => DotnetupConfig.ReadEffectiveAccessMode();
+
+    #endregion
+}

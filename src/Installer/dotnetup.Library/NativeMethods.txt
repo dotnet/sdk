@@ -1,0 +1,8 @@
+CertFreeCertificateChain
+CertGetCertificateChain
+CertVerifyCertificateChainPolicy
+WinVerifyTrust
+CERT_CHAIN_POLICY_MICROSOFT_ROOT
+WINTRUST_ACTION_GENERIC_VERIFY_V2
+WINTRUST_DATA
+WINTRUST_FILE_INFO

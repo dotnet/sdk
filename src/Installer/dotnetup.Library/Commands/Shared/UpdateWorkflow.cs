@@ -1,0 +1,303 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Globalization;
+using System.Runtime.ExceptionServices;
+using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation.Internal;
+using Spectre.Console;
+
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+
+/// <summary>
+/// Shared update workflow that can be used by both SDK and runtime update commands.
+/// </summary>
+internal class UpdateWorkflow
+{
+    private readonly ChannelVersionResolver _channelVersionResolver;
+
+    public UpdateWorkflow(ChannelVersionResolver channelVersionResolver)
+    {
+        _channelVersionResolver = channelVersionResolver;
+    }
+
+    /// <summary>
+    /// Updates all install specs matching the given component filter.
+    /// </summary>
+    /// <param name="manifestPath">Custom manifest path, or null for default.</param>
+    /// <param name="installPath">Specific install path to update, or null for all roots.</param>
+    /// <param name="componentFilter">Which component(s) to update. Null means update all.</param>
+    /// <param name="noProgress">Whether to suppress progress display.</param>
+    /// <param name="updateGlobalJson">Whether to update global.json files after updating global.json-sourced SDK specs.</param>
+    /// <param name="verbosity">The verbosity level for diagnostic messages during installation.</param>
+    public void Execute(string? manifestPath, string? installPath, InstallComponent? componentFilter, bool noProgress, bool updateGlobalJson = false, Verbosity verbosity = Verbosity.Normal)
+    {
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+
+        var rootsList = GetRootsToUpdate(manifestPath, installPath);
+        if (rootsList.Count == 0)
+        {
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning("No tracked dotnet installations found to update."));
+            return;
+        }
+
+        // Capture the first failure so we can rethrow it after best-effort processing
+        // of remaining specs. Rethrowing (rather than returning a non-zero exit code)
+        // gives CommandBase a real DotnetInstallException to feed into RecordException
+        // so error.type / error.category / error.details land on the telemetry row.
+        // Subsequent failures hang off the primary via AttachAdditionalFailure;
+        // GetAdditionalFailures().Count + 1 yields the total failure count without
+        // a parallel counter to keep in sync.
+        ExceptionDispatchInfo? firstFailure = null;
+        bool anyUpdated = false;
+
+        foreach (var root in rootsList)
+        {
+            UpdateRoot(root, manifestPath, componentFilter, noProgress, updateGlobalJson, verbosity, ref anyUpdated, ref firstFailure);
+        }
+
+        if (!anyUpdated && firstFailure is null)
+        {
+            AnsiConsole.MarkupLine("Everything is up to date.");
+        }
+
+        if (firstFailure is not null)
+        {
+            int totalFailures = firstFailure.SourceException.GetAdditionalFailures().Count + 1;
+            if (totalFailures > 1)
+            {
+                AnsiConsole.MarkupLine(DotnetupTheme.Error($"{totalFailures} update(s) failed; reporting the first failure."));
+            }
+            firstFailure.Throw();
+        }
+    }
+
+    private void UpdateRoot(
+        DotnetRootEntry root,
+        string? manifestPath,
+        InstallComponent? componentFilter,
+        bool noProgress,
+        bool updateGlobalJson,
+        Verbosity verbosity,
+        ref bool anyUpdated,
+        ref ExceptionDispatchInfo? firstFailure)
+    {
+        bool rootUpdated = false;
+        var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
+
+        foreach (var spec in root.InstallSpecs.ToList())
+        {
+            if (componentFilter is not null && spec.Component != componentFilter.Value)
+            {
+                continue;
+            }
+
+            try
+            {
+                bool updated = UpdateSpec(spec, root, installRoot, manifestPath, noProgress, updateGlobalJson, verbosity);
+                if (updated) { anyUpdated = true; rootUpdated = true; }
+            }
+            catch (DotnetInstallException ex)
+            {
+                AnsiConsole.MarkupLine(DotnetupTheme.Error($"Failed to update {spec.Component.GetDisplayName()} {spec.VersionOrChannel.EscapeMarkup()}."));
+                if (firstFailure is null)
+                {
+                    firstFailure = ExceptionDispatchInfo.Capture(ex);
+                }
+                else
+                {
+                    // Attach this follow-on failure to the primary exception
+                    // so RecordException sees the whole batch when CommandBase
+                    // catches the rethrown firstFailure.
+                    firstFailure.SourceException.AttachAdditionalFailure(ex);
+                }
+            }
+        }
+
+        // Run garbage collection
+        if (rootUpdated)
+        {
+            GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot);
+        }
+    }
+
+    /// <summary>
+    /// Reads the manifest and returns the list of dotnet roots to update,
+    /// optionally filtered by <paramref name="installPath"/>.
+    /// </summary>
+    private static List<DotnetRootEntry> GetRootsToUpdate(string? manifestPath, string? installPath)
+    {
+        var manifest = new DotnetupSharedManifest(manifestPath);
+        var manifestData = manifest.ReadManifest();
+
+        var rootsToUpdate = manifestData.DotnetRoots.AsEnumerable();
+        if (!string.IsNullOrEmpty(installPath))
+        {
+            rootsToUpdate = rootsToUpdate.Where(r =>
+                DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installPath)));
+        }
+
+        return [.. rootsToUpdate];
+    }
+
+    /// <summary>
+    /// Processes a single install spec: checks for updates, installs if newer version available,
+    /// and optionally updates the corresponding global.json.
+    /// </summary>
+    /// <returns>True if installations changed or repository requirements need garbage collection.</returns>
+    /// <exception cref="DotnetInstallException">Thrown when the installation fails.</exception>
+    private bool UpdateSpec(
+        InstallSpec spec,
+        DotnetRootEntry root,
+        DotnetInstallRoot installRoot,
+        string? manifestPath,
+        bool noProgress,
+        bool updateGlobalJson,
+        Verbosity verbosity)
+    {
+        var channel = GetChannelToUpdate(spec, out bool usesLastKnownRequirement);
+        if (channel is null)
+        {
+            new DotnetupSharedManifest(manifestPath).RemoveInstallSpec(installRoot, spec);
+            return true;
+        }
+        bool globalJsonRequirementChanged = false;
+        if (spec.InstallSource == InstallSource.GlobalJson && !usesLastKnownRequirement)
+        {
+            globalJsonRequirementChanged = spec.VersionOrChannel != channel.Name
+                || spec.MinimumVersion != channel.MinimumVersion?.ToString()
+                || spec.AllowPrerelease != channel.AllowPrerelease;
+            spec.VersionOrChannel = channel.Name;
+            spec.MinimumVersion = channel.MinimumVersion?.ToString();
+            spec.AllowPrerelease = channel.AllowPrerelease;
+            new DotnetupSharedManifest(manifestPath).AddInstallSpec(installRoot, spec);
+        }
+        // Skip standalone exact-version specs. Exact global.json specs still need processing
+        // because the requested version may have changed in the file.
+        if (channel.IsFullySpecifiedVersion() && spec.InstallSource != InstallSource.GlobalJson)
+        {
+            return false;
+        }
+
+        // Pass architecture so daily channels can be resolved via DailyChannelResolver.
+        var latestVersion = _channelVersionResolver.GetLatestVersionForChannel(channel, spec.Component, installRoot.Architecture);
+        string displayName = spec.Component.GetDisplayName();
+        if (latestVersion is null)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.VersionNotFound,
+                $"Could not resolve channel '{channel.Name}' to a .NET version for {displayName}.");
+        }
+
+        // Check if this version is already installed (in the manifest)
+        var existingInstallation = root.Installations.FirstOrDefault(i =>
+            i.Component == spec.Component && i.Version == latestVersion.ToString());
+        var alreadyInstalled = existingInstallation is not null;
+
+        // If the manifest says it's installed, validate on disk. If missing, remove the stale record.
+        if (alreadyInstalled)
+        {
+            InstallationValidator validator = new();
+            if (!validator.Validate(existingInstallation!.ToDotnetInstall(installRoot)))
+            {
+                var manifest = new DotnetupSharedManifest(manifestPath);
+                manifest.RemoveInstallation(installRoot, new Installation
+                {
+                    Component = existingInstallation!.Component,
+                    Version = existingInstallation.Version
+                });
+                alreadyInstalled = false;
+            }
+        }
+
+        bool updated = InstallVersion(channel, spec, installRoot, latestVersion, alreadyInstalled, noProgress, manifestPath, verbosity);
+
+        // Update global.json if requested and this spec came from a global.json,
+        // but only if the latest version is newer than what's already specified.
+        if (updateGlobalJson
+            && !usesLastKnownRequirement
+            && spec.InstallSource == InstallSource.GlobalJson
+            && spec.GlobalJsonPath is not null
+            && spec.Component == InstallComponent.SDK)
+        {
+            globalJsonRequirementChanged |= UpdateGlobalJsonFile(spec.GlobalJsonPath, latestVersion);
+        }
+
+        // A repository edit can release an older SDK even when the selected SDK is already installed.
+        return updated || globalJsonRequirementChanged;
+    }
+
+    internal static UpdateChannel? GetChannelToUpdate(InstallSpec spec) => GetChannelToUpdate(spec, out _);
+
+    private static UpdateChannel? GetChannelToUpdate(InstallSpec spec, out bool usesLastKnownRequirement)
+    {
+        var evaluation = InstallSpecResolver.Evaluate(spec);
+        usesLastKnownRequirement = evaluation.UsesLastKnownRequirement;
+        if (evaluation.Failure is { } failure)
+        {
+            if (!usesLastKnownRequirement)
+            {
+                throw failure;
+            }
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(failure.Message.EscapeMarkup()));
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
+                Strings.RepositoryUsingLastKnownRequirement, spec.GlobalJsonPath).EscapeMarkup()));
+        }
+        return evaluation.Spec;
+    }
+
+    /// <summary>
+    /// Updates a global.json file to the latest version if it's newer than the current one.
+    /// </summary>
+    private static bool UpdateGlobalJsonFile(string globalJsonPath, ReleaseVersion latestVersion)
+    {
+        if (GlobalJsonHelper.UpdateGlobalJsonIfNewer(globalJsonPath, latestVersion))
+        {
+            AnsiConsole.MarkupLine($"  Updated {DotnetupTheme.Dim(globalJsonPath.EscapeMarkup())} to {latestVersion}.");
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Installs the given version or logs a message if it is already installed.
+    /// </summary>
+    /// <returns>True if a new version was installed.</returns>
+    /// <exception cref="DotnetInstallException">Thrown when the installation fails.</exception>
+    private static bool InstallVersion(
+        UpdateChannel channel,
+        InstallSpec spec,
+        DotnetInstallRoot installRoot,
+        ReleaseVersion latestVersion,
+        bool alreadyInstalled,
+        bool noProgress,
+        string? manifestPath,
+        Verbosity verbosity)
+    {
+        string displayName = spec.Component.GetDisplayName();
+
+        if (alreadyInstalled)
+        {
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning($"{displayName} {channel.Name} is already up to date ({latestVersion})."));
+            return false;
+        }
+
+        AnsiConsole.MarkupLine($"Updating {displayName} {channel.Name} to {DotnetupTheme.Accent(latestVersion.ToString())}...");
+
+        var installRequest = new DotnetInstallRequest(
+            installRoot,
+            channel,
+            spec.Component,
+            new InstallRequestOptions { ManifestPath = manifestPath, SkipInstallSpecRecording = true, Verbosity = verbosity });
+
+        var resolvedRequest = new ResolvedInstallRequest(installRequest, latestVersion);
+
+        if (UnsignedSourcePolicy.MayDownloadUnsigned(installRequest))
+        {
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
+        }
+
+        InstallerOrchestratorSingleton.Instance.Install(resolvedRequest, noProgress);
+        AnsiConsole.MarkupLine(DotnetupTheme.Success($"Updated {displayName} {channel.Name} to {latestVersion}."));
+        return true;
+    }
+}

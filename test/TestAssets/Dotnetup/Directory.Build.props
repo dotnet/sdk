@@ -1,0 +1,4 @@
+<Project>
+  <!-- These process helpers use repository build settings, not consumer test-asset isolation. -->
+  <Import Project="..\..\..\Directory.Build.props" />
+</Project>

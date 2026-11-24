@@ -1,0 +1,774 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using FluentAssertions;
+using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
+
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
+
+[TestClass]
+public class InstallerOrchestratorTests
+{
+    [TestInitialize]
+    public void IgnoreMachineInstalls() => InstallerOrchestratorSingleton.SetSystemInstallsOverride(() => []);
+
+    [TestCleanup]
+    public void ClearSystemInstallsOverride() => InstallerOrchestratorSingleton.SetSystemInstallsOverride(null);
+
+    #region InstallAlreadyExists
+
+    [TestMethod]
+    public void PrepareInstall_UntrackedBundleAlreadyInstalled_ReturnsAlreadyInstalledResult()
+    {
+        using var testEnv = new TestEnvironment();
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+        var resolvedVersion = new ReleaseVersion("10.0.100");
+        var request = new DotnetInstallRequest(
+            root,
+            new UpdateChannel("10.0.100"),
+            InstallComponent.SDK,
+            new InstallRequestOptions
+            {
+                Untracked = true,
+                InstallMechanism = InstallMechanism.WindowsInstallerBundle,
+                ManifestPath = testEnv.ManifestPath
+            });
+        var resolvedRequest = new ResolvedInstallRequest(request, resolvedVersion);
+        var validator = new MockInstallationValidator(validateResult: true);
+
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        var batchContext = new InstallBatchContext(reporter, resolvedVersion.ToString().Length);
+
+        var prepared = InstallerOrchestratorSingleton.Instance.PrepareInstall(
+            resolvedRequest,
+            batchContext,
+            out var alreadyInstalledResult,
+            validator);
+
+        prepared.Should().BeNull();
+        alreadyInstalledResult.Should().NotBeNull();
+        alreadyInstalledResult!.WasAlreadyInstalled.Should().BeTrue();
+        alreadyInstalledResult.Install.InstallRoot.Path.Should().Be(testEnv.InstallPath);
+        alreadyInstalledResult.Install.Component.Should().Be(InstallComponent.SDK);
+        alreadyInstalledResult.Install.Version.ToString().Should().Be("10.0.100");
+        validator.ValidateCalls.Should().Be(1);
+        validator.LastInstall.Should().NotBeNull();
+        validator.LastInstall!.InstallRoot.Path.Should().Be(testEnv.InstallPath);
+        validator.LastInstall.Component.Should().Be(InstallComponent.SDK);
+        validator.LastInstall.Version.ToString().Should().Be("10.0.100");
+    }
+
+    [TestMethod]
+    public void InstallAlreadyExists_ReturnsTrueForDuplicateInstall()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = CreateManifestWithInstallation(testEnv, testEnv.InstallPath, InstallComponent.SDK, "10.0.100");
+        var install = MakeInstall(testEnv.InstallPath, "10.0.100", InstallComponent.SDK);
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.InstallAlreadyExists(install).Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void InstallAlreadyExists_ReturnsFalseForDifferentVersion()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = CreateManifestWithInstallation(testEnv, testEnv.InstallPath, InstallComponent.SDK, "10.0.100");
+        var install = MakeInstall(testEnv.InstallPath, "10.0.101", InstallComponent.SDK);
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.InstallAlreadyExists(install).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void InstallAlreadyExists_ReturnsFalseForDifferentComponent()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = CreateManifestWithInstallation(testEnv, testEnv.InstallPath, InstallComponent.SDK, "10.0.100");
+        var install = MakeInstall(testEnv.InstallPath, "10.0.100", InstallComponent.Runtime);
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.InstallAlreadyExists(install).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void InstallAlreadyExists_ReturnsFalseForDifferentRoot()
+    {
+        using var testEnv = new TestEnvironment();
+        var altRoot = Path.Combine(testEnv.TempRoot, "other-dotnet");
+        Directory.CreateDirectory(altRoot);
+        var manifest = CreateManifestWithInstallation(testEnv, testEnv.InstallPath, InstallComponent.SDK, "10.0.100");
+        var install = MakeInstall(altRoot, "10.0.100", InstallComponent.SDK);
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.InstallAlreadyExists(install).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void InstallAlreadyExists_ReturnsFalseForEmptyManifest()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var install = MakeInstall(testEnv.InstallPath, "10.0.100", InstallComponent.SDK);
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.InstallAlreadyExists(install).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void InstallAlreadyExists_DetectsDuplicateAmongMultipleInstallations()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create component directories so ReadManifest() pruning keeps them.
+        testEnv.StubComponentDirectories(null,
+            (InstallComponent.SDK, "9.0.100"),
+            (InstallComponent.Runtime, "9.0.0"),
+            (InstallComponent.SDK, "10.0.100"));
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "9.0.100" });
+        manifest.AddInstallation(root, new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" });
+        manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+
+        var install = MakeInstall(testEnv.InstallPath, "10.0.100", InstallComponent.SDK);
+        manifest.InstallAlreadyExists(install).Should().BeTrue();
+    }
+
+    #endregion
+
+    #region IsRootTracked
+
+    [TestMethod]
+    public void IsRootTracked_ReturnsTrueWhenRootExists()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = CreateManifestWithInstallation(testEnv, testEnv.InstallPath, InstallComponent.SDK, "10.0.100");
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.IsRootTracked(root).Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void IsRootTracked_ReturnsFalseWhenRootDoesNotExist()
+    {
+        using var testEnv = new TestEnvironment();
+        var altRoot = Path.Combine(testEnv.TempRoot, "other-dotnet");
+        Directory.CreateDirectory(altRoot);
+        var manifest = CreateManifestWithInstallation(testEnv, testEnv.InstallPath, InstallComponent.SDK, "10.0.100");
+        var root = new DotnetInstallRoot(altRoot, InstallArchitecture.x64);
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.IsRootTracked(root).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void IsRootTracked_ReturnsFalseForEmptyManifest()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.IsRootTracked(root).Should().BeFalse();
+    }
+
+    #endregion
+
+    #region HasDotnetArtifacts
+
+    [TestMethod]
+    public void HasDotnetArtifacts_ReturnsFalseForNullPath()
+    {
+        DotnetupSharedManifest.HasDotnetArtifacts(null).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void HasDotnetArtifacts_ReturnsFalseForNonexistentPath()
+    {
+        DotnetupSharedManifest.HasDotnetArtifacts(Path.Combine(Path.GetTempPath(), "nonexistent-" + Guid.NewGuid().ToString("N")))
+            .Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void HasDotnetArtifacts_ReturnsTrueWhenSdkDirectoryExists()
+    {
+        using var testEnv = new TestEnvironment();
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk"));
+
+        DotnetupSharedManifest.HasDotnetArtifacts(testEnv.InstallPath).Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void HasDotnetArtifacts_ReturnsTrueWhenSharedDirectoryExists()
+    {
+        using var testEnv = new TestEnvironment();
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "shared"));
+
+        DotnetupSharedManifest.HasDotnetArtifacts(testEnv.InstallPath).Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void HasDotnetArtifacts_ReturnsTrueWhenDotnetExeExists()
+    {
+        using var testEnv = new TestEnvironment();
+        var exeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "dotnet.exe" : "dotnet";
+        File.WriteAllText(Path.Combine(testEnv.InstallPath, exeName), "fake");
+
+        DotnetupSharedManifest.HasDotnetArtifacts(testEnv.InstallPath).Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void HasDotnetArtifacts_ReturnsFalseForEmptyDirectory()
+    {
+        using var testEnv = new TestEnvironment();
+
+        DotnetupSharedManifest.HasDotnetArtifacts(testEnv.InstallPath).Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Install mechanism
+
+    [TestMethod]
+    public void CreateInstallArtifact_UsesArchiveExtractorForArchiveRequests()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+
+        using var artifact = InstallerOrchestratorSingleton.CreateInstallArtifact(
+            MakeResolvedRequest(testEnv, InstallMechanism.Archive, untracked: false),
+            new ReleaseManifest(),
+            new InstallBatchContext(reporter, 8));
+
+        artifact.Should().BeOfType<DotnetArchiveExtractor>();
+    }
+
+    [TestMethod]
+    public void CreateInstallArtifact_UsesWindowsBundleArtifactForBundleRequests()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+
+        using var artifact = InstallerOrchestratorSingleton.CreateInstallArtifact(
+            MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true),
+            new ReleaseManifest(),
+            new InstallBatchContext(reporter, 8));
+
+        artifact.Should().BeOfType<WindowsBundleArtifact>();
+    }
+
+    [TestMethod]
+    [DataRow(InstallMechanism.WindowsInstallerBundle, false)]
+    [DataRow(InstallMechanism.WindowsInstallerBundle, true)]
+    [DataRow(InstallMechanism.Archive, false)]
+    internal void CreateInstallArtifact_OnlyArchivesUseOverriddenCache(InstallMechanism mechanism, bool directBundle)
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        DotnetupPaths.SetTestDataDirectoryOverride(testEnv.TempRoot);
+        try
+        {
+            var request = MakeResolvedRequest(testEnv, mechanism, untracked: true);
+            var batch = new InstallBatchContext(reporter, 8);
+            using IInstallArtifact artifact = directBundle
+                ? new WindowsBundleArtifact(request.Request, request.ResolvedVersion, batch)
+                : InstallerOrchestratorSingleton.CreateInstallArtifact(request, new ReleaseManifest(), batch);
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            string fieldName = mechanism == InstallMechanism.WindowsInstallerBundle ? "_downloader" : "_archiveDownloader";
+            var downloader = (DotnetDownloader)artifact.GetType().GetField(fieldName, flags)!.GetValue(artifact)!;
+            var cache = (DownloadCache)typeof(DotnetDownloader).GetField("_downloadCache", flags)!.GetValue(downloader)!;
+            var cacheDirectory = (string)typeof(DownloadCache).GetField("_cacheDirectory", flags)!.GetValue(cache)!;
+            string expected = mechanism != InstallMechanism.WindowsInstallerBundle
+                ? DotnetupPaths.DownloadCacheDirectory
+                : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify),
+                    "dotnetup", "downloadcache");
+
+            cacheDirectory.Should().Be(expected);
+        }
+        finally
+        {
+            DotnetupPaths.ClearTestDataDirectoryOverride();
+        }
+    }
+
+
+    [TestMethod]
+    public void PrepareInstall_BundleAlreadyInstalled_ReturnsAlreadyInstalledWithoutDownloading()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        var validator = new MockInstallationValidator(validateResult: true);
+
+        var prepared = InstallerOrchestratorSingleton.Instance.PrepareInstall(
+            MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true),
+            new InstallBatchContext(reporter, 8),
+            out var alreadyInstalledResult,
+            validator);
+
+        prepared.Should().BeNull();
+        alreadyInstalledResult!.WasAlreadyInstalled.Should().BeTrue();
+        validator.ValidateCalls.Should().Be(1);
+        File.Exists(testEnv.ManifestPath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void CommitPreparedInstall_RechecksBundleBeforeRunningInstaller(bool alreadyInstalled)
+    {
+        using var testEnv = new TestEnvironment();
+        var artifact = new FakeArtifact();
+        using var prepared = PrepareFakeBundle(testEnv, artifact);
+        artifact.OnCommit = () => WriteSdkLayout(prepared.Install);
+        if (alreadyInstalled)
+        {
+            WriteSdkLayout(prepared.Install);
+        }
+
+        var validator = new InstallationValidator();
+
+        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared, validator);
+
+        result.WasAlreadyInstalled.Should().Be(alreadyInstalled);
+        artifact.CommitCalls.Should().Be(alreadyInstalled ? 0 : 1);
+        validator.Validate(prepared.Install).Should().BeTrue();
+        File.Exists(testEnv.ManifestPath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_BundleNotFoundOnDisk_ThrowsPostInstallVerificationFailed()
+    {
+        using var testEnv = new TestEnvironment();
+        var artifact = new FakeArtifact();
+        using var prepared = PrepareFakeBundle(testEnv, artifact);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed);
+        artifact.CommitCalls.Should().Be(1);
+        artifact.RepairCalls.Should().Be(1);
+        ex.IsRepairFailed().Should().BeFalse("no repair could be attempted");
+        File.Exists(testEnv.ManifestPath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_NewerVersionInstalledAfterPrepare_ThrowsBeforeRunningInstaller()
+    {
+        using var testEnv = new TestEnvironment();
+        var artifact = new FakeArtifact();
+        using var prepared = PrepareFakeBundle(testEnv, artifact);
+        InstallSystemSdk("10.0.114");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
+        artifact.CommitCalls.Should().Be(0);
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_NewerVersionInstalledDuringInstall_ThrowsWithoutRepairing()
+    {
+        using var testEnv = new TestEnvironment();
+        var artifact = new FakeArtifact { OnCommit = () => InstallSystemSdk("10.0.114"), OnRepair = () => true };
+        using var prepared = PrepareFakeBundle(testEnv, artifact);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
+        ex.IsRepairFailed().Should().BeFalse("no repair should be attempted");
+        artifact.CommitCalls.Should().Be(1);
+        artifact.RepairCalls.Should().Be(0);
+        File.Exists(testEnv.ManifestPath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_BundleFilesMissing_RepairsAndSucceeds()
+    {
+        using var testEnv = new TestEnvironment();
+        var artifact = new FakeArtifact();
+        using var prepared = PrepareFakeBundle(testEnv, artifact);
+        artifact.OnRepair = () =>
+        {
+            WriteSdkLayout(prepared.Install);
+            return true;
+        };
+
+        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
+
+        result.WasAlreadyInstalled.Should().BeFalse();
+        result.Repaired.Should().BeTrue();
+        artifact.CommitCalls.Should().Be(1);
+        artifact.RepairCalls.Should().Be(1);
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_RepairStillMissingFiles_ThrowsPostInstallVerificationFailed()
+    {
+        using var testEnv = new TestEnvironment();
+        var artifact = new FakeArtifact { OnRepair = () => true };
+        using var prepared = PrepareFakeBundle(testEnv, artifact);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed);
+        ex.IsRepairFailed().Should().BeTrue();
+        artifact.RepairCalls.Should().Be(1);
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_RepairInstallerFails_MarksRepairFailed()
+    {
+        using var testEnv = new TestEnvironment();
+        var artifact = new FakeArtifact { OnRepair = () => throw new DotnetInstallException(DotnetInstallErrorCode.InstallerFailed, "repair failed") };
+        using var prepared = PrepareFakeBundle(testEnv, artifact);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerFailed);
+        ex.IsRepairFailed().Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void GetRepairTagValue_IsNullWithoutRepairsAndCountsRepairOutcomes()
+    {
+        using var testEnv = new TestEnvironment();
+        var request = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
+        var install = request.ToInstall();
+        var plainFailure = new DotnetInstallException(DotnetInstallErrorCode.InstallerFailed, "failed");
+        var repairFailure = new DotnetInstallException(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed, "still missing");
+        repairFailure.MarkRepairFailed();
+
+        InstallExecutor.GetRepairTagValue(new InstallBatchResult(
+            [new InstallResult(install, WasAlreadyInstalled: false)],
+            [new InstallFailure(request, plainFailure)])).Should().BeNull();
+        InstallExecutor.GetRepairTagValue(new InstallBatchResult(
+            [new InstallResult(install, WasAlreadyInstalled: false, Repaired: true)],
+            [new InstallFailure(request, repairFailure), new InstallFailure(request, plainFailure)])).Should().Be("succeeded:1,failed:1");
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_ArtifactThatInitiatedRestart_SkipsPostInstallVerification()
+    {
+        using var testEnv = new TestEnvironment();
+        var artifact = new FakeArtifact { RequiresPostInstallValidation = false };
+        using var prepared = PrepareFakeBundle(testEnv, artifact);
+
+        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
+
+        result.WasAlreadyInstalled.Should().BeFalse();
+        artifact.CommitCalls.Should().Be(1);
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_ArchiveValidationFailure_StillThrowsInstallFailed()
+    {
+        using var testEnv = new TestEnvironment();
+        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.Archive, untracked: true);
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, new FakeArtifact());
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallFailed);
+    }
+
+    [TestMethod]
+    public void ConsumePreparedInstalls_WithoutCancellation_CommitsEveryInstall()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        var batchContext = new InstallBatchContext(reporter, 8);
+        var artifacts = new[] { new FakeArtifact(), new FakeArtifact() };
+        var (results, failures) = ConsumePrepared(testEnv, batchContext, artifacts);
+
+        results.Should().HaveCount(2);
+        failures.Should().BeEmpty();
+        artifacts.Should().OnlyContain(a => a.CommitCalls == 1 && a.Disposed);
+    }
+
+    [TestMethod]
+    public void ConsumePreparedInstalls_CancellationRequestedDuringCommit_RecordsRemainingInstallsAsCancelled()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        var batchContext = new InstallBatchContext(reporter, 8);
+        var first = new FakeArtifact { OnCommit = batchContext.RequestCancellation };
+        var second = new FakeArtifact();
+        var (results, failures) = ConsumePrepared(testEnv, batchContext, first, second);
+
+        results.Should().ContainSingle();
+        failures.Should().ContainSingle().Which.Exception.ErrorCode.Should().Be(DotnetInstallErrorCode.OperationCancelled);
+        first.CommitCalls.Should().Be(1);
+        second.CommitCalls.Should().Be(0);
+        second.Disposed.Should().BeTrue();
+    }
+
+    private static (List<InstallResult> Results, List<InstallFailure> Failures) ConsumePrepared(
+        TestEnvironment testEnv,
+        InstallBatchContext batchContext,
+        params FakeArtifact[] artifacts)
+    {
+        var prepared = artifacts.Select(artifact =>
+        {
+            var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.Archive, untracked: true);
+            return new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, artifact);
+        });
+        using var readyQueue = new System.Collections.Concurrent.BlockingCollection<InstallerOrchestratorSingleton.PreparedInstall>(
+            new System.Collections.Concurrent.ConcurrentQueue<InstallerOrchestratorSingleton.PreparedInstall>(prepared));
+        readyQueue.CompleteAdding();
+        var results = new List<InstallResult>();
+        var failures = new List<InstallFailure>();
+        var fatalExceptions = new List<Exception>();
+
+        InstallerOrchestratorSingleton.ConsumeConcurrentPreparedInstallsAndCommit(
+            readyQueue,
+            batchContext,
+            prepared =>
+            {
+                prepared.Artifact.Commit();
+                return new InstallResult(prepared.Install, WasAlreadyInstalled: false);
+            },
+            results,
+            failures,
+            fatalExceptions,
+            new object());
+
+        fatalExceptions.Should().BeEmpty();
+        return (results, failures);
+    }
+
+    /// <summary>An untracked installer-bundle SDK request in <paramref name="testEnv"/> and the install it produces.</summary>
+    private static InstallerOrchestratorSingleton.PreparedInstall PrepareFakeBundle(TestEnvironment testEnv, FakeArtifact artifact) =>
+        new(MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true), artifact);
+
+    private static void WriteSdkLayout(DotnetInstall install)
+    {
+        File.WriteAllText(InstallationValidator.GetMuxerPath(install.InstallRoot.Path!), string.Empty);
+        Directory.CreateDirectory(install.ComponentDirectory);
+        File.WriteAllText(Path.Combine(install.ComponentDirectory, "dotnet.dll"), string.Empty);
+    }
+
+    private static DotnetInstall MakeSystemInstall(InstallComponent component, string version, InstallArchitecture architecture = InstallArchitecture.x64) =>
+        new(new DotnetInstallRoot(@"C:\Program Files\dotnet", architecture), new ReleaseVersion(version), component);
+
+    private static void InstallSystemSdk(string version) =>
+        InstallerOrchestratorSingleton.SetSystemInstallsOverride(() => [MakeSystemInstall(InstallComponent.SDK, version)]);
+
+    [TestMethod]
+    public void PrepareInstall_BundleWithNewerSdkInSameFeatureBand_ThrowsBeforeDownloading()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        InstallSystemSdk("10.0.114");
+
+        var prepare = () => InstallerOrchestratorSingleton.Instance.PrepareInstall(
+            MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true),
+            new InstallBatchContext(reporter, 8),
+            out _,
+            new MockInstallationValidator(validateResult: false));
+
+        prepare.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
+    }
+
+    [TestMethod]
+    [DataRow(InstallComponent.SDK, "11.0.100-rc.1.26425.128", InstallComponent.SDK, "11.0.100-rc.2.26504.105", true)]
+    [DataRow(InstallComponent.SDK, "10.0.100", InstallComponent.SDK, "10.0.114", true)]
+    [DataRow(InstallComponent.SDK, "10.0.100", InstallComponent.SDK, "10.0.401", false)]
+    [DataRow(InstallComponent.SDK, "10.0.114", InstallComponent.SDK, "10.0.100", false)]
+    [DataRow(InstallComponent.SDK, "10.0.100", InstallComponent.SDK, "10.0.100", false)]
+    [DataRow(InstallComponent.SDK, "10.0.100", InstallComponent.SDK, "10.0.100-rc.2.25502.107", false)]
+    [DataRow(InstallComponent.SDK, "10.0.100-rc.2.25502.107", InstallComponent.SDK, "10.0.100", true)]
+    [DataRow(InstallComponent.Runtime, "10.0.0", InstallComponent.Runtime, "10.0.0-rc.2.25502.107", false)]
+    [DataRow(InstallComponent.Runtime, "11.0.0-rc.1.26425.128", InstallComponent.Runtime, "11.0.0-rc.3.26522.148", true)]
+    [DataRow(InstallComponent.WindowsDesktop, "10.0.1", InstallComponent.WindowsDesktop, "10.0.5", true)]
+    [DataRow(InstallComponent.Runtime, "10.0.1", InstallComponent.Runtime, "11.0.0", false)]
+    [DataRow(InstallComponent.Runtime, "10.0.1", InstallComponent.ASPNETCore, "10.0.5", false)]
+    public void ThrowIfNewerVersionInstalled_RejectsDowngradesWithinTheInstallerFamily(
+        InstallComponent requestedComponent, string requestedVersion, InstallComponent installedComponent, string installedVersion, bool expectThrow)
+    {
+        var requested = new DotnetInstall(new DotnetInstallRoot(@"C:\Program Files\dotnet", InstallArchitecture.x64), new ReleaseVersion(requestedVersion), requestedComponent);
+        var installed = MakeSystemInstall(installedComponent, installedVersion);
+
+        var check = () => InstallerOrchestratorSingleton.ThrowIfNewerVersionInstalled(requested, [installed]);
+
+        if (expectThrow)
+        {
+            var ex = check.Should().Throw<DotnetInstallException>().Which;
+            ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NewerVersionInstalled);
+            ex.Message.Should().Contain(installedVersion).And.Contain(requestedVersion);
+        }
+        else
+        {
+            check.Should().NotThrow();
+        }
+    }
+
+    [TestMethod]
+    public void ThrowIfNewerVersionInstalled_IgnoresOtherArchitectures()
+    {
+        var requested = new DotnetInstall(new DotnetInstallRoot(@"C:\Program Files\dotnet", InstallArchitecture.x64), new ReleaseVersion("10.0.100"), InstallComponent.SDK);
+
+        var check = () => InstallerOrchestratorSingleton.ThrowIfNewerVersionInstalled(requested, [MakeSystemInstall(InstallComponent.SDK, "10.0.114", InstallArchitecture.arm64)]);
+
+        check.Should().NotThrow();
+    }
+
+    [TestMethod]
+    public void FindSupersededBundleRequests_SkipsOlderBundleRequestsInTheSameInstallerFamily()
+    {
+        var sdk100 = MakeBatchRequest(InstallComponent.SDK, "10.0.100");
+        var sdk114 = MakeBatchRequest(InstallComponent.SDK, "10.0.114");
+        var sdk201 = MakeBatchRequest(InstallComponent.SDK, "10.0.201");
+        var runtime1 = MakeBatchRequest(InstallComponent.Runtime, "10.0.1");
+        var runtime3 = MakeBatchRequest(InstallComponent.Runtime, "10.0.3");
+        var runtime5 = MakeBatchRequest(InstallComponent.Runtime, "10.0.5");
+        var aspnet1 = MakeBatchRequest(InstallComponent.ASPNETCore, "10.0.1");
+        var arm64Sdk100 = MakeBatchRequest(InstallComponent.SDK, "10.0.100", InstallArchitecture.arm64);
+
+        var superseded = InstallerOrchestratorSingleton.FindSupersededBundleRequests(
+            [sdk100, sdk114, sdk201, runtime5, runtime1, runtime3, aspnet1, arm64Sdk100]);
+
+        superseded.Should().BeEquivalentTo(new[] { (sdk100, sdk114), (runtime1, runtime5), (runtime3, runtime5) });
+    }
+
+    [TestMethod]
+    public void FindSupersededBundleRequests_IgnoresArchiveRequests()
+    {
+        var older = MakeBatchRequest(InstallComponent.SDK, "10.0.100", mechanism: InstallMechanism.Archive);
+        var newer = MakeBatchRequest(InstallComponent.SDK, "10.0.114", mechanism: InstallMechanism.Archive);
+
+        InstallerOrchestratorSingleton.FindSupersededBundleRequests([older, newer]).Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow(false, false, true)]
+    [DataRow(true, false, false)]
+    [DataRow(false, true, false)]
+    public void FailSupersededInstallsReplacedInBatch_FailsOlderInstallOnlyWhenNewerWasInstalled(bool newerWasAlreadyInstalled, bool newerFailed, bool expectReplaced)
+    {
+        var older = MakeBatchRequest(InstallComponent.SDK, "10.0.100");
+        var newer = MakeBatchRequest(InstallComponent.SDK, "10.0.114");
+        var olderResult = new InstallResult(older.ToInstall(), WasAlreadyInstalled: true);
+        var replacedFailure = new InstallFailure(older, new DotnetInstallException(DotnetInstallErrorCode.SupersededInBatch, "replaced"));
+        var results = new List<InstallResult> { olderResult };
+        var failures = new List<InstallFailure>();
+        if (newerFailed)
+        {
+            failures.Add(new InstallFailure(newer, new DotnetInstallException(DotnetInstallErrorCode.InstallerFailed, "failed")));
+        }
+        else
+        {
+            results.Add(new InstallResult(newer.ToInstall(), newerWasAlreadyInstalled));
+        }
+
+        InstallerOrchestratorSingleton.FailSupersededInstallsReplacedInBatch(
+            new Dictionary<InstallResult, InstallFailure>(ReferenceEqualityComparer.Instance) { [olderResult] = replacedFailure },
+            results,
+            failures);
+
+        results.Contains(olderResult).Should().Be(!expectReplaced);
+        failures.Contains(replacedFailure).Should().Be(expectReplaced);
+    }
+
+    private static ResolvedInstallRequest MakeBatchRequest(
+        InstallComponent component,
+        string version,
+        InstallArchitecture architecture = InstallArchitecture.x64,
+        InstallMechanism mechanism = InstallMechanism.WindowsInstallerBundle) =>
+        new(
+            new DotnetInstallRequest(
+                new DotnetInstallRoot(@"C:\Program Files\dotnet", architecture),
+                new UpdateChannel(version),
+                component,
+                new InstallRequestOptions { Untracked = true, InstallMechanism = mechanism }),
+            new ReleaseVersion(version));
+
+    private static ResolvedInstallRequest MakeResolvedRequest(TestEnvironment testEnv, InstallMechanism mechanism, bool untracked)
+    {
+        var request = new DotnetInstallRequest(
+            new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64),
+            new UpdateChannel("10.0.100"),
+            InstallComponent.SDK,
+            new InstallRequestOptions
+            {
+                Untracked = untracked,
+                ManifestPath = testEnv.ManifestPath,
+                InstallMechanism = mechanism,
+            });
+        return new ResolvedInstallRequest(request, new ReleaseVersion("10.0.100"));
+    }
+
+    private sealed class FakeArtifact : IInstallArtifact
+    {
+        public int CommitCalls { get; private set; }
+
+        public bool Disposed { get; private set; }
+
+        public Action? OnCommit { get; set; }
+
+        public Func<bool>? OnRepair { get; set; }
+
+        public int RepairCalls { get; private set; }
+
+        public bool RequiresPostInstallValidation { get; init; } = true;
+
+        public IReadOnlyList<string> ExtractedSubcomponents => [];
+
+        public void Prepare()
+        {
+        }
+
+        public void Commit()
+        {
+            CommitCalls++;
+            OnCommit?.Invoke();
+        }
+
+        public bool TryRepair()
+        {
+            RepairCalls++;
+            return OnRepair?.Invoke() ?? false;
+        }
+
+        public void Dispose() => Disposed = true;
+    }
+
+    #endregion
+
+    #region Helpers
+
+    private static DotnetInstall MakeInstall(string path, string version, InstallComponent component)
+    {
+        return new DotnetInstall(
+            new DotnetInstallRoot(path, InstallArchitecture.x64),
+            new ReleaseVersion(version),
+            component);
+    }
+
+    private static DotnetupSharedManifest CreateManifestWithInstallation(TestEnvironment testEnv, string rootPath, InstallComponent component, string version)
+    {
+        testEnv.StubComponentDirectories(rootPath, (component, version));
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(rootPath, InstallArchitecture.x64);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        manifest.AddInstallation(root, new Installation { Component = component, Version = version });
+        return manifest;
+    }
+
+    #endregion
+}
