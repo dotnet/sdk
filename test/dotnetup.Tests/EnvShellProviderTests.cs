@@ -309,7 +309,7 @@ public class EnvShellProviderTests
                 : string.Empty;
             if (scenario != "missing")
             {
-                File.WriteAllText(fakeDotnetup, fakeOutput);
+                File.WriteAllText(fakeDotnetup, fakeOutput, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
             }
 
             // The entry runs from its own file so that, like a real profile, it runs entirely in the
