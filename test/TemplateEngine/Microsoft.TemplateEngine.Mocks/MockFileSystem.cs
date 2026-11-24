@@ -157,7 +157,7 @@ namespace Microsoft.TemplateEngine.Mocks
                 throw new Exception($"File {sourcePath} doesn't exist");
             }
 
-            _files[targetPath] = new FileSystemFile(_files[targetPath]);
+            _files[targetPath] = new FileSystemFile(_files[sourcePath]);
         }
 
         public IEnumerable<string> EnumerateFileSystemEntries(string directoryName, string pattern, SearchOption searchOption)

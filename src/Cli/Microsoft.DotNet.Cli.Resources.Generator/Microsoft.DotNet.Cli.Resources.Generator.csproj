@@ -21,7 +21,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp"
                       VersionOverride="$(MicrosoftCodeAnalysisVersionForNetAnalyzers)"
                       PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
