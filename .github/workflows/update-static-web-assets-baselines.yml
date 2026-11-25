@@ -342,7 +342,7 @@ jobs:
       - name: Push baseline changes
         if: steps.commit.outcome == 'success'
         run: |
-          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:${{ needs.metadata.outputs.head_ref }}
+          git -c core.hooksPath=/dev/null push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:${{ needs.metadata.outputs.head_ref }}
 
       - name: Comment on PR - Success
         if: steps.commit.outcome == 'success'

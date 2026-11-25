@@ -27,6 +27,31 @@
         <target state="translated">Examine o uso do modo de criptografia '{0}' com especialistas em criptografia. Considere o uso dos modos recomendados (CBC, CTS).</target>
         <note />
       </trans-unit>
+      <trans-unit id="AttributeHasNoEffectDescription">
+        <source>Some attributes only take effect in certain places. 'ThreadStatic', 'ContextStatic' and 'FixedAddressValueType' only affect static fields, 'FixedAddressValueType' also needs the field to be of a struct type that is not a primitive or an enum, and 'SuppressGCTransition' only affects P/Invoke methods. Anywhere else they have no impact on behavior.</source>
+        <target state="new">Some attributes only take effect in certain places. 'ThreadStatic', 'ContextStatic' and 'FixedAddressValueType' only affect static fields, 'FixedAddressValueType' also needs the field to be of a struct type that is not a primitive or an enum, and 'SuppressGCTransition' only affects P/Invoke methods. Anywhere else they have no impact on behavior.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeHasNoEffectNonStaticFieldMessage">
+        <source>The '[{0}]' attribute has no effect on member '{1}' because it only applies to static fields</source>
+        <target state="new">The '[{0}]' attribute has no effect on member '{1}' because it only applies to static fields</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeHasNoEffectNotPInvokeMessage">
+        <source>The '[{0}]' attribute has no effect on member '{1}' because it only applies to P/Invoke methods</source>
+        <target state="new">The '[{0}]' attribute has no effect on member '{1}' because it only applies to P/Invoke methods</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeHasNoEffectTitle">
+        <source>Attribute has no effect</source>
+        <target state="new">Attribute has no effect</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeHasNoEffectUnsupportedTypeFieldMessage">
+        <source>The '[{0}]' attribute has no effect on member '{1}' because it only applies to fields of a struct type that is not a primitive or an enum</source>
+        <target state="new">The '[{0}]' attribute has no effect on member '{1}' because it only applies to fields of a struct type that is not a primitive or an enum</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
         <source>The string literal parameter of an attribute does not parse correctly for a URL, a GUID, or a version.</source>
         <target state="translated">O parâmetro literal de cadeia de caracteres de um atributo não é analisado corretamente para uma URL, um GUID ou uma versão.</target>
@@ -3041,21 +3066,6 @@ As ampliação e conversões definidas pelo usuário não são compatíveis com 
       <trans-unit id="ThreadStaticInitializedInlineTitle">
         <source>Improper 'ThreadStatic' field initialization</source>
         <target state="translated">Inicialização do campo “ThreadStatic” inadequada</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ThreadStaticOnNonStaticFieldDescription">
-        <source>'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</source>
-        <target state="translated">“ThreadStatic” afeta somente campos estáticos. Quando aplicado aos campos de instância, ele não afeta o comportamento.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ThreadStaticOnNonStaticFieldMessage">
-        <source>Ensure 'ThreadStatic' is only used with static fields</source>
-        <target state="translated">Verificar se “ThreadStatic” só é usado com campos estáticos</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ThreadStaticOnNonStaticFieldTitle">
-        <source>'ThreadStatic' only affects static fields</source>
-        <target state="translated">“ThreadStatic” afeta somente campos estáticos</target>
         <note />
       </trans-unit>
       <trans-unit id="UseArgumentExceptionThrowHelperTitle">

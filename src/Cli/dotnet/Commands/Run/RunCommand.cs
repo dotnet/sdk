@@ -141,7 +141,7 @@ public class RunCommand
         EnvironmentVariables = environmentVariables;
     }
 
-    public int Execute()
+    public int Execute(CancellationToken cancellationToken)
     {
         // Create a single logger for all MSBuild operations (device selection + build/run)
         // File-based runs (.cs files) don't support device selection and should use the existing logger behavior
@@ -198,7 +198,8 @@ public class RunCommand
                     out projectBuilder,
                     selector?.IntermediateOutputPath,
                     selector?.HasRuntimeEnvironmentVariableSupport ?? false,
-                    requiresProjectExpansion);
+                    requiresProjectExpansion,
+                    cancellationToken);
                 runPropertiesFromEvaluation = projectBuilder?.LastBuild.Level == BuildLevel.All;
             }
             else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
@@ -245,7 +246,7 @@ public class RunCommand
             // Ignore Ctrl-C for the remainder of the command's execution
             Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
 
-            return targetCommand.Execute().ExitCode;
+            return targetCommand.Execute(cancellationToken).ExitCode;
         }
         catch (InvalidProjectFileException e)
         {
@@ -508,7 +509,8 @@ public class RunCommand
                 ProjectFileFullPath,
                 projectFactory ?? (EntryPointFileFullPath is null ? null : CreateProjectBuilder().CreateProjectInstance),
                 MSBuildArgs,
-                binaryLogger: null);
+                binaryLogger: null,
+                out _);
             return project.ExpandString(expression);
         }
     }
@@ -519,13 +521,14 @@ public class RunCommand
         out VirtualProjectBuildingCommand? projectBuilder,
         string? intermediateOutputPath,
         bool hasRuntimeEnvironmentVariableSupport,
-        bool requiresProjectExpansion)
+        bool requiresProjectExpansion,
+        CancellationToken cancellationToken)
     {
         int buildResult;
         if (EntryPointFileFullPath is not null)
         {
             projectBuilder = CreateProjectBuilder();
-            buildResult = projectBuilder.Execute();
+            buildResult = projectBuilder.Execute(cancellationToken);
             projectFactory = requiresProjectExpansion || !CanUseRunPropertiesForCscBuiltProgram(projectBuilder.LastBuild.Level, projectBuilder.LastBuild.Cache?.PreviousEntry)
                 ? projectBuilder.CreateProjectInstance
                 : null;
@@ -556,7 +559,7 @@ public class RunCommand
                     userProfileDir: null,
                     advertiseWorkloadUpdates: false,
                     CommandServices.CreateDefault()
-                ).Execute();
+                ).Execute(cancellationToken);
             }
             finally
             {
@@ -650,9 +653,9 @@ public class RunCommand
             Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
 
             using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
-            project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
+            project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger, out var collection);
             ValidatePreconditions(project);
-            bool hasRuntimeEnvironmentVariableSupport = InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
+            bool hasRuntimeEnvironmentVariableSupport = InvokeRunArgumentsTarget(project, collection);
 
             var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
             command = CreateCommandFromRunProperties(runProperties);
@@ -752,31 +755,30 @@ public class RunCommand
             return command;
         }
 
-        [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
-        static bool InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, IReadOnlyDictionary<string, string> environmentVariables)
+        bool InvokeRunArgumentsTarget(ProjectInstance project, ProjectCollection collection)
         {
             // Only add environment variables as MSBuild items if the project has opted in via capability
             bool hasRuntimeEnvironmentVariableSupport = EnvironmentVariablesToMSBuild.HasRuntimeEnvironmentVariableSupport(project);
             if (hasRuntimeEnvironmentVariableSupport)
             {
-                EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
+                EnvironmentVariablesToMSBuild.AddAsItems(project, EnvironmentVariables);
             }
 
             List<ILogger> loggersForBuild = [];
-            if (!LoggerUtility.HasNoConsoleLoggerArgument(buildArgs.OtherMSBuildArgs))
+            if (!LoggerUtility.HasNoConsoleLoggerArgument(MSBuildArgs.OtherMSBuildArgs))
             {
                 loggersForBuild.Add(CommonRunHelpers.GetConsoleLogger(
-                    buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs]),
+                    MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..MSBuildArgs.OtherMSBuildArgs]),
                     CommandServices.CreateDefault()
                 ));
             }
 
-            if (binaryLogger is not null)
+            if (logger is not null)
             {
-                loggersForBuild.Add(binaryLogger);
+                loggersForBuild.Add(logger);
             }
 
-            if (!project.Build([Constants.ComputeRunArguments], loggers: loggersForBuild, remoteLoggers: null, out _))
+            if (!CommonRunHelpers.BuildProject(project, collection, [Constants.ComputeRunArguments], MSBuildArgs.IsMultiThreadedEnabled, loggersForBuild, out _))
             {
                 throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, Constants.ComputeRunArguments);
             }
@@ -789,10 +791,11 @@ public class RunCommand
         string? projectFilePath,
         Func<ProjectCollection, ProjectInstance>? projectFactory,
         MSBuildArgs msbuildArgs,
-        ILogger? binaryLogger)
+        ILogger? binaryLogger,
+        out ProjectCollection collection)
     {
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
-        var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
         if (projectFactory != null)
         {
@@ -1081,11 +1084,11 @@ public class RunCommand
         }
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult).Execute(cancellationToken);
     }
 
     public static ParseResult ModifyParseResultForShorthandProjectOption(ParseResult parseResult)

@@ -34,7 +34,7 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
         }
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         if (_allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(_fileOrDirectory))
         {

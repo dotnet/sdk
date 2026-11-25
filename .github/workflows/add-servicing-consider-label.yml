@@ -6,6 +6,9 @@ on:
     types: [opened, reopened, ready_for_review]
     branches:
       - 'release/[0-9]*'
+      # 11.0.2xx is not released until February and is open for merges; remove this
+      # exclusion once it enters servicing.
+      - '!release/11.0.2xx*'
 
 permissions:
   contents: read

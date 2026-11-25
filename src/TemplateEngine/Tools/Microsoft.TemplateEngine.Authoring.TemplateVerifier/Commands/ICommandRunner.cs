@@ -7,6 +7,6 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands
 {
     internal interface ICommandRunner
     {
-        CommandResultData RunCommand(TestCommand testCommand);
+        CommandResultData RunCommand(TestCommand testCommand, CancellationToken cancellationToken);
     }
 }

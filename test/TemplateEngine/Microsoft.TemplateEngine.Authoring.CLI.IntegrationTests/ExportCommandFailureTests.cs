@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
     ]
 }";
             (await CreateTemplateAndExport(json))
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(1)
                 .And.HaveStdOutContaining("Generating localization files for a template.json has failed.")
@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
     ]
 }";
             (await CreateTemplateAndExport(json))
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(1)
                 .And.HaveStdOutContaining("Generating localization files for a template.json has failed.")
@@ -96,7 +96,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
     ]
 }";
             (await CreateTemplateAndExport(json))
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(0)
                 .And.HaveStdOutContaining("Localization files were successfully generated");
@@ -121,7 +121,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
     ]
 }";
             (await CreateTemplateAndExport(json))
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(1)
                 .And.HaveStdOutContaining("Generating localization files for a template.json has failed.")
@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
     ]
 }";
             (await CreateTemplateAndExport(json))
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .ExitWith(1)
                 .And.HaveStdOutContaining("Generating localization files for a template.json has failed.")

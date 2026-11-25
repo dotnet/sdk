@@ -40,6 +40,10 @@ Downlevel test runtimes are acquired by
 [`eng/restore-toolset.ps1`](../../eng/restore-toolset.ps1) and
 [`.sh`](../../eng/restore-toolset.sh) and overlaid by
 [`OverlaySdkOnLKG.targets`](redist/targets/OverlaySdkOnLKG.targets).
+For stabilized runtimes, the scripts record the build-stamped version in
+`.sdk-runtime-build-version` so a stale runtime is replaced when the build changes.
+The cross-architecture sidecar overlay excludes current-band .NET and ASP.NET Core
+runtimes to avoid overwriting the runtimes staged by the SDK.
 Targeting packs required by offline tests belong in that test-only overlay too,
 not in `BundledLayoutPackage`. Keep their versions aligned with
 `GenerateBundledVersions.targets`.
@@ -51,11 +55,13 @@ than the test targeting packs pinned by
 
 ### macOS tool signing
 
-`PublishRoslyn` and `CreateMSBuildAppHost` ad hoc sign the concrete SDK apphosts with
+`CreateRoslynAppHosts` (called by `PublishRoslyn`) and `CreateMSBuildAppHost` ad hoc sign the concrete SDK apphosts with
 per-tool `SigningIdentifier` metadata and their existing entitlement files, while
 preserving other signing metadata. Official signing must preserve those identifiers
 and entitlements or explicitly supply the same values. Do not assign a shared
 product identifier to apphost templates.
+Use `CreateRoslynAppHosts` to regenerate apphosts in an existing SDK layout without
+re-copying compiler files from the Roslyn package.
 Identifiers use `com.microsoft.dotnet.<executable-name>` in lowercase, including
 `msbuild`, `vbcscompiler`, and the `dotnet-*` tool names.
 
@@ -116,6 +122,35 @@ from that directory and create the final `fsc` and `fsi` `.runtimeconfig.json` a
 `15.0` files and excludes testhost runtime config files. Other targets can stage files
 after an earlier pass, so `RetargetTools` must inspect the layout each time it runs.
 [`SdkJsonLayoutTests`](../../test/sdk-tasks.Tests/SdkJsonLayoutTests.cs) covers this behavior.
+
+#### Apphost generation and copy stability
+
+In [`GenerateLayout.targets`](redist/targets/GenerateLayout.targets),
+`_GenerateRoslynAppHosts` batches over the `_RoslynAppHost` inventory from
+[`Directory.Build.props`](Directory.Build.props) using qualified metadata in target-level
+`Inputs`/`Outputs`; `_GenerateMSBuildAppHost` handles MSBuild.
+Both make per-host incremental decisions based on the source files' timestamps, including
+the template, managed assembly, actual SDK task assembly, and HostModel dependency.
+Small per-host fingerprint files capture property and path inputs that MSBuild cannot
+compare directly, including managed package identity and per-tool signing identifiers;
+macOS inputs also include the applicable entitlements. Do not serialize file timestamps
+into these fingerprints.
+A changed fingerprint or missing host triggers regeneration (and signing on macOS), while
+unchanged inputs preserve the host. The shared preparation target fails when the selected
+apphost template is missing. macOS hosts are signed once with final entitlements; the
+writer's preliminary ad-hoc signing is disabled. Signing preserves the upstream metadata
+and uses each host's `SigningIdentifier`. Signing paths and identifiers are passed through
+`Exec`'s task-scoped environment and expanded inside double quotes, rather than interpolated
+into shell source, so literal dollar signs and backticks remain part of the values.
+A failed generation or signing removes the affected host so the next build repairs it.
+`PublishRoslyn` stages compiler files before calling `CreateRoslynAppHosts`. The latter
+also works directly on an existing layout without publishing those files or requiring the
+Roslyn package; both entry points initialize the package path used in host fingerprints.
+`CreateMSBuildAppHost` keeps the optional Windows type-library copy outside the skippable
+generation target. Layout copy producers use `SkipUnchangedFiles`, including the Containers imports,
+while the Containers child `Publish` still runs. Coverage is in
+[`SdkAppHostLayoutTests`](../../test/sdk-tasks.Tests/SdkAppHostLayoutTests.cs); the
+entitlements are declared in `test/UnitTests.proj` for Helix.
 
 ### Workload manifest layout ownership
 

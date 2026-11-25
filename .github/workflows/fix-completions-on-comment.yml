@@ -494,7 +494,7 @@ jobs:
           HEAD_REF: ${{ needs.authorize.outputs.head_ref }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" HEAD:"${HEAD_REF}"
+          git -c core.hooksPath=/dev/null push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" HEAD:"${HEAD_REF}"
 
       - name: Prepare success comment
         id: success-comment

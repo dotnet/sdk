@@ -62,15 +62,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var invocation = (IInvocationOperation)operationContext.Operation;
 
                     StringFormatInfo.Info? info = formatInfo.TryGet(invocation.TargetMethod, operationContext);
-                    if (info == null || invocation.Arguments.Length <= info.FormatStringIndex)
+                    if (info == null)
                     {
                         // not a target method
                         return;
                     }
 
-                    IArgumentOperation formatStringArgument = invocation.Arguments[info.FormatStringIndex];
-                    if (!Equals(formatStringArgument.Value.Type, formatInfo.String) ||
-                        !(formatStringArgument.Value.ConstantValue.Value is string stringFormat))
+                    IOperation? formatString = invocation.Instance;
+                    if (info.FormatStringIndex is int formatIndex)
+                    {
+                        if (formatIndex >= invocation.Arguments.Length ||
+                            !invocation.Arguments.TryGetArgumentForParameterAtIndex(formatIndex, out var argument))
+                        {
+                            return;
+                        }
+
+                        formatString = argument.Value;
+                    }
+                    else if (formatString is IConditionalAccessInstanceOperation conditionalReceiver)
+                    {
+                        formatString = conditionalReceiver.GetConditionalAccess()?.Operation;
+                    }
+
+                    if (formatString?.ConstantValue.Value is not string stringFormat || !Equals(formatString.Type, formatInfo.String))
                     {
                         // wrong argument or not a constant
                         return;
@@ -86,7 +100,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
 
                     // explicit parameter case
-                    if (info.ExpectedStringFormatArgumentCount >= 0)
+                    if (info.FixedArgumentCount is int fixedArgumentCount)
                     {
                         // __arglist is not supported here
                         if (invocation.TargetMethod.IsVararg)
@@ -95,22 +109,24 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             return;
                         }
 
-                        if (info.ExpectedStringFormatArgumentCount != expectedStringFormatArgumentCount)
+                        if (fixedArgumentCount != expectedStringFormatArgumentCount)
                         {
                             operationContext.ReportDiagnostic(operationContext.Operation.Syntax.CreateDiagnostic(ArgumentCountRule));
                         }
 
                         return;
                     }
-                    else if (info.ExpectedStringFormatArgumentCount == -2)
+
+                    if (info.ParamsIndex is not int paramsIndex)
                     {
-                        // Not a formatting method, we only checked the format specification.
+                        // No known argument count; only check the format specification.
                         return;
                     }
 
                     // ensure argument is an array
-                    IArgumentOperation paramsArgument = invocation.Arguments[info.FormatStringIndex + 1];
-                    if (paramsArgument.ArgumentKind is not ArgumentKind.ParamArray and not ArgumentKind.Explicit)
+                    if (paramsIndex >= invocation.Arguments.Length ||
+                        !invocation.Arguments.TryGetArgumentForParameterAtIndex(paramsIndex, out var paramsArgument) ||
+                        paramsArgument.ArgumentKind is not ArgumentKind.ParamArray and not ArgumentKind.Explicit)
                     {
                         // wrong format
                         return;
@@ -342,10 +358,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             private const string CompositeFormat = "CompositeFormat";
 
             private readonly ConcurrentDictionary<IMethodSymbol, Info?> _map;
+            private readonly INamedTypeSymbol? _formatProvider;
 
             public StringFormatInfo(Compilation compilation)
             {
                 _map = new ConcurrentDictionary<IMethodSymbol, Info?>();
+                _formatProvider = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIFormatProvider);
 
                 INamedTypeSymbol? console = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConsole);
                 AddStringFormatMap(console, "Write");
@@ -391,7 +409,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (determineAdditionalStringFormattingMethodsAutomatically &&
                     TryGetFormatInfoByParameterName(method, out info))
                 {
-                    if (info.ExpectedStringFormatArgumentCount == -1)
+                    if (info.ParamsIndex.HasValue)
                     {
                         return info;
                     }
@@ -422,56 +440,45 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             private bool TryGetFormatInfoByCompositeFormatStringSyntaxAttribute(IMethodSymbol method, [NotNullWhen(returnValue: true)] out Info? formatInfo)
             {
-                int formatIndex = FindParameterIndexOfCompositeFormatStringSyntaxAttribute(method.Parameters);
-                return TryGetFormatInfo(method, formatIndex, out formatInfo);
+                foreach (IParameterSymbol parameter in method.Parameters)
+                {
+                    if (IsCompositeFormatString(parameter))
+                    {
+                        formatInfo = AddFormatInfo(method, parameter.Ordinal, parameter.Ordinal + 1);
+                        return true;
+                    }
+                }
+
+                // An instance extension-block member's receiver is not in its parameter list.
+                if (!method.IsStatic && method.ContainingType?.ExtensionParameter() is { } receiver && IsCompositeFormatString(receiver))
+                {
+                    bool hasProvider = !method.Parameters.IsEmpty && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, _formatProvider);
+                    formatInfo = AddFormatInfo(method, formatIndex: null, firstArgumentIndex: hasProvider ? 1 : 0);
+                    return true;
+                }
+
+                formatInfo = null;
+                return false;
             }
 
             private bool TryGetFormatInfoByParameterName(IMethodSymbol method, [NotNullWhen(returnValue: true)] out Info? formatInfo)
             {
                 int formatIndex = FindParameterIndexByParameterName(method.Parameters, Format);
-                return TryGetFormatInfo(method, formatIndex, out formatInfo);
-            }
-
-            private bool TryGetFormatInfo(IMethodSymbol method, int formatIndex, [NotNullWhen(returnValue: true)] out Info? formatInfo)
-            {
-                formatInfo = default;
-
-                if (formatIndex < 0)
+                if (formatIndex < 0 || method.Parameters[formatIndex].Type.SpecialType != SpecialType.System_String)
                 {
-                    // no valid format string
+                    formatInfo = null;
                     return false;
                 }
 
-                if (method.Parameters[formatIndex].Type.SpecialType != SpecialType.System_String)
-                {
-                    // no valid format string
-                    return false;
-                }
-
-                int expectedArguments = GetExpectedNumberOfArguments(method.Parameters, formatIndex);
-                formatInfo = new Info(formatIndex, expectedArguments);
-                _map.TryAdd(method, formatInfo);
-
+                formatInfo = AddFormatInfo(method, formatIndex, formatIndex + 1);
                 return true;
             }
 
-            private static int GetExpectedNumberOfArguments(ImmutableArray<IParameterSymbol> parameters, int formatIndex)
+            private Info AddFormatInfo(IMethodSymbol method, int? formatIndex, int firstArgumentIndex)
             {
-                if (formatIndex == parameters.Length - 1)
-                {
-                    // format specification is the last parameter (e.g. CompositeFormat.Parse)
-                    // this is therefore not a formatting method.
-                    return -2;
-                }
-
-                // check params
-                IParameterSymbol nextParameter = parameters[formatIndex + 1];
-                if (nextParameter.IsParams)
-                {
-                    return -1;
-                }
-
-                return parameters.Length - formatIndex - 1;
+                var info = new Info(formatIndex, method.Parameters, firstArgumentIndex);
+                _map.TryAdd(method, info);
+                return info;
             }
 
             private static int FindParameterIndexByParameterName(ImmutableArray<IParameterSymbol> parameters, string name)
@@ -487,40 +494,50 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return -1;
             }
 
-            private int FindParameterIndexOfCompositeFormatStringSyntaxAttribute(ImmutableArray<IParameterSymbol> parameters)
+            private bool IsCompositeFormatString(IParameterSymbol parameter)
             {
-                for (var i = 0; i < parameters.Length; i++)
+                if (String.Equals(parameter.Type, SymbolEqualityComparer.Default))
                 {
-                    if (String.Equals(parameters[i].Type, SymbolEqualityComparer.Default))
+                    foreach (AttributeData attribute in parameter.GetAttributes())
                     {
-                        foreach (AttributeData attribute in parameters[i].GetAttributes())
+                        if (attribute.AttributeClass is INamedTypeSymbol attributeClass &&
+                            StringSyntaxAttributes.Contains(attributeClass, SymbolEqualityComparer.Default))
                         {
-                            if (attribute.AttributeClass is INamedTypeSymbol attributeClass &&
-                                StringSyntaxAttributes.Contains(attributeClass, SymbolEqualityComparer.Default))
+                            ImmutableArray<TypedConstant> arguments = attribute.ConstructorArguments;
+                            if (arguments.Length == 1 && CompositeFormat.Equals(arguments[0].Value))
                             {
-                                ImmutableArray<TypedConstant> arguments = attribute.ConstructorArguments;
-                                if (arguments.Length == 1 && CompositeFormat.Equals(arguments[0].Value))
-                                {
-                                    return i;
-                                }
+                                return true;
                             }
                         }
                     }
                 }
 
-                return -1;
+                return false;
             }
 
             public class Info
             {
-                public Info(int formatIndex, int expectedArguments)
+                public Info(int? formatIndex, ImmutableArray<IParameterSymbol> parameters, int firstArgumentIndex)
                 {
                     FormatStringIndex = formatIndex;
-                    ExpectedStringFormatArgumentCount = expectedArguments;
+                    if (firstArgumentIndex < parameters.Length)
+                    {
+                        if (parameters[firstArgumentIndex].IsParams)
+                        {
+                            ParamsIndex = firstArgumentIndex;
+                        }
+                        else if (formatIndex.HasValue || !parameters[parameters.Length - 1].IsParams)
+                        {
+                            // For extension receivers, don't count a trailing params array as one fixed value.
+                            FixedArgumentCount = parameters.Length - firstArgumentIndex;
+                        }
+                    }
                 }
 
-                public int FormatStringIndex { get; }
-                public int ExpectedStringFormatArgumentCount { get; }
+                // Null when the extension receiver is the format string.
+                public int? FormatStringIndex { get; }
+                public int? FixedArgumentCount { get; }
+                public int? ParamsIndex { get; }
             }
         }
     }

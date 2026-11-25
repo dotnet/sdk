@@ -16,6 +16,14 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
     public class TemplatePackagesTests : BootstrapperTestBase
     {
         private static PackageManager s_packageManager = null!;
+        private const string NuGetConfig = /*lang=xml,strict*/ """
+<configuration>
+    <packageSources>
+        <clear />
+        <add key="dotnet-public" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json" />
+    </packageSources>
+</configuration>
+""";
         private const string ValidPackageJsonFile = /*lang=json,strict*/ """
 {
     "Packages": [
@@ -23,6 +31,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             "Details": {
                 "PackageId": "Microsoft.DotNet.Common.ProjectTemplates.5.0",
                 "Author": "Microsoft",
+                "Reserved": "true",
                 "NuGetSource": "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json",
                 "Version": "5.0.0"
             },
@@ -34,6 +43,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             "Details": {
                 "PackageId": "Microsoft.DotNet.Web.ProjectTemplates.10.0",
                 "Author": "Microsoft",
+                "Reserved": "true",
                 "NuGetSource": "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json",
                 "Version": "10.0.0"
             },
@@ -211,13 +221,14 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         }
 
         [TestMethod]
+        [DoNotParallelize] // Other tests read the current directory without taking a resource lock.
         public async Task CanUpdateAllPackagesMetadataOnGetLatestVersion()
         {
             using Bootstrapper bootstrapper = GetBootstrapper(packageJsonContent: ValidPackageJsonFile);
             var installedPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None);
 
             // implicitly populates packages metadata
-            await bootstrapper.GetLatestVersionsAsync(installedPackages, CancellationToken.None);
+            await WithNuGetConfigAsync(() => bootstrapper.GetLatestVersionsAsync(installedPackages, CancellationToken.None));
 
             var updatedPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None);
 
@@ -225,19 +236,16 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var commonPackage = updatedPackages[0];
             Assert.AreEqual("5.0.0", commonPackage.Version);
             var commonPackageDetails = commonPackage.GetDetails();
-            // The configured sources return Microsoft prefix reservation metadata.
-            commonPackageDetails.TryGetValue("Owners", out var commonOwners);
-            Assert.IsTrue(bool.Parse(commonPackageDetails["Reserved"]));
+            Assert.IsFalse(bool.Parse(commonPackageDetails["Reserved"]));
 
             var webPackage = updatedPackages[1];
             Assert.AreEqual("10.0.0", webPackage.Version);
             var webPackageDetails = webPackage.GetDetails();
-            // The configured sources return Microsoft prefix reservation metadata.
-            webPackageDetails.TryGetValue("Owners", out var webOwners);
-            Assert.IsTrue(bool.Parse(webPackageDetails["Reserved"]));
+            Assert.IsFalse(bool.Parse(webPackageDetails["Reserved"]));
         }
 
         [TestMethod]
+        [DoNotParallelize] // Other tests read the current directory without taking a resource lock.
         public async Task CanUpdateSpecifiedPackageMetadataOnGetLatestVersion()
         {
             using Bootstrapper bootstrapper = GetBootstrapper(packageJsonContent: ValidPackageJsonFile);
@@ -245,19 +253,36 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var webTemplatePackage = installedPackages.FirstOrDefault(ip => ip.Identifier == "Microsoft.DotNet.Web.ProjectTemplates.10.0");
 
             // implicitly populates package metadata
-            await bootstrapper.GetLatestVersionsAsync(new[] { webTemplatePackage! }, CancellationToken.None);
+            await WithNuGetConfigAsync(() => bootstrapper.GetLatestVersionsAsync(new[] { webTemplatePackage! }, CancellationToken.None));
 
             var updatedPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None);
             Assert.HasCount(2, updatedPackages);
             var commonPackageDetails = updatedPackages[0].GetDetails();
             Assert.IsFalse(commonPackageDetails.TryGetValue("Owners", out var _));
-            Assert.IsFalse(bool.Parse(commonPackageDetails["Reserved"]));
+            Assert.IsTrue(bool.Parse(commonPackageDetails["Reserved"]));
 
             // the specified package has updated metadata
             var webPackageDetails = updatedPackages[1].GetDetails();
-            // The configured sources return Microsoft prefix reservation metadata.
-            webPackageDetails.TryGetValue("Owners", out var webOwners);
-            Assert.IsTrue(bool.Parse(webPackageDetails["Reserved"]));
+            Assert.IsFalse(bool.Parse(webPackageDetails["Reserved"]));
+        }
+
+        private static async Task WithNuGetConfigAsync(Func<Task> action)
+        {
+            string originalDirectory = Directory.GetCurrentDirectory();
+            string configDirectory = Path.Combine(Path.GetTempPath(), $"TemplatePackagesTests-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(configDirectory);
+            File.WriteAllText(Path.Combine(configDirectory, "NuGet.Config"), NuGetConfig);
+
+            try
+            {
+                Directory.SetCurrentDirectory(configDirectory);
+                await action();
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalDirectory);
+                Directory.Delete(configDirectory, recursive: true);
+            }
         }
 
         [TestMethod]

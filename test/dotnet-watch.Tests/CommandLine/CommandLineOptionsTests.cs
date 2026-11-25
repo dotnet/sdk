@@ -369,6 +369,13 @@ public class CommandLineOptionsTests
     [DataRow("-mt:\"\"")]
     [DataRow("\"--mt:false\"")]
     [DataRow("-m\"t\":fa\"lse\"")]
+    [DataRow("-mt:auto")]
+    [DataRow("-mt:on")]
+    [DataRow("--multiThreaded:invalid")]
+    [DataRow("-mt:\"invalid\"")]
+    [DataRow("-mt:\\\"false\\\"")]
+    [DataRow("-mt:'false'")]
+    [DataRow("-mt:\"\"\"false\"\"\"")]
     public void MultiThreadedOption(string option)
     {
         var options = VerifyOptions([option]);
@@ -396,6 +403,7 @@ public class CommandLineOptionsTests
     [DataRow("-mt:\"\"")]
     [DataRow("\"--mt:false\"")]
     [DataRow("-m\"t\":fa\"lse\"")]
+    [DataRow("-mt:yes")]
     public void MultiThreadedOption_AfterDashDash(string option)
     {
         var options = VerifyOptions(["--", option]);
@@ -406,14 +414,7 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
-    [DataRow("-mt:auto")]
-    [DataRow("-mt:on")]
     [DataRow("-mtx")]
-    [DataRow("--multiThreaded:invalid")]
-    [DataRow("-mt:\"invalid\"")]
-    [DataRow("-mt:\\\"false\\\"")]
-    [DataRow("-mt:'false'")]
-    [DataRow("-mt:\"\"\"false\"\"\"")]
     public void MultiThreadedOption_Invalid(string option)
     {
         var options = VerifyOptions([option]);
@@ -683,6 +684,18 @@ public class CommandLineOptionsTests
         var buildArgs = new[] { NugetInteractiveProperty, @"--property:ArtifactsPath=" + path };
 
         var options = VerifyOptions(["run", .. args]);
+        AssertEx.SequenceEqual(buildArgs, options.BuildArguments);
+    }
+
+    [TestMethod]
+    public void ForwardedBuildOptions_OutputPath()
+    {
+        var path = Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "out;put") + Path.DirectorySeparatorChar;
+
+        var args = new[] { "--output", path };
+        var buildArgs = new[] { NugetInteractiveProperty, "--property:OutputPath=" + path, "--property:_CommandLineDefinedOutputPath=true", "--nologo" };
+
+        var options = VerifyOptions(["build", .. args]);
         AssertEx.SequenceEqual(buildArgs, options.BuildArguments);
     }
 }

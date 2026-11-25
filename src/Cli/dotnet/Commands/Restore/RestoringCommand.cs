@@ -31,6 +31,8 @@ public class RestoringCommand : MSBuildForwardingApp
     public MSBuildForwardingApp? SeparateRestoreCommand { get; }
 
     private readonly bool AdvertiseWorkloadUpdates;
+    private readonly string _userProfileDir;
+    private readonly string _workingDirectory;
 
     public RestoringCommand(
         MSBuildArgs msbuildArgs,
@@ -53,8 +55,8 @@ public class RestoringCommand : MSBuildForwardingApp
         string workingDirectory)
         : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath, services)
     {
-        userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
-        Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir, workingDirectory));
+        _userProfileDir = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
+        _workingDirectory = workingDirectory;
         SdkVulnerabilityNotifier.BackgroundUpdateCacheIfNeeded();
         SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath, Services);
         AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.OtherMSBuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
@@ -241,18 +243,22 @@ public class RestoringCommand : MSBuildForwardingApp
     private static bool TriggersSilentSeparateRestore(string argument)
         => FlagsThatTriggerSilentSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
-    public override int Execute() => Execute(workingDirectory: null);
+    public override int Execute(CancellationToken cancellationToken) => Execute(workingDirectory: null, cancellationToken);
 
-    internal override int ExecuteOutOfProc(string workingDirectory) => Execute(workingDirectory);
+    internal override int ExecuteOutOfProc(string workingDirectory, CancellationToken cancellationToken) => Execute(workingDirectory, cancellationToken);
 
-    private int Execute(string? workingDirectory)
+    private int Execute(string? workingDirectory, CancellationToken cancellationToken)
     {
+        _ = Task.Run(
+            () => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(_userProfileDir, _workingDirectory, cancellationToken),
+            cancellationToken);
+
         int exitCode;
         if (SeparateRestoreCommand != null)
         {
             exitCode = workingDirectory is null
-                ? SeparateRestoreCommand.Execute()
-                : SeparateRestoreCommand.ExecuteOutOfProc(workingDirectory);
+                ? SeparateRestoreCommand.Execute(cancellationToken)
+                : SeparateRestoreCommand.ExecuteOutOfProc(workingDirectory, cancellationToken);
             if (exitCode != 0)
             {
                 return exitCode;
@@ -260,8 +266,8 @@ public class RestoringCommand : MSBuildForwardingApp
         }
 
         exitCode = workingDirectory is null
-            ? base.Execute()
-            : base.ExecuteOutOfProc(workingDirectory);
+            ? base.Execute(cancellationToken)
+            : base.ExecuteOutOfProc(workingDirectory, cancellationToken);
         if (AdvertiseWorkloadUpdates)
         {
             WorkloadManifestUpdater.AdvertiseWorkloadUpdates();

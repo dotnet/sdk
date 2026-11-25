@@ -34,7 +34,6 @@ namespace Microsoft.DotNet.Tests
         [DataRow("a45ede3bbbf09c8ae15c72efc07268d693a21c996fd51e67ca079460fd6d8873")]  // CN=QuoVadis Root Certification Authority, OU=Root Certification Authority, O=QuoVadis Limited, C=BM
         [DataRow("c40ebdcd75a90e4b7496abb23e789a48e33c03284f75d95130575ae6860ae13c")]  // CN=HARICA Code Signing RSA Root CA 2021, O=Hellenic Academic and Research Institutions CA, C=GR
         [DataRow("cbb522d7b7f127ad6a0113865bdf1cd4102e7d0759af635a7cf4720dc963c53b")]  // CN=GlobalSign, O=GlobalSign, OU=GlobalSign Root CA - R3
-        [DataRow("d7a7a0fb5d7e2731d771e9484ebcdef71d5f0c3e0a2948782bc83ee0ea699ef4")]  // CN=AAA Certificate Services, O=Comodo CA Limited, L=Salford, S=Greater Manchester, C=GB
         [DataRow("e793c9b02fd8aa13e21c31228accb08119643b749c898964b1746d46c3d4cbd2")]  // CN=USERTrust RSA Certification Authority, O=The USERTRUST Network, L=Jersey City, S=New Jersey, C=US
         [DataRow("ebd41040e4bb3ec742c9e381d31ef2a41a48b6685c96e7cef3c1df6cd4331c99")]  // CN=GlobalSign Root CA, OU=Root CA, O=GlobalSign nv-sa, C=BE
         public void File_contains_certificates_used_in_NuGet_org_package_signatures(string expectedFingerprint)

@@ -6,6 +6,8 @@
 using System.CommandLine;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
@@ -17,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
 internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<PackageListCommandDefinitionBase>(parseResult)
 {
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(Definition.FileOption, Definition.ProjectOption, Definition.GetProjectOrFileArgument(), _parseResult);
 
@@ -35,15 +37,15 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
         {
             ReportOutputFormat formatOption = _parseResult.GetValue(Definition.FormatOption);
             bool interactive = _parseResult.GetValue(Definition.InteractiveOption);
-            restoreExitCode = RunRestore(projectFile, formatOption, interactive, isFileBasedApp);
+            restoreExitCode = RunRestore(projectFile, formatOption, interactive, isFileBasedApp, cancellationToken);
         }
 
         return restoreExitCode == 0
-            ? NuGetCommand.Run(TransformArgs(projectFile), isFileBasedApp)
+            ? NuGetCommand.Run(TransformArgs(projectFile), cancellationToken, isFileBasedApp)
             : restoreExitCode;
     }
 
-    private static int RunRestore(string projectOrSolution, ReportOutputFormat formatOption, bool interactive, bool isFileBasedApp)
+    private static int RunRestore(string projectOrSolution, ReportOutputFormat formatOption, bool interactive, bool isFileBasedApp, CancellationToken cancellationToken)
     {
         CommandBase command;
         if (isFileBasedApp)
@@ -87,9 +89,10 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
 
         try
         {
-            exitCode = command.Execute();
+            cancellationToken.ThrowIfCancellationRequested();
+            exitCode = command.Execute(cancellationToken);
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             exitCode = 1;
         }
@@ -98,12 +101,15 @@ internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<
         {
             if (formatOption == ReportOutputFormat.json)
             {
+                var message = JsonEncodedText.Encode(
+                    String.Format(CultureInfo.CurrentCulture, CliCommandStrings.Error_restore),
+                    JavaScriptEncoder.UnsafeRelaxedJsonEscaping);
                 string jsonError = $$"""
 {
    "version": 1,
    "problems": [
       {
-         "text": "{{String.Format(CultureInfo.CurrentCulture, CliCommandStrings.Error_restore)}}",
+         "text": "{{message}}",
          "level": "error"
       }
    ]

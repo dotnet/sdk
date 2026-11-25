@@ -102,46 +102,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithSource();
             string programPath = Path.Join(testInstance.Path, "Program.cs");
             string feature = collectTestMap ? "RefreshMappingsOrchestrator" : "RunAffectedTestsOrchestrator";
-            string program = File.ReadAllText(programPath).Replace(
-                "var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);",
-                $$"""
-                var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);
-                var extension = new NoSelectionExtension("{{feature}}", {{orchestratorExitCode}});
-                testApplicationBuilder.CommandLine.AddProvider(() => extension);
-                testApplicationBuilder.TestHostOrchestrator.AddTestHostOrchestrator(_ => extension);
-                """,
-                StringComparison.Ordinal);
-            File.WriteAllText(
-                programPath,
-                """
-                #pragma warning disable TPEXP
-                using Microsoft.Testing.Platform.CommandLine;
-                using Microsoft.Testing.Platform.Extensions;
-                using Microsoft.Testing.Platform.Extensions.CommandLine;
-                using Microsoft.Testing.Platform.Extensions.TestHostOrchestrator;
-
-                """ + Environment.NewLine + program + Environment.NewLine + """
-                public sealed class NoSelectionExtension(string feature, int exitCode)
-                    : ITestHostExecutionOrchestrator, ICommandLineOptionsProvider
-                {
-                    public string Uid => feature;
-                    public string Version => "1.0.0";
-                    public string DisplayName => feature;
-                    public string Description => feature;
-                    public Task<bool> IsEnabledAsync() => Task.FromResult(true);
-                    public Task<int> OrchestrateTestHostExecutionAsync(CancellationToken cancellationToken)
-                        => Task.FromResult(exitCode);
-                    public IReadOnlyCollection<CommandLineOption> GetCommandLineOptions() =>
-                    [
-                        new("affected-tests", "Select affected tests.", ArgumentArity.Zero, isHidden: false),
-                        new("collect-test-map", "Collect test mappings.", ArgumentArity.Zero, isHidden: false),
-                    ];
-                    public Task<ValidationResult> ValidateOptionArgumentsAsync(CommandLineOption commandOption, string[] arguments)
-                        => ValidationResult.ValidTask;
-                    public Task<ValidationResult> ValidateCommandLineOptionsAsync(ICommandLineOptions commandLineOptions)
-                        => ValidationResult.ValidTask;
-                }
-                """);
+            AddAffectedTestsExtension(programPath, feature, orchestratorExitCode, orchestrate: true);
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testInstance.Path)
@@ -184,6 +145,86 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(expectedExitCode);
+        }
+
+        [TestMethod]
+        public void ParallelAffectedRun_ShowsSelectedOutModuleWithoutCountingItAsASkippedTest()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            AddAffectedTestsExtension(Path.Combine(testInstance.Path, "TestProject", "Program.cs"),
+                "RunAffectedTestsOrchestrator", TestExitCode.Success, orchestrate: true);
+            AddAffectedTestsExtension(Path.Combine(testInstance.Path, "OtherTestProject", "Program.cs"),
+                "RunAffectedTestsOrchestrator", TestExitCode.Success, orchestrate: false);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("TF_BUILD", "true")
+                .WithEnvironmentVariable(TestCommandDefinition.MicrosoftTestingPlatform.EnableAffectedTestsEnvironmentVariable, "1")
+                .Execute("--solution", "MultiTestProjectSolutionWithTests.sln", "-c", TestingConstants.Debug,
+                    "--affected-tests", "--no-ansi", "--no-progress",
+                    "--max-parallel-test-modules", "2");
+
+            result.ExitCode.Should().Be(TestExitCode.Success);
+            if (!SdkTestContext.IsLocalized())
+            {
+                string output = result.StdOut ?? string.Empty;
+                output.Should().Contain($"[TestProject {ToolsetInfo.CurrentTargetFramework}")
+                    .And.Contain($"[OtherTestProject {ToolsetInfo.CurrentTargetFramework}")
+                    .And.Contain("skipped (No affected tests selected)")
+                    .And.Contain("total: 2")
+                    .And.Contain("skipped: 1")
+                    .And.NotContain("Handshake failures:");
+                output.LastIndexOf("Test run summary: Passed!", StringComparison.Ordinal)
+                    .Should().BeGreaterThan(output.LastIndexOf("No affected tests selected", StringComparison.Ordinal));
+            }
+        }
+
+        private static void AddAffectedTestsExtension(string programPath, string feature, int orchestratorExitCode, bool orchestrate)
+        {
+            string registerOrchestrator = orchestrate
+                ? "testApplicationBuilder.TestHostOrchestrator.AddTestHostOrchestrator(_ => extension);"
+                : string.Empty;
+            string program = File.ReadAllText(programPath).Replace(
+                "var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);",
+                $$"""
+                var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);
+                var extension = new NoSelectionExtension("{{feature}}", {{orchestratorExitCode}});
+                testApplicationBuilder.CommandLine.AddProvider(() => extension);
+                {{registerOrchestrator}}
+                """,
+                StringComparison.Ordinal);
+            File.WriteAllText(
+                programPath,
+                """
+                #pragma warning disable TPEXP
+                using Microsoft.Testing.Platform.CommandLine;
+                using Microsoft.Testing.Platform.Extensions;
+                using Microsoft.Testing.Platform.Extensions.CommandLine;
+                using Microsoft.Testing.Platform.Extensions.TestHostOrchestrator;
+
+                """ + Environment.NewLine + program + Environment.NewLine + """
+                public sealed class NoSelectionExtension(string feature, int exitCode)
+                    : ITestHostExecutionOrchestrator, ICommandLineOptionsProvider
+                {
+                    public string Uid => feature;
+                    public string Version => "1.0.0";
+                    public string DisplayName => feature;
+                    public string Description => feature;
+                    public Task<bool> IsEnabledAsync() => Task.FromResult(true);
+                    public Task<int> OrchestrateTestHostExecutionAsync(CancellationToken cancellationToken)
+                        => Task.FromResult(exitCode);
+                    public IReadOnlyCollection<CommandLineOption> GetCommandLineOptions() =>
+                    [
+                        new("affected-tests", "Select affected tests.", ArgumentArity.Zero, isHidden: false),
+                        new("collect-test-map", "Collect test mappings.", ArgumentArity.Zero, isHidden: false),
+                    ];
+                    public Task<ValidationResult> ValidateOptionArgumentsAsync(CommandLineOption commandOption, string[] arguments)
+                        => ValidationResult.ValidTask;
+                    public Task<ValidationResult> ValidateCommandLineOptionsAsync(ICommandLineOptions commandLineOptions)
+                        => ValidationResult.ValidTask;
+                }
+                """);
         }
 
         [TestMethod]
@@ -311,6 +352,120 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        [DataRow(null, null)]
+        [DataRow("all", "all")]
+        [DataRow("all", "none")]
+        [DataRow("none", "all")]
+        [DataRow("none", "none")]
+        public void RunCapturedOutputHonorsDefaultAndIndependentOverrides(string? stdoutMode, string? stderrMode)
+        {
+            TestAsset testInstance = TestAssetsManager
+                .CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+                .WithSource();
+            File.WriteAllText(
+                Path.Join(testInstance.Path, "TestProject", "UnitTest1.cs"),
+                """
+                namespace TestProject;
+
+                [TestClass]
+                public class UnitTest1
+                {
+                    [TestMethod]
+                    public void PassingTest()
+                    {
+                        Console.WriteLine("captured stdout PassingTest");
+                        Console.Error.WriteLine("captured stderr PassingTest");
+                    }
+
+                    [TestMethod]
+                    public void SkippedTest()
+                    {
+                        Console.WriteLine("captured stdout SkippedTest");
+                        Console.Error.WriteLine("captured stderr SkippedTest");
+                        Assert.Inconclusive("intentional skip");
+                    }
+
+                    [TestMethod]
+                    public void FailingTest()
+                    {
+                        Console.WriteLine("captured stdout FailingTest");
+                        Console.Error.WriteLine("captured stderr FailingTest");
+                        Assert.Fail("intentional failure");
+                    }
+                }
+                """);
+            List<string> arguments =
+            [
+                "--project", Path.Join("TestProject", "TestProject.csproj"),
+                "-c", TestingConstants.Debug,
+                "--output", "detailed",
+                "--no-ansi", "--no-progress",
+            ];
+            if (stdoutMode is not null)
+            {
+                arguments.AddRange(["--show-stdout", stdoutMode]);
+            }
+            if (stderrMode is not null)
+            {
+                arguments.AddRange(["--show-stderr", stderrMode]);
+            }
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en")
+                .Execute([.. arguments]);
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+            string output = result.StdOut!;
+            output.Should().Contain("Test run summary: Failed!")
+                .And.Contain("total: 3")
+                .And.Contain("failed: 1")
+                .And.Contain("succeeded: 1")
+                .And.Contain("skipped: 1");
+            foreach (string testName in new[] { "PassingTest", "SkippedTest", "FailingTest" })
+            {
+                Match block = Regex.Match(
+                    output,
+                    $@"(?ms)^(?:passed|failed|skipped) [^\r\n]*\b{testName}\b[^\r\n]*\r?\n.*?(?=^(?:passed|failed|skipped) |\z)");
+                block.Success.Should().BeTrue($"the result for {testName} must remain visible");
+                bool isFailed = testName == "FailingTest";
+                AssertStream("stdout", "Standard output", stdoutMode);
+                AssertStream("stderr", "Error output", stderrMode);
+
+                void AssertStream(string stream, string heading, string? mode)
+                {
+                    string payload = $"captured {stream} {testName}";
+                    if (mode == "all" || (mode is null or "failed" && isFailed))
+                    {
+                        block.Value.Should().Contain(payload).And.Contain(heading);
+                    }
+                    else
+                    {
+                        block.Value.Should().NotContain(payload).And.NotContain(heading);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        [DataRow("--show-stdout")]
+        [DataRow("--show-stderr")]
+        public void RunCapturedOutputInvalidModeRetainsTestApplicationDiagnostic(string option)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en")
+                .Execute("-c", TestingConstants.Debug, option, "invalid");
+
+            result.ExitCode.Should().Be(TestExitCode.InvalidCommandLine);
+            (result.StdOut + result.StdErr).Should().Contain(option)
+                .And.Contain("expect a single parameter with value 'All', 'Failed', or 'None'");
         }
 
         [TestMethod]

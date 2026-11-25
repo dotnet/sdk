@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.Globalization;
@@ -34,13 +35,15 @@ internal partial class MicrosoftTestingPlatformTestCommand
     private const string RetryFailedTestsOptionName = "--retry-failed-tests";
     private const string ShowFlakyTestsOptionName = "--show-flaky-tests";
     private const string ShowSlowestTestsOptionName = "--show-slowest-tests";
+    private const string ShowStdoutOptionName = "--show-stdout";
+    private const string ShowStderrOptionName = "--show-stderr";
     private const string ShowTestResultsOptionName = "--show-test-results";
     private const string TestConfigurationFileSuffix = ".testconfig.json";
     private const string TestingPlatformExitCodeIgnoreEnvironmentVariable = "TESTINGPLATFORM_EXITCODE_IGNORE";
     private const string ZeroTestsPolicyOptionName = "--zero-tests-policy";
     private const string ZeroTestsPolicyStrictArgument = "strict";
 
-    public int Run(ParseResult parseResult, bool isHelp)
+    public int Run(ParseResult parseResult, bool isHelp, CancellationToken cancellationToken)
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
         string invocationWorkingDirectory = Directory.GetCurrentDirectory();
@@ -102,7 +105,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
 #if CLI_AOT
         var testHandler = new TestModulesFilterHandler(buildOptions.PathOptions.TestModules!, parseResult);
-        if (!testHandler.Initialize())
+        if (!testHandler.Initialize(cancellationToken))
         {
             return ExitCode.GenericFailure;
         }
@@ -157,7 +160,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 : RuntimeFeature.IsDynamicCodeSupported ? new MSBuildHandler(buildOptions, buildSession)
                     : throw new PlatformNotSupportedException("Dynamic code is not supported on this platform.");
 
-            if (!testHandler.Initialize())
+            if (!testHandler.Initialize(cancellationToken))
             {
                 return ExitCode.GenericFailure;
             }
@@ -771,7 +774,15 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 effectiveArguments,
                 configurationSettings.ShowFlakyTests),
             HasForwardedOption(effectiveArguments, RetryFailedTestsOptionName)
-                || configurationSettings.RetryFailedTests);
+                || configurationSettings.RetryFailedTests,
+            GetShowOutputMode(
+                effectiveArguments,
+                ShowStdoutOptionName,
+                configurationSettings.ShowStdout),
+            GetShowOutputMode(
+                effectiveArguments,
+                ShowStderrOptionName,
+                configurationSettings.ShowStderr));
     }
 
     internal static IReadOnlyList<string> GetEffectiveTestApplicationArguments(TestModule? module, BuildOptions buildOptions)
@@ -902,15 +913,19 @@ internal partial class MicrosoftTestingPlatformTestCommand
                     ? GetConfigurationOption(commandLineOptions, optionName)
                     : default;
 
+            ConfigurationOption GetOptionOrDefault(string optionName)
+            {
+                ConfigurationOption option = GetOption(optionName);
+                return !option.IsSpecified && hasCommandLineOptionDefaults
+                    ? GetConfigurationOption(commandLineOptionDefaults, optionName)
+                    : option;
+            }
+
             ConfigurationOption zeroTestsPolicy = GetOption(ZeroTestsPolicyOptionName);
             ConfigurationOption ignoredExitCodes = GetOption(IgnoreExitCodeOptionName);
-            ConfigurationOption showTestResults = GetOption(ShowTestResultsOptionName);
-            if (!showTestResults.IsSpecified && hasCommandLineOptionDefaults)
-            {
-                showTestResults = GetConfigurationOption(
-                    commandLineOptionDefaults,
-                    ShowTestResultsOptionName);
-            }
+            ConfigurationOption showTestResults = GetOptionOrDefault(ShowTestResultsOptionName);
+            ConfigurationOption showStdout = GetOptionOrDefault(ShowStdoutOptionName);
+            ConfigurationOption showStderr = GetOptionOrDefault(ShowStderrOptionName);
             ConfigurationOption showSlowestTests = GetOption(ShowSlowestTestsOptionName);
             ConfigurationOption showFlakyTests = GetOption(ShowFlakyTestsOptionName);
             ConfigurationOption retryFailedTests = GetOption(RetryFailedTestsOptionName);
@@ -935,7 +950,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 retryFailedTests.IsSpecified &&
                     retryFailedTests.Enabled &&
                     retryFailedTests.Values.Count == 0,
-                output.Values is [string outputValue] ? outputValue : null);
+                output.Values is [string outputValue] ? outputValue : null,
+                showStdout.Enabled ? showStdout.Values : null,
+                showStderr.Enabled ? showStderr.Values : null);
         }
         catch (Exception exception) when (
             exception is IOException or UnauthorizedAccessException or JsonException or ArgumentException or NotSupportedException)
@@ -1014,7 +1031,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
         IReadOnlyList<string>? ShowSlowestTests,
         bool? ShowFlakyTests,
         bool RetryFailedTests,
-        string? Output);
+        string? Output,
+        IReadOnlyList<string>? ShowStdout,
+        IReadOnlyList<string>? ShowStderr);
 
     private static bool TryGetProperty(
         JsonElement element,
@@ -1201,6 +1220,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
         }
 
         bool inCI = new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
+        bool contextualModuleOutput = ShouldUseContextualModuleOutput(
+            Environment.GetEnvironmentVariable("TF_BUILD"), degreeOfParallelism, testOptions);
 
         AnsiMode ansiMode = AnsiMode.AnsiIfPossible;
         // In LLM environments, prefer simple text output so that LLM can parse it easily.
@@ -1223,12 +1244,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
             AnsiMode = ansiMode,
             ShowAssembly = !isJsonDiscovery,
             ShowAssemblyStartAndComplete = !isJsonDiscovery,
+            ContextualModuleOutput = contextualModuleOutput,
+            ModuleDisplayName = contextualModuleOutput ? CreateModuleDisplayNameSelector([.. testModules]) : null,
             MinimumExpectedTests = parseResult.GetValue(definition.MinimumExpectedTestsOption),
             AllowZeroTests = testOptions.IsAffectedTestsMode,
             CollectTestMap = testOptions.CollectTestMap,
             ListTestsFormat = testOptions.ListTestsFormat,
             SlowestTestsCount = fallbackSettings.SlowestTestsCount,
             ShowFlakyTests = fallbackSettings.ShowFlakyTests,
+            ShowStdout = fallbackSettings.ShowStdout,
+            ShowStderr = fallbackSettings.ShowStderr,
             HeartbeatSilenceThreshold = GetProgressThreshold(Environment.GetEnvironmentVariable("MTP_PROGRESS_SILENCE_SECONDS")),
             SlowTestThreshold = GetProgressThreshold(Environment.GetEnvironmentVariable("MTP_PROGRESS_SLOW_TEST_SECONDS")),
         });
@@ -1243,6 +1268,28 @@ internal partial class MicrosoftTestingPlatformTestCommand
         bool isRetry = fallbackSettings.LegacyRetryEnabled;
         output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, testOptions.IsDiscovery, testOptions.IsHelp, isRetry);
         return output;
+    }
+
+    internal static bool ShouldUseContextualModuleOutput(string? azurePipelines, int degreeOfParallelism, TestOptions testOptions)
+        => bool.TryParse(azurePipelines, out bool enabled) && enabled && degreeOfParallelism > 1 &&
+            !testOptions.IsHelp && !testOptions.IsDiscovery && !testOptions.CollectTestMap;
+
+    internal static Func<string, string?, string> CreateModuleDisplayNameSelector(TestModule[] modules)
+    {
+        var names = new ConcurrentDictionary<(string Assembly, string? TargetFramework), string>();
+        return (assembly, targetFramework) => names.GetOrAdd((assembly, targetFramework), key =>
+        {
+            string name = Path.GetFileNameWithoutExtension(key.Assembly);
+            int matchingPaths = modules
+                .Where(module => FileUtilities.PathComparer.Equals(Path.GetFileNameWithoutExtension(module.TargetPath), name) &&
+                    (key.TargetFramework is null || module.TargetFramework is null ||
+                     string.Equals(key.TargetFramework, module.TargetFramework, StringComparison.OrdinalIgnoreCase)))
+                .Select(module => module.TargetPath)
+                .Distinct(FileUtilities.PathComparer)
+                .Take(2)
+                .Count();
+            return matchingPaths > 1 ? key.Assembly : name;
+        });
     }
 
     internal static TimeSpan GetProgressThreshold(string? value)
@@ -1271,6 +1318,35 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
     internal static bool IsLegacyRetryOptionEnabled(IReadOnlyList<string> arguments)
         => HasForwardedOption(arguments, RetryFailedTestsOptionName);
+
+    private static OutputShowMode GetShowOutputMode(
+        IReadOnlyList<string> arguments,
+        string optionName,
+        IReadOnlyList<string>? configuredValues)
+    {
+        bool hasExplicitOption = HasForwardedOption(arguments, optionName);
+        string? value = hasExplicitOption
+            ? GetForwardedOptionValue(arguments, optionName)
+            : configuredValues is [string configuredValue] ? configuredValue : null;
+        if (value is null && !hasExplicitOption && configuredValues is null)
+        {
+            return OutputShowMode.Failed;
+        }
+
+        switch (value?.ToLowerInvariant())
+        {
+            case "all":
+                return OutputShowMode.All;
+            case "failed":
+                return OutputShowMode.Failed;
+            case "none":
+                return OutputShowMode.None;
+            default:
+                // The test application owns validation of forwarded options and reports the error.
+                Logger.LogTrace($"Invalid '{optionName}' arguments while reconstructing captured-output policy.");
+                return OutputShowMode.Failed;
+        }
+    }
 
     internal static TestResultVisibility GetTestResultVisibility(
         OutputOptions output,

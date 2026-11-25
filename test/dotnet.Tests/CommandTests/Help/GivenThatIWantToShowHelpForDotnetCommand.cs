@@ -81,6 +81,23 @@ Run 'dotnet [command] --help' for more information on a command.";
         }
 
         [TestMethod]
+        [DataRow("reference", "Add, remove, or list ProjectReferences for a .NET project.")]
+        [DataRow("reference add", "Add a project-to-project reference to the project.")]
+        [DataRow("reference list", "List all project-to-project references of the project.")]
+        [DataRow("reference remove", "Remove a project-to-project reference from the project.")]
+        public void ReferenceHelpPrintsTheCommandDescription(string commandLine, string description)
+        {
+            var result = new DotnetCommand(Log)
+                .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "false")
+                .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+                .Execute([.. commandLine.Split(' '), "--help"]);
+
+            result.Should().Pass();
+            result.StdOut.Should().ContainVisuallySameFragment(
+                $"Description:{Environment.NewLine}  {description}");
+        }
+
+        [TestMethod]
         public void WhenInvalidCommandIsPassedToDotnetHelpItPrintsError()
         {
             var cmd = new DotnetCommand(Log)

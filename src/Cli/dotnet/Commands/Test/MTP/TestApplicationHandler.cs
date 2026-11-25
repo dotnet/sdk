@@ -19,11 +19,15 @@ internal sealed class TestApplicationHandler
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation;
     private readonly TestRunPolicy? _testRunPolicy;
     private readonly TestApplicationSettings _testApplicationSettings;
+    private readonly CancellationTokenSource? _liveOutputCancellation;
+    private readonly CancellationToken _liveOutputToken;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
     private readonly HashSet<string> _coverageSummaryInstances = new(StringComparer.Ordinal);
 
-    private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
+    private (string? RuntimeFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
+    private string? _targetFramework;
+    private string? _architecture;
     private string? _reportedModulePath;
     private bool _receivedTestHostHandshake;
     private bool _receivedAffectedTestsOrchestratorHandshake;
@@ -31,6 +35,7 @@ internal sealed class TestApplicationHandler
     private bool _handshakeRejected;
     private bool _retryEnabled;
     private bool _postProcessorSupportsCoverageSummary;
+    private int _liveOutputClosed;
 
     public TestApplicationHandler(
         TerminalTestReporter output,
@@ -48,7 +53,14 @@ internal sealed class TestApplicationHandler
         _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
         _testRunPolicy = testRunPolicy;
         _testApplicationSettings = testApplicationSettings ?? TestApplicationSettings.Default;
+        if (output.ContextualModuleOutput)
+        {
+            _liveOutputCancellation = new CancellationTokenSource();
+            _liveOutputToken = _liveOutputCancellation.Token;
+        }
+
         _retryEnabled = _testApplicationSettings.LegacyRetryEnabled;
+        _targetFramework = string.IsNullOrWhiteSpace(module.TargetFramework) ? null : module.TargetFramework;
     }
 
     /// <summary>
@@ -85,8 +97,8 @@ internal sealed class TestApplicationHandler
         }
 
         var arch = architecture!.ToLowerInvariant();
-        var tfm = TargetFrameworkParser.GetShortTargetFramework(framework);
-        var currentHandshakeInfo = (tfm, arch, executionId!);
+        var runtimeFramework = TargetFrameworkParser.GetShortTargetFramework(framework);
+        var currentHandshakeInfo = (runtimeFramework, arch, executionId!);
 
         if (_options.IsArtifactPostProcessing
             && hostType != HandshakeMessageHostTypes.ArtifactPostProcessor)
@@ -110,11 +122,22 @@ internal sealed class TestApplicationHandler
         if (!_handshakeInfo.HasValue)
         {
             _handshakeInfo = currentHandshakeInfo;
+            Volatile.Write(ref _architecture, arch);
         }
         else if (_handshakeInfo.Value != currentHandshakeInfo)
         {
             ReportHandshakeFailure(string.Format(CliCommandStrings.MismatchingHandshakeInfo, currentHandshakeInfo, _handshakeInfo.Value));
             return false;
+        }
+
+        // Project metadata wins; otherwise the first test host can refine a provisional orchestrator TFM.
+        // Keep that test-host identity stable across retries.
+        if (!_receivedTestHostHandshake && string.IsNullOrWhiteSpace(_module.TargetFramework) &&
+            (_targetFramework is null || hostType == HandshakeMessageHostTypes.TestHost) &&
+            handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.TargetFramework, out string? targetFramework) &&
+            !string.IsNullOrWhiteSpace(targetFramework))
+        {
+            Volatile.Write(ref _targetFramework, targetFramework);
         }
 
         if (hostType == HandshakeMessageHostTypes.TestHost)
@@ -135,12 +158,13 @@ internal sealed class TestApplicationHandler
             var handshakeInfo = _handshakeInfo.Value;
             _output.AssemblyRunStarted(
                 _module.TargetPath,
-                handshakeInfo.TargetFramework,
+                _targetFramework,
                 handshakeInfo.Architecture,
                 handshakeInfo.ExecutionId,
                 instanceId!,
                 attemptNumber,
-                _testApplicationSettings with { LegacyRetryEnabled = _retryEnabled });
+                _testApplicationSettings with { LegacyRetryEnabled = _retryEnabled },
+                handshakeInfo.RuntimeFramework);
         }
 
         // Validate the optional ExecutionMode property last (after AssemblyRunStarted) so that any
@@ -192,7 +216,7 @@ internal sealed class TestApplicationHandler
 
             _artifactPostProcessingManager?.RecordCapabilities(
                 _module,
-                _module.TargetFramework ?? tfm,
+                _targetFramework,
                 arch,
                 handshakeMessage);
         }
@@ -395,7 +419,7 @@ internal sealed class TestApplicationHandler
 
         foreach (var testResult in testResultMessage.SuccessfulTestMessages)
         {
-            _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+            _output.TestCompleted(_module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
                 instanceId,
                 ValidateRequiredMessageProperty(testResult.Uid, nameof(SuccessfulTestResultMessage.Uid), nameof(SuccessfulTestResultMessage)),
                 ValidateRequiredMessageProperty(testResult.DisplayName, nameof(SuccessfulTestResultMessage.DisplayName), nameof(SuccessfulTestResultMessage)),
@@ -411,7 +435,7 @@ internal sealed class TestApplicationHandler
 
         foreach (var testResult in testResultMessage.FailedTestMessages)
         {
-            _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+            _output.TestCompleted(_module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
                 instanceId,
                 ValidateRequiredMessageProperty(testResult.Uid, nameof(FailedTestResultMessage.Uid), nameof(FailedTestResultMessage)),
                 ValidateRequiredMessageProperty(testResult.DisplayName, nameof(FailedTestResultMessage.DisplayName), nameof(FailedTestResultMessage)),
@@ -468,7 +492,7 @@ internal sealed class TestApplicationHandler
         {
             _output.TestInProgress(
                 _module.TargetPath,
-                handshakeInfo.TargetFramework,
+                _targetFramework,
                 handshakeInfo.Architecture,
                 handshakeInfo.ExecutionId,
                 instanceId,
@@ -522,7 +546,7 @@ internal sealed class TestApplicationHandler
                 _output.CoverageArtifactReplaced(fullPath);
                 _artifactPostProcessingInvocation.RecordOutput(
                     _module,
-                    handshakeInfo.TargetFramework,
+                    _targetFramework,
                     handshakeInfo.Architecture,
                     handshakeInfo.ExecutionId,
                     artifact with
@@ -535,16 +559,14 @@ internal sealed class TestApplicationHandler
             {
                 _artifactPostProcessingManager?.RecordArtifact(
                     _module,
-                    // The handshake describes the running framework, not the assembly's target.
-                    // A --test-modules run may roll forward or target a platform-specific TFM.
-                    _module.TargetFramework,
+                    _targetFramework,
                     handshakeInfo.Architecture,
                     handshakeInfo.ExecutionId,
                     artifact with { FullPath = fullPath },
                     _reportedModulePath);
                 _output.ArtifactAdded(
                     outOfProcess: false,
-                    _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+                    _module.TargetPath, _targetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
                     artifact.TestDisplayName, fullPath, fileArtifactMessages.InstanceId, artifact.SessionUid);
             }
         }
@@ -656,6 +678,12 @@ internal sealed class TestApplicationHandler
         // lenient about missing/empty content (we simply skip it) instead of failing the run.
         if (!string.IsNullOrEmpty(azureDevOpsLogMessage.LogText))
         {
+            if (_output.ContextualModuleOutput)
+            {
+                WriteModuleMessage(azureDevOpsLogMessage.LogText);
+                return;
+            }
+
             // WriteMessage appends the payload verbatim without a trailing newline (the process-output streaming
             // path supplies its own newlines). An Azure DevOps logging command must sit on its own line to be
             // recognized, so terminate the line here without otherwise altering the payload.
@@ -672,6 +700,18 @@ internal sealed class TestApplicationHandler
         // a handshake and we stay lenient about missing content.
         if (string.IsNullOrEmpty(displayMessage.Text))
         {
+            return;
+        }
+
+        if (_output.ContextualModuleOutput)
+        {
+            SystemConsoleColor? color = displayMessage.Level switch
+            {
+                DisplayMessageLevels.Warning => new SystemConsoleColor { ConsoleColor = ConsoleColor.Yellow },
+                DisplayMessageLevels.Error => new SystemConsoleColor { ConsoleColor = ConsoleColor.Red },
+                _ => null,
+            };
+            WriteModuleMessage(displayMessage.Text, color);
             return;
         }
 
@@ -733,9 +773,58 @@ internal sealed class TestApplicationHandler
     {
         if (!string.IsNullOrEmpty(text))
         {
-            _output.WriteMessage(text);
+            if (_output.ContextualModuleOutput)
+            {
+                WriteModuleMessage(text);
+            }
+            else
+            {
+                _output.WriteMessage(text);
+            }
         }
     }
+
+    internal void WriteLiveMessage(string text)
+    {
+        if (_output.ContextualModuleOutput)
+        {
+            WriteModuleMessage(text, cancellationToken: _liveOutputToken);
+        }
+        else
+        {
+            WriteMessage(text);
+        }
+    }
+
+    internal void CloseLiveOutput(bool timedOut)
+    {
+        if (_liveOutputCancellation is null || Interlocked.Exchange(ref _liveOutputClosed, 1) != 0)
+        {
+            return;
+        }
+
+        _liveOutputCancellation.Cancel();
+        try
+        {
+            if (timedOut)
+            {
+                WriteModuleMessage(CliCommandStrings.TestApplicationOutputStreamTimeout);
+            }
+        }
+        finally
+        {
+            _liveOutputCancellation.Dispose();
+        }
+    }
+
+    private void WriteModuleMessage(string text, SystemConsoleColor? color = null, CancellationToken cancellationToken = default) =>
+        _output.WriteModuleMessage(
+            _module.TargetPath ?? _module.ProjectFullPath ?? string.Empty,
+            Volatile.Read(ref _targetFramework),
+            Volatile.Read(ref _architecture),
+            text,
+            color,
+            cancellationToken);
 
     internal void OnTestProcessExited(int exitCode, string outputData, string errorData)
     {
@@ -772,8 +861,9 @@ internal sealed class TestApplicationHandler
         {
             _output.AssemblyRunNotSelected(
                 _module.TargetPath ?? _module.ProjectFullPath ?? string.Empty,
-                _handshakeInfo?.TargetFramework ?? _module.TargetFramework,
-                _handshakeInfo?.Architecture);
+                _targetFramework,
+                _handshakeInfo?.Architecture,
+                _handshakeInfo?.RuntimeFramework);
         }
 
         LogTestProcessExit(exitCode, outputData, errorData);

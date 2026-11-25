@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -18,6 +19,9 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
 #pragma warning disable CA2213 // Disposable fields should be disposed
         private PooledDictionary<TKey, TValue> _coreAnalysisData;
 #pragma warning restore
+
+        internal event Action<TKey, bool>? KeySetChanged;
+        internal event Action? KeysCleared;
 
         public DictionaryAnalysisData()
         {
@@ -45,7 +49,12 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             set
             {
                 Debug.Assert(!IsDisposed);
+                var previousCount = _coreAnalysisData.Count;
                 _coreAnalysisData[key] = value;
+                if (_coreAnalysisData.Count != previousCount)
+                {
+                    KeySetChanged?.Invoke(key, true);
+                }
             }
         }
 
@@ -85,18 +94,20 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         {
             Debug.Assert(!IsDisposed);
             _coreAnalysisData.Add(key, value);
+            KeySetChanged?.Invoke(key, true);
         }
 
         public void Add(KeyValuePair<TKey, TValue> item)
         {
             Debug.Assert(!IsDisposed);
-            _coreAnalysisData.Add(item.Key, item.Value);
+            Add(item.Key, item.Value);
         }
 
         public void Clear()
         {
             Debug.Assert(!IsDisposed);
             _coreAnalysisData.Clear();
+            KeysCleared?.Invoke();
         }
 
         public bool Contains(KeyValuePair<TKey, TValue> item)
@@ -126,7 +137,13 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         public bool Remove(TKey key)
         {
             Debug.Assert(!IsDisposed);
-            return _coreAnalysisData.Remove(key);
+            var removed = _coreAnalysisData.Remove(key);
+            if (removed)
+            {
+                KeySetChanged?.Invoke(key, false);
+            }
+
+            return removed;
         }
 
         public bool Remove(KeyValuePair<TKey, TValue> item)
@@ -160,6 +177,8 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             {
                 _coreAnalysisData.Dispose();
                 _coreAnalysisData = null!;
+                KeySetChanged = null;
+                KeysCleared = null;
             }
 
             base.Dispose(disposing);

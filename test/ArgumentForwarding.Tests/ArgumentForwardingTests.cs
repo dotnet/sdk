@@ -172,7 +172,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             var commandResult = CommandFactoryUsingResolver.Create("dotnet", new[] { ReflectorPath }.Concat(rawEvaluatedArgument))
                 .CaptureStdErr()
                 .CaptureStdOut()
-                .Execute();
+                .Execute(TestContext.CancellationToken);
 
             Console.WriteLine($"STDOUT: {commandResult.StdOut}");
 
@@ -197,7 +197,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             var commandResult = cmd
                 .CaptureStdErr()
                 .CaptureStdOut()
-                .Execute();
+                .Execute(TestContext.CancellationToken);
 
             Console.WriteLine(commandResult.StdOut);
             Console.WriteLine(commandResult.StdErr);

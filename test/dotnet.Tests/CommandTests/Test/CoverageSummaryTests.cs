@@ -97,6 +97,124 @@ public class CoverageSummaryTests
     }
 
     [TestMethod]
+    public void ContextualSummary_SeparatesScopedCoverageAndArtifactsBeforeTheVerdict()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ShowProgress = false,
+            ContextualModuleOutput = true,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 2, isDiscovery: false, isHelp: false, isRetry: false);
+        foreach (string executionId in new[] { "first", "second" })
+        {
+            reporter.AssemblyRunStarted($"{executionId}.Tests.dll", "net10.0", "x64", executionId, "instance");
+            reporter.TestSessionStarted(executionId, "session");
+            reporter.TestSessionEnded(executionId, "session");
+        }
+
+        AddSummary(reporter, "first", 12, 186);
+        AddSummary(reporter, "second", 184, 186);
+        reporter.ArtifactAdded(false, "first.Tests.dll", "net10.0", "x64", "first", null, "original.trx");
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        string output = console.GetOutput();
+        int groupStart = output.IndexOf("##[group]", StringComparison.Ordinal);
+        int groupEnd = output.IndexOf("##[endgroup]", StringComparison.Ordinal);
+        int coverage = output.IndexOf(CliCommandStrings.CodeCoverageSummary, StringComparison.Ordinal);
+        int coverageEnd = output.IndexOf("##[endgroup]", coverage, StringComparison.Ordinal);
+        int artifact = output.IndexOf("original.trx", StringComparison.Ordinal);
+        int verdict = output.LastIndexOf("Test run summary:", StringComparison.Ordinal);
+        int artifactGroup = output.IndexOf("##[group]Artifacts: 1", StringComparison.Ordinal);
+        groupStart.Should().BeGreaterThanOrEqualTo(0);
+        coverage.Should().BeGreaterThan(groupEnd).And.BeLessThan(verdict);
+        coverageEnd.Should().BeGreaterThan(coverage);
+        artifactGroup.Should().BeGreaterThan(coverageEnd).And.BeLessThan(verdict);
+        artifact.Should().BeGreaterThan(artifactGroup).And.BeLessThan(verdict);
+        output.Should().Contain($"##[group]{CliCommandStrings.CodeCoverageSummary}");
+        verdict.Should().BeGreaterThan(output.LastIndexOf("##[endgroup]", StringComparison.Ordinal));
+        output.Split(CliCommandStrings.CodeCoverageSummary, StringSplitOptions.None).Should().HaveCount(2);
+        output.Should().Contain("first.Tests.dll (instance|session) - Line: 6.5%")
+            .And.Contain("second.Tests.dll (instance|session) - Line: 98.9%")
+            .And.NotContain(CliCommandStrings.NoAffectedTestsSelected)
+            .And.NotContain("Total -");
+    }
+
+    [TestMethod]
+    public void ContextualSummary_ShowsOnlyTrustedCoverageTotalsInTheGroupHeading()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ShowProgress = false,
+            ContextualModuleOutput = true,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 2, isDiscovery: false, isHelp: false, isRetry: false);
+        foreach (string executionId in new[] { "first", "second" })
+        {
+            reporter.AssemblyRunStarted($"{executionId}.Tests.dll", "net10.0", "x64", executionId, "instance");
+            reporter.TestSessionStarted(executionId, "session");
+            reporter.TestSessionEnded(executionId, "session");
+        }
+
+        AddSummary(reporter, "first", 12, 186);
+        AddSummary(reporter, "second", 184, 186);
+        AddMergedSummary(reporter, complete: true, "first", "second");
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain($"##[group]{CliCommandStrings.CodeCoverageSummary} Line: 98.9%")
+            .And.NotContain("52.7%");
+    }
+
+    [TestMethod]
+    public void ContextualSummary_ExcludesScopedMetricsFromOverallHeading()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ShowProgress = false,
+            ContextualModuleOutput = true,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 2, isDiscovery: false, isHelp: false, isRetry: false);
+        reporter.AssemblyRunStarted("first.Tests.dll", "net10.0", "x64", "first", "instance");
+        reporter.TestSessionStarted("first", "session");
+        reporter.TestSessionEnded("first", "session");
+        AddSummary(reporter, "first", 1, 2);
+        reporter.CoverageSummaryAdded("first.Tests.dll", "first", "instance",
+            [Summary(1, 1) with { ScopeLevel = 1, ScopeName = "Library" }]);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        string output = console.GetOutput();
+        output.Should().Contain($"##[group]{CliCommandStrings.CodeCoverageSummary} Line: 50.0%{Environment.NewLine}")
+            .And.Contain("first.Tests.dll: Library (instance|session) - Line: 100.0%");
+    }
+
+    [TestMethod]
+    public void ContextualOutput_WithRunSummarySuppressed_DoesNotPrintSubsetCounts()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ShowProgress = false,
+            ContextualModuleOutput = true,
+            ShowRunSummary = false,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 2, isDiscovery: false, isHelp: false, isRetry: true);
+        reporter.AssemblyRunStarted("first.Tests.dll", "net10.0", "x64", "first", "instance");
+        reporter.ArtifactAdded(false, "first.Tests.dll", "net10.0", "x64", "first", null, "original.trx");
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain("original.trx")
+            .And.NotContain("##[group]")
+            .And.NotContain("Test run summary:")
+            .And.NotContain("total:");
+    }
+
+    [TestMethod]
     public void CompleteMerge_UsesMergedCountsRatherThanSummingOverlappingApplications()
     {
         var console = new CapturingConsole();

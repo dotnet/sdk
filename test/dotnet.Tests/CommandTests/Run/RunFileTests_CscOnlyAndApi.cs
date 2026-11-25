@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Security;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
-using FluentAssertions.Execution;
+using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.NuGet;
@@ -182,8 +182,14 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 
         var expectedStdOut = "hello";
 
+        // The automatic artifacts cleanup runs as a detached process that inherits TMP and can still hold
+        // files inside the temp directory after `dotnet run` exits, which makes Directory.Move fail on Windows.
+        // See https://github.com/dotnet/sdk/issues/57158.
+        const string disableAutomaticCleanup = "DOTNET_CLI_DISABLE_FILE_BASED_APP_ARTIFACTS_AUTOMATIC_CLEANUP";
+
         Directory.CreateDirectory(tmpDir1);
         new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithEnvironmentVariable(disableAutomaticCleanup, "true")
             .WithEnvironmentVariable("TMP", tmpDir1)
             .WithEnvironmentVariable("TMPDIR", tmpDir1)
             .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir1)
@@ -195,6 +201,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         Directory.Move(tmpDir1, tmpDir2);
 
         new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithEnvironmentVariable(disableAutomaticCleanup, "true")
             .WithEnvironmentVariable("TMP", tmpDir2)
             .WithEnvironmentVariable("TMPDIR", tmpDir2)
             .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir2)
@@ -2616,7 +2623,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
     /// even after being evicted from MSBuild's strong cache (LRU of size N).
     /// We force eviction via <c>MSBUILDPROJECTROOTELEMENTCACHESIZE=1</c>
     /// and trigger GC via an inline task during NuGet restore.
-    /// Without the fix (strong reference in <c>VirtualProjectBuilder._projectRootElement</c>),
+    /// Without the strong references held by the project collection wrapper,
     /// this fails with MSB4025 "The project file could not be loaded".
     /// </summary>
     [TestMethod]

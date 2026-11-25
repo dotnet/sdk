@@ -77,6 +77,11 @@
         <target state="translated">安装 .NET 工具包时允许包降级。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ArtifactCount">
+        <source>Artifacts: {0}</source>
+        <target state="new">Artifacts: {0}</target>
+        <note>Heading for a group of test artifacts. {0} is the number of artifacts.</note>
+      </trans-unit>
       <trans-unit id="ArtifactPostProcessingConnectionFailed">
         <source>The artifact worker's reporting connection did not complete successfully.</source>
         <target state="new">The artifact worker's reporting connection did not complete successfully.</target>
@@ -3130,6 +3135,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">指向 &lt;application&gt;.runtimeconfig.json 文件的路径。</target>
         <note />
       </trans-unit>
+      <trans-unit id="RuntimeFramework">
+        <source>runtime: {0}</source>
+        <target state="new">runtime: {0}</target>
+        <note>Additional runtime information after the test assembly's target framework and process architecture. {0} is a compact runtime moniker such as net481 or net9.0.</note>
+      </trans-unit>
       <trans-unit id="RuntimePropertyNotFound">
         <source>Runtime property 'HOSTFXR_PATH' was not set or empty.</source>
         <target state="translated">未设置运行时属性“HOSTFXR_PATH”或该属性为空。</target>
@@ -3462,6 +3472,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="new">[slow] still running after {0}: {1}</target>
         <note>{0} is the elapsed duration, {1} is the test description. {Locked="[slow]"}</note>
       </trans-unit>
+      <trans-unit id="TestApplicationOutputStreamTimeout">
+        <source>Warning: Process output may be incomplete because its streams did not close in time.</source>
+        <target state="new">Warning: Process output may be incomplete because its streams did not close in time.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
         <target state="translated">... 输出已截断，省略 {0} 行 ...</target>
@@ -3701,11 +3716,6 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <target state="translated">PATH</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="translated">NuGet 配置文件“{0}”不存在。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
         <source>A package ID was not specified for tool installation.</source>
         <target state="translated">未指定用于工具安装的包 ID。</target>
@@ -3840,7 +3850,12 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
         <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">在 nuget.org 中搜索 dotnet 工具</target>
+        <target state="needs-review-translation">在 nuget.org 中搜索 dotnet 工具</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchNoSourcesConfigured">
+        <source>No NuGet package sources are configured or enabled.</source>
+        <target state="new">No NuGet package sources are configured or enabled.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">
@@ -3866,6 +3881,11 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
       <trans-unit id="ToolSearchSkipDescription">
         <source>The number of results to skip, for pagination.</source>
         <target state="translated">用于分页的要跳过的结果数。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSourceDoesNotSupportPackageTypeFiltering">
+        <source>The source '{0}' does not support searching by package type and cannot be used for .NET tool search.</source>
+        <target state="new">The source '{0}' does not support searching by package type and cannot be used for .NET tool search.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchTakeArgumentName">

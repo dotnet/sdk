@@ -111,6 +111,12 @@ internal static class HandshakeMessagePropertyNames
 
     // Independently negotiated so coverage does not enable the 1.4 server-control protocol.
     internal const byte CoverageSummaryVersion = 20;
+
+    // Optional assembly target metadata, independent of the runtime in Framework.
+    internal const byte TargetFramework = 21;
+
+    // The SDK can receive TestInProgressMessages even when protocol 1.0 is negotiated.
+    internal const byte TestInProgressSupported = 22;
 }
 
 internal static class HandshakeMessageExecutionModes

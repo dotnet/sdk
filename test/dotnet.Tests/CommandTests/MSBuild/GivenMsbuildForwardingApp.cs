@@ -128,6 +128,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 environmentProvider
                     .Setup(p => p.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID))
                     .Returns(sessionId);
+                environmentProvider
+                    .Setup(p => p.GetEnvironmentVariable(EnvironmentVariableNames.COPILOT_AGENT_SESSION_ID))
+                    .Returns((string)null);
 
                 _ = new TelemetryClient(sessionId: null, environmentProvider: environmentProvider.Object);
 
@@ -191,6 +194,35 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 Environment.SetEnvironmentVariable("DOTNET_CLI_USE_MSBUILD_SERVER", originalUseMSBuildServer);
                 Environment.SetEnvironmentVariable("MSBUILDUSESERVER", originalMSBuildUseServer);
             }
+        }
+
+        [TestMethod]
+        public void ItDoesNotStartOutOfProcessMSBuildAfterCancellation()
+        {
+            using var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+
+            var forwardingApp = new MSBuildForwardingAppWithoutLogging(
+                MSBuildArgs.FromOtherArgs(),
+                msbuildPath: "<msbuildpath>",
+                forceOutOfProc: true);
+
+            Action execute = () => forwardingApp.Execute(cancellationTokenSource.Token);
+
+            execute.Should().Throw<OperationCanceledException>();
+        }
+
+        [TestMethod]
+        public void ItDoesNotStartInProcessMSBuildAfterCancellation()
+        {
+            using var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+
+            var forwardingApp = new MSBuildForwardingAppWithoutLogging(MSBuildArgs.FromOtherArgs());
+
+            Action execute = () => forwardingApp.ExecuteInProc([], cancellationTokenSource.Token);
+
+            execute.Should().Throw<OperationCanceledException>();
         }
     }
 }

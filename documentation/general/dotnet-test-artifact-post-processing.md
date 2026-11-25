@@ -367,6 +367,18 @@ live counts nor changes a crash into a passing run.
 
 ## CI progress and summaries
 
+[Captured stdout and stderr](../../src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.cs)
+associated with individual test results are shown only for
+failed tests by default, including error, timeout, and cancellation outcomes. This applies
+in every environment, even with `--output detailed`. Use `--show-stdout all --show-stderr all`
+to restore output for all visible results, or select `none` independently for either stream.
+Test-result visibility still controls whether the entire result block is shown.
+
+The SDK resolves these stream options separately for each module from its
+[effective arguments and configuration](../../src/Cli/dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.cs).
+Capture, raw test-host process output, test counts, and exit
+policies are unchanged.
+
 On terminals that cannot update a progress area in place, the
 [parent SDK renderer](../../src/Cli/dotnet/Commands/Test/MTP/Terminal/SilenceDrivenHeartbeatRenderer.cs) prints a bounded
 progress line after 60 seconds without visible reporter output. Hidden passing results do
@@ -385,9 +397,14 @@ display is shared, an effective opt-out in any selected module disables parent h
 and slow-test messages for the invocation. `--no-launch-profile-arguments` also excludes
 profile arguments from that decision.
 
-Non-cursor final summaries put the verdict, counts, and module/handshake failure context
-before the artifact paths. Successful module summaries are not repeated if they were
-already printed at completion. Interactive cursor-based summary ordering is unchanged.
+Non-cursor final summaries normally put the verdict, counts, and module/handshake failure
+context before artifact paths. In Azure Pipelines, parallel multi-module runs instead group
+module details, coverage, and artifacts before the final verdict. The SDK omits module
+pass/fail totals when a handshake failure or a module execution/disposal failure makes those
+totals ambiguous; unselected module counts remain visible. Compatible test hosts
+disable their own live Azure DevOps groups for these runs; older hosts may still emit
+overlapping groups. Outside that mode, successful module summaries are not repeated if they
+were already printed at completion, and interactive cursor-based summary ordering is unchanged.
 
 [`--collect-test-map` has a separate parent lifecycle](../../src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.Collection.cs) because collection intentionally
 suppresses child test-result reporting. Its progress counts **finished modules**, not

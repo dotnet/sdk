@@ -530,6 +530,118 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
+        // XAML tooling (for example WinUI) runs the XamlPreCompile target, a copy of CoreCompile, during PrepareResources.
+        // That is before BeforeCompile and CoreCompile, so the generated assembly info must be hooked directly to it.
+        // https://github.com/dotnet/msbuild/issues/15040
+        private TestAsset CreateAssetThatRunsXamlPreCompile(string identifier, bool useLibraryImportWithChar, params (string Name, string Value)[] properties)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "XamlPreCompileProject",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+            foreach (var (name, value) in properties)
+            {
+                testProject.AdditionalProperties[name] = value;
+            }
+
+            // Passing a 'char' to a LibraryImport method fails with SYSLIB1051 unless the compilation sees DisableRuntimeMarshallingAttribute
+            var libraryImportMethod = useLibraryImportWithChar
+                ? """
+                    [LibraryImport("test")]
+                    public static partial void Test(char test);
+                    """
+                : "";
+            testProject.SourceFiles["Program.cs"] = $$"""
+                using System.Runtime.InteropServices;
+
+                public static partial class Pinvoke
+                {
+                    {{libraryImportMethod}}
+                }
+
+                public static class Program
+                {
+                    public static void Main() { }
+                }
+                """;
+            testProject.SourceFiles["Dummy.xaml"] = "<Page />";
+
+            return TestAssetsManager.CreateTestProject(testProject, identifier: identifier)
+                .WithProjectChanges((path, project) =>
+                {
+                    var ns = project.Root.Name.Namespace;
+
+                    // XamlPreCompile only runs when there is a Page or ApplicationDefinition item,
+                    // and compiles into XamlIntermediateAssembly.
+                    project.Root.Add(
+                        new XElement(ns + "ItemGroup",
+                            new XElement(ns + "Page", new XAttribute("Include", "Dummy.xaml")),
+                            new XElement(ns + "XamlIntermediateAssembly",
+                                new XAttribute("Include", @"$(IntermediateOutputPath)intermediatexaml\$(TargetName)$(TargetExt)"))));
+
+                    project.Root.Add(
+                        new XElement(ns + "Target",
+                            new XAttribute("Name", "_MakeXamlIntermediateDir"),
+                            new XElement(ns + "MakeDir",
+                                new XAttribute("Directories", @"$(IntermediateOutputPath)intermediatexaml"))));
+
+                    // Like XAML tooling, run XamlPreCompile as part of PrepareResources
+                    project.Root.Add(
+                        new XElement(ns + "Target",
+                            new XAttribute("Name", "RunXamlPreCompileLikeXamlTooling"),
+                            new XAttribute("BeforeTargets", "PrepareResources"),
+                            new XAttribute("DependsOnTargets", "_MakeXamlIntermediateDir;XamlPreCompile")));
+                });
+        }
+
+        [TestMethod]
+        public void It_generates_assembly_info_before_XamlPreCompile()
+        {
+            var testAsset = CreateAssetThatRunsXamlPreCompile(
+                nameof(It_generates_assembly_info_before_XamlPreCompile),
+                useLibraryImportWithChar: true,
+                ("AllowUnsafeBlocks", "true"),
+                ("DisableRuntimeMarshalling", "true"));
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            // Without the generated DisableRuntimeMarshallingAttribute in the XamlPreCompile compilation,
+            // this fails with SYSLIB1051.
+            buildCommand.Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdOutContaining("SYSLIB1051");
+
+            // The final compilation must still get the assembly info exactly once (no duplicate attributes)
+            var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework).FullName, "XamlPreCompileProject.dll");
+            AssemblyInfo.GetParameterlessAttributes(assemblyPath).Should().Contain("DisableRuntimeMarshallingAttribute");
+
+            // and an incremental build keeps working
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+        }
+
+        [TestMethod]
+        public void It_does_not_generate_assembly_info_for_XamlPreCompile_if_opted_out()
+        {
+            var testAsset = CreateAssetThatRunsXamlPreCompile(
+                nameof(It_does_not_generate_assembly_info_for_XamlPreCompile_if_opted_out),
+                useLibraryImportWithChar: false,
+                ("GenerateAssemblyInfo", "false"));
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var intermediateDirectory = buildCommand.GetIntermediateDirectory(ToolsetInfo.CurrentTargetFramework);
+            intermediateDirectory.EnumerateFiles("*.AssemblyInfo.cs").Should().BeEmpty();
+        }
+
         [TestMethod]
         public void It_respects_out_out_of_internals_visible_to()
         {

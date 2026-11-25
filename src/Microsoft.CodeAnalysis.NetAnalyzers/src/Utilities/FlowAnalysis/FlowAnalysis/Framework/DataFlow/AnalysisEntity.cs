@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -229,16 +230,22 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 return false;
             }
 
-            // Now perform slow check that compares individual hash code parts sequences.
-            return Symbol.GetHashCodeOrDefault() == other.Symbol.GetHashCodeOrDefault()
-                && HashUtilities.Combine(Indices) == HashUtilities.Combine(other.Indices)
-                && InstanceReferenceOperationSyntax.GetHashCodeOrDefault() == other.InstanceReferenceOperationSyntax.GetHashCodeOrDefault()
-                && CaptureId.GetHashCodeOrDefault() == other.CaptureId.GetHashCodeOrDefault()
-                && Type.GetHashCodeOrDefault() == other.Type.GetHashCodeOrDefault()
-                && Parent.GetHashCodeOrDefault() == other.Parent.GetHashCodeOrDefault()
-                && EntityForInstanceLocation.GetHashCodeOrDefault() == other.EntityForInstanceLocation.GetHashCodeOrDefault()
-                && IsThisOrMeInstance.GetHashCode() == other.IsThisOrMeInstance.GetHashCode();
+            return Indices.SequenceEqual(other.Indices)
+                && EqualsIgnoringIndicesAndInstanceLocation(other);
         }
+
+        internal bool EqualsIgnoringIndices(AnalysisEntity other)
+            => InstanceLocation.Equals(other.InstanceLocation)
+                && EqualsIgnoringIndicesAndInstanceLocation(other);
+
+        private bool EqualsIgnoringIndicesAndInstanceLocation(AnalysisEntity other)
+            => SymbolEqualityComparer.Default.Equals(Symbol, other.Symbol)
+                && ReferenceEquals(InstanceReferenceOperationSyntax, other.InstanceReferenceOperationSyntax)
+                && Nullable.Equals(CaptureId, other.CaptureId)
+                && SymbolEqualityComparer.Default.Equals(Type, other.Type)
+                && Equals(Parent, other.Parent)
+                && Equals(EntityForInstanceLocation, other.EntityForInstanceLocation)
+                && IsThisOrMeInstance == other.IsThisOrMeInstance;
 
         public int EqualsIgnoringInstanceLocationId { get; private set; }
 
@@ -251,17 +258,17 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<AnalysisEntity> obj)
         {
             var other = (AnalysisEntity)obj;
-            return InstanceLocation.GetHashCode() == other.InstanceLocation.GetHashCode()
+            return InstanceLocation.Equals(other.InstanceLocation)
                 && EqualsIgnoringInstanceLocation(other);
         }
 
         private void ComputeHashCodePartsIgnoringLocation(ref RoslynHashCode hashCode)
         {
-            hashCode.Add(Symbol.GetHashCodeOrDefault());
+            hashCode.Add(Symbol is null ? 0 : SymbolEqualityComparer.Default.GetHashCode(Symbol));
             hashCode.Add(HashUtilities.Combine(Indices));
             hashCode.Add(InstanceReferenceOperationSyntax.GetHashCodeOrDefault());
             hashCode.Add(CaptureId.GetHashCodeOrDefault());
-            hashCode.Add(Type.GetHashCode());
+            hashCode.Add(SymbolEqualityComparer.Default.GetHashCode(Type));
             hashCode.Add(Parent.GetHashCodeOrDefault());
             hashCode.Add(EntityForInstanceLocation.GetHashCodeOrDefault());
             hashCode.Add(IsThisOrMeInstance.GetHashCode());
