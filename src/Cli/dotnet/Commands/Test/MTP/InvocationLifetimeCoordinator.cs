@@ -431,6 +431,10 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
         lock (_lock)
         {
             failed = cleanupFailed || _state == State.Failed;
+            if (failed)
+            {
+                _state = State.Failed;
+            }
         }
 
         return failed && aggregateExitCode is ExitCode.Success or ExitCode.ZeroTests

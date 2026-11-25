@@ -20,6 +20,7 @@ internal class TestApplicationActionQueue
     private readonly bool _outputOptionSpecified;
     private readonly TestOptions _testOptions;
     private readonly TestRunPolicy _testRunPolicy;
+    private readonly Func<TestApplicationActionQueue, int, int>? _applyRunPolicies;
     private volatile InvocationLifetimeCoordinator? _invocationLifetimeCoordinator;
 
     private int? _aggregateExitCode;
@@ -41,7 +42,8 @@ internal class TestApplicationActionQueue
         CancellationToken cancellationToken,
         OutputOptions outputOptions,
         bool outputOptionSpecified,
-        TestApplicationSettings fallbackTestApplicationSettings)
+        TestApplicationSettings fallbackTestApplicationSettings,
+        Func<TestApplicationActionQueue, int, int>? applyRunPolicies = null)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = new Task[degreeOfParallelism];
@@ -52,6 +54,7 @@ internal class TestApplicationActionQueue
         _outputOptionSpecified = outputOptionSpecified;
         _testOptions = testOptions;
         _testRunPolicy = testRunPolicy;
+        _applyRunPolicies = applyRunPolicies;
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
@@ -163,6 +166,7 @@ internal class TestApplicationActionQueue
         // If _aggregateExitCode is null, that means we didn't get any results.
         // So, we exit with "zero tests".
         int aggregateExitCode = _aggregateExitCode ?? ExitCode.ZeroTests;
+        aggregateExitCode = _applyRunPolicies?.Invoke(this, aggregateExitCode) ?? aggregateExitCode;
         if (_invocationLifetimeCoordinator is { } coordinator)
         {
             using (coordinator)
@@ -352,6 +356,12 @@ internal class TestApplicationActionQueue
 
     internal int ApplyExitCodeIgnorePolicy(int exitCode)
     {
+        // Invocation infrastructure failures must never be converted into success by a test policy.
+        if (_invocationLifetimeCoordinator?.HasFailed == true)
+        {
+            return exitCode == ExitCode.Success ? ExitCode.GenericFailure : exitCode;
+        }
+
         lock (_lock)
         {
             IReadOnlyList<TestApplicationPolicy> effectivePolicies = GetEffectivePolicies();

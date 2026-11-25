@@ -463,7 +463,11 @@ public sealed class TestApplicationLaunchTests
     }
 
     [TestMethod]
-    public async Task CanceledOwnerHeldOnModuleTestsCompleted_IsReleasedWithoutWaitingForItsQueuedDataWrite()
+    [DataRow(ExitCode.Success, true)]
+    [DataRow(ExitCode.ZeroTests, true)]
+    [DataRow(ExitCode.MinimumExpectedTestsPolicyViolation, true)]
+    [DataRow(ExitCode.Success, false)]
+    public async Task CanceledOwnerHeldOnModuleTestsCompleted_IsReleasedWithoutWaitingForItsQueuedDataWrite(int aggregateExitCode, bool cleanupSucceeded)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var errors = new List<string>();
@@ -523,20 +527,28 @@ public sealed class TestApplicationLaunchTests
         callbackWrite.IsCompleted.Should().BeFalse();
         cleanup.IsCompleted.Should().BeFalse();
 
-        Task<int> completion = coordinator.CompleteAsync(ExitCode.Success, isCanceled: true);
+        Task<int> completion = coordinator.CompleteAsync(aggregateExitCode, isCanceled: true);
 
         await heldReply.WaitAsync(timeout.Token);
         await callbackWrite.WaitAsync(timeout.Token);
-        (await cleanup.WaitAsync(timeout.Token)).Should().Be(new ServerControlMessage(ServerControlKinds.RunInvocationCleanup, ExitCode.Success, true));
+        (await cleanup.WaitAsync(timeout.Token)).Should().Be(new ServerControlMessage(ServerControlKinds.RunInvocationCleanup, aggregateExitCode, true));
         await data.RequestReplyAsync<InvocationCleanupCompleted, VoidResponse>(
-            new InvocationCleanupCompleted("e", "i", true, null), timeout.Token);
+            new InvocationCleanupCompleted("e", "i", cleanupSucceeded, cleanupSucceeded ? null : "cleanup failed"), timeout.Token);
         data.Dispose();
         control.Dispose();
         await application.StopPipeConnectionLoopsAsync(pipeLoops).WaitAsync(timeout.Token);
         ownerRun.SetResult(ExitCode.Success);
 
-        (await completion.WaitAsync(timeout.Token)).Should().Be(ExitCode.Success);
-        errors.Should().BeEmpty();
+        (await completion.WaitAsync(timeout.Token)).Should().Be(cleanupSucceeded ? aggregateExitCode : ExitCode.GenericFailure);
+        coordinator.HasFailed.Should().Be(!cleanupSucceeded);
+        if (cleanupSucceeded)
+        {
+            errors.Should().BeEmpty();
+        }
+        else
+        {
+            errors.Should().ContainSingle().Which.Should().Contain("cleanup failed");
+        }
         application.HasFailureDuringDispose.Should().BeFalse();
     }
 

@@ -176,6 +176,41 @@ public class TestApplicationActionQueueTests : SdkTest
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void CompleteEnqueueAndWait_AppliesRunPoliciesBeforeInvocationCompletion(bool withOwner)
+    {
+        using var reporter = new TerminalTestReporter(
+            new CapturingConsole(), new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
+        var buildOptions = new BuildOptions(
+            new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+            HasNoRestore: true, HasNoBuild: false, Verbosity: null, NoLaunchProfile: false, NoLaunchProfileArguments: false,
+            TestApplicationArguments: [], MSBuildArgs: [], Device: null, ListDevices: false,
+            EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+        using var ctrlC = new CtrlCCancellationManager(() => { }, subscribeToConsole: false);
+        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: null);
+        int policyCalls = 0;
+        var queue = new TestApplicationActionQueue(
+            1, buildOptions, new TestOptions(false, false, TestListFormat.Text),
+            TestResultsDirectoryResolver.CreateShared(buildOptions.PathOptions, SdkTestContext.Current.TestExecutionDirectory),
+            reporter, _ => { }, ctrlC, new ArtifactPostProcessingManager(), policy, CancellationToken.None,
+            OutputOptions.Normal, outputOptionSpecified: false, TestApplicationSettings.Default,
+            applyRunPolicies: (_, aggregateExitCode) =>
+            {
+                policyCalls++;
+                aggregateExitCode.Should().Be(TestExitCode.ZeroTests);
+                return TestExitCode.MinimumExpectedTestsPolicyViolation;
+            });
+        if (withOwner)
+        {
+            queue.ConfigureInvocationLifetime([InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"], isOwner: true)]);
+        }
+
+        queue.CompleteEnqueueAndWait().Should().Be(TestExitCode.MinimumExpectedTestsPolicyViolation);
+        policyCalls.Should().Be(1);
+    }
+
+    [TestMethod]
     public void NormalizeExitCode_ZeroTestsWithDisposeFailure_ReturnsGenericFailure()
     {
         using var reporter = new TerminalTestReporter(
