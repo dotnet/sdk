@@ -161,10 +161,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
             AffectedTestsForwarded = forwardedAffectedTests,
         };
 
-        var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
+        TestModule[] evaluatedModules = [.. testHandler.EnumerateTestModules()];
+        var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions, evaluatedModules);
         var resultsDirectoryResolver = TestResultsDirectoryResolver.Create(
             buildOptions.PathOptions,
-            testHandler.EnumerateTestModules(),
+            evaluatedModules,
             Directory.GetCurrentDirectory());
 
         using var testRunPolicy = new TestRunPolicy(
@@ -993,7 +994,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             : TestListFormat.Text;
     }
 
-    private static TerminalTestReporter InitializeOutput(int degreeOfParallelism, ParseResult parseResult, TestOptions testOptions)
+    private static TerminalTestReporter InitializeOutput(int degreeOfParallelism, ParseResult parseResult, TestOptions testOptions, IReadOnlyList<TestModule> testModules)
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
@@ -1014,6 +1015,10 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         // TODO: Replace this with proper CI detection that we already have in telemetry. https://github.com/microsoft/testfx/issues/5533#issuecomment-2838893327
         bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
+        bool contextualModuleOutput = ShouldUseContextualModuleOutput(
+            Environment.GetEnvironmentVariable("TF_BUILD"),
+            degreeOfParallelism,
+            testOptions);
 
         AnsiMode ansiMode = AnsiMode.AnsiIfPossible;
         // In LLM environments, prefer simple text output so that LLM can parse it easily.
@@ -1037,6 +1042,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
             AnsiMode = ansiMode,
             ShowAssembly = !isJsonDiscovery,
             ShowAssemblyStartAndComplete = !isJsonDiscovery,
+            ContextualModuleOutput = contextualModuleOutput,
+            ModuleDisplayName = contextualModuleOutput ? TerminalTestReporter.CreateModuleDisplayNameSelector(testModules) : null,
             MinimumExpectedTests = parseResult.GetValue(definition.MinimumExpectedTestsOption),
             AllowZeroTests = testOptions.IsAffectedTestsMode,
             ListTestsFormat = testOptions.ListTestsFormat,
@@ -1055,6 +1062,10 @@ internal partial class MicrosoftTestingPlatformTestCommand
         output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, testOptions.IsDiscovery, testOptions.IsHelp, isRetry);
         return output;
     }
+
+    internal static bool ShouldUseContextualModuleOutput(string? azurePipelines, int degreeOfParallelism, TestOptions testOptions)
+        => bool.TryParse(azurePipelines, out bool enabled) && enabled && degreeOfParallelism > 1 &&
+            !testOptions.IsHelp && !testOptions.IsDiscovery && !testOptions.CollectTestMap;
 
     internal static bool IsLegacyRetryOptionEnabled(IReadOnlyList<string> arguments)
         => arguments.Contains("--retry-failed-tests");

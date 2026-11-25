@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace dotnet.Tests.CommandTests.Test;
 
@@ -17,6 +19,45 @@ public class ProcessOutputCollectorTests
     private const int TailLineCount = 3;
 
     public TestContext TestContext { get; set; } = null!;
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task CancelledWrite_DoesNotRenderAWritingThatWasWaitingForTheTerminal(bool showProgress)
+    {
+        using var terminal = new TestProgressStateAwareTerminal(new NonAnsiTerminal(new CapturingConsole()), showProgress);
+        using var cancellation = new CancellationTokenSource();
+        using var firstWriteStarted = new ManualResetEventSlim();
+        using var releaseFirstWrite = new ManualResetEventSlim();
+        using var secondWriteStarted = new ManualResetEventSlim();
+        bool lateWriteRendered = false;
+
+        Task first = Task.Run(() => terminal.WriteToTerminal(_ =>
+        {
+            firstWriteStarted.Set();
+            releaseFirstWrite.Wait(TestContext.CancellationToken);
+        }, TestContext.CancellationToken), TestContext.CancellationToken);
+
+        try
+        {
+            firstWriteStarted.Wait(TimeSpan.FromSeconds(30), TestContext.CancellationToken).Should().BeTrue();
+            Task second = Task.Run(() =>
+            {
+                secondWriteStarted.Set();
+                terminal.WriteToTerminal(_ => lateWriteRendered = true, cancellation.Token);
+            }, TestContext.CancellationToken);
+            secondWriteStarted.Wait(TimeSpan.FromSeconds(30), TestContext.CancellationToken).Should().BeTrue();
+            cancellation.Cancel();
+            releaseFirstWrite.Set();
+
+            await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+            lateWriteRendered.Should().BeFalse();
+        }
+        finally
+        {
+            releaseFirstWrite.Set();
+        }
+    }
 
     /// <summary>
     /// Before the protocol version is known the streaming state is <see langword="null"/>: nothing may

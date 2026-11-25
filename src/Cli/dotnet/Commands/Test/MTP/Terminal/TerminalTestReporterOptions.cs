@@ -26,6 +26,16 @@ internal sealed class TerminalTestReporterOptions
     public bool ShowAssemblyStartAndComplete { get; init; }
 
     /// <summary>
+    /// Gets a value indicating whether output should identify each module for parallel Azure Pipelines runs.
+    /// </summary>
+    public bool ContextualModuleOutput { get; init; }
+
+    /// <summary>
+    /// Gets an optional selector that maps an assembly path and target framework to a display name.
+    /// </summary>
+    public Func<string, string?, string>? ModuleDisplayName { get; init; }
+
+    /// <summary>
     /// Gets minimum amount of tests to run.
     /// </summary>
     public int MinimumExpectedTests { get; init; }

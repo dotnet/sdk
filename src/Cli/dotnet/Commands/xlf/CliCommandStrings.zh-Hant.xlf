@@ -3312,6 +3312,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">指定此命令的暫存目錄，以下載並解壓縮 NuGet 套件 (必須為安全)。</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputStreamTimeout">
+        <source>Test application output stream did not close within five seconds; further output was omitted.</source>
+        <target state="new">Test application output stream did not close within five seconds; further output was omitted.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
         <target state="translated">... 輸出已截斷，省略了 {0} 行...</target>

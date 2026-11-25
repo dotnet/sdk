@@ -4,8 +4,10 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.DotNet.ProjectTools;
 using Moq;
 using TestExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
@@ -14,6 +16,113 @@ namespace dotnet.Tests.CommandTests.Test;
 [TestClass]
 public class TerminalTestReporterTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
+    [TestMethod]
+    public void TestExecutionCompleted_WithContextualModuleOutput_GroupsModuleResultsAndIdentifiesTests()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ContextualModuleOutput = true,
+        });
+
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 2, isDiscovery: false, isHelp: false, isRetry: false);
+        reporter.AssemblyRunStarted("Failing.Tests.dll", "net9.0", "x64", "exec-fail", "instance-fail");
+        reporter.AssemblyRunStarted("Passing.Tests.dll", "net9.0", "x64", "exec-pass", "instance-pass");
+        ReportTest(reporter, "Failing.Tests.dll", "exec-fail", "instance-fail", "failed-test", TestOutcome.Fail);
+        ReportTest(reporter, "Passing.Tests.dll", "exec-pass", "instance-pass", "passed-test", TestOutcome.Passed);
+        reporter.AssemblyRunCompleted("exec-fail", TestExitCode.AtLeastOneTestFailed, null, null);
+        reporter.AssemblyRunCompleted("exec-pass", TestExitCode.Success, null, null);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.AtLeastOneTestFailed);
+
+        string output = console.GetOutput();
+        output.Should().Contain("##[group]Test run summary: 1 passed, 1 failed")
+            .And.Contain("[Failing.Tests net9.0|x64] failed failed-test")
+            .And.Contain("[Passing.Tests net9.0|x64] passed passed-test")
+            .And.Contain("##[endgroup]");
+    }
+
+    [TestMethod]
+    public void TestExecutionCompleted_WithIncompleteModule_OmitsAmbiguousModuleTotals()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ContextualModuleOutput = true,
+        });
+
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+        reporter.MarkModuleExecutionIncomplete();
+        reporter.AssemblyRunStarted("Passing.Tests.dll", "net9.0", "x64", "exec-pass", "instance-pass");
+        reporter.AssemblyRunCompleted("exec-pass", TestExitCode.Success, null, null);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.GenericFailure);
+
+        console.GetOutput().Should().Contain("##[group]Test run summary:")
+            .And.NotContain("##[group]Test run summary: 1 passed, 0 failed");
+    }
+
+    [TestMethod]
+    public void WriteModuleMessage_PrefixesTextButPreservesWorkflowCommands()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ContextualModuleOutput = true,
+        });
+
+        reporter.WriteModuleMessage(
+            "Tests.dll",
+            "net9.0",
+            "x64",
+            $"module output{Environment.NewLine}##[group]child group{Environment.NewLine}::notice::child notice",
+            cancellationToken: TestContext.CancellationToken);
+
+        string output = console.GetOutput();
+        output.Should().Contain("[Tests net9.0|x64] module output")
+            .And.Contain("##[group]child group")
+            .And.Contain("::notice::child notice")
+            .And.NotContain("[Tests net9.0|x64] ##[group]");
+    }
+
+    [TestMethod]
+    public void CreateModuleDisplayNameSelector_CachesDisplayNamesAndPreservesNullFrameworkWildcard()
+    {
+        string firstPath = Path.Combine("first", "Tests.dll");
+        string secondPath = Path.Combine("second", "Tests.dll");
+        TestModule[] modules =
+        [
+            new(
+                new RunProperties("dotnet", firstPath, null),
+                ProjectFullPath: Path.Combine("first", "Tests.csproj"),
+                TargetFramework: "net9.0",
+                IsTestingPlatformApplication: true,
+                LaunchSettings: null,
+                TargetPath: firstPath,
+                DotnetRootArchVariableName: null,
+                EnvironmentVariables: new Dictionary<string, string>()),
+            new(
+                new RunProperties("dotnet", secondPath, null),
+                ProjectFullPath: Path.Combine("second", "Tests.csproj"),
+                TargetFramework: "net10.0",
+                IsTestingPlatformApplication: true,
+                LaunchSettings: null,
+                TargetPath: secondPath,
+                DotnetRootArchVariableName: null,
+                EnvironmentVariables: new Dictionary<string, string>()),
+        ];
+
+        Func<string, string?, string> displayName = TerminalTestReporter.CreateModuleDisplayNameSelector(modules);
+
+        displayName(firstPath, "net9.0").Should().Be("Tests");
+        displayName(secondPath, "net10.0").Should().Be("Tests");
+        displayName(firstPath, null).Should().Be(firstPath);
+        displayName(firstPath, "NET9.0").Should().Be("Tests");
+    }
+
     [TestMethod]
     [DataRow(TestExitCode.Success, true, TestExitCode.TestSessionAborted)]
     [DataRow(TestExitCode.Success, false, TestExitCode.Success)]

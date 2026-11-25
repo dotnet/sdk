@@ -18,6 +18,8 @@ public class TestApplicationHandlerTests : IDisposable
     // Dispose() releases every reporter built for the current test.
     private readonly List<IDisposable> _disposables = new();
 
+    public TestContext TestContext { get; set; } = null!;
+
     public void Dispose()
     {
         foreach (var disposable in _disposables)
@@ -97,6 +99,81 @@ public class TestApplicationHandlerTests : IDisposable
         rendered.Should().Contain(targetFramework);
         rendered.Should().Contain("stdout-line");
         rendered.Should().Contain("stderr-line");
+    }
+
+    [TestMethod]
+    public async Task CloseLiveOutput_WhenTimedOut_CancelsQueuedWritesAndWritesOneNoticeBeforeSummary()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) =
+            CreateHandler(isHelp: false, isDiscovery: false, contextualModuleOutput: true);
+        handler.WriteLiveMessage("already-streamed");
+
+        using var queuedWriteStarted = new ManualResetEventSlim();
+        Task queuedWrite;
+        lock (Console.Out)
+        {
+            queuedWrite = Task.Run(() =>
+            {
+                queuedWriteStarted.Set();
+                handler.WriteLiveMessage("queued-live-output");
+            }, TestContext.CancellationToken);
+
+            queuedWriteStarted.Wait(TimeSpan.FromSeconds(30), TestContext.CancellationToken).Should().BeTrue();
+            handler.CloseLiveOutput(timedOut: true);
+            handler.CloseLiveOutput(timedOut: true);
+            handler.WriteLiveMessage("subsequent-live-output");
+            reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: 0);
+        }
+
+        await queuedWrite.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+
+        string output = console.GetOutput();
+        output.Should().Contain("already-streamed")
+            .And.NotContain("queued-live-output")
+            .And.NotContain("subsequent-live-output");
+        output.Split("did not close within five seconds", StringSplitOptions.None).Should().HaveCount(2);
+        output.IndexOf("did not close within five seconds", StringComparison.Ordinal)
+            .Should().BeLessThan(output.IndexOf("##[group]Test run summary:", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task WaitForOutputDrainAsync_WhenReadersTimeOut_ClosesLiveOutputBeforeSummary()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) =
+            CreateHandler(isHelp: false, isDiscovery: false, contextualModuleOutput: true);
+        var standardOutput = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var standardError = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await TestApplication.WaitForOutputDrainAsync(
+            standardOutput.Task,
+            standardError.Task,
+            handler,
+            TimeSpan.FromMilliseconds(10));
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: 0);
+
+        string output = console.GetOutput();
+        output.Split("did not close within five seconds", StringSplitOptions.None).Should().HaveCount(2);
+        output.IndexOf("did not close within five seconds", StringComparison.Ordinal)
+            .Should().BeLessThan(output.IndexOf("##[group]Test run summary:", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task WaitForOutputDrainAsync_WhenNormallyDrained_RetainsOutputWithoutTimeoutNotice()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) =
+            CreateHandler(isHelp: false, isDiscovery: false, contextualModuleOutput: true);
+
+        handler.WriteLiveMessage("drained-live-output");
+        await TestApplication.WaitForOutputDrainAsync(
+            Task.CompletedTask,
+            Task.CompletedTask,
+            handler,
+            TimeSpan.FromSeconds(1));
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: 0);
+
+        string output = console.GetOutput();
+        output.Should().Contain("drained-live-output")
+            .And.NotContain("did not close within five seconds");
     }
 
     /// <summary>
@@ -806,7 +883,8 @@ public class TestApplicationHandlerTests : IDisposable
         ArtifactPostProcessingManager? artifactPostProcessingManager = null,
         ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
         bool collectTestMap = false,
-        bool affectedTests = false)
+        bool affectedTests = false,
+        bool contextualModuleOutput = false)
     {
         var capturingConsole = new CapturingConsole();
 
@@ -816,6 +894,7 @@ public class TestApplicationHandlerTests : IDisposable
             ShowProgress = false,
             ShowAssembly = showAssembly,
             ShowAssemblyStartAndComplete = showAssembly,
+            ContextualModuleOutput = contextualModuleOutput,
         };
 
         var reporter = new TerminalTestReporter(capturingConsole, reporterOptions);

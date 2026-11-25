@@ -100,6 +100,8 @@ internal sealed class TestApplication(
             : Task.CompletedTask;
 
         Process? process = null;
+        Task? stdOutTask = null;
+        Task? stdErrTask = null;
         bool testApplicationStarted = false;
         try
         {
@@ -119,13 +121,14 @@ internal sealed class TestApplication(
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
             // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
             // The collector is thread-safe for the timeout case.
-            // In the timeout case, we leave stdOutTask and stdErrTask running, just we stop observing them.
-            var stdOutBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteMessage);
-            var stdErrBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteMessage);
+            // In the timeout case, descendants can keep the readers alive; contextual output is closed
+            // before the final summary so those readers cannot write after it.
+            var stdOutBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteLiveMessage);
+            var stdErrBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteLiveMessage);
             Volatile.Write(ref _standardOutputCollector, stdOutBuilder);
             Volatile.Write(ref _standardErrorCollector, stdErrBuilder);
 
-            var stdOutTask = Task.Factory.StartNew(() =>
+            stdOutTask = Task.Factory.StartNew(() =>
             {
                 var stdOut = process.StandardOutput;
                 string? currentLine;
@@ -135,7 +138,7 @@ internal sealed class TestApplication(
                 }
             }, TaskCreationOptions.LongRunning);
 
-            var stdErrTask = Task.Factory.StartNew(() =>
+            stdErrTask = Task.Factory.StartNew(() =>
             {
                 var stdErr = process.StandardError;
                 string? currentLine;
@@ -212,13 +215,7 @@ internal sealed class TestApplication(
 
             // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
             // We might not be able to consume all the output if the test app has exited but left a child process alive.
-            try
-            {
-                await Task.WhenAll(stdOutTask, stdErrTask).WaitAsync(TimeSpan.FromSeconds(5));
-            }
-            catch (TimeoutException)
-            {
-            }
+            await WaitForOutputDrainAsync(stdOutTask!, stdErrTask!, _handler, TimeSpan.FromSeconds(5));
 
             if (artifactPostProcessingTimedOut)
             {
@@ -257,6 +254,10 @@ internal sealed class TestApplication(
         }
         finally
         {
+            _handler.CloseLiveOutput(
+                timedOut: (stdOutTask is not null && !stdOutTask.IsCompleted) ||
+                    (stdErrTask is not null && !stdErrTask.IsCompleted));
+
             if (testApplicationStarted)
             {
                 _testRunPolicy?.OnTestApplicationExited();
@@ -334,6 +335,11 @@ internal sealed class TestApplication(
         else
         {
             processStartInfo.Environment.Remove(TestOptions.AffectedTestsModeEnvironmentVariable);
+        }
+
+        if (output.ContextualModuleOutput)
+        {
+            processStartInfo.Environment["TESTINGPLATFORM_DOTNETTEST_DISABLE_AZDO_HOST_GROUPS"] = "1";
         }
 
         processStartInfo.Environment["DOTNET_CLI_TEST_COMMAND_WORKING_DIRECTORY"] = Directory.GetCurrentDirectory();
@@ -902,6 +908,22 @@ internal sealed class TestApplication(
         if (capturedOutput.Length > 0)
         {
             Logger.LogTrace($"{label} (already streamed live): {capturedOutput}");
+        }
+    }
+
+    internal static async Task WaitForOutputDrainAsync(
+        Task stdOutTask,
+        Task stdErrTask,
+        TestApplicationHandler handler,
+        TimeSpan timeout)
+    {
+        try
+        {
+            await Task.WhenAll(stdOutTask, stdErrTask).WaitAsync(timeout);
+        }
+        catch (TimeoutException)
+        {
+            handler.CloseLiveOutput(timedOut: true);
         }
     }
 

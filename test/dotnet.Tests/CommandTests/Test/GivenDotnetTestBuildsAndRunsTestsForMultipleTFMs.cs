@@ -219,5 +219,63 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
+
+        [TestMethod]
+        public void RunProjectWithMSTestMetaPackageAndMultipleTFMs_UsesContextualOutputOnlyInAzureWhenParallel()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+                .WithSource();
+            string previousFramework = DotnetVersionHelper.GetPreviousDotnetVersion();
+            string currentFramework = ToolsetInfo.CurrentTargetFramework;
+            testInstance.WithTargetFrameworks($"{previousFramework};{currentFramework}");
+
+            CommandResult Run(string tfBuild, int degreeOfParallelism) =>
+                new DotnetTestCommand(Log, disableNewOutput: false)
+                    .WithWorkingDirectory(testInstance.Path)
+                    .WithEnvironmentVariable("TF_BUILD", tfBuild)
+                    .Execute(
+                        "-c", TestingConstants.Debug,
+                        "--max-parallel-test-modules", degreeOfParallelism.ToString());
+
+            CommandResult parallelAzureRun = Run("true", degreeOfParallelism: 2);
+            parallelAzureRun.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+            parallelAzureRun.StdOut.Should()
+                .Contain("##[group]Test run summary:")
+                .And.Contain("##[endgroup]");
+
+            string outputWithoutAnsi = Regex.Replace(parallelAzureRun.StdOut!, "\x1b\\[[0-9;]*[a-zA-Z]", string.Empty);
+            foreach (string framework in new[] { previousFramework, currentFramework })
+            {
+                Regex.IsMatch(
+                    outputWithoutAnsi,
+                    $@"\[TestProject {Regex.Escape(framework)}(?:\|[^\]]+)?\] failed TestMethod3")
+                    .Should().BeTrue($"the {framework} failure should identify its test module");
+            }
+
+            foreach ((string tfBuild, int degreeOfParallelism) in new[] { ("true", 1), ("false", 2) })
+            {
+                CommandResult run = Run(tfBuild, degreeOfParallelism);
+                run.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+                run.StdOut.Should().NotContain("##[group]Test run summary:");
+                foreach (string framework in new[] { previousFramework, currentFramework })
+                {
+                    run.StdOut.Should().NotContain($"[TestProject {framework}");
+                }
+            }
+
+            TestAsset passingTestInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithZeroTestsAndPassingTests", Guid.NewGuid().ToString())
+                .WithSource();
+            CommandResult passingRun = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(passingTestInstance.Path)
+                .WithEnvironmentVariable("TF_BUILD", "true")
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--max-parallel-test-modules", "2");
+
+            passingRun.ExitCode.Should().Be(ExitCodes.Success);
+            passingRun.StdOut.Should()
+                .Contain("##[group]Test run summary:")
+                .And.Contain("##[endgroup]");
+        }
     }
 }
