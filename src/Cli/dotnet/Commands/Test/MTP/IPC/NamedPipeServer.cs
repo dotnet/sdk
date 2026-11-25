@@ -25,6 +25,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
     private readonly byte[] _readBuffer = new byte[250000];
     private readonly byte[] _sizeOfIntArray = new byte[sizeof(int)];
     private readonly bool _skipUnknownMessages;
+    private readonly bool _ignoreDisconnectedControlClient;
     private Task? _loopTask;
     private bool _disposed;
 
@@ -33,7 +34,8 @@ internal sealed class NamedPipeServer : NamedPipeBase
         Func<NamedPipeServer, IRequest, Task<IResponse>> callback,
         int maxNumberOfServerInstances,
         CancellationToken cancellationToken,
-        bool skipUnknownMessages)
+        bool skipUnknownMessages,
+        bool ignoreDisconnectedControlClient = false)
     {
         _namedPipeServerStream = new NamedPipeServerStream(
             pipeName,
@@ -47,6 +49,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
         _callback = callback;
         _cancellationToken = cancellationToken;
         _skipUnknownMessages = skipUnknownMessages;
+        _ignoreDisconnectedControlClient = ignoreDisconnectedControlClient;
     }
 
     public bool WasConnected { get; private set; }
@@ -66,6 +69,10 @@ internal sealed class NamedPipeServer : NamedPipeBase
                 {
                     // We are being cancelled, so we don't need to wait anymore
                     return;
+                }
+                catch (IOException ex) when (_ignoreDisconnectedControlClient)
+                {
+                    Logger.LogTrace($"The server-control client disconnected: {ex.Message}");
                 }
             }, cancellationToken);
     }

@@ -64,6 +64,7 @@ internal sealed class TestApplication(
     private readonly InvocationLifetimeSiblingLaunch? _invocationLifetimeSiblingLaunch = invocationLifetimeSiblingLaunch;
     private readonly Task? _abortSignal = abortSignal;
     private NamedPipeServer? _invocationLifetimeConnection;
+    private Task? _invocationLifetimeControlConnectionLoop;
     private ServerControlMessage? _invocationCleanupMessage;
     private bool _sessionCancellationDelivered;
     private readonly CancellationTokenSource _pipeCancellationTokenSource = new();
@@ -72,10 +73,11 @@ internal sealed class TestApplication(
 
     private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
     private readonly string _controlPipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
+    private readonly string _invocationLifetimeControlPipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
     private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
-    private readonly List<TaskCompletionSource<IResponse>> _pendingControlRequests = [];
+    private readonly List<(TaskCompletionSource<IResponse> Completion, bool InvocationLifetime)> _pendingControlRequests = [];
 
     private int _hasRun;
     private int _protocolNegotiated;
@@ -262,6 +264,10 @@ internal sealed class TestApplication(
 
             _pipeCancellationTokenSource.Cancel();
             await Task.WhenAll(testAppPipeConnectionLoop, controlPipeConnectionLoop);
+            if (_invocationLifetimeControlConnectionLoop is not null)
+            {
+                await _invocationLifetimeControlConnectionLoop;
+            }
         }
     }
 
@@ -786,18 +792,19 @@ internal sealed class TestApplication(
         }
     }
 
-    private async Task WaitControlConnectionAsync(CancellationToken token)
+    private async Task WaitControlConnectionAsync(CancellationToken token, bool invocationLifetime = false)
     {
         try
         {
             while (!token.IsCancellationRequested)
             {
                 NamedPipeServer? pipeConnection = new(
-                    _controlPipeName,
-                    OnControlRequest,
+                    invocationLifetime ? _invocationLifetimeControlPipeName : _controlPipeName,
+                    (_, request) => OnControlRequest(request, invocationLifetime),
                     NamedPipeServerStream.MaxAllowedServerInstances,
                     token,
-                    skipUnknownMessages: false);
+                    skipUnknownMessages: false,
+                    ignoreDisconnectedControlClient: true);
                 try
                 {
                     pipeConnection.RegisterAllSerializers();
@@ -824,7 +831,7 @@ internal sealed class TestApplication(
         }
     }
 
-    private Task<IResponse> OnControlRequest(NamedPipeServer _, IRequest request)
+    internal Task<IResponse> OnControlRequest(IRequest request, bool invocationLifetime)
     {
         if (request is not WaitForServerControlRequest)
         {
@@ -834,20 +841,20 @@ internal sealed class TestApplication(
         lock (_controlRequestLock)
         {
             if (Volatile.Read(ref _sessionCancellationRequested) != 0
-                && !(_sessionCancellationDelivered && _invocationLifetimeOwnerCoordinator is { IsOwnerCoordinated: true }))
+                && !(_sessionCancellationDelivered && invocationLifetime))
             {
                 // A coordinated owner receives the cancellation once, then waits again for invocation cleanup.
-                _sessionCancellationDelivered = true;
+                _sessionCancellationDelivered |= invocationLifetime;
                 return Task.FromResult<IResponse>(new ServerControlMessage(ServerControlKinds.CancelSession));
             }
 
-            if (_invocationCleanupMessage is not null)
+            if (invocationLifetime && _invocationCleanupMessage is not null)
             {
                 return Task.FromResult<IResponse>(_invocationCleanupMessage);
             }
 
             var completion = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _pendingControlRequests.Add(completion);
+            _pendingControlRequests.Add((completion, invocationLifetime));
             _pipeCancellationTokenSource.Token.Register(
                 () => completion.TrySetCanceled(_pipeCancellationTokenSource.Token));
             return completion.Task;
@@ -862,7 +869,7 @@ internal sealed class TestApplication(
         }
     }
 
-    private void RequestSessionCancellation()
+    internal void RequestSessionCancellation()
     {
         if (Interlocked.Exchange(ref _sessionCancellationRequested, 1) != 0)
         {
@@ -872,9 +879,12 @@ internal sealed class TestApplication(
         lock (_controlRequestLock)
         {
             var message = new ServerControlMessage(ServerControlKinds.CancelSession);
-            foreach (TaskCompletionSource<IResponse> request in _pendingControlRequests)
+            foreach (var request in _pendingControlRequests)
             {
-                _sessionCancellationDelivered |= request.TrySetResult(message);
+                if (request.Completion.TrySetResult(message))
+                {
+                    _sessionCancellationDelivered |= request.InvocationLifetime;
+                }
             }
 
             _pendingControlRequests.Clear();
@@ -894,12 +904,15 @@ internal sealed class TestApplication(
             }
 
             _invocationCleanupMessage = new ServerControlMessage(ServerControlKinds.RunInvocationCleanup, aggregateExitCode, isCanceled);
-            foreach (TaskCompletionSource<IResponse> request in _pendingControlRequests)
+            foreach (var request in _pendingControlRequests)
             {
-                request.TrySetResult(_invocationCleanupMessage);
+                if (request.InvocationLifetime)
+                {
+                    request.Completion.TrySetResult(_invocationCleanupMessage);
+                }
             }
 
-            _pendingControlRequests.Clear();
+            _pendingControlRequests.RemoveAll(request => request.InvocationLifetime);
         }
     }
 
@@ -946,6 +959,9 @@ internal sealed class TestApplication(
                         if (invocationLifetimeAccepted)
                         {
                             _invocationLifetimeConnection = server;
+                            // Retry children use the ordinary pipe; only the accepted owner receives cleanup.
+                            _invocationLifetimeControlConnectionLoop = WaitControlConnectionAsync(
+                                _pipeCancellationTokenSource.Token, invocationLifetime: true);
                         }
 
                         return Task.FromResult((IResponse)CreateHandshakeMessage(
@@ -965,6 +981,7 @@ internal sealed class TestApplication(
                     case ModuleTestsCompleted moduleTestsCompleted:
                         if (IsInvocationLifetimeConnection(server, moduleTestsCompleted))
                         {
+                            _handler.ReleaseInvocationLifetimeWorker();
                             _invocationLifetimeOwnerCoordinator!.OnModuleTestsCompleted(moduleTestsCompleted);
                         }
 
@@ -1125,7 +1142,8 @@ internal sealed class TestApplication(
             properties.Add(HandshakeMessagePropertyNames.TestInProgressSupported, bool.TrueString);
             if (includeControlPipe)
             {
-                properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+                properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName,
+                    invocationLifetimeAccepted ? _invocationLifetimeControlPipeName : _controlPipeName);
             }
         }
 

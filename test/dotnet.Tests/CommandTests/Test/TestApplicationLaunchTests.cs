@@ -5,6 +5,8 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Test.IPC;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
@@ -407,6 +409,55 @@ public sealed class TestApplicationLaunchTests
         {
             properties.Should().NotContainKey(HandshakeMessagePropertyNames.InvocationLifetimeCoordinationAccepted);
         }
+    }
+
+    [TestMethod]
+    public async Task InvocationCleanup_OnlyCompletesTheDedicatedOwnerControlRequest()
+    {
+        using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+        Task<IResponse> child = application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: false);
+        Task<IResponse> owner = application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: true);
+
+        application.RequestInvocationCleanup(7, isCanceled: true);
+
+        child.IsCompleted.Should().BeFalse();
+        (await owner).Should().Be(new ServerControlMessage(ServerControlKinds.RunInvocationCleanup, 7, true));
+        Task<IResponse> laterChild = application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: false);
+        laterChild.IsCompleted.Should().BeFalse();
+        (await application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: true))
+            .Should().Be(new ServerControlMessage(ServerControlKinds.RunInvocationCleanup, 7, true));
+    }
+
+    [TestMethod]
+    public async Task CanceledOwner_CanWaitForCleanupWhileRetryChildrenStillReceiveCancellation()
+    {
+        using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+        Task<IResponse> child = application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: false);
+        application.RequestSessionCancellation();
+        (await child).Should().Be(new ServerControlMessage(ServerControlKinds.CancelSession));
+        (await application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: true))
+            .Should().Be(new ServerControlMessage(ServerControlKinds.CancelSession));
+        Task<IResponse> ownerCleanup = application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: true);
+        ownerCleanup.IsCompleted.Should().BeFalse();
+        (await application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: false))
+            .Should().Be(new ServerControlMessage(ServerControlKinds.CancelSession));
+
+        application.RequestInvocationCleanup(1, isCanceled: true);
+
+        (await ownerCleanup).Should().Be(new ServerControlMessage(ServerControlKinds.RunInvocationCleanup, 1, true));
+    }
+
+    [TestMethod]
+    public void AcceptedOwnerHandshake_AdvertisesADifferentControlPipeThanRetryChildren()
+    {
+        using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+
+        string ownerPipe = application.CreateHandshakeMessage("1.5.0", invocationLifetimeAccepted: true)
+            .Properties[HandshakeMessagePropertyNames.ServerControlPipeName];
+        string childPipe = application.CreateHandshakeMessage("1.5.0")
+            .Properties[HandshakeMessagePropertyNames.ServerControlPipeName];
+
+        ownerPipe.Should().NotBe(childPipe);
     }
 
     private static TestApplication CreateApplication(

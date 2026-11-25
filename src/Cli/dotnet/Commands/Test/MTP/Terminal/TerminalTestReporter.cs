@@ -1422,6 +1422,16 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
     }
 
+    internal void ReleaseInvocationLifetimeWorker(string executionId)
+    {
+        if (_assemblies.TryGetValue(executionId, out TestProgressState? assemblyRun))
+        {
+            // Cleanup keeps the process alive, but its slot can be reused. Process exit still reports the summary.
+            _terminalWithProgress.RemoveWorker(assemblyRun.SlotIndex);
+            assemblyRun.SlotIndex = -1;
+        }
+    }
+
     internal void AssemblyRunCompleted(string executionId,
         // These parameters are useful only for "remote" runs in dotnet test, where we are reporting on multiple processes.
         // In single process run, like with testing platform .exe we report these via messages, and run exit.

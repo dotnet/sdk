@@ -14,6 +14,45 @@ public class IPCTests
     public TestContext TestContext { get; set; } = null!;
 
     [TestMethod]
+    public async Task ControlClientDisconnectWhileWaiting_DoesNotFailServerDisposal()
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(15));
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var reply = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+        string pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
+        var server = new NamedPipeServer(
+            pipeName, (_, _) =>
+            {
+                received.TrySetResult();
+                return reply.Task.WaitAsync(timeout.Token);
+            },
+            1, timeout.Token, skipUnknownMessages: false, ignoreDisconnectedControlClient: true);
+        try
+        {
+            server.RegisterAllSerializers();
+            using var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+            Task connection = server.WaitConnectionAsync(timeout.Token);
+            await client.ConnectAsync(timeout.Token);
+            await connection;
+            byte[] frame = [.. BitConverter.GetBytes(sizeof(int)), .. BitConverter.GetBytes(WaitForServerControlRequestFieldsId.MessagesSerializerId)];
+            await client.WriteAsync(frame, timeout.Token);
+            await client.FlushAsync(timeout.Token);
+            await received.Task.WaitAsync(timeout.Token);
+            client.Dispose();
+            reply.SetResult(new ServerControlMessage(Microsoft.DotNet.Cli.Commands.Test.ServerControlKinds.CancelSession));
+
+            Action dispose = server.Dispose;
+            dispose.Should().NotThrow();
+        }
+        finally
+        {
+            timeout.Cancel();
+            server.Dispose();
+        }
+    }
+
+    [TestMethod]
     public async Task SingleConnectionNamedPipeServer_MultipleConnection_Fails()
     {
         var cancellationToken = TestContext.CancellationToken;

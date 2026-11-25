@@ -121,6 +121,28 @@ public class TestApplicationActionQueueTests : SdkTest
     }
 
     [TestMethod]
+    public void DetachedOwner_ReleasesWorkerWithoutLaterRemovingSiblingWorker()
+    {
+        using var reporter = new TerminalTestReporter(
+            new CapturingConsole(), new TerminalTestReporterOptions { AnsiMode = AnsiMode.SimpleAnsi, ShowProgress = true });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.AssemblyRunStarted("Owner.dll", ToolsetInfo.CurrentTargetFramework, null, "owner", "instance");
+
+        reporter.ReleaseInvocationLifetimeWorker("owner");
+        reporter.ReleaseInvocationLifetimeWorker("owner");
+        reporter.AssemblyRunStarted("Sibling.dll", ToolsetInfo.CurrentTargetFramework, null, "sibling", "instance");
+        reporter.AssemblyRunCompleted("owner", 0, null, null);
+        Action oversubscribe = () => reporter.AssemblyRunStarted(
+            "Extra.dll", ToolsetInfo.CurrentTargetFramework, null, "extra", "instance");
+        oversubscribe.Should().Throw<InvalidOperationException>().WithMessage("No empty slot found");
+        reporter.AssemblyRunCompleted("sibling", 0, null, null);
+        reporter.AssemblyRunStarted("Next.dll", ToolsetInfo.CurrentTargetFramework, null, "next", "instance");
+        reporter.AssemblyRunCompleted("next", 0, null, null);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, 0);
+        reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    [TestMethod]
     public void NormalizeExitCode_ZeroTestsWithDisposeFailure_ReturnsGenericFailure()
     {
         using var reporter = new TerminalTestReporter(
