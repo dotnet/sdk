@@ -422,6 +422,11 @@
         <target state="new">Invocation lifetime handlers are declared, but no single test project declares all of them, and no single project is marked with 'TestingPlatformInvocationLifetimeOwner'. Each test application runs its own handlers.</target>
         <note>{Locked="TestingPlatformInvocationLifetimeOwner"}</note>
       </trans-unit>
+      <trans-unit id="InvocationLifetimeOwnerControlLost">
+        <source>The test application '{0}' disconnected from its invocation lifetime control channel before invocation cleanup. The remaining test applications are not run.</source>
+        <target state="new">The test application '{0}' disconnected from its invocation lifetime control channel before invocation cleanup. The remaining test applications are not run.</target>
+        <note>{0} is a test module name.</note>
+      </trans-unit>
       <trans-unit id="InvocationLifetimeOwnerExitedBeforeCleanup">
         <source>The test application '{0}' exited before completing invocation cleanup.</source>
         <target state="new">The test application '{0}' exited before completing invocation cleanup.</target>
@@ -452,10 +457,20 @@
         <target state="new">Invocation setup in '{0}' did not complete within {1} seconds and was stopped. The remaining test applications are not run. Set the '{2}' environment variable to change the timeout.</target>
         <note>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</note>
       </trans-unit>
+      <trans-unit id="InvocationLifetimeSiblingProtocolTooOld">
+        <source>'{0}' does not support invocation lifetime coordination and might run invocation lifetime handlers again. Rebuild it with a Microsoft.Testing.Platform version that supports coordination.</source>
+        <target state="new">'{0}' does not support invocation lifetime coordination and might run invocation lifetime handlers again. Rebuild it with a Microsoft.Testing.Platform version that supports coordination.</target>
+        <note>{0} is a test application path. {Locked="Microsoft.Testing.Platform"}</note>
+      </trans-unit>
       <trans-unit id="InvocationLifetimeUnexpectedMessage">
         <source>The test application '{0}' sent the unexpected invocation lifetime message '{1}'. The test run is stopped.</source>
         <target state="new">The test application '{0}' sent the unexpected invocation lifetime message '{1}'. The test run is stopped.</target>
         <note>{0} is a test module name. {1} is a protocol message name.</note>
+      </trans-unit>
+      <trans-unit id="InvocationLifetimeUnsupportedParticipant">
+        <source>Invocation lifetime handlers are not coordinated because '{0}' ({1}) does not support coordination. Each test application runs its own handlers.</source>
+        <target state="new">Invocation lifetime handlers are not coordinated because '{0}' ({1}) does not support coordination. Each test application runs its own handlers.</target>
+        <note>{0} is a project path. {1} is a target framework.</note>
       </trans-unit>
       <trans-unit id="MismatchingHandshakeExecutionMode">
         <source>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</source>

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Pipes;
@@ -44,6 +44,89 @@ public class IPCTests
 
             Action dispose = server.Dispose;
             dispose.Should().NotThrow();
+        }
+        finally
+        {
+            timeout.Cancel();
+            server.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task WatchedControlClientDisconnectWhileWaiting_IsReportedBeforeTheResponse()
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(15));
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var disconnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var reply = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+        string pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
+        var server = new NamedPipeServer(
+            pipeName, (_, _) =>
+            {
+                received.TrySetResult();
+                return reply.Task;
+            },
+            1, timeout.Token, skipUnknownMessages: false, ignoreDisconnectedControlClient: true,
+            onClientDisconnected: () => disconnected.TrySetResult());
+        try
+        {
+            server.RegisterAllSerializers();
+            using var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+            Task connection = server.WaitConnectionAsync(timeout.Token);
+            await client.ConnectAsync(timeout.Token);
+            await connection;
+            byte[] frame = [.. BitConverter.GetBytes(sizeof(int)), .. BitConverter.GetBytes(WaitForServerControlRequestFieldsId.MessagesSerializerId)];
+            await client.WriteAsync(frame, timeout.Token);
+            await client.FlushAsync(timeout.Token);
+            await received.Task.WaitAsync(timeout.Token);
+
+            client.Dispose();
+
+            await disconnected.Task.WaitAsync(timeout.Token);
+            reply.Task.IsCompleted.Should().BeFalse();
+            Action dispose = server.Dispose;
+            dispose.Should().NotThrow();
+        }
+        finally
+        {
+            timeout.Cancel();
+            server.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task WatchedControlClient_ReceivesResponseAndServerCancellationIsNotReportedAsDisconnect()
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(15));
+        using var serverCancellation = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token);
+        int disconnects = 0;
+        var reply = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+        string pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
+        var server = new NamedPipeServer(
+            pipeName, (_, _) => reply.Task,
+            1, serverCancellation.Token, skipUnknownMessages: false, ignoreDisconnectedControlClient: true,
+            onClientDisconnected: () => Interlocked.Increment(ref disconnects));
+        try
+        {
+            server.RegisterAllSerializers();
+            using var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+            Task connection = server.WaitConnectionAsync(timeout.Token);
+            await client.ConnectAsync(timeout.Token);
+            await connection;
+            byte[] frame = [.. BitConverter.GetBytes(sizeof(int)), .. BitConverter.GetBytes(WaitForServerControlRequestFieldsId.MessagesSerializerId)];
+            await client.WriteAsync(frame, timeout.Token);
+            await client.FlushAsync(timeout.Token);
+
+            reply.SetResult(new ServerControlMessage(Microsoft.DotNet.Cli.Commands.Test.ServerControlKinds.CancelSession));
+            byte[] header = new byte[sizeof(int)];
+            await client.ReadExactlyAsync(header, timeout.Token);
+            BitConverter.ToInt32(header).Should().BeGreaterThan(sizeof(int));
+
+            serverCancellation.Cancel();
+            server.Dispose();
+            disconnects.Should().Be(0);
         }
         finally
         {

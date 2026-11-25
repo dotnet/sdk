@@ -191,6 +191,110 @@ public class InvocationLifetimeCoordinatorTests
     }
 
     [TestMethod]
+    public async Task ModuleTestsCompletedReplyIsHeldUntilEveryModuleCompleted()
+    {
+        using InvocationLifetimeCoordinator coordinator = CreateCoordinator();
+        coordinator.OnOwnerHandshake(CreateHandshake("[\"Sql\"]"), "1.5.0", controlPipeAvailable: true);
+        coordinator.OnSetupCompleted(new InvocationSetupCompleted("e", "i", true, null, []));
+
+        Task reply = coordinator.OnModuleTestsCompleted(new ModuleTestsCompleted("e", "i", ExitCode.Success));
+
+        coordinator.ModuleTestsCompletedTask.IsCompleted.Should().BeTrue();
+        reply.IsCompleted.Should().BeFalse();
+        await coordinator.CompleteAsync(ExitCode.Success, isCanceled: false);
+        reply.IsCompleted.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void ModuleTestsCompletedReplyIsReleasedOnDispose()
+    {
+        InvocationLifetimeCoordinator coordinator = CreateCoordinator();
+        coordinator.OnOwnerHandshake(CreateHandshake("[\"Sql\"]"), "1.5.0", controlPipeAvailable: true);
+        coordinator.OnSetupCompleted(new InvocationSetupCompleted("e", "i", true, null, []));
+        Task reply = coordinator.OnModuleTestsCompleted(new ModuleTestsCompleted("e", "i", ExitCode.Success));
+
+        coordinator.Dispose();
+
+        reply.IsCompleted.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public async Task ControlLossBeforeSetupSkipsSiblingsAndRepliesImmediately()
+    {
+        using InvocationLifetimeCoordinator coordinator = CreateCoordinator();
+        coordinator.OnOwnerHandshake(CreateHandshake("[\"Sql\"]"), "1.5.0", controlPipeAvailable: true);
+
+        coordinator.OnOwnerControlLost();
+
+        coordinator.HasFailed.Should().BeTrue();
+        AssertSiblingLaunch(coordinator, InvocationLifetimeSiblingLaunchKind.Skip);
+        coordinator.OwnerAbort.IsCompleted.Should().BeFalse();
+        _errors.Should().ContainSingle();
+
+        // The owner continues without coordination: it cleans up locally after its tests.
+        coordinator.OnSetupCompleted(new InvocationSetupCompleted("e", "i", true, null, []));
+        coordinator.OnModuleTestsCompleted(new ModuleTestsCompleted("e", "i", ExitCode.Success)).IsCompleted.Should().BeTrue();
+        coordinator.ModuleTestsCompletedTask.IsCompleted.Should().BeFalse();
+        coordinator.OwnerAbort.IsCompleted.Should().BeFalse();
+        _errors.Should().ContainSingle();
+        (await coordinator.CompleteAsync(ExitCode.Success, isCanceled: false)).Should().Be(ExitCode.GenericFailure);
+    }
+
+    [TestMethod]
+    public async Task ControlLossAfterSetupStopsLaunchesAndHoldsOwnerUntilRunningModulesComplete()
+    {
+        using InvocationLifetimeCoordinator coordinator = CreateCoordinator();
+        coordinator.OnOwnerHandshake(CreateHandshake("[\"Sql\"]"), "1.5.0", controlPipeAvailable: true);
+        coordinator.OnSetupCompleted(new InvocationSetupCompleted("e", "i", true, null, []));
+        AssertSiblingLaunch(coordinator, InvocationLifetimeSiblingLaunchKind.Coordinated);
+        coordinator.HasFailed.Should().BeFalse();
+
+        coordinator.OnOwnerControlLost();
+
+        coordinator.HasFailed.Should().BeTrue();
+        coordinator.SiblingAbort.IsCompleted.Should().BeFalse();
+        coordinator.OwnerAbort.IsCompleted.Should().BeFalse();
+        _errors.Should().ContainSingle();
+
+        Task reply = coordinator.OnModuleTestsCompleted(new ModuleTestsCompleted("e", "i", ExitCode.Success));
+        coordinator.ModuleTestsCompletedTask.IsCompleted.Should().BeTrue();
+        reply.IsCompleted.Should().BeFalse();
+        coordinator.OwnerAbort.IsCompleted.Should().BeFalse();
+
+        (await coordinator.CompleteAsync(ExitCode.Success, isCanceled: false)).Should().Be(ExitCode.GenericFailure);
+        reply.IsCompleted.Should().BeTrue();
+        _errors.Should().ContainSingle();
+    }
+
+    [TestMethod]
+    public void OwnerExitWhileHeldAfterControlLossAbortsRunningModules()
+    {
+        using InvocationLifetimeCoordinator coordinator = CreateCoordinator();
+        coordinator.OnOwnerHandshake(CreateHandshake("[\"Sql\"]"), "1.5.0", controlPipeAvailable: true);
+        coordinator.OnSetupCompleted(new InvocationSetupCompleted("e", "i", true, null, []));
+        coordinator.OnOwnerControlLost();
+        coordinator.OnModuleTestsCompleted(new ModuleTestsCompleted("e", "i", ExitCode.Success));
+
+        coordinator.OnOwnerExited();
+
+        coordinator.SiblingAbort.IsCompleted.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public async Task ControlLossWithoutAcceptedCoordinationIsIgnored()
+    {
+        using InvocationLifetimeCoordinator coordinator = CreateCoordinator();
+
+        coordinator.OnOwnerControlLost();
+
+        coordinator.HasFailed.Should().BeFalse();
+        _errors.Should().BeEmpty();
+        (await coordinator.CompleteAsync(ExitCode.Success, isCanceled: false)).Should().Be(ExitCode.Success);
+        coordinator.OnOwnerControlLost();
+        _errors.Should().BeEmpty();
+    }
+
+    [TestMethod]
     [DataRow(null, 900)]
     [DataRow("abc", 900)]
     [DataRow("-1", 900)]

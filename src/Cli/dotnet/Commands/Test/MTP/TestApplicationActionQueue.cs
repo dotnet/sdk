@@ -96,6 +96,13 @@ internal class TestApplicationActionQueue
                     selection.Owner!.ProjectFullPath).Yellow());
                 return null;
 
+            case InvocationLifetimeOwnerSelectionStatus.UnsupportedParticipant:
+                Reporter.Output.WriteLine(string.Format(
+                    CliCommandStrings.InvocationLifetimeUnsupportedParticipant,
+                    selection.UnsupportedParticipant!.ProjectFullPath,
+                    selection.UnsupportedParticipant.TargetFramework).Yellow());
+                return null;
+
             default:
                 return null;
         }
@@ -179,7 +186,10 @@ internal class TestApplicationActionQueue
                     if (coordinator is not null && !isOwner)
                     {
                         siblingLaunch = await coordinator.WaitForSiblingLaunchAsync(_cancellationToken);
-                        if (siblingLaunch.Kind == InvocationLifetimeSiblingLaunchKind.Skip)
+                        // Coordination can fail after earlier modules were launched with the setup outputs, for example
+                        // when the owner loses its control connection: the remaining modules are not launched.
+                        if (siblingLaunch.Kind == InvocationLifetimeSiblingLaunchKind.Skip
+                            || (siblingLaunch.Kind == InvocationLifetimeSiblingLaunchKind.Coordinated && coordinator.HasFailed))
                         {
                             // Invocation setup might have started and failed: launching would run tests without it.
                             output.MarkModuleExecutionIncomplete();

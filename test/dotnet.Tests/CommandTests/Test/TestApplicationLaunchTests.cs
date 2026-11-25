@@ -7,9 +7,11 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
+using ExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
 namespace dotnet.Tests.CommandTests.Test;
 
@@ -458,6 +460,84 @@ public sealed class TestApplicationLaunchTests
             .Properties[HandshakeMessagePropertyNames.ServerControlPipeName];
 
         ownerPipe.Should().NotBe(childPipe);
+    }
+
+    [TestMethod]
+    public async Task CanceledOwnerHeldOnModuleTestsCompleted_IsReleasedWithoutWaitingForItsQueuedDataWrite()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var errors = new List<string>();
+        using var coordinator = new InvocationLifetimeCoordinator(
+            InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"]),
+            TimeSpan.FromSeconds(30),
+            reportWarning: _ => { },
+            reportError: errors.Add);
+        TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            invocationLifetimeOwnerCoordinator: coordinator);
+        Task pipeLoops = application.StartPipeConnectionLoops();
+        var ownerRun = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var data = new NamedPipeClient(application.PipeName);
+        data.RegisterAllSerializers();
+        await data.ConnectAsync(timeout.Token);
+
+        HandshakeMessage reply = await data.RequestReplyAsync<HandshakeMessage, HandshakeMessage>(
+            new HandshakeMessage(new Dictionary<byte, string>
+            {
+                [HandshakeMessagePropertyNames.PID] = "1234",
+                [HandshakeMessagePropertyNames.Architecture] = "x64",
+                [HandshakeMessagePropertyNames.Framework] = ".NET 11.0.0",
+                [HandshakeMessagePropertyNames.OS] = "Windows",
+                [HandshakeMessagePropertyNames.SupportedProtocolVersions] = "1.5.0",
+                [HandshakeMessagePropertyNames.HostType] = HandshakeMessageHostTypes.TestHost,
+                [HandshakeMessagePropertyNames.ModulePath] = "test.dll",
+                [HandshakeMessagePropertyNames.TargetFramework] = "net11.0",
+                [HandshakeMessagePropertyNames.ExecutionId] = "e",
+                [HandshakeMessagePropertyNames.InstanceId] = "i",
+                [HandshakeMessagePropertyNames.InvocationLifetimeHandlers] = "[\"Sql\"]",
+            }),
+            timeout.Token);
+        reply.Properties[HandshakeMessagePropertyNames.InvocationLifetimeCoordinationAccepted].Should().Be("true");
+        var control = new NamedPipeClient(reply.Properties[HandshakeMessagePropertyNames.ServerControlPipeName]);
+        control.RegisterAllSerializers();
+        await control.ConnectAsync(timeout.Token);
+        Task<ServerControlMessage> cancellation = control.RequestReplyAsync<WaitForServerControlRequest, ServerControlMessage>(
+            WaitForServerControlRequest.CachedInstance, timeout.Token);
+        await data.RequestReplyAsync<InvocationSetupCompleted, VoidResponse>(
+            new InvocationSetupCompleted("e", "i", true, null, []), timeout.Token);
+
+        Task<VoidResponse> heldReply = data.RequestReplyAsync<ModuleTestsCompleted, VoidResponse>(
+            new ModuleTestsCompleted("e", "i", ExitCode.Success), timeout.Token);
+        (await coordinator.ModuleTestsCompletedTask.WaitAsync(timeout.Token)).Should().Be(ExitCode.Success);
+        coordinator.AttachDetachedOwner(application, ownerRun.Task);
+
+        // Cancellation reaches the held owner, whose graceful-stop callback then queues a data write behind the held reply.
+        application.RequestSessionCancellation();
+        (await cancellation.WaitAsync(timeout.Token)).Should().Be(new ServerControlMessage(ServerControlKinds.CancelSession));
+        Task<VoidResponse> callbackWrite = data.RequestReplyAsync<TestInProgressMessages, VoidResponse>(
+            new TestInProgressMessages("e", "i", []), timeout.Token);
+        Task<ServerControlMessage> cleanup = control.RequestReplyAsync<WaitForServerControlRequest, ServerControlMessage>(
+            WaitForServerControlRequest.CachedInstance, timeout.Token);
+        await Task.Delay(200, timeout.Token);
+        heldReply.IsCompleted.Should().BeFalse();
+        callbackWrite.IsCompleted.Should().BeFalse();
+        cleanup.IsCompleted.Should().BeFalse();
+
+        Task<int> completion = coordinator.CompleteAsync(ExitCode.Success, isCanceled: true);
+
+        await heldReply.WaitAsync(timeout.Token);
+        await callbackWrite.WaitAsync(timeout.Token);
+        (await cleanup.WaitAsync(timeout.Token)).Should().Be(new ServerControlMessage(ServerControlKinds.RunInvocationCleanup, ExitCode.Success, true));
+        await data.RequestReplyAsync<InvocationCleanupCompleted, VoidResponse>(
+            new InvocationCleanupCompleted("e", "i", true, null), timeout.Token);
+        data.Dispose();
+        control.Dispose();
+        await application.StopPipeConnectionLoopsAsync(pipeLoops).WaitAsync(timeout.Token);
+        ownerRun.SetResult(ExitCode.Success);
+
+        (await completion.WaitAsync(timeout.Token)).Should().Be(ExitCode.Success);
+        errors.Should().BeEmpty();
+        application.HasFailureDuringDispose.Should().BeFalse();
     }
 
     private static TestApplication CreateApplication(

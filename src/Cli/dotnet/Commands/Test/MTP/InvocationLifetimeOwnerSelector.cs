@@ -16,11 +16,18 @@ internal enum InvocationLifetimeOwnerSelectionStatus
 
     /// <summary>The selected owner cannot use the named-pipe transport and its control channel.</summary>
     UnsupportedTransport,
+
+    /// <summary>
+    /// A module does not declare <c>TestingPlatformInvocationLifetimeCoordinationSupported</c>. It could repeat the
+    /// owner's handlers (declared or code-only), so every module self-hosts (Phase 1).
+    /// </summary>
+    UnsupportedParticipant,
 }
 
 internal sealed record InvocationLifetimeOwnerSelection(
     InvocationLifetimeOwnerSelectionStatus Status,
-    TestModule? Owner = null);
+    TestModule? Owner = null,
+    TestModule? UnsupportedParticipant = null);
 
 /// <summary>
 /// Selects the module that owns invocation-lifetime handlers before any module is launched
@@ -53,6 +60,13 @@ internal static class InvocationLifetimeOwnerSelector
         if (!candidates.Any(static module => module.InvocationLifetimeHandlers is { Count: > 0 }))
         {
             return new(InvocationLifetimeOwnerSelectionStatus.NotRequested);
+        }
+
+        // A participant that cannot honor the coordinated-handler contract would run the owner's handlers again.
+        // Handlers can be registered in code only, so every participant must opt in, not only those declaring handlers.
+        if (candidates.FirstOrDefault(static module => !module.SupportsInvocationLifetimeCoordination) is { } unsupported)
+        {
+            return new(InvocationLifetimeOwnerSelectionStatus.UnsupportedParticipant, UnsupportedParticipant: unsupported);
         }
 
         TestModule? owner = null;

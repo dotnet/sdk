@@ -26,16 +26,23 @@ internal sealed class NamedPipeServer : NamedPipeBase
     private readonly byte[] _sizeOfIntArray = new byte[sizeof(int)];
     private readonly bool _skipUnknownMessages;
     private readonly bool _ignoreDisconnectedControlClient;
+    private readonly Action? _onClientDisconnected;
+    private readonly byte[] _disconnectProbeBuffer = new byte[1];
     private Task? _loopTask;
     private bool _disposed;
 
+    /// <param name="onClientDisconnected">
+    /// When set, the client is also watched for disconnection while a request waits for its response, and this
+    /// callback runs once when the client disconnects before the server is canceled.
+    /// </param>
     public NamedPipeServer(
         string pipeName,
         Func<NamedPipeServer, IRequest, Task<IResponse>> callback,
         int maxNumberOfServerInstances,
         CancellationToken cancellationToken,
         bool skipUnknownMessages,
-        bool ignoreDisconnectedControlClient = false)
+        bool ignoreDisconnectedControlClient = false,
+        Action? onClientDisconnected = null)
     {
         _namedPipeServerStream = new NamedPipeServerStream(
             pipeName,
@@ -50,6 +57,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
         _cancellationToken = cancellationToken;
         _skipUnknownMessages = skipUnknownMessages;
         _ignoreDisconnectedControlClient = ignoreDisconnectedControlClient;
+        _onClientDisconnected = onClientDisconnected;
     }
 
     public bool WasConnected { get; private set; }
@@ -73,8 +81,52 @@ internal sealed class NamedPipeServer : NamedPipeBase
                 catch (IOException ex) when (_ignoreDisconnectedControlClient)
                 {
                     Logger.LogTrace($"The server-control client disconnected: {ex.Message}");
+                    NotifyClientDisconnected();
                 }
             }, cancellationToken);
+    }
+
+    private void NotifyClientDisconnected()
+    {
+        if (!_cancellationToken.IsCancellationRequested)
+        {
+            _onClientDisconnected?.Invoke();
+        }
+    }
+
+    /// <summary>
+    /// Waits for a pending response while watching the client. A client waiting for its response sends nothing, so a
+    /// completed read means that it disconnected (or violated the protocol, which equally ends the conversation).
+    /// </summary>
+    /// <returns><see langword="false"/> when the client is gone.</returns>
+    private async Task<bool> WaitForResponseOrClientDisconnectionAsync(Task<IResponse> response, CancellationToken cancellationToken)
+    {
+        using var probeCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        Task<int> probe = _namedPipeServerStream.ReadAsync(_disconnectProbeBuffer, probeCancellation.Token).AsTask();
+        if (await Task.WhenAny(response, probe) == response)
+        {
+            probeCancellation.Cancel();
+        }
+
+        try
+        {
+            int bytesRead = await probe;
+            Logger.LogTrace(bytesRead == 0
+                ? "The server-control client disconnected while waiting for a response."
+                : "The server-control client sent data while waiting for a response.");
+            return false;
+        }
+        catch (IOException ex)
+        {
+            Logger.LogTrace($"The server-control client disconnected while waiting for a response: {ex.Message}");
+            return false;
+        }
+        catch (OperationCanceledException)
+        {
+            // Report server cancellation with the server token, as the other loop operations do.
+            cancellationToken.ThrowIfCancellationRequested();
+            return true;
+        }
     }
 
     /// <summary>
@@ -90,10 +142,20 @@ internal sealed class NamedPipeServer : NamedPipeBase
             IRequest? deserializedObject = await ReadRequestAsync(_namedPipeServerStream, cancellationToken);
             if (deserializedObject is null)
             {
+                NotifyClientDisconnected();
                 return;
             }
 
-            IResponse response = await _callback(this, deserializedObject);
+            Task<IResponse> responseTask = _callback(this, deserializedObject);
+            if (_onClientDisconnected is not null
+                && !responseTask.IsCompleted
+                && !await WaitForResponseOrClientDisconnectionAsync(responseTask, cancellationToken))
+            {
+                NotifyClientDisconnected();
+                return;
+            }
+
+            IResponse response = await responseTask;
             INamedPipeSerializer responseNamedPipeSerializer = GetSerializer(response.GetType());
 
             ResetBuffer(_serializationBuffer);

@@ -213,4 +213,5 @@ internal static class ProjectProperties
     internal const string ArtifactsPivots = "ArtifactsPivots";
     internal const string InvocationLifetimeHandlerItemName = "TestingPlatformInvocationLifetimeHandler";
     internal const string InvocationLifetimeOwner = "TestingPlatformInvocationLifetimeOwner";
+    internal const string InvocationLifetimeCoordinationSupported = "TestingPlatformInvocationLifetimeCoordinationSupported";
 }

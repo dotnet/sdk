@@ -2948,6 +2948,14 @@ Proceed?</value>
     <value>The invocation lifetime owner '{0}' cannot be coordinated because it does not use the named pipe transport. Each test application runs its own handlers.</value>
     <comment>{0} is a project path.</comment>
   </data>
+  <data name="InvocationLifetimeUnsupportedParticipant" xml:space="preserve">
+    <value>Invocation lifetime handlers are not coordinated because '{0}' ({1}) does not support coordination. Each test application runs its own handlers.</value>
+    <comment>{0} is a project path. {1} is a target framework.</comment>
+  </data>
+  <data name="InvocationLifetimeSiblingProtocolTooOld" xml:space="preserve">
+    <value>'{0}' does not support invocation lifetime coordination and might run invocation lifetime handlers again. Rebuild it with a Microsoft.Testing.Platform version that supports coordination.</value>
+    <comment>{0} is a test application path. {Locked="Microsoft.Testing.Platform"}</comment>
+  </data>
   <data name="InvocationLifetimeSetupFailed" xml:space="preserve">
     <value>Invocation setup failed in '{0}'. The remaining test applications are not run.</value>
     <comment>{0} is a test module name.</comment>
@@ -2958,6 +2966,10 @@ Proceed?</value>
   </data>
   <data name="InvocationLifetimeOwnerExitedBeforeCleanup" xml:space="preserve">
     <value>The test application '{0}' exited before completing invocation cleanup.</value>
+    <comment>{0} is a test module name.</comment>
+  </data>
+  <data name="InvocationLifetimeOwnerControlLost" xml:space="preserve">
+    <value>The test application '{0}' disconnected from its invocation lifetime control channel before invocation cleanup. The remaining test applications are not run.</value>
     <comment>{0} is a test module name.</comment>
   </data>
   <data name="InvocationLifetimeCleanupFailed" xml:space="preserve">

@@ -125,4 +125,5 @@ internal sealed record TestModule(
     string? ArtifactsProjectName = null,
     string? ArtifactsPivots = null,
     IReadOnlyList<string>? InvocationLifetimeHandlers = null,
-    bool IsInvocationLifetimeOwner = false);
+    bool IsInvocationLifetimeOwner = false,
+    bool SupportsInvocationLifetimeCoordination = false);

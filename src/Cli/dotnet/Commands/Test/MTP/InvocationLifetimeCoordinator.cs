@@ -68,8 +68,11 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
     private readonly TaskCompletionSource<InvocationCleanupCompleted> _cleanupCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource _ownerAbort = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource _siblingAbort = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource _ownerRelease = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     private State _state = State.Pending;
+    private bool _setupSucceeded;
+    private bool _ownerControlLost;
     private string? _coordinatedHandlers;
     private ITimer? _readinessTimer;
     private TestApplication? _detachedOwner;
@@ -114,6 +117,21 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
             lock (_lock)
             {
                 return _state is State.Accepted or State.SetupSucceeded or State.TestsCompleted or State.CleanupRequested;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Whether coordination failed after the owner accepted it. Modules that were not launched yet must not be
+    /// launched, even if invocation setup had already succeeded.
+    /// </summary>
+    public bool HasFailed
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _state == State.Failed;
             }
         }
     }
@@ -238,6 +256,7 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
             }
 
             _state = State.SetupSucceeded;
+            _setupSucceeded = true;
 
             // Output values are intentionally not traced.
             Logger.LogTrace($"Invocation setup completed in '{_ownerName}' with {message.Outputs.Length} output(s).");
@@ -248,18 +267,49 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
         }
     }
 
-    public void OnModuleTestsCompleted(ModuleTestsCompleted message)
+    /// <returns>
+    /// A task that completes when the owner may receive the reply to <see cref="ModuleTestsCompleted"/>: once every
+    /// other module completed. The owner cannot clean up while it waits for this reply, even if its server-control
+    /// connection is lost, so it never releases the resources that running modules still use.
+    /// </returns>
+    public Task OnModuleTestsCompleted(ModuleTestsCompleted message)
     {
         lock (_lock)
         {
-            if (_state != State.SetupSucceeded)
+            if (_state == State.SetupSucceeded)
+            {
+                _state = State.TestsCompleted;
+            }
+            else if (!(_state == State.Failed && _ownerControlLost && _setupSucceeded))
             {
                 FailUnexpectedMessage(nameof(ModuleTestsCompleted));
+                return Task.CompletedTask;
+            }
+
+            // After a lost control connection, the coordination already failed, but the owner is still held until the
+            // modules that run with its setup outputs complete.
+            _moduleTestsCompleted.TrySetResult(message.ExitCode);
+            return _ownerRelease.Task;
+        }
+    }
+
+    /// <summary>
+    /// Called when the owner's dedicated server-control connection closes while the owner is alive. The owner can no
+    /// longer receive the invocation cleanup request, so no other module is launched any more. Running modules are
+    /// not canceled: the owner is held at <see cref="ModuleTestsCompleted"/> until they complete.
+    /// </summary>
+    public void OnOwnerControlLost()
+    {
+        lock (_lock)
+        {
+            if (_state is not (State.Accepted or State.SetupSucceeded or State.TestsCompleted))
+            {
+                Logger.LogTrace($"The invocation lifetime control connection of '{_ownerName}' closed in state '{_state}'.");
                 return;
             }
 
-            _state = State.TestsCompleted;
-            _moduleTestsCompleted.TrySetResult(message.ExitCode);
+            _ownerControlLost = true;
+            Fail(string.Format(CliCommandStrings.InvocationLifetimeOwnerControlLost, _ownerName), abortOwner: false, abortSiblings: false);
         }
     }
 
@@ -297,6 +347,11 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
                 case State.TestsCompleted:
                     // An owner that exits before cleanup can no longer release what the other modules use.
                     Fail(string.Format(CliCommandStrings.InvocationLifetimeOwnerExitedBeforeCleanup, _ownerName), abortOwner: false);
+                    break;
+
+                case State.Failed when _ownerControlLost && !_ownerRelease.Task.IsCompleted:
+                    // The owner was held until the other modules complete, but it is gone: so might be its resources.
+                    _siblingAbort.TrySetResult();
                     break;
             }
         }
@@ -348,6 +403,12 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
                 if (requestCleanup)
                 {
                     owner.RequestInvocationCleanup(aggregateExitCode, isCanceled);
+                }
+
+                // Every other module completed: the owner may now proceed to its cleanup.
+                _ownerRelease.TrySetResult();
+                if (requestCleanup)
+                {
                     cleanupFailed = !await WaitForCleanupAsync(ownerRun);
                 }
 
@@ -362,6 +423,9 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
                 cleanupFailed |= owner.HasFailureDuringDispose;
             }
         }
+
+        // Nothing waits for the other modules any more.
+        _ownerRelease.TrySetResult();
 
         bool failed;
         lock (_lock)
@@ -490,7 +554,7 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
         Fail(string.Format(CliCommandStrings.InvocationLifetimeUnexpectedMessage, _ownerName, messageName), abortOwner: true);
     }
 
-    private void Fail(string message, bool abortOwner)
+    private void Fail(string message, bool abortOwner, bool abortSiblings = true)
     {
         if (_state == State.Failed)
         {
@@ -501,7 +565,11 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
         _state = State.Failed;
         _reportError(message);
         _siblingLaunch.TrySetResult(InvocationLifetimeSiblingLaunch.Skip);
-        _siblingAbort.TrySetResult();
+        if (abortSiblings)
+        {
+            _siblingAbort.TrySetResult();
+        }
+
         if (abortOwner)
         {
             _ownerAbort.TrySetResult();
@@ -576,5 +644,7 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
         {
             StopReadinessTimer();
         }
+
+        _ownerRelease.TrySetResult();
     }
 }

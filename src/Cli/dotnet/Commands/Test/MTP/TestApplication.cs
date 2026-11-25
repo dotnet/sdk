@@ -13,6 +13,7 @@ using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -67,6 +68,7 @@ internal sealed class TestApplication(
     private Task? _invocationLifetimeControlConnectionLoop;
     private ServerControlMessage? _invocationCleanupMessage;
     private bool _sessionCancellationDelivered;
+    private bool _invocationLifetimeParticipationWarned;
     private readonly CancellationTokenSource _pipeCancellationTokenSource = new();
     private HttpTestHostGateway? _httpGateway;
     private string? _httpResponseFilePath;
@@ -104,13 +106,7 @@ internal sealed class TestApplication(
 
         var processStartInfo = CreateProcessStartInfo();
 
-        var cancellationToken = _pipeCancellationTokenSource.Token;
-        var testAppPipeConnectionLoop = _httpGateway is null
-            ? Task.Run(async () => await WaitConnectionAsync(cancellationToken))
-            : Task.CompletedTask;
-        var controlPipeConnectionLoop = _httpGateway is null
-            ? Task.Run(async () => await WaitControlConnectionAsync(cancellationToken))
-            : Task.CompletedTask;
+        Task pipeConnectionLoops = StartPipeConnectionLoops();
 
         Process? process = null;
         Task? stdOutTask = null;
@@ -262,12 +258,32 @@ internal sealed class TestApplication(
             Volatile.Write(ref _standardOutputCollector, null);
             Volatile.Write(ref _standardErrorCollector, null);
 
-            _pipeCancellationTokenSource.Cancel();
-            await Task.WhenAll(testAppPipeConnectionLoop, controlPipeConnectionLoop);
-            if (_invocationLifetimeControlConnectionLoop is not null)
-            {
-                await _invocationLifetimeControlConnectionLoop;
-            }
+            await StopPipeConnectionLoopsAsync(pipeConnectionLoops);
+        }
+    }
+
+    internal string PipeName => _pipeName;
+
+    internal Task StartPipeConnectionLoops()
+    {
+        if (_httpGateway is not null)
+        {
+            return Task.CompletedTask;
+        }
+
+        var cancellationToken = _pipeCancellationTokenSource.Token;
+        return Task.WhenAll(
+            Task.Run(async () => await WaitConnectionAsync(cancellationToken)),
+            Task.Run(async () => await WaitControlConnectionAsync(cancellationToken)));
+    }
+
+    internal async Task StopPipeConnectionLoopsAsync(Task pipeConnectionLoops)
+    {
+        _pipeCancellationTokenSource.Cancel();
+        await pipeConnectionLoops;
+        if (_invocationLifetimeControlConnectionLoop is not null)
+        {
+            await _invocationLifetimeControlConnectionLoop;
         }
     }
 
@@ -804,7 +820,8 @@ internal sealed class TestApplication(
                     NamedPipeServerStream.MaxAllowedServerInstances,
                     token,
                     skipUnknownMessages: false,
-                    ignoreDisconnectedControlClient: true);
+                    ignoreDisconnectedControlClient: true,
+                    onClientDisconnected: invocationLifetime ? _invocationLifetimeOwnerCoordinator!.OnOwnerControlLost : null);
                 try
                 {
                     pipeConnection.RegisterAllSerializers();
@@ -927,8 +944,33 @@ internal sealed class TestApplication(
         return OnRequest(server: null, request);
     }
 
+    /// <summary>
+    /// The evaluated <c>TestingPlatformInvocationLifetimeCoordinationSupported</c> property can be stale, for example with
+    /// <c>--no-build</c> after a package update. A test host that cannot negotiate the coordination protocol cannot
+    /// recognize the coordinated handlers either and could run them again.
+    /// </summary>
+    private void WarnIfCoordinatedSiblingCannotParticipate(string negotiatedVersion)
+    {
+        if (_invocationLifetimeSiblingLaunch is not { Kind: InvocationLifetimeSiblingLaunchKind.Coordinated }
+            || _invocationLifetimeParticipationWarned
+            || (Version.TryParse(negotiatedVersion, out Version? version) && version >= ProtocolConstants.InvocationLifetimeVersion))
+        {
+            return;
+        }
+
+        _invocationLifetimeParticipationWarned = true;
+        Reporter.Output.WriteLine(string.Format(CliCommandStrings.InvocationLifetimeSiblingProtocolTooOld, Module.TargetPath).Yellow());
+    }
+
     private Task<IResponse> OnRequest(NamedPipeServer? server, IRequest request)
     {
+        // A coordinated owner waits for this reply before it cleans up, so it is held until every other module completed.
+        async Task<IResponse> ReplyWhenReleasedAsync(Task ownerRelease)
+        {
+            await ownerRelease.WaitAsync(_pipeCancellationTokenSource.Token);
+            return VoidResponse.CachedInstance;
+        }
+
         // We need to lock as we might be called concurrently when test app child processes all communicate with us.
         // For example, in a case of a sharding extension, we could get test result messages concurrently.
         // To be the most safe, we lock the whole OnRequest.
@@ -949,6 +991,7 @@ internal sealed class TestApplication(
                         // Microsoft.Testing.Platform stops sending further messages on this connection.
                         bool handshakeAccepted = OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
                         SetNegotiatedProtocolVersion(handshakeAccepted ? negotiatedVersion : string.Empty);
+                        WarnIfCoordinatedSiblingCannotParticipate(handshakeAccepted ? negotiatedVersion : string.Empty);
                         bool invocationLifetimeAccepted = server is not null
                             && _invocationLifetimeConnection is null
                             && _invocationLifetimeOwnerCoordinator is not null
@@ -982,7 +1025,11 @@ internal sealed class TestApplication(
                         if (IsInvocationLifetimeConnection(server, moduleTestsCompleted))
                         {
                             _handler.ReleaseInvocationLifetimeWorker();
-                            _invocationLifetimeOwnerCoordinator!.OnModuleTestsCompleted(moduleTestsCompleted);
+                            Task ownerRelease = _invocationLifetimeOwnerCoordinator!.OnModuleTestsCompleted(moduleTestsCompleted);
+                            if (!ownerRelease.IsCompleted)
+                            {
+                                return ReplyWhenReleasedAsync(ownerRelease);
+                            }
                         }
 
                         break;
