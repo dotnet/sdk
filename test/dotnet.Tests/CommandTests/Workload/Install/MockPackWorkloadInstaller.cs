@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             new List<(ManifestVersionUpdate manifestUpdate, DirectoryPath?)>();
         public string CachePath;
         public bool GarbageCollectionCalled = false;
+        public bool ShutdownCalled = false;
         public bool InstallWorkloadSetCalled = false;
         public MockInstallationRecordRepository InstallationRecordRepository;
         public bool FailingRollback;
@@ -211,7 +212,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         public void Shutdown()
         {
-
+            ShutdownCalled = true;
         }
 
         public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)

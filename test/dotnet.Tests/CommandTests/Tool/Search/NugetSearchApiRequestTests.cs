@@ -149,6 +149,34 @@ public class NugetSearchApiRequestTests
     }
 
     [TestMethod]
+    public async Task GetResultPropagatesUnrelatedCancellation()
+    {
+        var request = new NugetToolSearchApiRequest(
+            (_, _) => Task.FromException<PackageSearchResource?>(new OperationCanceledException("unrelated cancellation")));
+
+        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source, CancellationToken.None);
+
+        await act.Should().ThrowAsync<OperationCanceledException>()
+            .WithMessage("unrelated cancellation");
+    }
+
+    [TestMethod]
+    public async Task GetResultTranslatesInternalTimeout()
+    {
+        var request = new NugetToolSearchApiRequest(
+            async (_, cancellationToken) =>
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                return null;
+            });
+
+        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source, CancellationToken.None)
+            .WaitAsync(TimeSpan.FromSeconds(15), TestContext.CancellationToken);
+
+        await act.Should().ThrowAsync<NugetSearchApiRequestException>();
+    }
+
+    [TestMethod]
     public async Task GetResultEscapesSearchTermForV3Request()
     {
         await using var server = new TestV3SearchServer();

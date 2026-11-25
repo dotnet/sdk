@@ -264,7 +264,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
         [DataRow("\"VALUE\"", "\"value\"", "true", true)]
         [DataRow("\"VALUE\"", "\"OTHER\"", "true", false)]
         [DataRow("""{"name":"VALUE"}""", """{"name":"value"}""", "true", false)]
+        [DataRow("""["VALUE"]""", """["value"]""", "true", false)]
         [DataRow("42", "\"42\"", "true", false)]
+        [DataRow("true", "\"true\"", "true", false)]
         public void ComparesOnlyStringValuesIgnoringCaseWhenRequested(string originalValue, string newValue, string? ignorePropertyValueCase, bool expectedResult)
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();

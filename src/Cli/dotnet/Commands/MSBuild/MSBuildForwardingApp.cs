@@ -150,6 +150,9 @@ public class MSBuildForwardingApp : CommandBase
         // Ignore Ctrl-C for the remainder of the command's execution
         // Forwarding commands will just spawn the child process and exit
         Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
-        return _forwardingAppWithoutLogging.Execute(workingDirectory, cancellationToken);
+        return _forwardingAppWithoutLogging.Execute(
+            workingDirectory,
+            suspendSoftCancellationTimeout: false,
+            cancellationToken);
     }
 }

@@ -165,7 +165,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="GetCurrentProjectBuildStaticWebAssetItems" DependsOnTargets="ResolveStaticWebAssetsConfiguration" Returns="@(_CachedBuildStaticWebAssetItems)">
+  <Target Name="_ReadCurrentProjectBuildStaticWebAssetItems" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
 
       <PropertyGroup>
         <_ShouldReadBuildManifestAndUpdateItemGroup>false</_ShouldReadBuildManifestAndUpdateItemGroup>
@@ -180,8 +180,16 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Output TaskParameter="ReferencedProjectsConfiguration" ItemName="_CachedBuildStaticWebAssetReferencedProjectsConfiguration" />
       </ReadStaticWebAssetsManifestFile>
 
+      <ItemGroup>
+        <_BuildStaticWebAssetReferenceCandidates Include="@(_CachedBuildStaticWebAssets)" />
+      </ItemGroup>
+
+  </Target>
+
+  <Target Name="GetCurrentProjectBuildStaticWebAssetItems" DependsOnTargets="_ReadCurrentProjectBuildStaticWebAssetItems" Returns="@(_CachedBuildStaticWebAssetItems)">
+
       <ComputeReferenceStaticWebAssetItems
-        Assets="@(_CachedBuildStaticWebAssets)"
+        Assets="@(_BuildStaticWebAssetReferenceCandidates)"
         Patterns="@(_CachedBuildStaticWebAssetDiscoveryPatterns)"
         ProjectMode="$(StaticWebAssetProjectMode)"
         AssetKind="Build"

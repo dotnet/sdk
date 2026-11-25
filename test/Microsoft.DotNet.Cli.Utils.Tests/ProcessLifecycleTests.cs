@@ -227,6 +227,122 @@ public class ProcessLifecycleTests : SdkTest
 
     [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void ForwardedMSBuildUsesTheBuildSoftCancellationTimeout()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+        string msbuildPath = typeof(ProcessLifecycleTestApp).Assembly.Location;
+
+        using Process child = StartChild("msbuild-external", testDirectory.Path, msbuildPath);
+        try
+        {
+            WaitForMarker(testDirectory.Path, "ready");
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            child.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
+            child.WaitForExit(TimeSpan.FromSeconds(5)).Should().BeTrue();
+
+            child.ExitCode.Should().Be(130);
+            stopwatch.Elapsed.Should().BeGreaterThan(TimeSpan.FromSeconds(1.5));
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(4));
+        }
+        finally
+        {
+            StopChild(child);
+        }
+    }
+
+    [TestMethod]
+    public void MtpLifecycleAllowsCooperativeCleanupAndKillsChildrenOnForcefulCancellation()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+        using Process child = StartChild("mtp-lifecycle", testDirectory.Path);
+        try
+        {
+            WaitForMarker(testDirectory.Path, "ready");
+            int testApplicationProcessId =
+                int.Parse(File.ReadAllText(GetMarkerPath(testDirectory.Path) + ".pid"));
+
+            SendSignal(child, testDirectory.Path, PosixSignal.SIGINT);
+            WaitForMarker(testDirectory.Path, "signal-cancelled");
+            Thread.Sleep(TimeSpan.FromMilliseconds(750));
+            child.HasExited.Should().BeFalse(
+                "the first Ctrl+C should allow MTP test applications to finish reporting");
+            Process.GetProcessById(testApplicationProcessId).HasExited.Should().BeFalse(
+                "cooperative cancellation should not kill the test application");
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            SendSignal(child, testDirectory.Path, PosixSignal.SIGINT, sequence: 2);
+            child.WaitForExit(s_waitTimeout).Should().BeTrue();
+
+            child.ExitCode.Should().Be(130);
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
+            SpinWait.SpinUntil(
+                    () => HasProcessExited(testApplicationProcessId),
+                    TimeSpan.FromSeconds(10))
+                .Should().BeTrue("forceful cancellation should kill the test application");
+        }
+        finally
+        {
+            StopChild(child);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void MtpLifecycleForwardsSigTermToTestApplication()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+        using Process child = StartChild("mtp-sigterm-lifecycle", testDirectory.Path);
+        try
+        {
+            WaitForMarker(testDirectory.Path, "ready");
+            int testApplicationProcessId =
+                int.Parse(File.ReadAllText(GetMarkerPath(testDirectory.Path) + ".pid"));
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            child.SafeHandle.Signal(PosixSignal.SIGTERM).Should().BeTrue();
+            WaitForMarker(testDirectory.Path, "forwarded");
+            child.WaitForExit(s_waitTimeout).Should().BeTrue();
+
+            child.ExitCode.Should().Be(143);
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(2));
+            SpinWait.SpinUntil(
+                    () => HasProcessExited(testApplicationProcessId),
+                    TimeSpan.FromSeconds(10))
+                .Should().BeTrue("SIGTERM should let the test application exit before forceful cleanup");
+        }
+        finally
+        {
+            StopChild(child);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void ForwardSigTermSkipsDisposedProcessesAndTerminatesRemainingProcesses()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+        using Process child = StartChild("signal-child", testDirectory.Path);
+        using var disposedProcess = new Process();
+        disposedProcess.Dispose();
+
+        try
+        {
+            WaitForMarker(testDirectory.Path, "grandchild-ready");
+
+            ProcessReaper.ForwardSigTermAndTerminate([disposedProcess, child]);
+
+            WaitForMarker(testDirectory.Path, "forwarded");
+            child.WaitForExit(s_waitTimeout).Should().BeTrue();
+            child.ExitCode.Should().Be(43);
+        }
+        finally
+        {
+            StopChild(child);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void SigTermIsForwardedToReapedChild()
     {
         var testDirectory = TestAssetsManager.CreateTestDirectory();
@@ -327,13 +443,13 @@ public class ProcessLifecycleTests : SdkTest
         }
     }
 
-    private static Process StartChild(string childMode, string testDirectory)
+    private static Process StartChild(string childMode, string testDirectory, params string[] additionalArguments)
     {
         string markerPath = GetMarkerPath(testDirectory);
         File.Delete(markerPath);
         File.Delete(markerPath + ".signal-1");
         File.Delete(markerPath + ".signal-2");
-        Process process = CreateChildProcess(childMode, testDirectory);
+        Process process = CreateChildProcess(childMode, testDirectory, additionalArguments);
         process.Start();
         return process;
     }
@@ -359,7 +475,10 @@ public class ProcessLifecycleTests : SdkTest
         }
     }
 
-    private static Process CreateChildProcess(string childMode, string testDirectory)
+    private static Process CreateChildProcess(
+        string childMode,
+        string testDirectory,
+        params string[] additionalArguments)
     {
         string markerPath = GetMarkerPath(testDirectory);
         string testAssemblyPath = typeof(ProcessLifecycleTests).Assembly.Location;
@@ -382,6 +501,10 @@ public class ProcessLifecycleTests : SdkTest
         startInfo.ArgumentList.Add(helperAssemblyPath);
         startInfo.ArgumentList.Add(Path.ChangeExtension(testAssemblyPath, ".runtimeconfig.json"));
         startInfo.ArgumentList.Add(Path.ChangeExtension(testAssemblyPath, ".deps.json"));
+        foreach (string argument in additionalArguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
 
         return new Process { StartInfo = startInfo };
     }
@@ -419,4 +542,17 @@ public class ProcessLifecycleTests : SdkTest
 
     private static string GetMarkerPath(string testDirectory)
         => Path.Combine(testDirectory, "signal-marker");
+
+    private static bool HasProcessExited(int processId)
+    {
+        try
+        {
+            using Process process = Process.GetProcessById(processId);
+            return process.HasExited;
+        }
+        catch (ArgumentException)
+        {
+            return true;
+        }
+    }
 }

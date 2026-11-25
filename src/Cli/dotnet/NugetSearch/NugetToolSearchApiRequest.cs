@@ -97,7 +97,8 @@ internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
         {
             throw new NugetSearchApiRequestException(ex.Message);
         }
-        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException ex) when (
+            timeoutCancellation.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
             throw new NugetSearchApiRequestException(ex.Message);
         }

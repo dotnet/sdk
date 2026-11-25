@@ -478,11 +478,11 @@ internal static class SolutionAndProjectUtility
     /// The evaluation happens in the collection of <paramref name="buildSession"/>, which is the one
     /// every project of the run has to share; pass an <paramref name="evaluationContext"/> to reuse an
     /// existing one and avoid redundant evaluation.
-    /// When <paramref name="requireTestProject"/> is <see langword="true"/>, only target frameworks that
-    /// are test projects participate in device selection. Solutions use this so that non-test projects
-    /// (e.g. a MAUI app or library) that import <c>ComputeAvailableDevices</c> through their workload
-    /// are not asked for a device. It must only be used after restore, since test-project properties
-    /// typically come from NuGet package imports.
+    /// When <paramref name="requireTestingPlatformApplication"/> is <see langword="true"/>, only target
+    /// frameworks that are Microsoft.Testing.Platform applications participate in device selection.
+    /// Solutions use this so that other projects (e.g. a MAUI app or library) that import
+    /// <c>ComputeAvailableDevices</c> through their workload are not asked for a device. It must only be
+    /// used after restore, since <c>IsTestingPlatformApplication</c> typically comes from NuGet package imports.
     /// </summary>
     internal static DeviceSelectionEvaluation? EvaluateProjectForDeviceSelection(
         string projectFilePath,
@@ -491,7 +491,7 @@ internal static class SolutionAndProjectUtility
         EvaluationContext? evaluationContext = null,
         string? configuration = null,
         string? platform = null,
-        bool requireTestProject = false)
+        bool requireTestingPlatformApplication = false)
     {
         // --device is already handled by HandleDeviceWithTargetFrameworkSelection
         if (!string.IsNullOrWhiteSpace(buildOptions.Device))
@@ -571,7 +571,7 @@ internal static class SolutionAndProjectUtility
             evaluatedProjects[framework] = frameworkProject;
         }
 
-        return new DeviceSelectionEvaluation(evaluatedProjects, testTfmsInParallel, requireTestProject);
+        return new DeviceSelectionEvaluation(evaluatedProjects, testTfmsInParallel, requireTestingPlatformApplication);
     }
 
     /// <summary>
@@ -621,7 +621,7 @@ internal static class SolutionAndProjectUtility
     internal sealed record DeviceSelectionEvaluation(
         Dictionary<string, ProjectInstance> EvaluatedProjects,
         bool TestTfmsInParallel,
-        bool RequireTestProject = false)
+        bool RequireTestingPlatformApplication = false)
     {
         public IEnumerable<KeyValuePair<string, ProjectInstance>> ProjectsByFramework
             => EvaluatedProjects.Count == 1
@@ -633,11 +633,9 @@ internal static class SolutionAndProjectUtility
 
         public bool RequiresDeviceSelection(ProjectInstance project)
             => project.Targets.ContainsKey(Constants.ComputeAvailableDevices)
-                && (!RequireTestProject
-                    || IsTrue(project.GetPropertyValue(ProjectProperties.IsTestProject))
-                    || IsTrue(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)));
-
-        private static bool IsTrue(string value) => bool.TryParse(value, out bool result) && result;
+                && (!RequireTestingPlatformApplication
+                    || (bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication)
+                        && isTestingPlatformApplication));
     }
 
     internal sealed record DeviceSelectionResult(

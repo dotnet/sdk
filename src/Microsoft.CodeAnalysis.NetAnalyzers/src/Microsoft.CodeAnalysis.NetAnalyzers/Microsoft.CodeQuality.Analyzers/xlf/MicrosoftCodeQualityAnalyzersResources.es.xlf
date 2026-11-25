@@ -1469,7 +1469,7 @@
       </trans-unit>
       <trans-unit id="PropertiesShouldNotReturnArraysTitle">
         <source>Properties should not return arrays</source>
-        <target state="translated">Las propiedades no deben devolver matrices</target>
+        <target state="translated">Las propiedades no deberían devolver matrices</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertiesShouldNotReturnArraysDescription">
@@ -1479,7 +1479,7 @@
       </trans-unit>
       <trans-unit id="PropertiesShouldNotReturnArraysMessage">
         <source>Properties should not return arrays</source>
-        <target state="translated">Las propiedades no deben devolver matrices</target>
+        <target state="translated">Las propiedades no deberían devolver matrices</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideGetHashCodeOnOverridingEqualsTitle">
@@ -1934,17 +1934,17 @@
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalMessageDefault">
         <source>{0} is a multidimensional array. Replace it with a jagged array if possible.</source>
-        <target state="translated">{0} es una matriz multidimensional. Sustitúyala por una matriz escalonada si fuera posible.</target>
+        <target state="translated">{0} es una matriz multidimensional. Reemplácelo por una matriz escalonada si es posible.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalMessageReturn">
         <source>{0} returns a multidimensional array of {1}. Replace it with a jagged array if possible.</source>
-        <target state="translated">{0} devuelve una matriz multidimensional de {1}. Sustitúyala por una matriz escalonada si fuera posible.</target>
+        <target state="translated">{0} devuelve una matriz multidimensional de {1}. Reemplácelo por una matriz escalonada si es posible.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalMessageBody">
         <source>{0} uses a multidimensional array of {1}. Replace it with a jagged array if possible.</source>
-        <target state="translated">{0} utiliza una matriz multidimensional de {1}. Sustitúyala por una matriz escalonada si fuera posible.</target>
+        <target state="translated">{0} usa una matriz multidimensional de {1}. Reemplácelo por una matriz escalonada si es posible.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticTitle">

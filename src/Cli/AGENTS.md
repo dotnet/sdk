@@ -49,6 +49,11 @@ before bounded forceful termination.
 competing command-line termination handler for those signals. MSBuild operations use a
 two-second soft-cancellation override so submissions and loggers, including binary
 loggers, can finish cancellation cleanup; a second Ctrl+C or SIGTERM still bypasses it.
+MTP test execution suspends the automatic deadline while running test applications so
+their own first-Ctrl+C handlers can report final results. Its cancellation manager must
+observe the shared cooperative and forceful lifecycle tokens: cooperative cancellation
+stops queueing new applications, while forceful cancellation kills all registered test
+application process trees before the lifecycle exits.
 
 ### Cancellation and cleanup
 
@@ -199,9 +204,10 @@ target-produced project state, and the session's success/failure cleanup. Cover 
 
 In `--solution` runs,
 [`device selection`](dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs) applies only to
-test projects (`IsTestProject` or `IsTestingPlatformApplication`). App and library projects, such as
-MAUI heads, can import `ComputeAvailableDevices` in their inner builds and must not prompt for a device. The single-project
-path evaluates before restore, so it must not apply this NuGet-dependent gate.
+MTP test applications (`IsTestingPlatformApplication`); `IsTestProject` alone identifies
+a VSTest project and must not opt it in. App and library projects, such as MAUI heads,
+can import `ComputeAvailableDevices` in their inner builds and must not prompt for a device.
+The single-project path evaluates before restore, so it must not apply this NuGet-dependent gate.
 
 Parent-process operations must also use the captured invocation directory: pass it through background
 workload updates to both `global.json` discovery and NuGet configuration, and initialize absolute MTP
