@@ -149,31 +149,86 @@ public class NugetSearchApiRequestTests
     }
 
     [TestMethod]
-    public async Task GetResultPropagatesUnrelatedCancellation()
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task GetResultReportsDiscoveryAndSearchTimeoutsAsRetriable(bool duringSearch)
     {
+        var resource = new CapturingPackageSearchResource([])
+        {
+            BeforeSearch = token => Task.Delay(Timeout.InfiniteTimeSpan, token),
+        };
         var request = new NugetToolSearchApiRequest(
-            (_, _) => Task.FromException<PackageSearchResource?>(new OperationCanceledException("unrelated cancellation")));
+            async (_, token) =>
+            {
+                if (!duringSearch)
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                }
 
-        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source, CancellationToken.None);
+                return resource;
+            },
+            TimeSpan.FromMilliseconds(50));
 
-        await act.Should().ThrowAsync<OperationCanceledException>()
-            .WithMessage("unrelated cancellation");
+        Func<Task> action = () => request.GetResult(new NugetSearchApiParameter("sample"), Source, TestContext.CancellationToken);
+
+        (await action.Should().ThrowAsync<NugetSearchApiRequestException>())
+            .WithMessage($"*Retry*{Source.Source}*");
     }
 
     [TestMethod]
-    public async Task GetResultTranslatesInternalTimeout()
+    public async Task GetResultStartsQueryTimeoutAfterEndpointDiscovery()
+    {
+        TimeSpan delay = TimeSpan.FromMilliseconds(1600);
+        var resource = new CapturingPackageSearchResource([])
+        {
+            BeforeSearch = token => Task.Delay(delay, token),
+        };
+        var request = new NugetToolSearchApiRequest(
+            async (_, token) =>
+            {
+                await Task.Delay(delay, token);
+                return resource;
+            },
+            TimeSpan.FromSeconds(3));
+
+        IReadOnlyCollection<SearchResultPackage> result =
+            await request.GetResult(new NugetSearchApiParameter("sample"), Source, TestContext.CancellationToken);
+
+        result.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public async Task GetResultDoesNotReportUnrelatedCancellationAsTimeout()
     {
         var request = new NugetToolSearchApiRequest(
-            async (_, cancellationToken) =>
-            {
-                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
-                return null;
-            });
+            (_, _) => Task.FromException<PackageSearchResource?>(new OperationCanceledException()));
 
-        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source, CancellationToken.None)
-            .WaitAsync(TimeSpan.FromSeconds(15), TestContext.CancellationToken);
+        Func<Task> action = () => request.GetResult(new NugetSearchApiParameter("sample"), Source, TestContext.CancellationToken);
 
-        await act.Should().ThrowAsync<NugetSearchApiRequestException>();
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(action);
+    }
+
+    [TestMethod]
+    public async Task GetResultCancelsVersionDiscovery()
+    {
+        TaskCompletionSource started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<IEnumerable<VersionInfo>> versions = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        var packageMetadata = new Mock<IPackageSearchMetadata>(MockBehavior.Strict);
+        packageMetadata.Setup(metadata => metadata.GetVersionsAsync()).Returns(() =>
+        {
+            started.SetResult();
+            return versions.Task;
+        });
+        var resource = new CapturingPackageSearchResource([packageMetadata.Object]);
+        var request = new NugetToolSearchApiRequest((_, _) => Task.FromResult<PackageSearchResource?>(resource));
+        using CancellationTokenSource cancellation = new();
+
+        Task action = request.GetResult(new NugetSearchApiParameter("sample", includeVersions: true), Source, cancellation.Token);
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+        cancellation.Cancel();
+
+        await FluentActions.Awaiting(() => action).Should().ThrowAsync<OperationCanceledException>();
+        versions.SetResult([]);
     }
 
     [TestMethod]
@@ -219,9 +274,11 @@ public class NugetSearchApiRequestTests
 
         public int Take { get; private set; }
 
+        public Func<CancellationToken, Task>? BeforeSearch { get; init; }
+
         public override bool SupportsPackageTypeFiltering => true;
 
-        public override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(
+        public override async Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(
             string searchTerm,
             SearchFilter filters,
             int skip,
@@ -234,9 +291,17 @@ public class NugetSearchApiRequestTests
             Skip = skip;
             Take = take;
 
-            return _exception is null
-                ? Task.FromResult(_results!)
-                : Task.FromException<IEnumerable<IPackageSearchMetadata>>(_exception);
+            if (BeforeSearch is not null)
+            {
+                await BeforeSearch(cancellationToken);
+            }
+
+            if (_exception is not null)
+            {
+                throw _exception;
+            }
+
+            return _results!;
         }
     }
 
