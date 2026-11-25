@@ -186,6 +186,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveBuildCompressedStaticWebAssets;
       $(ResolveBuildRelatedStaticWebAssetsDependsOn)
     </ResolveBuildRelatedStaticWebAssetsDependsOn>
+    <ResolveBuildRelatedStaticWebAssetsDependsOn>
+      ResolvePrecompressedStaticWebAssets;
+      $(ResolveBuildRelatedStaticWebAssetsDependsOn)
+    </ResolveBuildRelatedStaticWebAssetsDependsOn>
     <ResolveBuildCompressedStaticWebAssetsDependsOn>
       GenerateBuildCompressedStaticWebAssets;
       $(ResolveBuildCompressedStaticWebAssetsDependsOn)
@@ -289,7 +293,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="ResolveBuildCompressedStaticWebAssetsConfiguration" DependsOnTargets="ResolveStaticWebAssetsInputs;$(ResolveCompressedFilesDependsOn)">
+  <Target Name="ResolvePrecompressedStaticWebAssets" DependsOnTargets="ResolveStaticWebAssetsInputs;$(ResolveCompressedFilesDependsOn)">
     <!-- There might be assets that are precompressed on packages or that are precompressed by other tools.
          In this case, we need to detect those assets, remove them and their endpoints, adjust the asset definition
          and recreate the endpoints for those assets as the original ones will not be correct.
@@ -312,6 +316,29 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAsset Include="@(_PrecompressedStaticWebAssets)" />
     </ItemGroup>
 
+    <!-- Disabling compression skips generation, not visibility normalization or serving checked-in alternatives. -->
+    <DefineStaticWebAssetEndpoints
+      Condition="'$(DisableBuildCompression)' == 'true' and '@(_PrecompressedStaticWebAssets)' != ''"
+      CandidateAssets="@(_PrecompressedStaticWebAssets)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ApplyCompressionNegotiation
+      Condition="'$(DisableBuildCompression)' == 'true' and '@(_PrecompressedStaticWebAssets)' != ''"
+      CandidateEndpoints="@(StaticWebAssetEndpoint)"
+      CandidateAssets="@(StaticWebAsset)"
+      AttachWeakETagToCompressedAssets="$(LinkAlternativeRepresentationsToOriginalResource)">
+      <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedPrecompressedBuildEndpoints" />
+    </ApplyCompressionNegotiation>
+
+    <ItemGroup Condition="'$(DisableBuildCompression)' == 'true'">
+      <StaticWebAssetEndpoint Remove="@(_UpdatedPrecompressedBuildEndpoints)" />
+      <StaticWebAssetEndpoint Include="@(_UpdatedPrecompressedBuildEndpoints)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ResolveBuildCompressedStaticWebAssetsConfiguration" DependsOnTargets="ResolvePrecompressedStaticWebAssets">
     <PropertyGroup>
       <StaticWebAssetBuildCompressAllAssets Condition="'$(StaticWebAssetBuildCompressAllAssets)' == '' and '$(StaticWebAssetProjectMode)' == 'Root'">true</StaticWebAssetBuildCompressAllAssets>
       <StaticWebAssetBuildCompressAllAssets Condition="'$(StaticWebAssetBuildCompressAllAssets)' == ''">false</StaticWebAssetBuildCompressAllAssets>

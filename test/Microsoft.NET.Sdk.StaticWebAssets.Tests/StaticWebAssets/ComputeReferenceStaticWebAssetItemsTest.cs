@@ -18,6 +18,107 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     public class ComputeReferenceStaticWebAssetItemsTest
     {
         [TestMethod]
+        [DataRow(StaticWebAsset.AssetModes.Local, 1)]
+        [DataRow(StaticWebAsset.AssetModes.All, 3)]
+        [DataRow(StaticWebAsset.AssetModes.CurrentProject, 3)]
+        [DataRow(StaticWebAsset.AssetModes.Reference, 3)]
+        public void FiltersDiscoveryRootsContainingLocalFiles(string assetMode, int expectedPatternCount)
+        {
+            var local = CreateCandidate(Path.Combine("wwwroot", "private", "local.js"), "MyPackage", "Discovered",
+                "private/local.js", "All", assetMode);
+            ITaskItem[] patterns =
+            [
+                CreatePatternCandidate("root", "base", Path.GetFullPath("wwwroot"), "**", "MyPackage"),
+                CreatePatternCandidate("private", "base/private", Path.GetFullPath(Path.Combine("wwwroot", "private")), "**", "MyPackage"),
+                CreatePatternCandidate("public", "base/public", Path.GetFullPath(Path.Combine("wwwroot", "public")), "**", "MyPackage")
+            ];
+            var task = new ComputeReferenceStaticWebAssetItems
+            {
+                BuildEngine = Mock.Of<IBuildEngine>(),
+                Source = "MyPackage",
+                Assets = [local],
+                Patterns = patterns,
+                AssetKind = "Build",
+                ProjectMode = "Root"
+            };
+
+            task.Execute().Should().BeTrue();
+            task.DiscoveryPatterns.Should().HaveCount(expectedPatternCount);
+            task.DiscoveryPatterns.Should().Contain(p => p.ItemSpec == "public");
+            task.Patterns.Should().HaveCount(3);
+        }
+
+        [TestMethod]
+        public void ComputedLocalAssetsDoNotDisableWebRootDiscovery()
+        {
+            var task = new ComputeReferenceStaticWebAssetItems
+            {
+                BuildEngine = Mock.Of<IBuildEngine>(),
+                Source = "MyPackage",
+                Assets = [CreateCandidate(Path.Combine("obj", "local.js"), "MyPackage", "Computed",
+                    "local.js", "All", StaticWebAsset.AssetModes.Local)],
+                Patterns = [CreatePatternCandidate("wwwroot", "base", Path.GetFullPath("wwwroot"), "**", "MyPackage")],
+                AssetKind = "Build",
+                ProjectMode = "Root"
+            };
+
+            task.Execute().Should().BeTrue();
+            task.DiscoveryPatterns.Should().ContainSingle();
+        }
+
+        [TestMethod]
+        [DataRow("Default", "Build")]
+        [DataRow("Root", "Build")]
+        [DataRow("SelfContained", "Build")]
+        [DataRow("Default", "Publish")]
+        [DataRow("Root", "Publish")]
+        [DataRow("SelfContained", "Publish")]
+        public void FiltersLocalAssetsAndTheirEndpoints(string projectMode, string assetKind)
+        {
+            var local = CreateCandidate(Path.Combine("obj", "local.js"), "MyPackage", "Computed",
+                "local.js", "All", StaticWebAsset.AssetModes.Local);
+            var compressed = CreateCandidate(Path.Combine("obj", "local.js.gz"), "MyPackage", "Computed",
+                "local.js.gz", "All", StaticWebAsset.AssetModes.Local);
+            compressed.SetMetadata("AssetRole", StaticWebAsset.AssetRoles.Alternative);
+            compressed.SetMetadata("RelatedAsset", local.ItemSpec);
+            compressed.SetMetadata("AssetTraitName", "Content-Encoding");
+            compressed.SetMetadata("AssetTraitValue", "gzip");
+            var shared = CreateCandidate(Path.Combine("wwwroot", "shared.js"), "MyPackage", "Discovered",
+                "shared.js", "All", "All");
+            ITaskItem[] assets = [local, compressed, shared];
+            var task = new ComputeReferenceStaticWebAssetItems
+            {
+                BuildEngine = Mock.Of<IBuildEngine>(),
+                Source = "MyPackage",
+                Assets = assets,
+                AssetKind = assetKind,
+                ProjectMode = projectMode
+            };
+
+            task.Execute().Should().BeTrue();
+            task.StaticWebAssets.Should().NotContain(a => a.GetMetadata("AssetMode") == StaticWebAsset.AssetModes.Local);
+            task.StaticWebAssets.Should().HaveCount(projectMode == "SelfContained" ? 0 : 1);
+
+            var endpoints = new ComputeEndpointsForReferenceStaticWebAssets
+            {
+                BuildEngine = task.BuildEngine,
+                Assets = task.StaticWebAssets,
+                CandidateEndpoints = assets.Select(a => new StaticWebAssetEndpoint
+                {
+                    Route = a.GetMetadata("RelativePath"),
+                    AssetFile = a.ItemSpec,
+                    Selectors = [],
+                    ResponseHeaders = [],
+                    EndpointProperties = []
+                }.ToTaskItem()).ToArray()
+            };
+
+            endpoints.Execute().Should().BeTrue();
+            endpoints.Endpoints.Should().HaveCount(task.StaticWebAssets.Length);
+            endpoints.Endpoints.Should().OnlyContain(e => e.GetMetadata("AssetFile") == shared.ItemSpec);
+        }
+
+        [TestMethod]
         public void IncludesAssetsFromCurrentProjectAsReferencedAssets()
         {
             var errorMessages = new List<string>();
