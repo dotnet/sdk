@@ -105,7 +105,13 @@ file.
 For hosted WebAssembly applications, the browser-facing client project owns the key,
 initializer and configuration assets. The launching server consumes those referenced
 assets and hosts the forwarding route, while `dotnet watch` reads the client project's
-deterministic private-key output. This avoids competing host/client keys.
+deterministic private-key output. This avoids competing host/client keys. The client-owned
+[initializer](../../src/WasmSdk/Sdk/HotReload/Microsoft.NET.Sdk.WebAssembly.HotReload.lib.module.js.template)
+also activates browser tools from `afterWebStarted`, independently of WebAssembly startup,
+so per-page static SSR pages receive refresh notifications before any interactive component
+starts. The client initializer enables deferred update retention on the shared Hot Reload
+agent signal; the browser client drains those updates in order when WebAssembly becomes
+ready, without delaying SSR refresh or opening another connection.
 
 The [WebAssembly SDK](../../src/WasmSdk/Sdk/Sdk.targets) and the
 [Web SDK](../../src/WebSdk/Web/Targets/Sdk.Server.targets) opt in by naming their asset
