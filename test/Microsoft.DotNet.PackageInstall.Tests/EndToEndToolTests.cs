@@ -308,7 +308,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
             {
-                RidSpecific = true
+                IncludeAnyRid = true
             };
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
             var testDirectory = TestAssetsManager.CreateTestDirectory();
@@ -319,7 +319,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Directory.CreateDirectory(ridFeedPath);
 
             string wrapperPackage = $"{toolSettings.ToolPackageId}.{toolSettings.ToolPackageVersion}.nupkg";
-            string ridPackage = $"{toolSettings.ToolPackageId}.{RuntimeInformation.RuntimeIdentifier}.{toolSettings.ToolPackageVersion}.nupkg";
+            string ridPackageId = $"{toolSettings.ToolPackageId}.any";
+            string ridPackage = $"{ridPackageId}.{toolSettings.ToolPackageVersion}.nupkg";
             File.Copy(Path.Combine(toolPackagesPath, wrapperPackage), Path.Combine(wrapperFeedPath, wrapperPackage));
             File.Copy(Path.Combine(toolPackagesPath, ridPackage), Path.Combine(ridFeedPath, ridPackage));
 
@@ -333,7 +334,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         new XElement("packageSource", new XAttribute("key", "wrapper"),
                             new XElement("package", new XAttribute("pattern", toolSettings.ToolPackageId))),
                         new XElement("packageSource", new XAttribute("key", "rid"),
-                            new XElement("package", new XAttribute("pattern", $"{toolSettings.ToolPackageId}.{RuntimeInformation.RuntimeIdentifier}"))))))
+                            new XElement("package", new XAttribute("pattern", ridPackageId))))))
                 .Save(Path.Combine(testDirectory.Path, "NuGet.Config"));
 
             string[] args = [command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes"];
