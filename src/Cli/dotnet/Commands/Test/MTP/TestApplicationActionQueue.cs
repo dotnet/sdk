@@ -161,19 +161,27 @@ internal class TestApplicationActionQueue
         // Notify readers that no more data will be written
         _channel.Writer.Complete();
 
-        Task.WaitAll(_readers);
-
-        // If _aggregateExitCode is null, that means we didn't get any results.
-        // So, we exit with "zero tests".
-        int aggregateExitCode = _aggregateExitCode ?? ExitCode.ZeroTests;
-        aggregateExitCode = _applyRunPolicies?.Invoke(this, aggregateExitCode) ?? aggregateExitCode;
-        if (_invocationLifetimeCoordinator is { } coordinator)
+        int aggregateExitCode = ExitCode.GenericFailure;
+        try
         {
-            using (coordinator)
+            Task.WaitAll(_readers);
+
+            // If _aggregateExitCode is null, that means we didn't get any results.
+            // So, we exit with "zero tests".
+            int moduleExitCode = _aggregateExitCode ?? ExitCode.ZeroTests;
+            aggregateExitCode = _applyRunPolicies?.Invoke(this, moduleExitCode) ?? moduleExitCode;
+        }
+        finally
+        {
+            // WaitAll drains every reader even when one faults; a failed policy must not strand the held owner either.
+            if (_invocationLifetimeCoordinator is { } coordinator)
             {
-                aggregateExitCode = coordinator.CompleteAsync(
-                    aggregateExitCode,
-                    _cancellationToken.IsCancellationRequested || _testRunPolicy.Cancellation.IsCompleted).GetAwaiter().GetResult();
+                using (coordinator)
+                {
+                    aggregateExitCode = coordinator.CompleteAsync(
+                        aggregateExitCode,
+                        _cancellationToken.IsCancellationRequested || _testRunPolicy.Cancellation.IsCompleted).GetAwaiter().GetResult();
+                }
             }
         }
 

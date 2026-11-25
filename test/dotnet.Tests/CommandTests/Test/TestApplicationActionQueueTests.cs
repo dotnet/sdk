@@ -176,9 +176,10 @@ public class TestApplicationActionQueueTests : SdkTest
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void CompleteEnqueueAndWait_AppliesRunPoliciesBeforeInvocationCompletion(bool withOwner)
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void CompleteEnqueueAndWait_AppliesRunPolicyResultAndPropagatesFailures(bool withOwner, bool policyFails)
     {
         using var reporter = new TerminalTestReporter(
             new CapturingConsole(), new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
@@ -199,6 +200,11 @@ public class TestApplicationActionQueueTests : SdkTest
             {
                 policyCalls++;
                 aggregateExitCode.Should().Be(TestExitCode.ZeroTests);
+                if (policyFails)
+                {
+                    throw new InvalidOperationException("Run policy failed.");
+                }
+
                 return TestExitCode.MinimumExpectedTestsPolicyViolation;
             });
         if (withOwner)
@@ -206,7 +212,15 @@ public class TestApplicationActionQueueTests : SdkTest
             queue.ConfigureInvocationLifetime([InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"], isOwner: true)]);
         }
 
-        queue.CompleteEnqueueAndWait().Should().Be(TestExitCode.MinimumExpectedTestsPolicyViolation);
+        if (policyFails)
+        {
+            Action complete = () => queue.CompleteEnqueueAndWait();
+            complete.Should().Throw<InvalidOperationException>().WithMessage("Run policy failed.");
+        }
+        else
+        {
+            queue.CompleteEnqueueAndWait().Should().Be(TestExitCode.MinimumExpectedTestsPolicyViolation);
+        }
         policyCalls.Should().Be(1);
     }
 
