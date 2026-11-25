@@ -34,7 +34,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
 
     public IManifestOperations Manifest { get; }
 
-    private static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isInsecureRegistry, RegistryMode mode)
+    internal static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isInsecureRegistry, RegistryMode mode)
     {
         HttpMessageHandler innerHandler = CreateHttpHandler(registryName, baseUri, isInsecureRegistry, logger);
 
@@ -77,7 +77,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
         return new FallbackToHttpMessageHandler(registryName, baseUri.Host, baseUri.Port, socketsHttpHandler, logger);
     }
 
-    private static RemoteCertificateValidationCallback IgnoreCertificateErrorsForSpecificHost(string host)
+    internal static RemoteCertificateValidationCallback IgnoreCertificateErrorsForSpecificHost(string host)
     {
         return (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
         {

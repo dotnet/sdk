@@ -41,6 +41,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         var g = String.Format(p, "{0}", 1, 2);
                         var h = String.Format(p, "{0} {1}", 1, 2, 3);
                         var i = String.Format(p, "{0} {1} {2}", 1, 2, 3, 4);
+                        var j = string.Format(arg0: 1, format: "{0}");
+                        var k = string.Format(arg0: 1, format: "{0} {1}");
                     }
                 }
 
@@ -54,7 +56,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             GetCSharpResultAt(15, 17),
             GetCSharpResultAt(16, 17),
             GetCSharpResultAt(17, 17),
-            GetCSharpResultAt(18, 17));
+            GetCSharpResultAt(18, 17),
+            GetCSharpResultAt(20, 17));
         }
 
         [TestMethod]
@@ -252,6 +255,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Dim f = String.Format(p, "{0}", 1, 2)
                         Dim g = String.Format(p, "{0} {1}", 1, 2, 3)
                         Dim h = String.Format(p, "{0} {1} {2}", 1, 2, 3, 4)
+                        Dim i = String.Format(arg0:=1, format:="{0}")
+                        Dim j = String.Format(arg0:=1, format:="{0} {1}")
                     End Sub
                 End Class
 
@@ -264,7 +269,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             GetBasicResultAt(12, 17),
             GetBasicResultAt(13, 17),
             GetBasicResultAt(14, 17),
-            GetBasicResultAt(15, 17));
+            GetBasicResultAt(15, 17),
+            GetBasicResultAt(17, 17));
         }
 
         [TestMethod]
@@ -866,6 +872,122 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        [WorkItem(57259, "https://github.com/dotnet/sdk/issues/57259")]
+        public async Task CSharpExtensionBlock_AnnotatedReceiver_ChecksArgumentCount()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp14,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                MarkupOptions = MarkupOptions.UseFirstDescriptor,
+                TestCode = """
+                    using System;
+                    using System.Diagnostics.CodeAnalysis;
+
+                    static class Extensions
+                    {
+                        extension([StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format)
+                        {
+                            public string Fmt(object arg) => string.Format(format, arg);
+                            public string Fmt(params object[] args) => string.Format(format, args);
+                            public string FmtP(IFormatProvider provider, object arg) => string.Format(provider, format, arg);
+                            public string FmtP(IFormatProvider provider, params object[] args) => string.Format(provider, format, args);
+                            public string Append([StringSyntax(StringSyntaxAttribute.CompositeFormat)] string other, params object[] args) => format + string.Format(other, args);
+                        }
+
+                        static void M(IFormatProvider provider, string unknownFormat, object[] unknownArgs)
+                        {
+                            [|"{0} {1}".Fmt(1)|];
+                            [|"{0}".Fmt(1, 2)|];
+                            [|"{0} {1}".FmtP(provider, 1)|];
+                            [|"{0}".FmtP(provider, 1, 2)|];
+
+                            "{0}".FmtP(provider, 1);
+                            "{0} {1}".FmtP(provider, 1, 2);
+                            [|"{0}".FmtP(args: new object[] { 1, 2 }, provider: provider)|];
+                            unknownFormat.Fmt(1);
+                            "{0}".FmtP(provider, unknownArgs);
+                            [|unknownFormat.Append("{0}", 1, 2)|];
+                            "{0} {1}"?[|.Fmt(1)|];
+                            "{0}"?.Fmt(1);
+                            unknownFormat?.Fmt(1);
+                        }
+                    }
+                    """,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CSharpExtensionBlock_AnnotatedReceiver_OnlyChecksFormatWhenNoArguments()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp14,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                TestCode = """
+                    using System.Diagnostics.CodeAnalysis;
+
+                    static class Extensions
+                    {
+                        extension([StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format)
+                        {
+                            public void Parse() { }
+                        }
+
+                        extension(string text)
+                        {
+                            public void Ignore() { }
+                        }
+
+                        static void M()
+                        {
+                            "{0}".Parse();
+                            {|#0:"{".Parse()|};
+                            "{"?{|#1:.Parse()|};
+                            "{".Ignore();
+                        }
+                    }
+                    """,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(ProvideCorrectArgumentsToFormattingMethodsAnalyzer.InvalidFormatRule).WithLocation(0),
+                    VerifyCS.Diagnostic(ProvideCorrectArgumentsToFormattingMethodsAnalyzer.InvalidFormatRule).WithLocation(1),
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CSharpExtensionBlock_MixedFixedAndParamsArguments_OnlyChecksFormat()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp14,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                TestCode = """
+                    using System.Diagnostics.CodeAnalysis;
+
+                    static class Extensions
+                    {
+                        extension([StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format)
+                        {
+                            public string Fmt(object first, params object[] rest) =>
+                                string.Format(format, (object[])[first, .. rest]);
+                        }
+
+                        static void M(object[] unknownArgs)
+                        {
+                            "{0}".Fmt(1);
+                            "{0} {1} {2}".Fmt(1, 2, 3);
+                            "{0}".Fmt(1, unknownArgs);
+                            {|#0:"{".Fmt(1)|};
+                        }
+                    }
+                    """,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(ProvideCorrectArgumentsToFormattingMethodsAnalyzer.InvalidFormatRule).WithLocation(0) },
             }.RunAsync(CancellationToken.None);
         }
 

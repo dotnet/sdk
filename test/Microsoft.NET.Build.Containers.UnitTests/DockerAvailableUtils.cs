@@ -48,7 +48,7 @@ internal static class DockerCliStatus
     private static (bool IsAvailable, ContainerRuntimeKind Runtime) GetStatus()
     {
         ContainerRuntime runtime = new(new TestLoggerFactory(), probePlatformNativeCli: false);
-        bool isAvailable = runtime.IsAvailable();
-        return (isAvailable, runtime.GetTelemetryValue());
+        bool isAvailable = runtime.IsAvailableAsync(CancellationToken.None).GetAwaiter().GetResult();
+        return (isAvailable, runtime.GetTelemetryValue(CancellationToken.None));
     }
 }

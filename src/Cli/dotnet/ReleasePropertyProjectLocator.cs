@@ -25,7 +25,8 @@ namespace Microsoft.DotNet.Cli;
 internal sealed class ReleasePropertyProjectLocator(
     ReadOnlyDictionary<string, string>? userSpecifiedExplicitMSBuildProperties,
     string propertyToCheck,
-    ReleasePropertyProjectLocator.DependentCommandOptions commandOptions)
+    ReleasePropertyProjectLocator.DependentCommandOptions commandOptions,
+    CancellationToken cancellationToken)
 {
     public readonly struct DependentCommandOptions(IEnumerable<string>? slnOrProjectArgs, string? configOption = null, string? frameworkOption = null)
     {
@@ -107,7 +108,10 @@ internal sealed class ReleasePropertyProjectLocator(
         {
             if (VirtualProjectBuilder.IsValidEntryPointPath(arg))
             {
-                return new VirtualProjectBuildingCommand(Path.GetFullPath(arg), MSBuildArgs.FromProperties(globalProps))
+                return new VirtualProjectBuildingCommand(
+                    Path.GetFullPath(arg),
+                    MSBuildArgs.FromProperties(globalProps),
+                    CommandServices.CreateDefault())
                     .CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
             }
             else if (IsValidProjectFilePath(arg))
@@ -150,7 +154,11 @@ internal sealed class ReleasePropertyProjectLocator(
         SolutionModel sln;
         try
         {
-            sln = SlnFileFactory.CreateFromFileOrDirectory(slnFullPath, false, false);
+            sln = SlnFileFactory.CreateFromFileOrDirectory(
+                slnFullPath,
+                cancellationToken,
+                includeSolutionFilterFiles: false,
+                includeSolutionXmlFiles: false);
         }
         catch (GracefulException)
         {

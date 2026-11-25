@@ -1,4 +1,6 @@
-﻿<Project Sdk="MSTest.Sdk">
+﻿<Project>
+
+  <Import Project="Sdk.props" Sdk="MSTest.Sdk" />
 
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
@@ -22,13 +24,13 @@
     <None Include="CommandTests\Test\snapshots\**\*" TargetPath="snapshots\%(RecursiveDir)\%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="ShellShimTests\WpfBinaryTestAssets\testwpf.dll" TargetPath="WpfBinaryTestAssets\testwpf.dll" CopyToOutputDirectory="PreserveNewest" />
     <None Include="CollectCodeCoverage.runsettings" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="queryResultSample.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- Windows-only test files that reference Installer\Windows, VisualStudio, and MSI types -->
   <ItemGroup Condition="'$(TargetOS)' != 'windows'">
     <Compile Remove="WindowsInstallerTests.cs" />
     <Compile Remove="CommandTests\Workload\Install\GivenAWindowsMsiManifestInstaller.cs" />
+    <Compile Remove="CommandTests\Workload\Install\GivenMsiCancellation.cs" />
     <Compile Remove="CommandTests\Workload\List\GivenAnMsiInstallation.cs" />
     <Compile Remove="CommandTests\Workload\List\GivenDotnetWorkloadList.cs" />
     <Compile Remove="CommandTests\Workload\List\VisualStudioWorkloadsTests.cs" />
@@ -50,10 +52,6 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>XUnitVersion</_Parameter1>
       <_Parameter2>$(XUnitVersion)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>SdkVersion</_Parameter1>
-      <_Parameter2>$(Version)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
@@ -81,6 +79,7 @@
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
     <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
     <ProjectReference Include="..\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj" />
+    <ProjectReference Include="..\dotnet.Tests.TestApp\dotnet.Tests.TestApp.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -118,4 +117,19 @@
     </ItemGroup>
     <Move SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles-&gt;Replace('received', 'verified'))" />
   </Target>
+
+  <Import Project="Sdk.targets" Sdk="MSTest.Sdk" />
+
+  <!-- SDK targets initialize Version before it is captured in assembly metadata. -->
+  <PropertyGroup>
+    <_ExpectedSdkVersion Condition="'$(StabilizePackageVersion)' == 'true'">$(VersionPrefix)</_ExpectedSdkVersion>
+    <_ExpectedSdkVersion Condition="'$(_ExpectedSdkVersion)' == ''">$(Version)</_ExpectedSdkVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SdkVersion</_Parameter1>
+      <_Parameter2>$(_ExpectedSdkVersion)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

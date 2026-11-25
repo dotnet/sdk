@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallCommand = new ToolListCommand(
                 result);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallCommand = new ToolListCommand(
                 result);
 
-            Action a = () => toolInstallCommand.Execute();
+            Action a = () => toolInstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(

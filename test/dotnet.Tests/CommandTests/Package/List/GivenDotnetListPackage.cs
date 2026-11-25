@@ -3,6 +3,9 @@
 
 #nullable disable
 
+using System.Globalization;
+using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Package;
 using Microsoft.DotNet.Cli.Commands.Package.List;
@@ -149,6 +152,37 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
         }
 
         [TestMethod]
+        [DataRow("list", "package", "pt-BR", "\"dotnet restore\"")]
+        [DataRow("package", "list", "pt-BR", "\"dotnet restore\"")]
+        [DataRow("package", "list", "de-DE", "\"dotnet restore\"")]
+        [DataRow("list", "package", "en-US", "`dotnet restore`")]
+        public void RestoreFailureProducesValidLocalizedJson(string command, string subcommand, string culture, string expectedCommand)
+        {
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: $"{command}-{culture}");
+            File.WriteAllText(Path.Combine(testDirectory.Path, "test.csproj"), string.Empty);
+
+            var result = new DotnetCommand(Log, command, subcommand)
+                .WithWorkingDirectory(testDirectory.Path)
+                .WithCulture(culture)
+                .Execute("--format", "json");
+
+            result.Should().Fail();
+
+            using var document = JsonDocument.Parse(result.StdOut);
+            var root = document.RootElement;
+            root.GetProperty("version").GetInt32().Should().Be(1);
+            var problems = root.GetProperty("problems");
+            problems.GetArrayLength().Should().Be(1);
+            var problem = problems[0];
+            problem.GetProperty("level").GetString().Should().Be("error");
+
+            var expectedText = CliCommandStrings.ResourceManager.GetString(
+                nameof(CliCommandStrings.Error_restore), CultureInfo.GetCultureInfo(culture));
+            expectedText.Should().Contain(expectedCommand);
+            problem.GetProperty("text").GetString().Should().Be(expectedText);
+        }
+
+        [TestMethod]
         public void RestoresAndLists()
         {
             var testAsset = "NewtonSoftDependentProject";
@@ -185,6 +219,27 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .Should().Pass()
                 .And.HaveStdOutContaining(packageId)
                 .And.HaveStdOutContaining(packageVersion);
+        }
+
+        [TestMethod]
+        public void RestorePropagatesCancellation()
+        {
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            string projectPath = Path.Combine(testDirectory.Path, "Test.csproj");
+            File.WriteAllText(projectPath, """
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <TargetFramework>net10.0</TargetFramework>
+                  </PropertyGroup>
+                </Project>
+                """);
+            var parseResult = Parser.Parse(["dotnet", "package", "list", "--project", projectPath]);
+            using CancellationTokenSource cancellationTokenSource = new();
+            cancellationTokenSource.Cancel();
+
+            Assert.ThrowsExactly<OperationCanceledException>(
+                () => new Microsoft.DotNet.Cli.Commands.Package.List.PackageListCommand(parseResult)
+                    .Execute(cancellationTokenSource.Token));
         }
 
         [TestMethod]

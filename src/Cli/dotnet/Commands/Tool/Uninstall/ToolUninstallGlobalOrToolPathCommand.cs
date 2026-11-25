@@ -27,7 +27,7 @@ internal sealed class ToolUninstallGlobalOrToolPathCommand(
     private readonly CreateToolPackageStoresAndUninstaller _createToolPackageStoresAndUninstaller = createToolPackageStoreAndUninstaller ??
                                                 ToolPackageFactory.CreateToolPackageStoresAndUninstaller;
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var global = _parseResult.GetValue(Definition.LocationOptions.GlobalOption);
         var toolPath = _parseResult.GetValue(Definition.LocationOptions.ToolPathOption);
@@ -46,24 +46,15 @@ internal sealed class ToolUninstallGlobalOrToolPathCommand(
             toolDirectoryPath = new DirectoryPath(toolPath);
         }
 
-        var (_, toolPackageStoreQuery, toolPackageUninstaller) = _createToolPackageStoresAndUninstaller(toolDirectoryPath);
+        var (toolPackageStore, toolPackageStoreQuery, toolPackageUninstaller) = _createToolPackageStoresAndUninstaller(toolDirectoryPath);
         var appHostSourceDirectory = ShellShimTemplateFinder.GetDefaultAppHostSourceDirectory();
         IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolDirectoryPath);
 
         var packageId = new PackageId(_parseResult.GetValue(Definition.PackageIdArgument));
-        IToolPackage package = null;
-        try
-        {
-            package = toolPackageStoreQuery.EnumeratePackageVersions(packageId).SingleOrDefault();
-            if (package == null)
-            {
-                throw new GracefulException(messages: [string.Format(CliCommandStrings.ToolUninstallToolNotInstalled, packageId)], isUserError: false);
-            }
-        }
-        catch (InvalidOperationException)
-        {
-            throw new GracefulException(messages: [string.Format(CliCommandStrings.ToolUninstallToolHasMultipleVersionsInstalled, packageId)], isUserError: false);
-        }
+        using FileStream packageMutationLock = ToolPackageDownloaderBase.AcquireToolPackageMutationLock(
+            toolPackageStore.Root,
+            packageId);
+        IToolPackage package = GetPackageToUninstall(toolPackageStoreQuery, packageId);
 
         try
         {
@@ -86,6 +77,26 @@ internal sealed class ToolUninstallGlobalOrToolPathCommand(
             throw new GracefulException(
                 messages: ToolUninstallCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId),
                 verboseMessages: [ex.ToString()],
+                isUserError: false);
+        }
+    }
+
+    /// <summary>
+    /// Reads the installed package only after locking so concurrent mutations cannot expose transient state.
+    /// </summary>
+    private static IToolPackage GetPackageToUninstall(IToolPackageStoreQuery toolPackageStoreQuery, PackageId packageId)
+    {
+        try
+        {
+            return toolPackageStoreQuery.EnumeratePackageVersions(packageId).SingleOrDefault()
+                ?? throw new GracefulException(
+                    messages: [string.Format(CliCommandStrings.ToolUninstallToolNotInstalled, packageId)],
+                    isUserError: false);
+        }
+        catch (InvalidOperationException)
+        {
+            throw new GracefulException(
+                messages: [string.Format(CliCommandStrings.ToolUninstallToolHasMultipleVersionsInstalled, packageId)],
                 isUserError: false);
         }
     }

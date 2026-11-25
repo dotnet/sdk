@@ -66,6 +66,13 @@ namespace dotnet.Tests
         [DataRow("\"--mt:false\"", "\"--mt:false\"")]
         [DataRow("\"-mt\"", "\"-mt\"")]
         [DataRow("-m\"t\":fa\"lse\"", "-m\"t\":fa\"lse\"")]
+        [DataRow("-mt:yes", "-mt:yes")]
+        [DataRow("-mt:auto", "-mt:auto")]
+        [DataRow("-mt:on", "-mt:on")]
+        [DataRow("-mt:\"invalid\"", "-mt:\"invalid\"")]
+        [DataRow("-mt:\\\"false\\\"", "-mt:\\\"false\\\"")]
+        [DataRow("-mt:'false'", "-mt:'false'")]
+        [DataRow("-mt:\"\"\"false\"\"\"", "-mt:\"\"\"false\"\"\"")]
         public void LoggerArgument_ArgumentForms(string arg, string expectedArg)
         {
             LoggerUtility.SeparateMSBuildArguments([arg], out var msbuildArgs, out var otherArgs);
@@ -88,14 +95,8 @@ namespace dotnet.Tests
         [DataRow("-llextra")]
         [DataRow("foo.csproj")]
         [DataRow("")]
-        [DataRow("-mt:auto")]
-        [DataRow("-mt:on")]
         [DataRow("-mtx")]
         [DataRow("--multithreadedextra")]
-        [DataRow("-mt:\"invalid\"")]
-        [DataRow("-mt:\\\"false\\\"")]
-        [DataRow("-mt:'false'")]
-        [DataRow("-mt:\"\"\"false\"\"\"")]
         public void LoggerArgument_InvalidFormsAreNotRecognized(string arg)
         {
             LoggerUtility.SeparateMSBuildArguments([arg], out var msbuildArgs, out var otherArgs);
@@ -154,6 +155,21 @@ namespace dotnet.Tests
                 "-mt configures the MSBuild engine and must be forwarded to the underlying build invocation.");
             buildOptions.TestApplicationArguments.Should().NotContain(multiThreadedArg,
                 "-mt must not be passed to the test application, which doesn't recognize it.");
+        }
+
+        [TestMethod]
+        [DataRow("-mt")]
+        [DataRow("-mt:")]
+        [DataRow("\"--mt:false\"")]
+        public void GetBuildOptions_PreservesMultiThreadedArgAfterDoubleDash(string argument)
+        {
+            var mtpCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = mtpCommand.Parse(["-mt:false", "--", argument]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            buildOptions.MSBuildArgs.Should().Contain("-mt:false").And.NotContain(argument);
+            buildOptions.TestApplicationArguments.Should().Equal(argument);
         }
 
         [TestMethod]

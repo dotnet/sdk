@@ -62,20 +62,24 @@ public static partial class SlnFileFactory
         ];
     }
 
-    public static SolutionModel CreateFromFileOrDirectory(string fileOrDirectory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
+    public static SolutionModel CreateFromFileOrDirectory(
+        string fileOrDirectory,
+        CancellationToken cancellationToken,
+        bool includeSolutionFilterFiles = false,
+        bool includeSolutionXmlFiles = true)
     {
         string solutionPath = GetSolutionFileFullPath(fileOrDirectory, includeSolutionFilterFiles, includeSolutionXmlFiles);
 
         if (solutionPath.HasExtension(".slnf"))
         {
-            return CreateFromFilteredSolutionFile(solutionPath);
+            return CreateFromFilteredSolutionFile(solutionPath, cancellationToken);
         }
         try
         {
             ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath)!;
-            return serializer.OpenAsync(solutionPath, CancellationToken.None).Result;
+            return serializer.OpenAsync(solutionPath, cancellationToken).GetAwaiter().GetResult();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             throw new GracefulException(
                 CliStrings.InvalidSolutionFormatString,
@@ -83,19 +87,23 @@ public static partial class SlnFileFactory
         }
     }
 
-    public static SolutionModel CreateFromFilteredSolutionFile(string filteredSolutionPath)
+    public static SolutionModel CreateFromFilteredSolutionFile(
+        string filteredSolutionPath,
+        CancellationToken cancellationToken)
     {
         string originalSolutionPath;
         string originalSolutionPathAbsolute;
         IEnumerable<string> filteredSolutionProjectPaths;
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var options = new JsonDocumentOptions
             {
                 AllowTrailingCommas = true,
                 CommentHandling = JsonCommentHandling.Skip
             };
             string fileContent = File.ReadAllText(filteredSolutionPath);
+            cancellationToken.ThrowIfCancellationRequested();
             // Fix unescaped backslashes for backward compatibility with .slnf files that contain
             // Windows-style path separators without proper JSON escaping (e.g. "..\foo" instead of "..\\foo" or "../foo").
             fileContent = FixInvalidJsonBackslashes(fileContent);
@@ -106,7 +114,7 @@ public static partial class SlnFileFactory
             filteredSolutionProjectPaths = [.. root.GetProperty("solution").GetProperty("projects").EnumerateArray().Select(p => p.GetString())];
             originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             throw new GracefulException(
                 CliStrings.InvalidSolutionFormatString,
@@ -114,7 +122,7 @@ public static partial class SlnFileFactory
         }
 
         SolutionModel filteredSolution = new();
-        SolutionModel originalSolution = CreateFromFileOrDirectory(originalSolutionPathAbsolute);
+        SolutionModel originalSolution = CreateFromFileOrDirectory(originalSolutionPathAbsolute, cancellationToken);
 
         // Store the original solution path in the description field of the filtered solution
         filteredSolution.Description = originalSolutionPathAbsolute;

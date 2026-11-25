@@ -28,6 +28,9 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 /// </remarks>
 public class MSBuildForwardingApp : CommandBase
 {
+    // MSBuild cancellation needs time to finish nodes and close loggers such as the binary logger.
+    internal static readonly TimeSpan BuildSoftCancellationTimeout = TimeSpan.FromSeconds(2);
+
     private readonly MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
 
     /// <summary>
@@ -73,9 +76,10 @@ public class MSBuildForwardingApp : CommandBase
     /// <remarks>
     /// Mostly intended for quick/one-shot usage - most 'core' SDK commands should do more hands-on parsing.
     /// </remarks>
-    public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath = null) : this(
+    public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath, CommandServices services) : this(
         MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption()),
-        msbuildPath)
+        msbuildPath,
+        services)
     {
     }
 
@@ -86,9 +90,13 @@ public class MSBuildForwardingApp : CommandBase
     /// </summary>
     /// <param name="msBuildArgs">MSBuild arguments to forward to the builder process, parsed by using <see cref="MSBuildArgs.AnalyzeMSBuildArguments"/> to apply a set of per-command <see cref="System.CommandLine.Option`1"/>s to a list of unparsed command line input tokens.</param>
     /// <param name="msbuildPath">The path to the MSBuild executable. If null, the default MSBuild executable will be used.</param>
-    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null)
+    /// <param name="services">The command's service dependencies.</param>
+    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath, CommandServices services)
+        : base(services)
     {
-        var modifiedMSBuildArgs = CommonRunHelpers.AdjustMSBuildForLLMs(ConcatTelemetryLogger(msBuildArgs));
+        var modifiedMSBuildArgs = CommonRunHelpers.AdjustMSBuildForLLMs(
+            ConcatTelemetryLogger(msBuildArgs),
+            Services);
 #if CLI_AOT
         const bool forceOutOfProc = true;
 #else
@@ -130,11 +138,18 @@ public class MSBuildForwardingApp : CommandBase
 
     internal string[] GetArgumentTokensToMSBuild() => _forwardingAppWithoutLogging.GetAllArguments();
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken) => Execute(workingDirectory: null, cancellationToken);
+
+    internal virtual int ExecuteOutOfProc(string workingDirectory, CancellationToken cancellationToken) => Execute(workingDirectory, cancellationToken);
+
+    private int Execute(string? workingDirectory, CancellationToken cancellationToken)
     {
+        using IDisposable softCancellationTimeout =
+            ProcessLifecycle.OverrideSoftCancellationTimeout(BuildSoftCancellationTimeout);
+
         // Ignore Ctrl-C for the remainder of the command's execution
         // Forwarding commands will just spawn the child process and exit
         Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
-        return _forwardingAppWithoutLogging.Execute();
+        return _forwardingAppWithoutLogging.Execute(workingDirectory, cancellationToken);
     }
 }

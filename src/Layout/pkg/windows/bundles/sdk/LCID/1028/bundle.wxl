@@ -89,7 +89,4 @@
   
   <String Id="VisualStudioWarning" Value="如果計劃使用 .NET [VERSIONMAJOR].[VERSIONMINOR] 搭配 Visual Studio，需要 Visual Studio 2026 [MINIMUMVSVERSION] 或更新版本。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;深入了解&lt;/A&gt;。"/>
   <String Id="LicenseAssent" Value="按一下 “安裝” 即表示您同意下列條款:"/>
-  <String Id="InstallPathx64x86" Value="x64 SDK 安裝的安裝路徑: &quot;[DOTNETHOME_X64]&quot; 不能與 x86 SDK 安裝的路徑相同: &quot;[DOTNETHOME_X86]&quot;"/>
-  <String Id="InstallPathARM64x86" Value="ARM64 SDK 安裝的安裝路徑: &quot;[DOTNETHOME_ARM64]&quot; 不能與 x86 SDK 安裝的路徑相同: &quot;[DOTNETHOME_X86]&quot;"/>
-  <String Id="InstallPathARM64x64" Value="ARM64 SDK 安裝的安裝路徑: &quot;[DOTNETHOME_ARM64]&quot; 不能與 x64 SDK 安裝的路徑相同: &quot;[DOTNETHOME_X64]&quot;"/>
 </WixLocalization>

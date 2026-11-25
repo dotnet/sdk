@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using FluentAssertions.Extensions;
@@ -37,7 +35,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             (var manifestUpdater, var nugetDownloader, _, _) = GetTestUpdater();
 
-            await manifestUpdater.UpdateAdvertisingManifestsAsync(true);
+            await manifestUpdater.UpdateAdvertisingManifestsAsync(
+                TestContext.CancellationToken,
+                includePreviews: true);
             nugetDownloader.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages());
         }
 
@@ -46,8 +46,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             (var manifestUpdater, var nugetDownloader, var sentinelPath, var configCommand) = GetTestUpdater();
 
-            configCommand.Execute().Should().Be(0);
-            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+            configCommand.Execute(TestContext.CancellationToken).Should().Be(0);
+            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
             nugetDownloader.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages());
             File.Exists(sentinelPath).Should().BeTrue();
         }
@@ -61,8 +61,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             File.WriteAllText(sentinelPath, string.Empty);
             var createTime = DateTime.Now;
 
-            configCommand.Execute().Should().Be(0);
-            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+            configCommand.Execute(TestContext.CancellationToken).Should().Be(0);
+            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
 
             nugetDownloader.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages());
             File.Exists(sentinelPath).Should().BeTrue();
@@ -77,9 +77,82 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             File.Create(sentinelPath).Close();
             var createTime = DateTime.Now;
 
-            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
             nugetDownloader.DownloadCallParams.Should().BeEmpty();
             File.GetLastAccessTime(sentinelPath).Should().BeBefore(createTime);
+        }
+
+        [TestMethod]
+        public async Task GivenAdvertisingManifestUpdateItPassesConfiguredPackageSourceLocationToVersionCheck()
+        {
+            var packageSourceLocation = new PackageSourceLocation(sourceFeedOverrides: ["https://example.com/mockFeed/index.json"]);
+            (var manifestUpdater, var nugetDownloader, var sentinelPath, var configCommand) = GetTestUpdater(packageSourceLocation: packageSourceLocation);
+
+            configCommand.Execute(TestContext.CancellationToken).Should().Be(0);
+            nugetDownloader.GetLatestPackageVersionCallParams.Clear();
+            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
+
+            nugetDownloader.GetLatestPackageVersionCallParams.Should().HaveCount(_installedManifests.Length);
+            nugetDownloader.GetLatestPackageVersionCallParams.Should()
+                .OnlyContain(callParams => callParams.packageSourceLocation == packageSourceLocation);
+            File.Exists(sentinelPath).Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task GivenAdvertisingManifestUpdateItPassesNullPackageSourceLocationToVersionCheckWhenNotConfigured()
+        {
+            (var manifestUpdater, var nugetDownloader, var sentinelPath, var configCommand) = GetTestUpdater();
+
+            configCommand.Execute(TestContext.CancellationToken).Should().Be(0);
+            nugetDownloader.GetLatestPackageVersionCallParams.Clear();
+            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
+
+            nugetDownloader.GetLatestPackageVersionCallParams.Should().HaveCount(_installedManifests.Length);
+            nugetDownloader.GetLatestPackageVersionCallParams.Should()
+                .OnlyContain(callParams => callParams.packageSourceLocation == null);
+            File.Exists(sentinelPath).Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task GivenAdvertisingManifestUpdateItDoesNotUpdateWhenNoNewerManifestPackagesExist()
+        {
+            (var manifestUpdater, var nugetDownloader, var sentinelPath, var configCommand) = GetTestUpdater(
+                packageVersions: [new NuGetVersion("1.0.0")]);
+
+            configCommand.Execute(TestContext.CancellationToken).Should().Be(0);
+            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
+
+            nugetDownloader.GetLatestPackageVersionCallParams.Should().HaveCount(_installedManifests.Length);
+            nugetDownloader.DownloadCallParams.Should().BeEmpty();
+            File.Exists(sentinelPath).Should().BeFalse();
+        }
+
+        [TestMethod]
+        public async Task GivenAdvertisingManifestUpdateItChecksInstalledManifestFeatureBandAsFallback()
+        {
+            const string installedFeatureBand = "6.0.200";
+            const string currentFeatureBand = "6.0.300";
+            string testDir = TestAssetsManager.CreateTestDirectory().Path;
+            (var manifestUpdater, var nugetDownloader, var sentinelPath, var workloadResolver) = GetTestUpdater(
+                testDir,
+                installedFeatureBand,
+                packageVersions: [new NuGetVersion("2.0.0")],
+                updaterFeatureBand: new SdkFeatureBand(currentFeatureBand));
+            foreach (ManifestId manifest in _installedManifests)
+            {
+                nugetDownloader.PackageIdsToNotFind.Add($"{manifest}.manifest-{currentFeatureBand}");
+            }
+            new WorkloadConfigCommand(
+                Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
+                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, currentFeatureBand, workloadResolver))
+                .Execute(TestContext.CancellationToken).Should().Be(0);
+
+            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
+
+            nugetDownloader.GetLatestPackageVersionCallParams.Should()
+                .Contain(call => call.id.ToString().EndsWith($".manifest-{installedFeatureBand}", StringComparison.Ordinal));
+            nugetDownloader.DownloadCallParams.Should().NotBeEmpty();
+            File.Exists(sentinelPath).Should().BeTrue();
         }
 
         [TestMethod]
@@ -88,7 +161,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             Func<string, string> getEnvironmentVariable = (envVar) => envVar.Equals(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE) ? "true" : string.Empty;
             (var manifestUpdater, var nugetDownloader, _, _) = GetTestUpdater(getEnvironmentVariable: getEnvironmentVariable);
 
-            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
             nugetDownloader.DownloadCallParams.Should().BeEmpty();
         }
 
@@ -251,13 +324,18 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 Directory.CreateDirectory(offlineCacheDir);
                 File.Create(Path.Combine(offlineCacheDir, $"{testManifestName}.Manifest-6.0.200.nupkg")).Close();
 
-                await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true, offlineCache: new DirectoryPath(offlineCacheDir));
+                await manifestUpdater.UpdateAdvertisingManifestsAsync(
+                    TestContext.CancellationToken,
+                    includePreviews: true,
+                    offlineCache: new DirectoryPath(offlineCacheDir));
             }
             else
             {
                 nugetDownloader.PackageIdsToNotFind.Add($"{testManifestName}.Manifest-6.0.300");
 
-                await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true);
+                await manifestUpdater.UpdateAdvertisingManifestsAsync(
+                    TestContext.CancellationToken,
+                    includePreviews: true);
 
                 //  Assert
                 //  6.0.300 manifest was requested and then 6.0.200 manifest was requested
@@ -327,14 +405,19 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 offlineCacheDir = Path.Combine(testDir, "offlineCache");
                 Directory.CreateDirectory(offlineCacheDir);             // empty dir because it shouldn't find any manifests to update
 
-                await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true, offlineCache: new DirectoryPath(offlineCacheDir));
+                await manifestUpdater.UpdateAdvertisingManifestsAsync(
+                    TestContext.CancellationToken,
+                    includePreviews: true,
+                    offlineCache: new DirectoryPath(offlineCacheDir));
             }
             else
             {
                 nugetDownloader.PackageIdsToNotFind.Add($"{testManifestName}.Manifest-6.0.300");
                 nugetDownloader.PackageIdsToNotFind.Add($"{testManifestName}.Manifest-6.0.200");
 
-                await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true);
+                await manifestUpdater.UpdateAdvertisingManifestsAsync(
+                    TestContext.CancellationToken,
+                    includePreviews: true);
 
                 //  6.0.300 manifest was requested and then 6.0.200 manifest was requested
                 // we can't assert this for the offline cache
@@ -385,7 +468,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             nugetDownloader.PackageIdsToNotFind.Add($"{testManifestName}.Manifest-6.0.200");
 
             //  Act
-            await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true);
+            await manifestUpdater.UpdateAdvertisingManifestsAsync(
+                TestContext.CancellationToken,
+                includePreviews: true);
 
             //  Assert - messages should be suppressed
             _reporter.Lines.Should().NotContain(l => l.ToLowerInvariant().Contains("fail"));
@@ -435,13 +520,18 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 offlineCacheDir = Path.Combine(testDir, "offlineCache");
                 Directory.CreateDirectory(offlineCacheDir);             // empty dir because it shouldn't find any manifests to update
 
-                await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true, offlineCache: new DirectoryPath(offlineCacheDir));
+                await manifestUpdater.UpdateAdvertisingManifestsAsync(
+                    TestContext.CancellationToken,
+                    includePreviews: true,
+                    offlineCache: new DirectoryPath(offlineCacheDir));
             }
             else
             {
                 nugetDownloader.PackageIdsToNotFind.Add($"{testManifestName}.Manifest-6.0.300");
 
-                await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true);
+                await manifestUpdater.UpdateAdvertisingManifestsAsync(
+                    TestContext.CancellationToken,
+                    includePreviews: true);
 
 
                 // only 6.0.300 manifest was requested
@@ -608,7 +698,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installationRepo = new MockInstallationRecordRepository();
             var installer = new MockPackWorkloadInstaller(dotnetRoot);
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, testDir, installationRepo, installer);
-            await manifestUpdater.UpdateAdvertisingManifestsAsync(false, false, new DirectoryPath(offlineCache));
+            await manifestUpdater.UpdateAdvertisingManifestsAsync(
+                TestContext.CancellationToken,
+                includePreviews: false,
+                useWorkloadSets: false,
+                offlineCache: new DirectoryPath(offlineCache));
 
             // We should have chosen the higher version manifest package to install/ extract
             installer.ExtractCallParams.Count().Should().Be(1);
@@ -695,53 +789,70 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             new WorkloadConfigCommand(
                 Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
-                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, "6.0.100", resolver1)).Execute().Should().Be(0);
-            await updater1.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, "6.0.100", resolver1)).Execute(TestContext.CancellationToken).Should().Be(0);
+            await updater1.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
             File.Exists(sentinelPath2).Should().BeFalse();
 
             downloader1.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages("6.0.100"));
 
             new WorkloadConfigCommand(
                 Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
-                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, "6.0.200", resolver2)).Execute().Should().Be(0);
-            await updater2.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, "6.0.200", resolver2)).Execute(TestContext.CancellationToken).Should().Be(0);
+            await updater2.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
             File.Exists(sentinelPath2).Should().BeTrue();
             downloader2.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages("6.0.200"));
             var updateTime2 = DateTime.Now;
 
             downloader1.DownloadCallParams.Clear();
-            await updater1.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+            await updater1.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
             downloader1.DownloadCallParams.Should().BeEmpty();
             File.GetLastAccessTime(sentinelPath1).Should().BeBefore(updateTime2);
 
             downloader2.DownloadCallParams.Clear();
-            await updater2.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+            await updater2.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(TestContext.CancellationToken);
             // var updateTime1 = DateTime.Now;
             downloader2.DownloadCallParams.Should().BeEmpty();
             File.GetLastAccessTime(sentinelPath2).Should().BeCloseTo(updateTime2, 1.Seconds());
         }
 
-        private List<(PackageId, NuGetVersion, DirectoryPath?, PackageSourceLocation)> GetExpectedDownloadedPackages(string sdkFeatureBand = "6.0.100")
+        private List<(PackageId, NuGetVersion?, DirectoryPath?, PackageSourceLocation?)> GetExpectedDownloadedPackages(string sdkFeatureBand = "6.0.100")
         {
             var expectedDownloadedPackages = _installedManifests
-                .Select(id => ((PackageId, NuGetVersion, DirectoryPath?, PackageSourceLocation))(new PackageId($"{id}.manifest-{sdkFeatureBand}"), null, null, null)).ToList();
+                .Select(id => ((PackageId, NuGetVersion?, DirectoryPath?, PackageSourceLocation?))(new PackageId($"{id}.manifest-{sdkFeatureBand}"), null, null, null)).ToList();
             return expectedDownloadedPackages;
         }
 
-        private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, WorkloadConfigCommand) GetTestUpdater([CallerMemberName] string testName = "", Func<string, string> getEnvironmentVariable = null)
+        private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, WorkloadConfigCommand) GetTestUpdater(
+            [CallerMemberName] string testName = "",
+            Func<string, string>? getEnvironmentVariable = null,
+            PackageSourceLocation? packageSourceLocation = null,
+            IEnumerable<NuGetVersion>? packageVersions = null)
         {
             var testDir = TestAssetsManager.CreateTestDirectory(testName: testName).Path;
 
             var featureBand = "6.0.100";
 
-            (var manifestUpdater, var packageDownloader, var sentinelPath, var workloadResolver) = GetTestUpdater(testDir, featureBand, testName, getEnvironmentVariable);
+            (var manifestUpdater, var packageDownloader, var sentinelPath, var workloadResolver) = GetTestUpdater(
+                testDir,
+                featureBand,
+                testName,
+                getEnvironmentVariable,
+                packageSourceLocation,
+                packageVersions);
             var configCommand = new WorkloadConfigCommand(
                 Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
                 workloadResolverFactory: new MockWorkloadResolverFactory(testDir, featureBand, workloadResolver));
             return (manifestUpdater, packageDownloader, sentinelPath, configCommand);
         }
 
-        private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, IWorkloadResolver) GetTestUpdater(string testDir, string featureBand, [CallerMemberName] string testName = "", Func<string, string> getEnvironmentVariable = null)
+        private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, IWorkloadResolver) GetTestUpdater(
+            string testDir,
+            string featureBand,
+            [CallerMemberName] string testName = "",
+            Func<string, string>? getEnvironmentVariable = null,
+            PackageSourceLocation? packageSourceLocation = null,
+            IEnumerable<NuGetVersion>? packageVersions = null,
+            SdkFeatureBand? updaterFeatureBand = null)
         {
             var dotnetRoot = Path.Combine(testDir, "dotnet");
 
@@ -764,11 +875,20 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 SdkFeatureBand = new SdkFeatureBand(featureBand),
             };
             var workloadResolver = WorkloadResolver.CreateForTests(workloadManifestProvider, dotnetRoot);
-            var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
+            var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot, packageVersions: packageVersions);
             var installationRepo = new MockInstallationRecordRepository();
-            var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, testDir, installationRepo, new MockPackWorkloadInstaller(dotnetRoot), getEnvironmentVariable: getEnvironmentVariable);
+            var manifestUpdater = new WorkloadManifestUpdater(
+                _reporter,
+                workloadResolver,
+                nugetDownloader,
+                testDir,
+                installationRepo,
+                new MockPackWorkloadInstaller(dotnetRoot),
+                packageSourceLocation: packageSourceLocation,
+                getEnvironmentVariable: getEnvironmentVariable,
+                sdkFeatureBand: updaterFeatureBand);
 
-            var sentinelPath = Path.Combine(testDir, _manifestSentinelFileName + featureBand);
+            var sentinelPath = Path.Combine(testDir, _manifestSentinelFileName + (updaterFeatureBand?.ToString() ?? featureBand));
             return (manifestUpdater, nugetDownloader, sentinelPath, workloadResolver);
         }
 

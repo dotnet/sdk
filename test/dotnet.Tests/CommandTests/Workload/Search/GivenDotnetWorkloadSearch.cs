@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             var workloadResolver = new MockWorkloadResolver(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
             var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
-            command.Execute();
+            command.Execute(CancellationToken.None);
 
             _reporter.Lines.Count.Should().Be(4, because: "Output should have header and no values.");
         }
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
                                    WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.Maui"));
             var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver, sdkVersion: new ReleaseVersion(9, 0, 100));
             _reporter.Clear();
-            command.Execute();
+            command.Execute(CancellationToken.None);
             _reporter.Lines.Count.Should().Be(1);
             _reporter.Lines.Single().Should().Be("9.0.101");
         }
@@ -118,11 +118,13 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         {
             MockPackWorkloadInstaller installer = new(workloadSetContents: new Dictionary<string, string>());
             MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.101.0")]);
-            var parseResult = Parser.Parse("dotnet workload search version --source myfeed --configfile mynuget.config --disable-parallel --ignore-failed-sources --no-http-cache --interactive");
+            var configFile = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "mynuget.config");
+            File.WriteAllText(configFile, "<configuration />");
+            var parseResult = Parser.Parse($"dotnet workload search version --source myfeed --configfile \"{configFile}\" --disable-parallel --ignore-failed-sources --no-http-cache --interactive");
             MockWorkloadResolver resolver = new(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
             var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver, sdkVersion: new ReleaseVersion(9, 0, 100));
             _reporter.Clear();
-            command.Execute();
+            command.Execute(CancellationToken.None);
 
             var packageSourceLocation = nugetPackageDownloader.GetLatestPackageVersionsCallParams.Should().ContainSingle().Subject.packageSourceLocation;
             packageSourceLocation.Should().NotBeNull();
@@ -139,7 +141,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             MockWorkloadResolver resolver = new(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
             var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver, sdkVersion: new ReleaseVersion(9, 0, 100));
             _reporter.Clear();
-            command.Execute();
+            command.Execute(CancellationToken.None);
 
             nugetPackageDownloader.GetLatestPackageVersionsCallParams.Should().ContainSingle().Subject.packageSourceLocation.Should().BeNull();
         }
@@ -152,7 +154,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
             var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
-            command.Execute();
+            command.Execute(CancellationToken.None);
 
             var output = string.Join(" ", _reporter.Lines);
             foreach (var workload in _availableWorkloads)
@@ -173,7 +175,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
             var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
-            command.Execute();
+            command.Execute(CancellationToken.None);
 
             var output = string.Join(" ", _reporter.Lines);
             foreach (var workload in _availableWorkloads)
@@ -194,7 +196,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
             var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
-            command.Execute();
+            command.Execute(CancellationToken.None);
 
             var output = string.Join(" ", _reporter.Lines);
             var expectedWorkloads = _availableWorkloads.Take(3);
@@ -216,7 +218,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
             var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
-            command.Execute();
+            command.Execute(CancellationToken.None);
 
             _reporter.Lines[3].Should().Contain("fake-workload-1");
             _reporter.Lines[4].Should().Contain("fake-workload-2");
@@ -233,7 +235,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
             var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
-            command.Execute();
+            command.Execute(CancellationToken.None);
 
             _reporter.Lines.Count.Should().Be(5);
             _reporter.Lines[3].Should().Contain("fake-workload-2");

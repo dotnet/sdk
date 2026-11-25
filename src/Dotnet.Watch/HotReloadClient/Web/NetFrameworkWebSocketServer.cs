@@ -111,7 +111,6 @@ internal sealed class NetFrameworkWebSocketServer : IAsyncDisposable
         }
     }
 
-    
 }
 
 #endif

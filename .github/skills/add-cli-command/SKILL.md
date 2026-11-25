@@ -56,17 +56,28 @@ Everything above, plus:
    ```csharp
    <Name>CommandParser.ConfigureCommand(rootCommand.<Name>Command);
    ```
+5. Register top-level `--help` routing in `src/Cli/dotnet/Parser.cs`:
+   - Add the command name (and any top-level `Aliases`) to `CreateCommandForGenericHelp`
+     unless top-level `--help` cannot use a standalone definition (such as `test`).
+   - If `<Name>CommandParser.ConfigureCommand` or `ConfigureManagedActions` mutates
+     help-visible structure — subcommands, options, descriptions, `ICustomHelp`, or
+     completion sources on arguments/options without an explicit `HelpName` — apply that
+     same setup in `TryParseGenericCommandHelp`. When Native AOT cannot produce that
+     dynamic help statically, guard the `CreateCommandForGenericHelp` entry with
+     `#if !CLI_AOT` and pass `rootCommand.<Name>Command` to `AotPrintHelpAction` in
+     `NormalizeRootOptions` so AOT defers `--help` to the managed CLI.
 
 > **Native AOT:** a newly registered command already *runs* under Native AOT via the
-> managed fallback (the `dotnet-aot` host runs `dotnet.dll` through hostfxr), and its
-> parsing and `--help` reach the AOT CLI for free. Making the command execute
+> managed fallback (the `dotnet-aot` host runs `dotnet.dll` through hostfxr), and static
+> parsing and `--help` reach the AOT CLI via `Definitions` + `CreateCommandForGenericHelp`.
+> Making the command execute
 > **in-process** in the native binary is separate, deliberate work — follow the
 > **add-dotnet-aot-command** skill when AOT support is required.
 
 ## Checklist
 
 - [ ] Option/command declared in `Definitions`, registered in its parent's constructor.
-- [ ] Managed behavior wired in `src/Cli/dotnet` and (for new commands) in `Parser.cs`.
+- [ ] Managed behavior wired in `src/Cli/dotnet` and (for new/renamed top-level commands or aliases) in `Parser.cs` (`ConfigureManagedActions`, `CreateCommandForGenericHelp`, and when `--help` is dynamic, `TryParseGenericCommandHelp` / `AotPrintHelpAction`).
 - [ ] Help description in `CommandDefinitionStrings.resx`; runtime message in `CliCommandStrings.resx`.
 - [ ] `.xlf` files regenerated via `/t:UpdateXlf` (not hand-edited), resx + xlf committed together.
 - [ ] No heavy dependency leaked into `Definitions`.

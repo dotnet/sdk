@@ -7,6 +7,6 @@ namespace Microsoft.DotNet.Cli;
 
 internal interface IFilePermissionSetter
 {
-    void SetUserExecutionPermission(string path);
-    void SetPermission(string path, string chmodArgument);
+    void SetUserExecutionPermission(string path, CancellationToken cancellationToken);
+    void SetPermission(string path, string chmodArgument, CancellationToken cancellationToken);
 }

@@ -88,13 +88,34 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.ValueContentAnalysis
 
         protected override void ComputeHashCodePartsSpecific(ref RoslynHashCode hashCode)
         {
-            hashCode.Add(HashUtilities.Combine(AdditionalSupportedValueTypes));
+            hashCode.Add(AdditionalSupportedValueTypes.Length);
+
+            foreach (var type in AdditionalSupportedValueTypes)
+            {
+                hashCode.Add(type, SymbolEqualityComparer.Default);
+            }
+
+            hashCode.Add(GetValueForAdditionalSupportedValueTypeOperation.GetHashCodeOrDefault());
         }
 
         protected override bool ComputeEqualsByHashCodeParts(AbstractDataFlowAnalysisContext<ValueContentAnalysisData, ValueContentAnalysisContext, ValueContentAnalysisResult, ValueContentAbstractValue> obj)
         {
             var other = (ValueContentAnalysisContext)obj;
-            return HashUtilities.Combine(AdditionalSupportedValueTypes) == HashUtilities.Combine(other.AdditionalSupportedValueTypes);
+            if (!Equals(GetValueForAdditionalSupportedValueTypeOperation, other.GetValueForAdditionalSupportedValueTypeOperation) ||
+                AdditionalSupportedValueTypes.Length != other.AdditionalSupportedValueTypes.Length)
+            {
+                return false;
+            }
+
+            for (var index = 0; index < AdditionalSupportedValueTypes.Length; index++)
+            {
+                if (!SymbolEqualityComparer.Default.Equals(AdditionalSupportedValueTypes[index], other.AdditionalSupportedValueTypes[index]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

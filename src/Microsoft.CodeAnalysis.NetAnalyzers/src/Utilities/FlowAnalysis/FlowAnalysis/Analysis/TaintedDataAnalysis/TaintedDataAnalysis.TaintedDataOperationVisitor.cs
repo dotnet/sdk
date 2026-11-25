@@ -57,6 +57,10 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             protected override void AddTrackedEntities(TaintedDataAnalysisData analysisData, HashSet<AnalysisEntity> builder, bool forInterproceduralAnalysis)
                 => analysisData.AddTrackedEntities(builder);
 
+            protected override ImmutableHashSet<AnalysisEntity> GetChildAnalysisEntitiesCore(
+                PointsToAbstractValue instanceLocation, Func<AnalysisEntity, bool> predicate)
+                => FilterChildAnalysisEntities(CurrentAnalysisData.GetChildAnalysisEntityCandidates(instanceLocation), predicate);
+
             protected override bool Equals(TaintedDataAnalysisData value1, TaintedDataAnalysisData value2)
             {
                 return value1.Equals(value2);
@@ -179,28 +183,40 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
                 // - adding a tainted value to something makes the result tainted
                 // - instantiating an object with tainted data makes the new object tainted
 
+                TaintedDataAbstractValue? firstTaintedValue = null;
+                TaintedDataAbstractValue? secondTaintedValue = null;
                 List<TaintedDataAbstractValue>? taintedValues = null;
+
                 foreach (IOperation childOperation in operation.ChildOperations)
                 {
                     TaintedDataAbstractValue childValue = Visit(childOperation, argument);
                     if (childValue.Kind == TaintedDataAbstractValueKind.Tainted)
                     {
-                        taintedValues ??= new List<TaintedDataAbstractValue>();
-
-                        taintedValues.Add(childValue);
+                        if (firstTaintedValue == null)
+                        {
+                            firstTaintedValue = childValue;
+                        }
+                        else if (secondTaintedValue == null)
+                        {
+                            secondTaintedValue = childValue;
+                        }
+                        else
+                        {
+                            taintedValues ??= new List<TaintedDataAbstractValue> { firstTaintedValue, secondTaintedValue };
+                            taintedValues.Add(childValue);
+                        }
                     }
                 }
 
                 if (taintedValues != null)
                 {
-                    if (taintedValues.Count == 1)
-                    {
-                        return taintedValues[0];
-                    }
-                    else
-                    {
-                        return TaintedDataAbstractValue.MergeTainted(taintedValues);
-                    }
+                    return TaintedDataAbstractValue.MergeTainted(taintedValues);
+                }
+                else if (firstTaintedValue != null)
+                {
+                    return secondTaintedValue == null
+                        ? firstTaintedValue
+                        : TaintedDataAbstractValue.MergeTainted(firstTaintedValue, secondTaintedValue);
                 }
                 else
                 {
@@ -299,18 +315,13 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
                         return taintedParameterNames;
                     }
 
-                    taintedParameterNamesCached = PooledHashSet<string>.GetInstance();
-                    taintedParameterNamesCached.UnionWith(GetTaintedParameterNames());
-
                     if (this.DataFlowAnalysisContext.SourceInfos.IsSourceMethod(
                         method,
                         visitedArguments,
-                        new Lazy<PointsToAnalysisResult?>(() => DataFlowAnalysisContext.PointsToAnalysisResult),
-                        new Lazy<(PointsToAnalysisResult?, ValueContentAnalysisResult?)>(() => (DataFlowAnalysisContext.PointsToAnalysisResult, DataFlowAnalysisContext.ValueContentAnalysisResult)),
+                        DataFlowAnalysisContext.PointsToAnalysisResult,
+                        DataFlowAnalysisContext.ValueContentAnalysisResult,
                         out taintedTargets))
                     {
-                        bool rebuildTaintedParameterNames = false;
-
                         foreach (string taintedTarget in taintedTargets)
                         {
                             if (taintedTarget != TaintedTargetValue.Return)
@@ -318,7 +329,6 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
                                 IArgumentOperation? argumentOperation = visitedArguments.FirstOrDefault(o => o.Parameter?.Name == taintedTarget);
                                 if (argumentOperation?.Parameter != null)
                                 {
-                                    rebuildTaintedParameterNames = true;
                                     this.CacheAbstractValue(argumentOperation, TaintedDataAbstractValue.CreateTainted(argumentOperation.Parameter, argumentOperation.Syntax, method));
                                 }
                                 else
@@ -331,13 +341,10 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
                                 result = TaintedDataAbstractValue.CreateTainted(method, originalOperation.Syntax, this.OwningSymbol);
                             }
                         }
-
-                        if (rebuildTaintedParameterNames)
-                        {
-                            taintedParameterNamesCached.Clear();
-                            taintedParameterNamesCached.UnionWith(GetTaintedParameterNames());
-                        }
                     }
+
+                    taintedParameterNamesCached = PooledHashSet<string>.GetInstance();
+                    taintedParameterNamesCached.UnionWith(GetTaintedParameterNames());
 
                     if (this.DataFlowAnalysisContext.SourceInfos.IsSourceTransferMethod(
                         method,
@@ -477,13 +484,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             // See HttpRequest_Form_Array_List_Diagnostic and HttpRequest_Form_List_Diagnostic tests.
             public override TaintedDataAbstractValue VisitArrayInitializer(IArrayInitializerOperation operation, object? argument)
             {
-                HashSet<SymbolAccess>? sourceOrigins = null;
                 TaintedDataAbstractValue baseAbstractValue = base.VisitArrayInitializer(operation, argument);
-                if (baseAbstractValue.Kind == TaintedDataAbstractValueKind.Tainted)
-                {
-                    sourceOrigins = new HashSet<SymbolAccess>(baseAbstractValue.SourceOrigins);
-                }
-
                 IEnumerable<TaintedDataAbstractValue> taintedAbstractValues =
                     operation.ElementValues
                         .Select<IOperation, TaintedDataAbstractValue>(this.GetCachedAbstractValue)

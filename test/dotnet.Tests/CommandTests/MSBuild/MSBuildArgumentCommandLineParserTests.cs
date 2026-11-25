@@ -6,6 +6,8 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.MSBuild.Tests;
+using Microsoft.DotNet.Cli.Utils;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
 
@@ -14,6 +16,40 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
     [TestClass]
     public class MSBuildArgumentCommandLineParserTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
+        [TestMethod]
+        [DataRow(new string[0], null)]
+        [DataRow(new[] { "-mt" }, true)]
+        [DataRow(new[] { "--multiThreaded:FALSE" }, false)]
+        [DataRow(new[] { "/MT:true" }, true)]
+        [DataRow(new[] { "\"--mt:false\"" }, false)]
+        [DataRow(new[] { "-mt:\"true\"" }, true)]
+        [DataRow(new[] { "-mt:false", "-mt" }, true)]
+        [DataRow(new[] { "-mt", "-mt:false" }, false)]
+        [DataRow(new[] { "-mt:" }, true)]
+        [DataRow(new[] { "-mt:\"\"" }, true)]
+        [DataRow(new[] { "-mt:false", "-mt:\"\"" }, false)]
+        [DataRow(new[] { "-mtx" }, null)]
+        [DataRow(new[] { "-mt:yes", "-mt:false" }, false)]
+        [DataRow(new[] { "-mt:yes" }, null)]
+        public void MSBuildArgumentsParseMultiThreading(string[] arguments, bool? expected)
+        {
+            var args = MSBuildArgs.AnalyzeMSBuildArguments(arguments);
+
+            args.HasMultithreadedSwitch.Should().Be(expected);
+            args.OtherMSBuildArgs.Should().Equal(arguments);
+        }
+
+        [TestMethod]
+        public void MSBuildArgumentsClonesKeepMultiThreading()
+        {
+            var args = MSBuildArgs.AnalyzeMSBuildArguments(["-mt"]);
+
+            args.CloneWithAdditionalArgs("-v:q").HasMultithreadedSwitch.Should().BeTrue();
+            args.CloneWithExplicitArgs(["-v:q", .. args.OtherMSBuildArgs]).HasMultithreadedSwitch.Should().BeTrue();
+            args.CloneWithVerbosity(VerbosityOptions.quiet).HasMultithreadedSwitch.Should().BeTrue();
+        }
 
         [TestMethod]
         [DataRow(new string[] { "-property:prop1=true", "-p:prop2=false" }, true)]
@@ -27,8 +63,8 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         public void MSBuildArgumentsAreForwardedCorrectly(string[] arguments, bool buildCommand)
         {
             RestoringCommand command = buildCommand ?
-                (RestoringCommand)BuildCommand.FromArgs(arguments) :
-                (RestoringCommand)PublishCommand.FromArgs(arguments);
+                (RestoringCommand)BuildCommand.FromArgs(arguments, msbuildPath: null, services: TestCommandServices.CreateNonLLM()) :
+                (RestoringCommand)PublishCommand.FromArgs(arguments, TestContext.CancellationToken, msbuildPath: null, services: TestCommandServices.CreateNonLLM());
             var expectedArguments = arguments.Select(a => a.Replace("-property:", "--property:").Replace("-p:", "--property:"));
             var argString = command.MSBuildArguments;
 

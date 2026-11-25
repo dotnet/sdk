@@ -11,6 +11,7 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public DotnetBuildCommand(ITestOutputHelper log, params string[] args) : base(log)
         {
+            SupportsTestBinlogCapture = true;
             Arguments.Add("build");
             Arguments.AddRange(args);
         }

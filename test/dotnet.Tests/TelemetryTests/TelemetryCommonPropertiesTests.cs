@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.NetworkInformation;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Telemetry;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
+using Moq;
 
 namespace Microsoft.DotNet.Tests.TelemetryTests;
 
@@ -219,76 +222,19 @@ public class TelemetryCommonPropertiesTests : SdkTest
         }
     }
 
-    // All environment variables checked by LLMEnvironmentDetectorForTelemetry.
-    // Tests must clear these before each run so that ambient env vars (e.g. when
-    // tests execute inside the Copilot CLI desktop app) don't pollute results.
-    private static readonly string[] _allLLMEnvVars = [
-        "CLAUDE_CODE_IS_COWORK", "CLAUDECODE", "CLAUDE_CODE", "CLAUDE_CODE_ENTRYPOINT",
-        "CURSOR_EDITOR", "CURSOR_AI", "CURSOR_TRACE_ID", "CURSOR_AGENT",
-        "GEMINI_CLI",
-        "GITHUB_COPILOT_CLI_MODE", "GH_COPILOT_WORKING_DIRECTORY", "COPILOT_CLI", "COPILOT_MODEL", "COPILOT_ALLOW_ALL", "COPILOT_GITHUB_TOKEN",
-        "AI_AGENT", "COPILOT_AGENT",
-        "CODEX_CLI", "CODEX_SANDBOX", "CODEX_CI", "CODEX_THREAD_ID",
-        "OR_APP_NAME",
-        "AMP_HOME",
-        "QWEN_CODE",
-        "DROID_CLI",
-        "OPENCODE_AI",
-        "ZED_ENVIRONMENT", "ZED_TERM",
-        "KIMI_CLI",
-        "GOOSE_TERMINAL", "GOOSE_PROVIDER",
-        "CLINE_TASK_ID",
-        "ROO_CODE_TASK_ID",
-        "WINDSURF_SESSION",
-        "REPL_ID",
-        "AUGMENT_AGENT",
-        "ANTIGRAVITY_AGENT",
-        "AGENT_CLI",
-    ];
-
     [TestMethod]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     [DynamicData(nameof(LLMTelemetryTestCases))]
     public void CanDetectLLMStatusForEnvVars(Dictionary<string, string>? envVars, string? expected)
     {
-        // Save and clear all LLM env vars so ambient values don't affect the test.
-        var savedEnvVars = _allLLMEnvVars
-            .Select(key => (key, value: Environment.GetEnvironmentVariable(key)))
-            .Where(pair => pair.value is not null)
-            .ToArray();
+        var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
+        environmentProvider
+            .Setup(provider => provider.GetEnvironmentVariable(It.IsAny<string>()))
+            .Returns((string name) => envVars?.GetValueOrDefault(name));
 
-        foreach (var key in _allLLMEnvVars)
-        {
-            Environment.SetEnvironmentVariable(key, null);
-        }
-
-        try
-        {
-            if (envVars is not null)
-            {
-                foreach (var (key, value) in envVars)
-                {
-                    Environment.SetEnvironmentVariable(key, value);
-                }
-            }
-            new LLMEnvironmentDetectorForTelemetry().GetLLMEnvironment().Should().Be(expected);
-        }
-        finally
-        {
-            // Clean up test-set vars
-            if (envVars is not null)
-            {
-                foreach (var (key, value) in envVars)
-                {
-                    Environment.SetEnvironmentVariable(key, null);
-                }
-            }
-            // Restore original ambient vars
-            foreach (var (key, value) in savedEnvVars)
-            {
-                Environment.SetEnvironmentVariable(key, value);
-            }
-        }
+        new LLMEnvironmentDetectorForTelemetry(environmentProvider.Object)
+            .GetLLMEnvironment()
+            .Should()
+            .Be(expected);
     }
 
     [TestMethod]
@@ -301,6 +247,69 @@ public class TelemetryCommonPropertiesTests : SdkTest
 
         commonProperties.Should().ContainKey("SessionId");
         commonProperties["SessionId"].Should().Be(sessionId);
+    }
+
+    [TestMethod]
+    [DataRow("11111111-2222-4333-8444-555555555555", "11111111-2222-4333-8444-555555555555")]
+    [DataRow("aBCDEfAB-1234-4567-8ABC-DEFaBCDEF012", "aBCDEfAB-1234-4567-8ABC-DEFaBCDEF012")]
+    [DataRow("11111111-2222-1333-8444-555555555555", "11111111-2222-1333-8444-555555555555")]
+    [DataRow("11111111-2222-8333-B444-555555555555", "11111111-2222-8333-B444-555555555555")]
+    [DataRow("00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000")]
+    [DataRow(null, "not_present")]
+    [DataRow("", "not_present")]
+    [DataRow("not_present", "edcc84b8e36c26b675c1b102b0e42f3507eee0afe5fbda7c203e9cbb758390e3")]
+    [DataRow("build-investigation-42", "a5b5273cea99d1a7df8e81f234369666daf7d810c64d852df129ae276d5167b2")]
+    [DataRow("BUILD-INVESTIGATION-42", "8495a77b0853a7baf0eaccc4f2cb4b53bd36872da0f13744527a2f8c4142a30f")]
+    [DataRow("11111111-2222-4333-8444-55555555555z", "da8570b51ec8f24bb7194a2999c1fd4f360aeb7f5c00dd67626a8219af4d8cf4")]
+    [DataRow("11111111222243338444555555555555", "a57c45f998b7a947797b97e2a2f9f5193c3f3b0d25846743ffe0ce9d41b8d31a")]
+    [DataRow("{11111111-2222-4333-8444-555555555555}", "317fed678c8ba3993d5679e3e6f9e8812c05a45b6f18f2436fccb6900ad1c8ed")]
+    [DataRow(" 11111111-2222-4333-8444-555555555555", "509590cf9e16ef2e2c18fa3c850252cd38d7a5f933c9b3d9be955a375bc3b424")]
+    [DataRow("11111111-2222-4333-8444-555555555555 ", "a55397b892e7d810f57cf4891c72eb2f4be672aa98ce3666cee9dceb683b2cb0")]
+    [DataRow("11111111-2222-4333-8444-555555555555\n", "1ea86e0cda2cdfa70440c9d56e86fd20e61b6a51daed6a369d403d1e997da00d")]
+    [DataRow("11111111-2222-0333-8444-555555555555", "8b777695ee7f9a53bb76f167e98a835c582ee2da5aeba14055efda55a786eb8d")]
+    [DataRow("11111111-2222-9333-8444-555555555555", "b478764bfaad8e44fbec9869e9287cd58ccb738bb299477b8d77935ede317765")]
+    [DataRow("11111111-2222-4333-7444-555555555555", "b16908ebd945a172e8201459e14ea359bf33417005810f1b28aef64b7d7e32b5")]
+    [DataRow("11111111-2222-4333-c444-555555555555", "d9bb2db9d5fbd352725181efa0c6869e672ad1b9522ed249284b674b5e7c605d")]
+    [DataRow("ffffffff-ffff-ffff-ffff-ffffffffffff", "13984ab878f915021670cd855c9399ebc339676b2581855e4efd60c685f67c8e")]
+    [DataRow(" ", "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068")]
+    [DataRow("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "635361c48bb9eab14198e76ea8ab7f1a41685d6ad62aa9146d301d4f17eb0ae0")]
+    [DataRow("r\u00e9union-\U0001F527", "4f0d2b876136e17123ad90cae429ad8a4672b8acd187746136640f98da7a515e")]
+    public void TelemetryCommonPropertiesShouldNormalizeCopilotSessionId(string? sessionId, string expectedId)
+    {
+        var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
+        environmentProvider
+            .Setup(p => p.GetEnvironmentVariable(EnvironmentVariableNames.COPILOT_AGENT_SESSION_ID))
+            .Returns(sessionId);
+        var collector = new TelemetryCommonProperties(
+            userLevelCacheWriter: new NothingCache(),
+            environmentProvider: environmentProvider.Object);
+
+        var properties = collector.GetTelemetryCommonProperties("sdk-correlation-test");
+
+        properties.Should().ContainKey("CopilotAgentSessionId");
+        properties["CopilotAgentSessionId"].Should().Be(expectedId);
+        properties["SessionId"].Should().Be("sdk-correlation-test");
+    }
+
+    [TestMethod]
+    public void TelemetryContextPropertiesShouldRefreshWithoutChangingEarlierSnapshots()
+    {
+        string? sessionId = "build-investigation-42";
+        var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
+        environmentProvider
+            .Setup(p => p.GetEnvironmentVariable(EnvironmentVariableNames.COPILOT_AGENT_SESSION_ID))
+            .Returns(() => sessionId);
+        var collector = new TelemetryCommonProperties(environmentProvider: environmentProvider.Object);
+
+        var first = collector.GetTelemetryContextProperties();
+        sessionId = "aBCDEfAB-1234-4567-8ABC-DEFaBCDEF012";
+        var second = collector.GetTelemetryContextProperties();
+        sessionId = null;
+        var absent = collector.GetTelemetryContextProperties();
+
+        first["CopilotAgentSessionId"].Should().Be("a5b5273cea99d1a7df8e81f234369666daf7d810c64d852df129ae276d5167b2");
+        second["CopilotAgentSessionId"].Should().Be("aBCDEfAB-1234-4567-8ABC-DEFaBCDEF012");
+        absent["CopilotAgentSessionId"].Should().Be("not_present");
     }
 
     public static IEnumerable<object[]> LLMTelemetryTestCases => new List<object[]>()
@@ -338,7 +347,10 @@ public class TelemetryCommonPropertiesTests : SdkTest
         new object[] { new Dictionary<string, string> { { "AMP_HOME", "/path/to/amp" } }, "amp" },
         new object[] { new Dictionary<string, string> { { "QWEN_CODE", "1" } }, "qwen" },
         new object[] { new Dictionary<string, string> { { "DROID_CLI", "true" } }, "droid" },
-        new object[] { new Dictionary<string, string> { { "OPENCODE_AI", "1" } }, "opencode" },
+        new object[] { new Dictionary<string, string> { { "OPENCODE", "1" } }, "opencode" },
+        new object[] { new Dictionary<string, string> { { "OPENCODE", "0" } }, "opencode" },
+        new object[] { new Dictionary<string, string> { { "OPENCODE", "" } }, null! },
+        new object[] { new Dictionary<string, string> { { "OPENCODE_AI", "1" } }, null! },
         new object[] { new Dictionary<string, string> { { "ZED_ENVIRONMENT", "1" } }, "zed" },
         new object[] { new Dictionary<string, string> { { "ZED_TERM", "1" } }, "zed" },
         new object[] { new Dictionary<string, string> { { "KIMI_CLI", "true" } }, "kimi" },

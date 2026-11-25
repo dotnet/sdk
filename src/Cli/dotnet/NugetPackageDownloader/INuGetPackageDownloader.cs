@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader;
 internal interface INuGetPackageDownloader
 {
     Task<string> DownloadPackageAsync(PackageId packageId,
+        CancellationToken cancellationToken,
         NuGetVersion packageVersion = null,
         PackageSourceLocation packageSourceLocation = null,
         bool includePreview = false,
@@ -21,26 +22,31 @@ internal interface INuGetPackageDownloader
         PackageSourceMapping packageSourceMapping = null);
 
     Task<string> GetPackageUrl(PackageId packageId,
+        CancellationToken cancellationToken,
         NuGetVersion packageVersion = null,
         PackageSourceLocation packageSourceLocation = null,
         bool includePreview = false);
 
-    Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder);
+    Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder, CancellationToken cancellationToken);
 
     Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId,
+         CancellationToken cancellationToken,
          PackageSourceLocation packageSourceLocation = null,
          bool includePreview = false);
 
     Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId,
          int numberOfResults,
+         CancellationToken cancellationToken,
          PackageSourceLocation packageSourceLocation = null,
          bool includePreview = false);
 
     Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
         VersionRange versionRange,
+        CancellationToken cancellationToken,
          PackageSourceLocation packageSourceLocation = null);
 
     Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
         VersionRange versionRange,
+        CancellationToken cancellationToken,
         PackageSourceLocation packageSourceLocation = null);
 }

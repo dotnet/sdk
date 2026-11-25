@@ -42,7 +42,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('package', 'package', [CompletionResultType]::ParameterValue, "package")
                 [CompletionResult]::new('project', 'project', [CompletionResultType]::ParameterValue, "project")
                 [CompletionResult]::new('publish', 'publish', [CompletionResultType]::ParameterValue, "Publisher for the .NET Platform")
-                [CompletionResult]::new('reference', 'reference', [CompletionResultType]::ParameterValue, ".NET Remove Command")
+                [CompletionResult]::new('reference', 'reference', [CompletionResultType]::ParameterValue, "Add, remove, or list ProjectReferences for a .NET project.")
                 [CompletionResult]::new('restore', 'restore', [CompletionResultType]::ParameterValue, ".NET dependency restorer")
                 [CompletionResult]::new('run', 'run', [CompletionResultType]::ParameterValue, ".NET Run Command")
                 [CompletionResult]::new('solution', 'solution', [CompletionResultType]::ParameterValue, ".NET modify solution file command")

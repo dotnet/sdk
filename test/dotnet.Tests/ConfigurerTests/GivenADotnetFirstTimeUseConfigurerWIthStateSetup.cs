@@ -89,6 +89,9 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 .Setup(p => p.GetEnvironmentVariableAsBool("DOTNET_CLI_TELEMETRY_OPTOUT", It.IsAny<bool>()))
                 .Returns(DOTNET_CLI_TELEMETRY_OPTOUT);
             _environmentProvider
+                .Setup(p => p.GetEnvironmentVariable("COPILOT_AGENT_SESSION_ID"))
+                .Returns((string)null);
+            _environmentProvider
                 .Setup(p => p.GetEnvironmentVariableAsBool("DOTNET_NOLOGO", It.IsAny<bool>()))
                 .Returns(DOTNET_NOLOGO);
             _environmentProvider

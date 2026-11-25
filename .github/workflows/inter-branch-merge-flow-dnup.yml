@@ -1,0 +1,23 @@
+name: Inter-branch merge workflow (dotnetup)
+# Flows the newest .NET 11 feature band into release/dnup so dotnetup stays on .NET 11.
+# This is separate from inter-branch-merge-flow.yml because a branch can only have one
+# merge target per configuration file, and this branch already flows to main.
+# The configuration is read from github-merge-flow-dnup.jsonc on main.
+on:
+  push:
+    branches:
+      - release/11.0.2xx
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  Merge:
+    uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@a1e2996a5c308f9ad515414927559b43f36f1cbc # main
+    with:
+      configuration_file_path: github-merge-flow-dnup.jsonc
+      script_version: a1e2996a5c308f9ad515414927559b43f36f1cbc

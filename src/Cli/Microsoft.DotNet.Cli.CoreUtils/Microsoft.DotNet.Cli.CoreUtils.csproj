@@ -13,9 +13,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Common\FileBasedProgramDefaults.cs" Link="Common\FileBasedProgramDefaults.cs" />
     <InternalsVisibleTo Include="dotnet" />
     <InternalsVisibleTo Include="dotnet-aot" />
     <InternalsVisibleTo Include="dotnet-aot.Tests" />
+    <InternalsVisibleTo Include="dotnet-watch" />
     <InternalsVisibleTo Include="Microsoft.DotNet.Cli.CoreUtils.Tests"
                         Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'" />
     <InternalsVisibleTo Include="Microsoft.DotNet.Cli.Utils" />

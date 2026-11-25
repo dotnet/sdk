@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -43,23 +42,19 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     private readonly int _insecureRegistryHttpPort;
     private readonly ILogger _logger;
     private readonly RegistryMode _registryMode;
-    private static ConcurrentDictionary<string, AuthenticationHeaderValue?> _authenticationHeaders = new();
+    private readonly Func<Uri, HttpMessageHandler> _createRealmHandler;
+    private readonly Func<TimeSpan, CancellationToken, Task> _delay;
+    private AuthenticationHeaderValue? _authentication;
 
-    /// <summary>
-    /// IPv4 ranges considered unsafe to send token requests to. Loopback (127.0.0.0/8) is
-    /// covered by <see cref="IPAddress.IsLoopback(IPAddress)"/>.
-    /// </summary>
-    private static readonly IPNetwork[] BlockedV4Networks =
-    [
-        IPNetwork.Parse("0.0.0.0/8"),      // "this network" / unspecified
-        IPNetwork.Parse("10.0.0.0/8"),     // private (RFC 1918)
-        IPNetwork.Parse("172.16.0.0/12"),  // private (RFC 1918)
-        IPNetwork.Parse("192.168.0.0/16"), // private (RFC 1918)
-        IPNetwork.Parse("169.254.0.0/16"), // link-local
-        IPNetwork.Parse("224.0.0.0/24"),   // link-local multicast
-    ];
-
-    public AuthHandshakeMessageHandler(string registryName, Uri registryUri, bool isInsecureRegistry, HttpMessageHandler innerHandler, ILogger logger, RegistryMode mode) : base(innerHandler)
+    public AuthHandshakeMessageHandler(
+        string registryName,
+        Uri registryUri,
+        bool isInsecureRegistry,
+        HttpMessageHandler innerHandler,
+        ILogger logger,
+        RegistryMode mode,
+        Func<Uri, HttpMessageHandler>? realmHandlerFactory = null,
+        Func<TimeSpan, CancellationToken, Task>? delay = null) : base(innerHandler)
     {
         _registryName = registryName;
         _registryUri = registryUri;
@@ -67,6 +62,9 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         _insecureRegistryHttpPort = RegistryNameContainsPort(registryName) ? registryUri.Port : 80;
         _logger = logger;
         _registryMode = mode;
+        _createRealmHandler = realmHandlerFactory
+            ?? new AuthRealmHandlerFactory(registryName, registryUri, isInsecureRegistry).Create;
+        _delay = delay ?? Task.Delay;
     }
 
     /// <summary>
@@ -174,15 +172,22 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// </summary>
     private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> GetAuthenticationAsync(string registry, string scheme, AuthInfo? bearerAuthInfo, CancellationToken cancellationToken)
     {
-        // For bearer auth, validate the realm URL before any credential lookup so that a malicious or
+        // For bearer auth, validate the realm before any credential lookup so that a malicious or
         // compromised registry response cannot trigger credential retrieval toward a hostile token
-        // endpoint, and so that validation errors aren't masked by credential errors.
+        // endpoint, and so that validation errors aren't masked by credential errors. The addresses
+        // the realm resolves to are checked by the realm handler when it connects.
         Uri? validatedBearerRealm = null;
+        HttpMessageHandler? realmHandler = null;
         if (scheme.Equals(BearerAuthScheme, StringComparison.OrdinalIgnoreCase))
         {
             Debug.Assert(bearerAuthInfo is not null);
             validatedBearerRealm = ValidateRealmUri(bearerAuthInfo.Realm, registry, _isInsecureRegistry);
+            realmHandler = _createRealmHandler(validatedBearerRealm);
         }
+
+        // The realm is untrusted, so token requests use a separate SSRF-protected transport rather
+        // than the registry transport.
+        using HttpMessageInvoker? realmClient = realmHandler is null ? null : new(realmHandler, disposeHandler: true);
 
         DockerCredentials? privateRepoCreds;
         // Allow overrides for auth via environment variables
@@ -204,6 +209,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         {
             Debug.Assert(bearerAuthInfo is not null);
             Debug.Assert(validatedBearerRealm is not null);
+            Debug.Assert(realmClient is not null);
 
             // Obtain a Bearer token, when the credentials are:
             // - an identity token: use it for OAuth
@@ -211,14 +217,14 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
 
             if (string.IsNullOrWhiteSpace(privateRepoCreds.IdentityToken))
             {
-                var authenticationValueAndDuration = await TryTokenGetAsync(privateRepoCreds, bearerAuthInfo, validatedBearerRealm, cancellationToken).ConfigureAwait(false);
+                var authenticationValueAndDuration = await TryTokenGetAsync(realmClient, privateRepoCreds, bearerAuthInfo, validatedBearerRealm, cancellationToken).ConfigureAwait(false);
                 if (authenticationValueAndDuration is not null)
                 {
                     return authenticationValueAndDuration;
                 }
             }
 
-            return await TryOAuthPostAsync(privateRepoCreds, bearerAuthInfo, validatedBearerRealm, cancellationToken).ConfigureAwait(false);
+            return await TryOAuthPostAsync(realmClient, privateRepoCreds, bearerAuthInfo, validatedBearerRealm, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -227,12 +233,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     }
 
     /// <summary>
-    /// Validates the bearer realm URL returned in a WWW-Authenticate challenge before the client
-    /// uses it to fetch a token.
-    /// Exception for legitimate insecure dev/on-prem registries that use IP-literal
-    /// hostnames and return realms pointing back at themselves: an IP-literal realm host is
-    /// allowed when <paramref name="isInsecureRegistry"/> is true and the realm host matches the
-    /// registry host (port-independent).
+    /// Validates the syntax and scheme of the bearer realm URL returned in a WWW-Authenticate
+    /// challenge. The addresses the realm resolves to are checked by <see cref="AuthRealmHandlerFactory"/>.
     /// </summary>
     internal static Uri ValidateRealmUri(string realm, string registryName, bool isInsecureRegistry)
     {
@@ -258,56 +260,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                 Resource.FormatString(nameof(Strings.InvalidAuthResponse_DisallowedScheme), realm, realmUri.Scheme));
         }
 
-        // IP-literal guard. We use Uri.IdnHost (the ASCII/canonical host) rather than
-        // Uri.Host so that Unicode-dot forms, which the runtime canonicalizes back to
-        // 127.0.0.1 when the request is actually sent, cannot bypass the check by
-        // appearing as a DNS name to Uri.HostNameType.
-        string realmHost = TrimTrailingDot(realmUri.IdnHost);
-        if (IPAddress.TryParse(realmHost, out IPAddress? realmIp)
-            && IsBlockedIpLiteral(realmIp))
-        {
-            // Exception: allow IP-literal realm whose host matches the registry's host
-            // when the registry is insecure. This supports legitimate private/on-prem dev
-            // registries (e.g. 192.168.1.5:5000) whose realm points back to themselves.
-            if (!(isInsecureRegistry && RegistryHostMatchesIp(registryName, realmIp)))
-            {
-                throw new InvalidAuthResponseException(
-                    registryName,
-                    Resource.FormatString(nameof(Strings.InvalidAuthResponse_PrivateIpLiteralRealm), realm, realmHost));
-            }
-        }
-        else if (IsLoopbackDnsName(realmHost)
-            && !(isInsecureRegistry && RegistryIsLoopbackEquivalent(registryName)))
-        {
-            // RFC 6761 reserves "localhost" and "*.localhost" for loopback resolution, so a
-            // realm host of those names carries the same risk as a literal 127.0.0.1 - the
-            // runtime resolves them to loopback regardless of /etc/hosts. Apply the same
-            // exception model the IP-literal guard uses (insecure + registry is also loopback-equivalent).
-            throw new InvalidAuthResponseException(
-                registryName,
-                Resource.FormatString(nameof(Strings.InvalidAuthResponse_PrivateIpLiteralRealm), realm, realmHost));
-        }
-
         return realmUri;
     }
-
-    /// <summary>
-    /// Returns true when <paramref name="host"/> is one of the DNS names RFC 6761 reserves
-    /// for loopback resolution.
-    /// Callers must pass an already-trimmed host (see <see cref="TrimTrailingDot"/>).
-    /// </summary>
-    private static bool IsLoopbackDnsName(string host) =>
-        host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
-        || host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>
-    /// Strips a single FQDN root-zone trailing dot from <paramref name="host"/>. DNS treats
-    /// "localhost" and "localhost." as equivalent, but Uri.IdnHost preserves the dot, so
-    /// without this normalization a realm could bypass the IP-literal and loopback-name
-    /// guards using forms like "127.0.0.1." or "localhost.".
-    /// </summary>
-    private static string TrimTrailingDot(string host) =>
-        host.Length > 1 && host[^1] == '.' ? host[..^1] : host;
 
     private static bool RegistryNameContainsPort(string registryName)
     {
@@ -374,92 +328,6 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         }
     }
 
-    /// <summary>
-    /// Returns true when <paramref name="registryName"/> identifies the local machine via a
-    /// loopback IP literal (<c>127.0.0.0</c> or <c>::1</c>) or an RFC 6761 loopback name
-    /// (<c>localhost</c> / <c>*.localhost</c>).
-    /// </summary>
-    private static bool RegistryIsLoopbackEquivalent(string registryName)
-    {
-        if (!Uri.TryCreate($"https://{registryName}", UriKind.Absolute, out Uri? uri))
-        {
-            return false;
-        }
-        string host = TrimTrailingDot(uri.IdnHost);
-        return IsLoopbackDnsName(host)
-            || (IPAddress.TryParse(host, out IPAddress? ip) && IPAddress.IsLoopback(ip));
-    }
-
-    /// <summary>
-    /// Returns true if the IP address is considered unsafe to send token requests to:
-    /// loopback, link-local, private, or unspecified.
-    /// </summary>
-    private static bool IsBlockedIpLiteral(IPAddress ip)
-    {
-        if (IPAddress.IsLoopback(ip))
-        {
-            return true;
-        }
-        // IPv4-mapped IPv6: unwrap so we don't need a parallel set of IPv4-in-IPv6 CIDRs.
-        if (ip.IsIPv4MappedToIPv6)
-        {
-            return IsBlockedIpLiteral(ip.MapToIPv4());
-        }
-
-        foreach (IPNetwork net in BlockedV4Networks)
-        {
-            if (net.Contains(ip))
-            {
-                return true;
-            }
-        }
-
-        // IPv6-only properties; all return false for IPv4 so the family gate is implicit.
-        // Multicast scope is read directly from the second byte.
-        return ip.Equals(IPAddress.IPv6Any)
-            || ip.IsIPv6LinkLocal
-            || ip.IsIPv6SiteLocal
-            || ip.IsIPv6UniqueLocal
-            || (ip.IsIPv6Multicast && (ip.GetAddressBytes()[1] & 0x0f) == 0x02);
-    }
-
-    /// <summary>
-    /// Returns true when the registry name's host portion (port stripped) refers to the same machine
-    /// as <paramref name="ip"/>. Used to allow IP-literal realms whose host matches the registry host
-    /// in insecure-registry scenarios.
-    /// </summary>
-    /// <remarks>
-    /// Two forms of match are recognized: an IP-literal registry name whose address equals
-    /// <paramref name="ip"/>, and a registry name of <c>localhost</c> (or any <c>*.localhost</c>
-    /// subdomain) paired with any loopback IP.
-    /// </remarks>
-    private static bool RegistryHostMatchesIp(string registryName, IPAddress ip)
-    {
-        // Use Uri to handle "host[:port]" and bracketed IPv6 ("[::1]:5000") splitting.
-        // The synthetic scheme is parser convenience — we never use the URL.
-        if (!Uri.TryCreate($"https://{registryName}", UriKind.Absolute, out Uri? uri))
-        {
-            return false;
-        }
-        // IdnHost (vs. Host) gives us three things in one shot:
-        //   1. Strips the "[" and "]" around IPv6 literals so the host feeds straight
-        //      into IPAddress.TryParse.
-        //   2. Canonicalizes Unicode/IDN host forms to ASCII (e.g. fullwidth-dot
-        //      "127\uFF0E0\uFF0E0\uFF0E1" -> "127.0.0.1"), matching what HttpClient
-        //      actually resolves.
-        //   3. Matches the canonicalization ValidateRealmUri uses, so realm-vs-registry
-        //      host comparisons stay consistent on both sides.
-        string host = TrimTrailingDot(uri.IdnHost);
-
-        // RFC 6761 reserves "localhost" (and "*.localhost") for loopback addresses, so a
-        // localhost-named registry returning a 127.0.0.0/8 or ::1 realm is legitimate.
-        if (IPAddress.IsLoopback(ip) && IsLoopbackDnsName(host))
-        {
-            return true;
-        }
-
-        return IPAddress.TryParse(host, out IPAddress? registryIp) && registryIp.Equals(ip);
-    }
 
     internal static (string credU, string credP)? TryGetCredentialsFromEnvVars(string unameVar, string passwordVar)
     {
@@ -521,7 +389,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// <summary>
     /// Implements the Docker OAuth2 Authentication flow as documented at <see href="https://docs.docker.com/registry/spec/auth/oauth/"/>.
     /// </summary
-    private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> TryOAuthPostAsync(DockerCredentials privateRepoCreds, AuthInfo bearerAuthInfo, Uri realmUri, CancellationToken cancellationToken)
+    private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> TryOAuthPostAsync(HttpMessageInvoker realmClient, DockerCredentials privateRepoCreds, AuthInfo bearerAuthInfo, Uri realmUri, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -548,13 +416,13 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         if (bearerAuthInfo.Scope is not null)
         {
             parameters["scope"] = bearerAuthInfo.Scope;
-        };
+        }
         HttpRequestMessage postMessage = new(HttpMethod.Post, realmUri)
         {
             Content = new FormUrlEncodedContent(parameters)
         };
 
-        using HttpResponseMessage postResponse = await base.SendAsync(postMessage, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage postResponse = await realmClient.SendAsync(postMessage, cancellationToken).ConfigureAwait(false);
         if (!postResponse.IsSuccessStatusCode)
         {
             await postResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
@@ -577,7 +445,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// <summary>
     /// Implements the Docker Token Authentication flow as documented at <see href="https://docs.docker.com/registry/spec/auth/token/"/>
     /// </summary>
-    private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> TryTokenGetAsync(DockerCredentials privateRepoCreds, AuthInfo bearerAuthInfo, Uri realmUri, CancellationToken cancellationToken)
+    private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> TryTokenGetAsync(HttpMessageInvoker realmClient, DockerCredentials privateRepoCreds, AuthInfo bearerAuthInfo, Uri realmUri, CancellationToken cancellationToken)
     {
         // this doesn't seem to be called out in the spec, but actual username/password auth information should be converted into Basic auth here,
         // even though the overall Scheme we're authenticating for is Bearer
@@ -598,7 +466,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         var message = new HttpRequestMessage(HttpMethod.Get, builder.ToString());
         message.Headers.Authorization = header;
 
-        using var tokenResponse = await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
+        using var tokenResponse = await realmClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         if (!tokenResponse.IsSuccessStatusCode)
         {
             await tokenResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
@@ -645,46 +513,81 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             throw new ArgumentException(Resource.GetString(nameof(Strings.NoRequestUriSpecified)), nameof(request));
         }
 
-        if (IsRegistryOrigin(request.RequestUri)
-            && _authenticationHeaders.TryGetValue(_registryName, out AuthenticationHeaderValue? header))
+        bool isRegistryOrigin = IsRegistryOrigin(request.RequestUri);
+        AuthenticationHeaderValue? attemptedAuthentication = isRegistryOrigin ? Volatile.Read(ref _authentication) : null;
+        if (attemptedAuthentication is not null)
         {
-            request.Headers.Authorization = header;
+            request.Headers.Authorization = attemptedAuthentication;
         }
 
         int retryCount = 0;
         List<Exception>? requestExceptions = null;
+        AuthenticationHeaderValue? authenticationToCache = null;
 
         while (retryCount < MaxRequestRetries)
         {
             try
             {
+                // Redirects mutate the request URI and clear Authorization, including for same-origin redirects.
+                // Restore only the existing credential, and only while retrying the registry itself.
+                if (retryCount > 0 && IsRegistryOrigin(request.RequestUri)
+                    && (authenticationToCache ?? attemptedAuthentication) is { } retryAuthentication)
+                {
+                    request.Headers.Authorization = retryAuthentication;
+                }
+
                 var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 ValidateAuthenticationOrigin(response, request.RequestUri);
-                if (response is { StatusCode: HttpStatusCode.OK })
+                if (authenticationToCache is not null && response.StatusCode != HttpStatusCode.Unauthorized)
+                {
+                    Interlocked.Exchange(ref _authentication, authenticationToCache);
+                }
+
+                if (response.StatusCode != HttpStatusCode.Unauthorized
+                    || !isRegistryOrigin
+                    || authenticationToCache is not null)
                 {
                     return response;
                 }
-                else if (response is { StatusCode: HttpStatusCode.Unauthorized } && TryParseAuthenticationInfo(response, out string? scheme, out AuthInfo? authInfo))
+
+                string? scheme;
+                AuthInfo? authInfo;
+                bool challengeParsed;
+                try
+                {
+                    challengeParsed = TryParseAuthenticationInfo(response, out scheme, out authInfo);
+                }
+                catch
+                {
+                    response.Dispose();
+                    throw;
+                }
+
+                if (!challengeParsed)
+                {
+                    return response;
+                }
+
+                using (response)
                 {
                     // Load the reply so the HTTP connection becomes available to send the authentication request.
                     // Ideally we'd call LoadIntoBufferAsync, but it has no overload that accepts a CancellationToken so we call ReadAsByteArrayAsync instead.
                     _ = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+                }
 
-                    if (await GetAuthenticationAsync(_registryName, scheme!, authInfo, cancellationToken).ConfigureAwait(false) is (AuthenticationHeaderValue authHeader, DateTimeOffset expirationTime))
-                    {
-                        _authenticationHeaders[_registryName] = authHeader;
-                        request.Headers.Authorization = authHeader;
-                        HttpResponseMessage authenticatedResponse = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                        ValidateAuthenticationOrigin(authenticatedResponse, request.RequestUri);
-                        return authenticatedResponse;
-                    }
+                if (attemptedAuthentication is not null)
+                {
+                    Interlocked.CompareExchange(ref _authentication, null, attemptedAuthentication);
+                }
 
+                if (await GetAuthenticationAsync(_registryName, scheme!, authInfo, cancellationToken).ConfigureAwait(false) is not (AuthenticationHeaderValue authHeader, _))
+                {
                     throw new UnableToAccessRepositoryException(_registryName);
                 }
-                else
-                {
-                    return response;
-                }
+
+                authenticationToCache = authHeader;
+                request.Headers.Authorization = authHeader;
+                continue;
             }
             catch (HttpRequestException e) when (e.InnerException is IOException ioe && ioe.InnerException is SocketException se)
             {
@@ -694,7 +597,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                 retryCount += 1;
                 _logger.LogInformation("Encountered a HttpRequestException {error} with message \"{message}\". Pausing before retry.", e.HttpRequestError, se.Message);
                 _logger.LogTrace("Exception details: {ex}", se);
-                await Task.Delay(TimeSpan.FromSeconds(1.0 * Math.Pow(2, retryCount)), cancellationToken).ConfigureAwait(false);
+                await _delay(TimeSpan.FromSeconds(1.0 * Math.Pow(2, retryCount)), cancellationToken).ConfigureAwait(false);
 
                 // retry
                 continue;

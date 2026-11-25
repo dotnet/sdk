@@ -27,6 +27,36 @@ current-.NET-only:
   via the `<Sdk>` attribute.
 - `FrameworkPackages/` — per-TFM runtime framework version data.
 
+## Multithreaded tasks and caches
+
+Apply `[MSBuildMultiThreadableTask]` to each migrated concrete task. Tasks that resolve
+paths or access the environment also implement `IMultiThreadableTask`, defaulting to
+`TaskEnvironment.Fallback`. Resolve filesystem operands using the injected context
+without changing output paths, diagnostics, or invalid-input behavior. Keep original
+inputs through shared helpers when they govern validation or control flow; audit every
+filesystem use in those helpers.
+[`GetAbsolutePathPreservingInvalidArguments`](Common/TaskEnvironmentExtensions.cs)
+retains BCL argument validation by consulting the host before anchoring whitespace, without
+letting accepted whitespace operands resolve against a shared process CWD.
+Do not infer rejection from the task TFM or the Framework legacy-path switch alone:
+Framework rejects ASCII spaces in both modes but accepts some Unicode whitespace (such
+as U+2003) in legacy mode. Windows .NET accepts U+00A0 as well. A Framework task assembly
+can also execute in .NET MSBuild. Accepted names always need project-relative resolution;
+discard the validation probe's process-relative absolute path.
+The [Framework regression test](../../test/TestAssets/TestProjects/TaskEnvironmentPaths/Program.cs)
+checks ASCII space and U+2003 in a fresh process for each path mode.
+
+For expensive shared initialization, use
+[`TaskObjectCache`](Microsoft.NET.Build.Tasks/TaskObjectCache.cs), as
+[`LockFileCache`](Microsoft.NET.Build.Tasks/LockFileCache.cs) and
+[`ResolveTargetingPackAssets`](Microsoft.NET.Build.Tasks/ResolveTargetingPackAssets.cs)
+do. Keep cache keys complete and preserve the intended registered-object lifetime.
+The helper scopes entries by their owning generic type to avoid collisions between SDK
+assemblies, coordinates initialization per retained engine-owned entry, retries thrown
+initialization failures, and does not retain task factories. Cached values must support
+concurrent consumers and must not require engine-managed disposal. Do not introduce a
+process-wide dictionary of per-project locks.
+
 ## Build diagnostics (NETSDK errors / warnings / info)
 
 These are conventions that aren't visible from the code alone — getting them wrong

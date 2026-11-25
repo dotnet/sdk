@@ -37,9 +37,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
-                    .And.Contain("total: 7")
+                    .And.Contain("total: 6")
                     .And.Contain("succeeded: 2")
-                    .And.Contain("failed: 4")
+                    .And.Contain("failed: 3")
                     .And.Contain("skipped: 1");
             }
 
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                string pattern = $@"In\sprocess\sfile\sartifacts\sproduced:\s+.*{PathUtility.GetDirectorySeparatorChar()}TestResults{PathUtility.GetDirectorySeparatorChar()}.*\.coverage";
+                string pattern = $@"In process file artifacts produced: 1\r?\n\s+- .*{PathUtility.GetDirectorySeparatorChar()}TestResults{PathUtility.GetDirectorySeparatorChar()}.*\.coverage";
 
                 Assert.MatchesRegex(pattern, result.StdOut);
 
