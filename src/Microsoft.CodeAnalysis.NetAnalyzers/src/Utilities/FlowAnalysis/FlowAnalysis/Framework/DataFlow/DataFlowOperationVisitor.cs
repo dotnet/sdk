@@ -1240,6 +1240,29 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             return TryInferConversion(operation.Value, targetType, isTryCast: true, operation, out inference);
         }
 
+        protected bool MayUnwrapUnionPattern(IIsPatternOperation operation)
+        {
+            if (operation.Language != LanguageNames.CSharp ||
+                operation.Pattern is IDiscardPatternOperation or IDeclarationPatternOperation { MatchesNull: true })
+            {
+                return false;
+            }
+
+            var type = operation.Value.Type;
+            type = type.GetNullableValueTypeUnderlyingType() ?? type;
+            var unionAttribute = WellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesUnionAttribute);
+            if (type?.GetAttribute(unionAttribute) != null)
+            {
+                return true;
+            }
+
+            // Earlier compiler versions identify union declarations through IUnion.
+            var unionInterface = WellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesIUnion);
+            return type is INamedTypeSymbol namedType &&
+                unionInterface != null &&
+                namedType.DerivesFromOrImplementsAnyConstructionOf(unionInterface);
+        }
+
         private bool TryInferConversion(
             IOperation sourceOperand,
             ITypeSymbol? targetType,
@@ -1552,6 +1575,13 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                     break;
 
                 case IIsPatternOperation isPatternOperation:
+                    // A union pattern may test the contained value rather than the wrapper.
+                    if (isPatternOperation.Pattern is not IDeclarationPatternOperation &&
+                        MayUnwrapUnionPattern(isPatternOperation))
+                    {
+                        break;
+                    }
+
                     // Predicate analysis for "is pattern" checks:
                     //  1. Non-null value check for declaration pattern, i.e. "c is D d"
                     //  2. Non-null value check for discard pattern, i.e. "c is D _"
@@ -1564,13 +1594,12 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                             {
                                 // Set predicated null/non-null value for declared pattern variable, i.e. for 'd' in "c is D d".
                                 predicateValueKind = SetValueForIsNullComparisonOperator(isPatternOperation.Pattern, equals: FlowBranchConditionKind == ControlFlowConditionKind.WhenFalse, targetAnalysisData: targetAnalysisData);
-                            }
 
-                            // Also set the predicated value for pattern value for true branch, i.e. for 'c' in "c is D d",
-                            // while explicitly ignore the returned 'predicateValueKind'.
-                            if (FlowBranchConditionKind == ControlFlowConditionKind.WhenTrue)
-                            {
-                                _ = SetValueForIsNullComparisonOperator(isPatternOperation.Value, equals: false, targetAnalysisData: targetAnalysisData);
+                                // Also set the predicated value for 'c' in "c is D d" on the true branch.
+                                if (FlowBranchConditionKind == ControlFlowConditionKind.WhenTrue)
+                                {
+                                    _ = SetValueForIsNullComparisonOperator(isPatternOperation.Value, equals: false, targetAnalysisData: targetAnalysisData);
+                                }
                             }
 
                             break;

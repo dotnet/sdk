@@ -1185,6 +1185,16 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
 
             public override PointsToAbstractValue GetAssignedValueForPattern(IIsPatternOperation operation, PointsToAbstractValue operandValue)
             {
+                if (operation.Pattern is IDeclarationPatternOperation { MatchesNull: true })
+                {
+                    return operandValue;
+                }
+
+                if (MayUnwrapUnionPattern(operation))
+                {
+                    return PointsToAbstractValue.Unknown;
+                }
+
                 var value = base.GetAssignedValueForPattern(operation, operandValue);
 
                 ConversionInference? inference = null;

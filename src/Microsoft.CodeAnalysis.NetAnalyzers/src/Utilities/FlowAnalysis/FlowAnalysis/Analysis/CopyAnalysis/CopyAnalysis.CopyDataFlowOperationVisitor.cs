@@ -614,6 +614,16 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.CopyAnalysis
 
             public override CopyAbstractValue GetAssignedValueForPattern(IIsPatternOperation operation, CopyAbstractValue operandValue)
             {
+                if (operation.Pattern is IDeclarationPatternOperation { MatchesNull: true })
+                {
+                    return operandValue;
+                }
+
+                if (MayUnwrapUnionPattern(operation))
+                {
+                    return CopyAbstractValue.Unknown;
+                }
+
                 if (TryInferConversion(operation, out var conversionInference))
                 {
                     if (FlowConversionOperandValue(conversionInference, targetType: operation.Pattern.GetPatternType()))

@@ -87,6 +87,138 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await vbTest.RunAsync(CancellationToken.None);
         }
 
+        [WorkItem(57085, "https://github.com/dotnet/sdk/issues/57085")]
+        [TestMethod]
+        public async Task UnionPatterns_NoFalseDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = """
+                    namespace System.Runtime.CompilerServices
+                    {
+                        public interface IUnion { }
+
+                        [global::System.AttributeUsage(global::System.AttributeTargets.Class | global::System.AttributeTargets.Struct)]
+                        public sealed class UnionAttribute : global::System.Attribute { }
+                    }
+
+                    public union TextOrNumber(string, int);
+                    public struct Any { }
+                    public sealed class MyVersion
+                    {
+                        public int Major { get; set; }
+                    }
+                    public union VersionOrAny(Any, MyVersion);
+
+                    [System.Runtime.CompilerServices.Union]
+                    public sealed class ReferenceUnion
+                    {
+                        public ReferenceUnion(string value) => Value = value;
+                        public ReferenceUnion(int value) => Value = value;
+                        public object Value { get; }
+                    }
+
+                    public class Test
+                    {
+                        public VersionOrAny Version { get; set; }
+
+                        public bool Matches(System.Version other)
+                        {
+                            if (other is null)
+                                return false;
+                            return Version switch
+                            {
+                                Any => true,
+                                MyVersion value => other.Major == value.Major,
+                                _ => throw new System.InvalidOperationException()
+                            };
+                        }
+
+                        public int Match(TextOrNumber value) => value switch
+                        {
+                            int number => number,
+                            string text => text.Length,
+                            _ => -1
+                        };
+
+                        public string Text(TextOrNumber value) => value is string text ? text : null;
+                        public int? Number(TextOrNumber value) => value is int number ? number : null;
+                        public string NullableText(TextOrNumber? value) => value is string text ? text : null;
+                        public string ReferenceText(ReferenceUnion value) => value is string text ? text : null;
+
+                        public bool Recursive(TextOrNumber value)
+                        {
+                            if (value is string { Length: > 0 })
+                                return true;
+                            return false;
+                        }
+
+                        public bool Constant(TextOrNumber value)
+                        {
+                            if (value is 1)
+                                return true;
+                            return false;
+                        }
+
+                        public bool Null(TextOrNumber value)
+                        {
+                            if (value is null)
+                                return true;
+                            return false;
+                        }
+
+                        public bool NotNull(TextOrNumber value)
+                        {
+                            if (value is not null)
+                                return true;
+                            return false;
+                        }
+
+                        public bool ReferenceNull(ReferenceUnion value)
+                        {
+                            if (value is null)
+                                return true;
+                            return false;
+                        }
+
+                        public bool MatchedTextIsNotNull(TextOrNumber value)
+                        {
+                            if (value is string text)
+                                return {|#0:text == null|};
+                            return false;
+                        }
+
+                        public bool VarPattern(ReferenceUnion value)
+                        {
+                            if (value is var copy && value != null)
+                                return {|#1:copy == null|};
+                            return false;
+                        }
+
+                        public bool VarMayBeNull(ReferenceUnion value) =>
+                            value is var copy && copy == null;
+                    }
+                    """,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule)
+                        .WithLocation(0).WithArguments("text == null", "false"),
+                    new DiagnosticResult(AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule)
+                        .WithLocation(1).WithArguments("copy == null", "false")
+                },
+                TestState =
+                {
+                    AnalyzerConfigFiles = { ("/.editorconfig", """
+                        root = true
+
+                        [*]
+                        dotnet_code_quality.copy_analysis = true
+                        """) },
+                }
+            }.RunAsync(CancellationToken.None);
+        }
+
         [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod]
         public async Task SimpleNullCompare_NoDiagnosticAsync()
