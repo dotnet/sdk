@@ -336,6 +336,79 @@ public sealed class TestApplicationLaunchTests
             .Properties.Should().NotContainKey(HandshakeMessagePropertyNames.RequiredPostProcessingSupported);
     }
 
+    [TestMethod]
+    public void CreateProcessStartInfo_InvocationLifetimeOwner_SetsOwnerRole()
+    {
+        using var coordinator = new InvocationLifetimeCoordinator(
+            InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"]),
+            TimeSpan.FromSeconds(1));
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            invocationLifetimeOwnerCoordinator: coordinator);
+
+        ProcessStartInfo startInfo = application.CreateProcessStartInfo();
+
+        startInfo.Environment[InvocationLifetimeEnvironmentVariables.Role].Should().Be(InvocationLifetimeEnvironmentVariables.OwnerRole);
+        startInfo.Environment.ContainsKey(InvocationLifetimeEnvironmentVariables.Coordinated).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void CreateProcessStartInfo_CoordinatedSibling_AppliesSetupOutputsAndHandlers()
+    {
+        var launch = new InvocationLifetimeSiblingLaunch(
+            InvocationLifetimeSiblingLaunchKind.Coordinated,
+            [
+                new("CONNECTION", true, "secret"),
+                new("MODULE_VALUE", false, null),
+                new(InvocationLifetimeEnvironmentVariables.Role, true, InvocationLifetimeEnvironmentVariables.OwnerRole),
+            ],
+            "[\"Sql\"]");
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            environmentVariables: new Dictionary<string, string> { ["MODULE_VALUE"] = "1", ["CONNECTION"] = "module" },
+            invocationLifetimeSiblingLaunch: launch);
+
+        ProcessStartInfo startInfo = application.CreateProcessStartInfo();
+
+        startInfo.Environment["CONNECTION"].Should().Be("secret");
+        startInfo.Environment.ContainsKey("MODULE_VALUE").Should().BeFalse();
+        startInfo.Environment.ContainsKey(InvocationLifetimeEnvironmentVariables.Role).Should().BeFalse();
+        startInfo.Environment[InvocationLifetimeEnvironmentVariables.Coordinated].Should().Be("[\"Sql\"]");
+    }
+
+    [TestMethod]
+    public void CreateProcessStartInfo_IndependentSibling_DoesNotReceiveCoordination()
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            invocationLifetimeSiblingLaunch: InvocationLifetimeSiblingLaunch.Independent);
+
+        ProcessStartInfo startInfo = application.CreateProcessStartInfo();
+
+        startInfo.Environment.ContainsKey(InvocationLifetimeEnvironmentVariables.Role).Should().BeFalse();
+        startInfo.Environment.ContainsKey(InvocationLifetimeEnvironmentVariables.Coordinated).Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow("1.5.0", true, true)]
+    [DataRow("1.5.0", false, false)]
+    [DataRow("", true, false)]
+    public void CreateHandshakeMessage_AcknowledgesInvocationLifetimeOnlyWhenAccepted(string version, bool accepted, bool expected)
+    {
+        using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+
+        Dictionary<byte, string> properties = application.CreateHandshakeMessage(version, invocationLifetimeAccepted: accepted).Properties;
+
+        if (expected)
+        {
+            properties[HandshakeMessagePropertyNames.InvocationLifetimeCoordinationAccepted].Should().Be("true");
+        }
+        else
+        {
+            properties.Should().NotContainKey(HandshakeMessagePropertyNames.InvocationLifetimeCoordinationAccepted);
+        }
+    }
+
     private static TestApplication CreateApplication(
         TestOptions testOptions,
         IEnumerable<string>? forwardedArguments = null,
@@ -343,7 +416,9 @@ public sealed class TestApplicationLaunchTests
         ProjectLaunchProfile? launchProfile = null,
         string runtimeIdentifier = "",
         ArtifactPostProcessingManager? artifactPostProcessingManager = null,
-        bool contextualModuleOutput = false)
+        bool contextualModuleOutput = false,
+        InvocationLifetimeCoordinator? invocationLifetimeOwnerCoordinator = null,
+        InvocationLifetimeSiblingLaunch? invocationLifetimeSiblingLaunch = null)
     {
         var module = new TestModule(
             new RunProperties("dotnet", "test.dll", null, runtimeIdentifier, string.Empty, string.Empty),
@@ -385,6 +460,8 @@ public sealed class TestApplicationLaunchTests
             artifactPostProcessingManager: artifactPostProcessingManager,
             artifactPostProcessingInvocation: testOptions.IsArtifactPostProcessing
                 ? new ArtifactPostProcessingInvocation("manifest.json")
-                : null);
+                : null,
+            invocationLifetimeOwnerCoordinator: invocationLifetimeOwnerCoordinator,
+            invocationLifetimeSiblingLaunch: invocationLifetimeSiblingLaunch);
     }
 }

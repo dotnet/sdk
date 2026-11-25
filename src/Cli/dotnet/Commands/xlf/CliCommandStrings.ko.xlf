@@ -407,6 +407,56 @@
         <target state="new">A test application reported an invalid code coverage summary. The invalid summary was ignored.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvocationLifetimeCleanupFailed">
+        <source>Invocation cleanup failed in '{0}'.</source>
+        <target state="new">Invocation cleanup failed in '{0}'.</target>
+        <note>{0} is a test module name.</note>
+      </trans-unit>
+      <trans-unit id="InvocationLifetimeCleanupTimedOut">
+        <source>Invocation cleanup in '{0}' did not complete within {1} seconds and was stopped. Set the '{2}' environment variable to change the timeout.</source>
+        <target state="new">Invocation cleanup in '{0}' did not complete within {1} seconds and was stopped. Set the '{2}' environment variable to change the timeout.</target>
+        <note>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</note>
+      </trans-unit>
+      <trans-unit id="InvocationLifetimeOwnerAmbiguous">
+        <source>Invocation lifetime handlers are declared, but no single test project declares all of them, and no single project is marked with 'TestingPlatformInvocationLifetimeOwner'. Each test application runs its own handlers.</source>
+        <target state="new">Invocation lifetime handlers are declared, but no single test project declares all of them, and no single project is marked with 'TestingPlatformInvocationLifetimeOwner'. Each test application runs its own handlers.</target>
+        <note>{Locked="TestingPlatformInvocationLifetimeOwner"}</note>
+      </trans-unit>
+      <trans-unit id="InvocationLifetimeOwnerExitedBeforeCleanup">
+        <source>The test application '{0}' exited before completing invocation cleanup.</source>
+        <target state="new">The test application '{0}' exited before completing invocation cleanup.</target>
+        <note>{0} is a test module name.</note>
+      </trans-unit>
+      <trans-unit id="InvocationLifetimeOwnerExitedBeforeSetup">
+        <source>The test application '{0}' exited before completing invocation setup. The remaining test applications are not run.</source>
+        <target state="new">The test application '{0}' exited before completing invocation setup. The remaining test applications are not run.</target>
+        <note>{0} is a test module name.</note>
+      </trans-unit>
+      <trans-unit id="InvocationLifetimeOwnerHandshakeTimedOut">
+        <source>The test application '{0}' did not request invocation lifetime coordination within {1} seconds. The other test applications run their own handlers. Set the '{2}' environment variable to change the timeout.</source>
+        <target state="new">The test application '{0}' did not request invocation lifetime coordination within {1} seconds. The other test applications run their own handlers. Set the '{2}' environment variable to change the timeout.</target>
+        <note>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</note>
+      </trans-unit>
+      <trans-unit id="InvocationLifetimeOwnerUnsupportedTransport">
+        <source>The invocation lifetime owner '{0}' cannot be coordinated because it does not use the named pipe transport. Each test application runs its own handlers.</source>
+        <target state="new">The invocation lifetime owner '{0}' cannot be coordinated because it does not use the named pipe transport. Each test application runs its own handlers.</target>
+        <note>{0} is a project path.</note>
+      </trans-unit>
+      <trans-unit id="InvocationLifetimeSetupFailed">
+        <source>Invocation setup failed in '{0}'. The remaining test applications are not run.</source>
+        <target state="new">Invocation setup failed in '{0}'. The remaining test applications are not run.</target>
+        <note>{0} is a test module name.</note>
+      </trans-unit>
+      <trans-unit id="InvocationLifetimeSetupTimedOut">
+        <source>Invocation setup in '{0}' did not complete within {1} seconds and was stopped. The remaining test applications are not run. Set the '{2}' environment variable to change the timeout.</source>
+        <target state="new">Invocation setup in '{0}' did not complete within {1} seconds and was stopped. The remaining test applications are not run. Set the '{2}' environment variable to change the timeout.</target>
+        <note>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</note>
+      </trans-unit>
+      <trans-unit id="InvocationLifetimeUnexpectedMessage">
+        <source>The test application '{0}' sent the unexpected invocation lifetime message '{1}'. The test run is stopped.</source>
+        <target state="new">The test application '{0}' sent the unexpected invocation lifetime message '{1}'. The test run is stopped.</target>
+        <note>{0} is a test module name. {1} is a protocol message name.</note>
+      </trans-unit>
       <trans-unit id="MismatchingHandshakeExecutionMode">
         <source>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</source>
         <target state="translated">테스트 호스트에서 실행 모드가 '{0}' 것으로 보고했지만 예상된 '{1}''dotnet test'. 이는 일반적으로 '--help', '-?' 또는 '--list-tests'와 같은 옵션이 비 CLI 채널(예: 'TestingPlatformCommandLineArguments' 또는 'RunArguments' MSBuild 속성 또는 'launchSettings.json' commandLineArgs)을 통해 테스트 호스트에 삽입된 경우에 발생합니다. 대신 이러한 옵션을 'dotnet test'에 직접 전달하세요.</target>

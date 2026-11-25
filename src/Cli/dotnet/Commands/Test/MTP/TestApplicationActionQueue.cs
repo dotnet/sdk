@@ -5,6 +5,7 @@ using System.Threading.Channels;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -17,6 +18,9 @@ internal class TestApplicationActionQueue
     private readonly BuildOptions _buildOptions;
     private readonly OutputOptions _outputOptions;
     private readonly bool _outputOptionSpecified;
+    private readonly TestOptions _testOptions;
+    private readonly TestRunPolicy _testRunPolicy;
+    private volatile InvocationLifetimeCoordinator? _invocationLifetimeCoordinator;
 
     private int? _aggregateExitCode;
     private readonly List<TestApplicationPolicy> _effectivePolicies = [];
@@ -46,6 +50,8 @@ internal class TestApplicationActionQueue
         _buildOptions = buildOptions;
         _outputOptions = outputOptions;
         _outputOptionSpecified = outputOptionSpecified;
+        _testOptions = testOptions;
+        _testRunPolicy = testRunPolicy;
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
@@ -58,6 +64,39 @@ internal class TestApplicationActionQueue
                 ctrlC,
                 artifactPostProcessingManager,
                 testRunPolicy));
+        }
+    }
+
+    /// <summary>
+    /// Selects the invocation lifetime owner among every module of the command. Must be called before any module is
+    /// enqueued; the returned owner, if any, must be enqueued first.
+    /// </summary>
+    public TestModule? ConfigureInvocationLifetime(IEnumerable<TestModule> modules)
+    {
+        if (_testOptions.IsHelp || _testOptions.IsArtifactPostProcessing)
+        {
+            return null;
+        }
+
+        InvocationLifetimeOwnerSelection selection = InvocationLifetimeOwnerSelector.Select(modules);
+        switch (selection.Status)
+        {
+            case InvocationLifetimeOwnerSelectionStatus.Selected:
+                _invocationLifetimeCoordinator = new InvocationLifetimeCoordinator(selection.Owner!, InvocationLifetimeCoordinator.GetTimeout());
+                return selection.Owner;
+
+            case InvocationLifetimeOwnerSelectionStatus.Ambiguous:
+                Reporter.Output.WriteLine(CliCommandStrings.InvocationLifetimeOwnerAmbiguous.Yellow());
+                return null;
+
+            case InvocationLifetimeOwnerSelectionStatus.UnsupportedTransport:
+                Reporter.Output.WriteLine(string.Format(
+                    CliCommandStrings.InvocationLifetimeOwnerUnsupportedTransport,
+                    selection.Owner!.ProjectFullPath).Yellow());
+                return null;
+
+            default:
+                return null;
         }
     }
 
@@ -98,7 +137,18 @@ internal class TestApplicationActionQueue
 
         // If _aggregateExitCode is null, that means we didn't get any results.
         // So, we exit with "zero tests".
-        return _aggregateExitCode ?? ExitCode.ZeroTests;
+        int aggregateExitCode = _aggregateExitCode ?? ExitCode.ZeroTests;
+        if (_invocationLifetimeCoordinator is { } coordinator)
+        {
+            using (coordinator)
+            {
+                aggregateExitCode = coordinator.CompleteAsync(
+                    aggregateExitCode,
+                    _cancellationToken.IsCancellationRequested || _testRunPolicy.Cancellation.IsCompleted).GetAwaiter().GetResult();
+            }
+        }
+
+        return aggregateExitCode;
     }
 
     private async Task Read(
@@ -115,11 +165,30 @@ internal class TestApplicationActionQueue
         {
             await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync(_cancellationToken))
             {
-                foreach (var module in nonParallelizedGroup)
+                InvocationLifetimeCoordinator? coordinator = _invocationLifetimeCoordinator;
+                IEnumerable<TestModule> modules = coordinator is null
+                    ? nonParallelizedGroup
+                    : nonParallelizedGroup.OrderBy(module => ReferenceEquals(module, coordinator.Owner) ? 0 : 1);
+                foreach (var module in modules)
                 {
                     _cancellationToken.ThrowIfCancellationRequested();
 
+                    bool isOwner = coordinator is not null && ReferenceEquals(module, coordinator.Owner);
+                    InvocationLifetimeSiblingLaunch? siblingLaunch = null;
+                    if (coordinator is not null && !isOwner)
+                    {
+                        siblingLaunch = await coordinator.WaitForSiblingLaunchAsync(_cancellationToken);
+                        if (siblingLaunch.Kind == InvocationLifetimeSiblingLaunchKind.Skip)
+                        {
+                            // Invocation setup might have started and failed: launching would run tests without it.
+                            output.MarkModuleExecutionIncomplete();
+                            AggregateResult(ExitCode.GenericFailure);
+                            continue;
+                        }
+                    }
+
                     int result = ExitCode.GenericFailure;
+                    bool ownerDetached = false;
                     var testApp = new TestApplication(
                         module,
                         buildOptions,
@@ -129,11 +198,18 @@ internal class TestApplicationActionQueue
                         onHelpRequested,
                         artifactPostProcessingManager,
                         testRunPolicy: testRunPolicy,
-                        testApplicationSettings: GetEffectiveSettings(module));
+                        testApplicationSettings: GetEffectiveSettings(module),
+                        invocationLifetimeOwnerCoordinator: isOwner ? coordinator : null,
+                        invocationLifetimeSiblingLaunch: siblingLaunch,
+                        abortSignal: coordinator is null ? null : isOwner ? coordinator.OwnerAbort : coordinator.SiblingAbort);
                     try
                     {
                         output.TestMapCollectionModuleStarted(module.TargetPath);
-                        using (testApp)
+                        if (isOwner)
+                        {
+                            (result, ownerDetached) = await RunInvocationLifetimeOwnerAsync(coordinator!, testApp, ctrlC);
+                        }
+                        else
                         {
                             result = await testApp.RunAsync(ctrlC);
                         }
@@ -149,6 +225,11 @@ internal class TestApplicationActionQueue
                     }
                     finally
                     {
+                        if (!ownerDetached)
+                        {
+                            testApp.Dispose();
+                        }
+
                         output.TestMapCollectionModuleCompleted();
                     }
 
@@ -160,35 +241,7 @@ internal class TestApplicationActionQueue
                     // module with ExitCode.MinimumExpectedTestsPolicyViolation (9) and is preserved.
                     // See https://github.com/microsoft/testfx/issues/7457.
                     result = NormalizeExitCode(result, testApp.HasFailureDuringDispose, output);
-
-                    lock (_lock)
-                    {
-                        if (_aggregateExitCode is null)
-                        {
-                            // This is the first result we are getting.
-                            // So we assign the exit code, regardless of whether it's failure or success.
-                            _aggregateExitCode = result;
-                        }
-                        else if (_aggregateExitCode.Value != result)
-                        {
-                            if (_aggregateExitCode == ExitCode.Success)
-                            {
-                                // The current result we are dealing with is the first failure after previous Success.
-                                // So we assign the current failure.
-                                _aggregateExitCode = result;
-                            }
-                            else if (result != ExitCode.Success)
-                            {
-                                // If we get a new failure result, which is different from a previous failure, we use GenericFailure.
-                                _aggregateExitCode = ExitCode.GenericFailure;
-                            }
-                            else
-                            {
-                                // The current result is a success, but we already have a failure.
-                                // So, we keep the failure exit code.
-                            }
-                        }
-                    }
+                    AggregateResult(result);
                 }
             }
 
@@ -198,6 +251,62 @@ internal class TestApplicationActionQueue
             // Stop scheduling new test apps once cancellation is requested.
             // Already-running test apps are left alone so they can gracefully cancel themselves
             // and report final session state via IPC.
+        }
+    }
+
+    private static async Task<(int Result, bool Detached)> RunInvocationLifetimeOwnerAsync(
+        InvocationLifetimeCoordinator coordinator,
+        TestApplication testApp,
+        CtrlCCancellationManager ctrlC)
+    {
+        coordinator.OnOwnerLaunching();
+        Task<int> run = testApp.RunAsync(ctrlC);
+        _ = run.ContinueWith(
+            static (_, state) => ((InvocationLifetimeCoordinator)state!).OnOwnerExited(),
+            coordinator,
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+
+        if (await Task.WhenAny(run, coordinator.ModuleTestsCompletedTask) == run)
+        {
+            return (await run, false);
+        }
+
+        // The owner keeps running until invocation cleanup, which runs after every other module completed.
+        coordinator.AttachDetachedOwner(testApp, run);
+        return (await coordinator.ModuleTestsCompletedTask, true);
+    }
+
+    private void AggregateResult(int result)
+    {
+        lock (_lock)
+        {
+            if (_aggregateExitCode is null)
+            {
+                // This is the first result we are getting.
+                // So we assign the exit code, regardless of whether it's failure or success.
+                _aggregateExitCode = result;
+            }
+            else if (_aggregateExitCode.Value != result)
+            {
+                if (_aggregateExitCode == ExitCode.Success)
+                {
+                    // The current result we are dealing with is the first failure after previous Success.
+                    // So we assign the current failure.
+                    _aggregateExitCode = result;
+                }
+                else if (result != ExitCode.Success)
+                {
+                    // If we get a new failure result, which is different from a previous failure, we use GenericFailure.
+                    _aggregateExitCode = ExitCode.GenericFailure;
+                }
+                else
+                {
+                    // The current result is a success, but we already have a failure.
+                    // So, we keep the failure exit code.
+                }
+            }
         }
     }
 

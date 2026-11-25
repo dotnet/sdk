@@ -2940,6 +2940,46 @@ Proceed?</value>
   <data name="UnnegotiatedCoverageSummary" xml:space="preserve">
     <value>A test application reported a code coverage summary without negotiating coverage summary support. The summary was ignored.</value>
   </data>
+  <data name="InvocationLifetimeOwnerAmbiguous" xml:space="preserve">
+    <value>Invocation lifetime handlers are declared, but no single test project declares all of them, and no single project is marked with 'TestingPlatformInvocationLifetimeOwner'. Each test application runs its own handlers.</value>
+    <comment>{Locked="TestingPlatformInvocationLifetimeOwner"}</comment>
+  </data>
+  <data name="InvocationLifetimeOwnerUnsupportedTransport" xml:space="preserve">
+    <value>The invocation lifetime owner '{0}' cannot be coordinated because it does not use the named pipe transport. Each test application runs its own handlers.</value>
+    <comment>{0} is a project path.</comment>
+  </data>
+  <data name="InvocationLifetimeSetupFailed" xml:space="preserve">
+    <value>Invocation setup failed in '{0}'. The remaining test applications are not run.</value>
+    <comment>{0} is a test module name.</comment>
+  </data>
+  <data name="InvocationLifetimeOwnerExitedBeforeSetup" xml:space="preserve">
+    <value>The test application '{0}' exited before completing invocation setup. The remaining test applications are not run.</value>
+    <comment>{0} is a test module name.</comment>
+  </data>
+  <data name="InvocationLifetimeOwnerExitedBeforeCleanup" xml:space="preserve">
+    <value>The test application '{0}' exited before completing invocation cleanup.</value>
+    <comment>{0} is a test module name.</comment>
+  </data>
+  <data name="InvocationLifetimeCleanupFailed" xml:space="preserve">
+    <value>Invocation cleanup failed in '{0}'.</value>
+    <comment>{0} is a test module name.</comment>
+  </data>
+  <data name="InvocationLifetimeCleanupTimedOut" xml:space="preserve">
+    <value>Invocation cleanup in '{0}' did not complete within {1} seconds and was stopped. Set the '{2}' environment variable to change the timeout.</value>
+    <comment>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</comment>
+  </data>
+  <data name="InvocationLifetimeOwnerHandshakeTimedOut" xml:space="preserve">
+    <value>The test application '{0}' did not request invocation lifetime coordination within {1} seconds. The other test applications run their own handlers. Set the '{2}' environment variable to change the timeout.</value>
+    <comment>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</comment>
+  </data>
+  <data name="InvocationLifetimeSetupTimedOut" xml:space="preserve">
+    <value>Invocation setup in '{0}' did not complete within {1} seconds and was stopped. The remaining test applications are not run. Set the '{2}' environment variable to change the timeout.</value>
+    <comment>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</comment>
+  </data>
+  <data name="InvocationLifetimeUnexpectedMessage" xml:space="preserve">
+    <value>The test application '{0}' sent the unexpected invocation lifetime message '{1}'. The test run is stopped.</value>
+    <comment>{0} is a test module name. {1} is a protocol message name.</comment>
+  </data>
   <data name="FailedColon" xml:space="preserve">
     <value>failed:</value>
   </data>

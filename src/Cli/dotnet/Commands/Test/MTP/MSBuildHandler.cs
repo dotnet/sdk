@@ -72,7 +72,20 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, MSBuildSession b
 
     public int RunTestApplications(TestApplicationActionQueue actionQueue)
     {
-        foreach (var testApp in _testApplications)
+        List<ParallelizableTestModuleGroupWithSequentialInnerModules> groups = [.. _testApplications];
+        if (actionQueue.ConfigureInvocationLifetime(groups.SelectMany(static group => group)) is { } owner)
+        {
+            // Other modules wait for invocation setup in the owner, so the owner must be scheduled first.
+            int ownerGroupIndex = groups.FindIndex(group => group.Any(module => ReferenceEquals(module, owner)));
+            if (ownerGroupIndex > 0)
+            {
+                ParallelizableTestModuleGroupWithSequentialInnerModules ownerGroup = groups[ownerGroupIndex];
+                groups.RemoveAt(ownerGroupIndex);
+                groups.Insert(0, ownerGroup);
+            }
+        }
+
+        foreach (var testApp in groups)
         {
             actionQueue.Enqueue(testApp);
         }

@@ -27,7 +27,10 @@ internal sealed class TestApplication(
     ArtifactPostProcessingManager? artifactPostProcessingManager = null,
     ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
     TestRunPolicy? testRunPolicy = null,
-    TestApplicationSettings? testApplicationSettings = null) : IDisposable
+    TestApplicationSettings? testApplicationSettings = null,
+    InvocationLifetimeCoordinator? invocationLifetimeOwnerCoordinator = null,
+    InvocationLifetimeSiblingLaunch? invocationLifetimeSiblingLaunch = null,
+    Task? abortSignal = null) : IDisposable
 {
     private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
     private static readonly TimeSpan DefaultArtifactPostProcessingTimeout = TimeSpan.FromMinutes(15);
@@ -57,6 +60,12 @@ internal sealed class TestApplication(
         testApplicationSettings: testApplicationSettings ?? TestApplicationSettings.Default);
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
     private readonly TestRunPolicy? _testRunPolicy = testRunPolicy;
+    private readonly InvocationLifetimeCoordinator? _invocationLifetimeOwnerCoordinator = invocationLifetimeOwnerCoordinator;
+    private readonly InvocationLifetimeSiblingLaunch? _invocationLifetimeSiblingLaunch = invocationLifetimeSiblingLaunch;
+    private readonly Task? _abortSignal = abortSignal;
+    private NamedPipeServer? _invocationLifetimeConnection;
+    private ServerControlMessage? _invocationCleanupMessage;
+    private bool _sessionCancellationDelivered;
     private readonly CancellationTokenSource _pipeCancellationTokenSource = new();
     private HttpTestHostGateway? _httpGateway;
     private string? _httpResponseFilePath;
@@ -154,44 +163,7 @@ internal sealed class TestApplication(
             bool artifactPostProcessingTimedOut = false;
             if (_artifactPostProcessingInvocation is null)
             {
-                Task processExitTask = process.WaitForExitAsync();
-                if (_testRunPolicy is { } testRunPolicy)
-                {
-                    Task firstCompletedTask = await Task.WhenAny(processExitTask, testRunPolicy.Cancellation);
-                    if (firstCompletedTask != processExitTask)
-                    {
-                        RequestSessionCancellation();
-                        try
-                        {
-                            await processExitTask.WaitAsync(testRunPolicy.CancellationGracePeriod);
-                        }
-                        catch (TimeoutException)
-                        {
-                            try
-                            {
-                                if (!process.HasExited)
-                                {
-                                    process.Kill(entireProcessTree: true);
-                                }
-                            }
-                            catch (InvalidOperationException ex)
-                            {
-                                // The process exited between the HasExited check and Kill.
-                                Logger.LogTrace($"Test process exited before it could be killed after cancellation:\n{ex}");
-                            }
-
-                            await processExitTask;
-                        }
-                    }
-                    else
-                    {
-                        await processExitTask;
-                    }
-                }
-                else
-                {
-                    await processExitTask;
-                }
+                await WaitForTestApplicationExitAsync(process, process.WaitForExitAsync());
             }
             else
             {
@@ -293,6 +265,129 @@ internal sealed class TestApplication(
         }
     }
 
+    private void ApplyInvocationLifetimeEnvironment(IDictionary<string, string?> environment)
+    {
+        if (_artifactPostProcessingInvocation is not null)
+        {
+            return;
+        }
+
+        if (_invocationLifetimeOwnerCoordinator is not null)
+        {
+            environment[InvocationLifetimeEnvironmentVariables.Role] = InvocationLifetimeEnvironmentVariables.OwnerRole;
+            return;
+        }
+
+        if (_invocationLifetimeSiblingLaunch is not { Kind: InvocationLifetimeSiblingLaunchKind.Coordinated } launch)
+        {
+            return;
+        }
+
+        // Output values may be secrets: they are applied but never logged.
+        foreach (InvocationLifetimeOutput output in launch.Outputs)
+        {
+            if (string.IsNullOrEmpty(output.Name)
+                || string.Equals(output.Name, InvocationLifetimeEnvironmentVariables.Role, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(output.Name, InvocationLifetimeEnvironmentVariables.Coordinated, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (output.HasValue)
+            {
+                environment[output.Name] = output.Value ?? string.Empty;
+            }
+            else
+            {
+                environment.Remove(output.Name);
+            }
+        }
+
+        environment[InvocationLifetimeEnvironmentVariables.Coordinated] = launch.CoordinatedHandlers;
+    }
+
+    private async Task WaitForTestApplicationExitAsync(Process process, Task processExitTask)
+    {
+        Task? policyCancellation = _testRunPolicy?.Cancellation;
+        TimeSpan gracePeriod = _testRunPolicy?.CancellationGracePeriod ?? TestRunPolicy.DefaultCancellationGracePeriod;
+        bool cancellationRequested = false;
+        while (true)
+        {
+            List<Task> tasks = [processExitTask];
+            if (!cancellationRequested && policyCancellation is not null)
+            {
+                tasks.Add(policyCancellation);
+            }
+
+            if (_abortSignal is not null)
+            {
+                tasks.Add(_abortSignal);
+            }
+
+            Task firstCompletedTask = await Task.WhenAny(tasks);
+            if (firstCompletedTask == processExitTask)
+            {
+                await processExitTask;
+                return;
+            }
+
+            if (firstCompletedTask == _abortSignal && _invocationLifetimeOwnerCoordinator is not null)
+            {
+                // The owner missed an invocation lifetime deadline or violated the protocol.
+                await KillProcessTreeAsync(process, processExitTask);
+                return;
+            }
+
+            cancellationRequested = true;
+            RequestSessionCancellation();
+
+            if (firstCompletedTask == policyCancellation
+                && _invocationLifetimeOwnerCoordinator is { IsOwnerCoordinated: true } coordinator)
+            {
+                // A coordinated owner stays alive after its tests end so that it can run invocation cleanup, which
+                // the coordinator bounds. Only its test execution is bound by the usual cancellation grace period.
+                Task testsCompleted = coordinator.ModuleTestsCompletedTask;
+                Task first = await Task.WhenAny(processExitTask, testsCompleted, Task.Delay(gracePeriod));
+                if (first == processExitTask || first == testsCompleted)
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                try
+                {
+                    await processExitTask.WaitAsync(gracePeriod);
+                    return;
+                }
+                catch (TimeoutException)
+                {
+                }
+            }
+
+            await KillProcessTreeAsync(process, processExitTask);
+            return;
+        }
+    }
+
+    private static async Task KillProcessTreeAsync(Process process, Task processExitTask)
+    {
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            // The process exited between the HasExited check and Kill.
+            Logger.LogTrace($"Test process exited before it could be killed after cancellation:\n{ex}");
+        }
+
+        await processExitTask;
+    }
+
     internal ProcessStartInfo CreateProcessStartInfo()
     {
         var processStartInfo = new ProcessStartInfo
@@ -312,6 +407,10 @@ internal sealed class TestApplication(
         {
             processStartInfo.WorkingDirectory = Module.RunProperties.WorkingDirectory;
         }
+
+        // A nested 'dotnet test' must not inherit the coordination of the invocation that launched it.
+        processStartInfo.Environment.Remove(InvocationLifetimeEnvironmentVariables.Role);
+        processStartInfo.Environment.Remove(InvocationLifetimeEnvironmentVariables.Coordinated);
 
         if (Module.LaunchSettings is ProjectLaunchProfile)
         {
@@ -339,6 +438,8 @@ internal sealed class TestApplication(
         {
             processStartInfo.Environment[Module.DotnetRootArchVariableName] = Path.GetDirectoryName(new Muxer().MuxerPath);
         }
+
+        ApplyInvocationLifetimeEnvironment(processStartInfo.Environment);
 
         if (TestOptions.CollectTestMap)
         {
@@ -732,9 +833,17 @@ internal sealed class TestApplication(
 
         lock (_controlRequestLock)
         {
-            if (Volatile.Read(ref _sessionCancellationRequested) != 0)
+            if (Volatile.Read(ref _sessionCancellationRequested) != 0
+                && !(_sessionCancellationDelivered && _invocationLifetimeOwnerCoordinator is { IsOwnerCoordinated: true }))
             {
+                // A coordinated owner receives the cancellation once, then waits again for invocation cleanup.
+                _sessionCancellationDelivered = true;
                 return Task.FromResult<IResponse>(new ServerControlMessage(ServerControlKinds.CancelSession));
+            }
+
+            if (_invocationCleanupMessage is not null)
+            {
+                return Task.FromResult<IResponse>(_invocationCleanupMessage);
             }
 
             var completion = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -765,8 +874,32 @@ internal sealed class TestApplication(
             var message = new ServerControlMessage(ServerControlKinds.CancelSession);
             foreach (TaskCompletionSource<IResponse> request in _pendingControlRequests)
             {
-                request.TrySetResult(message);
+                _sessionCancellationDelivered |= request.TrySetResult(message);
             }
+
+            _pendingControlRequests.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Asks the coordinated invocation lifetime owner to run invocation cleanup over its server-control channel.
+    /// </summary>
+    internal void RequestInvocationCleanup(int aggregateExitCode, bool isCanceled)
+    {
+        lock (_controlRequestLock)
+        {
+            if (_invocationCleanupMessage is not null)
+            {
+                return;
+            }
+
+            _invocationCleanupMessage = new ServerControlMessage(ServerControlKinds.RunInvocationCleanup, aggregateExitCode, isCanceled);
+            foreach (TaskCompletionSource<IResponse> request in _pendingControlRequests)
+            {
+                request.TrySetResult(_invocationCleanupMessage);
+            }
+
+            _pendingControlRequests.Clear();
         }
     }
 
@@ -803,10 +936,47 @@ internal sealed class TestApplication(
                         // Microsoft.Testing.Platform stops sending further messages on this connection.
                         bool handshakeAccepted = OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
                         SetNegotiatedProtocolVersion(handshakeAccepted ? negotiatedVersion : string.Empty);
+                        bool invocationLifetimeAccepted = server is not null
+                            && _invocationLifetimeConnection is null
+                            && _invocationLifetimeOwnerCoordinator is not null
+                            && _invocationLifetimeOwnerCoordinator.OnOwnerHandshake(
+                                handshakeMessage,
+                                handshakeAccepted ? negotiatedVersion : string.Empty,
+                                controlPipeAvailable: _httpGateway is null);
+                        if (invocationLifetimeAccepted)
+                        {
+                            _invocationLifetimeConnection = server;
+                        }
+
                         return Task.FromResult((IResponse)CreateHandshakeMessage(
                             handshakeAccepted ? negotiatedVersion : string.Empty,
                             includeControlPipe: _httpGateway is null,
-                            includeCoverageSummary: handshakeAccepted && SupportsCoverageSummary(handshakeMessage)));
+                            includeCoverageSummary: handshakeAccepted && SupportsCoverageSummary(handshakeMessage),
+                            invocationLifetimeAccepted: invocationLifetimeAccepted));
+
+                    case InvocationSetupCompleted setupCompleted:
+                        if (IsInvocationLifetimeConnection(server, setupCompleted))
+                        {
+                            _invocationLifetimeOwnerCoordinator!.OnSetupCompleted(setupCompleted);
+                        }
+
+                        break;
+
+                    case ModuleTestsCompleted moduleTestsCompleted:
+                        if (IsInvocationLifetimeConnection(server, moduleTestsCompleted))
+                        {
+                            _invocationLifetimeOwnerCoordinator!.OnModuleTestsCompleted(moduleTestsCompleted);
+                        }
+
+                        break;
+
+                    case InvocationCleanupCompleted cleanupCompleted:
+                        if (IsInvocationLifetimeConnection(server, cleanupCompleted))
+                        {
+                            _invocationLifetimeOwnerCoordinator!.OnCleanupCompleted(cleanupCompleted);
+                        }
+
+                        break;
 
                     case CommandLineOptionMessages commandLineOptionMessages:
                         OnCommandLineOptionMessages(commandLineOptionMessages);
@@ -923,11 +1093,23 @@ internal sealed class TestApplication(
         return highestCommonVersionText;
     }
 
+    private bool IsInvocationLifetimeConnection(NamedPipeServer? server, IRequest request)
+    {
+        if (server is not null && ReferenceEquals(server, _invocationLifetimeConnection))
+        {
+            return true;
+        }
+
+        // Only the connection that negotiated coordination may drive the invocation lifetime.
+        Logger.LogTrace($"Ignoring invocation lifetime message '{request.GetType().Name}' received on a connection that did not negotiate coordination.");
+        return false;
+    }
+
     internal static bool SupportsCoverageSummary(HandshakeMessage handshakeMessage)
         => handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.CoverageSummaryVersion, out string? version)
             && version == ProtocolConstants.CoverageSummaryVersion;
 
-    internal HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true, bool includeCoverageSummary = false)
+    internal HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true, bool includeCoverageSummary = false, bool invocationLifetimeAccepted = false)
     {
         var properties = new Dictionary<byte, string>(capacity: 8)
         {
@@ -950,6 +1132,11 @@ internal sealed class TestApplication(
         if (includeCoverageSummary)
         {
             properties.Add(HandshakeMessagePropertyNames.CoverageSummaryVersion, ProtocolConstants.CoverageSummaryVersion);
+        }
+
+        if (invocationLifetimeAccepted && version.Length > 0)
+        {
+            properties.Add(HandshakeMessagePropertyNames.InvocationLifetimeCoordinationAccepted, bool.TrueString.ToLowerInvariant());
         }
 
         if (version.Length > 0
