@@ -35,8 +35,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.AnalyzersToAdd[0].ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, "analyzers/dotnet/anyAnalyzer.dll"));
             task.AnalyzersToAdd[1].ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, "analyzers/dotnet/cs/csAnalyzer.dll"));
 
-            ((MockBuildEngine)task.BuildEngine).RegisteredTaskObjectsQueries.Should().Be(2,
-                because: "There should be a lookup for the overall and the specific targeting pack");
+            ((MockBuildEngine)task.BuildEngine).RegisteredTaskObjectsQueries.Should().Be(4,
+                because: "each cold cache entry is looked up before and after registration");
 
             ((MockBuildEngine)task.BuildEngine).RegisteredTaskObjects.Count.Should().Be(2,
                 because: "There should be a cache entry for the overall lookup and for the specific targeting pack");
@@ -73,8 +73,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task1.Execute().Should().BeTrue();
 
-            buildEngine.RegisteredTaskObjectsQueries.Should().Be(2,
-                because: "there should be a lookup for the overall and the specific targeting pack");
+            buildEngine.RegisteredTaskObjectsQueries.Should().Be(4,
+                because: "each cold cache entry is looked up before and after registration");
 
             buildEngine.RegisteredTaskObjects.Count.Should().Be(2,
                 because: "there should be a cache entry for the overall lookup and for the specific targeting pack");
@@ -83,7 +83,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task2.Execute().Should().BeTrue();
 
-            buildEngine.RegisteredTaskObjectsQueries.Should().Be(3,
+            buildEngine.RegisteredTaskObjectsQueries.Should().Be(5,
                 because: "there should be a hit on the overall lookup this time through");
 
             buildEngine.RegisteredTaskObjects.Count.Should().Be(2,
@@ -100,8 +100,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task1.Execute().Should().BeTrue();
 
-            buildEngine.RegisteredTaskObjectsQueries.Should().Be(2,
-                because: "there should be a lookup for the overall and the specific targeting pack");
+            buildEngine.RegisteredTaskObjectsQueries.Should().Be(4,
+                because: "each cold cache entry is looked up before and after registration");
 
             buildEngine.RegisteredTaskObjects.Count.Should().Be(2,
                 because: "there should be a cache entry for the overall lookup and for the specific targeting pack");
@@ -112,7 +112,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task2.Execute().Should().BeTrue();
 
-            buildEngine.RegisteredTaskObjectsQueries.Should().Be(4,
+            buildEngine.RegisteredTaskObjectsQueries.Should().Be(8,
                 because: "there should be no hits on the overall or targeting pack lookup this time through");
 
             buildEngine.RegisteredTaskObjects.Count.Should().Be(4,

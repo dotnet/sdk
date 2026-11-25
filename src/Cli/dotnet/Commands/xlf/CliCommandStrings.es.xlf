@@ -77,6 +77,11 @@
         <target state="translated">Permitir la degradación del paquete al instalar un paquete de herramientas de .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ArtifactCount">
+        <source>Artifacts: {0}</source>
+        <target state="new">Artifacts: {0}</target>
+        <note>Heading for a group of test artifacts. {0} is the number of artifacts.</note>
+      </trans-unit>
       <trans-unit id="ArtifactPostProcessingConnectionFailed">
         <source>The artifact worker's reporting connection did not complete successfully.</source>
         <target state="new">The artifact worker's reporting connection did not complete successfully.</target>
@@ -3466,6 +3471,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <source>[slow] still running after {0}: {1}</source>
         <target state="new">[slow] still running after {0}: {1}</target>
         <note>{0} is the elapsed duration, {1} is the test description. {Locked="[slow]"}</note>
+      </trans-unit>
+      <trans-unit id="TestApplicationOutputStreamTimeout">
+        <source>Warning: Process output may be incomplete because its streams did not close in time.</source>
+        <target state="new">Warning: Process output may be incomplete because its streams did not close in time.</target>
+        <note />
       </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>

@@ -26,6 +26,15 @@ Never manually update the xlf file even if a translation is wrong. Report a bug 
 External -- https://aka.ms/provide-feedback
 Internal -- https://aka.ms/icxLocFeedback
 
+When diagnosing a missing translation in the Native AOT CLI, compare the same
+command with `DOTNET_CLI_ENABLEAOT=true` and `false` in the same complete SDK
+installation. Set `DOTNET_CLI_UI_LANGUAGE` to the affected culture, and check a
+translated string as well as output parity: both paths can otherwise fall back
+to English and appear to match. For example, `dotnet build --help` with `zh-CN`
+should show `.NET 生成器` (dotnet/sdk#55820). Also verify a localized first-run
+message using a fresh CLI home with developer-certificate generation and global
+tool PATH changes disabled.
+
 ### Loc Updates
 These are triggered automatically by the loc system as new translations come in. We generally accept these unless we notice it removing translations.
 https://github.com/dotnet/sdk/pulls?q=is%3Apr+author%3Adotnet-bot+onelocbuild

@@ -28,6 +28,64 @@ public class TestApplicationHandlerTests : IDisposable
     }
 
     [TestMethod]
+    public void ContextualOutput_AttributesHostTextButPreservesWorkflowCommands()
+    {
+        (TestApplicationHandler handler, _, CapturingConsole console) = CreateHandler(
+            isHelp: false, isDiscovery: false, contextualModuleOutput: true);
+
+        handler.WriteMessage("raw output\n");
+        handler.WriteMessage("global::Example.Type\n");
+        handler.OnAzureDevOpsLogReceived(new AzureDevOpsLogMessage(null, null, "slow test\n##[warning]unchanged"));
+        handler.OnAzureDevOpsLogReceived(new AzureDevOpsLogMessage(null, null, "##[group]user group\n##[endgroup]"));
+        handler.OnDisplayMessageReceived(new DisplayMessage(null, null, DisplayMessageLevels.Warning, "host warning"));
+        handler.OnDisplayMessageReceived(new DisplayMessage(null, null, DisplayMessageLevels.Information, "prefix ##vso[task.logissue type=warning;]unchanged"));
+        handler.OnDisplayMessageReceived(new DisplayMessage(null, null, DisplayMessageLevels.Information, "  ::warning::unchanged"));
+        handler.OnDisplayMessageReceived(new DisplayMessage(null, null, DisplayMessageLevels.Information, "prefix ##[warning]legacy"));
+
+        string[] lines = console.GetOutput().Split('\n').Select(line => line.TrimEnd('\r')).ToArray();
+        foreach (string text in new[] { "raw output", "global::Example.Type", "slow test", "host warning" })
+        {
+            lines.Should().Contain(line => line.Contains(TargetPath) && line.Contains(TargetFramework) && line.Contains(text));
+        }
+
+        lines.Should().Contain("##[warning]unchanged");
+        lines.Should().Contain("##[group]user group");
+        lines.Should().Contain("##[endgroup]");
+        lines.Should().Contain("prefix ##vso[task.logissue type=warning;]unchanged");
+        lines.Should().Contain("  ::warning::unchanged");
+        lines.Should().Contain("prefix ##[warning]legacy");
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void LiveOutputAfterDrainTimeout_IsOnlySuppressedInContextualMode(bool contextual)
+    {
+        (TestApplicationHandler handler, _, CapturingConsole console) = CreateHandler(
+            isHelp: false, isDiscovery: false, contextualModuleOutput: contextual);
+
+        handler.WriteLiveMessage("before timeout\n");
+        handler.CloseLiveOutput(timedOut: true);
+        handler.CloseLiveOutput(timedOut: true);
+        handler.WriteLiveMessage("late output\n");
+        handler.WriteMessage("buffered exit output\n");
+
+        string output = console.GetOutput();
+        output.Should().Contain("before timeout").And.Contain("buffered exit output");
+        if (contextual)
+        {
+            output.Should().NotContain("late output");
+            output.Split(CliCommandStrings.TestApplicationOutputStreamTimeout, StringSplitOptions.None)
+                .Should().HaveCount(2, "one contextual warning must precede the summary");
+            output.Should().Contain(TargetPath).And.Contain(TargetFramework);
+        }
+        else
+        {
+            output.Should().Contain("late output").And.NotContain(CliCommandStrings.TestApplicationOutputStreamTimeout);
+        }
+    }
+
+    [TestMethod]
     [DataRow("net472", null, ".NET Framework 4.8", "net472|x64, runtime: net48")]
     [DataRow("net48", null, ".NET Framework 4.8", "net48|x64")]
     [DataRow(null, "net48", ".NET Framework 4.8", "net48|x64")]
@@ -82,6 +140,27 @@ public class TestApplicationHandlerTests : IDisposable
             HandshakeMessageExecutionModes.Run, hostType: HandshakeMessageHostTypes.TestHostOrchestrator);
         controller.Properties[HandshakeMessagePropertyNames.Framework] = ".NET Framework 4.8.1";
         handler.OnHandshakeReceived(controller, gotSupportedVersion: true).Should().BeTrue();
+        HandshakeMessage host = BuildHandshake(HandshakeMessageExecutionModes.Run);
+        host.Properties[HandshakeMessagePropertyNames.Framework] = ".NET Framework 4.8.1";
+        host.Properties[HandshakeMessagePropertyNames.TargetFramework] = "net472";
+
+        handler.OnHandshakeReceived(host, gotSupportedVersion: true).Should().BeTrue();
+        handler.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+
+        console.GetOutput().Should().Contain("(net472|x64, runtime: net481)");
+        reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void OnHandshakeReceived_TestHostTargetOverridesOrchestratorTarget()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false, isDiscovery: false, showAssembly: true, targetFramework: null);
+        HandshakeMessage orchestrator = BuildHandshake(
+            HandshakeMessageExecutionModes.Run, hostType: HandshakeMessageHostTypes.TestHostOrchestrator);
+        orchestrator.Properties[HandshakeMessagePropertyNames.Framework] = ".NET Framework 4.8.1";
+        orchestrator.Properties[HandshakeMessagePropertyNames.TargetFramework] = "net481";
+        handler.OnHandshakeReceived(orchestrator, gotSupportedVersion: true).Should().BeTrue();
         HandshakeMessage host = BuildHandshake(HandshakeMessageExecutionModes.Run);
         host.Properties[HandshakeMessagePropertyNames.Framework] = ".NET Framework 4.8.1";
         host.Properties[HandshakeMessagePropertyNames.TargetFramework] = "net472";
@@ -628,6 +707,50 @@ public class TestApplicationHandlerTests : IDisposable
         string rendered = console.GetOutput();
         rendered.Should().Contain(reportedMode);
         rendered.Should().Contain(expectedMode);
+    }
+
+    [TestMethod]
+    public void ContextualSummary_DoesNotCountRejectedHostAsMultipleModules()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false, isDiscovery: false, contextualModuleOutput: true);
+
+        handler.OnHandshakeReceived(BuildHandshake(HandshakeMessageExecutionModes.Help), gotSupportedVersion: true)
+            .Should().BeFalse();
+        handler.OnTestProcessExited(TestExitCode.GenericFailure, string.Empty, string.Empty);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.GenericFailure);
+
+        console.GetOutput().Should().Contain("##[group]Test run summary:" + Environment.NewLine);
+    }
+
+    [TestMethod]
+    public void ContextualSummary_DoesNotCountRejectedRetryAsAnotherModule()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false, isDiscovery: false, contextualModuleOutput: true);
+
+        handler.OnHandshakeReceived(BuildHandshake(HandshakeMessageExecutionModes.Run), gotSupportedVersion: true)
+            .Should().BeTrue();
+        handler.OnHandshakeReceived(BuildHandshake(HandshakeMessageExecutionModes.Help), gotSupportedVersion: true)
+            .Should().BeFalse();
+        handler.OnTestProcessExited(TestExitCode.GenericFailure, string.Empty, string.Empty);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.GenericFailure);
+
+        console.GetOutput().Should().Contain("##[group]Test run summary:" + Environment.NewLine);
+    }
+
+    [TestMethod]
+    public void ContextualSummary_ShowsUnselectedCountWithoutAmbiguousFailureCounts()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false, isDiscovery: false, contextualModuleOutput: true);
+
+        handler.OnHandshakeReceived(BuildHandshake(HandshakeMessageExecutionModes.Help), gotSupportedVersion: true)
+            .Should().BeFalse();
+        reporter.AssemblyRunNotSelected("other.dll", "net9.0", "x64");
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.GenericFailure);
+
+        console.GetOutput().Should().Contain("##[group]Test run summary: 1 skipped (No affected tests selected)");
     }
 
     /// <summary>
@@ -1651,16 +1774,18 @@ public class TestApplicationHandlerTests : IDisposable
         TestApplicationSettings? testApplicationSettings = null,
         bool collectTestMap = false,
         bool affectedTests = false,
-        string? targetFramework = TargetFramework)
+        string? targetFramework = TargetFramework,
+        bool contextualModuleOutput = false)
     {
         var capturingConsole = new CapturingConsole();
 
         var reporterOptions = new TerminalTestReporterOptions
         {
-            AnsiMode = AnsiMode.SimpleAnsi,
+            AnsiMode = contextualModuleOutput ? AnsiMode.NoAnsi : AnsiMode.SimpleAnsi,
             ShowProgress = false,
             ShowAssembly = showAssembly,
             ShowAssemblyStartAndComplete = showAssembly,
+            ContextualModuleOutput = contextualModuleOutput,
         };
 
         var reporter = new TerminalTestReporter(capturingConsole, reporterOptions);

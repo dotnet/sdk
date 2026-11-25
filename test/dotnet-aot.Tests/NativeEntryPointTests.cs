@@ -694,6 +694,7 @@ public partial class NativeEntryPointTests
 
     [TestMethod]
     [DataRow("de-DE", "Willkommen bei .NET")]
+    [DataRow("fr-CA", "Bienvenue dans .NET")]
     [DataRow("zh-Hans", "欢迎使用 .NET")]
     public void ExecuteCore_AotEnabled_LocalizedFirstRun_StaysOnAotPath(string uiLanguage, string expectedWelcome)
     {
@@ -750,6 +751,62 @@ public partial class NativeEntryPointTests
                 Reporter.Reset();
                 Environment.SetEnvironmentVariable("PATH", originalPath);
                 Directory.Delete(testDirectory, recursive: true);
+            }
+        });
+    }
+
+    [TestMethod]
+    public void NativeEntryPoint_AotEnabled_PreCanceledExternalCommandIsNotLaunched()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+
+            string toolDir = Path.Combine(Path.GetTempPath(), $"aot-canceled-tool-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(toolDir);
+            string markerPath = Path.Combine(toolDir, "launched");
+            string originalPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+
+            try
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    File.WriteAllText(
+                        Path.Combine(toolDir, "dotnet-aotcanceledtool.cmd"),
+                        $"@echo off{Environment.NewLine}echo launched>\"{markerPath}\"{Environment.NewLine}");
+                }
+                else
+                {
+                    string toolPath = Path.Combine(toolDir, "dotnet-aotcanceledtool");
+                    File.WriteAllText(
+                        toolPath,
+                        $"#!/bin/sh{Environment.NewLine}touch '{markerPath}'{Environment.NewLine}");
+                    File.SetUnixFileMode(
+                        toolPath,
+                        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                        UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                        UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+                }
+
+                Environment.SetEnvironmentVariable("PATH", toolDir + Path.PathSeparator + originalPath);
+                using var cancellationSource = new CancellationTokenSource();
+                cancellationSource.Cancel();
+
+                int exitCode = NativeEntryPoint.ExecuteCoreForNativeEntryPoint(
+                    hostPath: "test-host",
+                    dotnetRoot: "test-root",
+                    sdkDir: AppContext.BaseDirectory,
+                    hostfxrPath: "",
+                    args: ["aotcanceledtool"],
+                    cancellationToken: cancellationSource.Token);
+
+                Assert.AreEqual(1, exitCode);
+                Assert.IsFalse(File.Exists(markerPath));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("PATH", originalPath);
+                try { Directory.Delete(toolDir, recursive: true); } catch { }
             }
         });
     }

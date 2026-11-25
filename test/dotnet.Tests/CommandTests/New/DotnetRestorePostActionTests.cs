@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
     [TestClass]
     public class DotnetRestorePostActionTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         private IEngineEnvironmentSettings _engineEnvironmentSettings = null!;
 
         [TestInitialize]
@@ -40,7 +42,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(projFileFullPath, callback.Target);
         }
@@ -65,7 +68,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(projFileFullPath, callback.Target);
         }
@@ -74,7 +78,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
         {
             public string? Target { get; private set; }
 
-            public bool RestoreProject(string target)
+            public bool RestoreProject(string target, CancellationToken cancellationToken = default)
             {
                 Target = target;
                 return true;

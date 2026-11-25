@@ -40,6 +40,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private readonly List<TestRunArtifact> _artifacts = [];
     private readonly Lock _artifactsLock = new();
+    private readonly Lock _unselectedAssembliesLock = new();
+    private readonly List<(string Assembly, string? TargetFramework, string? Architecture, string? RuntimeFramework)> _unselectedAssemblies = [];
 
     private readonly TerminalTestReporterOptions _options;
 
@@ -69,8 +71,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private int _buildErrorsCount;
 
     private volatile bool _wasCancelled;
+    private volatile bool _moduleExecutionIncomplete;
 
     public bool HasHandshakeFailure => !_handshakeFailures.IsEmpty;
+    internal bool ContextualModuleOutput => _options.ContextualModuleOutput;
+    internal void MarkModuleExecutionIncomplete() => _moduleExecutionIncomplete = true;
     public int TotalTests => _assemblies.Values.Sum(a => a.TotalTests);
     public int SkippedTests => _assemblies.Values.Sum(a => a.SkippedTests);
 
@@ -141,7 +146,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             ? new CursorProgressRenderer()
             : new SilenceDrivenHeartbeatRenderer(
                 _options.HeartbeatSilenceThreshold, _options.SlowTestThreshold,
-                () => CreateStopwatch(), () => _assemblies.Values);
+                () => CreateStopwatch(), () => _assemblies.Values, _options.ContextualModuleOutput, _options.ModuleDisplayName);
         _terminalWithProgress = new TestProgressStateAwareTerminal(terminal, showProgress, renderer);
         _showActiveTests = _options.ShowActiveTests && showProgress;
     }
@@ -175,18 +180,47 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        _terminalWithProgress.WriteToTerminal(terminal =>
+        if (_options.ContextualModuleOutput)
         {
-            terminal.SetColor(TerminalColor.Default);
-            if (_options.ShowAssembly)
+            lock (_unselectedAssembliesLock)
+            {
+                _unselectedAssemblies.Add((assembly, targetFramework, architecture, runtimeFramework));
+            }
+        }
+
+        _terminalWithProgress.WriteToTerminal(terminal => AppendUnselectedAssembly(terminal, assembly, targetFramework, architecture, runtimeFramework));
+    }
+
+    private void AppendUnselectedAssembly(ITerminal terminal, string assembly, string? targetFramework, string? architecture, string? runtimeFramework)
+    {
+        terminal.SetColor(TerminalColor.Default);
+        if (_options.ShowAssembly)
+        {
+            if (_options.ContextualModuleOutput)
+            {
+                AppendModuleIdentity(terminal, assembly, targetFramework, architecture, runtimeFramework);
+            }
+            else
             {
                 AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly, targetFramework, architecture, runtimeFramework);
                 terminal.Append(' ');
             }
+        }
 
-            terminal.AppendLine(CliCommandStrings.NoAffectedTestsSelected);
+        if (_options.ContextualModuleOutput)
+        {
+            terminal.SetColor(TerminalColor.DarkYellow);
+            terminal.Append(CliCommandStrings.SkippedLowercase);
             terminal.ResetColor();
-        });
+            terminal.Append(" (");
+            terminal.Append(CliCommandStrings.NoAffectedTestsSelected);
+            terminal.AppendLine(")");
+        }
+        else
+        {
+            terminal.AppendLine(CliCommandStrings.NoAffectedTestsSelected);
+        }
+        terminal.ResetColor();
     }
 
     public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId)
@@ -252,7 +286,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
                 terminal.Append(_isDiscovery ? CliCommandStrings.DiscoveringTestsFrom : CliCommandStrings.RunningTestsFrom);
                 terminal.Append(' ');
-                AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly, targetFramework, architecture, assemblyRun.RuntimeFramework);
+                if (_options.ContextualModuleOutput)
+                {
+                    AppendModuleIdentity(terminal, assembly, targetFramework, architecture, assemblyRun.RuntimeFramework, trailingSpace: false);
+                }
+                else
+                {
+                    AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly, targetFramework, architecture, assemblyRun.RuntimeFramework);
+                }
                 terminal.AppendLine();
             });
         }
@@ -328,6 +369,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
         _assemblies.Clear();
         _handshakeFailures.Clear();
+        _moduleExecutionIncomplete = false;
+        lock (_unselectedAssembliesLock)
+        {
+            _unselectedAssemblies.Clear();
+        }
         ClearCoverageSummaries();
         lock (_erroredAssembliesLock)
         {
@@ -344,6 +390,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private void AppendTestRunSummary(ITerminal terminal, int? exitCode)
     {
         List<TestProgressState> assemblies = [.. _assemblies.Values.OrderBy(static assembly => assembly.Id)];
+        if (_options.ContextualModuleOutput && _options.ShowRunSummary)
+        {
+            AppendContextualSummary(terminal, exitCode, assemblies);
+            return;
+        }
+
         if (!_useCompactSummary)
         {
             AppendTestRunArtifacts(terminal);
@@ -392,6 +444,66 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
     }
 
+    private void AppendContextualSummary(ITerminal terminal, int? exitCode, List<TestProgressState> assemblies)
+    {
+        (string Assembly, string? TargetFramework, string? Architecture, string? RuntimeFramework)[] unselected;
+        lock (_unselectedAssembliesLock)
+        {
+            unselected = [.. _unselectedAssemblies];
+        }
+
+        int passed = assemblies.Count(static assembly => assembly.Success);
+        int failed = assemblies.Count - passed;
+        AppendExitCodeAndUrl(terminal, exitCode, isRun: true);
+        terminal.AppendLine();
+        terminal.Append($"##[group]{CliCommandStrings.TestRunSummary}");
+        // A rejected retry or an exception after registration can refer to an existing
+        // module, so these failures cannot reliably be counted as additional modules.
+        bool hasModuleTotals = _handshakeFailures.IsEmpty && !_moduleExecutionIncomplete;
+        if (hasModuleTotals)
+        {
+            terminal.Append($" {passed} {CliCommandStrings.PassedLowercase}, {failed} {CliCommandStrings.FailedLowercase}");
+        }
+        if (unselected.Length > 0)
+        {
+            terminal.Append($"{(hasModuleTotals ? "," : string.Empty)} {unselected.Length} {CliCommandStrings.SkippedLowercase} ({CliCommandStrings.NoAffectedTestsSelected})");
+        }
+
+        terminal.AppendLine();
+        AppendAssemblySummaries(terminal, assemblies.Where(static assembly => !assembly.Success));
+        foreach (var (assembly, targetFramework, architecture, runtimeFramework) in unselected)
+        {
+            terminal.Append(SingleIndentation);
+            AppendUnselectedAssembly(terminal, assembly, targetFramework, architecture, runtimeFramework);
+        }
+
+        AppendAssemblySummaries(terminal, assemblies.Where(static assembly => assembly.Success));
+        AppendHandshakeFailureRecap(terminal);
+        AppendErroredAssemblyRecap(terminal);
+        AppendReportingStatus(terminal, assemblies);
+        AppendFlakyTests(terminal, assemblies);
+        AppendSlowestTests(terminal, assemblies);
+        terminal.AppendLine();
+        terminal.AppendLine("##[endgroup]");
+        AppendCoverageSummary(terminal, exitCode, contextual: true);
+        int artifactCount;
+        lock (_artifactsLock)
+        {
+            artifactCount = _artifacts.Count;
+        }
+
+        if (artifactCount > 0)
+        {
+            terminal.AppendLine();
+            terminal.AppendLine(string.Format(CultureInfo.CurrentCulture, "##[group]" + CliCommandStrings.ArtifactCount, artifactCount));
+            AppendTestRunArtifacts(terminal);
+            terminal.AppendLine();
+            terminal.AppendLine("##[endgroup]");
+        }
+
+        AppendTestRunResult(terminal, exitCode, assemblies);
+    }
+
     private void AppendTestRunArtifacts(ITerminal terminal)
     {
         TestRunArtifact[] artifacts;
@@ -410,8 +522,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         foreach (IGrouping<bool, TestRunArtifact> artifactGroup in artifactGroups)
         {
-            terminal.Append(SingleIndentation);
-            terminal.AppendLine(artifactGroup.Key ? CliCommandStrings.OutOfProcessArtifactsProduced : CliCommandStrings.InProcessArtifactsProduced);
+            string heading = artifactGroup.Key ? CliCommandStrings.OutOfProcessArtifactsProduced : CliCommandStrings.InProcessArtifactsProduced;
+            terminal.AppendLine($"{SingleIndentation}{heading} {artifactGroup.Count()}");
             foreach (TestRunArtifact artifact in artifactGroup)
             {
                 terminal.Append(DoubleIndentation);
@@ -466,46 +578,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool ranZeroTests = totalTests == 0;
         bool zeroTestsFailure = exitCode == ExitCode.ZeroTests;
         bool minimumExpectedTestsFailure = exitCode == ExitCode.MinimumExpectedTestsPolicyViolation;
-        terminal.SetColor(runFailed ? TerminalColor.DarkRed : ranZeroTests ? TerminalColor.Default : TerminalColor.DarkGreen);
-
-        terminal.Append(CliCommandStrings.TestRunSummary);
-        terminal.Append(' ');
-
-        if (!runFailed)
+        if (!_options.ContextualModuleOutput)
         {
-            terminal.Append(ranZeroTests
-                ? CliCommandStrings.ZeroTestsRan
-                : string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Passed));
-        }
-        else if (_wasCancelled)
-        {
-            terminal.Append(CliCommandStrings.Aborted);
-        }
-        else if (minimumExpectedTestsFailure && _options.MinimumExpectedTests > 0)
-        {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.MinimumExpectedTestsPolicyViolation, totalTests, _options.MinimumExpectedTests));
-        }
-        else if (zeroTestsFailure)
-        {
-            terminal.Append(CliCommandStrings.ZeroTestsRan);
-        }
-        else
-        {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
+            AppendVerdict();
         }
 
-        if (!_options.ShowAssembly && assemblies.Count == 1)
-        {
-            TestProgressState testProgressState = assemblies[0];
-            terminal.SetColor(TerminalColor.DarkGray);
-            terminal.Append(" - ");
-            terminal.ResetColor();
-            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, testProgressState.Assembly, testProgressState.TargetFramework, testProgressState.Architecture, testProgressState.RuntimeFramework);
-        }
-
-        terminal.AppendLine();
-
-        if (!_useCompactSummary && _options.ShowAssembly && assemblies.Count > 1)
+        if (!_options.ContextualModuleOutput && !_useCompactSummary && _options.ShowAssembly && assemblies.Count > 1)
         {
             AppendAssemblySummaries(terminal, assemblies);
         }
@@ -588,6 +666,51 @@ internal sealed partial class TerminalTestReporter : IDisposable
         AppendLongDuration(terminal, runDuration, wrapInParentheses: false, colorize: false);
         terminal.AppendLine();
 
+        if (_options.ContextualModuleOutput)
+        {
+            AppendVerdict();
+        }
+
+        void AppendVerdict()
+        {
+            terminal.SetColor(runFailed ? TerminalColor.DarkRed : ranZeroTests ? TerminalColor.Default : TerminalColor.DarkGreen);
+            terminal.Append(CliCommandStrings.TestRunSummary);
+            terminal.Append(' ');
+
+            if (!runFailed)
+            {
+                terminal.Append(ranZeroTests
+                    ? CliCommandStrings.ZeroTestsRan
+                    : string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Passed));
+            }
+            else if (_wasCancelled)
+            {
+                terminal.Append(CliCommandStrings.Aborted);
+            }
+            else if (minimumExpectedTestsFailure && _options.MinimumExpectedTests > 0)
+            {
+                terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.MinimumExpectedTestsPolicyViolation, totalTests, _options.MinimumExpectedTests));
+            }
+            else if (zeroTestsFailure)
+            {
+                terminal.Append(CliCommandStrings.ZeroTestsRan);
+            }
+            else
+            {
+                terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
+            }
+
+            if (!_options.ShowAssembly && assemblies.Count == 1)
+            {
+                TestProgressState state = assemblies[0];
+                terminal.SetColor(TerminalColor.DarkGray);
+                terminal.Append(" - ");
+                terminal.ResetColor();
+                AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, state.Assembly, state.TargetFramework, state.Architecture, state.RuntimeFramework);
+            }
+
+            terminal.AppendLine();
+        }
     }
 
     private void AppendAssemblySummaries(ITerminal terminal, IEnumerable<TestProgressState> assemblies)
@@ -798,7 +921,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
         foreach (HandshakeFailureRecord failure in failures)
         {
             terminal.Append(SingleIndentation);
-            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, failure.AssemblyPath, failure.TargetFramework, architecture: null);
+            if (_options.ContextualModuleOutput && !string.IsNullOrEmpty(failure.AssemblyPath))
+            {
+                AppendModuleIdentity(terminal, failure.AssemblyPath, failure.TargetFramework, architecture: null, trailingSpace: false);
+            }
+            else
+            {
+                AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, failure.AssemblyPath, failure.TargetFramework, architecture: null);
+            }
             terminal.AppendLine();
             AppendExecutableSummary(terminal, failure.ExitCode, failure.OutputData, failure.ErrorData);
         }
@@ -993,6 +1123,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
             _ => throw new NotSupportedException(),
         };
 
+        if (_options.ContextualModuleOutput)
+        {
+            AppendModuleIdentity(terminal, assembly, targetFramework, architecture, runtimeFramework);
+        }
+
         terminal.SetColor(color);
         terminal.Append(outcomeText);
         if (isRetry)
@@ -1017,7 +1152,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(informativeMessage);
         }
 
-        if (_options.ShowAssembly)
+        if (_options.ShowAssembly && !_options.ContextualModuleOutput)
         {
             terminal.AppendLine();
             terminal.Append(SingleIndentation);
@@ -1145,6 +1280,66 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.ResetColor();
     }
 
+    private void AppendModuleIdentity(ITerminal terminal, string assembly, string? targetFramework, string? architecture, string? runtimeFramework = null, bool trailingSpace = true)
+        => AppendModuleIdentity(terminal, assembly, targetFramework, architecture, runtimeFramework, _options.ModuleDisplayName, trailingSpace);
+
+    internal static void AppendModuleIdentity(ITerminal terminal, string assembly, string? targetFramework, string? architecture, string? runtimeFramework, Func<string, string?, string>? displayName, bool trailingSpace = true)
+    {
+        uint hash = 2166136261;
+        unchecked
+        {
+            foreach (char character in assembly)
+            {
+                hash = (hash ^ character) * 16777619;
+            }
+
+            if (targetFramework is not null)
+            {
+                foreach (char character in targetFramework)
+                {
+                    hash = (hash ^ character) * 16777619;
+                }
+            }
+        }
+
+        terminal.SetColor((hash % 4) switch
+        {
+            0 => TerminalColor.Cyan,
+            1 => TerminalColor.DarkCyan,
+            2 => TerminalColor.Magenta,
+            _ => TerminalColor.DarkMagenta,
+        });
+        string module = displayName?.Invoke(assembly, targetFramework) ?? assembly;
+        string identity = TestFrameworkDisplay.GetDisplayName(targetFramework, architecture, runtimeFramework);
+        string label = identity.Length > 0 ? $"[{module} {identity}]" : $"[{module}]";
+        terminal.Append(MakeIdentityControlCharactersVisible(label));
+        terminal.ResetColor();
+        if (trailingSpace)
+        {
+            terminal.Append(' ');
+        }
+    }
+
+    private static string MakeIdentityControlCharactersVisible(string text)
+    {
+        foreach (char character in text)
+        {
+            if (char.IsControl(character))
+            {
+                return string.Create(text.Length, text, static (buffer, value) =>
+                {
+                    for (int i = 0; i < value.Length; i++)
+                    {
+                        char current = value[i];
+                        buffer[i] = char.IsControl(current) ? (char)(0x2400 + current) : current;
+                    }
+                });
+            }
+        }
+
+        return text;
+    }
+
     private static void AppendAssemblyLinkTargetFrameworkAndArchitecture(ITerminal terminal, string assembly, string? targetFramework, string? architecture, string? runtimeFramework = null)
     {
         terminal.AppendLink(assembly, lineNumber: null);
@@ -1268,6 +1463,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
+            if (_options.ContextualModuleOutput)
+            {
+                AppendModuleIdentity(terminal, assemblyRun.Assembly, assemblyRun.TargetFramework, assemblyRun.Architecture, assemblyRun.RuntimeFramework);
+            }
+
             AppendExecutableSummary(terminal, exitCode, outputData, errorData);
         });
         if (!assemblyRun.Success && assemblyRun.FailedTests == 0)
@@ -1297,8 +1497,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
             terminal.ResetColor();
-            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyPath, targetFramework, architecture: null);
-            terminal.Append(' ');
+            if (_options.ContextualModuleOutput && !string.IsNullOrEmpty(assemblyPath))
+            {
+                AppendModuleIdentity(terminal, assemblyPath, targetFramework, architecture: null);
+            }
+            else
+            {
+                AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyPath, targetFramework, architecture: null);
+                terminal.Append(' ');
+            }
             terminal.SetColor(TerminalColor.DarkRed);
             terminal.Append(_options.CollectTestMap ? CliCommandStrings.TestMapCollectionFailed : CliCommandStrings.ZeroTestsRan);
             terminal.ResetColor();
@@ -1375,14 +1582,60 @@ internal sealed partial class TerminalTestReporter : IDisposable
     {
         terminal.ResetColor();
 
-        AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyRun.Assembly, assemblyRun.TargetFramework, assemblyRun.Architecture, assemblyRun.RuntimeFramework);
-        terminal.Append(' ');
+        if (_options.ContextualModuleOutput)
+        {
+            AppendModuleIdentity(terminal, assemblyRun.Assembly, assemblyRun.TargetFramework, assemblyRun.Architecture, assemblyRun.RuntimeFramework);
+        }
+        else
+        {
+            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyRun.Assembly, assemblyRun.TargetFramework, assemblyRun.Architecture, assemblyRun.RuntimeFramework);
+            terminal.Append(' ');
+        }
         AppendAssemblyResult(terminal, assemblyRun);
         terminal.Append(' ');
-        AppendAssemblyTestCounts(terminal, assemblyRun);
+        if (_options.ContextualModuleOutput)
+        {
+            AppendContextualTestCounts(terminal, assemblyRun);
+        }
+        else
+        {
+            AppendAssemblyTestCounts(terminal, assemblyRun);
+        }
         terminal.Append(' ');
         AppendLongDuration(terminal, assemblyRun.Stopwatch.Elapsed);
         terminal.AppendLine();
+    }
+
+    private static void AppendContextualTestCounts(ITerminal terminal, TestProgressState state)
+    {
+        AppendCount(state.PassedTests, CliCommandStrings.PassedLowercase, TerminalColor.DarkGreen);
+        terminal.Append(", ");
+        AppendCount(state.FailedTests, CliCommandStrings.FailedLowercase, TerminalColor.DarkRed);
+        terminal.Append(", ");
+        AppendCount(state.SkippedTests, CliCommandStrings.SkippedLowercase, TerminalColor.DarkYellow);
+        if (state.RetriedFailedTests > 0)
+        {
+            terminal.Append(", ");
+            terminal.Append(CliCommandStrings.RetriedColon);
+            terminal.Append(' ');
+            terminal.Append(state.RetriedFailedTests.ToString("N0", CultureInfo.CurrentCulture));
+        }
+
+        void AppendCount(int count, string label, TerminalColor color)
+        {
+            if (count > 0)
+            {
+                terminal.SetColor(color);
+            }
+
+            terminal.Append(count.ToString("N0", CultureInfo.CurrentCulture));
+            terminal.Append(' ');
+            terminal.Append(label);
+            if (count > 0)
+            {
+                terminal.ResetColor();
+            }
+        }
     }
 
     /// <summary>
@@ -1493,6 +1746,63 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             terminal.Append(text);
         });
+
+    internal void WriteModuleMessage(string assembly, string? targetFramework, string? architecture, string text, SystemConsoleColor? color = null, CancellationToken cancellationToken = default)
+    {
+        if (!_options.ContextualModuleOutput)
+        {
+            WriteMessage(text);
+            return;
+        }
+
+        _terminalWithProgress.WriteToTerminal(terminal =>
+        {
+            int start = 0;
+            bool previousLineWasCommand = false;
+            while (start < text.Length)
+            {
+                int newline = text.IndexOf('\n', start);
+                int end = newline < 0 ? text.Length : newline;
+                bool hasCarriageReturn = newline >= 0 && end > start && text[end - 1] == '\r';
+                string line = text.Substring(start, end - start - (hasCarriageReturn ? 1 : 0));
+                bool command = line.Contains("##vso[", StringComparison.Ordinal)
+                    || line.Contains("##[", StringComparison.Ordinal)
+                    || line.TrimStart().StartsWith("::", StringComparison.Ordinal);
+                if (command && !previousLineWasCommand)
+                {
+                    terminal.ResetColor();
+                    terminal.AppendLine();
+                }
+                else if (!command)
+                {
+                    AppendModuleIdentity(terminal, assembly, targetFramework, architecture);
+                    if (color is not null)
+                    {
+                        terminal.SetColor(ToTerminalColor(color.ConsoleColor));
+                    }
+                }
+
+                terminal.Append(line);
+                if (!command && color is not null)
+                {
+                    terminal.ResetColor();
+                }
+
+                if (newline >= 0)
+                {
+                    terminal.Append(hasCarriageReturn ? "\r\n" : "\n");
+                    start = newline + 1;
+                }
+                else
+                {
+                    terminal.AppendLine();
+                    break;
+                }
+
+                previousLineWasCommand = command;
+            }
+        }, cancellationToken);
+    }
 
     internal void WriteInformationMessage(string text) =>
         _terminalWithProgress.WriteToTerminal(terminal =>

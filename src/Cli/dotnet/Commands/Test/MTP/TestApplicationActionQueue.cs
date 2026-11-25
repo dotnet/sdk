@@ -140,6 +140,7 @@ internal class TestApplicationActionQueue
                     }
                     catch (Exception ex)
                     {
+                        output.MarkModuleExecutionIncomplete();
                         output.MarkCoverageIncomplete();
                         var exAsString = ex.ToString();
                         Logger.LogTrace($"Exception running test module {module.RunProperties?.Command} {module.RunProperties?.Arguments}: {exAsString}");
@@ -158,7 +159,7 @@ internal class TestApplicationActionQueue
                     // stricter per-module minimum requested via -- --minimum-expected-tests N still fails that
                     // module with ExitCode.MinimumExpectedTestsPolicyViolation (9) and is preserved.
                     // See https://github.com/microsoft/testfx/issues/7457.
-                    result = NormalizeExitCode(result, testApp.HasFailureDuringDispose);
+                    result = NormalizeExitCode(result, testApp.HasFailureDuringDispose, output);
 
                     lock (_lock)
                     {
@@ -253,8 +254,13 @@ internal class TestApplicationActionQueue
         }
     }
 
-    internal static int NormalizeExitCode(int result, bool hasFailureDuringDispose)
+    internal static int NormalizeExitCode(int result, bool hasFailureDuringDispose, TerminalTestReporter output)
     {
+        if (hasFailureDuringDispose)
+        {
+            output.MarkModuleExecutionIncomplete();
+        }
+
         if (result == ExitCode.ZeroTests)
         {
             result = ExitCode.Success;

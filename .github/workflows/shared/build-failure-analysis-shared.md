@@ -34,8 +34,11 @@ permissions:
 description: "Shared body for build-failure-analysis workflows"
 
 # Threat detection inherits this model. Preserve the agent/default overrides.
-# The compatible default avoids OpenAI Responses rejecting ctc_call edit-tool IDs.
-model: ${{ vars.GH_AW_MODEL_AGENT_COPILOT || vars.GH_AW_DEFAULT_MODEL_COPILOT || 'claude-sonnet-5' }}
+model: ${{ vars.GH_AW_MODEL_AGENT_COPILOT || vars.GH_AW_DEFAULT_MODEL_COPILOT || 'gpt-6.1-sol' }}
+
+# AWF does not automatically select Responses for GPT-6.
+env:
+  COPILOT_PROVIDER_WIRE_API: ${{ startsWith(vars.GH_AW_MODEL_AGENT_COPILOT || vars.GH_AW_DEFAULT_MODEL_COPILOT || 'gpt-6.1-sol', 'gpt-6') && 'responses' || '' }}
 
 jobs:
   detection:

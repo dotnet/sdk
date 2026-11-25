@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var command = CreateCommand(serverProvider: provider.Object);
 
-            command.Execute().Should().Be(0);
+            command.Execute(TestContext.CancellationToken).Should().Be(0);
 
             _reporter.Lines.Should().Equal(CliCommandStrings.NoServersToShutdown.Green());
 
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var command = CreateCommand(options: ["--msbuild"], serverProvider: provider.Object);
 
-            command.Execute().Should().Be(0);
+            command.Execute(TestContext.CancellationToken).Should().Be(0);
 
             _reporter.Lines.Should().Equal(CliCommandStrings.NoServersToShutdown.Green());
 
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var command = CreateCommand(options: ["--vbcscompiler"], serverProvider: provider.Object);
 
-            command.Execute().Should().Be(0);
+            command.Execute(TestContext.CancellationToken).Should().Be(0);
 
             _reporter.Lines.Should().Equal(CliCommandStrings.NoServersToShutdown.Green());
 
@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var command = CreateCommand(options: ["--razor"], serverProvider: provider.Object);
 
-            command.Execute().Should().Be(0);
+            command.Execute(TestContext.CancellationToken).Should().Be(0);
 
             _reporter.Lines.Should().Equal(CliCommandStrings.NoServersToShutdown.Green());
 
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var command = CreateCommand(serverProvider: provider.Object);
 
-            command.Execute().Should().Be(0);
+            command.Execute(TestContext.CancellationToken).Should().Be(0);
 
             _reporter.Lines.Should().Equal(
                 FormatShuttingDownMessage(mocks[0].Object),
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var command = CreateCommand(serverProvider: provider.Object);
 
-            command.Execute().Should().Be(1);
+            command.Execute(TestContext.CancellationToken).Should().Be(1);
 
             _reporter.Lines.Should().Equal(
                 FormatShuttingDownMessage(mocks[0].Object),
@@ -156,6 +156,74 @@ namespace Microsoft.DotNet.Tests.Commands
                 FormatFailureMessage(mocks[2].Object, ThirdFailureMessage));
 
             VerifyShutdownCalls(mocks);
+        }
+
+        [TestMethod]
+        public async Task GivenCancellationItCancelsTheServerShutdown()
+        {
+            using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+            using var shutdownStarted = new ManualResetEventSlim();
+            using var shutdownFinished = new ManualResetEventSlim();
+            var server = new Mock<IBuildServer>(MockBehavior.Strict);
+            server.SetupGet(s => s.ProcessId).Returns(0);
+            server.SetupGet(s => s.Name).Returns("server");
+            server
+                .Setup(s => s.Shutdown(cancellationSource.Token))
+                .Callback<CancellationToken>(cancellationToken =>
+                {
+                    shutdownStarted.Set();
+                    try
+                    {
+                        cancellationToken.WaitHandle.WaitOne();
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+                    finally
+                    {
+                        shutdownFinished.Set();
+                    }
+                });
+
+            var provider = new Mock<IBuildServerProvider>(MockBehavior.Strict);
+            provider
+                .Setup(p => p.EnumerateBuildServers(ServerEnumerationFlags.All))
+                .Returns([server.Object]);
+
+            var command = CreateCommand(serverProvider: provider.Object);
+            Task<int> execution = Task.Run(
+                () => command.Execute(cancellationSource.Token),
+                TestContext.CancellationToken);
+
+            shutdownStarted.Wait(TestContext.CancellationToken);
+            cancellationSource.Cancel();
+
+            await Assert.ThrowsExactlyAsync<OperationCanceledException>(() => execution);
+            shutdownFinished.Wait(TestContext.CancellationToken);
+            server.Verify(s => s.Shutdown(cancellationSource.Token), Times.Once);
+        }
+
+        [TestMethod]
+        public void GivenServerShutdownThrowsMatchingCancellationItPropagates()
+        {
+            using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+            var server = new Mock<IBuildServer>(MockBehavior.Strict);
+            server.SetupGet(s => s.ProcessId).Returns(0);
+            server.SetupGet(s => s.Name).Returns("server");
+            server
+                .Setup(s => s.Shutdown(cancellationSource.Token))
+                .Throws(new OperationCanceledException(cancellationSource.Token));
+
+            var provider = new Mock<IBuildServerProvider>(MockBehavior.Strict);
+            provider
+                .Setup(p => p.EnumerateBuildServers(ServerEnumerationFlags.All))
+                .Returns([server.Object]);
+
+            var command = CreateCommand(serverProvider: provider.Object);
+
+            var exception = Assert.ThrowsExactly<OperationCanceledException>(
+                () => command.Execute(cancellationSource.Token));
+
+            exception.CancellationToken.Should().Be(cancellationSource.Token);
+            server.Verify(s => s.Shutdown(cancellationSource.Token), Times.Once);
         }
 
         [TestMethod]
@@ -219,11 +287,11 @@ namespace Microsoft.DotNet.Tests.Commands
 
             if (exceptionMessage == null)
             {
-                mock.Setup(s => s.Shutdown());
+                mock.Setup(s => s.Shutdown(It.IsAny<CancellationToken>()));
             }
             else
             {
-                mock.Setup(s => s.Shutdown()).Throws(new Exception(exceptionMessage));
+                mock.Setup(s => s.Shutdown(It.IsAny<CancellationToken>())).Throws(new Exception(exceptionMessage));
             }
 
             return mock;
@@ -233,7 +301,7 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             foreach (var mock in mocks)
             {
-                mock.Verify(s => s.Shutdown(), Times.Once);
+                mock.Verify(s => s.Shutdown(TestContext.CancellationToken), Times.Once);
             }
         }
 

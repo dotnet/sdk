@@ -11,5 +11,6 @@ internal interface IProjectRestorer
 {
     void Restore(FilePath project,
         PackageLocation packageLocation,
+        CancellationToken cancellationToken,
         string verbosity = null);
 }

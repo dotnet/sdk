@@ -40,6 +40,10 @@ Downlevel test runtimes are acquired by
 [`eng/restore-toolset.ps1`](../../eng/restore-toolset.ps1) and
 [`.sh`](../../eng/restore-toolset.sh) and overlaid by
 [`OverlaySdkOnLKG.targets`](redist/targets/OverlaySdkOnLKG.targets).
+For stabilized runtimes, the scripts record the build-stamped version in
+`.sdk-runtime-build-version` so a stale runtime is replaced when the build changes.
+The cross-architecture sidecar overlay excludes current-band .NET and ASP.NET Core
+runtimes to avoid overwriting the runtimes staged by the SDK.
 Targeting packs required by offline tests belong in that test-only overlay too,
 not in `BundledLayoutPackage`. Keep their versions aligned with
 `GenerateBundledVersions.targets`.

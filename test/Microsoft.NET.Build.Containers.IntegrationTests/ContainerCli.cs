@@ -9,7 +9,8 @@ static class ContainerCli
 
     public static bool IsAvailable => DockerCliStatus.IsAvailable;
 
-    public static bool IsContainerdStoreEnabledForDocker => DockerContainerRuntime.IsContainerdStoreEnabled();
+    public static bool IsContainerdStoreEnabledForDocker =>
+        DockerContainerRuntime.IsContainerdStoreEnabled(CancellationToken.None);
 
     public static RunExeCommand PullCommand(ITestOutputHelper log, params string[] args)
       => CreateCommand(log, "pull", args);

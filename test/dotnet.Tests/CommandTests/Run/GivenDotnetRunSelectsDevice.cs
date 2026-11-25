@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.DotNet.Cli.Commands;
 using StructuredLoggerTarget = Microsoft.Build.Logging.StructuredLogger.Target;
@@ -27,6 +29,208 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             target => target.Name == targetName);
         
         assertion(targets);
+    }
+
+    private TestDirectory CreateRunTargetsProject(string identifier)
+    {
+        TestDirectory directory = TestAssetsManager.CreateTestDirectory(identifier: identifier);
+        File.WriteAllText(Path.Combine(directory.Path, "App.csproj"), $"""
+            <Project DefaultTargets="Build">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+              <Target Name="Restore" />
+              <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+                <WriteLinesToFile File="$(MSBuildProjectDirectory)/target-ran.txt" Lines="ran" />
+                <ItemGroup>
+                  <Devices Include="test-device" />
+                </ItemGroup>
+              </Target>
+              <Target Name="Build" />
+              <Target Name="DeployToDevice" />
+              <Target Name="ComputeRunArguments">
+                <PropertyGroup>
+                  <RunCommand>{SecurityElement.Escape(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath)}</RunCommand>
+                  <RunArguments>--version</RunArguments>
+                  <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
+                </PropertyGroup>
+              </Target>
+            </Project>
+            """);
+        return directory;
+    }
+
+    [TestMethod]
+    [DataRow("-mt", false)]    [DataRow("-mt:false", false)]
+    [DataRow(null, false)]
+    [DataRow("-mt", true)]
+    public void ItPassesMultiThreadingToRunTargets(string? argument, bool noBuild)
+    {
+        TestDirectory directory = CreateRunTargetsProject(Guid.NewGuid().ToString());
+
+
+        List<string> args = ["run", "--no-launch-profile", "-bl"];
+        if (argument is not null)
+        {
+            args.Add(argument);
+        }
+        if (noBuild)
+        {
+            args.Add("--no-build");
+        }
+
+        new DotnetCommand(Log, args.ToArray())
+            .WithWorkingDirectory(directory.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDDISABLEFEATURESFROMVERSION", "")
+            .WithEnvironmentVariable("MSBUILDUSESERVER", "0")
+            .Execute()
+            .Should().Pass();
+
+        string[] expectedTargets = noBuild
+            ? ["ComputeAvailableDevices", "DeployToDevice", "ComputeRunArguments"]
+            : ["Restore", "ComputeAvailableDevices", "DeployToDevice", "ComputeRunArguments"];
+        var events = BinaryLog.ReadRecords(Path.Combine(directory.Path, "msbuild-dotnet-run.binlog"))
+            .Select(record => record.Args).ToArray();
+
+        events.OfType<TargetStartedEventArgs>().Select(target => target.TargetName).Should().Contain(expectedTargets);
+        events.OfType<BuildMessageEventArgs>().Count(message => message.Message?.StartsWith(
+            "Multi-threaded strict mode is enabled.", StringComparison.Ordinal) == true)
+            .Should().Be(argument == "-mt" ? expectedTargets.Length : 0);
+    }
+
+    [TestMethod]
+    [CombinatorialData]
+    public void ItValidatesMultiThreadingBeforeRunningTargets(bool noBuild, bool forceMultiThreaded)
+    {
+        TestDirectory directory = CreateRunTargetsProject($"{noBuild}-{forceMultiThreaded}");
+        string markerPath = Path.Combine(directory.Path, "target-ran.txt");
+
+        var result = new DotnetCommand(Log, ["run", "--no-launch-profile", "-mt:yes", .. noBuild ? new[] { "--no-build" } : Array.Empty<string>()])
+            .WithWorkingDirectory(directory.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", forceMultiThreaded ? "1" : "0")
+            .Execute();
+
+        if (forceMultiThreaded)
+        {
+            result.Should().Pass();
+        }
+        else
+        {
+            result.Should().Fail()
+                .And.HaveStdErrContaining("yes")
+                .And.HaveStdErrContaining("-mt");
+        }
+        File.Exists(markerPath).Should().Be(forceMultiThreaded);
+    }
+
+    [TestMethod]
+    public void ItPreservesMSBuildMultiThreadingValidation()
+    {
+        TestDirectory directory = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Combine(directory.Path, "App.proj"), """<Project><Target Name="Build" /></Project>""");
+
+        new DotnetCommand(Log, "msbuild", "App.proj", "-mt:yes")
+            .WithWorkingDirectory(directory.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", "0")
+            .Execute()
+            .Should().Fail().And.HaveStdOutContaining("MSB1072");
+    }
+
+    [TestMethod]
+    public void ItStopsPreparationTaskHostsBeforeLaunchingTheApp()
+    {
+        TestDirectory directory = TestAssetsManager.CreateTestDirectory();
+        string taskDirectory = Directory.CreateDirectory(Path.Combine(directory.Path, "Task")).FullName;
+        string msbuildDirectory = SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest;
+        File.WriteAllText(Path.Combine(taskDirectory, "Task.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                <OutputType>Exe</OutputType>
+                <UseAppHost>false</UseAppHost>
+              </PropertyGroup>
+              <ItemGroup>
+                <Reference Include="Microsoft.Build.Framework">
+                  <HintPath>{SecurityElement.Escape(Path.Combine(msbuildDirectory, "Microsoft.Build.Framework.dll"))}</HintPath>
+                  <Private>false</Private>
+                </Reference>
+              </ItemGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(taskDirectory, "Program.cs"), """
+            using System;
+            using System.Diagnostics;
+            using Microsoft.Build.Framework;
+
+            public sealed class RecordProcess : ITask
+            {
+                public IBuildEngine BuildEngine { get; set; }
+                public ITaskHost HostObject { get; set; }
+                [Output]
+                public int ProcessId { get; set; }
+                public bool Execute()
+                {
+                    ProcessId = Environment.ProcessId;
+                    return true;
+                }
+            }
+
+            public static class Program
+            {
+                public static int Main(string[] args)
+                {
+                    try
+                    {
+                        using var taskHost = Process.GetProcessById(int.Parse(args[0]));
+                        return taskHost.WaitForExit(10000) ? 0 : 1;
+                    }
+                    catch (ArgumentException)
+                    {
+                        return 0;
+                    }
+                }
+            }
+            """);
+        new DotnetCommand(Log, "build", "Task.csproj")
+            .WithWorkingDirectory(taskDirectory)
+            .Execute()
+            .Should().Pass();
+
+        string taskAssembly = Path.Combine(taskDirectory, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Task.dll");
+        File.WriteAllText(Path.Combine(directory.Path, "App.proj"), $"""
+            <Project>
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+              <UsingTask TaskName="RecordProcess" AssemblyFile="{SecurityElement.Escape(taskAssembly)}" />
+              <Target Name="ComputeRunArguments">
+                <RecordProcess>
+                  <Output TaskParameter="ProcessId" PropertyName="TaskHostPid" />
+                </RecordProcess>
+                <Error Condition="'$(TaskHostPid)' == '$([System.Environment]::ProcessId)'"
+                       Text="The task did not run in a separate task host." />
+                <PropertyGroup>
+                  <RunCommand>{SecurityElement.Escape(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath)}</RunCommand>
+                  <RunArguments>exec &quot;{SecurityElement.Escape(taskAssembly)}&quot; $(TaskHostPid)</RunArguments>
+                  <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
+                </PropertyGroup>
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "--project", "App.proj", "--no-build", "--no-launch-profile", "-mt")
+            .WithWorkingDirectory(directory.Path)
+            .WithEnvironmentVariable("MSBUILDDISABLENODEREUSE", "0")
+            .WithEnvironmentVariable("MSBUILDENABLEALLPROPERTYFUNCTIONS", "1")
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", "0")
+            .Execute()
+            .Should().Pass();
     }
 
     [TestMethod]

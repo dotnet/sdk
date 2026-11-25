@@ -55,7 +55,40 @@ static unsafe partial class NativeEntryPoint
             args[i] = PlatformStringMarshaller.ConvertToManaged(argv[i]) ?? string.Empty;
         }
 
-        return ExecuteCore(hostPath, dotnetRoot, sdkDir, hostfxrPath, args);
+        return ExecuteCoreForNativeEntryPoint(
+            hostPath,
+            dotnetRoot,
+            sdkDir,
+            hostfxrPath,
+            args,
+            default);
+    }
+
+    internal static int ExecuteCoreForNativeEntryPoint(
+        string hostPath, string dotnetRoot, string sdkDir,
+        string hostfxrPath, string[] args,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return ExecuteCoreWithCancellation(
+                hostPath,
+                dotnetRoot,
+                sdkDir,
+                hostfxrPath,
+                args,
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (
+            ProcessLifecycle.TryGetSignalExitCode(ProcessLifecycle.CancellationToken, out int signalExitCode))
+        {
+            return signalExitCode;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Exceptions cannot cross the native entry-point boundary.
+            return 1;
+        }
     }
 
     public static ITelemetryClient? TelemetryClient { get; private set; }
@@ -71,12 +104,24 @@ static unsafe partial class NativeEntryPoint
     internal static int ExecuteCore(
         string hostPath, string dotnetRoot, string sdkDir,
         string hostfxrPath, string[] args)
+        => ExecuteCoreWithCancellation(
+            hostPath,
+            dotnetRoot,
+            sdkDir,
+            hostfxrPath,
+            args,
+            default);
+
+    internal static int ExecuteCoreWithCancellation(
+        string hostPath, string dotnetRoot, string sdkDir,
+        string hostfxrPath, string[] args,
+        CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrEmpty(sdkDir);
 
         // Match the managed entry point before any localized resources are read. The AOT host does
         // not run Program.Main, so it must apply DOTNET_CLI_UI_LANGUAGE/VSLANG itself.
-        using AutomaticEncodingRestorer _ = new();
+        using AutomaticEncodingRestorer encodingRestorer = new();
         UILanguageOverride.Setup();
 
         // Publish the versioned SDK directory as the "Microsoft.DotNet.Sdk.Root" AppContext value
@@ -87,6 +132,22 @@ static unsafe partial class NativeEntryPoint
         // src/Cli/dotnet-aot/SdkRootResolution.md.
         AppContext.SetData(SdkPaths.DataName, sdkDir);
         SdkDirectory = sdkDir;
+
+#if DOTNET_AOT_NATIVE_RUNTIME
+        if (!AotResourceManagerProvider.IsConfigured
+            && !AotResourceManagerProvider.TryConfigure(sdkDir, out Exception? resourceError))
+        {
+            Debug.WriteLine($"NativeAOT resource preflight failed; deferring to the managed CLI: {resourceError}");
+            if (EnvironmentVariableParser.ParseBool(
+                Environment.GetEnvironmentVariable("DOTNET_AOT_RESOURCE_DIAGNOSTICS"),
+                defaultValue: false))
+            {
+                Console.Error.WriteLine(resourceError);
+            }
+
+            return RunManagedFallback(hostPath, dotnetRoot, sdkDir, hostfxrPath, args, out _, resourcesAvailable: false);
+        }
+#endif
 
         // Telemetry is best-effort and must never prevent the CLI from running. Initializing
         // it can fail on some layouts (e.g. the NativeAOT muxer cannot resolve the crypto
@@ -162,6 +223,10 @@ static unsafe partial class NativeEntryPoint
 
             if (ShouldAttemptAotExecution(args))
             {
+                using IDisposable? processLifecycle =
+                    cancellationToken == default ? ProcessLifecycle.Initialize() : null;
+                CancellationToken aotCancellationToken =
+                    processLifecycle is null ? cancellationToken : ProcessLifecycle.CancellationToken;
                 ParseResult? parseResult = null;
                 bool genericCommandHelp = false;
                 using (var parse = Activities.Source.StartActivity("parse"))
@@ -207,7 +272,7 @@ static unsafe partial class NativeEntryPoint
                         {
                             try
                             {
-                                exitCode = CommandInvocation.ExecuteInternalCommand(parseResult);
+                                exitCode = CommandInvocation.ExecuteInternalCommand(parseResult, aotCancellationToken);
                                 success = true;
                                 aotHandledInProcess = true;
                                 SendAotParserTelemetry(parseResult, globalJsonState);
@@ -223,7 +288,15 @@ static unsafe partial class NativeEntryPoint
                     // or local tool, a command on the PATH, ...) or an implicit file-based app (`dotnet app.cs`).
                     // Resolve and invoke external commands in AOT when possible; defer file-based apps, legacy
                     // project tools, and anything that does not resolve to the managed CLI.
-                    else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, mainActivity, globalJsonState, out exitCode, out success))
+                    else if (parseResult is not null && TryInvokeExternalCommand(
+                        parseResult,
+                        args,
+                        sdkDir,
+                        mainActivity,
+                        globalJsonState,
+                        aotCancellationToken,
+                        out exitCode,
+                        out success))
                     {
                         aotHandledInProcess = true;
                         return exitCode;
@@ -241,22 +314,7 @@ static unsafe partial class NativeEntryPoint
                 mainActivity.SetTag("command.name", fallbackName);
             }
 
-            string dotnetDll = Path.Join(sdkDir, "dotnet.dll");
-            string runtimeConfig = Path.Join(sdkDir, "dotnet.runtimeconfig.json");
-
-            if (File.Exists(dotnetDll) && File.Exists(runtimeConfig))
-            {
-                // Use the command-line hosting path to run dotnet.dll
-                string[] appArgs = new string[args.Length + 1];
-                appArgs[0] = dotnetDll;
-                Array.Copy(args, 0, appArgs, 1, args.Length);
-                exitCode = ManagedHost.RunApp(hostPath, dotnetRoot, hostfxrPath, appArgs);
-                success = true;
-                return exitCode;
-            }
-
-            // No managed fallback available
-            Console.Error.WriteLine(string.Format(CliStrings.ManagedFallbackCouldNotBeLocated, dotnetDll, runtimeConfig));
+            exitCode = RunManagedFallback(hostPath, dotnetRoot, sdkDir, hostfxrPath, args, out success);
             return exitCode;
         }
         finally
@@ -283,6 +341,29 @@ static unsafe partial class NativeEntryPoint
         }
     }
 
+    private static int RunManagedFallback(
+        string hostPath, string dotnetRoot, string sdkDir, string hostfxrPath, string[] args,
+        out bool success, bool resourcesAvailable = true)
+    {
+        string dotnetDll = Path.Join(sdkDir, "dotnet.dll");
+        string runtimeConfig = Path.Join(sdkDir, "dotnet.runtimeconfig.json");
+        if (File.Exists(dotnetDll) && File.Exists(runtimeConfig))
+        {
+            string[] appArgs = new string[args.Length + 1];
+            appArgs[0] = dotnetDll;
+            Array.Copy(args, 0, appArgs, 1, args.Length);
+            int exitCode = ManagedHost.RunApp(hostPath, dotnetRoot, hostfxrPath, appArgs);
+            success = true;
+            return exitCode;
+        }
+
+        Console.Error.WriteLine(resourcesAvailable
+            ? string.Format(CliStrings.ManagedFallbackCouldNotBeLocated, dotnetDll, runtimeConfig)
+            : $"The managed fallback could not be located. Expected '{dotnetDll}' and '{runtimeConfig}'.");
+        success = false;
+        return 1;
+    }
+
     internal static bool ShouldAttemptAotExecution(string[] args)
         => EnvironmentVariableParser.ParseBool(
             Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT),
@@ -298,7 +379,15 @@ static unsafe partial class NativeEntryPoint
     ///  unsupported file-based app shapes, legacy project tools, commands that do not resolve in AOT,
     ///  or any resolution error. External commands take precedence over implicit file-based apps.
     /// </summary>
-    private static bool TryInvokeExternalCommand(ParseResult parseResult, string[] args, string sdkDir, Activity? mainActivity, string? globalJsonState, out int exitCode, out bool success)
+    private static bool TryInvokeExternalCommand(
+        ParseResult parseResult,
+        string[] args,
+        string sdkDir,
+        Activity? mainActivity,
+        string? globalJsonState,
+        CancellationToken cancellationToken,
+        out int exitCode,
+        out bool success)
     {
         exitCode = 1;
         success = false;
@@ -339,7 +428,7 @@ static unsafe partial class NativeEntryPoint
             {
                 try
                 {
-                    exitCode = AotRunCommand.Execute(fileBasedRunParseResult);
+                    exitCode = AotRunCommand.Execute(fileBasedRunParseResult, cancellationToken);
                     success = true;
                     mainActivity?.SetDisplayName(fileBasedRunParseResult);
                     SendAotParserTelemetry(fileBasedRunParseResult, globalJsonState);
@@ -349,7 +438,7 @@ static unsafe partial class NativeEntryPoint
                 {
                     return false;
                 }
-                catch (Exception exception)
+                catch (Exception exception) when (exception is not OperationCanceledException)
                 {
                     exitCode = Parser.ExceptionHandler(exception, fileBasedRunParseResult);
                     success = false;
@@ -385,11 +474,11 @@ static unsafe partial class NativeEntryPoint
             try
             {
                 Microsoft.DotNet.Cli.Utils.Command command = CommandFactoryUsingResolver.CreateOrThrow(commandName, commandSpec);
-                exitCode = command.Execute().ExitCode;
+                exitCode = command.Execute(cancellationToken).ExitCode;
                 success = true;
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 // The command was resolved and may have already executed, so it must not be re-run via
                 // the managed CLI. Report the failure exactly as the managed invocation path would.
