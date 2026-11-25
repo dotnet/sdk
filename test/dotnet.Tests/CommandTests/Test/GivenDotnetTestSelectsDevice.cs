@@ -490,34 +490,7 @@ public class GivenDotnetTestSelectsDevice : SdkTest
 
         // Mimics a MAUI app in the same solution: the workload imports ComputeAvailableDevices into
         // its inner builds even though it is not a test project. See https://github.com/dotnet/sdk/issues/57120.
-        string appDir = Path.Combine(testInstance.Path, "App");
-        Directory.CreateDirectory(appDir);
-        File.WriteAllText(Path.Combine(appDir, "Program.cs"), "System.Console.WriteLine();");
-        File.WriteAllText(Path.Combine(appDir, "App.csproj"),
-            $$"""
-            <Project Sdk="Microsoft.NET.Sdk">
-              <PropertyGroup>
-                <OutputType>Exe</OutputType>
-                <TargetFrameworks>{{ToolsetInfo.CurrentTargetFramework}}</TargetFrameworks>
-                <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-              </PropertyGroup>
-              <Import Project="App.Device.targets" Condition="'$(TargetFramework)' != ''" />
-            </Project>
-            """);
-        File.WriteAllText(Path.Combine(appDir, "App.Device.targets"),
-            """
-            <Project>
-              <Target Name="ComputeAvailableDevices" Returns="@(Devices)" />
-            </Project>
-            """);
-
-        File.WriteAllText(Path.Combine(testInstance.Path, "TestSolution.slnx"),
-            """
-            <Solution>
-              <Project Path="App\App.csproj" />
-              <Project Path="DotnetTestDevices.csproj" />
-            </Solution>
-            """);
+        AddProjectWithDeviceTargetsToSolution(testInstance.Path, "App");
 
         var result = new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(testInstance.Path)
@@ -535,6 +508,58 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"),
             "DeployToDevice",
             targets => targets.Should().HaveCount(2, "only the test project's target frameworks should be deployed"));
+    }
+
+    [TestMethod]
+    public void ItDoesNotSelectDevicesForVSTestProjectsInSolution()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+
+        // IsTestProject alone marks a VSTest project, which MTP rejects; it must not opt into device selection.
+        AddProjectWithDeviceTargetsToSolution(testInstance.Path, "VSTestApp", "<IsTestProject>true</IsTestProject>");
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--solution", "TestSolution.slnx", "-p:SingleDevice=true");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "VSTestApp.csproj"))
+            .And.NotHaveStdErrContaining(CliCommandStrings.RunCommandNoDevicesAvailable);
+    }
+
+    private static void AddProjectWithDeviceTargetsToSolution(string solutionDirectory, string projectName, string additionalProperties = "")
+    {
+        string projectDirectory = Path.Combine(solutionDirectory, projectName);
+        Directory.CreateDirectory(projectDirectory);
+        File.WriteAllText(Path.Combine(projectDirectory, "Program.cs"), "System.Console.WriteLine();");
+        File.WriteAllText(Path.Combine(projectDirectory, $"{projectName}.csproj"),
+            $$"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFrameworks>{{ToolsetInfo.CurrentTargetFramework}}</TargetFrameworks>
+                <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+                {{additionalProperties}}
+              </PropertyGroup>
+              <Import Project="Device.targets" Condition="'$(TargetFramework)' != ''" />
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(projectDirectory, "Device.targets"),
+            """
+            <Project>
+              <Target Name="ComputeAvailableDevices" Returns="@(Devices)" />
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Combine(solutionDirectory, "TestSolution.slnx"),
+            $"""
+            <Solution>
+              <Project Path="{projectName}\{projectName}.csproj" />
+              <Project Path="DotnetTestDevices.csproj" />
+            </Solution>
+            """);
     }
 
     [TestMethod]

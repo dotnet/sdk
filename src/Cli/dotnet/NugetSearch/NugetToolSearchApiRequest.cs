@@ -15,7 +15,10 @@ namespace Microsoft.DotNet.Cli.NugetSearch;
 
 internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
 {
+    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(10);
+
     private readonly Func<PackageSource, CancellationToken, Task<PackageSearchResource?>> _getPackageSearchResource;
+    private readonly TimeSpan _requestTimeout;
 
     public NugetToolSearchApiRequest()
         : this(GetPackageSearchResource)
@@ -23,9 +26,11 @@ internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
     }
 
     internal NugetToolSearchApiRequest(
-        Func<PackageSource, CancellationToken, Task<PackageSearchResource?>> getPackageSearchResource)
+        Func<PackageSource, CancellationToken, Task<PackageSearchResource?>> getPackageSearchResource,
+        TimeSpan? requestTimeout = null)
     {
         _getPackageSearchResource = getPackageSearchResource;
+        _requestTimeout = requestTimeout ?? RequestTimeout;
     }
 
     public async Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
@@ -37,11 +42,13 @@ internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
         ArgumentNullException.ThrowIfNull(source);
 
         using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeoutCancellation.CancelAfter(TimeSpan.FromSeconds(10));
+        timeoutCancellation.CancelAfter(_requestTimeout);
 
         try
         {
             PackageSearchResource? searchResource = await _getPackageSearchResource(source, timeoutCancellation.Token).ConfigureAwait(false);
+            timeoutCancellation.Token.ThrowIfCancellationRequested();
+            timeoutCancellation.CancelAfter(_requestTimeout);
             if (searchResource is null)
             {
                 throw new NugetSearchApiRequestException(
@@ -67,11 +74,12 @@ internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
                 NullLogger.Instance,
                 timeoutCancellation.Token).ConfigureAwait(false);
 
+            timeoutCancellation.Token.ThrowIfCancellationRequested();
             var results = new List<SearchResultPackage>();
             foreach (IPackageSearchMetadata packageMetadata in metadata)
             {
                 IEnumerable<VersionInfo> versions = nugetSearchApiParameter.IncludeVersions
-                    ? await packageMetadata.GetVersionsAsync().ConfigureAwait(false)
+                    ? await packageMetadata.GetVersionsAsync().WaitAsync(timeoutCancellation.Token).ConfigureAwait(false)
                     : [];
                 results.Add(new SearchResultPackage(
                     new PackageId(packageMetadata.Identity.Id),
@@ -87,6 +95,7 @@ internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
                         version.DownloadCount ?? 0)).ToArray()));
             }
 
+            timeoutCancellation.Token.ThrowIfCancellationRequested();
             return results;
         }
         catch (Exception ex) when (ex is HttpRequestException
@@ -97,9 +106,11 @@ internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
         {
             throw new NugetSearchApiRequestException(ex.Message);
         }
-        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException ex) when (
+            timeoutCancellation.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
-            throw new NugetSearchApiRequestException(ex.Message);
+            throw new NugetSearchApiRequestException(
+                string.Format(CliStrings.RetriableNugetSearchFailure, source.Source, ex.Message, "N/A"));
         }
     }
 

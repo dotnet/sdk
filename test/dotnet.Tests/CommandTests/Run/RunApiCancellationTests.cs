@@ -4,6 +4,8 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.TestApp;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -21,6 +23,33 @@ public class RunApiCancellationTests : SdkTest
     [OSCondition(OperatingSystems.Linux)]
     public async Task CancellationInterruptsABlockedLinuxStandardInputRead()
         => await VerifyStandardInputCancellation();
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public async Task SignalCancellationUsesTheSignalExitCode()
+    {
+        using Process child = StartChild();
+        Task<string> standardError = child.StandardError.ReadToEndAsync(TestContext.CancellationToken);
+        try
+        {
+            await child.StandardInput.WriteLineAsync("""{"$type":"Unknown"}""");
+            await child.StandardInput.FlushAsync(TestContext.CancellationToken);
+            string? response = await child.StandardOutput.ReadLineAsync(TestContext.CancellationToken)
+                .AsTask()
+                .WaitAsync(s_timeout, TestContext.CancellationToken);
+            response.Should().NotBeNull();
+
+            child.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue();
+            await child.WaitForExitAsync(TestContext.CancellationToken).WaitAsync(s_timeout, TestContext.CancellationToken);
+
+            child.ExitCode.Should().Be(130);
+            (await standardError).Should().BeEmpty();
+        }
+        finally
+        {
+            StopChild(child);
+        }
+    }
 
     private async Task VerifyStandardInputCancellation()
     {

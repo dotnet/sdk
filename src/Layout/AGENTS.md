@@ -53,6 +53,11 @@ Workload devserver runtimes follow
 than the test targeting packs pinned by
 [`Net110PackageVersion`](../../eng/ManualVersions.props).
 
+### Visual Studio transport symbols
+
+The Visual Studio transport projects must keep `IncludeSymbols` disabled because
+their component projects archive symbols directly through Arcade.
+
 ### macOS tool signing
 
 `CreateRoslynAppHosts` (called by `PublishRoslyn`) and `CreateMSBuildAppHost` ad hoc sign the concrete SDK apphosts with

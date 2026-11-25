@@ -327,6 +327,40 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void ProjectTemplate_DefaultRunnerRemainsVSTest(bool useMSTestSdk)
+        {
+            string repositoryDirectory = CreateTemporaryFolder();
+            string projectDirectory = Path.Combine(repositoryDirectory, "NewTests");
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string globalJsonPath = Path.Combine(repositoryDirectory, "global.json");
+            File.WriteAllText(globalJsonPath, "{}");
+            string[] sdkArgs = useMSTestSdk ? ["--sdk"] : [];
+
+            new DotnetNewCommand(_log, ["mstest", "-n", "NewTests", "-o", projectDirectory,
+                "-f", ToolsetInfo.SdkTargetFramework, "--no-restore", .. sdkArgs])
+                .WithCustomHive(home)
+                .WithWorkingDirectory(repositoryDirectory)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            File.ReadAllText(globalJsonPath).Should().Be("{}");
+            File.Exists(Path.Combine(projectDirectory, "global.json")).Should().BeFalse();
+            new DotnetTestCommand(_log, false)
+                .WithWorkingDirectory(repositoryDirectory)
+                .WithEnvironmentVariable("DOTNET_TEST_RUNNER", string.Empty)
+                .Execute(projectDirectory)
+                .Should().Pass()
+                .And.HaveStdOutMatching(@"Passed:\s*1");
+
+            DeleteDirectoryWithRetry(repositoryDirectory);
+            DeleteDirectoryWithRetry(home);
+        }
+
+        [TestMethod]
         [DataRow("VSTest", false)]
         [DataRow("VSTest", true)]
         [DataRow("Microsoft.Testing.Platform", false)]

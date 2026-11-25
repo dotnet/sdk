@@ -187,6 +187,12 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// When specified, run out-of-process in this directory without changing the caller's directory.
     /// </param>
     public int Execute(string? workingDirectory, CancellationToken cancellationToken)
+        => Execute(workingDirectory, suspendSoftCancellationTimeout: true, cancellationToken);
+
+    internal int Execute(
+        string? workingDirectory,
+        bool suspendSoftCancellationTimeout,
+        CancellationToken cancellationToken)
     {
         using var activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
 
@@ -203,7 +209,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
                 startInfo.WorkingDirectory = workingDirectory;
             }
 
-            return startInfo.Execute(cancellationToken);
+            return startInfo.Execute(suspendSoftCancellationTimeout, cancellationToken);
         }
         else
         {

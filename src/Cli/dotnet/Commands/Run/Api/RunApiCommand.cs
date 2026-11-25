@@ -51,9 +51,11 @@ internal sealed class RunApiCommand(ParseResult parseResult) : CommandBase(parse
                 }
             }
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (
+            cancellationToken.IsCancellationRequested &&
+            !ProcessLifecycle.IsSignalTerminationRequested)
         {
-            // The stdin read was cancelled (e.g. Ctrl+C/SIGTERM); exit the loop gracefully.
+            // A standalone caller cancelled the stdin read; exit the loop gracefully.
         }
 
         return 0;

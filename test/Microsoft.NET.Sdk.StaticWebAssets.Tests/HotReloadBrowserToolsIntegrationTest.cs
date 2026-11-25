@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Text.Json;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
@@ -231,6 +232,100 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             endpoints.Should().Contain($"_framework/{ClientFileName}");
         }
 
+        [TestMethod]
+        [DataRow("Library", true)]
+        [DataRow("Exe", true)]
+        [DataRow("Exe", false)]
+        public void Build_PlainWebSdkProjectReference_KeepsWorking(string outputType, bool referenceOutputAssembly)
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset("RazorComponentAppWithReferenceMultitarget", identifier: $"{outputType}_{referenceOutputAssembly}")
+                .WithProjectChanges((path, document) =>
+                {
+                    if (Path.GetFileName(path) == "RazorComponentLibrary.csproj")
+                    {
+                        document.Descendants("TargetFrameworks").Single()
+                            .ReplaceWith(new XElement("TargetFramework", DefaultTfm));
+                        document.Descendants("OutputType").Single().Value = outputType;
+                    }
+                    else
+                    {
+                        document.Descendants("ProjectReference").Single()
+                            .SetElementValue("ReferenceOutputAssembly", referenceOutputAssembly);
+                    }
+                });
+
+            const string apiProgram = """
+                using Microsoft.AspNetCore.Builder;
+
+                var app = WebApplication.CreateBuilder(args).Build();
+                app.MapGet("/", () => "API");
+                app.Run();
+                """;
+            File.WriteAllText(Path.Combine(projectDirectory.TestRoot, "RazorComponentApp", "Program.cs"), apiProgram);
+
+            var libraryDirectory = Path.Combine(projectDirectory.TestRoot, "RazorComponentLibrary");
+            if (outputType == "Exe")
+            {
+                File.WriteAllText(Path.Combine(libraryDirectory, "Program.cs"), apiProgram);
+            }
+
+            var build = CreateBuildCommand(projectDirectory, "RazorComponentApp");
+            var appIntermediate = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var libraryIntermediate = OutputPathCalculator.FromProject(libraryDirectory)
+                .GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+
+            ExecuteCommand(build).Should().Pass();
+            AssertLocalBrowserTools(appIntermediate, "ComponentApp");
+            AssertLocalBrowserTools(libraryIntermediate, "RazorComponentLibrary");
+
+            const string libraryInitializer = "RazorComponentLibrary.lib.module.js";
+            Directory.CreateDirectory(Path.Combine(libraryDirectory, "wwwroot"));
+            File.WriteAllText(Path.Combine(libraryDirectory, "wwwroot", libraryInitializer), "export function afterStarted() {}");
+
+            for (var iteration = 0; iteration < 2; iteration++)
+            {
+                ExecuteCommand(build).Should().Pass();
+
+                var appManifest = AssertLocalBrowserTools(appIntermediate, "ComponentApp");
+                AssertLocalBrowserTools(libraryIntermediate, "RazorComponentLibrary");
+
+                var referencedInitializer = appManifest.Assets.Single(a =>
+                    a.IsPrimaryAsset() && a.SourceId == "RazorComponentLibrary" &&
+                    a.AssetTraitName == "JSModule" && a.AssetTraitValue == "JSLibraryModule");
+                appManifest.Endpoints.Should().Contain(e => e.AssetFile == referencedInitializer.Identity);
+                File.ReadAllText(Path.Combine(appIntermediate, "jsmodules", "jsmodules.build.manifest.json"))
+                    .Should().Contain(libraryInitializer);
+            }
+
+            static StaticWebAssetsManifest AssertLocalBrowserTools(string intermediatePath, string sourceId)
+            {
+                var manifest = StaticWebAssetsManifest.FromJsonBytes(
+                    File.ReadAllBytes(Path.Combine(intermediatePath, "staticwebassets.build.json")));
+                var browserTools = manifest.Assets.Where(a =>
+                    a.RelativePath.StartsWith("_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload", StringComparison.Ordinal))
+                    .ToArray();
+
+                browserTools.Where(a => a.IsPrimaryAsset()).Should().HaveCount(3);
+                browserTools.Should().OnlyContain(a => a.SourceId == sourceId);
+                browserTools.Should().Contain(a => a.IsAlternativeAsset() && a.AssetTraitValue == "gzip");
+                foreach (var asset in browserTools)
+                {
+                    manifest.Endpoints.Should().Contain(e => e.AssetFile == asset.Identity);
+                }
+
+                var endpoints = JsonSerializer.Deserialize(
+                    File.ReadAllBytes(Path.Combine(intermediatePath, "staticwebassets.build.endpoints.json")),
+                    StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointsManifest);
+                foreach (var fileName in new[] { InitializerFileName, ClientFileName, ConfigFileName })
+                {
+                    endpoints.Endpoints.Should().Contain(e =>
+                        e.Route == $"_framework/{fileName}" && e.Selectors.Length == 0);
+                }
+
+                return manifest;
+            }
+        }
+
         /// <summary>
         /// Browser tools are a development only feature. Nothing may be generated when they are off,
         /// including the key pair.
@@ -301,13 +396,17 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var hostManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(
                 build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
                 "staticwebassets.build.json")));
-            var initializerAssets = hostManifest.Assets
+            var browserToolsAssets = hostManifest.Assets
                 .Where(a => a.RelativePath.Replace('\\', '/').Contains("Microsoft.NET.Sdk.WebAssembly.HotReload"))
                 .Where(a => a.IsPrimaryAsset())
                 .ToArray();
 
-            initializerAssets.Should().NotBeEmpty();
-            initializerAssets.Should().OnlyContain(a => a.SourceId == "blazorwasm");
+            browserToolsAssets.Should().HaveCount(3);
+            browserToolsAssets.Should().OnlyContain(a => a.SourceId == "blazorwasm");
+            foreach (var asset in browserToolsAssets)
+            {
+                hostManifest.Endpoints.Should().Contain(e => e.AssetFile == asset.Identity);
+            }
         }
 
         /// <summary>

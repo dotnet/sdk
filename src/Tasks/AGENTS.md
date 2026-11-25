@@ -17,6 +17,15 @@ current-.NET-only:
 | `Microsoft.NET.Build.Extensions.Tasks` | Tasks/targets for desktop/.NET Framework projects built **outside** the SDK. |
 | `sdk-tasks` | Build-time-only tasks for **this repo's own** build/packaging — never shipped to users. |
 
+### Repository-build task host references
+
+[`sdk-tasks`](sdk-tasks/sdk-tasks.csproj) and
+[`HelixTasks`](../../test/HelixTasks/HelixTasks.csproj) run in the bootstrap .NET
+task host, even when the outer build uses Full Framework MSBuild. Reference the host's
+MSBuild and NuGet assemblies via `$(NetCoreSdkRoot)` with `Private="false"` instead of
+shipping package versions. The [`sdk-tasks` tests](../../test/sdk-tasks.Tests/sdk-tasks.Tests.csproj)
+provide their own MSBuild runtime copies.
+
 ### Inside `Microsoft.NET.Build.Tasks`
 
 - Root `*.cs` — the MSBuild `Task` classes.

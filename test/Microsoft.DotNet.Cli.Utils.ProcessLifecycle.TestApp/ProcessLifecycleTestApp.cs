@@ -4,6 +4,9 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Utils.TestApp;
@@ -12,6 +15,13 @@ public static partial class ProcessLifecycleTestApp
 {
     public static int Main(string[] args)
     {
+        if (Environment.GetEnvironmentVariable("PROCESS_LIFECYCLE_TEST_FAKE_MSBUILD") == "1")
+        {
+            File.WriteAllText(Environment.GetEnvironmentVariable("TEST_MARKER_PATH")!, "ready");
+            Thread.Sleep(Timeout.Infinite);
+            return 0;
+        }
+
         string childMode = args[0];
         string markerPath = args[1];
 
@@ -40,6 +50,12 @@ public static partial class ProcessLifecycleTestApp
             return 0;
         }
 
+        if (childMode == "ignoring-cancellation-child")
+        {
+            RunIgnoringCancellationChild(markerPath);
+            return 0;
+        }
+
         if (OperatingSystem.IsWindows())
         {
             // A private console prevents test signals from reaching MTP or other processes.
@@ -63,6 +79,51 @@ public static partial class ProcessLifecycleTestApp
 
         using IDisposable processLifecycle = ProcessLifecycle.Initialize();
         CancellationToken cancellationToken = ProcessLifecycle.CancellationToken;
+        if (childMode is "mtp-lifecycle" or "mtp-sigterm-lifecycle")
+        {
+            using IDisposable cancellationTimeout =
+                ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan);
+            using var ctrlC = new CtrlCCancellationManager(
+                onFirstCtrlC: () => WriteMarker(markerPath, "signal-cancelled"),
+                subscribeToConsole: false,
+                cooperativeCancellationToken: cancellationToken,
+                forcefulCancellationToken: ProcessLifecycle.ForcefulCancellationToken);
+            using Process testApplication = CreateChildProcess(
+                args,
+                childMode == "mtp-sigterm-lifecycle"
+                    ? "signal-child"
+                    : "ignoring-cancellation-child");
+            if (ctrlC.StartAndRegister(() =>
+            {
+                testApplication.Start();
+                return testApplication;
+            }) is null)
+            {
+                return ExitCode.TestSessionAborted;
+            }
+
+            WaitForMarker(markerPath, "grandchild-ready");
+            File.WriteAllText(markerPath + ".pid", testApplication.Id.ToString());
+            WriteMarker(markerPath, "ready");
+            Thread.Sleep(Timeout.Infinite);
+        }
+
+        if (childMode == "msbuild-external")
+        {
+            var forwardingApp = new MSBuildForwardingApp([], args[6], CommandServices.CreateDefault());
+            forwardingApp.EnvironmentVariable("TEST_MARKER_PATH", markerPath);
+            forwardingApp.EnvironmentVariable("PROCESS_LIFECYCLE_TEST_FAKE_MSBUILD", "1");
+            try
+            {
+                return forwardingApp.Execute(cancellationToken);
+            }
+            catch (OperationCanceledException) when (
+                ProcessLifecycle.TryGetSignalExitCode(cancellationToken, out int exitCode))
+            {
+                return exitCode;
+            }
+        }
+
         using CancellationTokenRegistration registration = childMode is "uncooperative" or "repeated"
             ? cancellationToken.Register(() => WriteMarker(markerPath, "signal-cancelled"))
             : default;
@@ -160,6 +221,13 @@ public static partial class ProcessLifecycleTestApp
             context => context.Cancel = true);
 
         File.WriteAllText(markerPath, "grandchild-ready");
+        Thread.Sleep(Timeout.Infinite);
+    }
+
+    private static void RunIgnoringCancellationChild(string markerPath)
+    {
+        Console.CancelKeyPress += (_, eventArgs) => eventArgs.Cancel = true;
+        WriteMarker(markerPath, "grandchild-ready");
         Thread.Sleep(Timeout.Infinite);
     }
 

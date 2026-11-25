@@ -237,7 +237,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 : parseResult.GetValue(definition.TimeoutOption),
             onCancellation: _ => output.MarkCancelled());
 
-        using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
+        using IDisposable? lifecycleCancellationTimeout = ProcessLifecycle.IsInitialized
+            ? ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan)
+            : null;
+        using var ctrlC = new CtrlCCancellationManager(
+            output.StartCancelling,
+            subscribeToConsole: !ProcessLifecycle.IsInitialized,
+            cooperativeCancellationToken: cancellationToken,
+            forcefulCancellationToken: ProcessLifecycle.IsInitialized
+                ? ProcessLifecycle.ForcefulCancellationToken
+                : default);
         using var queueCancellation = CancellationTokenSource.CreateLinkedTokenSource(ctrlC.Token, testRunPolicy.Token);
         var artifactPostProcessingManager = new ArtifactPostProcessingManager(
             enabled: ShouldPostProcessArtifacts(
@@ -317,13 +326,21 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 exitCode.Value,
                 ctrlC.Token.IsCancellationRequested,
                 cancellationReason));
+            cancellationToken.ThrowIfCancellationRequested();
             return exitCode.Value;
         }
         finally
         {
-            output.TestExecutionCompleted(DateTimeOffset.Now, exitCode);
+            output.TestExecutionCompleted(
+                DateTimeOffset.Now,
+                GetExitCodeForReporting(exitCode, cancellationToken.IsCancellationRequested));
         }
     }
+
+    internal static int? GetExitCodeForReporting(int? exitCode, bool cancellationRequested)
+        => cancellationRequested && exitCode == ExitCode.Success
+            ? ExitCode.TestSessionAborted
+            : exitCode;
 
     /// <summary>
     /// Decides whether the artifacts of a finished run should be consolidated.
@@ -1258,9 +1275,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
             SlowTestThreshold = GetProgressThreshold(Environment.GetEnvironmentVariable("MTP_PROGRESS_SLOW_TEST_SECONDS")),
         });
 
-        // Ctrl+C handling is wired in Run() through CtrlCCancellationManager so that
-        // a second press can force-kill running test app child processes and exit with
-        // ExitCode.TestSessionAborted (see issue https://github.com/dotnet/sdk/issues/50732).
+        // Cancellation is wired in Run() through CtrlCCancellationManager so the first Ctrl+C
+        // stops scheduling without interrupting test reporting, while shared lifecycle forceful
+        // cancellation kills running test app child processes.
 
         // Retry-specific rendering is enabled authoritatively by the retry orchestrator handshake.
         // Keep the raw option check only for older platform versions that support retries but do not

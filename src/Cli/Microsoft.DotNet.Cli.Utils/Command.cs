@@ -23,6 +23,8 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
 
     private bool _logProcess = true;
 
+    private bool _suspendSoftCancellationTimeout = true;
+
     public CommandResult Execute(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -39,6 +41,13 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
     {
         ThrowIfRunning();
         _logProcess = false;
+        return this;
+    }
+
+    internal Command WithoutSoftCancellationTimeoutOverride()
+    {
+        ThrowIfRunning();
+        _suspendSoftCancellationTimeout = false;
         return this;
     }
 
@@ -67,7 +76,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
         }
 
         using (var reaper = ProcessReaper.Create(_process))
-        using (ProcessLifecycle.IsInitialized
+        using (ProcessLifecycle.IsInitialized && _suspendSoftCancellationTimeout
             ? ProcessLifecycle.OverrideSoftCancellationTimeout(Timeout.InfiniteTimeSpan)
             : null)
         {
