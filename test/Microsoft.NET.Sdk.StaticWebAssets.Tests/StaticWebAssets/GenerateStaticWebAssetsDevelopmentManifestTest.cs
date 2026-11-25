@@ -46,7 +46,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [TestMethod]
-        public void ComputeDevelopmentManifest_IncludesBuildAssets()
+        [DataRow(StaticWebAsset.AssetModes.All)]
+        [DataRow(StaticWebAsset.AssetModes.Local)]
+        public void ComputeDevelopmentManifest_IncludesBuildAssets(string assetMode)
         {
             // Arrange
             var messages = new List<string>();
@@ -62,9 +64,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var task = new GenerateStaticWebAssetsDevelopmentManifest()
             {
                 BuildEngine = buildEngine.Object,
+                Source = "CurrentProjectId"
             };
 
-            var assets = new[] { CreateAsset("index.html", "index.html", assetKind: StaticWebAsset.AssetKinds.Build) };
+            var assets = new[] { CreateAsset("index.html", "index.html", assetKind: StaticWebAsset.AssetKinds.Build, assetMode: assetMode) };
             var patterns = Array.Empty<StaticWebAssetsDiscoveryPattern>();
 
             // Act
