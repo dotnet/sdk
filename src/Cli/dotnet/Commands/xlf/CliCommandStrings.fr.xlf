@@ -417,6 +417,11 @@
         <target state="new">Invocation cleanup in '{0}' did not complete within {1} seconds and was stopped. Set the '{2}' environment variable to change the timeout.</target>
         <note>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</note>
       </trans-unit>
+      <trans-unit id="InvocationLifetimeNoBuild">
+        <source>Invocation lifetime handlers are not coordinated with '--no-build' because existing test binaries might not support coordination. Each test application runs its own handlers.</source>
+        <target state="new">Invocation lifetime handlers are not coordinated with '--no-build' because existing test binaries might not support coordination. Each test application runs its own handlers.</target>
+        <note>{Locked="--no-build"}</note>
+      </trans-unit>
       <trans-unit id="InvocationLifetimeOwnerAmbiguous">
         <source>Invocation lifetime handlers are declared, but no single test project declares all of them, and no single project is marked with 'TestingPlatformInvocationLifetimeOwner'. Each test application runs its own handlers.</source>
         <target state="new">Invocation lifetime handlers are declared, but no single test project declares all of them, and no single project is marked with 'TestingPlatformInvocationLifetimeOwner'. Each test application runs its own handlers.</target>

@@ -94,15 +94,17 @@ public class TestApplicationActionQueueTests : SdkTest
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void ConfigureInvocationLifetime_IsDisabledForDiscovery(bool discovery)
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public void ConfigureInvocationLifetime_IsDisabledForDiscoveryOrNoBuild(bool discovery, bool noBuild)
     {
         using var reporter = new TerminalTestReporter(
             new CapturingConsole(), new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
         var buildOptions = new BuildOptions(
             new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
-            HasNoRestore: true, HasNoBuild: true, Verbosity: null, NoLaunchProfile: false, NoLaunchProfileArguments: false,
+            HasNoRestore: true, HasNoBuild: noBuild, Verbosity: null, NoLaunchProfile: false, NoLaunchProfileArguments: false,
             TestApplicationArguments: [], MSBuildArgs: [], Device: null, ListDevices: false,
             EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
         using var ctrlC = new CtrlCCancellationManager(() => { }, subscribeToConsole: false);
@@ -117,7 +119,7 @@ public class TestApplicationActionQueueTests : SdkTest
         TestModule? selected = queue.ConfigureInvocationLifetime([owner]);
 
         queue.CompleteEnqueueAndWait();
-        selected.Should().BeSameAs(discovery ? null : owner);
+        selected.Should().BeSameAs(discovery || noBuild ? null : owner);
     }
 
     [TestMethod]

@@ -33,6 +33,56 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     """new SkippedTestNodeStateProperty("OK skipped too!")"""));
         }
 
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void RunNoBuildWithInvocationLifetimeMetadata_DoesNotActivateCoordination(bool handlersDeclared)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            string programPath = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(
+                programPath,
+                File.ReadAllText(programPath).Replace(
+                    "var testApplicationBuilder =",
+                    """
+                    if (Environment.GetEnvironmentVariable("TESTINGPLATFORM_INVOCATIONLIFETIME_ROLE") is not null
+                        || Environment.GetEnvironmentVariable("TESTINGPLATFORM_INVOCATIONLIFETIME_COORDINATED") is not null)
+                    {
+                        throw new InvalidOperationException("Unexpected invocation lifetime coordination.");
+                    }
+                    var testApplicationBuilder =
+                    """,
+                    StringComparison.Ordinal));
+            new BuildCommand(testInstance).Execute().Should().Pass();
+
+            // Change only evaluated metadata after building: it cannot prove that the runnable binary is current.
+            if (handlersDeclared)
+            {
+                testInstance.WithProjectChanges(project =>
+                {
+                    var ns = project.Root!.Name.Namespace;
+                    project.Root.Add(
+                        new XElement(ns + "PropertyGroup",
+                            new XElement(ns + "TestingPlatformInvocationLifetimeCoordinationSupported", "true")),
+                        new XElement(ns + "ItemGroup",
+                            new XElement(ns + "TestingPlatformInvocationLifetimeHandler", new XAttribute("Include", "Sql"))));
+                });
+            }
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en")
+                .Execute("--project", "TestProject.csproj", "--no-build");
+
+            result.ExitCode.Should().Be(TestExitCode.Success);
+            result.StdOut.Should().NotBeNull();
+            Regex.Matches(result.StdOut!, Regex.Escape(CliCommandStrings.InvocationLifetimeNoBuild))
+                .Count.Should().Be(handlersDeclared ? 1 : 0);
+            result.StdOut.Should().NotContain("Unexpected invocation lifetime coordination.")
+                .And.NotContain("Invocation lifetime setup");
+        }
+
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]

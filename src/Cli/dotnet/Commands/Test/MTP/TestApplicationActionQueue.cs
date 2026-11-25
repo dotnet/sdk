@@ -80,6 +80,13 @@ internal class TestApplicationActionQueue
         }
 
         InvocationLifetimeOwnerSelection selection = InvocationLifetimeOwnerSelector.Select(modules);
+        if (_buildOptions.HasNoBuild && selection.Status != InvocationLifetimeOwnerSelectionStatus.NotRequested)
+        {
+            // Evaluated project capabilities do not establish which MTP version the existing binaries contain.
+            Reporter.Output.WriteLine(CliCommandStrings.InvocationLifetimeNoBuild.Yellow());
+            return null;
+        }
+
         switch (selection.Status)
         {
             case InvocationLifetimeOwnerSelectionStatus.Selected:
