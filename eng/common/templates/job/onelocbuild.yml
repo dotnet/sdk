@@ -5,10 +5,9 @@ parameters:
   # Optional: A defined YAML pool - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
   pool: ''
     
-  # Project-scoped WIF service connection for Ceapex feed authentication.
+  # Localization and credential parameters are retained for caller compatibility only.
   CeapexServiceConnection: 'dnceng-onelocbuild-ceapex'
 
-  # GitHub App authentication for the OneLoc check-in PR.
   GitHubAppServiceConnection: 'dnceng-oneloc-githubapp'
   GitHubAppClientId: 'Iv23lijBU8x3gc9lDOc9'
   GitHubAppKeyVaultName: 'EngKeyVault'
@@ -39,13 +38,6 @@ jobs:
   displayName: OneLocBuild${{ parameters.JobNameSuffix }}
 
   variables:
-    - name: _GenerateLocProjectArguments
-      value: -SourcesDirectory ${{ parameters.SourcesDirectory }}
-        -LanguageSet "${{ parameters.LanguageSet }}"
-        -CreateNeutralXlfs
-    - ${{ if eq(parameters.UseCheckedInLocProjectJson, 'true') }}:
-      - name: _GenerateLocProjectArguments
-        value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
     - template: /eng/common/templates/variables/pool-providers.yml
 
   ${{ if ne(parameters.pool, '') }}:
@@ -62,80 +54,8 @@ jobs:
         demands: ImageOverride -equals windows.vs2022.amd64
 
   steps:
-    - ${{ if notIn(variables['System.TeamProject'], 'internal', 'DevDiv') }}:
-      - 'OneLocBuild is supported only in dnceng/internal and DevDiv/DevDiv.': error
-    - ${{ if eq(parameters.CeapexServiceConnection, '') }}:
-      - 'CeapexServiceConnection must identify a WIF service connection.': error
-
-    - ${{ if ne(parameters.SkipLocProjectJsonGeneration, 'true') }}:
-      - task: Powershell@2
-        inputs:
-          filePath: $(System.DefaultWorkingDirectory)/eng/common/generate-locproject.ps1
-          arguments: $(_GenerateLocProjectArguments)
-        displayName: Generate LocProject.json
+    - checkout: none
+    - script: echo OneLocBuild is disabled for Arcade release/8.0. No localization updates or credentials are requested.
+      displayName: Skip localization (release/8.0)
+      ${{ if ne(parameters.condition, '') }}:
         condition: ${{ parameters.condition }}
-
-    # Acquire a short-lived Entra token for Ceapex feed access.
-    - template: /eng/common/templates/steps/get-federated-access-token.yml
-      parameters:
-        federatedServiceConnection: ${{ parameters.CeapexServiceConnection }}
-        outputVariableName: 'CeapexEntraToken'
-        condition: ${{ parameters.condition }}
-
-    # Mint a short-lived GitHub App installation token for the loc check-in PR.
-    - ${{ if eq(parameters.RepoType, 'gitHub') }}:
-      - template: /eng/common/templates/steps/get-github-app-token.yml
-        parameters:
-          ${{ if and(eq(variables['System.TeamProject'], 'DevDiv'), eq(parameters.GitHubAppServiceConnection, 'dnceng-oneloc-githubapp')) }}:
-            azureSubscription: 'devdiv-oneloc-githubapp'
-          ${{ else }}:
-            azureSubscription: ${{ parameters.GitHubAppServiceConnection }}
-          keyVaultName: ${{ parameters.GitHubAppKeyVaultName }}
-          keyName: ${{ parameters.GitHubAppKeyName }}
-          appClientId: ${{ parameters.GitHubAppClientId }}
-          installationOwner: ${{ parameters.GitHubOrg }}
-          outputVariableName: 'GitHubAppInstallationToken'
-          condition: ${{ parameters.condition }}
-
-    - task: OneLocBuild@2
-      displayName: OneLocBuild
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-      inputs:
-        locProj: eng/Localize/LocProject.json
-        outDir: $(Build.ArtifactStagingDirectory)
-        lclSource: ${{ parameters.LclSource }}
-        lclPackageId: ${{ parameters.LclPackageId }}
-        isCreatePrSelected: ${{ parameters.CreatePr }}
-        isAutoCompletePrSelected: ${{ parameters.AutoCompletePr }}
-        ${{ if eq(parameters.CreatePr, true) }}:
-          isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
-          ${{ if eq(parameters.RepoType, 'gitHub') }}:
-            isShouldReusePrSelected: ${{ parameters.ReusePr }}
-        packageSourceAuth: patAuth
-        patVariable: $(CeapexEntraToken)
-        ${{ if eq(parameters.RepoType, 'gitHub') }}:
-          repoType: ${{ parameters.RepoType }}
-          gitHubPatVariable: "$(GitHubAppInstallationToken)"
-        ${{ if ne(parameters.MirrorRepo, '') }}:
-          isMirrorRepoSelected: true
-          gitHubOrganization: ${{ parameters.GitHubOrg }}
-          mirrorRepo: ${{ parameters.MirrorRepo }}
-          mirrorBranch: ${{ parameters.MirrorBranch }}
-      condition: ${{ parameters.condition }}
-
-    - task: PublishBuildArtifacts@1
-      displayName: Publish Localization Files
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/loc'
-        PublishLocation: Container
-        ArtifactName: Loc
-      condition: ${{ parameters.condition }}
-
-    - task: PublishBuildArtifacts@1
-      displayName: Publish LocProject.json
-      inputs:
-        PathtoPublish: '$(System.DefaultWorkingDirectory)/eng/Localize/'
-        PublishLocation: Container
-        ArtifactName: Loc
-      condition: ${{ parameters.condition }}
