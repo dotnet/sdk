@@ -34,6 +34,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         private const string ConfigFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js";
         private const string ClientFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js";
         private const string InitializerFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js";
+        private const string SettingsFileName = "hot-reload-settings.json";
+        private const string SettingsBuildMarkerFileName = "hot-reload-settings.build.marker";
+        private const string SettingsRoute = "/_framework/dotnet-browser-tools/hot-reload-settings.json";
 
         // Contract with Microsoft.DotNet.Watch.SharedSecretBuildOutputs.
         private const string PublicKeyFileName = "browser-tools-key.public.json";
@@ -215,6 +218,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             settings.Should().ContainSingle();
             settings[0].IsBuildOnly().Should().BeTrue();
             settings[0].IsPrimaryAsset().Should().BeTrue();
+            settings[0].AssetMode.Should().Be(StaticWebAsset.AssetModes.Local);
             manifest.Assets.Should().NotContain(a =>
                 a.IsAlternativeAsset() && a.RelatedAsset == settings[0].Identity);
 
@@ -258,7 +262,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(settingsFile));
             var initializer = Path.Combine(
                 GeneratedDirectory(build),
-                gateway ? "Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js" : InitializerFileName);
+                gateway ? "Microsoft.NET.Sdk.WebAssembly.HotReload.lib.module.js" : InitializerFileName);
             File.ReadAllText(initializer).Should().Contain("'If-None-Match': `\"browser-tools-${crypto.randomUUID()}\"`");
 
             var listener = new TcpListener(IPAddress.Loopback, 0);
@@ -359,7 +363,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 var watchWriteTime = File.GetLastWriteTimeUtc(settingsFile);
                 Assert.AreNotEqual(originalWriteTime, watchWriteTime);
 
-                // BrowserToolsBuildOutputsTests covers watch's write-if-different operation.
+                // BrowserToolsSettingsTests covers watch's write-if-different operation.
                 Assert.AreEqual("{ \"hotReload\": true }" + Environment.NewLine, File.ReadAllText(settingsFile));
                 Assert.AreEqual(watchWriteTime, File.GetLastWriteTimeUtc(settingsFile));
                 await AssertServedAsync(true);
@@ -628,6 +632,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var hostManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(
                 build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
                 "staticwebassets.build.json")));
+            hostManifest.Assets.Should().ContainSingle(a =>
+                a.RelativePath.Replace('\\', '/') == SettingsRoute.TrimStart('/') &&
+                a.SourceId == "blazorwasm" &&
+                a.AssetMode == StaticWebAsset.AssetModes.All);
             var browserToolsAssets = hostManifest.Assets
                 .Where(a => a.RelativePath.Replace('\\', '/').Contains("Microsoft.NET.Sdk.WebAssembly.HotReload"))
                 .Where(a => a.IsPrimaryAsset())
@@ -825,11 +833,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             var clientItems = GetBuiltItems(new MSBuildCommand(Log, "CollectUpToDateCheckBuiltDesignTime", clientProjectPath));
             clientItems.Should().ContainSingle(path =>
-                path != null && path.EndsWith($"dotnet-watch\\{SettingsBuildMarkerFileName}", StringComparison.Ordinal));
+                path != null && path.EndsWith($"HotReload\\{SettingsBuildMarkerFileName}", StringComparison.Ordinal));
 
             var serverItems = GetBuiltItems(new MSBuildCommand(Log, "CollectUpToDateCheckBuiltDesignTime", serverProjectPath));
             serverItems.Should().NotContain(path =>
-                path != null && path.EndsWith($"dotnet-watch\\{SettingsBuildMarkerFileName}", StringComparison.Ordinal));
+                path != null && path.EndsWith($"HotReload\\{SettingsBuildMarkerFileName}", StringComparison.Ordinal));
         }
 
         /// <summary>

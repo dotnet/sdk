@@ -38,14 +38,14 @@ Reload).
 - **The browser-tools provider owns the browser protocol and replay
   state.** Its fixed `/_framework/dotnet-browser-tools` endpoints live under
   [`HotReloadClient/Web`](HotReloadClient/Web) and are reduced to `connect` (WebSocket)
-  `clear-cache`, and the non-executable `hot-reload-settings.json`; the provider serves no
+  and `clear-cache`; the provider serves no settings response or
   JavaScript, no session descriptor, no protocol version, and no HTTP replay. Most
   application hosts reach it through the
   shared-framework-only [`BrowserToolsForwarder`](Web.Middleware/BrowserToolsForwarder.cs)
   installed by the hosting-startup path. Standalone Blazor WebAssembly is the exception:
   it is served by the Blazor Gateway, a separate YARP host that does not activate ASP.NET
   Core hosting startups, so
-  [`BlazorWebAssemblyAppModel`](Watch/AppModels/BlazorWebAssemblyAppModel.cs) configures a
+  [`BrowserRefreshServer`](HotReloadClient/Web/BrowserRefreshServer.cs) configures
   gateway reverse-proxy routes for only `/connect` and `/clear-cache` through `ReverseProxy__*`
   environment variables instead. Never proxy settings to the provider. Keep
   destinations fixed to the trusted loopback provider address, the route root-relative, and
@@ -68,7 +68,7 @@ Reload).
   When present, the initializer fetches the build-owned
   `/_framework/dotnet-browser-tools/hot-reload-settings.json` static web asset and starts
   the client only for `{ "hotReload": true }`. A normal build writes `false` under
-  `obj/<configuration>/<tfm>/dotnet-watch/`; after the build and before launching the app,
+  `obj/<configuration>/<tfm>/HotReload/`; after the build and before launching the app,
   watch changes it to `true` only if the bytes differ. Watch also restores `true` after a
   successful in-process rebuild that leaves the application running, and resets it to
   `false` on graceful shutdown so a subsequent run without building does not activate
@@ -83,6 +83,8 @@ Reload).
   belongs to dotnet/aspnetcore, not this repository. Hosted
   WebAssembly uses the client as the browser-tools project even though the server remains
   the launching project.
+  [`BrowserToolsSettings`](Watch/Browser/BrowserToolsSettings.cs) owns the watch-side
+  write-if-different updates; the shared key reader does not own mutable settings.
   Watch reads the evaluated `HotReloadBrowserToolsEnabled` property to discover whether
   that project produces browser keys; it does not reconstruct the build's enablement
   condition from individual properties.

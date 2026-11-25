@@ -143,18 +143,22 @@ internal partial class BrowserRefreshServer(
         }
 
         // A standalone WebAssembly app is served by the Blazor Gateway, a YARP based
-        // host that does not activate ASP.NET Core hosting startups. Reserve a proxy route on it that
-        // forwards RoutePrefix to the provider. The hosting startup
+        // host that does not activate ASP.NET Core hosting startups. Proxy only the provider
+        // endpoints; the settings route is served by Static Web Assets. The hosting startup
         // configuration above is still applied because older target frameworks
         // are served by blazor-devserver, which is a regular ASP.NET Core host.
         if (useGatewayProxy)
         {
-            const string routeAndClusterName = "dotnet-browser-tools";
+            const string cluster = "dotnet-browser-tools";
+            foreach (var route in new[] { BrowserToolsProtocol.ConnectPath, BrowserToolsProtocol.ClearCachePath })
+            {
+                var name = cluster + "-" + route.TrimStart('/');
+                builder[$"ReverseProxy__Routes__{name}__ClusterId"] = cluster;
+                builder[$"ReverseProxy__Routes__{name}__Order"] = "-1000";
+                builder[$"ReverseProxy__Routes__{name}__Match__Path"] = BrowserToolsProtocol.RoutePrefix + route;
+            }
 
-            builder[$"ReverseProxy__Routes__{routeAndClusterName}__ClusterId"] = routeAndClusterName;
-            builder[$"ReverseProxy__Routes__{routeAndClusterName}__Order"] = "-1000";
-            builder[$"ReverseProxy__Routes__{routeAndClusterName}__Match__Path"] = BrowserToolsProtocol.RoutePrefix + "/{**catch-all}";
-            builder[$"ReverseProxy__Clusters__{routeAndClusterName}__Destinations__provider__Address"] = providerUrl;
+            builder[$"ReverseProxy__Clusters__{cluster}__Destinations__provider__Address"] = providerUrl;
         }
     }
 
@@ -198,7 +202,7 @@ internal partial class BrowserRefreshServer(
     ///
     /// The provider serves no executable content: the browser tools client and its configuration are
     /// part of the application build output, which is what makes authenticating the provider with the
-    /// build pinned public key meaningful. Its settings response only reports provider availability.
+    /// build pinned public key meaningful. Settings are served by the application.
     /// </summary>
     internal async Task HandleRequestAsync(WebSocketConfig webSocketConfig, HttpContext context)
     {
@@ -224,13 +228,6 @@ internal partial class BrowserRefreshServer(
         {
             context.Response.Headers.Append("Clear-Site-Data", "\"cache\"");
             context.Response.StatusCode = StatusCodes.Status204NoContent;
-            return;
-        }
-
-        if (path == BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.HotReloadSettingsPath)
-        {
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync("{ \"hotReload\": true }", context.RequestAborted);
             return;
         }
 

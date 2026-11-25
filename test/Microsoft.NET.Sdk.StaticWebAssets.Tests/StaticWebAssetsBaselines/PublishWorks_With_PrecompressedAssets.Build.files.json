@@ -22,5 +22,6 @@
   "${OutputPath}\\wwwroot\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.br",
   "${OutputPath}\\wwwroot\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.gz",
   "${OutputPath}\\wwwroot\\js\\project-transitive-dep.js.br",
-  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.js.gz"
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.js.gz",
+  "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\HotReload\\hot-reload-settings.json"
 ]

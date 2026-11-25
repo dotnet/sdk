@@ -10,5 +10,6 @@
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js",
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json",
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp.styles.css",
-  "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css"
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\hot-reload-settings.json"
 ]

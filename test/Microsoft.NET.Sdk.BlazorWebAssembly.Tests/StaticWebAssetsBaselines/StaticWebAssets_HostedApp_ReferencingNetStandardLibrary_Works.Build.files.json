@@ -6,5 +6,6 @@
   "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js",
   "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js",
   "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js",
-  "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json"
+  "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json",
+  "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\HotReload\\hot-reload-settings.json"
 ]

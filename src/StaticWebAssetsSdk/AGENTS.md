@@ -37,7 +37,7 @@ mobile SDK task through [`HotReloadKeyPair`](../Common/HotReloadKeyPair.cs). The
 `true` for Debug builds; there is no browser-tools-specific watch-to-MSBuild property.
 The generated initializer checks the build-owned
 `/_framework/dotnet-browser-tools/hot-reload-settings.json` static web asset before importing
-the configuration. A normal build writes `{ "hotReload": false }` under `obj/<config>/<tfm>/dotnet-watch/`;
+the configuration. A normal build writes `{ "hotReload": false }` under `obj/<config>/<tfm>/HotReload/`;
 `dotnet watch` changes that file to `true` after compilation and before launch, only if the
 bytes differ. This settings asset is nonfingerprinted, uncompressed, build-only, emits
 `no-store` endpoint metadata, and has endpoint order `-1001` to precede host fallback

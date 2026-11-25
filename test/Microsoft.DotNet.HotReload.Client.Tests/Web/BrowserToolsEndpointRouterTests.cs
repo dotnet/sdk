@@ -234,10 +234,8 @@ public class BrowserToolsEndpointRouterTests : IAsyncDisposable
 
         var response = await TestHttpClient.GetAsync(baseAddress, HotReloadSettingsPath, TestContext.CancellationToken);
 
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        Assert.AreEqual("application/json", response.MediaType);
+        Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
         Assert.AreEqual("no-store", response.GetHeader("Cache-Control"));
-        Assert.AreEqual("{ \"hotReload\": true }", response.Body);
         Assert.AreEqual(0, _sessionKeyLoads);
     }
 

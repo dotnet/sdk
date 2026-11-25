@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
@@ -15,7 +16,7 @@ public class BrowserTests : DotNetWatchTestBase
         var testAsset = CopyTestAsset("WatchRazorWithDeps");
         var settingsPath = Path.Combine(
             testAsset.Path, "RazorApp", "obj", "Debug", ToolsetInfo.CurrentTargetFramework,
-            BrowserToolsBuildOutputs.DirectoryName, BrowserToolsBuildOutputs.SettingsFileName);
+            SharedSecretBuildOutputs.DirectoryName, BrowserToolsSettings.FileName);
 
         App.Start(testAsset, [], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);

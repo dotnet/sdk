@@ -21,6 +21,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <HotReloadBrowserToolsRoutePrefix Condition="'$(HotReloadBrowserToolsRoutePrefix)' == ''">/_framework/dotnet-browser-tools</HotReloadBrowserToolsRoutePrefix>
     <HotReloadBrowserToolsSettingsPath Condition="'$(HotReloadBrowserToolsSettingsPath)' == ''">$(HotReloadBrowserToolsRoutePrefix)/hot-reload-settings.json</HotReloadBrowserToolsSettingsPath>
     <HotReloadBrowserToolsAssetMode Condition="'$(HotReloadBrowserToolsAssetMode)' == ''">All</HotReloadBrowserToolsAssetMode>
+    <CompressionExcludePatterns>$(CompressionExcludePatterns);**/dotnet-browser-tools/hot-reload-settings.json</CompressionExcludePatterns>
 
     <!-- Imported after the opting-in SDK sets its browser tools properties so this is available during evaluation. -->
     <HotReloadBrowserToolsEnabled>false</HotReloadBrowserToolsEnabled>
@@ -68,6 +69,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_HotReloadBrowserToolsIntermediatePath>$(IntermediateOutputPath)HotReload\</_HotReloadBrowserToolsIntermediatePath>
       <_HotReloadBrowserToolsPublicKeyFile>$(_HotReloadBrowserToolsIntermediatePath)browser-tools-key.public.json</_HotReloadBrowserToolsPublicKeyFile>
       <_HotReloadBrowserToolsPrivateKeyFile>$(_HotReloadBrowserToolsIntermediatePath)browser-tools-key.private.json</_HotReloadBrowserToolsPrivateKeyFile>
+      <_HotReloadBrowserToolsSettingsFile>$(_HotReloadBrowserToolsIntermediatePath)hot-reload-settings.json</_HotReloadBrowserToolsSettingsFile>
+      <_HotReloadBrowserToolsSettingsBuildMarker>$(_HotReloadBrowserToolsIntermediatePath)hot-reload-settings.build.marker</_HotReloadBrowserToolsSettingsBuildMarker>
 
       <_HotReloadBrowserToolsInitializerFileName>$(HotReloadBrowserToolsAssetPrefix).lib.module.js</_HotReloadBrowserToolsInitializerFileName>
       <_HotReloadBrowserToolsClientFileName>$(HotReloadBrowserToolsAssetPrefix).BrowserTools.js</_HotReloadBrowserToolsClientFileName>
@@ -136,7 +139,24 @@ Copyright (c) .NET Foundation. All rights reserved.
       Overwrite="true"
       WriteOnlyWhenDifferent="true" />
 
+    <WriteLinesToFile
+      File="$(_HotReloadBrowserToolsSettingsFile)"
+      Lines="{ &quot;hotReload&quot;: false }"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+
+    <!-- A later watch write makes the settings newer than this marker, so Visual Studio
+         schedules an ordinary build to restore the disabled state.
+         https://github.com/dotnet/project-system/blob/main/docs/up-to-date-check.md#transformed-files -->
+    <Touch Files="$(_HotReloadBrowserToolsSettingsBuildMarker)" AlwaysCreate="true" />
+
     <ItemGroup>
+      <_HotReloadBrowserToolsSettings Include="$(_HotReloadBrowserToolsSettingsFile)">
+        <RelativePath>_framework/dotnet-browser-tools/hot-reload-settings.json</RelativePath>
+      </_HotReloadBrowserToolsSettings>
+      <_HotReloadBrowserToolsSettings Update="@(_HotReloadBrowserToolsSettings)">
+        <OriginalItemSpec>%(Identity)</OriginalItemSpec>
+      </_HotReloadBrowserToolsSettings>
       <_HotReloadBrowserToolsInitializer Include="$(_HotReloadBrowserToolsIntermediatePath)$(_HotReloadBrowserToolsInitializerFileName)">
         <RelativePath>_framework/$(_HotReloadBrowserToolsInitializerFileName)</RelativePath>
       </_HotReloadBrowserToolsInitializer>
@@ -156,8 +176,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- The key files are not static web assets. They are tracked so that Clean removes them and
            no key material is left behind on disk. -->
-      <FileWrites Include="@(_HotReloadBrowserToolsInitializer);@(_HotReloadBrowserToolsClientModule)" />
-      <FileWrites Include="$(_HotReloadBrowserToolsPublicKeyFile);$(_HotReloadBrowserToolsPrivateKeyFile)" />
+      <FileWrites Include="@(_HotReloadBrowserToolsInitializer);@(_HotReloadBrowserToolsClientModule);@(_HotReloadBrowserToolsSettings)" />
+      <FileWrites Include="$(_HotReloadBrowserToolsPublicKeyFile);$(_HotReloadBrowserToolsPrivateKeyFile);$(_HotReloadBrowserToolsSettingsBuildMarker)" />
     </ItemGroup>
 
     <DefineStaticWebAssets
@@ -214,6 +234,51 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>
 
+    <DefineStaticWebAssets
+      CandidateAssets="@(_HotReloadBrowserToolsSettings)"
+      FingerprintCandidates="false"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      ContentRoot="$(_HotReloadBrowserToolsIntermediatePath)"
+      BasePath="$(StaticWebAssetBasePath)"
+      AssetKind="Build"
+      AssetMode="$(HotReloadBrowserToolsAssetMode)"
+      CopyToPublishDirectory="Never">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_HotReloadBrowserToolsSettingsAsset" />
+    </DefineStaticWebAssets>
+
+    <ItemGroup>
+      <_HotReloadBrowserToolsSettingsContentType Include="application/json" Cache="no-store" Pattern="hot-reload-settings.json" Priority="0" />
+    </ItemGroup>
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_HotReloadBrowserToolsSettingsAsset)"
+      ContentTypeMappings="@(_HotReloadBrowserToolsSettingsContentType);@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="_HotReloadBrowserToolsSettingsEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+    <ItemGroup>
+      <_HotReloadBrowserToolsSettingsEndpoint Update="@(_HotReloadBrowserToolsSettingsEndpoint)">
+        <Order>-1001</Order>
+      </_HotReloadBrowserToolsSettingsEndpoint>
+      <StaticWebAssetEndpoint Include="@(_HotReloadBrowserToolsSettingsEndpoint)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!-- The browser-facing project alone has these files. Keep the pair visible if either
+       is missing so the fast up-to-date check schedules a build to restore it. -->
+  <Target Name="_CollectHotReloadBrowserToolsSettingsBuiltDesignTime"
+          DependsOnTargets="ResolveStaticWebAssetsConfiguration"
+          BeforeTargets="CollectUpToDateCheckBuiltDesignTime"
+          Condition="'$(HotReloadBrowserToolsEnabled)' == 'true'
+            and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+            and (Exists('$(IntermediateOutputPath)HotReload\hot-reload-settings.json')
+              or Exists('$(IntermediateOutputPath)HotReload\hot-reload-settings.build.marker'))">
+    <ItemGroup>
+      <UpToDateCheckBuilt
+        Include="$(IntermediateOutputPath)HotReload\hot-reload-settings.build.marker"
+        Original="$(IntermediateOutputPath)HotReload\hot-reload-settings.json" />
+    </ItemGroup>
   </Target>
 
 </Project>

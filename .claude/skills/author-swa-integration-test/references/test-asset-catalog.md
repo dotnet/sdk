@@ -117,7 +117,7 @@ Pick the simplest asset that has the project shape you need. Prefer reusing an e
 - **Project**: `BlazorWasmTestApp.csproj`
 - **wwwroot**: `index.html`, styles and scripts
 - **Used for**: Standalone development hosting through `Microsoft.AspNetCore.Components.Gateway` rather than the deprecated DevServer
-- **Test classes**: `DotNetWatchBrowserToolsIntegrationTest`, `VanillaWasmTests`
+- **Test classes**: `HotReloadBrowserToolsIntegrationTest`, `VanillaWasmTests`
 
 ### BlazorWasmWithLibrary
 - **SDK**: BlazorWebAssembly (app) + Razor (library)
