@@ -232,10 +232,10 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             Directory.SetCurrentDirectory(newWorkingDir);
 
-            var runCommand = RunCommand.FromArgs(["b0", "-mt:val1", "b1", "--", "a0", "-mt:val2", "a1"]);
+            var runCommand = RunCommand.FromArgs(["b0", "b1", "--", "a0", "-mt:val2", "a1"]);
 
-            runCommand.ApplicationArgs.Should().Equal("b0", "-mt:val1", "b1", "a0", "-mt:val2", "a1");
-            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("-mt:val1");
+            runCommand.ApplicationArgs.Should().Equal("b0", "b1", "a0", "-mt:val2", "a1");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("-mt:val2");
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
         }
 

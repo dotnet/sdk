@@ -369,6 +369,13 @@ public class CommandLineOptionsTests
     [DataRow("-mt:\"\"")]
     [DataRow("\"--mt:false\"")]
     [DataRow("-m\"t\":fa\"lse\"")]
+    [DataRow("-mt:auto")]
+    [DataRow("-mt:on")]
+    [DataRow("--multiThreaded:invalid")]
+    [DataRow("-mt:\"invalid\"")]
+    [DataRow("-mt:\\\"false\\\"")]
+    [DataRow("-mt:'false'")]
+    [DataRow("-mt:\"\"\"false\"\"\"")]
     public void MultiThreadedOption(string option)
     {
         var options = VerifyOptions([option]);
@@ -396,6 +403,7 @@ public class CommandLineOptionsTests
     [DataRow("-mt:\"\"")]
     [DataRow("\"--mt:false\"")]
     [DataRow("-m\"t\":fa\"lse\"")]
+    [DataRow("-mt:yes")]
     public void MultiThreadedOption_AfterDashDash(string option)
     {
         var options = VerifyOptions(["--", option]);
@@ -406,14 +414,7 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
-    [DataRow("-mt:auto")]
-    [DataRow("-mt:on")]
     [DataRow("-mtx")]
-    [DataRow("--multiThreaded:invalid")]
-    [DataRow("-mt:\"invalid\"")]
-    [DataRow("-mt:\\\"false\\\"")]
-    [DataRow("-mt:'false'")]
-    [DataRow("-mt:\"\"\"false\"\"\"")]
     public void MultiThreadedOption_Invalid(string option)
     {
         var options = VerifyOptions([option]);

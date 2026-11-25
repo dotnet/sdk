@@ -5,6 +5,7 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.HotReload;
+using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -28,8 +29,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 /// asset. Both files are reported through <c>FileWrites</c> by the caller so that <c>Clean</c>
 /// removes them.
 /// </summary>
-public class EnsureHotReloadBrowserToolsKey : Task
+[MSBuildMultiThreadableTask]
+public class EnsureHotReloadBrowserToolsKey : Task, IMultiThreadableTask
 {
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     /// <summary>
     /// Path of the JSON document that holds the base64 X.509 SubjectPublicKeyInfo.
     /// </summary>
@@ -60,7 +64,8 @@ public class EnsureHotReloadBrowserToolsKey : Task
         try
         {
             (PublicKey, Regenerated) = HotReloadKeyPair.GetOrCreate(PublicKeyPath, PrivateKeyPath,
-                message => Log.LogMessage(MessageImportance.Low, message));
+                message => Log.LogMessage(MessageImportance.Low, message),
+                TaskEnvironment.GetAbsolutePathPreservingInvalidArguments);
             return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

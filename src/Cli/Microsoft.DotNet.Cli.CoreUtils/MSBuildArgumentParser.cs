@@ -6,10 +6,14 @@ namespace Microsoft.DotNet.Cli;
 internal static class MSBuildArgumentParser
 {
     internal static bool IsMultiThreadedSwitch(string argument)
+        => TryGetMultiThreadedSwitch(argument, out _);
+
+    internal static bool TryGetMultiThreadedSwitch(string argument, out string? parameter)
     {
+        parameter = null;
         string unquoted = Unquote(argument);
         int prefixLength = unquoted.StartsWith("--", StringComparison.Ordinal) ? 2
-            : unquoted.StartsWith('-') || unquoted.StartsWith('/') ? 1
+            : unquoted.Length > 0 && (unquoted[0] == '-' || unquoted[0] == '/') ? 1
             : 0;
 
         if (prefixLength == 0)
@@ -18,7 +22,9 @@ internal static class MSBuildArgumentParser
         }
 
         int separatorIndex = unquoted.IndexOf(':');
-        string name = separatorIndex < 0 ? unquoted[prefixLength..] : unquoted[prefixLength..separatorIndex];
+        string name = separatorIndex < 0
+            ? unquoted.Substring(prefixLength)
+            : unquoted.Substring(prefixLength, separatorIndex - prefixLength);
         if (!name.Equals("mt", StringComparison.OrdinalIgnoreCase) &&
             !name.Equals("multiThreaded", StringComparison.OrdinalIgnoreCase))
         {
@@ -30,8 +36,8 @@ internal static class MSBuildArgumentParser
             return true;
         }
 
-        string parameter = unquoted[(separatorIndex + 1)..];
-        return parameter.Length == 0 || bool.TryParse(parameter, out _);
+        parameter = unquoted.Substring(separatorIndex + 1);
+        return true;
     }
 
     // Match MSBuild's QuotingUtilities.Unquote, including escaped and doubled quotes.

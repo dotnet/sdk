@@ -42,6 +42,38 @@ public class AzureExporterLifecycleTests
     }
 
     [TestMethod]
+    public void LocalShutdownPersistsQueuedActivitiesWithinCliBudget()
+    {
+        using var settings = new ExporterSettingsScope(ci: false);
+        using var scope = new AzureExporterTestScope();
+        using var handler = new RecordingHandler();
+        using var provider = scope.CreateProvider(handler);
+        using var activity = scope.Emit("cli-budget");
+
+        provider.Shutdown(100).Should().BeTrue();
+
+        handler.Payloads.Should().BeEmpty();
+        scope.StoredFiles().Select(File.ReadAllText)
+            .Should().Contain(payload => payload.Contains("cli-budget", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void LocalForceFlushPersistsQueuedActivitiesWithinCliBudget()
+    {
+        using var settings = new ExporterSettingsScope(ci: false);
+        using var scope = new AzureExporterTestScope();
+        using var handler = new RecordingHandler();
+        using var provider = scope.CreateProvider(handler);
+        using var activity = scope.Emit("cli-force-flush-budget");
+
+        provider.ForceFlush(100).Should().BeTrue();
+
+        handler.Payloads.Should().BeEmpty();
+        scope.StoredFiles().Select(File.ReadAllText)
+            .Should().Contain(payload => payload.Contains("cli-force-flush-budget", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public async Task LocalShutdownDoesNotWaitForItsBackgroundUpload()
     {
         using var settings = new ExporterSettingsScope(ci: false);

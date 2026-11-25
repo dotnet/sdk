@@ -66,6 +66,13 @@ namespace dotnet.Tests
         [DataRow("\"--mt:false\"", "\"--mt:false\"")]
         [DataRow("\"-mt\"", "\"-mt\"")]
         [DataRow("-m\"t\":fa\"lse\"", "-m\"t\":fa\"lse\"")]
+        [DataRow("-mt:yes", "-mt:yes")]
+        [DataRow("-mt:auto", "-mt:auto")]
+        [DataRow("-mt:on", "-mt:on")]
+        [DataRow("-mt:\"invalid\"", "-mt:\"invalid\"")]
+        [DataRow("-mt:\\\"false\\\"", "-mt:\\\"false\\\"")]
+        [DataRow("-mt:'false'", "-mt:'false'")]
+        [DataRow("-mt:\"\"\"false\"\"\"", "-mt:\"\"\"false\"\"\"")]
         public void LoggerArgument_ArgumentForms(string arg, string expectedArg)
         {
             LoggerUtility.SeparateMSBuildArguments([arg], out var msbuildArgs, out var otherArgs);
@@ -88,14 +95,8 @@ namespace dotnet.Tests
         [DataRow("-llextra")]
         [DataRow("foo.csproj")]
         [DataRow("")]
-        [DataRow("-mt:auto")]
-        [DataRow("-mt:on")]
         [DataRow("-mtx")]
         [DataRow("--multithreadedextra")]
-        [DataRow("-mt:\"invalid\"")]
-        [DataRow("-mt:\\\"false\\\"")]
-        [DataRow("-mt:'false'")]
-        [DataRow("-mt:\"\"\"false\"\"\"")]
         public void LoggerArgument_InvalidFormsAreNotRecognized(string arg)
         {
             LoggerUtility.SeparateMSBuildArguments([arg], out var msbuildArgs, out var otherArgs);

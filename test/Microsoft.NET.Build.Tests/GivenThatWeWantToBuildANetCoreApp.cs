@@ -423,6 +423,35 @@ public static class Program
         }
 
         [TestMethod]
+        [DataRow("AssignTargetPaths")]
+        [DataRow("DeployToDevice")]
+        [DataRow("ComputeRunArguments")]
+        public void HotReloadWebSocketKey_is_available_without_build(string target)
+        {
+            var asset = TestAssetsManager.CopyTestAsset("WatchMobileApp", identifier: target).WithSource()
+                .WithProjectChanges(project => project.Root!.Add(
+                    new XElement("Target", new XAttribute("Name", "DeployToDevice"),
+                        new XElement("Error",
+                            new XAttribute("Condition", "'$(_HotReloadWebSocketPublicKey)' == ''"),
+                            new XAttribute("Text", "The public key must be available before deployment.")))));
+
+            var result = new MSBuildCommand(Log, target, Path.Combine(asset.Path, "WatchMobileApp.csproj"))
+                .Execute("-getItem:RuntimeEnvironmentVariable");
+            result.Should().Pass();
+
+            var keyDirectory = Path.Combine(asset.Path, "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "HotReload");
+            using var publicDocument = System.Text.Json.JsonDocument.Parse(
+                File.ReadAllText(Path.Combine(keyDirectory, "websocket-key.public.json")));
+            var publicKey = publicDocument.RootElement.GetProperty("publicKey").GetString();
+            using var output = System.Text.Json.JsonDocument.Parse(result.StdOut!);
+            var pinnedKey = output.RootElement.GetProperty("Items").GetProperty("RuntimeEnvironmentVariable")
+                .EnumerateArray().Single(item => item.GetProperty("Identity").GetString() == "DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY")
+                .GetProperty("Value").GetString();
+            Assert.AreEqual(publicKey, pinnedKey);
+            Assert.IsTrue(File.Exists(Path.Combine(keyDirectory, "websocket-key.private.json")));
+        }
+
+        [TestMethod]
         [DataRow("Debug", true)]
         [DataRow("Debug", false)]
         [DataRow("Release", false)]

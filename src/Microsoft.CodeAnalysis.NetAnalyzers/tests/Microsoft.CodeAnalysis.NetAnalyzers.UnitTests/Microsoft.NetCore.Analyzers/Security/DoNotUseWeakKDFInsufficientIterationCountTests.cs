@@ -212,6 +212,53 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         }
 
         [TestMethod]
+        public async Task DefaultIterationConstructorInInfeasibleCatchFilter_CSharp_NoDiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    void Method(Rfc2898DeriveBytes derive, string password, byte[] salt)
+                    {
+                        int mode = 0;
+                        try
+                        {
+                            derive.GetHashCode();
+                        }
+                        catch (System.Exception) when (mode == 1)
+                        {
+                            derive = new Rfc2898DeriveBytes(password, salt);
+                        }
+
+                        derive.GetBytes(16);
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task DefaultIterationConstructorInInfeasibleCatchFilter_VB_NoDiagnosticAsync()
+        {
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Security.Cryptography
+
+                Public Class TestClass
+                    Public Sub Method(derive As Rfc2898DeriveBytes, password As String, salt As Byte())
+                        Dim mode = 0
+                        Try
+                            derive.GetHashCode()
+                        Catch ex As System.Exception When mode = 1
+                            derive = New Rfc2898DeriveBytes(password, salt)
+                        End Try
+
+                        derive.GetBytes(16)
+                    End Sub
+                End Class
+                """);
+        }
+
+        [TestMethod]
         public async Task DefaultIterationConstructorOnInfeasibleBranch_VB_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync("""
