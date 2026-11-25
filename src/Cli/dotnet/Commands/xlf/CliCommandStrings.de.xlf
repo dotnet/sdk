@@ -422,6 +422,11 @@
         <target state="new">Invocation lifetime handlers are not coordinated with '--no-build' because existing test binaries might not support coordination. Each test application runs its own handlers.</target>
         <note>{Locked="--no-build"}</note>
       </trans-unit>
+      <trans-unit id="InvocationLifetimeNoDependencies">
+        <source>Invocation lifetime handlers are not coordinated with '--no-dependencies' because existing project reference outputs might not support coordination. Each test application runs its own handlers.</source>
+        <target state="new">Invocation lifetime handlers are not coordinated with '--no-dependencies' because existing project reference outputs might not support coordination. Each test application runs its own handlers.</target>
+        <note>{Locked="--no-dependencies"}</note>
+      </trans-unit>
       <trans-unit id="InvocationLifetimeOwnerAmbiguous">
         <source>Invocation lifetime handlers are declared, but no single test project declares all of them, and no single project is marked with 'TestingPlatformInvocationLifetimeOwner'. Each test application runs its own handlers.</source>
         <target state="new">Invocation lifetime handlers are declared, but no single test project declares all of them, and no single project is marked with 'TestingPlatformInvocationLifetimeOwner'. Each test application runs its own handlers.</target>

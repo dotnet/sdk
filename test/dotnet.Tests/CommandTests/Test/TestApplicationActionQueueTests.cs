@@ -123,6 +123,37 @@ public class TestApplicationActionQueueTests : SdkTest
     }
 
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void ConfigureInvocationLifetime_IsDisabledWhenAnyModuleSkipsProjectReferences(bool siblingBuildsProjectReferences)
+    {
+        using var reporter = new TerminalTestReporter(
+            new CapturingConsole(), new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
+        var buildOptions = new BuildOptions(
+            new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+            HasNoRestore: true, HasNoBuild: false, Verbosity: null, NoLaunchProfile: false, NoLaunchProfileArguments: false,
+            TestApplicationArguments: [], MSBuildArgs: [], Device: null, ListDevices: false,
+            EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+        using var ctrlC = new CtrlCCancellationManager(() => { }, subscribeToConsole: false);
+        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: null);
+        var queue = new TestApplicationActionQueue(
+            1, buildOptions, new TestOptions(false, false, TestListFormat.Text),
+            TestResultsDirectoryResolver.CreateShared(buildOptions.PathOptions, SdkTestContext.Current.TestExecutionDirectory),
+            reporter, _ => { }, ctrlC, new ArtifactPostProcessingManager(), policy, CancellationToken.None,
+            OutputOptions.Normal, outputOptionSpecified: false, TestApplicationSettings.Default);
+        TestModule owner = InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"], isOwner: true);
+        TestModule sibling = InvocationLifetimeOwnerSelectorTests.CreateModule("Sibling") with
+        {
+            BuildsProjectReferences = siblingBuildsProjectReferences,
+        };
+
+        TestModule? selected = queue.ConfigureInvocationLifetime([owner, sibling]);
+
+        queue.CompleteEnqueueAndWait();
+        selected.Should().BeSameAs(siblingBuildsProjectReferences ? owner : null);
+    }
+
+    [TestMethod]
     public void DetachedOwner_ReleasesWorkerWithoutLaterRemovingSiblingWorker()
     {
         using var reporter = new TerminalTestReporter(

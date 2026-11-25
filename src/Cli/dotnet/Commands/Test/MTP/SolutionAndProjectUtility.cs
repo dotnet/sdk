@@ -799,7 +799,8 @@ internal static class SolutionAndProjectUtility
             InvocationLifetimeOwnerSelector.NormalizeHandlers(
                 project.GetItems(ProjectProperties.InvocationLifetimeHandlerItemName).Select(static item => item.EvaluatedInclude)),
             bool.TryParse(project.GetPropertyValue(ProjectProperties.InvocationLifetimeOwner), out bool isInvocationLifetimeOwner) && isInvocationLifetimeOwner,
-            bool.TryParse(project.GetPropertyValue(ProjectProperties.InvocationLifetimeCoordinationSupported), out bool supportsInvocationLifetimeCoordination) && supportsInvocationLifetimeCoordination);
+            bool.TryParse(project.GetPropertyValue(ProjectProperties.InvocationLifetimeCoordinationSupported), out bool supportsInvocationLifetimeCoordination) && supportsInvocationLifetimeCoordination,
+            !bool.TryParse(project.GetPropertyValue(ProjectProperties.BuildProjectReferences), out bool buildsProjectReferences) || buildsProjectReferences);
 
         [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
         [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]

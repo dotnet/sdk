@@ -79,11 +79,21 @@ internal class TestApplicationActionQueue
             return null;
         }
 
-        InvocationLifetimeOwnerSelection selection = InvocationLifetimeOwnerSelector.Select(modules);
+        IReadOnlyList<TestModule> moduleList = [.. modules];
+        InvocationLifetimeOwnerSelection selection = InvocationLifetimeOwnerSelector.Select(moduleList);
         if (_buildOptions.HasNoBuild && selection.Status != InvocationLifetimeOwnerSelectionStatus.NotRequested)
         {
             // Evaluated project capabilities do not establish which MTP version the existing binaries contain.
             Reporter.Output.WriteLine(CliCommandStrings.InvocationLifetimeNoBuild.Yellow());
+            return null;
+        }
+
+        if (selection.Status != InvocationLifetimeOwnerSelectionStatus.NotRequested &&
+            moduleList.Any(static module => module.IsTestingPlatformApplication && !module.BuildsProjectReferences))
+        {
+            // Unbuilt project references (for example a source-referenced Microsoft.Testing.Platform or handler
+            // extension) can be copied into the runnable output from stale binaries.
+            Reporter.Output.WriteLine(CliCommandStrings.InvocationLifetimeNoDependencies.Yellow());
             return null;
         }
 

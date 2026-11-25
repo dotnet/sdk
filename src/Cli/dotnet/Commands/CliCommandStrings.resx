@@ -2956,6 +2956,10 @@ Proceed?</value>
     <value>Invocation lifetime handlers are not coordinated with '--no-build' because existing test binaries might not support coordination. Each test application runs its own handlers.</value>
     <comment>{Locked="--no-build"}</comment>
   </data>
+  <data name="InvocationLifetimeNoDependencies" xml:space="preserve">
+    <value>Invocation lifetime handlers are not coordinated with '--no-dependencies' because existing project reference outputs might not support coordination. Each test application runs its own handlers.</value>
+    <comment>{Locked="--no-dependencies"}</comment>
+  </data>
   <data name="InvocationLifetimeSiblingProtocolTooOld" xml:space="preserve">
     <value>'{0}' does not support invocation lifetime coordination and might run invocation lifetime handlers again. Rebuild it with a Microsoft.Testing.Platform version that supports coordination.</value>
     <comment>{0} is a test application path. {Locked="Microsoft.Testing.Platform"}</comment>
