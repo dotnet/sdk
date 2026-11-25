@@ -42,6 +42,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             Collect();
             Assert.HasCount(5, values.Where(value => value.TryGetTarget(out _)).ToArray());
             GC.KeepAlive(keys);
+            GC.KeepAlive(cache);
         }
 
         [TestMethod]
