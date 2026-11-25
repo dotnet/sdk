@@ -437,6 +437,7 @@ public class BuildProjects
             mainProjectOptions: TestOptions.ProjectOptions with { TargetFramework = ToolsetInfo.CurrentTargetFramework },
             frameworkSelector: null,
             deviceSelector: (_, _) => throw new AssertFailedException("Device selection should not be invoked"),
+            evaluatedProjectGraph: null,
             CancellationToken.None);
 
         Assert.IsFalse(result.Success);
@@ -472,6 +473,7 @@ public class BuildProjects
             mainProjectOptions: TestOptions.ProjectOptions with { TargetFramework = ToolsetInfo.CurrentTargetFramework },
             frameworkSelector: null,
             deviceSelector: (_, _) => throw new AssertFailedException("Device selection should not be invoked"),
+            evaluatedProjectGraph: null,
             CancellationToken.None);
 
         Assert.IsFalse(result.Success);
