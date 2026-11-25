@@ -94,6 +94,33 @@ public class TestApplicationActionQueueTests : SdkTest
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ConfigureInvocationLifetime_IsDisabledForDiscovery(bool discovery)
+    {
+        using var reporter = new TerminalTestReporter(
+            new CapturingConsole(), new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
+        var buildOptions = new BuildOptions(
+            new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+            HasNoRestore: true, HasNoBuild: true, Verbosity: null, NoLaunchProfile: false, NoLaunchProfileArguments: false,
+            TestApplicationArguments: [], MSBuildArgs: [], Device: null, ListDevices: false,
+            EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+        using var ctrlC = new CtrlCCancellationManager(() => { }, subscribeToConsole: false);
+        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: null);
+        var queue = new TestApplicationActionQueue(
+            1, buildOptions, new TestOptions(false, discovery, TestListFormat.Text),
+            TestResultsDirectoryResolver.CreateShared(buildOptions.PathOptions, SdkTestContext.Current.TestExecutionDirectory),
+            reporter, _ => { }, ctrlC, new ArtifactPostProcessingManager(), policy, CancellationToken.None,
+            OutputOptions.Normal, outputOptionSpecified: false, TestApplicationSettings.Default);
+        TestModule owner = InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"], isOwner: true);
+
+        TestModule? selected = queue.ConfigureInvocationLifetime([owner]);
+
+        queue.CompleteEnqueueAndWait();
+        selected.Should().BeSameAs(discovery ? null : owner);
+    }
+
+    [TestMethod]
     public void NormalizeExitCode_ZeroTestsWithDisposeFailure_ReturnsGenericFailure()
     {
         using var reporter = new TerminalTestReporter(

@@ -58,6 +58,19 @@ public class InvocationLifetimeCoordinatorTests
     }
 
     [TestMethod]
+    [DataRow(HandshakeMessageHostTypes.TestHostOrchestrator)]
+    [DataRow("TestHostController")]
+    public void OutermostControllerHandshakeWithHandlersIsAcceptedAndLaterTestHostIsIgnored(string hostType)
+    {
+        using InvocationLifetimeCoordinator coordinator = CreateCoordinator();
+
+        coordinator.OnOwnerHandshake(CreateHandshake("[\"Sql\"]", hostType), "1.5.0", controlPipeAvailable: true).Should().BeTrue();
+        coordinator.OnOwnerHandshake(CreateHandshake(handlersJson: null), "1.5.0", controlPipeAvailable: true).Should().BeFalse();
+
+        coordinator.WaitForSiblingLaunchAsync(CancellationToken.None).IsCompleted.Should().BeFalse();
+    }
+
+    [TestMethod]
     [DataRow("Sql")]
     [DataRow("[\"Sql\",1]")]
     [DataRow("[\"Other\"]")]

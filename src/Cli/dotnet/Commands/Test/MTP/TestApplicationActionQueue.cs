@@ -73,7 +73,8 @@ internal class TestApplicationActionQueue
     /// </summary>
     public TestModule? ConfigureInvocationLifetime(IEnumerable<TestModule> modules)
     {
-        if (_testOptions.IsHelp || _testOptions.IsArtifactPostProcessing)
+        // Microsoft.Testing.Platform never runs invocation lifetime handlers for help or discovery.
+        if (_testOptions.IsHelp || _testOptions.IsDiscovery || _testOptions.IsArtifactPostProcessing)
         {
             return null;
         }
