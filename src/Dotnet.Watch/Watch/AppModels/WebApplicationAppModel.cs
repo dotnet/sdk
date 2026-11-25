@@ -39,10 +39,10 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     public virtual ProjectGraphNode BrowserToolsProject => LaunchingProject;
 
     internal void EnableBrowserToolsSettings(ILogger logger)
-        => BrowserToolsSettings.FromProject(BrowserToolsProject.ProjectInstance, logger)?.Enable();
+        => BrowserToolsSettingsExtensions.FromProject(BrowserToolsProject.ProjectInstance, logger)?.Enable();
 
     internal void DisableBrowserToolsSettings(ILogger logger)
-        => BrowserToolsSettings.FromProject(BrowserToolsProject.ProjectInstance, logger)?.Disable();
+        => BrowserToolsSettingsExtensions.FromProject(BrowserToolsProject.ProjectInstance, logger)?.Disable();
 
     protected abstract ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer);
 

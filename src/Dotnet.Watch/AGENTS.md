@@ -83,8 +83,14 @@ Reload).
   belongs to dotnet/aspnetcore, not this repository. Hosted
   WebAssembly uses the client as the browser-tools project even though the server remains
   the launching project.
-  [`BrowserToolsSettings`](Watch/Browser/BrowserToolsSettings.cs) owns the watch-side
-  write-if-different updates; the shared key reader does not own mutable settings.
+  [`BrowserToolsSettings`](HotReloadClient/Web/BrowserToolsSettings.cs) provides
+  write-if-different enable/disable operations in the Hot Reload client source imported
+  by Watch and Visual Studio. Watch selects eligible projects through
+  [`BrowserToolsSettingsExtensions`](Watch/Browser/BrowserToolsSettingsExtensions.cs)
+  and calls the helper at launch/rebuild and shutdown. Visual Studio must call the
+  helper at its own Hot Reload session boundaries to activate browser tools; simply
+  importing the source does not change its session lifecycle. The shared key reader
+  does not own mutable settings.
   Watch reads the evaluated `HotReloadBrowserToolsEnabled` property to discover whether
   that project produces browser keys; it does not reconstruct the build's enablement
   condition from individual properties.

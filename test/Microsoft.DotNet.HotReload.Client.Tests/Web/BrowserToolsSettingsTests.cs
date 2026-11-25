@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watch.UnitTests;
+namespace Microsoft.DotNet.HotReload.UnitTests;
 
 [TestClass]
 public sealed class BrowserToolsSettingsTests : IDisposable
@@ -11,9 +11,9 @@ public sealed class BrowserToolsSettingsTests : IDisposable
     [TestMethod]
     public void WriteSettings_ChangesOnlyDifferentBytes()
     {
-        Directory.CreateDirectory(_directory);
-        var path = Path.Combine(_directory, BrowserToolsSettings.FileName);
-        var settings = new BrowserToolsSettings(path);
+        var path = Path.Combine(_directory, SharedSecretBuildOutputs.DirectoryName, BrowserToolsSettings.FileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        var settings = BrowserToolsSettings.FromProjectSettings(_directory);
         File.WriteAllText(path, "{ \"hotReload\": false }" + Environment.NewLine);
         File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddMinutes(-2));
         var disabled = File.GetLastWriteTimeUtc(path);
@@ -37,8 +37,8 @@ public sealed class BrowserToolsSettingsTests : IDisposable
     [TestMethod]
     public void Enable_RequiresSettingsProducedByBuild()
     {
-        var path = Path.Combine(_directory, BrowserToolsSettings.FileName);
-        Assert.ThrowsExactly<DirectoryNotFoundException>(() => new BrowserToolsSettings(path).Enable());
+        var settings = BrowserToolsSettings.FromProjectSettings(_directory);
+        Assert.ThrowsExactly<DirectoryNotFoundException>(settings.Enable);
     }
 
     public void Dispose()
