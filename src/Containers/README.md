@@ -2,6 +2,14 @@
 
 This folder contains the source code for .NET app containers (`Microsoft.NET.Build.Containers`).
 
+For multi-platform publishes, `CreateImageIndex` exposes `GeneratedImageIndexDigest` as
+an output and the container targets expose the same MSBuild property. It is
+`sha256:<lowercase hex>` over the exact UTF-8 bytes of `GeneratedImageIndex`, the final
+OCI image index or Docker manifest list. For archives, it identifies the index blob
+referenced by the root `index.json`, not that wrapper or the archive file. Like the
+single-platform `GeneratedContainerDigest`, it identifies generated content, not a
+successful push; failures before index generation leave it empty.
+
 The documentation on .NET app containers is available in [dotnet/sdk-containers-builds](https://github.com/dotnet/sdk-container-builds/tree/main/docs) repo.
 
 In case you encounter an issue with .NET app containers or would like to submit a feature request, please use [dotnet/sdk-containers-builds](https://github.com/dotnet/sdk-container-builds/issues/new) repo.
