@@ -71,7 +71,7 @@ public class SdkAppHostLayoutTests : SdkTest
 
         string[] inputFiles = Directory.GetFiles(Path.Combine(project.Root, "obj", "incremental-layout"), "*.inputs");
         Dictionary<string, DateTime> inputTimestamps = inputFiles.ToDictionary(path => path, File.GetLastWriteTimeUtc);
-        File.WriteAllText(project.Template, "updated template at the same path");
+        WriteInputNewerThanHosts(project, project.Template, "updated template at the same path");
         project.Build();
         Dictionary<string, string> updatedTemplateContents = project.ReadHosts();
         foreach (string host in Hosts)
@@ -86,7 +86,7 @@ public class SdkAppHostLayoutTests : SdkTest
         project.Build();
         project.ReadHosts().Should().Equal(updatedTemplateContents);
 
-        File.WriteAllText(project.AssemblyPath("MSBuild"), "updated MSBuild.dll");
+        WriteInputNewerThanHosts(project, project.AssemblyPath("MSBuild"), "updated MSBuild.dll");
         project.Build();
         Dictionary<string, string> updatedAssembly = project.ReadHosts();
         updatedAssembly["MSBuild"].Should().NotBe(updatedTemplateContents["MSBuild"]);
@@ -96,7 +96,7 @@ public class SdkAppHostLayoutTests : SdkTest
             updatedAssembly[host].Should().Be(updatedTemplateContents[host]);
         }
 
-        File.WriteAllText(project.AssemblyPath("csc"), "updated csc.dll");
+        WriteInputNewerThanHosts(project, project.AssemblyPath("csc"), "updated csc.dll");
         project.Build();
         Dictionary<string, string> updatedCompiler = project.ReadHosts();
         updatedCompiler["csc"].Should().NotBe(updatedAssembly["csc"]);
@@ -110,7 +110,7 @@ public class SdkAppHostLayoutTests : SdkTest
         project.Build();
         project.ReadHosts().Should().Equal(updatedCompiler);
 
-        File.WriteAllText(project.TaskAssembly, "updated Microsoft.NET.Build.Tasks.dll");
+        WriteInputNewerThanHosts(project, project.TaskAssembly, "updated Microsoft.NET.Build.Tasks.dll");
         project.Build();
         Dictionary<string, string> updatedTask = project.ReadHosts();
         foreach (string host in Hosts)
@@ -118,7 +118,7 @@ public class SdkAppHostLayoutTests : SdkTest
             updatedTask[host].Should().NotBe(updatedCompiler[host]);
         }
 
-        File.WriteAllText(project.HostModelAssembly, "updated Microsoft.NET.HostModel.dll");
+        WriteInputNewerThanHosts(project, project.HostModelAssembly, "updated Microsoft.NET.HostModel.dll");
         project.Build();
         Dictionary<string, string> updatedHostModel = project.ReadHosts();
         foreach (string host in Hosts)
@@ -348,6 +348,17 @@ public class SdkAppHostLayoutTests : SdkTest
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, contents);
+    }
+
+    private static void WriteInputNewerThanHosts(AppHostProject project, string path, string contents)
+    {
+        DateTime latestHostTimestamp = Hosts.Select(host => File.GetLastWriteTimeUtc(project.HostPath(host))).Max();
+        File.WriteAllText(path, contents);
+        while (File.GetLastWriteTimeUtc(path) <= latestHostTimestamp)
+        {
+            WaitForUtcNowToAdvance();
+            File.SetLastWriteTimeUtc(path, DateTime.UtcNow);
+        }
     }
 
     private sealed class AppHostProject
