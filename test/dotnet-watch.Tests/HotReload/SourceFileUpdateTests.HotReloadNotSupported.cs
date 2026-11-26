@@ -123,6 +123,43 @@ public class SourceFileUpdateTests_HotReloadNotSupported : DotNetWatchTestBase
     }
 
     [TestMethod]
+    [DataRow("VBTestApp", "Program.vb", """
+        Imports System
+        Imports System.Threading
+
+        Module Program
+            Sub Main()
+                Console.WriteLine("Before")
+                Thread.Sleep(Timeout.Infinite)
+            End Sub
+        End Module
+        """)]
+    [DataRow("HelloWorldFS", "Program.fs", """
+        module Program
+
+        open System.Threading
+
+        [<EntryPoint>]
+        let main argv =
+            printfn "Before"
+            Thread.Sleep(Timeout.Infinite)
+            0
+        """)]
+    public async Task ChangeFileInNonCSharpProjectWithLoop(string assetName, string fileName, string source)
+    {
+        var testAsset = TestAssets.CopyTestAsset(assetName, identifier: assetName).WithSource();
+        var sourcePath = Path.Combine(testAsset.Path, fileName);
+        File.WriteAllText(sourcePath, source);
+
+        App.Start(testAsset, ["--non-interactive"]);
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+
+        UpdateSourceFile(sourcePath, content => content.Replace("Before", "After"));
+
+        await App.WaitUntilOutputContains("After");
+    }
+
+    [TestMethod]
     public async Task ChangeFileInFSharpProject()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
