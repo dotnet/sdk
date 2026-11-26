@@ -8,6 +8,7 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Provides a localizable mechanism for logging information from the SDK targets.
     /// </summary>
+    [MSBuildMultiThreadableTask]
     public class
 #if EXTENSIONS
         // This task source is shared with multiple task Dlls.  Since both tasks
