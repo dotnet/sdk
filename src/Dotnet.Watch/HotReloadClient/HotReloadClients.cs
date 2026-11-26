@@ -224,6 +224,9 @@ internal sealed class HotReloadClients(
     public ValueTask ReportCompilationErrorsInApplicationAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
         => browserRefreshServer?.ReportCompilationErrorsInBrowserAsync(compilationErrors, cancellationToken) ?? ValueTask.CompletedTask;
 
+    public Task ReportRudeEditAsync(ImmutableArray<string> diagnostics, CancellationToken applyOperationCancellationToken)
+        => Task.WhenAll(clients.Select(c => c.ReportRudeEditAsync(diagnostics, applyOperationCancellationToken)));
+
     /// <summary>
     /// Returns union of capabilities reported by each agent.
     /// When applying changes the updates applied to a specific process will be filtered based on their required capabilities.

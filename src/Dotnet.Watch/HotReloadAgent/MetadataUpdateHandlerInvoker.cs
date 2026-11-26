@@ -36,7 +36,8 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
     internal sealed class RegisteredActions(
         IReadOnlyList<UpdateHandler<MetadataUpdateAction>> clearCacheHandlers,
         IReadOnlyList<UpdateHandler<MetadataUpdateAction>> updateApplicationHandlers,
-        List<UpdateHandler<ContentUpdateAction>> updateContentHandlers)
+        List<UpdateHandler<ContentUpdateAction>> updateContentHandlers,
+        IReadOnlyList<UpdateHandler<Action<string[]>>> rudeEditHandlers)
     {
         public void MetadataUpdated(AgentReporter reporter, Type[] updatedTypes)
         {
@@ -62,6 +63,15 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
             }
         }
 
+        public void RudeEditDetected(AgentReporter reporter, string[] diagnostics)
+        {
+            foreach (var handler in rudeEditHandlers)
+            {
+                handler.ReportInvocation(reporter);
+                handler.Action(diagnostics);
+            }
+        }
+
         /// <summary>
         /// For testing.
         /// </summary>
@@ -76,15 +86,22 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
         /// For testing.
         /// </summary>
         internal IEnumerable<UpdateHandler<ContentUpdateAction>> UpdateContentHandlers => updateContentHandlers;
+
+        /// <summary>
+        /// For testing.
+        /// </summary>
+        internal IEnumerable<UpdateHandler<Action<string[]>>> RudeEditHandlers => rudeEditHandlers;
     }
 
     private const string ClearCacheHandlerName = "ClearCache";
     private const string UpdateApplicationHandlerName = "UpdateApplication";
     private const string UpdateContentHandlerName = "UpdateContent";
+    private const string RudeEditHandlerName = "HotReloadRudeEdit";
     private const BindingFlags HandlerMethodBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
     private static readonly Type[] s_contentUpdateSignature = [typeof(string), typeof(bool), typeof(string), typeof(byte[])];
     private static readonly Type[] s_metadataUpdateSignature = [typeof(Type[])];
+    private static readonly Type[] s_rudeEditSignature = [typeof(string[])];
 
     private RegisteredActions? _actions;
 
@@ -142,6 +159,23 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
         }
     }
 
+    /// <summary>
+    /// Invokes all registered rude edit handlers.
+    /// </summary>
+    internal void RudeEditDetected(IReadOnlyList<string> diagnostics)
+    {
+        try
+        {
+            reporter.Report("Invoking rude edit handlers.", AgentMessageSeverity.Verbose);
+
+            GetActions().RudeEditDetected(reporter, diagnostics as string[] ?? [.. diagnostics]);
+        }
+        catch (Exception e)
+        {
+            reporter.Report(e.ToString(), AgentMessageSeverity.Warning);
+        }
+    }
+
     private IEnumerable<Type> GetHandlerTypes()
     {
         // We need to execute MetadataUpdateHandlers in a well-defined order. For v1, the strategy that is used is to topologically
@@ -186,38 +220,45 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
         var clearCacheHandlers = new List<UpdateHandler<MetadataUpdateAction>>();
         var applicationUpdateHandlers = new List<UpdateHandler<MetadataUpdateAction>>();
         var contentUpdateHandlers = new List<UpdateHandler<ContentUpdateAction>>();
+        var rudeEditHandlers = new List<UpdateHandler<Action<string[]>>>();
 
         foreach (var handlerType in handlerTypes)
         {
             bool methodFound = false;
 
-            if (GetMetadataUpdateMethod(handlerType, ClearCacheHandlerName) is MethodInfo clearCache)
+            if (GetHandlerMethod(handlerType, ClearCacheHandlerName, s_metadataUpdateSignature) is MethodInfo clearCache)
             {
                 clearCacheHandlers.Add(CreateMetadataUpdateAction(clearCache));
                 methodFound = true;
             }
 
-            if (GetMetadataUpdateMethod(handlerType, UpdateApplicationHandlerName) is MethodInfo updateApplication)
+            if (GetHandlerMethod(handlerType, UpdateApplicationHandlerName, s_metadataUpdateSignature) is MethodInfo updateApplication)
             {
                 applicationUpdateHandlers.Add(CreateMetadataUpdateAction(updateApplication));
                 methodFound = true;
             }
 
-            if (GetContentUpdateMethod(handlerType, UpdateContentHandlerName) is MethodInfo updateContent)
+            if (GetHandlerMethod(handlerType, UpdateContentHandlerName, s_contentUpdateSignature) is MethodInfo updateContent)
             {
                 contentUpdateHandlers.Add(CreateContentUpdateAction(updateContent));
+                methodFound = true;
+            }
+
+            if (GetHandlerMethod(handlerType, RudeEditHandlerName, s_rudeEditSignature) is MethodInfo rudeEdit)
+            {
+                rudeEditHandlers.Add(CreateRudeEditAction(rudeEdit));
                 methodFound = true;
             }
 
             if (!methodFound)
             {
                 reporter.Report(
-                    $"Expected to find a static method '{ClearCacheHandlerName}', '{UpdateApplicationHandlerName}' or '{UpdateContentHandlerName}' on type '{handlerType.AssemblyQualifiedName}' but neither exists.",
+                    $"Expected to find a static method '{ClearCacheHandlerName}', '{UpdateApplicationHandlerName}', '{UpdateContentHandlerName}' or '{RudeEditHandlerName}' on type '{handlerType.AssemblyQualifiedName}' but none exists.",
                     AgentMessageSeverity.Warning);
             }
         }
 
-        return new RegisteredActions(clearCacheHandlers, applicationUpdateHandlers, contentUpdateHandlers);
+        return new RegisteredActions(clearCacheHandlers, applicationUpdateHandlers, contentUpdateHandlers, rudeEditHandlers);
 
         UpdateHandler<MetadataUpdateAction> CreateMetadataUpdateAction(MethodInfo method)
         {
@@ -254,24 +295,28 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
         void ReportException(Exception e, MethodInfo method)
             => reporter.Report($"Exception from '{GetHandlerDisplayString(method)}': {e}", AgentMessageSeverity.Warning);
 
-        MethodInfo? GetMetadataUpdateMethod(Type handlerType, string name)
+        UpdateHandler<Action<string[]>> CreateRudeEditAction(MethodInfo method)
         {
-            if (handlerType.GetMethod(name, HandlerMethodBindingFlags, binder: null, s_metadataUpdateSignature, modifiers: null) is MethodInfo updateMethod &&
-                updateMethod.ReturnType == typeof(void))
+            var action = (Action<string[]>)method.CreateDelegate(typeof(Action<string[]>));
+            return new(diagnostics =>
             {
-                return updateMethod;
-            }
-
-            ReportSignatureMismatch(handlerType, name);
-            return null;
+                try
+                {
+                    action(diagnostics);
+                }
+                catch (Exception e)
+                {
+                    ReportException(e, method);
+                }
+            }, method);
         }
 
-        MethodInfo? GetContentUpdateMethod(Type handlerType, string name)
+        MethodInfo? GetHandlerMethod(Type handlerType, string name, Type[] signature)
         {
-            if (handlerType.GetMethod(name, HandlerMethodBindingFlags, binder: null, s_contentUpdateSignature, modifiers: null) is MethodInfo updateMethod &&
-                updateMethod.ReturnType == typeof(void))
+            if (handlerType.GetMethod(name, HandlerMethodBindingFlags, binder: null, signature, modifiers: null) is MethodInfo method &&
+                method.ReturnType == typeof(void))
             {
-                return updateMethod;
+                return method;
             }
 
             ReportSignatureMismatch(handlerType, name);

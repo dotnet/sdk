@@ -7,6 +7,7 @@ internal class TestHotReloadAgent : IHotReloadAgent
 {
     public Action<IEnumerable<RuntimeManagedCodeUpdate>>? ApplyManagedCodeUpdatesImpl = null;
     public Action<RuntimeStaticAssetUpdate>? ApplyStaticAssetUpdateImpl = null;
+    public Action<IReadOnlyList<string>>? ReportRudeEditImpl = null;
 
     public AgentReporter Reporter { get; set; } = new();
     public string Capabilities { get; set; } = "Baseline";
@@ -16,6 +17,9 @@ internal class TestHotReloadAgent : IHotReloadAgent
 
     public void ApplyStaticAssetUpdate(RuntimeStaticAssetUpdate update)
         => ApplyStaticAssetUpdateImpl?.Invoke(update);
+
+    public void ReportRudeEdit(IReadOnlyList<string> diagnostics)
+        => ReportRudeEditImpl?.Invoke(diagnostics);
 
     public void Dispose()
     {

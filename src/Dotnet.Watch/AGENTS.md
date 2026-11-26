@@ -26,6 +26,10 @@ Reload).
   named-pipe protocol; Blazor WASM uses JSON over WebSocket. Each protocol has its
   own `HotReloadClient` subclass (e.g. `DefaultHotReloadClient`,
   `WebAssemblyHotReloadClient`); a new app model may need its own implementation.
+- **Do not send a new binary request type to an older agent.** An agent closes the
+  connection on an unknown `RequestType`. Add a new `ClientInitializationResponse`
+  version and check it in the client (see `SupportsRudeEditRequest`). Older clients
+  reject newer versions, so the agent and the client must have the same version.
 - **The browser-tools provider owns the browser protocol and replay
   state.** Its fixed `/_framework/dotnet-browser-tools` endpoints live under
   [`HotReloadClient/Web`](HotReloadClient/Web) and are reduced to `connect` (WebSocket)

@@ -67,6 +67,7 @@ internal sealed partial class ProjectUpdatesBuilder
         }
 
         var errorsToDisplayInApp = new List<string>();
+        var rudeEditsToReportToApp = new List<string>();
 
         // Display errors first, then warnings:
         ReportCompilationDiagnostics(DiagnosticSeverity.Error);
@@ -77,6 +78,13 @@ internal sealed partial class ProjectUpdatesBuilder
         await RunningProjects.ForEachValueAsync(
             (project, cancellationToken) => project.Clients.ReportCompilationErrorsInApplicationAsync([.. errorsToDisplayInApp], cancellationToken).AsTask() ?? Task.CompletedTask,
             cancellationToken);
+
+        if (rudeEditsToReportToApp is not [])
+        {
+            await RunningProjects.ForEachValueAsync(
+                (project, _) => project.Clients.ReportRudeEditAsync([.. rudeEditsToReportToApp], project.Process.ExitedCancellationToken),
+                cancellationToken);
+        }
 
         void ReportCompilationDiagnostics(DiagnosticSeverity severity)
         {
@@ -136,6 +144,11 @@ internal sealed partial class ProjectUpdatesBuilder
                         "";
 
                     ReportDiagnostic(diagnostic, projectDisplay, prefix);
+
+                    if (diagnostic.DefaultSeverity == DiagnosticSeverity.Error)
+                    {
+                        rudeEditsToReportToApp.Add(projectDisplay + CSharpDiagnosticFormatter.Instance.Format(diagnostic));
+                    }
                 }
             }
         }

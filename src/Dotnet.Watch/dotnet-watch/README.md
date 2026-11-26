@@ -195,6 +195,18 @@ static void UpdateApplication(Type[]?);
 ```
 `ClearCache` allows runtime and library code to clear any reflection-based caches. This allows applications to "renew" their state based on new information produced by the delta. This includes caches such as System.Text.Json's caches about types being serialized, Blazor's caches about what properties are parameters, MVC's caches about controllers, actions and models, etc. `UpdateApplication` allows any state (primarily UI) to be updated. For e.g. in a Blazor or WinForms app, this causes the UI to re-rendered.
 
+A handler type can also declare this optional method:
+
+```C#
+static void HotReloadRudeEdit(string[] diagnostics);
+```
+
+`dotnet watch` calls `HotReloadRudeEdit` when it finds a rude edit (a change that Hot Reload can't apply). When `dotnet watch` asks to restart the app, the notification is sent before the question. When the app restarts automatically, delivery is best effort: the process can stop before the method runs. `diagnostics` contains the rude edit errors as `dotnet watch` writes them to the console. A UI framework can show them in the app. The method is called on a background thread. It is not called for runtime rude edits (`HotReloadException`). Older agents log a warning for a handler type that has only this method, so add it to a type that also has `ClearCache` or `UpdateApplication`.
+
+The diagnostics are sent in a `RudeEdit` request of the binary protocol, so the named pipe and WebSocket transports support it. Blazor WebAssembly does not. The agent sends `ClientInitializationResponse` version 2 to show that it supports `RudeEdit`, because older agents close the connection on an unknown request. Older clients reject version 2, so the agent and the client must have the same version.
+
+**Planned:** an optional `static void HotReloadStarted()` method, so that a UI framework can show that Hot Reload is in progress. `dotnet watch` will call it for each batch of file changes, before it compiles them. Then the app receives `ClearCache`/`UpdateApplication`, `UpdateContent`, `HotReloadRudeEdit`, or no call (for example, for a compilation error). It needs a new request type and a new `ClientInitializationResponse` version.
+
 ## Contribution
 
 Follow the contribution steps for the dotnet SDK: /documentation/project-docs/developer-guide.md. If developing from Visual Studio, open the dotnet-watch.slnf.
