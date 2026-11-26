@@ -38,8 +38,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
-        [DataRow("MSBuildExtensionsPath")]
-        [DataRow("MSBuildSDKsPath")]
+        [DataRow("DOTNET_HOST_PATH")]
         [DataRow("DOTNET_CLI_TELEMETRY_SESSIONID")]
         public void ItSetsEnvironmentalVariables(string envVarName)
         {
@@ -64,27 +63,35 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
-        public void ItSetsMSBuildExtensionPathToExistingPath()
+        [DataRow("MSBuildExtensionsPath", null)]
+        [DataRow("MSBuildSDKsPath", null)]
+        [DataRow("MSBuildExtensionsPath", "explicit-extensions-path")]
+        [DataRow("MSBuildSDKsPath", "explicit-sdks-path")]
+        public void ItDoesNotGenerateSdkPathEnvironmentVariables(string name, string value)
         {
-            var msbuildPath = "<msbuildpath>";
-            var envVar = "MSBuildExtensionsPath";
-            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
-                                .GetProcessStartInfo()
-                                .Environment[envVar])
-                .Should()
-                .Exist();
-        }
+            string originalValue = Environment.GetEnvironmentVariable(name);
+            try
+            {
+                Environment.SetEnvironmentVariable(name, value);
 
-        [TestMethod]
-        public void ItSetsMSBuildSDKsPathToExistingPath()
-        {
-            var msbuildPath = "<msbuildpath>";
-            var envVar = "MSBuildSDKsPath";
-            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
-                                .GetProcessStartInfo()
-                                .Environment[envVar])
-                .Should()
-                .Exist();
+                var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), "<msbuildpath>")
+                    .GetProcessStartInfo();
+                startInfo.Environment.TryGetValue(name, out string forwardedValue).Should().Be(value is not null);
+                forwardedValue.Should().Be(value);
+
+                MSBuildForwardingAppWithoutLogging.GetMSBuildRequiredEnvironmentVariables()
+                    .Should().NotContainKey(name);
+                using (MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables())
+                {
+                    Environment.GetEnvironmentVariable(name).Should().Be(value);
+                }
+
+                Environment.GetEnvironmentVariable(name).Should().Be(value);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(name, originalValue);
+            }
         }
 
         [TestMethod]

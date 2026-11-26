@@ -51,12 +51,12 @@ public class MSBuildEvaluationTests
             forceOutOfProc: true);
 
         Assert.AreEqual(Path.Combine(sdkDirectory, "MSBuild.dll"), forwardingApp.MSBuildPath);
-        Assert.AreEqual(
-            Path.Combine(sdkDirectory, "Sdks"),
-            forwardingApp.GetProcessStartInfo().Environment["MSBuildSDKsPath"]);
-        Assert.AreEqual(
-            sdkDirectory,
-            forwardingApp.GetProcessStartInfo().Environment["MSBuildExtensionsPath"]);
+        foreach (string name in new[] { "MSBuildSDKsPath", "MSBuildExtensionsPath" })
+        {
+            Assert.IsFalse(MSBuildForwardingAppWithoutLogging.GetMSBuildRequiredEnvironmentVariables().ContainsKey(name));
+            forwardingApp.GetProcessStartInfo().Environment.TryGetValue(name, out string? actual);
+            Assert.AreEqual(Environment.GetEnvironmentVariable(name), actual);
+        }
     }
 
     [TestMethod]

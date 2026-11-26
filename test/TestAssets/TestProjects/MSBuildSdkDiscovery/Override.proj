@@ -1,0 +1,3 @@
+<Project Sdk="Discovery.Sdk">
+  <Import Project="$(MSBuildExtensionsPath)\Discovery.props" />
+</Project>

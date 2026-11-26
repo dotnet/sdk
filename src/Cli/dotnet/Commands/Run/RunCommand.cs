@@ -1221,7 +1221,6 @@ public class RunCommand
             {
                 var globalProperties = MSBuildArgs.GlobalProperties?.ToDictionary() ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 globalProperties[Constants.EnableDefaultItems] = "false";
-                globalProperties[Constants.MSBuildExtensionsPath] = AppContext.BaseDirectory;
 
                 using var collection = new ProjectCollection(globalProperties: globalProperties);
                 var project = collection.LoadProject(ProjectFileFullPath).CreateProjectInstance();

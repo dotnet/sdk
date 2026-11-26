@@ -60,7 +60,7 @@ the module self-locates.
   processes. A caller-provided value (e.g. a `runtimeconfig.json` `configProperties`
   entry) is honored, but must point to an existing directory or the bridge errors out.
 - **Read.** In-repo code reads `SdkPaths.SdkDirectory` (in
-  `Microsoft.DotNet.Cli.Utils`), which resolves the `Microsoft.DotNet.Sdk.Root`
+  `Microsoft.DotNet.Cli.CoreUtils`), which resolves the `Microsoft.DotNet.Sdk.Root`
   AppContext value -> the SDK assembly directory -> `AppContext.BaseDirectory` (once,
   cached). Out-of-repo code (MSBuild tasks, NuGet, the runtime) reads the
   `Microsoft.DotNet.Sdk.Root` AppContext value first, else its existing BCL logic. The
@@ -70,6 +70,13 @@ the module self-locates.
 The same forwarding code is shared by both CLIs and therefore consistently uses
 `SdkPaths.SdkDirectory`; this remains equivalent to `AppContext.BaseDirectory` in
 the normal managed SDK layout.
+
+`MSBuildForwardingAppWithoutLogging` uses this directory to select `MSBuild.dll`.
+It does not generate `MSBuildSDKsPath` or `MSBuildExtensionsPath` environment
+variables. MSBuild discovers these locations from its toolset unless the caller
+supplies explicit overrides. `DOTNET_HOST_PATH` still identifies the .NET host.
+See [MSBuild SDK-location discovery](../../../documentation/project-docs/developer-guide.md#msbuild-sdk-location-discovery)
+for inherited-override limitations and test-environment requirements.
 
 ## Testing
 

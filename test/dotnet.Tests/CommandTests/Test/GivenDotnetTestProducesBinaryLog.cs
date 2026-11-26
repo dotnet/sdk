@@ -29,6 +29,9 @@ public class GivenDotnetTestProducesBinaryLog : SdkTest
             .WithSource();
 
         new DotnetTestCommand(Log, disableNewOutput: false)
+        {
+            EnvironmentToRemove = { "MSBUILD_EXE_PATH", "MSBuildSDKsPath", "MSBuildExtensionsPath" }
+        }
             .WithWorkingDirectory(testInstance.Path)
             .Execute("-bl")
             .Should().Pass();

@@ -12,6 +12,23 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 [TestClass]
 public sealed class RunCommandTests : SdkTest
 {
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("explicit-extensions-path")]
+    public void EvaluationPreservesMSBuildExtensionsPathProperty(string? extensionsPath)
+    {
+        var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (extensionsPath is not null)
+        {
+            properties["MSBuildExtensionsPath"] = extensionsPath;
+        }
+
+        var result = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs.FromProperties(new(properties)));
+
+        result.TryGetValue("MSBuildExtensionsPath", out string? actual).Should().Be(extensionsPath is not null);
+        actual.Should().Be(extensionsPath);
+    }
+
     // The same syntax works on Windows and Unix ($VAR does not get expanded Unix).
     private static string EnvironmentVariableReference(string name)
         => $"%{name}%";
@@ -114,6 +131,9 @@ public sealed class RunCommandTests : SdkTest
             """);
 
         new DotnetCommand(Log, "run")
+        {
+            EnvironmentToRemove = { "MSBUILD_EXE_PATH", "MSBuildSDKsPath", "MSBuildExtensionsPath" }
+        }
             .WithWorkingDirectory(testProjectDirectory)
             .Execute()
             .Should().Pass()
