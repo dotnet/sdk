@@ -10,6 +10,8 @@ using Microsoft.TemplateEngine.Tests;
 namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 {
     [TestClass]
+    // Mitigates intermittent Windows cleanup failures under class-level parallelism; see https://github.com/dotnet/sdk/issues/56222.
+    [ResourceLock(nameof(DotnetCommand))]
     public class LocalizeTemplateTests : TestBase
     {
         public TestContext TestContext { get; set; } = null!;
@@ -25,13 +27,13 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 
             CreateDotnetCommand("add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             CreateDotnetCommand("build")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
@@ -53,13 +55,13 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 
             CreateDotnetCommand("add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             CreateDotnetCommand("build")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
@@ -82,13 +84,13 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 
             CreateDotnetCommand("add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             CreateDotnetCommand("build")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
@@ -112,13 +114,13 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 
             CreateDotnetCommand("add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Pass();
 
             CreateDotnetCommand("build")
                 .WithWorkingDirectory(tmpDir)
-                .Execute()
+                .Execute(TestContext.CancellationToken)
                 .Should()
                 .Fail()
                 .And.HaveStdOutContaining("Build FAILED.")

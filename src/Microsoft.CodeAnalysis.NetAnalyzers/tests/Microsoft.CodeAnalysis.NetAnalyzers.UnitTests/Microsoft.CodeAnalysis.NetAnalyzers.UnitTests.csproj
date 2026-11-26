@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Test.Utilities\Test.Utilities.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.NetAnalyzers\Microsoft.CodeAnalysis.NetAnalyzers.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.NetAnalyzers\Microsoft.CodeAnalysis.NetAnalyzers.csproj" Aliases="global,NetAnalyzers" />
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.CSharp.NetAnalyzers\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.vbproj" />
   </ItemGroup>

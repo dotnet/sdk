@@ -8,6 +8,14 @@ Static Web Assets (SWA) creates a **virtual file system** that remaps these file
 
 The build pipeline is implemented as a set of MSBuild targets and tasks. Targets orchestrate the pipeline phases, tasks contain the logic.
 
+The [service worker targets](Targets/Microsoft.NET.Sdk.StaticWebAssets.ServiceWorker.targets)
+register existing `ServiceWorker` source items as `UpToDateCheckInput` in the `StaticWebAssets` set
+when removing them from `Content`. This keeps existing PWA projects' development service
+workers tracked by Visual Studio's fast up-to-date check without requiring project-file
+changes. Missing development sources are not registered, matching build asset creation.
+`PublishedContent` is a publish-only source and is not added to `UpToDateCheckInput`
+by this registration.
+
 ## 2. Static Web Assets
 
 `StaticWebAsset` (`Tasks/Data/StaticWebAsset.cs`) is the core abstraction. It represents a single file tracked through the build and publish pipeline. Every property falls into one of six categories.
@@ -22,6 +30,11 @@ The build pipeline is implemented as a set of MSBuild targets and tasks. Targets
 - **Endpoint validity**: Every `StaticWebAssetEndpoint` must point to an existing `StaticWebAsset` via `AssetFile`. There must be no endpoints referencing non-existent assets.
 - **Endpoint uniqueness**: Endpoints are unique by the `(Route, AssetFile)` pair. No two endpoints share the same route and asset file combination.
 
+MSBuild can log captured task inputs asynchronously, so endpoint projection must not
+modify its input item arrays. Collect retained endpoints separately and return compact
+outputs without null entries, as in
+[`ComputeEndpointsForReferenceStaticWebAssets`](Tasks/ComputeEndpointsForReferenceStaticWebAssets.cs).
+
 **Required properties (every asset must have)**
 
 - `Identity`, `SourceId`, `ContentRoot`, `BasePath`, `RelativePath`, `OriginalItemSpec` — non-empty strings.
@@ -33,7 +46,7 @@ The build pipeline is implemented as a set of MSBuild targets and tasks. Targets
 
 - `SourceType` ∈ {`Discovered`, `Computed`, `Project`, `Package`, `Framework`}.
 - `AssetKind` ∈ {`Build`, `Publish`, `All`}.
-- `AssetMode` ∈ {`All`, `CurrentProject`, `Reference`}.
+- `AssetMode` ∈ {`All`, `CurrentProject`, `Reference`, `Local`}.
 - `AssetRole` ∈ {`Primary`, `Related`, `Alternative`}.
 
 **Conditional requirements**
@@ -88,7 +101,7 @@ The only supported token is `fingerprint` (base-36 SHA-256).
 | Property | Type | Description | Invariants |
 |----------|------|-------------|------------|
 | `AssetKind` | `string` | When the asset is active. | `Build`, `Publish`, or `All`. Defaults to `All` unless `CopyToPublishDirectory` is `Never`, in which case defaults to `Build`. |
-| `AssetMode` | `string` | Visibility scope. | `All` (current project + references), `CurrentProject` (owning project only), `Reference` (referencing projects only). Defaults to `All`. |
+| `AssetMode` | `string` | Visibility scope. | `All` (current project + references), `CurrentProject` (current-project assets, also exported by `Root` projects), `Reference` (exported by `Default` projects, excluded from `Root` projects' local output and exports), `Local` (available locally, never exported through project references, independent of project mode). Defaults to `All`. |
 | `AssetRole` | `string` | Relationship to other assets. | `Primary`, `Related`, or `Alternative`. Defaults to `Primary`. |
 | `RelatedAsset` | `string` | Full path to the asset this one is associated with. Forms a chain: an `Alternative` can point to a `Related` asset, which in turn points to a `Primary`. | Required when `AssetRole` is `Related` or `Alternative`. Must reference a valid asset `Identity` in the pipeline. Empty for `Primary`. |
 | `AssetTraitName` | `string` | Name of the trait that distinguishes an alternative (e.g., `Content-Encoding`). | Required when `AssetRole` is `Alternative`. |
@@ -238,6 +251,37 @@ The MSBuild property `StaticWebAssetProjectMode` controls how a project particip
 | Manifest mode | `Default` | `Root` |
 
 The mode is stored in the build manifest's `Mode` field and used at manifest-read time to decide which assets to include in the current project vs. expose as references.
+
+`AssetMode=Local` is independent of project mode. The shared
+[`ManifestModes.ShouldIncludeAssetAsReference`](Tasks/Data/StaticAssetsManifest.cs)
+predicate excludes it from both build and publish project-reference exports.
+Local assets still participate in the owning project's development, endpoint and publish
+pipelines according to their `AssetKind` and copy metadata. Compressed alternatives inherit
+the mode, and reference endpoints are projected from the retained assets by
+[`ComputeEndpointsForReferenceStaticWebAssets`](Tasks/ComputeEndpointsForReferenceStaticWebAssets.cs).
+[`DiscoverPrecompressedAssets`](Tasks/Compression/DiscoverPrecompressedAssets.cs) also
+marks checked-in gzip and Brotli alternatives `Local` when their primary is `Local`,
+even if the compressed file has the default `All` mode. It preserves those files'
+original item identities so reference publish cleanup also removes their `Content`
+items instead of copying them outside the static web assets pipeline.
+The independent `ResolvePrecompressedStaticWebAssets` target in
+[`Compression.targets`](Targets/Microsoft.NET.Sdk.StaticWebAssets.Compression.targets)
+runs this normalization even when `DisableBuildCompression=true`. That switch skips
+generating new compressed files, not resolving checked-in alternatives and their
+serving endpoints. Publish, including no-build publish, resumes from the normalized
+build manifest.
+
+Development discovery patterns cannot express per-file exclusions.
+[`ComputeReferenceStaticWebAssetItems`](Tasks/ComputeReferenceStaticWebAssetItems.cs)
+therefore omits exported patterns whose physical content root contains a `Local` file.
+Shared files already included in the manifest remain available, including edits to those
+files; newly added shared files in those roots require a rebuild. The owning project's
+discovery patterns and exports from unrelated roots are unchanged. Generated browser-tools
+files live outside `wwwroot` and do not disable its discovery.
+
+Server Web SDK Hot Reload browser-tools assets use this mode to avoid exporting
+project-specific initializers and configurations. WebAssembly browser-tools assets keep `All`
+because a hosted client's server must consume them.
 
 ### Discovered — Current Project
 

@@ -340,6 +340,7 @@ public class FileBasedAppRunPlanTests
                 "v11.0"),
             CscArguments = ["/nologo", "/target:exe"],
             BuildResultFile = "bin/Program.dll",
+            BuildOutputs = ["bin/Program.dll", "bin/Example.dll"],
         };
         entry.ImplicitBuildFiles.Add("Directory.Build.props");
         entry.AdditionalSources.Add("Additional.cs");
@@ -363,6 +364,7 @@ public class FileBasedAppRunPlanTests
         Assert.AreEqual(entry.Run, roundTripped.Run);
         Assert.IsTrue(entry.CscArguments.SequenceEqual(roundTripped.CscArguments));
         Assert.AreEqual(entry.BuildResultFile, roundTripped.BuildResultFile);
+        Assert.AreSequenceEqual(entry.BuildOutputs, roundTripped.BuildOutputs);
     }
 
     private static FileBasedAppRunPlanInputs CreateInputs(string entryPointPath, string artifactsPath)

@@ -76,7 +76,7 @@ extends:
       - job: Create
         pool:
           name: $(DncEngInternalBuildPool)
-          image: 1es-ubuntu-2204
+          image: build.azurelinux.3.amd64
           os: linux
         templateContext:
           # The MicroBuild publish-authorization plugin only needs to run on the

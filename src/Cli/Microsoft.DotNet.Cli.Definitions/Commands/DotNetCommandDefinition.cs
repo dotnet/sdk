@@ -40,6 +40,21 @@ namespace Microsoft.DotNet.Cli.Commands;
 
 internal sealed class DotNetCommandDefinition : RootCommand
 {
+    // RootCommand names the root command after the running executable, falling back to the
+    // "System.CommandLine.ExecutableName" AppContext value (emitted by the System.CommandLine build
+    // targets) and then to "app". Ensure the fallback is "dotnet" when the host provides neither,
+    // so help usage lines and completion scripts never read "app <command>".
+    static DotNetCommandDefinition() => EnsureExecutableName();
+
+    internal static void EnsureExecutableName()
+    {
+        const string ExecutableNameKey = "System.CommandLine.ExecutableName";
+        if (AppContext.GetData(ExecutableNameKey) is not string { Length: > 0 })
+        {
+            AppContext.SetData(ExecutableNameKey, "dotnet");
+        }
+    }
+
     public readonly Argument<string> DotnetSubCommand = new("subcommand")
     {
         Arity = ArgumentArity.ZeroOrOne,

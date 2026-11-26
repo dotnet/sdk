@@ -17,7 +17,7 @@ internal class AppHostShellShimMaker(string appHostSourceDirectory, IFilePermiss
             ?? new FilePermissionSetter();
     private const ushort WindowsGUISubsystem = 0x2;
 
-    public void CreateApphostShellShim(FilePath entryPoint, FilePath shimPath)
+    public void CreateApphostShellShim(FilePath entryPoint, FilePath shimPath, CancellationToken cancellationToken)
     {
         string appHostSourcePath;
         if (OperatingSystem.IsWindows())
@@ -43,6 +43,6 @@ internal class AppHostShellShimMaker(string appHostSourceDirectory, IFilePermiss
                                  assemblyToCopyResourcesFrom: entryPointFullPath,
                                  enableMacOSCodeSign: OperatingSystem.IsMacOS());
 
-        _filePermissionSetter.SetUserExecutionPermission(appHostDestinationFilePath);
+        _filePermissionSetter.SetUserExecutionPermission(appHostDestinationFilePath, cancellationToken);
     }
 }

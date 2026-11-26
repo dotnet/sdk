@@ -24,12 +24,14 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [TestMethod]
         public void ToolRestoreParserCanGetFollowingArguments()
         {
+            string configFile = typeof(ToolRestoreParserTests).Assembly.Location;
             var result =
                 Parser.Parse(
-                    @"dotnet tool restore --configfile C:\TestAssetLocalNugetFeed");
+                    $@"dotnet tool restore --configfile ""{configFile}""");
 
             var definition = Assert.IsExactInstanceOfType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
-            result.GetRequiredValue(definition.ConfigOption).Should().Be(@"C:\TestAssetLocalNugetFeed");
+            result.Errors.Should().BeEmpty();
+            result.GetRequiredValue(definition.ConfigOption).FullName.Should().Be(configFile);
         }
 
         [TestMethod]

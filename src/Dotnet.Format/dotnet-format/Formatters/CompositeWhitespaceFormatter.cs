@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 
@@ -31,34 +30,21 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         public override FixCategory Category => FixCategory.Whitespace;
 
         internal override async Task<SourceText> FormatFileAsync(
-            Document document,
+            TextDocument document,
             SourceText sourceText,
-            OptionSet optionSet,
             AnalyzerConfigOptions analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var formattedSourceText = await s_whitespaceFormatter.FormatFileAsync(document, sourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
+            var formattedSourceText = await s_whitespaceFormatter.FormatFileAsync(document, sourceText, analyzerConfigOptions, formatOptions, logger, cancellationToken);
 
-            // Only run the final newline pass when the option is configured. When it is absent the
-            // formatter returns the *document* text, which still points at the unformatted source
-            // in a merged pass, so invoking it would discard the whitespace formatting.
-            if (IsFinalNewlineConfigured(analyzerConfigOptions))
-            {
-                formattedSourceText = await s_finalNewlineFormatter.FormatFileAsync(document, formattedSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
-            }
+            formattedSourceText = await s_finalNewlineFormatter.FormatFileAsync(document, formattedSourceText, analyzerConfigOptions, formatOptions, logger, cancellationToken);
 
-            formattedSourceText = await s_endOfLineFormatter.FormatFileAsync(document, formattedSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
-            formattedSourceText = await s_charsetFormatter.FormatFileAsync(document, formattedSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
+            formattedSourceText = await s_endOfLineFormatter.FormatFileAsync(document, formattedSourceText, analyzerConfigOptions, formatOptions, logger, cancellationToken);
+            formattedSourceText = await s_charsetFormatter.FormatFileAsync(document, formattedSourceText, analyzerConfigOptions, formatOptions, logger, cancellationToken);
 
             return formattedSourceText;
-        }
-
-        private static bool IsFinalNewlineConfigured(AnalyzerConfigOptions analyzerConfigOptions)
-        {
-            return analyzerConfigOptions?.TryGetValue("insert_final_newline", out var insertFinalNewlineValue) == true
-                && bool.TryParse(insertFinalNewlineValue, out _);
         }
     }
 }

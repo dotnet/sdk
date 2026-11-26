@@ -1,0 +1,13 @@
+<Project Sdk="MSTest.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.CoreUtils\Microsoft.DotNet.Cli.CoreUtils.csproj" />
+  </ItemGroup>
+
+</Project>

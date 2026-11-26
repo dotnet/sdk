@@ -26,8 +26,7 @@ namespace Microsoft.CodeAnalysis.Tools
             string? TargetFramework)
     {
         /// <summary>
-        /// Disables the on-disk formatting cache. This is a record body property (not a positional
-        /// parameter) so the positional constructor used by tests is unaffected.
+        /// Disables the on-disk formatting cache.
         /// </summary>
         public bool NoCache { get; init; } = false;
 

@@ -316,6 +316,14 @@ internal abstract class MsiInstallerBase(
 
         if (IsElevated)
         {
+            // The cache lives below %ProgramData%\dotnet, which a standard user can pre-create. Prove that
+            // root is administrator-owned so the validated package path cannot have been substituted.
+            SecurityUtils.EnsureSecureProgramDataRoot();
+
+            // The unelevated client verified this payload before requesting elevation. Verify it again
+            // here so the process that executes the package is the one that authenticated it.
+            Cache.VerifyPackageSignature(packagePath);
+
             ConfigureInstall(logFile);
             string installProperties = InstallProperties.Create(InstallProperties.SystemComponent,
                 InstallProperties.FastInstall, InstallProperties.SuppressReboot,
@@ -492,7 +500,7 @@ internal abstract class MsiInstallerBase(
     /// <param name="requestType">The action to perform on the provider key.</param>
     /// <param name="providerKeyName">The provider key to update.</param>
     /// <param name="dependent">The dependent to add or remove.</param>
-    protected void UpdateDependent(InstallRequestType requestType, string providerKeyName, string dependent)
+    protected virtual void UpdateDependent(InstallRequestType requestType, string providerKeyName, string dependent)
     {
         DependencyProvider provider = new(providerKeyName, allUsers: true);
 

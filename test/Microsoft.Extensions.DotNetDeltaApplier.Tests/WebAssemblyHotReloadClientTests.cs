@@ -17,7 +17,7 @@ public class WebAssemblyHotReloadClientTests
     [TestMethod]
     public async Task NoBrowser_RetainsAndAcceptsUpdate()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
         var epoch = server.ResetUpdates();
         using var client = CreateClient(server, epoch);
 
@@ -46,7 +46,7 @@ public class WebAssemblyHotReloadClientTests
     [TestMethod]
     public async Task BaselineReset_DropsUpdatesFromSupersededBaseline()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
         var staleEpoch = server.ResetUpdates();
         using var staleClient = CreateClient(server, staleEpoch);
 
@@ -67,7 +67,7 @@ public class WebAssemblyHotReloadClientTests
     [TestMethod]
     public async Task BaselineReset_ClearsRetainedUpdates()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
         var epoch = server.ResetUpdates();
         using var client = CreateClient(server, epoch);
 

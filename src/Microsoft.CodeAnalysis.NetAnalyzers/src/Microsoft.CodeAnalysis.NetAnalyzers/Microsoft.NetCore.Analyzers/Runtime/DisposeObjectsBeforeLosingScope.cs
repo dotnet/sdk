@@ -104,7 +104,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             skipAnalysisForInvokedContextPredicate: null) :
                         null;
 
-                    if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockContext.OperationBlocks, containingMethod,
+                    if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockContext.GetControlFlowGraph(), containingMethod,
                         operationBlockContext.Options, NotDisposedRule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties, trackInstanceFields: false, trackExceptionPaths: trackExceptionPaths,
                         disposeAnalysisResult: out var disposeAnalysisResult, pointsToAnalysisResult: out var pointsToAnalysisResult, interproceduralAnalysisPredicate: interproceduralAnalysisPredicate))
                     {

@@ -1,0 +1,32 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Publish.ReferenceSatellites.targets
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="_ClassifyReferenceSatellitesForPublish"
+          AfterTargets="_ComputeResolvedCopyLocalPublishAssets"
+          Condition="'@(ReferenceSatellitePaths)' != ''">
+    <!-- Match only references that are already selected for publish. RAR supplies the
+         culture as the destination subdirectory, not as Culture metadata. -->
+    <JoinItems Left="@(ReferenceSatellitePaths)" Right="@(_ResolvedCopyLocalPublishAssets)" RightMetadata="*">
+      <Output TaskParameter="JoinResult" ItemName="_ReferenceSatellitePublishAssets" />
+    </JoinItems>
+    <ItemGroup>
+      <_ResolvedCopyLocalPublishAssets Remove="@(_ReferenceSatellitePublishAssets)" />
+      <_ReferenceSatellitePublishAssets>
+        <AssetType>resources</AssetType>
+        <Culture>$([System.Text.RegularExpressions.Regex]::Replace('%(DestinationSubDirectory)', '[\\/]+$', ''))</Culture>
+      </_ReferenceSatellitePublishAssets>
+      <_ResolvedCopyLocalPublishAssets Include="@(_ReferenceSatellitePublishAssets)"
+                                       Condition="'$(SatelliteResourceLanguages)' == ''" />
+    </ItemGroup>
+    <JoinItems Left="@(_ReferenceSatellitePublishAssets)" LeftKey="Culture" LeftMetadata="*"
+               Right="$(SatelliteResourceLanguages)" RightKey="" RightMetadata="" ItemSpecToUse="Left"
+               Condition="'$(SatelliteResourceLanguages)' != ''">
+      <Output TaskParameter="JoinResult" ItemName="_ResolvedCopyLocalPublishAssets" />
+    </JoinItems>
+  </Target>
+</Project>

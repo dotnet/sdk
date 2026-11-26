@@ -53,7 +53,7 @@ const EXCLUDED_LABELS = [
 const LABEL_SCORE_RULES = [
     {labels: ["documentation"], score: 60},
     {labels: ["bug"], score: 55},
-    {labels: ["area-infrastructure", "test debt", "known build error"], score: 50},
+    {labels: ["area-infrastructure", "test debt", "known build error", "stale-issue-detection"], score: 50},
     {labels: ["cost:s"], score: 50},
     {labels: ["good first issue", "help wanted"], score: 40},
     {labels: ["enhancement", "fit-n-finish"], score: 40},

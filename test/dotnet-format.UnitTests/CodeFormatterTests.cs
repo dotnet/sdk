@@ -61,14 +61,14 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [TestMethod]
         public async Task NoFilesFormattedInFormattedProject()
         {
-await TestFormatWorkspaceAsync(
+            await TestFormatWorkspaceAsync(
                 s_formattedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 1);
+                expectedFileCount: 3);
         }
 
         [TestMethod]
@@ -81,7 +81,7 @@ await TestFormatWorkspaceAsync(
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 1);
+                expectedFileCount: 3);
         }
 
         [TestMethod]
@@ -236,8 +236,6 @@ await TestFormatWorkspaceAsync(
         {
             var include = new[] { s_unformattedProgramFilePath };
 
-            // The whitespace fast path creates a workspace containing only the matched files, so
-            // the file count now reflects the matched files rather than all project documents.
             await TestFormatWorkspaceAsync(
                 s_unformattedProjectFilePath,
                 include,
@@ -245,7 +243,7 @@ await TestFormatWorkspaceAsync(
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
-                expectedFileCount: 1);
+                expectedFileCount: 6);
         }
 
         [TestMethod]
@@ -253,8 +251,6 @@ await TestFormatWorkspaceAsync(
         {
             var include = new[] { Path.Combine(s_unformattedProjectPath, "does_not_exist.cs") };
 
-            // The whitespace fast path creates a workspace containing only the matched files, so
-            // the file count now reflects the matched files rather than all project documents.
             await TestFormatWorkspaceAsync(
                 s_unformattedProjectFilePath,
                 include,
@@ -262,7 +258,7 @@ await TestFormatWorkspaceAsync(
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 0);
+                expectedFileCount: 6);
         }
 
         [TestMethod]
@@ -270,8 +266,6 @@ await TestFormatWorkspaceAsync(
         {
             var include = new[] { s_unformattedProgramFilePath };
 
-            // The whitespace fast path creates a workspace containing only the matched files, so
-            // the file count now reflects the matched files rather than all project documents.
             var log = await TestFormatWorkspaceAsync(
                 s_unformattedSolutionFilePath,
                 include,
@@ -279,7 +273,7 @@ await TestFormatWorkspaceAsync(
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
-                expectedFileCount: 1);
+                expectedFileCount: 6);
 
             var pattern = string.Format(Resources.Formatted_code_file_0, @"(.*)");
             var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
@@ -349,7 +343,7 @@ await TestFormatWorkspaceAsync(
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 1);
+                expectedFileCount: 3);
 
             var formatLocations = log.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
                 .Where(line => FindFormattingLogLine.Match(line).Success);
@@ -362,8 +356,6 @@ await TestFormatWorkspaceAsync(
         {
             var include = new[] { s_unformattedProgramFilePath };
 
-            // The whitespace fast path creates a workspace containing only the matched files, so
-            // the file count now reflects the matched files rather than all project documents.
             var log = await TestFormatWorkspaceAsync(
                 s_unformattedSolutionFilePath,
                 include,
@@ -371,7 +363,7 @@ await TestFormatWorkspaceAsync(
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
-                expectedFileCount: 1);
+                expectedFileCount: 6);
 
             var pattern = string.Format(Resources.Formatted_code_file_0, @"(.*)");
             var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
@@ -385,8 +377,6 @@ await TestFormatWorkspaceAsync(
         {
             var include = new[] { s_unformattedProgramFilePath };
 
-            // The whitespace fast path creates a workspace containing only the matched files, so
-            // the file count now reflects the matched files rather than all project documents.
             await TestFormatWorkspaceAsync(
                 s_unformattedSolutionFilePath,
                 include: include,
@@ -394,7 +384,7 @@ await TestFormatWorkspaceAsync(
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 0);
+                expectedFileCount: 6);
         }
 
         [TestMethod]
@@ -403,8 +393,6 @@ await TestFormatWorkspaceAsync(
             var include = new[] { s_unformattedProgramFilePath };
             var exclude = new[] { s_unformattedProjectPath };
 
-            // The whitespace fast path creates a workspace containing only the matched files, so
-            // the file count now reflects the matched files rather than all project documents.
             await TestFormatWorkspaceAsync(
                 s_unformattedSolutionFilePath,
                 include: include,
@@ -412,7 +400,7 @@ await TestFormatWorkspaceAsync(
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 0);
+                expectedFileCount: 6);
         }
 
         [TestMethod]
@@ -421,8 +409,6 @@ await TestFormatWorkspaceAsync(
             var include = new[] { s_unformattedProgramFilePath };
             var exclude = new[] { "**/*.*" };
 
-            // The whitespace fast path creates a workspace containing only the matched files, so
-            // the file count now reflects the matched files rather than all project documents.
             await TestFormatWorkspaceAsync(
                 s_unformattedSolutionFilePath,
                 include: include,
@@ -430,7 +416,7 @@ await TestFormatWorkspaceAsync(
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 0);
+                expectedFileCount: 6);
         }
 
         [TestMethod]
@@ -443,7 +429,7 @@ await TestFormatWorkspaceAsync(
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 1);
+                expectedFileCount: 3);
         }
 
         [TestMethod]
@@ -455,8 +441,8 @@ await TestFormatWorkspaceAsync(
                 exclude: EmptyFilesList,
                 includeGenerated: true,
                 expectedExitCode: 0,
-                expectedFilesFormatted: 1,
-                expectedFileCount: 1);
+                expectedFilesFormatted: 3,
+                expectedFileCount: 3);
         }
 
         [TestMethod]
@@ -739,20 +725,6 @@ Greeter.Greeter() -> void";
         {
             var workspacePath = Path.GetFullPath(workspaceFilePath, TestProjectsPathHelper.GetProjectsDirectory());
 
-            // Include and exclude patterns are matched against the current directory. The test
-            // assets are authored relative to the projects directory, so run with that as the
-            // current directory to keep matching deterministic. Tests without include/exclude
-            // patterns do not depend on the current directory (all files match).
-            var matchesPatterns = include.Length > 0 || exclude.Length > 0;
-            var previousWorkingDirectory = Environment.CurrentDirectory;
-            if (matchesPatterns)
-            {
-                Environment.CurrentDirectory = TestProjectsPathHelper.GetProjectsDirectory();
-            }
-
-            try
-            {
-
             WorkspaceType workspaceType;
             if (Directory.Exists(workspacePath))
             {
@@ -767,7 +739,18 @@ Greeter.Greeter() -> void";
 
             var logger = new TestLogger();
 
-            var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
+            // Match asset-relative patterns without changing the process-wide current directory.
+            var projectsDirectory = TestProjectsPathHelper.GetProjectsDirectory();
+            var fileMatcher = SourceFileMatcher.CreateMatcher(
+                include.Select(ToPattern).ToArray(),
+                exclude.Select(ToPattern).ToArray());
+
+            string ToPattern(string path)
+            {
+                var pattern = Path.GetRelativePath(Environment.CurrentDirectory, Path.GetFullPath(path, projectsDirectory));
+                return Path.EndsInDirectorySeparator(path) ? pattern + Path.DirectorySeparatorChar : pattern;
+            }
+
             var formatOptions = new FormatOptions(
                 workspacePath,
                 workspaceType,
@@ -802,14 +785,6 @@ Greeter.Greeter() -> void";
             }
 
             return log;
-            }
-            finally
-            {
-                if (matchesPatterns)
-                {
-                    Environment.CurrentDirectory = previousWorkingDirectory;
-                }
-            }
         }
 
         /// <summary>

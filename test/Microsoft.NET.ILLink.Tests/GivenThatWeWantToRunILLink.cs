@@ -64,11 +64,9 @@ namespace Microsoft.NET.ILLink.Tests
             DoesDepsFileHaveAssembly(depsFile, UnusedFrameworkAssembly).Should().BeTrue();
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
+        // https://github.com/dotnet/sdk/issues/49665
         [TestMethod]
         [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
-        [DataRow("netcoreapp3.0", true)]
-        [DataRow("netcoreapp3.0", false)]
         [DataRow("net5.0", false)]
         [DataRow(ToolsetInfo.CurrentTargetFramework, false)]
         public void ILLink_runs_and_creates_linked_app(string targetFramework, bool referenceClassLibAsPackage)
@@ -489,7 +487,8 @@ namespace Microsoft.NET.ILLink.Tests
             // Please keep list below sorted and de-duplicated
             var expectedWarnings = new List<string> {
                 "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComActivator.GetClassFactoryForTypeInternal(ComActivationContextInternal*",
-                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr",
+                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr): Using member 'Internal.Runtime.InteropServices.ComponentActivator.InternalGetFunctionPointer(AssemblyLoadContext, String, String, IntPtr)'",
+                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr): Using member 'Internal.Runtime.InteropServices.ComponentLoadContextManager.Get(IntPtr, String, Boolean)'",
                 "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.DeserializeUsingBinaryFormatter(DesigntimeLicenseContextSerializer.StreamWrapper, String, RuntimeLicenseContext",
                 "ILLink : Trim analysis warning IL2026: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream, Assembly",
                 "ILLink : Trim analysis warning IL2026: System.StartupHookProvider.ProcessStartupHooks(",
@@ -551,7 +550,8 @@ namespace Microsoft.NET.ILLink.Tests
 
             // Please keep list below sorted and de-duplicated
             var expectedWarnings = new List<string> {
-                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr",
+                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr): Using member 'Internal.Runtime.InteropServices.ComponentActivator.InternalGetFunctionPointer(AssemblyLoadContext, String, String, IntPtr)'",
+                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr): Using member 'Internal.Runtime.InteropServices.ComponentLoadContextManager.Get(IntPtr, String, Boolean)'",
                 "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssembly(IntPtr, IntPtr",
                 "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.DeserializeUsingBinaryFormatter(DesigntimeLicenseContextSerializer.StreamWrapper, String, RuntimeLicenseContext",
                 "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.SerializeWithBinaryFormatter(Stream, String, DesigntimeLicenseContext",
@@ -1039,6 +1039,18 @@ namespace Microsoft.NET.ILLink.Tests
     {
         public static string UnusedFrameworkAssembly = "System.IO";
 
+        // Current ILLink packs write the incremental-build semaphore next to the "linked" directory
+        // (linked.semaphore); older packs, still used for older target frameworks, write it inside
+        // that directory (linked/Link.semaphore).
+        public static string[] GetLinkSemaphoreCandidates(string intermediateLinkDir) =>
+        [
+            intermediateLinkDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + ".semaphore",
+            Path.Combine(intermediateLinkDir, "Link.semaphore"),
+        ];
+
+        public static string FindLinkSemaphore(string intermediateLinkDir) =>
+            GetLinkSemaphoreCandidates(intermediateLinkDir).FirstOrDefault(File.Exists);
+
         public static bool DoesImageHaveMethod(string path, string methodNameToCheck)
         {
             using (FileStream fs = new(path, FileMode.Open, FileAccess.Read))
@@ -1432,7 +1444,7 @@ namespace HelloWorld
                 // NOTE: If using a package reference for the reference project, it will be retrieved
                 // from the nuget cache. Set the reference project TFM to the lowest common denominator
                 // of these tests to prevent conflicts.
-                TargetFrameworks = usePackageReference ? "netcoreapp3.0" : targetFrameworks,
+                TargetFrameworks = usePackageReference ? "net5.0" : targetFrameworks,
             };
             referenceProject.SourceFiles[$"{referenceProjectName}.cs"] = @"
 using System;

@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Utilities;
@@ -15,6 +16,7 @@ namespace Microsoft.CodeAnalysis.Tools
     internal static class CodeFormatter
     {
         private static readonly ImmutableArray<ICodeFormatter> s_codeFormatters = ImmutableArray.Create<ICodeFormatter>(
+            new RazorDocumentFormatter(),
             new CompositeWhitespaceFormatter(),
             new OrganizeImportsFormatter(),
             AnalyzerFormatter.CodeStyleFormatter,
@@ -35,13 +37,9 @@ namespace Microsoft.CodeAnalysis.Tools
 
             using var formatCache = FormatCache.Create(formatOptions, logger);
 
-            ImmutableArray<string>? enumeratedFilePaths = null;
-
             using var loadedWorkspace = formatOptions.WorkspaceType == WorkspaceType.Folder
                 ? OpenFolderWorkspace(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher)
-                : CanFormatWithoutMSBuild(formatOptions)
-                    ? OpenWorkspaceWithEnumeratedFiles(formatOptions, formatCache, out enumeratedFilePaths)
-                    : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, formatOptions.BinaryLogPath, logWorkspaceWarnings, logger, formatOptions.TargetFramework, cancellationToken);
+                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, formatOptions.BinaryLogPath, logWorkspaceWarnings, logger, formatOptions.TargetFramework, cancellationToken);
 
             if (loadedWorkspace is null)
             {
@@ -96,7 +94,8 @@ namespace Microsoft.CodeAnalysis.Tools
             var documentIdsWithErrors = formattedFiles.Select(file => file.DocumentId).Distinct().ToImmutableArray();
             foreach (var documentId in documentIdsWithErrors)
             {
-                var documentWithError = solution.GetDocument(documentId);
+                TextDocument? documentWithError = solution.GetDocument(documentId)
+                    ?? solution.GetAdditionalDocument(documentId);
                 if (documentWithError is null)
                 {
                     documentWithError = await solution.GetSourceGeneratedDocumentAsync(documentId, cancellationToken);
@@ -107,17 +106,28 @@ namespace Microsoft.CodeAnalysis.Tools
 
             var exitCode = 0;
 
+            // Capture the formatter's output snapshot before saving, not a subsequent disk edit.
+            var formattedTexts = new List<KeyValuePair<string, SourceText>>();
+            if (formatCache is not null)
+            {
+                foreach (var documentId in formatableFiles)
+                {
+                    var document = formattedSolution.GetDocument(documentId);
+                    if (document?.FilePath is string filePath)
+                    {
+                        formattedTexts.Add(new(filePath, await document.GetTextAsync(cancellationToken)));
+                    }
+                }
+            }
+
             if (formatOptions.SaveFormattedFiles && !workspace.TryApplyChanges(formattedSolution))
             {
                 logger.LogError(Resources.Failed_to_save_formatting_changes);
                 exitCode = 1;
             }
-            else
+            else if (formatCache is not null)
             {
-                var recordedSolutionFilePaths = enumeratedFilePaths is { } enumeratedFilePathsValue
-                    ? enumeratedFilePathsValue
-                    : GetSolutionFilePaths(solution);
-                formatCache?.RecordFormattedFiles(GetFormattedFilePaths(solution, formatableFiles), recordedSolutionFilePaths);
+                formatCache.RecordFormattedFiles(formattedTexts, GetSolutionFilePaths(solution));
             }
 
             if (exitCode == 0 && !string.IsNullOrWhiteSpace(formatOptions.ReportPath))
@@ -137,70 +147,6 @@ namespace Microsoft.CodeAnalysis.Tools
             var folderWorkspace = FolderWorkspace.Create();
             folderWorkspace.OpenFolder(workspacePath, fileMatcher);
             return new LoadedWorkspace(folderWorkspace, ProjectId: null);
-        }
-
-        /// <summary>
-        /// Determines whether whitespace-only formatting can run without loading MSBuild. The
-        /// workspace must be a classic solution or a C#/Visual Basic project, and no options that
-        /// depend on an MSBuild evaluation may be set.
-        /// </summary>
-        internal static bool CanFormatWithoutMSBuild(FormatOptions formatOptions)
-        {
-            if (formatOptions.FixCategory != FixCategory.Whitespace ||
-                formatOptions.TargetFramework is not null ||
-                formatOptions.BinaryLogPath is not null)
-            {
-                return false;
-            }
-
-            var extension = Path.GetExtension(formatOptions.WorkspaceFilePath);
-            return formatOptions.WorkspaceType switch
-            {
-                WorkspaceType.Solution => extension.Equals(".sln", StringComparison.OrdinalIgnoreCase),
-                WorkspaceType.Project => extension.Equals(".csproj", StringComparison.OrdinalIgnoreCase)
-                    || extension.Equals(".vbproj", StringComparison.OrdinalIgnoreCase),
-                _ => false,
-            };
-        }
-
-        private static LoadedWorkspace OpenWorkspaceWithEnumeratedFiles(FormatOptions formatOptions, FormatCache? formatCache, out ImmutableArray<string>? enumeratedFilePaths)
-        {
-            var filePaths = WorkspaceFileEnumerator.GetFormattableFiles(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.FileMatcher);
-
-            enumeratedFilePaths = filePaths;
-
-            if (formatCache is not null)
-            {
-                filePaths = filePaths.Where(filePath => !formatCache.IsUpToDate(filePath)).ToImmutableArray();
-            }
-
-            var folderPath = GetWorkspaceFolder(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType);
-            var folderWorkspace = FolderWorkspace.Create();
-            folderWorkspace.OpenFiles(folderPath, filePaths);
-            return new LoadedWorkspace(folderWorkspace, ProjectId: null);
-        }
-
-        private static string GetWorkspaceFolder(string workspaceFilePath, WorkspaceType workspaceType)
-        {
-            if (workspaceType == WorkspaceType.Solution)
-            {
-                return Path.GetDirectoryName(workspaceFilePath)!;
-            }
-
-            return Directory.Exists(workspaceFilePath)
-                ? workspaceFilePath
-                : Path.GetDirectoryName(workspaceFilePath)!;
-        }
-
-        private static IEnumerable<string> GetFormattedFilePaths(Solution solution, ImmutableArray<DocumentId> formatableFiles)
-        {
-            for (var index = 0; index < formatableFiles.Length; index++)
-            {
-                if (solution.GetDocument(formatableFiles[index])?.FilePath is string filePath)
-                {
-                    yield return filePath;
-                }
-            }
         }
 
         private static IEnumerable<string> GetSolutionFilePaths(Solution solution)
@@ -271,9 +217,9 @@ namespace Microsoft.CodeAnalysis.Tools
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            Debug.Assert(formatOptions.WorkspaceType is not WorkspaceType.Project || projectId is not null || CanFormatWithoutMSBuild(formatOptions));
+            Debug.Assert(formatOptions.WorkspaceType is not WorkspaceType.Project || projectId is not null);
 
-            var totalFileCount = solution.Projects.Sum(project => project.DocumentIds.Count);
+            var totalFileCount = solution.Projects.Sum(project => project.DocumentIds.Count + project.AdditionalDocumentIds.Count);
             var projectFileCount = 0;
 
             var documentsCoveredByEditorConfig = ImmutableArray.CreateBuilder<DocumentId>(totalFileCount);
@@ -324,11 +270,11 @@ namespace Microsoft.CodeAnalysis.Tools
                     }
 
                     if (cache is not null && cache.IsUpToDate(document.FilePath))
-                {
-                    continue;
-                }
+                    {
+                        continue;
+                    }
 
-                var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken);
+                    var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken);
                     if (syntaxTree is null)
                     {
                         throw new Exception($"Unable to get a syntax tree for '{document.Name}'");
@@ -359,6 +305,39 @@ namespace Microsoft.CodeAnalysis.Tools
                     else
                     {
                         documentsNotCoveredByEditorConfig.Add(document.Id);
+                    }
+                }
+
+                if (formatOptions.FixCategory.HasFlag(FixCategory.Whitespace))
+                {
+                    foreach (var document in project.AdditionalDocuments)
+                    {
+                        if (document.FilePath is null ||
+                            !FormatterUtilities.IsRazorDocument(document) ||
+                            !addedFilePaths.Add(document.FilePath))
+                        {
+                            continue;
+                        }
+
+                        projectFileCount++;
+
+                        var isFileIncluded = formatOptions.WorkspaceType == WorkspaceType.Folder ||
+                            (formatOptions.FileMatcher.HasMatches(document.FilePath) && File.Exists(document.FilePath));
+                        if (!isFileIncluded)
+                        {
+                            continue;
+                        }
+
+                        var analyzerConfigOptions = FormatterUtilities.GetAnalyzerConfigOptionsForAdditionalDocument(document);
+
+                        if (analyzerConfigOptions is not null)
+                        {
+                            documentsCoveredByEditorConfig.Add(document.Id);
+                        }
+                        else
+                        {
+                            documentsNotCoveredByEditorConfig.Add(document.Id);
+                        }
                     }
                 }
 

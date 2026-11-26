@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 
@@ -17,9 +16,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         public override FixCategory Category => FixCategory.Whitespace;
 
         internal override Task<SourceText> FormatFileAsync(
-            Document document,
+            TextDocument document,
             SourceText sourceText,
-            OptionSet optionSet,
             AnalyzerConfigOptions analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
@@ -70,14 +68,21 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
         private static bool NeedsEndOfLineFixes(SourceText sourceText, string endOfLine)
         {
+            var text = sourceText.ToString();
+            // Roslyn also recognizes these Unicode characters as line endings.
+            if (text.Contains('\u0085') || text.Contains('\u2028') || text.Contains('\u2029'))
+            {
+                return true;
+            }
+
             switch (endOfLine)
             {
                 case "\n":
                     // A 'cr' character can only appear as part of a cr or crlf line ending, so
                     // its absence means every line ending is already a plain 'lf'.
-                    return sourceText.ToString().IndexOf('\r') >= 0;
+                    return sourceText.ToString().Contains('\r');
                 case "\r":
-                    return sourceText.ToString().IndexOf('\n') >= 0;
+                    return sourceText.ToString().Contains('\n');
                 case "\r\n":
                     return HasLooseEndOfLine(sourceText.ToString());
                 default:

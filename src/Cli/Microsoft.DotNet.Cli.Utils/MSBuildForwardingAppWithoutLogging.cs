@@ -180,17 +180,36 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// <summary>
     /// Run the MSBuild arguments that have been previously specified.
     /// </summary>
-    public int Execute()
+    public int Execute(CancellationToken cancellationToken) => Execute(workingDirectory: null, cancellationToken);
+
+    /// <inheritdoc cref="Execute(CancellationToken)"/>
+    /// <param name="workingDirectory">
+    /// When specified, run out-of-process in this directory without changing the caller's directory.
+    /// </param>
+    public int Execute(string? workingDirectory, CancellationToken cancellationToken)
     {
+        using var activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
+
+        if (workingDirectory is not null && _forwardingApp is null)
+        {
+            InitializeForOutOfProcForwarding();
+        }
+
         if (_forwardingApp != null)
         {
-            return GetProcessStartInfo().Execute();
+            ProcessStartInfo startInfo = GetProcessStartInfo();
+            if (workingDirectory is not null)
+            {
+                startInfo.WorkingDirectory = workingDirectory;
+            }
+
+            return startInfo.Execute(cancellationToken);
         }
         else
         {
             if (RuntimeFeature.IsDynamicCodeSupported)
             {
-                return ExecuteInProc(GetAllArguments());
+                return ExecuteInProc(GetAllArguments(), cancellationToken);
             }
             else
             {
@@ -205,15 +224,20 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// After execution, the original environment variables are restored for any remaining cleanup work the dotnet CLI needs to perform.
     /// </summary>
     [RequiresDynamicCode("Calls MSBuildApp.Main, which is not AOT-safe")]
-    public int ExecuteInProc(string[] arguments)
+    public int ExecuteInProc(string[] arguments, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         using var _ = SetEnvironmentVariables(_msbuildRequiredEnvironmentVariables);
+        using CancellationTokenRegistration cancellationRegistration = cancellationToken.Register(
+            static () => Build.Execution.BuildManager.DefaultBuildManager.CancelAllSubmissions());
+
         try
         {
             // Execute MSBuild in the current process by calling its Main method.
             return Build.CommandLine.MSBuildApp.Main(arguments);
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             // MSBuild, like all well-behaved CLI tools, handles all exceptions. In the unlikely case
             // that something still escapes, we print the exception and fail the call. Non-localized
@@ -231,6 +255,22 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// </summary>
     internal static IDisposable SetMSBuildRequiredEnvironmentVariables()
         => SetEnvironmentVariables(GetMSBuildRequiredEnvironmentVariables());
+
+    /// <summary>
+    /// Sets the required MSBuild environment variables and additional variables for a direct
+    /// in-process MSBuild operation. Restores their original values when disposed.
+    /// </summary>
+    internal static IDisposable SetMSBuildRequiredEnvironmentVariables(
+        IEnumerable<KeyValuePair<string, string?>> additionalEnvironmentVariables)
+    {
+        Dictionary<string, string?> environmentVariables = GetMSBuildRequiredEnvironmentVariables();
+        foreach (KeyValuePair<string, string?> variable in additionalEnvironmentVariables)
+        {
+            environmentVariables[variable.Key] = variable.Value;
+        }
+
+        return SetEnvironmentVariables(environmentVariables);
+    }
 
     private static IDisposable SetEnvironmentVariables(IEnumerable<KeyValuePair<string, string?>> environmentVariables)
     {

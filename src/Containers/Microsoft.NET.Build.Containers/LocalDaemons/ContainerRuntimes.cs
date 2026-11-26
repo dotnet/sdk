@@ -78,7 +78,7 @@ internal sealed class DockerContainerRuntime(ContainerRuntimeOperations operatio
     /// <inheritdoc />
     public override Task<bool> IsAvailableAsync(CancellationToken cancellationToken)
     {
-        JsonDocument config = GetDockerConfig();
+        JsonDocument config = GetDockerConfig(cancellationToken);
         if (!config.RootElement.TryGetProperty("ServerErrors", out JsonElement errorProperty) ||
             errorProperty.ValueKind == JsonValueKind.Array && errorProperty.GetArrayLength() == 0)
         {
@@ -100,7 +100,7 @@ internal sealed class DockerContainerRuntime(ContainerRuntimeOperations operatio
         DestinationImageReference destinationReference,
         CancellationToken cancellationToken)
     {
-        if (!IsContainerdStoreEnabled())
+        if (!IsContainerdStoreEnabled(cancellationToken))
         {
             throw new DockerLoadException(Strings.ImageLoadFailed_ContainerdStoreDisabled);
         }
@@ -115,11 +115,11 @@ internal sealed class DockerContainerRuntime(ContainerRuntimeOperations operatio
             cancellationToken);
     }
 
-    internal static bool IsPodmanAlias()
+    internal static bool IsPodmanAlias(CancellationToken cancellationToken)
     {
         try
         {
-            JsonElement dockerInfo = GetDockerConfig().RootElement;
+            JsonElement dockerInfo = GetDockerConfig(cancellationToken).RootElement;
             bool hasDockerProperty =
                 dockerInfo.TryGetProperty("DockerRootDir", out JsonElement dockerRootDir) &&
                 dockerRootDir.GetString() is not null;
@@ -129,13 +129,13 @@ internal sealed class DockerContainerRuntime(ContainerRuntimeOperations operatio
                 buildahVersion.GetString() is not null;
             return !hasDockerProperty && hasPodmanProperty;
         }
-        catch
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             return false;
         }
     }
 
-    internal static JsonDocument GetDockerConfig()
+    internal static JsonDocument GetDockerConfig(CancellationToken cancellationToken)
     {
         string dockerPath = ContainerRuntimeOperations.FindFullPathFromPath(ContainerRuntime.DockerCommand);
         Process process = new()
@@ -148,7 +148,7 @@ internal sealed class DockerContainerRuntime(ContainerRuntimeOperations operatio
             Command dockerCommand = new(process);
             dockerCommand.CaptureStdOut();
             dockerCommand.CaptureStdErr();
-            CommandResult result = dockerCommand.Execute();
+            CommandResult result = dockerCommand.Execute(cancellationToken);
             if (result.ExitCode != 0)
             {
                 throw new DockerLoadException(Resource.FormatString(
@@ -160,17 +160,17 @@ internal sealed class DockerContainerRuntime(ContainerRuntimeOperations operatio
 
             return JsonDocument.Parse(result.StdOut ?? string.Empty);
         }
-        catch (Exception e) when (e is not DockerLoadException)
+        catch (Exception e) when (e is not DockerLoadException and not OperationCanceledException)
         {
             throw new DockerLoadException(Resource.FormatString(nameof(Strings.DockerInfoFailed_Ex), e.Message));
         }
     }
 
-    internal static bool IsInsecureRegistry(string registryDomain)
+    internal static bool IsInsecureRegistry(string registryDomain, CancellationToken cancellationToken)
     {
         try
         {
-            JsonElement rootElement = GetDockerConfig().RootElement;
+            JsonElement rootElement = GetDockerConfig(cancellationToken).RootElement;
             if (rootElement.TryGetProperty("RegistryConfig", out JsonElement registryConfig) &&
                 registryConfig.ValueKind == JsonValueKind.Object &&
                 registryConfig.TryGetProperty("IndexConfigs", out JsonElement indexConfigs) &&
@@ -210,11 +210,11 @@ internal sealed class DockerContainerRuntime(ContainerRuntimeOperations operatio
         }
     }
 
-    internal static bool IsContainerdStoreEnabled()
+    internal static bool IsContainerdStoreEnabled(CancellationToken cancellationToken)
     {
         try
         {
-            if (!GetDockerConfig().RootElement.TryGetProperty("DriverStatus", out JsonElement driverStatus) ||
+            if (!GetDockerConfig(cancellationToken).RootElement.TryGetProperty("DriverStatus", out JsonElement driverStatus) ||
                 driverStatus.ValueKind != JsonValueKind.Array)
             {
                 return false;
@@ -236,7 +236,7 @@ internal sealed class DockerContainerRuntime(ContainerRuntimeOperations operatio
             }
             return false;
         }
-        catch
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             return false;
         }

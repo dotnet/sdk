@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// </summary>
 public sealed class MSBuildArgs
 {
+    private readonly string? _multiThreadedValue;
+
     private MSBuildArgs(
         ReadOnlyDictionary<string, string>? properties,
         ReadOnlyDictionary<string, string>? restoreProperties,
@@ -22,7 +24,8 @@ public sealed class MSBuildArgs
         string[]? getResultOutputFile,
         VerbosityOptions? verbosity,
         bool noLogo,
-        string[]? otherMSBuildArgs
+        string[]? otherMSBuildArgs,
+        string? multiThreadedValue = null
         )
     {
         GlobalProperties = properties;
@@ -34,6 +37,7 @@ public sealed class MSBuildArgs
         GetResultOutputFile = getResultOutputFile;
         Verbosity = verbosity;
         NoLogo = noLogo;
+        _multiThreadedValue = multiThreadedValue;
         OtherMSBuildArgs = otherMSBuildArgs is not null
             ? [.. otherMSBuildArgs]
             : new List<string>();
@@ -87,6 +91,27 @@ public sealed class MSBuildArgs
     /// </summary>
     public List<string> OtherMSBuildArgs { get; }
 
+    internal bool? HasMultithreadedSwitch => bool.TryParse(_multiThreadedValue, out bool value) ? value : null;
+
+    internal bool IsMultiThreadedEnabled
+    {
+        get
+        {
+            if (Env.GetEnvironmentVariable("MSBUILDFORCEMULTITHREADED") == "1")
+            {
+                return true;
+            }
+
+            if (_multiThreadedValue is null)
+            {
+                return Env.GetEnvironmentVariable("MSBUILDENABLEMULTITHREADED") == "1";
+            }
+
+            return HasMultithreadedSwitch
+                ?? throw new GracefulException(string.Format(LocalizableStrings.InvalidMultiThreadedValue, _multiThreadedValue));
+        }
+    }
+
     /// <summary>
     /// Ensures that when we do our MSBuild-property re-parses we parse in the same way as the dotnet CLI's parser.
     /// </summary>
@@ -119,6 +144,7 @@ public sealed class MSBuildArgs
         var verbosity = TryGetValue<VerbosityOptions?>("--verbosity");
         var nologo = TryGetValue<bool?>("--no-logo") ?? true; // Default to nologo if not specified
         var otherMSBuildArgs = parseResult.UnmatchedTokens.ToArray();
+
         return new MSBuildArgs(
             properties: globalProperties,
             restoreProperties: restoreProperties,
@@ -129,7 +155,8 @@ public sealed class MSBuildArgs
             getResultOutputFile: getResultOutputFile,
             otherMSBuildArgs: otherMSBuildArgs,
             verbosity: verbosity,
-            noLogo: nologo);
+            noLogo: nologo,
+            multiThreadedValue: ParseMultiThreadedSwitch(otherMSBuildArgs));
 
         /// We can't use <see cref="ParseResult.GetResult(string)"/> to check if the names of the options we care
         /// about were specified, because if they weren't specified it throws.
@@ -140,6 +167,28 @@ public sealed class MSBuildArgs
         }
     }
 
+    // Returns the effective -mt value, or null when no switch was given. Validation happens on use.
+    private static string? ParseMultiThreadedSwitch(IEnumerable<string> arguments)
+    {
+        string? value = null;
+        foreach (string argument in arguments)
+        {
+            if (argument == "--")
+            {
+                break;
+            }
+
+            if (MSBuildArgumentParser.TryGetMultiThreadedSwitch(argument, out string? parameter))
+            {
+                // Empty parameters do not replace an earlier explicit value.
+                value = parameter is null ? bool.TrueString
+                    : parameter.Length == 0 ? value ?? bool.TrueString
+                    : parameter;
+            }
+        }
+
+        return value;
+    }
 
     public static MSBuildArgs FromProperties(ReadOnlyDictionary<string, string>? properties)
     {
@@ -172,7 +221,8 @@ public sealed class MSBuildArgs
             getResultOutputFile: GetResultOutputFile,
             otherMSBuildArgs: newArgs,
             noLogo: NoLogo,
-            verbosity: Verbosity);
+            verbosity: Verbosity,
+            multiThreadedValue: _multiThreadedValue);
     }
 
     /// <summary>
@@ -193,7 +243,8 @@ public sealed class MSBuildArgs
                 GetResultOutputFile,
                 Verbosity,
                 NoLogo,
-                OtherMSBuildArgs.ToArray());
+                OtherMSBuildArgs.ToArray(),
+                _multiThreadedValue);
         }
 
         return new MSBuildArgs(
@@ -206,7 +257,8 @@ public sealed class MSBuildArgs
             GetResultOutputFile,
             Verbosity,
             NoLogo,
-            [.. OtherMSBuildArgs, .. additionalArgs]);
+            [.. OtherMSBuildArgs, .. additionalArgs],
+            _multiThreadedValue);
     }
 
     public MSBuildArgs CloneWithAdditionalRestoreProperties(ReadOnlyDictionary<string, string>? additionalRestoreProperties)
@@ -224,7 +276,8 @@ public sealed class MSBuildArgs
                 GetResultOutputFile,
                 Verbosity,
                 NoLogo,
-                OtherMSBuildArgs.ToArray());
+                OtherMSBuildArgs.ToArray(),
+                _multiThreadedValue);
         }
         if (RestoreGlobalProperties is null)
         {
@@ -238,7 +291,8 @@ public sealed class MSBuildArgs
                 GetResultOutputFile,
                 Verbosity,
                 NoLogo,
-                OtherMSBuildArgs.ToArray());
+                OtherMSBuildArgs.ToArray(),
+                _multiThreadedValue);
         }
 
         var newRestoreProperties = new Dictionary<string, string>(RestoreGlobalProperties, StringComparer.OrdinalIgnoreCase);
@@ -256,7 +310,8 @@ public sealed class MSBuildArgs
             GetResultOutputFile,
             Verbosity,
             NoLogo,
-            OtherMSBuildArgs.ToArray());
+            OtherMSBuildArgs.ToArray(),
+            _multiThreadedValue);
     }
 
     public MSBuildArgs CloneWithAdditionalProperties(ReadOnlyDictionary<string, string>? additionalProperties)
@@ -274,7 +329,8 @@ public sealed class MSBuildArgs
                 GetResultOutputFile,
                 Verbosity,
                 NoLogo,
-                OtherMSBuildArgs.ToArray());
+                OtherMSBuildArgs.ToArray(),
+                _multiThreadedValue);
         }
         if (GlobalProperties is null)
         {
@@ -288,7 +344,8 @@ public sealed class MSBuildArgs
                 GetResultOutputFile,
                 Verbosity,
                 NoLogo,
-                OtherMSBuildArgs.ToArray());
+                OtherMSBuildArgs.ToArray(),
+                _multiThreadedValue);
         }
 
         var newProperties = new Dictionary<string, string>(GlobalProperties, StringComparer.OrdinalIgnoreCase);
@@ -306,7 +363,8 @@ public sealed class MSBuildArgs
             GetResultOutputFile,
             Verbosity,
             NoLogo,
-            OtherMSBuildArgs.ToArray());
+            OtherMSBuildArgs.ToArray(),
+            _multiThreadedValue);
     }
 
     public MSBuildArgs CloneWithAdditionalTargets(params ReadOnlySpan<string> additionalTargets)
@@ -324,7 +382,8 @@ public sealed class MSBuildArgs
             GetResultOutputFile,
             Verbosity,
             NoLogo,
-            OtherMSBuildArgs.ToArray());
+            OtherMSBuildArgs.ToArray(),
+            _multiThreadedValue);
     }
 
     public MSBuildArgs CloneWithVerbosity(VerbosityOptions newVerbosity)
@@ -339,7 +398,8 @@ public sealed class MSBuildArgs
             GetResultOutputFile,
             newVerbosity,
             NoLogo,
-            OtherMSBuildArgs.ToArray());
+            OtherMSBuildArgs.ToArray(),
+            _multiThreadedValue);
     }
 
     public MSBuildArgs CloneWithNoLogo(bool noLogo)
@@ -354,7 +414,8 @@ public sealed class MSBuildArgs
             GetResultOutputFile,
             Verbosity,
             noLogo,
-            OtherMSBuildArgs.ToArray());
+            OtherMSBuildArgs.ToArray(),
+            _multiThreadedValue);
     }
 
     /// <summary>

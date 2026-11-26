@@ -478,6 +478,11 @@ internal static class SolutionAndProjectUtility
     /// The evaluation happens in the collection of <paramref name="buildSession"/>, which is the one
     /// every project of the run has to share; pass an <paramref name="evaluationContext"/> to reuse an
     /// existing one and avoid redundant evaluation.
+    /// When <paramref name="requireTestingPlatformApplication"/> is <see langword="true"/>, only target
+    /// frameworks that are Microsoft.Testing.Platform applications participate in device selection.
+    /// Solutions use this so that other projects (e.g. a MAUI app or library) that import
+    /// <c>ComputeAvailableDevices</c> through their workload are not asked for a device. It must only be
+    /// used after restore, since <c>IsTestingPlatformApplication</c> typically comes from NuGet package imports.
     /// </summary>
     internal static DeviceSelectionEvaluation? EvaluateProjectForDeviceSelection(
         string projectFilePath,
@@ -485,7 +490,8 @@ internal static class SolutionAndProjectUtility
         MSBuildSession buildSession,
         EvaluationContext? evaluationContext = null,
         string? configuration = null,
-        string? platform = null)
+        string? platform = null,
+        bool requireTestingPlatformApplication = false)
     {
         // --device is already handled by HandleDeviceWithTargetFrameworkSelection
         if (!string.IsNullOrWhiteSpace(buildOptions.Device))
@@ -502,6 +508,8 @@ internal static class SolutionAndProjectUtility
         {
             return null;
         }
+
+        using var activity = Activities.PerformanceSource.StartActivity("test-project-discovery");
 
         var collection = buildSession.ProjectCollection;
         evaluationContext ??= EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
@@ -563,7 +571,7 @@ internal static class SolutionAndProjectUtility
             evaluatedProjects[framework] = frameworkProject;
         }
 
-        return new DeviceSelectionEvaluation(evaluatedProjects, testTfmsInParallel);
+        return new DeviceSelectionEvaluation(evaluatedProjects, testTfmsInParallel, requireTestingPlatformApplication);
     }
 
     /// <summary>
@@ -588,7 +596,7 @@ internal static class SolutionAndProjectUtility
             // Workload-specific targets are imported only by inner builds, so probe the
             // TFM-specific evaluation before constructing the selector that executes the target.
             (string? Device, string? RuntimeIdentifier, bool RestoreWasPerformed) selection =
-                frameworkProject.Targets.ContainsKey(Constants.ComputeAvailableDevices)
+                evaluation.RequiresDeviceSelection(frameworkProject)
                     ? SelectDeviceForTfm(
                         projectFilePath,
                         buildOptions,
@@ -612,7 +620,8 @@ internal static class SolutionAndProjectUtility
 
     internal sealed record DeviceSelectionEvaluation(
         Dictionary<string, ProjectInstance> EvaluatedProjects,
-        bool TestTfmsInParallel)
+        bool TestTfmsInParallel,
+        bool RequireTestingPlatformApplication = false)
     {
         public IEnumerable<KeyValuePair<string, ProjectInstance>> ProjectsByFramework
             => EvaluatedProjects.Count == 1
@@ -620,7 +629,13 @@ internal static class SolutionAndProjectUtility
                 : EvaluatedProjects.Where(project => !string.IsNullOrEmpty(project.Key));
 
         public bool SupportsDeviceSelection
-            => ProjectsByFramework.Any(project => project.Value.Targets.ContainsKey(Constants.ComputeAvailableDevices));
+            => ProjectsByFramework.Any(project => RequiresDeviceSelection(project.Value));
+
+        public bool RequiresDeviceSelection(ProjectInstance project)
+            => project.Targets.ContainsKey(Constants.ComputeAvailableDevices)
+                && (!RequireTestingPlatformApplication
+                    || (bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication)
+                        && isTestingPlatformApplication));
     }
 
     internal sealed record DeviceSelectionResult(
@@ -679,7 +694,9 @@ internal static class SolutionAndProjectUtility
                 out var restoreWasPerformed))
             {
                 throw new GracefulException(
-                    string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+                    string.IsNullOrEmpty(tfm)
+                        ? string.Format(CliCommandStrings.TestCommandDeviceSelectionFailed, projectFilePath)
+                        : string.Format(CliCommandStrings.TestCommandDeviceSelectionFailedForTargetFramework, projectFilePath, tfm));
             }
 
             return (selectedDevice, runtimeIdentifier, restoreWasPerformed);

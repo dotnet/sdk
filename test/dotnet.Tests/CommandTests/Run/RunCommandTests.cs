@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.MSBuild.Tests;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectTools;
 
@@ -35,6 +36,22 @@ public sealed class RunCommandTests : SdkTest
             applicationArgs: applicationArgs ?? [],
             readCodeFromStdin: false,
             environmentVariables: new Dictionary<string, string>());
+
+    [TestMethod]
+    public void VirtualProjectBuildRejectsCancellationBeforeStarting()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory();
+        var sourceFile = Path.Join(testDirectory.Path, "Program.cs");
+        File.WriteAllText(sourceFile, "Console.WriteLine();");
+        var command = new VirtualProjectBuildingCommand(
+            sourceFile,
+            MSBuildArgs.FromOtherArgs([]),
+            TestCommandServices.CreateNonLLM());
+        using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+        cancellationSource.Cancel();
+
+        Assert.ThrowsExactly<OperationCanceledException>(() => command.Execute(cancellationSource.Token));
+    }
 
     [TestMethod]
     public void EnvironmentVariableExpansion_Project()

@@ -38,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Common\FileBasedProgramDefaults.cs" Link="Common\FileBasedProgramDefaults.cs" />
     <ProjectReference Include="$(ProjectToolsProjectDir)Microsoft.DotNet.ProjectTools.csproj" />
   </ItemGroup>
 

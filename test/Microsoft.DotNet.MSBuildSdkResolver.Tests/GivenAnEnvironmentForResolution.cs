@@ -4,6 +4,8 @@
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
     [TestClass]
+    // These tests read the current directory while GivenAnMSBuildSdkResolver temporarily changes it.
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public class GivenAnEnvironmentForResolution : SdkTest
     {
         public GivenAnEnvironmentForResolution() : base()

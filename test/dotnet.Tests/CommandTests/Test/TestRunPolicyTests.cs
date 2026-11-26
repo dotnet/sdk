@@ -52,26 +52,53 @@ public class TestRunPolicyTests
     public async Task TimeoutStartsWithFirstTestApplication()
     {
         CancellationToken cancellationToken = TestContext.CancellationToken;
-        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: TimeSpan.FromMilliseconds(100));
+        var timeProvider = new ManualTimeProvider();
+        using var policy = new TestRunPolicy(
+            maximumFailedTests: null,
+            timeout: TimeSpan.FromMilliseconds(100),
+            timeProvider: timeProvider);
 
-        await Task.Delay(200, cancellationToken);
+        timeProvider.Advance(TimeSpan.FromMilliseconds(200));
         policy.Reason.Should().Be(TestRunCancellationReason.None);
+        policy.Cancellation.IsCompleted.Should().BeFalse();
+        policy.Token.IsCancellationRequested.Should().BeFalse();
 
         policy.OnTestApplicationStarted();
 
+        timeProvider.Advance(TimeSpan.FromMilliseconds(99));
+        policy.Reason.Should().Be(TestRunCancellationReason.None);
+        policy.Cancellation.IsCompleted.Should().BeFalse();
+        policy.Token.IsCancellationRequested.Should().BeFalse();
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
+        policy.Cancellation.IsCompleted.Should().BeTrue();
         TestRunCancellationReason reason = await policy.Cancellation.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
         reason.Should().Be(TestRunCancellationReason.Timeout);
+        policy.Token.IsCancellationRequested.Should().BeTrue();
     }
 
     [TestMethod]
-    public void StartingAdditionalTestApplicationsDoesNotRestartTimeout()
+    public async Task StartingAdditionalTestApplicationsDoesNotRestartTimeout()
     {
-        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: TimeSpan.FromMinutes(1));
+        CancellationToken cancellationToken = TestContext.CancellationToken;
+        var timeProvider = new ManualTimeProvider();
+        using var policy = new TestRunPolicy(
+            maximumFailedTests: null,
+            timeout: TimeSpan.FromMilliseconds(100),
+            timeProvider: timeProvider);
 
         policy.OnTestApplicationStarted();
+        timeProvider.Advance(TimeSpan.FromMilliseconds(50));
         policy.OnTestApplicationStarted();
 
+        timeProvider.Advance(TimeSpan.FromMilliseconds(49));
         policy.Reason.Should().Be(TestRunCancellationReason.None);
+        policy.Cancellation.IsCompleted.Should().BeFalse();
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
+        policy.Cancellation.IsCompleted.Should().BeTrue();
+        TestRunCancellationReason reason = await policy.Cancellation.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+        reason.Should().Be(TestRunCancellationReason.Timeout);
     }
 
     [TestMethod]

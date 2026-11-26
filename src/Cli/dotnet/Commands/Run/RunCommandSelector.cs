@@ -195,6 +195,7 @@ internal sealed class RunCommandSelector : IDisposable
     /// </summary>
     private bool OpenProjectIfNeeded([NotNullWhen(true)] out ProjectInstance? projectInstance)
     {
+        using var activity = Activities.PerformanceSource.StartActivity("project-selection");
         if (_project is null)
         {
             try
@@ -227,7 +228,6 @@ internal sealed class RunCommandSelector : IDisposable
     /// command (so a binary log attached to it holds a single build) or, when no session was provided,
     /// in a build of its own.
     /// </summary>
-    [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
     private bool BuildTargets(ProjectInstance projectInstance, string[] targets, out IDictionary<string, TargetResult> targetOutputs)
     {
         if (_buildSession is { } buildSession)
@@ -236,7 +236,8 @@ internal sealed class RunCommandSelector : IDisposable
         }
 
         using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
-        return projectInstance.Build(targets, GetLoggers(), remoteLoggers: null, out targetOutputs);
+        return CommonRunHelpers.BuildProject(projectInstance, Collection, targets,
+            _msbuildArgs.IsMultiThreadedEnabled, GetLoggers(), out targetOutputs);
     }
 
     public void Dispose()
@@ -374,6 +375,8 @@ internal sealed class RunCommandSelector : IDisposable
         {
             return false;
         }
+
+        using var activity = Activities.PerformanceSource.StartActivity("device-discovery");
 
         // If restore is allowed, run restore first so device computation sees the restored assets
         if (!noRestore)
@@ -628,6 +631,6 @@ internal sealed class RunCommandSelector : IDisposable
             yield return _binaryLogger;
 
         if (!LoggerUtility.HasNoConsoleLoggerArgument(_msbuildArgs.OtherMSBuildArgs))
-            yield return CommonRunHelpers.GetConsoleLogger(_msbuildArgs);
+            yield return CommonRunHelpers.GetConsoleLogger(_msbuildArgs, CommandServices.CreateDefault());
     }
 }

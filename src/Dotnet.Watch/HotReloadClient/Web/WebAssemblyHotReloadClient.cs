@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.HotReload;
 internal sealed class WebAssemblyHotReloadClient(
     ILogger logger,
     ILogger agentLogger,
-    AbstractBrowserRefreshServer browserRefreshServer,
+    BrowserRefreshServer browserRefreshServer,
     int baselineEpoch,
     ImmutableArray<string> projectHotReloadCapabilities,
     Version projectTargetFrameworkVersion,
@@ -98,8 +98,12 @@ internal sealed class WebAssemblyHotReloadClient(
         // Wait for the browser connection to be established. Currently we need the browser to be running in order to apply changes.
         => await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
 
-    public override Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
-        => Task.FromResult(_capabilities);
+    public override Task<HotReloadAgentInfo> GetConnectedAgentInfoAsync(CancellationToken cancellationToken)
+        => Task.FromResult(new HotReloadAgentInfo
+        {
+            ManagedCodeUpdateCapabilities = _capabilities,
+            LocalProcessId = null
+        });
 
     public override async Task<Task<bool>> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {
@@ -119,7 +123,7 @@ internal sealed class WebAssemblyHotReloadClient(
 
         var loggingLevel = Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
-        return QueueUpdateBatch(
+        return QueueUpdateBatchAsync(
             sendAndReceive: async batchId =>
             {
                 // When testing abstract away the browser and pretend all changes have been applied:
@@ -152,7 +156,7 @@ internal sealed class WebAssemblyHotReloadClient(
     public override Task InitialUpdatesAppliedAsync(CancellationToken cancellationToken)
         => Task.CompletedTask;
 
-    private readonly struct JsonApplyManagedCodeUpdatesRequest
+    internal readonly struct JsonApplyManagedCodeUpdatesRequest
     {
         public string Type => "ApplyManagedCodeUpdates";
         public string? SharedSecret { get; init; }

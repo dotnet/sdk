@@ -136,9 +136,13 @@ namespace Microsoft.TemplateEngine.Cli
                         break;
                     case InstallerErrorCode.PackageNotFound:
                         _reporterError.WriteLine(
-                            string.Format(
-                                LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_PackageNotFound,
-                                packageToInstall).Bold().Red());
+                            (string.IsNullOrWhiteSpace(result.ErrorMessage)
+                                ? string.Format(
+                                    LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_PackageNotFound,
+                                    packageToInstall)
+                                : string.Format(
+                                    LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_GenericError,
+                                    packageToInstall) + Environment.NewLine + result.ErrorMessage).Bold().Red());
                         break;
                     case InstallerErrorCode.DownloadFailed:
                         _reporterError.WriteLine(
@@ -349,6 +353,10 @@ namespace Microsoft.TemplateEngine.Cli
                             string.Format(
                                 LocalizableStrings.TemplatePackageCoordinator_Update_Error_PackageNotFound,
                                 result.TemplatePackage.DisplayName).Bold().Red());
+                        if (!string.IsNullOrWhiteSpace(result.ErrorMessage))
+                        {
+                            _reporterError.WriteLine(result.ErrorMessage.Bold().Red());
+                        }
                     }
                     break;
                 case InstallerErrorCode.UnsupportedRequest:
