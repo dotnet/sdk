@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
+using System.Xml.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
@@ -288,6 +289,55 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             string[] args = [command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath];
+            var testCommand = command == "dnx"
+                ? new DotnetCommand(Log, args)
+                : new DotnetToolCommand(Log, args);
+
+            testCommand
+                .WithEnvironmentVariables(homeFolder)
+                .WithWorkingDirectory(testDirectory.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Hello Tool!");
+        }
+
+        [TestMethod]
+        [DataRow("exec")]
+        [DataRow("dnx")]
+        public void ToolExecUsesPackageSourceMappingForRidSpecificPackage(string command)
+        {
+            var toolSettings = new TestToolBuilder.TestToolSettings()
+            {
+                IncludeAnyRid = true
+            };
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            var homeFolder = Path.Combine(testDirectory.Path, "home");
+            string wrapperFeedPath = Path.Combine(testDirectory.Path, "wrapper-feed");
+            string ridFeedPath = Path.Combine(testDirectory.Path, "rid-feed");
+            Directory.CreateDirectory(wrapperFeedPath);
+            Directory.CreateDirectory(ridFeedPath);
+
+            string wrapperPackage = $"{toolSettings.ToolPackageId}.{toolSettings.ToolPackageVersion}.nupkg";
+            string ridPackageId = $"{toolSettings.ToolPackageId}.any";
+            string ridPackage = $"{ridPackageId}.{toolSettings.ToolPackageVersion}.nupkg";
+            File.Copy(Path.Combine(toolPackagesPath, wrapperPackage), Path.Combine(wrapperFeedPath, wrapperPackage));
+            File.Copy(Path.Combine(toolPackagesPath, ridPackage), Path.Combine(ridFeedPath, ridPackage));
+
+            new XDocument(
+                new XElement("configuration",
+                    new XElement("packageSources",
+                        new XElement("clear"),
+                        new XElement("add", new XAttribute("key", "wrapper"), new XAttribute("value", wrapperFeedPath)),
+                        new XElement("add", new XAttribute("key", "rid"), new XAttribute("value", ridFeedPath))),
+                    new XElement("packageSourceMapping",
+                        new XElement("packageSource", new XAttribute("key", "wrapper"),
+                            new XElement("package", new XAttribute("pattern", toolSettings.ToolPackageId))),
+                        new XElement("packageSource", new XAttribute("key", "rid"),
+                            new XElement("package", new XAttribute("pattern", ridPackageId))))))
+                .Save(Path.Combine(testDirectory.Path, "NuGet.Config"));
+
+            string[] args = [command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes"];
             var testCommand = command == "dnx"
                 ? new DotnetCommand(Log, args)
                 : new DotnetToolCommand(Log, args);
