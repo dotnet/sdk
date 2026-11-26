@@ -1,11 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Build.Framework;
+
 namespace Microsoft.NET.Build.Tasks
 {
     /// <summary>
     /// Provides a localizable mechanism for logging a warning from the SDK targets.
     /// </summary>
+    [MSBuildMultiThreadableTask]
     public class
 #if EXTENSIONS
         // This task source is shared with multiple task Dlls.  Since both tasks
