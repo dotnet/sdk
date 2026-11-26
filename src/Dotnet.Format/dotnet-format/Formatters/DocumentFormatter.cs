@@ -28,7 +28,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// <summary>
         /// Applies formatting and returns a formatted <see cref="Solution"/>.
         /// </summary>
-        public async Task<Solution> FormatAsync(
+        public Task<Solution> FormatAsync(
             Workspace workspace,
             Solution solution,
             ImmutableArray<DocumentId> formattableDocuments,
@@ -36,8 +36,18 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             ILogger logger,
             List<FormattedFile> formattedFiles,
             CancellationToken cancellationToken)
+            => FormatAsync(ImmutableArray.Create(this), solution, formattableDocuments, formatOptions, logger, formattedFiles, cancellationToken);
+
+        internal static async Task<Solution> FormatAsync(
+            ImmutableArray<DocumentFormatter> formatters,
+            Solution solution,
+            ImmutableArray<DocumentId> formattableDocuments,
+            FormatOptions formatOptions,
+            ILogger logger,
+            List<FormattedFile> formattedFiles,
+            CancellationToken cancellationToken)
         {
-            var results = new (TextDocument document, SourceText originalText, SourceText? formattedText)?[formattableDocuments.Length];
+            var results = new (TextDocument document, SourceText originalText, SourceText formattedText)?[formatters.Length, formattableDocuments.Length];
 
             // Bound concurrent formatting while retaining document order for applying and reporting changes.
             await Parallel.ForEachAsync(Enumerable.Range(0, formattableDocuments.Length),
@@ -80,30 +90,40 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                         return;
                     }
 
-                    var formattedText = await FormatFileAsync(document, originalText, analyzerConfigOptions, formatOptions, logger, token);
-                    results[index] = !formattedText.ContentEquals(originalText) ||
-                        !Equals(formattedText.Encoding, originalText.Encoding)
-                        ? (document, originalText, formattedText)
-                        : (document, originalText, null);
+                    for (var stage = 0; stage < formatters.Length; stage++)
+                    {
+                        var formattedText = await formatters[stage].FormatFileAsync(document, originalText, analyzerConfigOptions, formatOptions, logger, token);
+                        if (!formattedText.ContentEquals(originalText) || !Equals(formattedText.Encoding, originalText.Encoding))
+                        {
+                            results[stage, index] = (document, originalText, formattedText);
+                        }
+
+                        originalText = formattedText;
+                    }
                 });
 
             var formattedSolution = solution;
-            foreach (var result in results)
+            // Report in formatter-first order without repeating per-document setup.
+            for (var stage = 0; stage < formatters.Length; stage++)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                if (result is not { } value || value.document.FilePath is null || value.formattedText is null)
+                var formatter = formatters[stage];
+                for (var index = 0; index < formattableDocuments.Length; index++)
                 {
-                    continue;
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (results[stage, index] is not { } value || value.document.FilePath is null)
+                    {
+                        continue;
+                    }
+
+                    var (document, originalText, formattedText) = value;
+                    var fileChanges = FormatterUtilities.GetFileChanges(
+                        document, originalText, formattedText, formatter.Name, formatter.FormatWarningDescription, formatOptions, logger);
+                    formattedFiles.Add(new FormattedFile(document, fileChanges));
+
+                    formattedSolution = document is Document
+                        ? formattedSolution.WithDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity)
+                        : formattedSolution.WithAdditionalDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity);
                 }
-
-                var (document, originalText, formattedText) = value;
-                var fileChanges = FormatterUtilities.GetFileChanges(
-                    document, originalText, formattedText, Name, FormatWarningDescription, formatOptions, logger);
-                formattedFiles.Add(new FormattedFile(document, fileChanges));
-
-                formattedSolution = document is Document
-                    ? formattedSolution.WithDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity)
-                    : formattedSolution.WithAdditionalDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity);
             }
 
             return formattedSolution;

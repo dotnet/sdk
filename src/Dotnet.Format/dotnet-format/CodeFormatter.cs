@@ -221,6 +221,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             var totalFileCount = solution.Projects.Sum(project => project.DocumentIds.Count + project.AdditionalDocumentIds.Count);
             var projectFileCount = 0;
+            var cachedFiles = cache?.GetUpToDateFiles(GetSolutionFilePaths(solution));
 
             var documentsCoveredByEditorConfig = ImmutableArray.CreateBuilder<DocumentId>(totalFileCount);
             var documentsNotCoveredByEditorConfig = ImmutableArray.CreateBuilder<DocumentId>(totalFileCount);
@@ -269,7 +270,7 @@ namespace Microsoft.CodeAnalysis.Tools
                         continue;
                     }
 
-                    if (cache is not null && cache.IsUpToDate(document.FilePath))
+                    if (cachedFiles?.Contains(document.FilePath) == true)
                     {
                         continue;
                     }

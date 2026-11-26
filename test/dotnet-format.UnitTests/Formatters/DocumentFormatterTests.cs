@@ -40,7 +40,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 Assert.AreEqual("<p>hello</p>", text.ToString());
                 Assert.IsNotNull(text.Encoding);
                 text.Encoding.GetPreamble().Should().Equal(new byte[] { 0xef, 0xbb, 0xbf });
-                Assert.HasCount(1, files);
+                files.SelectMany(file => file.FileChanges).Select(change => change.DiagnosticId)
+                    .Should().Contain("FINALNEWLINE").And.Contain("CHARSET");
             }
         }
 

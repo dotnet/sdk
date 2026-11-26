@@ -82,10 +82,28 @@ namespace Microsoft.CodeAnalysis.Tools
             }
         }
 
-        public bool IsUpToDate(string filePath)
+        /// <summary>
+        /// Validates configuration once for a document-selection batch. Recording and publishing
+        /// independently revalidate it so concurrent configuration edits cannot poison the cache.
+        /// </summary>
+        public HashSet<string> GetUpToDateFiles(IEnumerable<string> filePaths)
         {
-            return _files.TryGetValue(filePath, out var expectedHash) &&
-                !string.IsNullOrEmpty(expectedHash) && ConfigurationIsUnchanged() && ComputeFileHash(filePath) == expectedHash;
+            var result = new HashSet<string>(s_pathComparer);
+            if (!ConfigurationIsUnchanged())
+            {
+                return result;
+            }
+
+            foreach (var filePath in filePaths)
+            {
+                if (_files.TryGetValue(filePath, out var expectedHash) &&
+                    !string.IsNullOrEmpty(expectedHash) && ComputeFileHash(filePath) == expectedHash)
+                {
+                    result.Add(filePath);
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

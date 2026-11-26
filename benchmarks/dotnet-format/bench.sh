@@ -6,6 +6,8 @@
 #   bench.sh <dotnetHost> <toolDll> <repoPath> [extraArgs...]
 #
 # Prints the wall-clock duration in milliseconds on stdout.
+# Pass --folder to measure the persistent cache, or --no-cache to bypass it.
+# Project/solution callers can pass --no-restore in extraArgs.
 set -euo pipefail
 
 DOTNET_HOST="${1:?dotnet host required}"
@@ -14,7 +16,7 @@ REPO_PATH="${3:?repo path required}"
 shift 3
 
 START=$(date +%s%N)
-"$DOTNET_HOST" "$TOOL_DLL" whitespace --no-restore "$REPO_PATH" "$@" >/dev/null 2>&1
+"$DOTNET_HOST" "$TOOL_DLL" whitespace "$REPO_PATH" "$@" >/dev/null
 END=$(date +%s%N)
 
 echo $(((END - START) / 1000000))

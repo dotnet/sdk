@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Tools.Utilities;
+using Microsoft.CodeAnalysis.Tools.Workspaces;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.NET.TestFramework;
 
@@ -48,11 +49,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             using var fixture = new CacheFixture();
             fixture.Save();
             using var cache = fixture.Create();
-            Assert.IsTrue(cache.IsUpToDate(fixture.FilePath));
+            Assert.IsTrue(IsUpToDate(cache, fixture.FilePath));
             File.WriteAllText(fixture.FilePath, "class C{ }");
-            Assert.IsFalse(cache.IsUpToDate(fixture.FilePath));
+            Assert.IsFalse(IsUpToDate(cache, fixture.FilePath));
             File.Delete(fixture.FilePath);
-            Assert.IsFalse(cache.IsUpToDate(fixture.FilePath));
+            Assert.IsFalse(IsUpToDate(cache, fixture.FilePath));
         }
 
         [TestMethod]
@@ -78,14 +79,14 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             foreach (var options in alternatives)
             {
                 using var cache = fixture.Create(options);
-                Assert.IsFalse(cache.IsUpToDate(fixture.FilePath));
+                Assert.IsFalse(IsUpToDate(cache, fixture.FilePath));
             }
 
             using var reorderedCache = fixture.Create(original with
             {
                 FileMatcher = SourceFileMatcher.CreateMatcher(new[] { "bc", "a" }, Array.Empty<string>()),
             });
-            Assert.IsTrue(reorderedCache.IsUpToDate(fixture.FilePath));
+            Assert.IsTrue(IsUpToDate(reorderedCache, fixture.FilePath));
         }
 
         [TestMethod]
@@ -105,20 +106,20 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 File.WriteAllText(path, "[*.cs]\nindent_size = 2");
                 using (var cache = fixture.Create())
                 {
-                    Assert.IsFalse(cache.IsUpToDate(fixture.FilePath), path);
+                    Assert.IsFalse(IsUpToDate(cache, fixture.FilePath), path);
                 }
 
                 fixture.Save();
                 File.WriteAllText(path, "[*.cs]\nindent_size = 4");
                 using (var cache = fixture.Create())
                 {
-                    Assert.IsFalse(cache.IsUpToDate(fixture.FilePath), path);
+                    Assert.IsFalse(IsUpToDate(cache, fixture.FilePath), path);
                 }
 
                 fixture.Save();
                 File.Delete(path);
                 using var removedConfigCache = fixture.Create();
-                Assert.IsFalse(removedConfigCache.IsUpToDate(fixture.FilePath), path);
+                Assert.IsFalse(IsUpToDate(removedConfigCache, fixture.FilePath), path);
             }
         }
 
@@ -130,12 +131,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             using (var cache = fixture.Create())
             {
                 File.WriteAllText(Path.Combine(fixture.Options.WorkspaceFilePath, ".editorconfig"), "[*.cs]\nindent_size = 2");
-                Assert.IsFalse(cache.IsUpToDate(fixture.FilePath));
+                Assert.IsFalse(IsUpToDate(cache, fixture.FilePath));
                 cache.RecordFormattedFiles(fixture.ExpectedFiles(), new[] { fixture.FilePath });
             }
 
             using var reloadedCache = fixture.Create();
-            Assert.IsFalse(reloadedCache.IsUpToDate(fixture.FilePath));
+            Assert.IsFalse(IsUpToDate(reloadedCache, fixture.FilePath));
         }
 
         [TestMethod]
@@ -164,7 +165,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             }
 
             using var reloadedCache = fixture.Create();
-            Assert.IsFalse(reloadedCache.IsUpToDate(fixture.FilePath));
+            Assert.IsFalse(IsUpToDate(reloadedCache, fixture.FilePath));
         }
 
         [TestMethod]
@@ -178,7 +179,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             }
 
             using var reloadedCache = fixture.Create();
-            Assert.IsFalse(reloadedCache.IsUpToDate(fixture.FilePath));
+            Assert.IsFalse(IsUpToDate(reloadedCache, fixture.FilePath));
         }
 
         [TestMethod]
@@ -192,7 +193,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             }
 
             using var reloadedCache = fixture.Create();
-            Assert.IsFalse(reloadedCache.IsUpToDate(fixture.FilePath));
+            Assert.IsFalse(IsUpToDate(reloadedCache, fixture.FilePath));
         }
 
         [TestMethod]
@@ -205,7 +206,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             }
 
             using var reloadedCache = fixture.Create();
-            Assert.IsFalse(reloadedCache.IsUpToDate(fixture.FilePath));
+            Assert.IsFalse(IsUpToDate(reloadedCache, fixture.FilePath));
         }
 
         [TestMethod]
@@ -222,7 +223,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 }
 
                 using var reloadedCache = fixture.Create();
-                Assert.IsTrue(reloadedCache.IsUpToDate(fixture.FilePath), encoding.WebName);
+                Assert.IsTrue(IsUpToDate(reloadedCache, fixture.FilePath), encoding.WebName);
             }
         }
 
@@ -241,7 +242,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var before = File.ReadAllBytes(fixture.CacheFilePath);
             using (var cache = fixture.Create(verifyOptions))
             {
-                Assert.IsTrue(cache.IsUpToDate(fixture.FilePath));
+                Assert.IsTrue(IsUpToDate(cache, fixture.FilePath));
                 cache.RecordFormattedFiles(Array.Empty<KeyValuePair<string, SourceText>>(), Array.Empty<string>());
             }
 
@@ -260,12 +261,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             using (var cache = fixture.Create())
             {
-                Assert.IsTrue(cache.IsUpToDate(fixture.FilePath));
+                Assert.IsTrue(IsUpToDate(cache, fixture.FilePath));
                 cache.RecordFormattedFiles(Array.Empty<KeyValuePair<string, SourceText>>(), Array.Empty<string>());
             }
 
             using var reloadedCache = fixture.Create();
-            Assert.IsFalse(reloadedCache.IsUpToDate(fixture.FilePath));
+            Assert.IsFalse(IsUpToDate(reloadedCache, fixture.FilePath));
         }
 
         [TestMethod]
@@ -275,7 +276,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             fixture.Save();
             File.WriteAllText(fixture.CacheFilePath, "{ invalid json");
             using var cache = fixture.Create();
-            Assert.IsFalse(cache.IsUpToDate(fixture.FilePath));
+            Assert.IsFalse(IsUpToDate(cache, fixture.FilePath));
         }
 
         [TestMethod]
@@ -291,7 +292,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 fixture.Save();
                 Assert.AreEqual("another writer", File.ReadAllText(sharedTempPath));
                 using var cache = fixture.Create();
-                Assert.IsTrue(cache.IsUpToDate(fixture.FilePath));
+                Assert.IsTrue(IsUpToDate(cache, fixture.FilePath));
                 Assert.IsEmpty(Directory.GetFiles(Path.GetDirectoryName(fixture.CacheFilePath)!, Path.GetFileName(fixture.CacheFilePath) + ".*.tmp"));
             }
             finally
@@ -315,14 +316,71 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             using (var cache = fixture.Create())
             {
                 cache.RecordFormattedFiles(fixture.ExpectedFiles(), new[] { fixture.FilePath, otherPath });
-                Assert.IsTrue(cache.IsUpToDate(fixture.FilePath));
-                Assert.IsFalse(cache.IsUpToDate(otherPath));
+                Assert.IsTrue(IsUpToDate(cache, fixture.FilePath));
+                Assert.IsFalse(IsUpToDate(cache, otherPath));
             }
 
             using var reloadedCache = fixture.Create();
-            Assert.IsTrue(reloadedCache.IsUpToDate(fixture.FilePath));
-            Assert.IsFalse(reloadedCache.IsUpToDate(otherPath));
+            Assert.IsTrue(IsUpToDate(reloadedCache, fixture.FilePath));
+            Assert.IsFalse(IsUpToDate(reloadedCache, otherPath));
         }
+
+        [TestMethod]
+        public async Task WarmFolderCacheSkipsUnchangedDocumentsWithoutChangingFileCount()
+        {
+            using var fixture = new CacheFixture();
+            fixture.Save();
+            using var workspace = FolderWorkspace.Create();
+            workspace.OpenFolder(fixture.Options.WorkspaceFilePath, fixture.Options.FileMatcher);
+            using var cache = fixture.Create();
+            var (cachedCount, cachedDocuments) = await CodeFormatter.DetermineFormattableFilesAsync(
+                workspace.CurrentSolution, null, fixture.Options, cache, NullLogger.Instance, TestContext.CancellationToken);
+            var (uncachedCount, uncachedDocuments) = await CodeFormatter.DetermineFormattableFilesAsync(
+                workspace.CurrentSolution, null, fixture.Options, null, NullLogger.Instance, TestContext.CancellationToken);
+
+            Assert.AreEqual(1, cachedCount);
+            Assert.AreEqual(uncachedCount, cachedCount);
+            Assert.IsEmpty(cachedDocuments);
+            Assert.HasCount(1, uncachedDocuments);
+
+            File.WriteAllText(fixture.FilePath, "class C{ }");
+            var (editedCount, editedDocuments) = await CodeFormatter.DetermineFormattableFilesAsync(
+                workspace.CurrentSolution, null, fixture.Options, cache, NullLogger.Instance, TestContext.CancellationToken);
+            Assert.AreEqual(cachedCount, editedCount);
+            editedDocuments.Should().Equal(uncachedDocuments);
+        }
+
+        [TestMethod]
+        public void SelectionBatchUsesOneConfigurationSnapshotAndRevalidatesNextBatch()
+        {
+            using var fixture = new CacheFixture();
+            var otherPath = Path.Combine(fixture.Options.WorkspaceFilePath, "other.cs");
+            File.Copy(fixture.FilePath, otherPath);
+            using (var writer = fixture.Create())
+            {
+                writer.RecordFormattedFiles(
+                    fixture.ExpectedFiles().Concat(new[] { KeyValuePair.Create(otherPath, SourceText.From("class C { }", new UTF8Encoding(false))) }),
+                    new[] { fixture.FilePath, otherPath });
+            }
+
+            using var cache = fixture.Create();
+            IEnumerable<string> FilesWithConcurrentConfigEdit()
+            {
+                yield return fixture.FilePath;
+                File.WriteAllText(Path.Combine(fixture.Options.WorkspaceFilePath, ".editorconfig"), "[*.cs]\nindent_size = 2");
+                yield return otherPath;
+            }
+
+            // The second candidate uses the batch's configuration snapshot, not another scan.
+            cache.GetUpToDateFiles(FilesWithConcurrentConfigEdit()).Should().BeEquivalentTo(new[] { fixture.FilePath, otherPath });
+            Assert.IsEmpty(cache.GetUpToDateFiles(new[] { fixture.FilePath }));
+            cache.RecordFormattedFiles(fixture.ExpectedFiles(), new[] { fixture.FilePath });
+            using var reloadedCache = fixture.Create();
+            Assert.IsFalse(IsUpToDate(reloadedCache, fixture.FilePath));
+        }
+
+        private static bool IsUpToDate(FormatCache cache, string filePath)
+            => cache.GetUpToDateFiles(new[] { filePath }).Contains(filePath);
 
         private sealed class CacheFixture : IDisposable
         {
