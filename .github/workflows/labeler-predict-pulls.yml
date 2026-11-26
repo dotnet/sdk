@@ -42,8 +42,8 @@ on:
 
 env:
   DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
-  # Do not allow failure for jobs triggered automatically (this can block PR merge)
-  ALLOW_FAILURE: ${{ github.event_name == 'workflow_dispatch' }}
+  # Suppress failures on PR events to avoid blocking merges. Scheduled runs must fail so the poll cursor doesn't advance past missed PRs.
+  ALLOW_FAILURE: ${{ github.event_name == 'pull_request_target' }}
 
   LABEL_PREFIX: "Area-"
   THRESHOLD: 0.40
@@ -98,8 +98,9 @@ jobs:
         uses: dotnet/issue-labeler/restore@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
         with:
           type: pulls
-          fail-on-cache-miss: ${{ env.ALLOW_FAILURE }}
-          quiet: true
+          fail-on-cache-miss: ${{ !fromJSON(env.ALLOW_FAILURE) }}
+          # v2.0.0 only enforces fail-on-cache-miss when quiet is false.
+          quiet: ${{ fromJSON(env.ALLOW_FAILURE) }}
 
       - name: "Predict pull labels"
         id: prediction
@@ -111,4 +112,4 @@ jobs:
           threshold: ${{ env.THRESHOLD }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        continue-on-error: ${{ !env.ALLOW_FAILURE }}
+        continue-on-error: ${{ fromJSON(env.ALLOW_FAILURE) }}
