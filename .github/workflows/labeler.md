@@ -28,9 +28,3 @@ Across these workflows, the following changes were made to configure the issue l
     - `labeler-train.yml`
 5. Update the cache retention cron schedule to an arbitrary time of day:
     - `labeler-cache-retention.yml`
-
-## Pull Request Polling
-
-[`labeler-predict-pulls.yml`](labeler-predict-pulls.yml) polls every five minutes for open pull requests without an `Area-` label, using the last successful scheduled run's start time with five minutes of overlap. The first scheduled run and manual dispatches without pull request numbers scan all open pull requests.
-
-Scheduled and manual runs fail on model cache misses and prediction errors so failed batches do not advance the polling checkpoint. Only `pull_request_target` runs tolerate those failures. The pinned v2.0.0 restore action requires quiet mode to be disabled to enforce cache-miss failures.
