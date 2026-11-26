@@ -56,10 +56,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             if (GetSpanIndexOfComparison(semanticModel, expression, cancellationToken) is (SyntaxNode spanComparison, IInvocationOperation spanIndexOfOperation, bool negateSpanComparison))
             {
-                ImmutableArray<SyntaxNode> spanIndexOfArguments = spanIndexOfOperation.Arguments
-                    .Where(argument => argument.ArgumentKind != ArgumentKind.DefaultValue)
-                    .Select((argument, index) => index == 0 ? argument.Value.Syntax : argument.Syntax)
-                    .ToImmutableArray();
+                // C# passes the receiver as the first argument, VB as the instance of the reduced extension method.
+                var arguments = spanIndexOfOperation.Arguments.Where(argument => argument.ArgumentKind != ArgumentKind.DefaultValue);
+                ImmutableArray<SyntaxNode> spanIndexOfArguments = spanIndexOfOperation.Instance is { } spanInstance
+                    ? arguments.Select(argument => argument.Syntax).Prepend(spanInstance.Syntax).ToImmutableArray()
+                    : arguments.Select((argument, index) => index == 0 ? argument.Value.Syntax : argument.Syntax).ToImmutableArray();
                 string containsMethodName = PreferStringContainsOverIndexOfAnalyzer.GetContainsMethodName(spanIndexOfOperation.TargetMethod.Name);
 
                 foreach (SyntaxNode node in spanIndexOfArguments)
@@ -157,9 +158,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             return (expression is null ? null : semanticModel.GetOperation(expression, cancellationToken)) switch
             {
-                IBinaryOperation { LeftOperand: IInvocationOperation { Instance: null, TargetMethod.IsExtensionMethod: true } invocationOperation } binaryOperation
+                IBinaryOperation { LeftOperand: IInvocationOperation { TargetMethod.IsExtensionMethod: true } invocationOperation } binaryOperation
                     => (binaryOperation.Syntax, invocationOperation, binaryOperation.OperatorKind is BinaryOperatorKind.Equals or BinaryOperatorKind.LessThan),
-                IIsPatternOperation { Value: IInvocationOperation { Instance: null, TargetMethod.IsExtensionMethod: true } invocationOperation, Pattern: IRelationalPatternOperation relationalPattern } isPatternOperation
+                IIsPatternOperation { Value: IInvocationOperation { TargetMethod.IsExtensionMethod: true } invocationOperation, Pattern: IRelationalPatternOperation relationalPattern } isPatternOperation
                     => (isPatternOperation.Syntax, invocationOperation, relationalPattern.OperatorKind == BinaryOperatorKind.LessThan),
                 _ => null,
             };

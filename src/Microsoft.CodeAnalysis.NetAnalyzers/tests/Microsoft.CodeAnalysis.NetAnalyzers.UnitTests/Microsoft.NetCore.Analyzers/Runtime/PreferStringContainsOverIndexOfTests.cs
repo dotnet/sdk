@@ -1498,6 +1498,33 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [TestMethod]
+        [DataRow("str.AsSpan().IndexOf(\"a\"c) >= 0", "str.AsSpan().Contains(\"a\"c)")]
+        [DataRow("str.AsSpan().IndexOf(\"a\"c) <> -1", "str.AsSpan().Contains(\"a\"c)")]
+        [DataRow("str.AsSpan().IndexOf(\"a\"c) < 0", "Not str.AsSpan().Contains(\"a\"c)")]
+        [DataRow("str.AsSpan().IndexOf(\"a\"c) = -1", "Not str.AsSpan().Contains(\"a\"c)")]
+        [DataRow("str.AsSpan().IndexOfAny(\"a\"c, \"b\"c) >= 0", "str.AsSpan().ContainsAny(\"a\"c, \"b\"c)")]
+        public async Task SpanIndexOfComparedWithZero_OffersContainsVBAsync(string condition, string fixedCondition)
+        {
+            const string template = """
+                Imports System
+
+                Class TestClass
+                    Sub TestMethod(str As String)
+                        If {0} Then
+                        End If
+                    End Sub
+                End Class
+                """;
+
+            await new VerifyVB.Test
+            {
+                TestCode = template.Replace("{0}", "{|CA2249:" + condition + "|}"),
+                FixedCode = template.Replace("{0}", fixedCondition),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
         [DataRow("span.IndexOf('a') > 0")]
         [DataRow("span.IndexOf('a') >= 1")]
         [DataRow("span.IndexOf('a') <= 0")]

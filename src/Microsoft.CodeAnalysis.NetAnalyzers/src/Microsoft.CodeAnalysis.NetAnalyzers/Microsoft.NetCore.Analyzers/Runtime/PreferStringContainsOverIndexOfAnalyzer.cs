@@ -234,6 +234,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     bool IsSpanIndexOfWithContains(IMethodSymbol targetMethod)
                     {
+                        // VB reports an extension method call in its reduced form, without the receiver parameter.
+                        targetMethod = targetMethod.GetConstructedReducedFrom() ?? targetMethod;
+
                         if (memoryExtensionsType is null ||
                             !SymbolEqualityComparer.Default.Equals(targetMethod.ContainingType, memoryExtensionsType) ||
                             targetMethod.Name is not ("IndexOf" or "IndexOfAny" or "IndexOfAnyExcept"))
