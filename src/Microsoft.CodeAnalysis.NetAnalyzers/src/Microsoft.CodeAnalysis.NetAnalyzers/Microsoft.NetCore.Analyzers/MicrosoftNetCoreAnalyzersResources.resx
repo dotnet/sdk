@@ -1311,7 +1311,7 @@
     <value>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</value>
   </data>
   <data name="PreferStringContainsOverIndexOfMessage" xml:space="preserve">
-    <value>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</value>
+    <value>Use '{0}' instead of '{1}' to improve readability</value>
   </data>
   <data name="PreferStringContainsOverIndexOfTitle" xml:space="preserve">
     <value>Consider using 'string.Contains' instead of 'string.IndexOf'</value>
@@ -1481,6 +1481,9 @@
   <data name="PlatformCompatibilityOnlySupportedCsAllPlatformMessage" xml:space="preserve">
     <value>This call site is reachable on all platforms. '{0}' is only supported on: {1}.</value>
     <comment>This call site is reachable on all platforms. 'SupportedOnWindowsAndBrowser()' is only supported on: 'windows', 'browser' .</comment>
+  </data>
+  <data name="PreferSpanContainsOverIndexOfCodeFixTitle" xml:space="preserve">
+    <value>Replace with '{0}'</value>
   </data>
   <data name="PreferStringContainsOverIndexOfCodeFixTitle" xml:space="preserve">
     <value>Replace with 'string.Contains'</value>

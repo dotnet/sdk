@@ -2498,6 +2498,11 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
         <target state="new">Prefer ReadOnlySpan&lt;T&gt; properties over readonly array fields</target>
         <note>{Locked="ReadOnlySpan&lt;T&gt;"}{Locked="readonly"}</note>
       </trans-unit>
+      <trans-unit id="PreferSpanContainsOverIndexOfCodeFixTitle">
+        <source>Replace with '{0}'</source>
+        <target state="new">Replace with '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">"Stream" 有一个将 "Memory&lt;Byte&gt;" 作为第一个参数的 "ReadAsync" 重载和一个将 "Memory&lt;Byte&gt;" 作为第一个参数的 "WriteAsync" 重载。首选调用基于内存的重载，它们的效率更高。</target>
@@ -2524,8 +2529,8 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
-        <source>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</source>
-        <target state="translated">使用 "string.Contains" 而不是 "string.IndexOf" 来提高可读性</target>
+        <source>Use '{0}' instead of '{1}' to improve readability</source>
+        <target state="new">Use '{0}' instead of '{1}' to improve readability</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfTitle">

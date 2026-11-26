@@ -2498,6 +2498,11 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <target state="new">Prefer ReadOnlySpan&lt;T&gt; properties over readonly array fields</target>
         <note>{Locked="ReadOnlySpan&lt;T&gt;"}{Locked="readonly"}</note>
       </trans-unit>
+      <trans-unit id="PreferSpanContainsOverIndexOfCodeFixTitle">
+        <source>Replace with '{0}'</source>
+        <target state="new">Replace with '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">'Stream', ilk bağımsız değişken olarak 'Memory&lt;Byte&gt;' alan bir 'ReadAsync' aşırı yüklemesine ve ilk bağımsız değişken olarak 'ReadOnlyMemory&lt;Byte&gt;' alan bir 'WriteAsync' aşırı yüklemesine sahip. Daha verimli olan bellek tabanlı aşırı yüklemeleri çağırmayı tercih edin.</target>
@@ -2524,8 +2529,8 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
-        <source>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</source>
-        <target state="translated">Okunabilirliği artırmak için 'string.IndexOf' yerine 'string.Contains' kullanın</target>
+        <source>Use '{0}' instead of '{1}' to improve readability</source>
+        <target state="new">Use '{0}' instead of '{1}' to improve readability</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfTitle">

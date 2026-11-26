@@ -2498,6 +2498,11 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
         <target state="new">Prefer ReadOnlySpan&lt;T&gt; properties over readonly array fields</target>
         <note>{Locked="ReadOnlySpan&lt;T&gt;"}{Locked="readonly"}</note>
       </trans-unit>
+      <trans-unit id="PreferSpanContainsOverIndexOfCodeFixTitle">
+        <source>Replace with '{0}'</source>
+        <target state="new">Replace with '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">"Stream" tiene una sobrecarga "ReadAsync" que toma "Memory&lt;Byte&gt;" como primer argumento y una sobrecarga "WriteAsync" que toma "ReadOnlyMemory&lt;Byte&gt;" como primer argumento. Es preferible llamar a las sobrecargas basadas en memory, que son más eficaces.</target>
@@ -2524,8 +2529,8 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
-        <source>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</source>
-        <target state="translated">Usar "string.Contains" en lugar de "string.IndexOf" para mejorar la legibilidad</target>
+        <source>Use '{0}' instead of '{1}' to improve readability</source>
+        <target state="new">Use '{0}' instead of '{1}' to improve readability</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfTitle">
