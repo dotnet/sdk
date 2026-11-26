@@ -332,7 +332,7 @@ public class AspireServerServiceTests
 
         await aspireServer.NotifyLogMessageAsync(DcpId, "1", isStdErr: false, "My Message", CancellationToken.None);
 
-        var result = await notificationTask.Task;
+        var result = await notificationTask.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual("My Message", result.LogMessage);
         Assert.IsFalse(result.IsStdErr);
