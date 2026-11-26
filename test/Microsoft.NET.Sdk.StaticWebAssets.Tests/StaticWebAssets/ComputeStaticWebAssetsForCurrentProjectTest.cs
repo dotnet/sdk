@@ -19,6 +19,31 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     public class ComputeStaticWebAssetsForCurrentProjectTest
     {
         [TestMethod]
+        [DataRow("Default", "Build")]
+        [DataRow("Root", "Build")]
+        [DataRow("SelfContained", "Build")]
+        [DataRow("Default", "Publish")]
+        [DataRow("Root", "Publish")]
+        [DataRow("SelfContained", "Publish")]
+        public void IncludesLocalAssets(string projectMode, string assetKind)
+        {
+            var local = CreateCandidate(Path.Combine("wwwroot", "local.js"), "MyPackage", "Discovered",
+                "local.js", "All", StaticWebAsset.AssetModes.Local);
+            var task = new ComputeStaticWebAssetsForCurrentProject
+            {
+                BuildEngine = Mock.Of<IBuildEngine>(),
+                Source = "MyPackage",
+                Assets = [local],
+                AssetKind = assetKind,
+                ProjectMode = projectMode
+            };
+
+            task.Execute().Should().BeTrue();
+            task.StaticWebAssets.Should().ContainSingle()
+                .Which.GetMetadata("AssetMode").Should().Be(StaticWebAsset.AssetModes.Local);
+        }
+
+        [TestMethod]
         public void IncludesAssetsFromCurrentProject()
         {
             var errorMessages = new List<string>();

@@ -199,9 +199,10 @@ target-produced project state, and the session's success/failure cleanup. Cover 
 
 In `--solution` runs,
 [`device selection`](dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs) applies only to
-test projects (`IsTestProject` or `IsTestingPlatformApplication`). App and library projects, such as
-MAUI heads, can import `ComputeAvailableDevices` in their inner builds and must not prompt for a device. The single-project
-path evaluates before restore, so it must not apply this NuGet-dependent gate.
+MTP test applications (`IsTestingPlatformApplication`); `IsTestProject` is a VSTest concept and must not
+opt a project in. App and library projects, such as MAUI heads, can import `ComputeAvailableDevices` in
+their inner builds and must not prompt for a device. The single-project path evaluates before restore, so
+it must not apply this NuGet-dependent gate.
 
 Parent-process operations must also use the captured invocation directory: pass it through background
 workload updates to both `global.json` discovery and NuGet configuration, and initialize absolute MTP

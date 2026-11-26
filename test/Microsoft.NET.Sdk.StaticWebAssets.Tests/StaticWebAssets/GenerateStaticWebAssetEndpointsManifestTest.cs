@@ -20,7 +20,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 public class GenerateStaticWebAssetEndpointsManifestTest
 {
     [TestMethod]
-    public void GeneratesManifest_ForEndpointsWithTokens()
+    [DataRow(StaticWebAsset.AssetModes.All, "Build")]
+    [DataRow(StaticWebAsset.AssetModes.Local, "Build")]
+    [DataRow(StaticWebAsset.AssetModes.Local, "Publish")]
+    public void GeneratesManifest_ForEndpointsWithTokens(string assetMode, string manifestType)
     {
         StaticWebAssetEndpoint[] expectedEndpoints =
         [
@@ -181,8 +184,8 @@ public class GenerateStaticWebAssetEndpointsManifestTest
 
         var assets = new[]
         {
-            CreateAsset("index.html", relativePath: "index#[.{fingerprint}]?.html"),
-            CreateAsset("index.js", relativePath: "index#[.{fingerprint}]!.js"),
+            CreateAsset("index.html", relativePath: "index#[.{fingerprint}]?.html", assetMode: assetMode),
+            CreateAsset("index.js", relativePath: "index#[.{fingerprint}]!.js", assetMode: assetMode),
         };
         Array.Sort(assets, (l, r) => string.Compare(l.Identity, r.Identity, StringComparison.Ordinal));
 
@@ -194,7 +197,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
         {
             Assets = assets.Select(a => a.ToTaskItem()).ToArray(),
             Endpoints = endpoints.Select(e => e.ToTaskItem()).ToArray(),
-            ManifestType = "Build",
+            ManifestType = manifestType,
             Source = "MyApp",
             ManifestPath = path,
             BuildEngine = Mock.Of<IBuildEngine>()

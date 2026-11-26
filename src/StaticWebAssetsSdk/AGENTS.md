@@ -40,7 +40,12 @@ The generated initializer checks the provider-owned
 configuration; this response is not a generated file or Static Web Asset.
 Hosted WebAssembly's client owns these outputs; its server consumes the referenced assets
 rather than generating a competing route and keypair. The assets are build only and must
-never reach publish output. Its generated watch initializer also initializes the SDK Hot
+never reach publish output. Server Web SDK browser-tools assets use `AssetMode=Local`:
+they remain available to their own project but are never exported through project
+references, even in `Root` project mode. WebAssembly-owned browser-tools assets retain
+`AssetMode=All` so a hosted client's assets reach its server. Use the shared manifest-mode
+reference filter rather than adding browser-tools-specific export filtering.
+Its generated watch initializer also initializes the SDK Hot
 Reload agent on .NET 10+; older target frameworks use the runtime's apply API. Do not add a
 second Hot Reload agent initializer—the shared browser-tools rendezvous carries the SDK
 agent's apply functions directly.
@@ -67,6 +72,14 @@ These invariants must hold at all times. Violating any of them is a bug.
 - **Referential integrity**: Every non-primary asset (`Related` or `Alternative`) must point to a valid asset definition via `RelatedAsset`. If an asset is removed, all assets that reference it must also be removed.
 - **Endpoint validity**: Every `StaticWebAssetEndpoint` must point to an existing `StaticWebAsset` via `AssetFile`. There must be no endpoints referencing non-existent assets.
 - **Endpoint uniqueness**: Endpoints are unique by the `(Route, AssetFile)` pair. No two endpoints share the same route and asset file combination.
+- **Local visibility**: Checked-in compressed alternatives of `Local` primaries must also
+  be `Local`, including when `DisableBuildCompression=true`. Precompressed discovery
+  must remain independent of optional compression generation.
+  Do not export discovery patterns whose physical root contains `Local`
+  files: runtime discovery has no exclusion list. Shared files retain explicit manifest
+  entries, but newly added shared files in affected roots require a rebuild. Keep the
+  owning project's discovery and unrelated roots unchanged. See
+  [project boundaries](Architecture.md#4-how-assets-cross-project-boundaries).
 
 **Required properties (every asset must have)**
 
@@ -79,7 +92,7 @@ These invariants must hold at all times. Violating any of them is a bug.
 
 - `SourceType` ∈ {`Discovered`, `Computed`, `Project`, `Package`, `Framework`}.
 - `AssetKind` ∈ {`Build`, `Publish`, `All`}.
-- `AssetMode` ∈ {`All`, `CurrentProject`, `Reference`}.
+- `AssetMode` ∈ {`All`, `CurrentProject`, `Reference`, `Local`}.
 - `AssetRole` ∈ {`Primary`, `Related`, `Alternative`}.
 
 **Conditional requirements**

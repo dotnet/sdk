@@ -31,7 +31,11 @@ public class DiscoverPrecompressedAssetsTest
     }
 
     [TestMethod]
-    public void DiscoversPrecompressedAssetsCorrectly()
+    [DataRow(StaticWebAsset.AssetModes.All, ".gz", "gzip")]
+    [DataRow(StaticWebAsset.AssetModes.All, ".br", "br")]
+    [DataRow(StaticWebAsset.AssetModes.Local, ".gz", "gzip")]
+    [DataRow(StaticWebAsset.AssetModes.Local, ".br", "br")]
+    public void DiscoversPrecompressedAssetsCorrectly(string assetMode, string extension, string encoding)
     {
         var errorMessages = new List<string>();
         var buildEngine = new Mock<IBuildEngine>();
@@ -43,7 +47,7 @@ public class DiscoverPrecompressedAssetsTest
             Identity = Path.Combine(Environment.CurrentDirectory, "wwwroot", "js", "site.js"),
             RelativePath = "js/site#[.{fingerprint}]?.js",
             BasePath = "_content/Test",
-            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetMode = assetMode,
             AssetKind = StaticWebAsset.AssetKinds.All,
             AssetMergeSource = string.Empty,
             SourceId = "Test",
@@ -65,8 +69,8 @@ public class DiscoverPrecompressedAssetsTest
 
         var compressedCandidate = new StaticWebAsset
         {
-            Identity = Path.Combine(Environment.CurrentDirectory, "wwwroot", "js", "site.js.gz"),
-            RelativePath = "js/site.js#[.{fingerprint}]?.gz",
+            Identity = Path.Combine(Environment.CurrentDirectory, "wwwroot", "js", $"site.js{extension}"),
+            RelativePath = $"js/site.js#[.{{fingerprint}}]?{extension}",
             BasePath = "_content/Test",
             AssetMode = StaticWebAsset.AssetModes.All,
             AssetKind = StaticWebAsset.AssetKinds.All,
@@ -82,7 +86,7 @@ public class DiscoverPrecompressedAssetsTest
             AssetMergeBehavior = string.Empty,
             AssetTraitValue = string.Empty,
             AssetTraitName = string.Empty,
-            OriginalItemSpec = Path.Combine("wwwroot", "js", "site.js.gz"),
+            OriginalItemSpec = Path.Combine("wwwroot", "js", $"site.js{extension}"),
             CopyToPublishDirectory = StaticWebAsset.AssetCopyOptions.PreserveNewest,
             FileLength = 10,
             LastWriteTime = DateTime.UtcNow
@@ -101,11 +105,13 @@ public class DiscoverPrecompressedAssetsTest
         var asset = task.DiscoveredCompressedAssets[0];
         asset.ItemSpec.Should().Be(compressedCandidate.Identity);
         asset.GetMetadata("RelatedAsset").Should().Be(uncompressedCandidate.Identity);
-        asset.GetMetadata("OriginalItemSpec").Should().Be(uncompressedCandidate.Identity);
-        asset.GetMetadata("RelativePath").Should().Be("js/site#[.{fingerprint=uncompressed}]?.js.gz");
+        asset.GetMetadata("OriginalItemSpec").Should().Be(assetMode == StaticWebAsset.AssetModes.Local
+            ? Path.Combine("wwwroot", "js", $"site.js{extension}")
+            : uncompressedCandidate.Identity);
+        asset.GetMetadata("RelativePath").Should().Be($"js/site#[.{{fingerprint=uncompressed}}]?.js{extension}");
         asset.GetMetadata("AssetRole").Should().Be("Alternative");
         asset.GetMetadata("AssetTraitName").Should().Be("Content-Encoding");
-        asset.GetMetadata("AssetTraitValue").Should().Be("gzip");
+        asset.GetMetadata("AssetTraitValue").Should().Be(encoding);
         asset.GetMetadata("Fingerprint").Should().Be("compressed");
         asset.GetMetadata("Integrity").Should().Be("compressed-integrity");
         asset.GetMetadata("CopyToPublishDirectory").Should().Be("PreserveNewest");
@@ -113,7 +119,7 @@ public class DiscoverPrecompressedAssetsTest
         asset.GetMetadata("AssetMergeSource").Should().Be(string.Empty);
         asset.GetMetadata("AssetMergeBehavior").Should().Be(string.Empty);
         asset.GetMetadata("AssetKind").Should().Be("All");
-        asset.GetMetadata("AssetMode").Should().Be("All");
+        asset.GetMetadata("AssetMode").Should().Be(assetMode);
         asset.GetMetadata("SourceId").Should().Be("Test");
         asset.GetMetadata("SourceType").Should().Be("Discovered");
         asset.GetMetadata("ContentRoot").Should().Be(Path.Combine(Environment.CurrentDirectory, $"wwwroot{Path.DirectorySeparatorChar}"));

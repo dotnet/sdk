@@ -20,6 +20,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          Microsoft.DotNet.HotReload.BrowserToolsProtocol.RoutePrefix. -->
     <HotReloadBrowserToolsRoutePrefix Condition="'$(HotReloadBrowserToolsRoutePrefix)' == ''">/_framework/dotnet-browser-tools</HotReloadBrowserToolsRoutePrefix>
     <HotReloadBrowserToolsSettingsPath Condition="'$(HotReloadBrowserToolsSettingsPath)' == ''">$(HotReloadBrowserToolsRoutePrefix)/hot-reload-settings.json</HotReloadBrowserToolsSettingsPath>
+    <HotReloadBrowserToolsAssetMode Condition="'$(HotReloadBrowserToolsAssetMode)' == ''">All</HotReloadBrowserToolsAssetMode>
 
     <!-- Imported after the opting-in SDK sets its browser tools properties so this is available during evaluation. -->
     <HotReloadBrowserToolsEnabled>false</HotReloadBrowserToolsEnabled>
@@ -168,6 +169,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentRoot="$(_HotReloadBrowserToolsIntermediatePath)"
       BasePath="$(StaticWebAssetBasePath)"
       AssetKind="Build"
+      AssetMode="$(HotReloadBrowserToolsAssetMode)"
       CopyToPublishDirectory="Never"
       AssetTraitName="JSModule"
       AssetTraitValue="JSLibraryModule"
@@ -200,6 +202,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentRoot="$(_HotReloadBrowserToolsIntermediatePath)"
       BasePath="$(StaticWebAssetBasePath)"
       AssetKind="Build"
+      AssetMode="$(HotReloadBrowserToolsAssetMode)"
       CopyToPublishDirectory="Never">
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
       <Output TaskParameter="Assets" ItemName="_HotReloadBrowserToolsClientAsset" />

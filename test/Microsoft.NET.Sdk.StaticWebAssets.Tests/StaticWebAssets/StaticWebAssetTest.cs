@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Text.Json;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
@@ -15,6 +16,25 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 [TestClass]
 public class StaticWebAssetTest
 {
+    [TestMethod]
+    public void LocalModeSurvivesValidationAndManifestRoundTrip()
+    {
+        var asset = CreateAsset("wwwroot/local.js", "local.js", "All", StaticWebAsset.AssetModes.Local);
+        asset.Validate();
+        var manifest = new StaticWebAssetsManifest
+        {
+            Assets = [StaticWebAsset.FromTaskItem(asset.ToTaskItem())]
+        };
+
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(manifest,
+            StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetsManifest);
+        var restored = StaticWebAssetsManifest.FromJsonBytes(bytes).Assets.Single();
+
+        restored.Validate();
+        Assert.AreEqual(StaticWebAsset.AssetModes.Local, restored.AssetMode);
+        Assert.AreEqual(asset, restored);
+    }
+
     [TestMethod]
     public void ValidateAssetGroup_SingleAsset_ReturnsTrue()
     {
