@@ -1198,9 +1198,13 @@ internal sealed class HotReloadDotNetWatcher
             {
                 var solutionElement = new XElement("Solution");
 
-                foreach (var projectPath in projectPaths)
+                for (var i = 0; i < projectPaths.Length; i++)
                 {
-                    solutionElement.Add(new XElement("Project", new XAttribute("Path", projectPath)));
+                    solutionElement.Add(
+                        new XElement(
+                            "Folder",
+                            new XAttribute("Name", $"/{i + 1}/"),
+                            new XElement("Project", new XAttribute("Path", projectPaths[i]))));
                 }
 
                 var doc = new XDocument(solutionElement);

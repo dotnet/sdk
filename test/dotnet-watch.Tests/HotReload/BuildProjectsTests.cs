@@ -24,6 +24,7 @@ public class BuildProjects
 
         public readonly List<string> BuildInvocations = [];
         public string? SolutionFile;
+        public string? SolutionContents;
 
         public WatcherContext(DualOutputHelper output, ImmutableArray<ProjectRepresentation> rootProjects)
         {
@@ -67,6 +68,7 @@ public class BuildProjects
         public void LogBuildInvocation(ProcessSpec processSpec)
         {
             SolutionFile = processSpec.Arguments.FirstOrDefault(a => a.EndsWith(".slnx"));
+            SolutionContents = SolutionFile != null ? File.ReadAllText(SolutionFile) : null;
 
             // Replace path to solution, which is a temp path, with a placeholder to make assertions easier.
             BuildInvocations.Add(string.Join(" ", processSpec.Arguments.Select(a =>
@@ -506,6 +508,38 @@ public class BuildProjects
         Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual(["build <solution> -p A=1"], context.BuildInvocations);
+    }
+
+    [TestMethod]
+    public async Task MultipleProjects_SameFileName()
+    {
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project1 = Path.Combine(dir.Path, "a", "Api.csproj");
+        var project2 = Path.Combine(dir.Path, "b", "Api.csproj");
+
+        using var context = CreateContext();
+
+        var result = await context.Watcher.BuildProjectsAsync(
+            projects:
+            [
+                new ProjectRepresentation(project1, entryPointFilePath: null),
+                new ProjectRepresentation(project2, entryPointFilePath: null)
+            ],
+            context.FileWatcher,
+            mainProjectOptions: null,
+            frameworkSelector: null,
+            deviceSelector: null,
+            evaluatedProjectGraph: null,
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Success);
+        AssertEx.SequenceEqual(["build <solution> -p A=1"], context.BuildInvocations);
+
+        var folders = XDocument.Parse(context.SolutionContents!).Root!.Elements("Folder").ToArray();
+        AssertEx.SequenceEqual(["/1/", "/2/"], folders.Select(folder => folder.Attribute("Name")!.Value));
+        AssertEx.SequenceEqual(
+            [project1, project2],
+            folders.Select(folder => folder.Element("Project")!.Attribute("Path")!.Value));
     }
 
     [TestMethod]
