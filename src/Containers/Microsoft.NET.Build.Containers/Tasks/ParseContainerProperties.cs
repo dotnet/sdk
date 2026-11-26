@@ -6,6 +6,7 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
+[MSBuildMultiThreadableTask]
 public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
 {
     /// <summary>
