@@ -5,9 +5,13 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Test.IPC;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
+using ExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
 namespace dotnet.Tests.CommandTests.Test;
 
@@ -336,14 +340,287 @@ public sealed class TestApplicationLaunchTests
             .Properties.Should().NotContainKey(HandshakeMessagePropertyNames.RequiredPostProcessingSupported);
     }
 
-    private static TestApplication CreateApplication(
+    [TestMethod]
+    public void CreateProcessStartInfo_InvocationLifetimeOwner_SetsOwnerRole()
+    {
+        using var coordinator = new InvocationLifetimeCoordinator(
+            InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"]),
+            TimeSpan.FromSeconds(1));
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            invocationLifetimeOwnerCoordinator: coordinator);
+
+        ProcessStartInfo startInfo = application.CreateProcessStartInfo();
+
+        startInfo.Environment[InvocationLifetimeEnvironmentVariables.Role].Should().Be(InvocationLifetimeEnvironmentVariables.OwnerRole);
+        startInfo.Environment.ContainsKey(InvocationLifetimeEnvironmentVariables.Coordinated).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void CreateProcessStartInfo_CoordinatedSibling_AppliesSetupOutputsAndHandlers()
+    {
+        var launch = new InvocationLifetimeSiblingLaunch(
+            InvocationLifetimeSiblingLaunchKind.Coordinated,
+            [
+                new("CONNECTION", true, "secret"),
+                new("MODULE_VALUE", false, null),
+                new(InvocationLifetimeEnvironmentVariables.Role, true, InvocationLifetimeEnvironmentVariables.OwnerRole),
+            ],
+            "[\"Sql\"]");
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            environmentVariables: new Dictionary<string, string> { ["MODULE_VALUE"] = "1", ["CONNECTION"] = "module" },
+            invocationLifetimeSiblingLaunch: launch);
+
+        ProcessStartInfo startInfo = application.CreateProcessStartInfo();
+
+        startInfo.Environment["CONNECTION"].Should().Be("secret");
+        startInfo.Environment.ContainsKey("MODULE_VALUE").Should().BeFalse();
+        startInfo.Environment.ContainsKey(InvocationLifetimeEnvironmentVariables.Role).Should().BeFalse();
+        startInfo.Environment[InvocationLifetimeEnvironmentVariables.Coordinated].Should().Be("[\"Sql\"]");
+    }
+
+    [TestMethod]
+    public void CreateProcessStartInfo_IndependentSibling_DoesNotReceiveCoordination()
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            invocationLifetimeSiblingLaunch: InvocationLifetimeSiblingLaunch.Independent);
+
+        ProcessStartInfo startInfo = application.CreateProcessStartInfo();
+
+        startInfo.Environment.ContainsKey(InvocationLifetimeEnvironmentVariables.Role).Should().BeFalse();
+        startInfo.Environment.ContainsKey(InvocationLifetimeEnvironmentVariables.Coordinated).Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow("1.5.0", true, true)]
+    [DataRow("1.5.0", false, false)]
+    [DataRow("", true, false)]
+    public void CreateHandshakeMessage_AcknowledgesInvocationLifetimeOnlyWhenAccepted(string version, bool accepted, bool expected)
+    {
+        using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+
+        Dictionary<byte, string> properties = application.CreateHandshakeMessage(version, invocationLifetimeAccepted: accepted).Properties;
+
+        if (expected)
+        {
+            properties[HandshakeMessagePropertyNames.InvocationLifetimeCoordinationAccepted].Should().Be("true");
+        }
+        else
+        {
+            properties.Should().NotContainKey(HandshakeMessagePropertyNames.InvocationLifetimeCoordinationAccepted);
+        }
+    }
+
+    [TestMethod]
+    public async Task InvocationCleanup_OnlyCompletesTheDedicatedOwnerControlRequest()
+    {
+        using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+        Task<IResponse> child = application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: false);
+        Task<IResponse> owner = application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: true);
+
+        application.RequestInvocationCleanup(7, isCanceled: true);
+
+        child.IsCompleted.Should().BeFalse();
+        (await owner).Should().Be(new ServerControlMessage(ServerControlKinds.RunInvocationCleanup, 7, true));
+        Task<IResponse> laterChild = application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: false);
+        laterChild.IsCompleted.Should().BeFalse();
+        (await application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: true))
+            .Should().Be(new ServerControlMessage(ServerControlKinds.RunInvocationCleanup, 7, true));
+    }
+
+    [TestMethod]
+    public async Task CanceledOwner_CanWaitForCleanupWhileRetryChildrenStillReceiveCancellation()
+    {
+        using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+        Task<IResponse> child = application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: false);
+        application.RequestSessionCancellation();
+        (await child).Should().Be(new ServerControlMessage(ServerControlKinds.CancelSession));
+        (await application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: true))
+            .Should().Be(new ServerControlMessage(ServerControlKinds.CancelSession));
+        Task<IResponse> ownerCleanup = application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: true);
+        ownerCleanup.IsCompleted.Should().BeFalse();
+        (await application.OnControlRequest(WaitForServerControlRequest.CachedInstance, invocationLifetime: false))
+            .Should().Be(new ServerControlMessage(ServerControlKinds.CancelSession));
+
+        application.RequestInvocationCleanup(1, isCanceled: true);
+
+        (await ownerCleanup).Should().Be(new ServerControlMessage(ServerControlKinds.RunInvocationCleanup, 1, true));
+    }
+
+    [TestMethod]
+    public void AcceptedOwnerHandshake_AdvertisesADifferentControlPipeThanRetryChildren()
+    {
+        using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+
+        string ownerPipe = application.CreateHandshakeMessage("1.5.0", invocationLifetimeAccepted: true)
+            .Properties[HandshakeMessagePropertyNames.ServerControlPipeName];
+        string childPipe = application.CreateHandshakeMessage("1.5.0")
+            .Properties[HandshakeMessagePropertyNames.ServerControlPipeName];
+
+        ownerPipe.Should().NotBe(childPipe);
+    }
+
+    [TestMethod]
+    [DataRow(ExitCode.Success, true)]
+    [DataRow(ExitCode.ZeroTests, true)]
+    [DataRow(ExitCode.MinimumExpectedTestsPolicyViolation, true)]
+    [DataRow(ExitCode.Success, false)]
+    public async Task CanceledOwnerHeldOnModuleTestsCompleted_IsReleasedWithoutWaitingForItsQueuedDataWrite(int aggregateExitCode, bool cleanupSucceeded)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var errors = new List<string>();
+        using var coordinator = new InvocationLifetimeCoordinator(
+            InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"]),
+            TimeSpan.FromSeconds(30),
+            reportWarning: _ => { },
+            reportError: errors.Add);
+        TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            invocationLifetimeOwnerCoordinator: coordinator);
+        Task pipeLoops = application.StartPipeConnectionLoops();
+        var ownerRun = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var data = new NamedPipeClient(application.PipeName);
+        data.RegisterAllSerializers();
+        await data.ConnectAsync(timeout.Token);
+
+        HandshakeMessage reply = await data.RequestReplyAsync<HandshakeMessage, HandshakeMessage>(
+            new HandshakeMessage(new Dictionary<byte, string>
+            {
+                [HandshakeMessagePropertyNames.PID] = "1234",
+                [HandshakeMessagePropertyNames.Architecture] = "x64",
+                [HandshakeMessagePropertyNames.Framework] = ".NET 11.0.0",
+                [HandshakeMessagePropertyNames.OS] = "Windows",
+                [HandshakeMessagePropertyNames.SupportedProtocolVersions] = "1.5.0",
+                [HandshakeMessagePropertyNames.HostType] = HandshakeMessageHostTypes.TestHost,
+                [HandshakeMessagePropertyNames.ModulePath] = "test.dll",
+                [HandshakeMessagePropertyNames.TargetFramework] = "net11.0",
+                [HandshakeMessagePropertyNames.ExecutionId] = "e",
+                [HandshakeMessagePropertyNames.InstanceId] = "i",
+                [HandshakeMessagePropertyNames.InvocationLifetimeHandlers] = "[\"Sql\"]",
+            }),
+            timeout.Token);
+        reply.Properties[HandshakeMessagePropertyNames.InvocationLifetimeCoordinationAccepted].Should().Be("true");
+        var control = new NamedPipeClient(reply.Properties[HandshakeMessagePropertyNames.ServerControlPipeName]);
+        control.RegisterAllSerializers();
+        await control.ConnectAsync(timeout.Token);
+        Task<ServerControlMessage> cancellation = control.RequestReplyAsync<WaitForServerControlRequest, ServerControlMessage>(
+            WaitForServerControlRequest.CachedInstance, timeout.Token);
+        await data.RequestReplyAsync<InvocationSetupCompleted, VoidResponse>(
+            new InvocationSetupCompleted("e", "i", true, null, []), timeout.Token);
+
+        Task<VoidResponse> heldReply = data.RequestReplyAsync<ModuleTestsCompleted, VoidResponse>(
+            new ModuleTestsCompleted("e", "i", ExitCode.Success), timeout.Token);
+        (await coordinator.ModuleTestsCompletedTask.WaitAsync(timeout.Token)).Should().Be(ExitCode.Success);
+        coordinator.AttachDetachedOwner(application, ownerRun.Task);
+
+        // Cancellation reaches the held owner, whose graceful-stop callback then queues a data write behind the held reply.
+        application.RequestSessionCancellation();
+        (await cancellation.WaitAsync(timeout.Token)).Should().Be(new ServerControlMessage(ServerControlKinds.CancelSession));
+        Task<VoidResponse> callbackWrite = data.RequestReplyAsync<TestInProgressMessages, VoidResponse>(
+            new TestInProgressMessages("e", "i", []), timeout.Token);
+        Task<ServerControlMessage> cleanup = control.RequestReplyAsync<WaitForServerControlRequest, ServerControlMessage>(
+            WaitForServerControlRequest.CachedInstance, timeout.Token);
+        await Task.Delay(200, timeout.Token);
+        heldReply.IsCompleted.Should().BeFalse();
+        callbackWrite.IsCompleted.Should().BeFalse();
+        cleanup.IsCompleted.Should().BeFalse();
+
+        Task<int> completion = coordinator.CompleteAsync(aggregateExitCode, isCanceled: true);
+
+        await heldReply.WaitAsync(timeout.Token);
+        await callbackWrite.WaitAsync(timeout.Token);
+        (await cleanup.WaitAsync(timeout.Token)).Should().Be(new ServerControlMessage(ServerControlKinds.RunInvocationCleanup, aggregateExitCode, true));
+        await data.RequestReplyAsync<InvocationCleanupCompleted, VoidResponse>(
+            new InvocationCleanupCompleted("e", "i", cleanupSucceeded, cleanupSucceeded ? null : "cleanup failed"), timeout.Token);
+        data.Dispose();
+        control.Dispose();
+        await application.StopPipeConnectionLoopsAsync(pipeLoops).WaitAsync(timeout.Token);
+        ownerRun.SetResult(ExitCode.Success);
+
+        (await completion.WaitAsync(timeout.Token)).Should().Be(cleanupSucceeded ? aggregateExitCode : ExitCode.GenericFailure);
+        coordinator.HasFailed.Should().Be(!cleanupSucceeded);
+        if (cleanupSucceeded)
+        {
+            errors.Should().BeEmpty();
+        }
+        else
+        {
+            errors.Should().ContainSingle().Which.Should().Contain("cleanup failed");
+        }
+        application.HasFailureDuringDispose.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow("1.4.0", false)]
+    [DataRow("1.5.0", true)]
+    public async Task CoordinatedSiblingHandshakeRequiresProtocol15AndNeverRepliesWithFallback(string version, bool accepted)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var errors = new List<string>();
+        using var coordinator = new InvocationLifetimeCoordinator(
+            InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"]),
+            TimeSpan.FromSeconds(30),
+            reportWarning: _ => { },
+            reportError: errors.Add);
+        coordinator.OnOwnerHandshake(new HandshakeMessage(new Dictionary<byte, string>
+        {
+            [HandshakeMessagePropertyNames.InvocationLifetimeHandlers] = "[\"Sql\"]",
+        }), "1.5.0", controlPipeAvailable: true);
+        coordinator.OnSetupCompleted(new InvocationSetupCompleted("e", "i", true, null, []));
+        TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            invocationLifetimeSiblingLaunch: await coordinator.WaitForSiblingLaunchAsync(timeout.Token),
+            invocationLifetimeSiblingCoordinator: coordinator);
+        Task loops = application.StartPipeConnectionLoops();
+        var data = new NamedPipeClient(application.PipeName);
+        data.RegisterAllSerializers();
+        await data.ConnectAsync(timeout.Token);
+        Task<HandshakeMessage> handshake = data.RequestReplyAsync<HandshakeMessage, HandshakeMessage>(
+            new HandshakeMessage(new Dictionary<byte, string>
+            {
+                [HandshakeMessagePropertyNames.PID] = "1234",
+                [HandshakeMessagePropertyNames.Architecture] = "x64",
+                [HandshakeMessagePropertyNames.Framework] = ".NET 11.0.0",
+                [HandshakeMessagePropertyNames.OS] = "Windows",
+                [HandshakeMessagePropertyNames.SupportedProtocolVersions] = version,
+                [HandshakeMessagePropertyNames.HostType] = HandshakeMessageHostTypes.TestHost,
+                [HandshakeMessagePropertyNames.ModulePath] = "test.dll",
+                [HandshakeMessagePropertyNames.TargetFramework] = "net11.0",
+                [HandshakeMessagePropertyNames.ExecutionId] = "e",
+                [HandshakeMessagePropertyNames.InstanceId] = "i",
+            }), timeout.Token);
+        if (accepted)
+        {
+            (await handshake.WaitAsync(timeout.Token)).Properties[HandshakeMessagePropertyNames.SupportedProtocolVersions].Should().Be("1.5.0");
+            coordinator.HasFailed.Should().BeFalse();
+            errors.Should().BeEmpty();
+        }
+        else
+        {
+            await coordinator.SiblingAbort.WaitAsync(timeout.Token);
+            coordinator.HasFailed.Should().BeTrue();
+            handshake.IsCompleted.Should().BeFalse();
+            errors.Should().ContainSingle().Which.Should().Contain("Coordinated execution is stopped");
+        }
+
+        data.Dispose();
+        await application.StopPipeConnectionLoopsAsync(loops).WaitAsync(timeout.Token);
+        application.HasFailureDuringDispose.Should().BeFalse();
+    }
+
+    internal static TestApplication CreateApplication(
         TestOptions testOptions,
         IEnumerable<string>? forwardedArguments = null,
         IReadOnlyDictionary<string, string>? environmentVariables = null,
         ProjectLaunchProfile? launchProfile = null,
         string runtimeIdentifier = "",
         ArtifactPostProcessingManager? artifactPostProcessingManager = null,
-        bool contextualModuleOutput = false)
+        bool contextualModuleOutput = false,
+        InvocationLifetimeCoordinator? invocationLifetimeOwnerCoordinator = null,
+        InvocationLifetimeSiblingLaunch? invocationLifetimeSiblingLaunch = null,
+        InvocationLifetimeCoordinator? invocationLifetimeSiblingCoordinator = null)
     {
         var module = new TestModule(
             new RunProperties("dotnet", "test.dll", null, runtimeIdentifier, string.Empty, string.Empty),
@@ -385,6 +662,9 @@ public sealed class TestApplicationLaunchTests
             artifactPostProcessingManager: artifactPostProcessingManager,
             artifactPostProcessingInvocation: testOptions.IsArtifactPostProcessing
                 ? new ArtifactPostProcessingInvocation("manifest.json")
-                : null);
+                : null,
+            invocationLifetimeOwnerCoordinator: invocationLifetimeOwnerCoordinator,
+            invocationLifetimeSiblingLaunch: invocationLifetimeSiblingLaunch,
+            invocationLifetimeSiblingCoordinator: invocationLifetimeSiblingCoordinator);
     }
 }

@@ -209,6 +209,47 @@ internal static class ServerControlMessageFieldsId
     public const int MessagesSerializerId = 14;
 
     public const ushort Kind = 1;
+
+    // Protocol 1.5.0, RunInvocationCleanup only.
+    public const ushort AggregateExitCode = 2;
+    public const ushort IsCanceled = 3;
+}
+
+internal static class InvocationSetupCompletedFieldsId
+{
+    public const int MessagesSerializerId = 16;
+
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort Succeeded = 3;
+    public const ushort ErrorMessage = 4;
+    public const ushort Outputs = 5;
+}
+
+internal static class InvocationLifetimeOutputFieldsId
+{
+    public const ushort Name = 1;
+    public const ushort HasValue = 2;
+    public const ushort Value = 3;
+}
+
+internal static class ModuleTestsCompletedFieldsId
+{
+    public const int MessagesSerializerId = 17;
+
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort ExitCode = 3;
+}
+
+internal static class InvocationCleanupCompletedFieldsId
+{
+    public const int MessagesSerializerId = 18;
+
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort Succeeded = 3;
+    public const ushort ErrorMessage = 4;
 }
 
 internal static class CoverageSummaryMessagesFieldsId

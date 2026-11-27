@@ -46,6 +46,18 @@ public class TestApplicationProtocolVersionTests
         }
 
         TestApplication.SupportsCoverageSummary(new HandshakeMessage(properties)).Should().Be(expected);
-        ProtocolConstants.SupportedVersions.Split(';').Should().NotContain("1.4.0");
+    }
+
+    [TestMethod]
+    [DataRow("1.0.0;1.1.0;1.2.0;1.3.0;1.4.0", "1.4.0")]
+    [DataRow("1.0.0;1.1.0;1.2.0;1.3.0;1.4.0;1.5.0", "1.5.0")]
+    public void GetSupportedProtocolVersion_NegotiatesServerControlAndInvocationLifetimeVersions(string advertisedVersions, string expectedVersion)
+    {
+        var handshake = new HandshakeMessage(new Dictionary<byte, string>
+        {
+            [HandshakeMessagePropertyNames.SupportedProtocolVersions] = advertisedVersions,
+        });
+
+        TestApplication.GetSupportedProtocolVersion(handshake).Should().Be(expectedVersion);
     }
 }

@@ -2940,6 +2940,74 @@ Proceed?</value>
   <data name="UnnegotiatedCoverageSummary" xml:space="preserve">
     <value>A test application reported a code coverage summary without negotiating coverage summary support. The summary was ignored.</value>
   </data>
+  <data name="InvocationLifetimeOwnerAmbiguous" xml:space="preserve">
+    <value>Invocation lifetime handlers are declared, but no single test project declares all of them, and no single project is marked with 'TestingPlatformInvocationLifetimeOwner'. Each test application runs its own handlers.</value>
+    <comment>{Locked="TestingPlatformInvocationLifetimeOwner"}</comment>
+  </data>
+  <data name="InvocationLifetimeOwnerUnsupportedTransport" xml:space="preserve">
+    <value>The invocation lifetime owner '{0}' cannot be coordinated because it does not use the named pipe transport. Each test application runs its own handlers.</value>
+    <comment>{0} is a project path.</comment>
+  </data>
+  <data name="InvocationLifetimeUnsupportedParticipant" xml:space="preserve">
+    <value>Invocation lifetime handlers are not coordinated because '{0}' ({1}) does not support coordination. Each test application runs its own handlers.</value>
+    <comment>{0} is a project path. {1} is a target framework.</comment>
+  </data>
+  <data name="InvocationLifetimeNoBuild" xml:space="preserve">
+    <value>Invocation lifetime handlers are not coordinated with '--no-build' because existing test binaries might not support coordination. Each test application runs its own handlers.</value>
+    <comment>{Locked="--no-build"}</comment>
+  </data>
+  <data name="InvocationLifetimeNoDependencies" xml:space="preserve">
+    <value>Invocation lifetime handlers are not coordinated with '--no-dependencies' because existing project reference outputs might not support coordination. Each test application runs its own handlers.</value>
+    <comment>{Locked="--no-dependencies"}</comment>
+  </data>
+  <data name="InvocationLifetimeSiblingProtocolTooOld" xml:space="preserve">
+    <value>'{0}' does not support invocation lifetime coordination. Coordinated execution is stopped. Rebuild it with a Microsoft.Testing.Platform version that supports coordination.</value>
+    <comment>{0} is a test application path. {Locked="Microsoft.Testing.Platform"}</comment>
+  </data>
+  <data name="InvocationLifetimeOwnerUnexpectedExitCode" xml:space="preserve">
+    <value>The invocation lifetime owner '{0}' exited with unexpected code {1} after its tests completed.</value>
+    <comment>{0} is a test module name. {1} is the process exit code.</comment>
+  </data>
+  <data name="InvocationLifetimeOwnerShutdownTimedOut" xml:space="preserve">
+    <value>The invocation lifetime owner '{0}' did not exit within {1} seconds after invocation cleanup and was stopped. Set the '{2}' environment variable to change the timeout.</value>
+    <comment>{0} is a test module name. {1} is a timeout in seconds. {2} is an environment variable name.</comment>
+  </data>
+  <data name="InvocationLifetimeSetupFailed" xml:space="preserve">
+    <value>Invocation setup failed in '{0}'. The remaining test applications are not run.</value>
+    <comment>{0} is a test module name.</comment>
+  </data>
+  <data name="InvocationLifetimeOwnerExitedBeforeSetup" xml:space="preserve">
+    <value>The test application '{0}' exited before completing invocation setup. The remaining test applications are not run.</value>
+    <comment>{0} is a test module name.</comment>
+  </data>
+  <data name="InvocationLifetimeOwnerExitedBeforeCleanup" xml:space="preserve">
+    <value>The test application '{0}' exited before completing invocation cleanup.</value>
+    <comment>{0} is a test module name.</comment>
+  </data>
+  <data name="InvocationLifetimeOwnerControlLost" xml:space="preserve">
+    <value>The test application '{0}' disconnected from its invocation lifetime control channel before invocation cleanup. The remaining test applications are not run.</value>
+    <comment>{0} is a test module name.</comment>
+  </data>
+  <data name="InvocationLifetimeCleanupFailed" xml:space="preserve">
+    <value>Invocation cleanup failed in '{0}'.</value>
+    <comment>{0} is a test module name.</comment>
+  </data>
+  <data name="InvocationLifetimeCleanupTimedOut" xml:space="preserve">
+    <value>Invocation cleanup in '{0}' did not complete within {1} seconds and was stopped. Set the '{2}' environment variable to change the timeout.</value>
+    <comment>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</comment>
+  </data>
+  <data name="InvocationLifetimeOwnerHandshakeTimedOut" xml:space="preserve">
+    <value>The test application '{0}' did not request invocation lifetime coordination within {1} seconds. The other test applications run their own handlers. Set the '{2}' environment variable to change the timeout.</value>
+    <comment>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</comment>
+  </data>
+  <data name="InvocationLifetimeSetupTimedOut" xml:space="preserve">
+    <value>Invocation setup in '{0}' did not complete within {1} seconds and was stopped. The remaining test applications are not run. Set the '{2}' environment variable to change the timeout.</value>
+    <comment>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</comment>
+  </data>
+  <data name="InvocationLifetimeUnexpectedMessage" xml:space="preserve">
+    <value>The test application '{0}' sent the unexpected invocation lifetime message '{1}'. The test run is stopped.</value>
+    <comment>{0} is a test module name. {1} is a protocol message name.</comment>
+  </data>
   <data name="FailedColon" xml:space="preserve">
     <value>failed:</value>
   </data>

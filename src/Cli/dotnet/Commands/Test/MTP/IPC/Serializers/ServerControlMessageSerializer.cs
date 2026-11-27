@@ -12,7 +12,9 @@ internal sealed class ServerControlMessageSerializer : BaseSerializer, INamedPip
     public object Deserialize(Stream stream)
     {
         byte kind = 0;
-        ReadFields(stream, (fieldId, _) =>
+        int? aggregateExitCode = null;
+        bool? isCanceled = null;
+        ReadFields(stream, (fieldId, fieldSize) =>
         {
             switch (fieldId)
             {
@@ -20,18 +22,30 @@ internal sealed class ServerControlMessageSerializer : BaseSerializer, INamedPip
                     kind = ReadByte(stream);
                     return true;
 
+                case ServerControlMessageFieldsId.AggregateExitCode:
+                    aggregateExitCode = ReadFieldPayload(stream, fieldSize, ReadInt);
+                    return true;
+
+                case ServerControlMessageFieldsId.IsCanceled:
+                    isCanceled = ReadFieldPayload(stream, fieldSize, ReadBool);
+                    return true;
+
                 default:
                     return false;
             }
         });
 
-        return new ServerControlMessage(kind);
+        return new ServerControlMessage(kind, aggregateExitCode, isCanceled);
     }
 
     public void Serialize(object objectToSerialize, Stream stream)
     {
         var message = (ServerControlMessage)objectToSerialize;
-        WriteUShort(stream, 1);
+        WriteUShort(stream, (ushort)(1
+            + (message.AggregateExitCode is null ? 0 : 1)
+            + (message.IsCanceled is null ? 0 : 1)));
         WriteField(stream, ServerControlMessageFieldsId.Kind, message.Kind);
+        WriteField(stream, ServerControlMessageFieldsId.AggregateExitCode, message.AggregateExitCode);
+        WriteField(stream, ServerControlMessageFieldsId.IsCanceled, message.IsCanceled);
     }
 }
