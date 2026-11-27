@@ -87,6 +87,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
+                var memoryExtensionsType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemoryExtensions);
+
                 // Roslyn doesn't yet support "FindAllReferences" at a file/block level. So instead, find references to local int variables in this block.
                 context.RegisterOperationBlockStartAction(OnOperationBlockStart);
                 return;
@@ -144,7 +146,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     void AnalyzeInvocationOperation(OperationAnalysisContext context)
                     {
                         var invocationOperation = (IInvocationOperation)context.Operation;
-                        if (!IsDesiredTargetMethod(invocationOperation.TargetMethod))
+                        bool isSpan = IsSpanIndexOfWithContains(invocationOperation.TargetMethod);
+                        if (!isSpan && !IsDesiredTargetMethod(invocationOperation.TargetMethod))
                         {
                             return;
                         }
@@ -152,10 +155,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         var parent = invocationOperation.Parent;
                         if (parent is IBinaryOperation binaryOperation)
                         {
+                            if (isSpan)
+                            {
+                                if (binaryOperation.LeftOperand == invocationOperation &&
+                                    (CheckOperatorKindAndOperand(binaryOperation, binaryOperation.RightOperand) ||
+                                     (binaryOperation.OperatorKind == BinaryOperatorKind.LessThan && binaryOperation.RightOperand.ConstantValue is { HasValue: true, Value: 0 })))
+                                {
+                                    context.ReportDiagnostic(CreateIndexOfDiagnostic(binaryOperation, invocationOperation));
+                                }
+
+                                return;
+                            }
+
                             var otherOperand = binaryOperation.LeftOperand is IInvocationOperation ? binaryOperation.RightOperand : binaryOperation.LeftOperand;
                             if (CheckOperatorKindAndOperand(binaryOperation, otherOperand))
                             {
-                                context.ReportDiagnostic(binaryOperation.CreateDiagnostic(Rule));
+                                context.ReportDiagnostic(CreateIndexOfDiagnostic(binaryOperation, invocationOperation));
+                            }
+                        }
+                        else if (isSpan && parent is IIsPatternOperation { Pattern: IRelationalPatternOperation relationalPattern } isPatternOperation)
+                        {
+                            if (relationalPattern.OperatorKind is BinaryOperatorKind.GreaterThanOrEqual or BinaryOperatorKind.LessThan &&
+                                relationalPattern.Value.ConstantValue is { HasValue: true, Value: 0 })
+                            {
+                                context.ReportDiagnostic(CreateIndexOfDiagnostic(isPatternOperation, invocationOperation));
                             }
                         }
                         else if (parent is IVariableInitializerOperation variableInitializer)
@@ -195,7 +218,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             ILocalSymbol variable = variableNameAndLocation.Key;
                             if (!localsToBailOut.Contains(variable))
                             {
-                                context.ReportDiagnostic(variableNameAndLocation.Value.CreateDiagnostic(Rule));
+                                context.ReportDiagnostic(CreateIndexOfDiagnostic(variableNameAndLocation.Value, variableNameAndLocation.Value));
                             }
                         }
 
@@ -208,8 +231,46 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                          || targetMethod.Equals(charArgumentIndexOfMethod)
                          || targetMethod.Equals(stringAndComparisonTypeArgumentIndexOfMethod)
                          || targetMethod.Equals(charAndComparisonTypeArgumentIndexOfMethod);
+
+                    bool IsSpanIndexOfWithContains(IMethodSymbol targetMethod)
+                    {
+                        // VB reports an extension method call in its reduced form, without the receiver parameter.
+                        targetMethod = targetMethod.GetConstructedReducedFrom() ?? targetMethod;
+
+                        if (memoryExtensionsType is null ||
+                            !SymbolEqualityComparer.Default.Equals(targetMethod.ContainingType, memoryExtensionsType) ||
+                            targetMethod.Name is not ("IndexOf" or "IndexOfAny" or "IndexOfAnyExcept"))
+                        {
+                            return false;
+                        }
+
+                        foreach (var containsMethod in memoryExtensionsType.GetMembers(GetContainsMethodName(targetMethod.Name)).OfType<IMethodSymbol>())
+                        {
+                            if (containsMethod.TypeParameters.Length != targetMethod.TypeArguments.Length ||
+                                containsMethod.Parameters.Length != targetMethod.Parameters.Length)
+                            {
+                                continue;
+                            }
+
+                            var constructedContainsMethod = containsMethod.IsGenericMethod ? containsMethod.Construct(targetMethod.TypeArguments.ToArray()) : containsMethod;
+                            if (constructedContainsMethod.Parameters.Zip(targetMethod.Parameters, (c, i) => c.RefKind == i.RefKind && SymbolEqualityComparer.Default.Equals(c.Type, i.Type)).All(match => match))
+                            {
+                                // The Contains method itself may be implemented as IndexOf() >= 0.
+                                return !SymbolEqualityComparer.Default.Equals(containsMethod, method.OriginalDefinition);
+                            }
+                        }
+
+                        return false;
+                    }
+
+                    Diagnostic CreateIndexOfDiagnostic(IOperation operation, IInvocationOperation invocationOperation) =>
+                        SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingType, memoryExtensionsType)
+                            ? operation.CreateDiagnostic(Rule, GetContainsMethodName(invocationOperation.TargetMethod.Name), invocationOperation.TargetMethod.Name)
+                            : operation.CreateDiagnostic(Rule, "string.Contains", "string.IndexOf");
                 }
             });
         }
+
+        internal static string GetContainsMethodName(string indexOfMethodName) => "Contains" + indexOfMethodName.Substring("IndexOf".Length);
     }
 }

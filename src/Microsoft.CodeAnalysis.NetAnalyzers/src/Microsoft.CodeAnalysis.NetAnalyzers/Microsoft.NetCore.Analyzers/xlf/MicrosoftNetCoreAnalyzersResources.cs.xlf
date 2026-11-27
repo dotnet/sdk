@@ -2498,6 +2498,11 @@ Rozšíření a uživatelem definované převody se u obecných typů nepodporuj
         <target state="new">Prefer ReadOnlySpan&lt;T&gt; properties over readonly array fields</target>
         <note>{Locked="ReadOnlySpan&lt;T&gt;"}{Locked="readonly"}</note>
       </trans-unit>
+      <trans-unit id="PreferSpanContainsOverIndexOfCodeFixTitle">
+        <source>Replace with '{0}'</source>
+        <target state="new">Replace with '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">Stream má přetížení ReadAsync, které jako první argument přijímá Memory&lt;Byte&gt;, a přetížení WriteAsync, které jako první argument přijímá ReadOnlyMemory&lt;Byte&gt;. Upřednostňujte volání přetížení založených na paměti, která jsou efektivnější.</target>
@@ -2524,8 +2529,8 @@ Rozšíření a uživatelem definované převody se u obecných typů nepodporuj
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
-        <source>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</source>
-        <target state="translated">Pro lepší čitelnost použijte místo string.IndexOf metodu string.Contains.</target>
+        <source>Use '{0}' instead of '{1}' to improve readability</source>
+        <target state="new">Use '{0}' instead of '{1}' to improve readability</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfTitle">

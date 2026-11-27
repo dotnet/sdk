@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Composition;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +29,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             SemanticModel semanticModel = await doc.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 
+            if (GetSpanIndexOfComparison(semanticModel, root.FindNode(context.Span), cancellationToken) is (_, IInvocationOperation spanIndexOfOperation, _))
+            {
+                RegisterCodeFix(
+                    context,
+                    string.Format(CultureInfo.CurrentCulture, MicrosoftNetCoreAnalyzersResources.PreferSpanContainsOverIndexOfCodeFixTitle, PreferStringContainsOverIndexOfAnalyzer.GetContainsMethodName(spanIndexOfOperation.TargetMethod.Name)),
+                    nameof(MicrosoftNetCoreAnalyzersResources.PreferSpanContainsOverIndexOfCodeFixTitle));
+                return;
+            }
+
             if (GetIndexOfComparison(semanticModel, root.FindNode(context.Span), cancellationToken) is null)
             {
                 return;
@@ -43,6 +53,33 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             SemanticModel semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             SyntaxNode expression = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+
+            if (GetSpanIndexOfComparison(semanticModel, expression, cancellationToken) is (SyntaxNode spanComparison, IInvocationOperation spanIndexOfOperation, bool negateSpanComparison))
+            {
+                // C# passes the receiver as the first argument, VB as the instance of the reduced extension method.
+                var arguments = spanIndexOfOperation.Arguments.Where(argument => argument.ArgumentKind != ArgumentKind.DefaultValue);
+                ImmutableArray<SyntaxNode> spanIndexOfArguments = spanIndexOfOperation.Instance is { } spanInstance
+                    ? arguments.Select(argument => argument.Syntax).Prepend(spanInstance.Syntax).ToImmutableArray()
+                    : arguments.Select((argument, index) => index == 0 ? argument.Value.Syntax : argument.Syntax).ToImmutableArray();
+                string containsMethodName = PreferStringContainsOverIndexOfAnalyzer.GetContainsMethodName(spanIndexOfOperation.TargetMethod.Name);
+
+                foreach (SyntaxNode node in spanIndexOfArguments)
+                {
+                    editor.TrackNode(node);
+                }
+
+                editor.ReplaceNode(spanComparison, (currentNode, generator) =>
+                {
+                    SyntaxNode Current(SyntaxNode original) => currentNode.GetCurrentNode(original) ?? original;
+
+                    SyntaxNode containsInvocation = generator.InvocationExpression(
+                        generator.MemberAccessExpression(Current(spanIndexOfArguments[0]), containsMethodName),
+                        spanIndexOfArguments.Skip(1).Select(Current));
+                    SyntaxNode newCondition = negateSpanComparison ? generator.LogicalNotExpression(containsInvocation) : containsInvocation;
+                    return newCondition.WithTriviaFrom(currentNode);
+                });
+                return;
+            }
 
             if (GetIndexOfComparison(semanticModel, expression, cancellationToken) is not (IBinaryOperation binaryOperation, IInvocationOperation invocationOperation, IOperation otherOperation))
             {
@@ -114,6 +151,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 SyntaxNode newIfCondition = negate ? generator.LogicalNotExpression(containsInvocation) : containsInvocation;
                 return newIfCondition.WithTriviaFrom(currentNode);
             });
+        }
+
+        private static (SyntaxNode Comparison, IInvocationOperation IndexOf, bool Negate)? GetSpanIndexOfComparison(
+            SemanticModel semanticModel, SyntaxNode? expression, CancellationToken cancellationToken)
+        {
+            return (expression is null ? null : semanticModel.GetOperation(expression, cancellationToken)) switch
+            {
+                IBinaryOperation { LeftOperand: IInvocationOperation { TargetMethod.IsExtensionMethod: true } invocationOperation } binaryOperation
+                    => (binaryOperation.Syntax, invocationOperation, binaryOperation.OperatorKind is BinaryOperatorKind.Equals or BinaryOperatorKind.LessThan),
+                IIsPatternOperation { Value: IInvocationOperation { TargetMethod.IsExtensionMethod: true } invocationOperation, Pattern: IRelationalPatternOperation relationalPattern } isPatternOperation
+                    => (isPatternOperation.Syntax, invocationOperation, relationalPattern.OperatorKind == BinaryOperatorKind.LessThan),
+                _ => null,
+            };
         }
 
         private static (IBinaryOperation Comparison, IInvocationOperation IndexOf, IOperation Other)? GetIndexOfComparison(

@@ -1454,5 +1454,180 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 """;
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
+
+        [TestMethod]
+        [DataRow("span.IndexOf('a') >= 0", "span.Contains('a')")]
+        [DataRow("span.IndexOf('a') != -1", "span.Contains('a')")]
+        [DataRow("span.IndexOf('a') < 0", "!span.Contains('a')")]
+        [DataRow("span.IndexOf('a') == -1", "!span.Contains('a')")]
+        [DataRow("span.IndexOf('a') is >= 0", "span.Contains('a')")]
+        [DataRow("span.IndexOf('a') is < 0", "!span.Contains('a')")]
+        [DataRow("span.IndexOfAny('a', 'b') >= 0", "span.ContainsAny('a', 'b')")]
+        [DataRow("span.IndexOfAny('a', 'b') < 0", "!span.ContainsAny('a', 'b')")]
+        [DataRow("span.IndexOfAny(\"abc\") >= 0", "span.ContainsAny(\"abc\")")]
+        [DataRow("span.IndexOfAnyExcept('a', 'b') >= 0", "span.ContainsAnyExcept('a', 'b')")]
+        [DataRow("span.IndexOfAnyExcept('a', 'b') < 0", "!span.ContainsAnyExcept('a', 'b')")]
+        [DataRow("span.IndexOf(\"ab\", System.StringComparison.OrdinalIgnoreCase) >= 0", "span.Contains(\"ab\", System.StringComparison.OrdinalIgnoreCase)")]
+        [DataRow("str.AsSpan().IndexOf('a') >= 0", "str.AsSpan().Contains('a')")]
+        [DataRow("ints.IndexOf(5) < 0", "!ints.Contains(5)")]
+        [DataRow("MemoryExtensions.IndexOf(span, 'a') >= 0", "span.Contains('a')")]
+        [DataRow("span.IndexOf(value: 'a') >= 0", "span.Contains(value: 'a')")]
+        public async Task SpanIndexOfComparedWithZero_OffersContainsAsync(string condition, string fixedCondition)
+        {
+            const string template = """
+                using System;
+
+                class TestClass
+                {
+                    void TestMethod(ReadOnlySpan<char> span, Span<int> ints, string str)
+                    {
+                        if ({0})
+                        {
+                        }
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = template.Replace("{0}", "{|CA2249:" + condition + "|}"),
+                FixedCode = template.Replace("{0}", fixedCondition),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        [DataRow("str.AsSpan().IndexOf(\"a\"c) >= 0", "str.AsSpan().Contains(\"a\"c)")]
+        [DataRow("str.AsSpan().IndexOf(\"a\"c) <> -1", "str.AsSpan().Contains(\"a\"c)")]
+        [DataRow("str.AsSpan().IndexOf(\"a\"c) < 0", "Not str.AsSpan().Contains(\"a\"c)")]
+        [DataRow("str.AsSpan().IndexOf(\"a\"c) = -1", "Not str.AsSpan().Contains(\"a\"c)")]
+        [DataRow("str.AsSpan().IndexOfAny(\"a\"c, \"b\"c) >= 0", "str.AsSpan().ContainsAny(\"a\"c, \"b\"c)")]
+        public async Task SpanIndexOfComparedWithZero_OffersContainsVBAsync(string condition, string fixedCondition)
+        {
+            const string template = """
+                Imports System
+
+                Class TestClass
+                    Sub TestMethod(str As String)
+                        If {0} Then
+                        End If
+                    End Sub
+                End Class
+                """;
+
+            await new VerifyVB.Test
+            {
+                TestCode = template.Replace("{0}", "{|CA2249:" + condition + "|}"),
+                FixedCode = template.Replace("{0}", fixedCondition),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        [DataRow("span.IndexOf('a') > 0")]
+        [DataRow("span.IndexOf('a') >= 1")]
+        [DataRow("span.IndexOf('a') <= 0")]
+        [DataRow("span.IndexOf('a') is > 0")]
+        [DataRow("span.LastIndexOf('a') >= 0")]
+        [DataRow("span.IndexOfAnyInRange('a', 'z') >= 0")]
+        [DataRow("span.IndexOf(\"ab\".AsSpan()) >= 0")]
+        public async Task SpanIndexOfNotAPresenceCheck_NoDiagnosticAsync(string condition)
+        {
+            string source = """
+                using System;
+
+                class TestClass
+                {
+                    void TestMethod(ReadOnlySpan<char> span)
+                    {
+                        if (
+                """ + condition + """
+                )
+                        {
+                        }
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task SpanContainsImplementedWithIndexOf_NoDiagnosticAsync()
+        {
+            string source = """
+                namespace System
+                {
+                    public static class MemoryExtensions
+                    {
+                        public static int IndexOf(this ReadOnlySpan<char> span, char value) => 0;
+
+                        public static bool Contains(this ReadOnlySpan<char> span, char value) => IndexOf(span, value) >= 0;
+
+                        public static bool Other(this ReadOnlySpan<char> span, char value) => {|CA2249:IndexOf(span, value) >= 0|};
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = source,
+                FixedCode = source.Replace("{|CA2249:IndexOf(span, value) >= 0|}", "span.Contains(value)"),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task SpanIndexOfStoredInLocal_DiagnosticWithoutFixAsync()
+        {
+            string source = """
+                using System;
+
+                class TestClass
+                {
+                    void TestMethod(ReadOnlySpan<char> span)
+                    {
+                        int index = {|CA2249:span.IndexOf('a')|};
+                        if (index >= 0)
+                        {
+                        }
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = source,
+                FixedCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task SpanIndexOf_MessageNamesTheContainsMethodAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+
+                    class TestClass
+                    {
+                        bool TestMethod(ReadOnlySpan<char> span) => span.IndexOfAnyExcept('a', 'b') >= 0;
+                    }
+                    """,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic().WithSpan(5, 49, 5, 85).WithArguments("ContainsAnyExcept", "IndexOfAnyExcept"),
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+            }.RunAsync(CancellationToken.None);
+        }
     }
 }
