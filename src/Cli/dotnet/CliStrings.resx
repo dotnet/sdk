@@ -252,17 +252,43 @@
   </data>
   <data name="EnvironmentPathLinuxManualInstructions" xml:space="preserve">
     <value>Tools directory '{0}' is not currently on the PATH environment variable.
-If you are using bash, you can add it to your profile by running the following command:
+{1}
+If this is the startup file used by your shell, append the tools directory by running:
 
-cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
-# Add .NET Core SDK tools
-export PATH="$PATH:{0}"
-EOF
+printf '\n%s\n' {3} &gt;&gt; {2}
 
 You can add it to the current session by running the following command:
 
-export PATH="$PATH:{0}"
+{4}
 </value>
+    <comment>{0} is the tools directory, {1} explains shell startup-file loading, {2} is the shell-quoted startup file, {3} is a shell-quoted export command, {4} is the export command. {Locked="printf '\n%s\n'"} {Locked="&gt;&gt;"}</comment>
+  </data>
+  <data name="EnvironmentPathLinuxShellManualInstructions" xml:space="preserve">
+    <value>Tools directory '{0}' is not currently on the PATH environment variable.
+{1}
+Append the tools directory to your shell's startup configuration by running:
+
+{2}
+
+You can add it to the current session by running the following command:
+
+{3}
+</value>
+    <comment>{0} is the tools directory, {1} explains shell startup-file loading, {2} is the shell-native command that appends to the startup file without overwriting it, {3} is the command for the current session.</comment>
+  </data>
+  <data name="EnvironmentPathLinuxLoginShellInstructions" xml:space="preserve">
+    <value>{0} reads '{1}' for login shells. Interactive non-login shells may use a different startup file.</value>
+  </data>
+  <data name="EnvironmentPathLinuxInteractiveShellInstructions" xml:space="preserve">
+    <value>Use '{1}' for interactive {0} sessions that read this file. Login and non-login sessions may read different startup files.</value>
+  </data>
+  <data name="EnvironmentPathLinuxZshEnvironmentInstructions" xml:space="preserve">
+    <value>{0} normally reads '{1}' for all shells. Later startup files can override PATH or change ZDOTDIR.</value>
+    <comment>{Locked="PATH"} {Locked="ZDOTDIR"}</comment>
+  </data>
+  <data name="EnvironmentPathLinuxUnknownShellInstructions" xml:space="preserve">
+    <value>Tools directory '{0}' is not currently on the PATH environment variable.
+Add this directory to PATH using your shell's configuration. Consult your shell's documentation for the appropriate startup file and syntax.</value>
   </data>
   <data name="EnvironmentPathLinuxNeedLogout" xml:space="preserve">
     <value>Since you just installed the .NET SDK, you will need to logout or restart your session before running the tool you installed.</value>
