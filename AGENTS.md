@@ -196,3 +196,5 @@ required checklist for memory, instructions, `AGENTS.md`, skills, agents, contri
 documentation, help, snapshots, and localized resources.
 
 If the change is genuinely internal and unobservable to users, contributors, or agents, no artifact update is needed — but make that a deliberate call, not an oversight.
+
+For AI artifact ownership, change requests, review, and retirement, see [AI artifacts](documentation/project-docs/ai-artifacts.md).

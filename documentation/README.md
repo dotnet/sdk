@@ -16,6 +16,7 @@ Documents Index
 
 - [Developer Guide](project-docs/developer-guide.md)
 - [How to file issues](project-docs/issue-filing-guide.md)
+- [AI artifacts: ownership, changes, and retirement](project-docs/ai-artifacts.md)
 
 ## Troubleshooting and issues reporting
 
