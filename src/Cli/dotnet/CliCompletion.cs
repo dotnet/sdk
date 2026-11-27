@@ -18,7 +18,7 @@ internal static class CliCompletion
     {
         try
         {
-            return GetMSBuildProject()?.GetTargetFrameworks().Select(tf => tf.GetShortFolderName()).Select(ToCompletionItem) ?? Empty<CompletionItem>();
+            return GetMSBuildProject()?.GetTargetFrameworkNames().Select(ToCompletionItem) ?? Empty<CompletionItem>();
         }
         catch (Exception)
         {

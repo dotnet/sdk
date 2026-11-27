@@ -36,10 +36,11 @@ internal class MsbuildProject
     public string ProjectDirectory { get; private set; }
 
     private readonly ProjectCollection _projects;
-    private List<NuGetFramework> _cachedTfms = null;
+    private List<(string Value, NuGetFramework Framework, bool IsAlias)> _cachedTfms = null;
     private IEnumerable<string> cachedRuntimeIdentifiers;
     private IEnumerable<string> cachedConfigurations;
     private ProjectInstance _cachedEvaluatedProject;
+    private bool _interactiveLoggerRegistered = false;
     private readonly bool _interactive = false;
 
     private MsbuildProject(ProjectCollection projects, ProjectRootElement project, bool interactive)
@@ -141,15 +142,87 @@ internal class MsbuildProject
 
     public IEnumerable<NuGetFramework> GetTargetFrameworks()
     {
+        return GetResolvedTargetFrameworks().Select(tfm => tfm.Framework);
+    }
+
+    /// <summary>
+    /// Returns the values of the TargetFramework/TargetFrameworks properties as they can be passed to
+    /// <c>--framework</c>, without evaluating the project once per TargetFramework alias.
+    /// </summary>
+    public IEnumerable<string> GetTargetFrameworkNames()
+    {
+        return GetEvaluatedProject()
+            .GetTargetFrameworkValues()
+            .Select(value => NuGetFramework.Parse(value) is var framework && framework.IsUnsupported
+                ? value
+                : framework.GetShortFolderName());
+    }
+
+    /// <summary>
+    /// Resolves a <c>--framework</c> value to the framework it denotes in this project. The value can be
+    /// a framework name or one of the project's TargetFramework aliases.
+    /// </summary>
+    /// <returns><see langword="true"/> if the project targets the given framework.</returns>
+    public bool TryGetTargetFramework(string frameworkString, out NuGetFramework framework)
+    {
+        var resolvedTargetFrameworks = GetResolvedTargetFrameworks();
+        foreach (var tfm in resolvedTargetFrameworks)
+        {
+            if (tfm.IsAlias && string.Equals(tfm.Value, frameworkString, StringComparison.OrdinalIgnoreCase))
+            {
+                framework = tfm.Framework;
+                return true;
+            }
+        }
+
+        framework = NuGetFramework.Parse(frameworkString);
+        foreach (var tfm in resolvedTargetFrameworks)
+        {
+            if (!tfm.IsAlias && framework.Equals(tfm.Framework))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private List<(string Value, NuGetFramework Framework, bool IsAlias)> GetResolvedTargetFrameworks()
+    {
         if (_cachedTfms != null)
         {
             return _cachedTfms;
         }
 
         var project = GetEvaluatedProject();
-        _cachedTfms = [.. project.GetTargetFrameworks()];
+        _cachedTfms = [.. project.GetTargetFrameworkValues().Select(value => ResolveTargetFramework(project, value))];
         return _cachedTfms;
     }
+
+    private (string Value, NuGetFramework Framework, bool IsAlias) ResolveTargetFramework(ProjectInstance project, string targetFramework)
+    {
+        var framework = NuGetFramework.Parse(targetFramework);
+        if (!framework.IsUnsupported)
+        {
+            return (targetFramework, framework, false);
+        }
+
+        // The value is not a framework name, so it may be a TargetFramework alias. Like NuGet restore, determine
+        // the framework from the TargetFrameworkMoniker and TargetPlatformMoniker of the evaluation for that value.
+        var innerProject = string.Equals(project.GetPropertyValue("TargetFramework"), targetFramework, StringComparison.OrdinalIgnoreCase)
+            ? project
+            : EvaluateProject(targetFramework);
+
+        var targetFrameworkMoniker = innerProject.GetPropertyValue("TargetFrameworkMoniker");
+        if (string.IsNullOrWhiteSpace(targetFrameworkMoniker))
+        {
+            return (targetFramework, framework, false);
+        }
+
+        var targetPlatformMoniker = innerProject.GetPropertyValue("TargetPlatformMoniker");
+        return (targetFramework, NuGetFramework.ParseComponents(targetFrameworkMoniker, targetPlatformMoniker), true);
+    }
+
     public IEnumerable<string> GetConfigurations()
     {
         return cachedConfigurations ??= GetEvaluatedProject().GetPropertyCommaSeparatedValues("Configurations");
@@ -168,51 +241,47 @@ internal class MsbuildProject
         return false;
     }
 
-    public bool IsTargetingFramework(NuGetFramework framework)
-    {
-        foreach (var tfm in GetTargetFrameworks())
-        {
-            if (framework.Equals(tfm))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
     private ProjectInstance GetEvaluatedProject()
     {
         // Reuse a single evaluation across the RID/TFM/Configuration getters. A ProjectInstance is a
         // standalone snapshot that is never stored in the ProjectCollection's loaded-project cache, so
         // (unlike a cached Project) it can never be silently re-evaluated to Full by a later LoadProject.
-        if (_cachedEvaluatedProject is not null)
-        {
-            return _cachedEvaluatedProject;
-        }
+        return _cachedEvaluatedProject ??= EvaluateProject(targetFramework: null);
+    }
 
+    private ProjectInstance EvaluateProject(string targetFramework)
+    {
         string originalDotnetHostPath = null;
         try
         {
-            // Only evaluated properties (RuntimeIdentifier(s), TargetFramework(s), Configurations) are read
-            // from the returned instance, never items or targets, so stop after the Properties pass instead
-            // of running a full evaluation.
+            // Only evaluated properties (RuntimeIdentifier(s), TargetFramework(s), TargetFrameworkMoniker,
+            // Configurations, ...) are read from the returned instance, never items or targets, so stop after
+            // the Properties pass instead of running a full evaluation.
             var options = new ProjectOptions
             {
                 ProjectCollection = _projects,
                 EvaluationStage = ProjectEvaluationStage.Properties,
             };
+            if (targetFramework is not null)
+            {
+                options.GlobalProperties = new Dictionary<string, string> { ["TargetFramework"] = targetFramework };
+            }
             if (_interactive)
             {
                 // NuGet need this environment variable to call plugin dll
                 originalDotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
                 Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
                 // Even during evaluation time, the SDK resolver may need to output auth instructions, so set a logger.
-                _projects.RegisterLogger(new ConsoleLogger(LoggerVerbosity.Minimal));
-                options.GlobalProperties = new Dictionary<string, string>
-                { ["NuGetInteractive"] = "true" };
+                if (!_interactiveLoggerRegistered)
+                {
+                    _projects.RegisterLogger(new ConsoleLogger(LoggerVerbosity.Minimal));
+                    _interactiveLoggerRegistered = true;
+                }
+                options.GlobalProperties ??= new Dictionary<string, string>();
+                options.GlobalProperties["NuGetInteractive"] = "true";
             }
 
-            return _cachedEvaluatedProject = ProjectInstance.FromFile(ProjectRootElement.FullPath, options);
+            return ProjectInstance.FromFile(ProjectRootElement.FullPath, options);
         }
         catch (InvalidProjectFileException e)
         {

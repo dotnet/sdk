@@ -73,8 +73,7 @@ internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefin
         }
         else
         {
-            var framework = NuGetFramework.Parse(frameworkString);
-            if (!msbuildProj.IsTargetingFramework(framework))
+            if (!msbuildProj.TryGetTargetFramework(frameworkString, out var framework))
             {
                 Reporter.Error.WriteLine(string.Format(
                                              CliStrings.ProjectDoesNotTargetFramework,
