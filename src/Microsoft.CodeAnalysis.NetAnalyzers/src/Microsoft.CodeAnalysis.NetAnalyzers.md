@@ -1956,6 +1956,18 @@ If an array field is readonly and the array is never modified, the compiler can 
 |CodeFix|True|
 ---
 
+## [CA1881](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1881): Prefer 'ValueTuple' over 'Tuple'
+
+'ValueTuple' is a struct, so it avoids the heap allocation of each 'Tuple'. A tuple is only reported when every use of it, and of everything it is stored in, passed to or returned from, works the same with a value tuple.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
