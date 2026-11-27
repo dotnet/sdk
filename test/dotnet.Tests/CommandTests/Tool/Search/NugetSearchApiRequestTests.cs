@@ -255,7 +255,8 @@ public class NugetSearchApiRequestTests
 
         public async ValueTask DisposeAsync()
         {
-            _listener.Stop();
+            // Do not call Stop() before Close(): on non-Windows platforms, Close() after Stop() removes the
+            // prefixes again, which re-binds the already released port and can throw "Address already in use".
             _listener.Close();
             await _serverTask.ConfigureAwait(false);
         }
