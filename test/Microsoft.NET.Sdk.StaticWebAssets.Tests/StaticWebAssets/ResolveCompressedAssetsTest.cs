@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -10,6 +10,7 @@ using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
@@ -55,6 +56,7 @@ public class ResolveCompressedAssetsTest
             OutputPath = OutputBasePath,
             BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
             Formats = "gzip;brotli",
             ExplicitAssets = new[] { gzipExplicitAsset, brotliExplicitAsset },
         };
@@ -127,6 +129,33 @@ public class ResolveCompressedAssetsTest
         {
             OutputPath = OutputBasePath,
             CandidateAssets = [uncompressedCandidate.ToTaskItem(), compressedCandidate.ToTaskItem()],
+            CompressionFormats = CreateCompressionFormats("gzip"),
+            Formats = "gzip",
+            BuildEngine = _buildEngine.Object
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        task.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(0);
+    }
+
+    [TestMethod]
+    public void IgnoresPrecompressedAssetsWhenRelatedAssetDiffersOnlyByPathCasing()
+    {
+        var asset = CreatePrimaryAsset();
+        var relatedAssetPath = asset.ItemSpec.ToUpperInvariant();
+
+        var compressedAsset = new TaskItem(Path.ChangeExtension(asset.ItemSpec, ".gz"), asset.CloneCustomMetadata());
+        compressedAsset.SetMetadata(nameof(StaticWebAsset.AssetTraitName), "Content-Encoding");
+        compressedAsset.SetMetadata(nameof(StaticWebAsset.AssetTraitValue), "gzip");
+        compressedAsset.SetMetadata(nameof(StaticWebAsset.RelatedAsset), relatedAssetPath);
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            CandidateAssets = [asset, compressedAsset],
+            CompressionFormats = CreateCompressionFormats("gzip"),
             Formats = "gzip",
             BuildEngine = _buildEngine.Object
         };
@@ -152,6 +181,7 @@ public class ResolveCompressedAssetsTest
             BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
             IncludePatterns = "**\\*.tmp",
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
             Formats = "gzip;brotli",
         };
 
@@ -179,6 +209,7 @@ public class ResolveCompressedAssetsTest
             BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
             IncludePatterns = "**\\*.tmp",
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
             Formats = "gzip;brotli",
         };
 
@@ -217,7 +248,8 @@ public class ResolveCompressedAssetsTest
             IncludePatterns = "**\\*",
             ExcludePatterns = "**\\*.tmp",
             CandidateAssets = new[] { asset },
-            Formats = "gzip;brotli"
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
+            Formats = "gzip;brotli",
         };
 
         // Act
@@ -244,7 +276,8 @@ public class ResolveCompressedAssetsTest
             CandidateAssets = new[] { asset },
             IncludePatterns = "**\\*.tmp",
             ExplicitAssets = new[] { gzipExplicitAsset, brotliExplicitAsset },
-            Formats = "gzip;brotli"
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
+            Formats = "gzip;brotli",
         };
 
         // Act
@@ -273,6 +306,7 @@ public class ResolveCompressedAssetsTest
             BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
             IncludePatterns = "**\\*.tmp",
+            CompressionFormats = CreateCompressionFormats(phase1Format),
             Formats = phase1Format,
         };
 
@@ -295,7 +329,8 @@ public class ResolveCompressedAssetsTest
             CandidateAssets = new[] { asset, task1.AssetsToCompress[0] },
             IncludePatterns = "**\\*.tmp",
             ExplicitAssets = new[] { explicitAsset },
-            Formats = "gzip;brotli"
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
+            Formats = "gzip;brotli",
         };
 
         var result2 = task2.Execute();
@@ -359,6 +394,7 @@ public class ResolveCompressedAssetsTest
             BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { v4Asset, v5Asset },
             IncludePatterns = "**/*.css",
+            CompressionFormats = CreateCompressionFormats("gzip"),
             Formats = "gzip",
         };
 
@@ -396,5 +432,198 @@ public class ResolveCompressedAssetsTest
             FileLength = 10,
             LastWriteTime = DateTime.UtcNow
         }.ToTaskItem();
+    }
+
+    private static ITaskItem[] CreateCompressionFormats(params string[] formatNames)
+    {
+        var formats = new Dictionary<string, (string Extension, string ContentEncoding, bool UsesDictionary)>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["gzip"] = (".gz", "gzip", false),
+            ["brotli"] = (".br", "br", false),
+            ["zstd"] = (".zst", "zstd", false),
+            ["dcz"] = (".dcz", "dcz", true),
+        };
+
+        return formatNames.Select(name =>
+        {
+            var (ext, enc, usesDict) = formats[name];
+            var item = new TaskItem(name);
+            item.SetMetadata("FileExtension", ext);
+            item.SetMetadata("ContentEncoding", enc);
+            if (usesDict)
+            {
+                item.SetMetadata("UsesDictionary", "true");
+            }
+            return (ITaskItem)item;
+        }).ToArray();
+    }
+
+    private ITaskItem CreateDictionaryCandidate(string targetAssetIdentity, string dictionaryPath, string hash, string oldFileFingerprint = "prevfp")
+    {
+        var item = new TaskItem(dictionaryPath);
+        item.SetMetadata("Hash", hash);
+        item.SetMetadata("TargetAsset", targetAssetIdentity);
+        item.SetMetadata("MatchPattern", "matched/path");
+        item.SetMetadata("OldFileFingerprint", oldFileFingerprint);
+        return item;
+    }
+
+    [TestMethod]
+    public void DczFormat_ProducesCandidateWhenDictionaryExists()
+    {
+        // Arrange
+        var asset = CreatePrimaryAsset();
+
+        var dictPath = Path.Combine(OutputBasePath, "dict", "prev.js");
+        Directory.CreateDirectory(Path.GetDirectoryName(dictPath));
+        File.WriteAllText(dictPath, "previous content");
+
+        var dictCandidate = CreateDictionaryCandidate(asset.ItemSpec, dictPath, ":abc123hash:", "oldfp123");
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = _buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            IncludePatterns = "**\\*",
+            CompressionFormats = CreateCompressionFormats("gzip", "dcz"),
+            Formats = "gzip;dcz",
+            DictionaryCandidates = new[] { dictCandidate },
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        var compressed = task.AssetsToCompress.TakeWhile(a => a != null).ToArray();
+        compressed.Should().HaveCount(2);
+        compressed[0].ItemSpec.Should().EndWith(".gz");
+        compressed[1].ItemSpec.Should().EndWith(".dcz");
+        compressed[1].GetMetadata("DictionaryPath").Should().Be(dictPath);
+        compressed[1].GetMetadata("DictionaryHash").Should().Be(":abc123hash:");
+
+        // The dcz RelativePath should include the old file fingerprint
+        var dczAsset = StaticWebAsset.FromTaskItem(compressed[1]);
+        dczAsset.RelativePath.Should().Contain(".oldfp123.dcz");
+    }
+
+    [TestMethod]
+    public void DczFormat_SkippedWhenNoDictionaryCandidate()
+    {
+        // Arrange
+        var asset = CreatePrimaryAsset();
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = _buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            IncludePatterns = "**\\*",
+            CompressionFormats = CreateCompressionFormats("gzip", "dcz"),
+            Formats = "gzip;dcz",
+            // No DictionaryCandidates provided
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        var compressed = task.AssetsToCompress.TakeWhile(a => a != null).ToArray();
+        compressed.Should().HaveCount(1); // Only gzip, no dcz
+        compressed[0].ItemSpec.Should().EndWith(".gz");
+    }
+
+    [TestMethod]
+    public void DczFormat_NonDictionaryFormatsUnaffectedByDictionaryCandidates()
+    {
+        // Arrange
+        var asset = CreatePrimaryAsset();
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = _buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            IncludePatterns = "**\\*",
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
+            Formats = "gzip;brotli",
+            DictionaryCandidates = Array.Empty<ITaskItem>(), // Empty — shouldn't affect gzip/brotli
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        var compressed = task.AssetsToCompress.TakeWhile(a => a != null).ToArray();
+        compressed.Should().HaveCount(2);
+        compressed[0].ItemSpec.Should().EndWith(".gz");
+        compressed[1].ItemSpec.Should().EndWith(".br");
+    }
+
+    [TestMethod]
+    public void LogsErrorForCompressedAssetWithoutContentEncoding()
+    {
+        var asset = CreatePrimaryAsset();
+        var compressedAsset = new TaskItem(Path.ChangeExtension(asset.ItemSpec, ".gz"), asset.CloneCustomMetadata());
+        compressedAsset.SetMetadata(nameof(StaticWebAsset.AssetTraitName), "Content-Encoding");
+        compressedAsset.SetMetadata(nameof(StaticWebAsset.RelatedAsset), asset.ItemSpec);
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = _buildEngine.Object,
+            CandidateAssets = new[] { asset, compressedAsset },
+            IncludePatterns = "**\\*",
+            CompressionFormats = CreateCompressionFormats("gzip"),
+            Formats = "gzip",
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeFalse();
+        _errorMessages.Should().ContainSingle(m => m.Contains("does not match any configured compression format"));
+    }
+
+    [TestMethod]
+    public void DczFormat_AlongsideOtherFormats()
+    {
+        // Arrange
+        var asset = CreatePrimaryAsset();
+
+        var dictPath = Path.Combine(OutputBasePath, "dict", "prev.js");
+        Directory.CreateDirectory(Path.GetDirectoryName(dictPath));
+        File.WriteAllText(dictPath, "previous content");
+
+        var dictCandidate = CreateDictionaryCandidate(asset.ItemSpec, dictPath, ":hash:");
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = _buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            IncludePatterns = "**\\*",
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli", "zstd", "dcz"),
+            Formats = "gzip;brotli;zstd;dcz",
+            DictionaryCandidates = new[] { dictCandidate },
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        var compressed = task.AssetsToCompress.TakeWhile(a => a != null).ToArray();
+        compressed.Should().HaveCount(4);
+        compressed[0].ItemSpec.Should().EndWith(".gz");
+        compressed[1].ItemSpec.Should().EndWith(".br");
+        compressed[2].ItemSpec.Should().EndWith(".zst");
+        compressed[3].ItemSpec.Should().EndWith(".dcz");
+
+        // Only dcz should have dictionary metadata
+        compressed[0].GetMetadata("DictionaryPath").Should().BeEmpty();
+        compressed[3].GetMetadata("DictionaryPath").Should().Be(dictPath);
     }
 }

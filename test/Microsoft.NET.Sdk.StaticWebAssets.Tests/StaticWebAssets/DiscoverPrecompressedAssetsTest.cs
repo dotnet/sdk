@@ -10,6 +10,7 @@ using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
@@ -17,19 +18,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 [TestClass]
 public class DiscoverPrecompressedAssetsTest
 {
-    public string ItemSpec { get; }
-
-    public string OriginalItemSpec { get; }
-
-    public string OutputBasePath { get; }
-
-    public DiscoverPrecompressedAssetsTest()
-    {
-        OutputBasePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, nameof(ResolveCompressedAssetsTest));
-        ItemSpec = Path.Combine(OutputBasePath, Guid.NewGuid().ToString("N") + ".tmp");
-        OriginalItemSpec = Path.Combine(OutputBasePath, Guid.NewGuid().ToString("N") + ".tmp");
-    }
-
     [TestMethod]
     [DataRow(StaticWebAsset.AssetModes.All, ".gz", "gzip")]
     [DataRow(StaticWebAsset.AssetModes.All, ".br", "br")]
@@ -37,10 +25,7 @@ public class DiscoverPrecompressedAssetsTest
     [DataRow(StaticWebAsset.AssetModes.Local, ".br", "br")]
     public void DiscoversPrecompressedAssetsCorrectly(string assetMode, string extension, string encoding)
     {
-        var errorMessages = new List<string>();
         var buildEngine = new Mock<IBuildEngine>();
-        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
         var uncompressedCandidate = new StaticWebAsset
         {
@@ -95,6 +80,7 @@ public class DiscoverPrecompressedAssetsTest
         var task = new DiscoverPrecompressedAssets
         {
             CandidateAssets = [uncompressedCandidate.ToTaskItem(), compressedCandidate.ToTaskItem()],
+            CompressionFormats = CreateCompressionFormats("gzip", "brotli"),
             BuildEngine = buildEngine.Object
         };
 
@@ -123,5 +109,23 @@ public class DiscoverPrecompressedAssetsTest
         asset.GetMetadata("SourceId").Should().Be("Test");
         asset.GetMetadata("SourceType").Should().Be("Discovered");
         asset.GetMetadata("ContentRoot").Should().Be(Path.Combine(Environment.CurrentDirectory, $"wwwroot{Path.DirectorySeparatorChar}"));
+    }
+
+    private static ITaskItem[] CreateCompressionFormats(params string[] formatNames)
+    {
+        var formats = new Dictionary<string, (string Extension, string ContentEncoding)>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["gzip"] = (".gz", "gzip"),
+            ["brotli"] = (".br", "br"),
+        };
+
+        return formatNames.Select(name =>
+        {
+            var (ext, enc) = formats[name];
+            var item = new TaskItem(name);
+            item.SetMetadata("FileExtension", ext);
+            item.SetMetadata("ContentEncoding", enc);
+            return (ITaskItem)item;
+        }).ToArray();
     }
 }

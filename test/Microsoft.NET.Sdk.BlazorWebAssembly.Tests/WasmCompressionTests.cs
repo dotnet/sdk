@@ -198,10 +198,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             foreach (var file in Directory.EnumerateFiles(frameworkFilesPath, "*", new EnumerationOptions { RecurseSubdirectories = true, }))
             {
                 var extension = Path.GetExtension(file);
-                if (extension != ".br" && extension != ".gz")
+                if (extension != ".br" && extension != ".gz" && extension != ".zst")
                 {
                     Assert.IsTrue(File.Exists($"{file}.gz"), $"Expected file {$"{file}.gz"} to exist, but it did not.");
                     Assert.IsTrue(File.Exists($"{file}.br"), $"Expected file {$"{file}.br"} to exist, but it did not.");
+                    Assert.IsTrue(File.Exists($"{file}.zst"), $"Expected file {$"{file}.zst"} to exist, but it did not.");
                 }
             }
         }

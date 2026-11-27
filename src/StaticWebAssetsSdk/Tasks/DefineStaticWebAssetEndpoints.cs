@@ -24,6 +24,8 @@ public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
 
     public ITaskItem[] AdditionalEndpointDefinitions { get; set; }
 
+    public ITaskItem[] CompressionFormats { get; set; }
+
     [Output]
     public ITaskItem[] Endpoints { get; set; }
 
@@ -31,7 +33,8 @@ public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
     {
         var existingEndpointsByAssetFile = CreateEndpointsByAssetFile();
         var contentTypeMappings = CreateAdditionalContentTypeMappings();
-        var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
+        var compressedExtensions = CompressionFormats?.Select(f => f.GetMetadata("FileExtension")).Where(e => !string.IsNullOrEmpty(e)).ToArray();
+        var contentTypeProvider = new ContentTypeProvider(contentTypeMappings, compressedExtensions);
         var additionalEndpointDefinitions = CreateAdditionalEndpointDefinitions();
         var endpoints = new List<StaticWebAssetEndpoint>(CandidateAssets.Length);
 
