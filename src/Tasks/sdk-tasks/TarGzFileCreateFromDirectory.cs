@@ -5,7 +5,7 @@
 
 namespace Microsoft.DotNet.Build.Tasks
 {
-    public sealed class TarGzFileCreateFromDirectory : ToolTask
+    public sealed partial class TarGzFileCreateFromDirectory : ToolTask
     {
         /// <summary>
         /// The path to the directory to be archived.
@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.Build.Tasks
             {
                 string directory = OperatingSystem.IsWindows()
                     ? rawDirectory.Trim().Trim('"')
-                    : rawDirectory.Trim();
+                    : rawDirectory;
                 if (string.IsNullOrEmpty(directory))
                 {
                     continue;
@@ -158,26 +158,64 @@ namespace Microsoft.DotNet.Build.Tasks
                     continue;
                 }
 
-                if (OperatingSystem.IsWindows())
+                if (IsExecutableFile(candidatePath))
                 {
                     return true;
-                }
-
-                try
-                {
-                    UnixFileMode mode = File.GetUnixFileMode(candidatePath);
-                    if ((mode & (UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute)) != 0)
-                    {
-                        return true;
-                    }
-                }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                {
-                    continue;
                 }
             }
 
             return false;
+        }
+
+        private static bool IsExecutableFile(string candidatePath)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return true;
+            }
+
+            try
+            {
+                UnixFileMode mode = File.GetUnixFileMode(candidatePath);
+                if ((mode & (UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute)) == 0)
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                return false;
+            }
+
+            return HasEffectiveExecuteAccess(candidatePath);
+        }
+
+        private static bool HasEffectiveExecuteAccess(string path)
+        {
+            const int X_OK = 1;
+
+            if (OperatingSystem.IsLinux())
+            {
+                const int AT_FDCWD = -100;
+                const int AT_EACCESS = 0x200;
+                return NativeMethods.faccessat(AT_FDCWD, path, X_OK, AT_EACCESS) == 0;
+            }
+
+            if (OperatingSystem.IsMacOS())
+            {
+                const int AT_FDCWD = -2;
+                const int AT_EACCESS = 0x0010;
+                return NativeMethods.faccessat(AT_FDCWD, path, X_OK, AT_EACCESS) == 0;
+            }
+
+            if (OperatingSystem.IsFreeBSD())
+            {
+                const int AT_FDCWD = -100;
+                const int AT_EACCESS = 0x0100;
+                return NativeMethods.faccessat(AT_FDCWD, path, X_OK, AT_EACCESS) == 0;
+            }
+
+            return NativeMethods.access(path, X_OK) == 0;
         }
 
         private string GetExcludes()
@@ -196,5 +234,14 @@ namespace Microsoft.DotNet.Build.Tasks
         }
 
         protected override void LogToolCommand(string message) => base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
+
+        private static partial class NativeMethods
+        {
+            [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
+            internal static partial int faccessat(int dirfd, string pathname, int mode, int flags);
+
+            [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
+            internal static partial int access(string pathname, int mode);
+        }
     }
 }
