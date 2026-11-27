@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "app": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_STARTUP_HOOKS": "$(TargetDir)Hook.dll"
+      }
+    }
+  }
+}
