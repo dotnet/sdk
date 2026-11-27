@@ -2293,6 +2293,26 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">사전 형식 '{0}'에 대해 'Values.Contains'보다 'ContainsValue'를 우선적으로 사용합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferDictionaryRemoveOverTryGetValueAndRemoveCodeFixTitle">
+        <source>Use 'Remove(key, out value)'</source>
+        <target state="new">Use 'Remove(key, out value)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryRemoveOverTryGetValueAndRemoveDescription">
+        <source>When 'Dictionary.TryGetValue(key, out value)' is immediately followed by 'Dictionary.Remove(key)', a single call to 'Dictionary.Remove(key, out value)' does the same work with one lookup instead of two.</source>
+        <target state="new">When 'Dictionary.TryGetValue(key, out value)' is immediately followed by 'Dictionary.Remove(key)', a single call to 'Dictionary.Remove(key, out value)' does the same work with one lookup instead of two.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryRemoveOverTryGetValueAndRemoveMessage">
+        <source>Use 'Dictionary.Remove(key, out value)' instead of 'Dictionary.TryGetValue(key, out value)' followed by 'Dictionary.Remove(key)'</source>
+        <target state="new">Use 'Dictionary.Remove(key, out value)' instead of 'Dictionary.TryGetValue(key, out value)' followed by 'Dictionary.Remove(key)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryRemoveOverTryGetValueAndRemoveTitle">
+        <source>Prefer 'Dictionary.Remove(key, out value)' over 'TryGetValue' followed by 'Remove'</source>
+        <target state="new">Prefer 'Dictionary.Remove(key, out value)' over 'TryGetValue' followed by 'Remove'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferDictionaryTryAddDescription">
         <source>Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</source>
         <target state="translated">'ContainsKey' 확인으로 보호되는 'Add' 호출보다 'TryAdd' 호출을 선호합니다. 'TryAdd'는 'Add'와 동일하게 동작하지만 지정한 키가 이미 존재하는 경우 예외를 던지는 대신 'false'를 반환합니다.</target>

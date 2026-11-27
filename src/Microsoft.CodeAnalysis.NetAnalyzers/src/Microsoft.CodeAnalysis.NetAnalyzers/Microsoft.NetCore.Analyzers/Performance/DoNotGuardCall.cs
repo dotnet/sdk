@@ -19,12 +19,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
     /// <summary>
     /// CA1853: <inheritdoc cref="DoNotGuardDictionaryRemoveByContainsKeyTitle"/>
     /// CA1868: <inheritdoc cref="DoNotGuardSetAddOrRemoveByContainsTitle"/>
+    /// CA1883: <inheritdoc cref="PreferDictionaryRemoveOverTryGetValueAndRemoveTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotGuardCallAnalyzer : DiagnosticAnalyzer
     {
         internal const string DoNotGuardDictionaryRemoveByContainsKeyRuleId = "CA1853";
         internal const string DoNotGuardSetAddOrRemoveByContainsRuleId = "CA1868";
+        internal const string PreferDictionaryRemoveOverTryGetValueAndRemoveRuleId = "CA1883";
 
         internal static readonly DiagnosticDescriptor DoNotGuardDictionaryRemoveByContainsKeyRule = DiagnosticDescriptorHelper.Create(
             DoNotGuardDictionaryRemoveByContainsKeyRuleId,
@@ -43,6 +45,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
             CreateLocalizableResourceString(nameof(DoNotGuardSetAddOrRemoveByContainsDescription)),
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
+
+        internal static readonly DiagnosticDescriptor PreferDictionaryRemoveOverTryGetValueAndRemoveRule = DiagnosticDescriptorHelper.Create(
+            PreferDictionaryRemoveOverTryGetValueAndRemoveRuleId,
+            CreateLocalizableResourceString(nameof(PreferDictionaryRemoveOverTryGetValueAndRemoveTitle)),
+            CreateLocalizableResourceString(nameof(PreferDictionaryRemoveOverTryGetValueAndRemoveMessage)),
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            CreateLocalizableResourceString(nameof(PreferDictionaryRemoveOverTryGetValueAndRemoveDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
@@ -76,10 +88,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 new ConditionMethodContext(WellKnownTypeNames.SystemCollectionsImmutableIImmutableSet1, "Contains"),
                 ImmutableArray.Create(
                     new GuardedMethodContext(WellKnownTypeNames.SystemCollectionsImmutableIImmutableSet1, "Add", 1, ExpectsConditionNegated: true),
-                    new GuardedMethodContext(WellKnownTypeNames.SystemCollectionsImmutableIImmutableSet1, "Remove", 1, ExpectsConditionNegated: false))));
+                    new GuardedMethodContext(WellKnownTypeNames.SystemCollectionsImmutableIImmutableSet1, "Remove", 1, ExpectsConditionNegated: false))),
+            new GuardedCallContext(
+                PreferDictionaryRemoveOverTryGetValueAndRemoveRule,
+                new ConditionMethodContext(WellKnownTypeNames.SystemCollectionsGenericIDictionary2, "TryGetValue"),
+                ImmutableArray.Create(
+                    new GuardedMethodContext(WellKnownTypeNames.SystemCollectionsGenericIDictionary2, "Remove", 1, ExpectsConditionNegated: false))));
 
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
-            ImmutableArray.Create(DoNotGuardDictionaryRemoveByContainsKeyRule, DoNotGuardSetAddOrRemoveByContainsRule);
+            ImmutableArray.Create(DoNotGuardDictionaryRemoveByContainsKeyRule, DoNotGuardSetAddOrRemoveByContainsRule, PreferDictionaryRemoveOverTryGetValueAndRemoveRule);
 
         public sealed override void Initialize(AnalysisContext context)
         {
@@ -94,7 +111,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 if (!GuardedCallSymbols.TryGetSymbols(context.Compilation, guardedCallContext, out var symbols))
                 {
-                    return;
+                    continue;
                 }
 
                 context.RegisterOperationAction(OnConditional, OperationKind.Conditional);
@@ -107,6 +124,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         !symbols.HasApplicableGuardedInvocation(conditional, containsNegated, out var guardedInvocation) ||
                         !AreInvocationsOnSameInstance(conditionInvocation, guardedInvocation) ||
                         !AreInvocationArgumentsEqual(conditionInvocation, guardedInvocation))
+                    {
+                        return;
+                    }
+
+                    if (guardedCallContext.Rule == PreferDictionaryRemoveOverTryGetValueAndRemoveRule &&
+                        !CanCollapseIntoRemoveWithValue(conditionInvocation, guardedInvocation))
                     {
                         return;
                     }
@@ -135,6 +158,23 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 (ILocalReferenceOperation localRef1, ILocalReferenceOperation localRef2) => localRef1.Local == localRef2.Local,
                 _ => false,
             };
+        }
+
+        // dictionary.TryGetValue(key, out value) followed by dictionary.Remove(key) can only become
+        // dictionary.Remove(key, out value) when nothing runs between the two calls and the type has that overload.
+        private static bool CanCollapseIntoRemoveWithValue(IInvocationOperation tryGetValueInvocation, IInvocationOperation removeInvocation)
+        {
+            if (removeInvocation.Parent is not IExpressionStatementOperation ||
+                tryGetValueInvocation.GetInstance()?.WalkDownConversion() is IPropertyReferenceOperation ||
+                !tryGetValueInvocation.Arguments.TryGetArgumentForParameterAtIndex(1, out var valueArgument) ||
+                AreArgumentValuesEqual(GetFirstNonInstanceArgument(tryGetValueInvocation)?.Value, valueArgument.Value))
+            {
+                return false;
+            }
+
+            return removeInvocation.TargetMethod.ContainingType.GetMembers(removeInvocation.TargetMethod.Name)
+                .OfType<IMethodSymbol>()
+                .Any(m => m.Parameters.Length == 2 && m.Parameters[1].RefKind != RefKind.None);
         }
 
         private static bool AreInvocationArgumentsEqual(IInvocationOperation invocation1, IInvocationOperation invocation2)

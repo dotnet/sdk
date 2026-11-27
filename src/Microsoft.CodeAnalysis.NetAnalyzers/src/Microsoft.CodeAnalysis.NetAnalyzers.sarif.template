@@ -3625,6 +3625,26 @@
             ]
           }
         },
+        "CA1883": {
+          "id": "CA1883",
+          "shortDescription": "Prefer 'Dictionary.Remove(key, out value)' over 'TryGetValue' followed by 'Remove'",
+          "fullDescription": "When 'Dictionary.TryGetValue(key, out value)' is immediately followed by 'Dictionary.Remove(key)', a single call to 'Dictionary.Remove(key, out value)' does the same work with one lookup instead of two.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1883",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotGuardCallAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",

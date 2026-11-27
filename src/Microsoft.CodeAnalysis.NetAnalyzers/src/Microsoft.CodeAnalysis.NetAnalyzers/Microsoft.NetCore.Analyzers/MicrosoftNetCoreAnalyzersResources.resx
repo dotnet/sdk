@@ -1542,6 +1542,18 @@
   <data name="RemoveRedundantGuardCallCodeFixTitle" xml:space="preserve">
     <value>Remove unnecessary call</value>
   </data>
+  <data name="PreferDictionaryRemoveOverTryGetValueAndRemoveTitle" xml:space="preserve">
+    <value>Prefer 'Dictionary.Remove(key, out value)' over 'TryGetValue' followed by 'Remove'</value>
+  </data>
+  <data name="PreferDictionaryRemoveOverTryGetValueAndRemoveMessage" xml:space="preserve">
+    <value>Use 'Dictionary.Remove(key, out value)' instead of 'Dictionary.TryGetValue(key, out value)' followed by 'Dictionary.Remove(key)'</value>
+  </data>
+  <data name="PreferDictionaryRemoveOverTryGetValueAndRemoveDescription" xml:space="preserve">
+    <value>When 'Dictionary.TryGetValue(key, out value)' is immediately followed by 'Dictionary.Remove(key)', a single call to 'Dictionary.Remove(key, out value)' does the same work with one lookup instead of two.</value>
+  </data>
+  <data name="PreferDictionaryRemoveOverTryGetValueAndRemoveCodeFixTitle" xml:space="preserve">
+    <value>Use 'Remove(key, out value)'</value>
+  </data>
   <data name="BufferBlockCopyLengthMessage" xml:space="preserve">
     <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</value>
   </data>
