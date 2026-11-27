@@ -6,14 +6,14 @@ using static Microsoft.DotNet.NativeWrapper.Interop;
 
 namespace Microsoft.DotNet.NativeWrapper
 {
-    public interface INetBundleInfo
+    partial interface INetBundleInfo
     {
         public ReleaseVersion Version { get; }
 
         public string Path { get; }
     }
 
-    public sealed class NetSdkInfo : INetBundleInfo
+    sealed partial class NetSdkInfo : INetBundleInfo
     {
         public ReleaseVersion Version { get; private set; }
 
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.NativeWrapper
         }
     }
 
-    public sealed class NetRuntimeInfo : INetBundleInfo
+    sealed partial class NetRuntimeInfo : INetBundleInfo
     {
         public ReleaseVersion Version { get; private set; }
 
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.NativeWrapper
         }
     }
 
-    public sealed class NetEnvironmentInfo
+    sealed partial class NetEnvironmentInfo
     {
         public IEnumerable<NetRuntimeInfo> RuntimeInfo { get; private set; }
 

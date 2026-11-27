@@ -8,9 +8,17 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestReader;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public partial class SdkDirectoryWorkloadManifestProvider
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+    public
+#endif
+    partial class SdkDirectoryWorkloadManifestProvider
     {
-        public static class GlobalJsonReader
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        static class GlobalJsonReader
         {
             public static string? GetWorkloadVersionFromGlobalJson(string? globalJsonPath, out bool? shouldUseWorkloadSets)
             {

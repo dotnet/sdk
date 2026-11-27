@@ -9,7 +9,7 @@ using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.DotNet.NativeWrapper
 {
-    public static partial class Interop
+    static partial class Interop
     {
 #if NET
         private static readonly string? s_hostFxrPath;
