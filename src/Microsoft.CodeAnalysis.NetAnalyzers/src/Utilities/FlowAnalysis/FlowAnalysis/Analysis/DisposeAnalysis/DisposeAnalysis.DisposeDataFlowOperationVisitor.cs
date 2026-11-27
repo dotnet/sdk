@@ -410,9 +410,11 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.DisposeAnalysis
                             if (!_trackedInstanceFieldLocations.TryGetValue(operation.Field, out _))
                             {
                                 // First field reference on any control flow path.
-                                // Create a default instance to represent the object referenced by the field at start of the method and
+                                // Preserve state from the caller when analyzing a helper method. Otherwise,
+                                // create a default instance to represent the object referenced by the field at start of the method and
                                 // check if the instance has NotDisposed state, indicating it is a disposable field that must be tracked.
-                                if (HandleInstanceCreation(operation, pointsToAbstractValue, defaultValue: DisposeAbstractValue.NotDisposable) == DisposeAbstractValue.NotDisposed)
+                                if (CurrentAnalysisData.ContainsKey(location) ||
+                                    HandleInstanceCreation(operation, pointsToAbstractValue, defaultValue: DisposeAbstractValue.NotDisposable) == DisposeAbstractValue.NotDisposed)
                                 {
                                     _trackedInstanceFieldLocations.Add(operation.Field, pointsToAbstractValue);
                                 }

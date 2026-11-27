@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -20,6 +21,73 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     [TestClass]
     public class DisposableFieldsShouldBeDisposedTests
     {
+        [TestMethod]
+        [DataRow("object", true)]
+        [DataRow("System.Threading.Lock", true)]
+        [DataRow("object", false)]
+        [DataRow("System.Threading.Lock", false)]
+        [WorkItem(57136, "https://github.com/dotnet/sdk/issues/57136")]
+        public async Task DisposableFieldDisposedBeforeHelperCallWithLockAndFinallyAsync(string gateType, bool disposeWorker)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = $$"""
+                    #nullable enable
+                    using System;
+                    using System.IO;
+                    using System.Threading;
+
+                    internal sealed class WorkerHost : IDisposable
+                    {
+                        private readonly PeriodicWorker {|#0:_worker|} = new();
+                        private readonly MemoryStream _buffer = new();
+
+                        public void Dispose()
+                        {
+                            {{(disposeWorker ? "_worker.Dispose();" : "")}}
+                            try
+                            {
+                                StopWorker();
+                            }
+                            finally
+                            {
+                                _buffer.Dispose();
+                            }
+                        }
+
+                        private void StopWorker() => _worker.Stop();
+                    }
+
+                    internal sealed class PeriodicWorker : IDisposable
+                    {
+                        private readonly {{gateType}} _gate = new();
+                        private readonly Timer _timer = new(_ => { });
+
+                        public void Dispose() => Stop();
+
+                        public void Stop()
+                        {
+                            lock (_gate)
+                            {
+                                _timer.Dispose();
+                            }
+                        }
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+                LanguageVersion = LanguageVersion.CSharp13,
+            };
+
+            if (!disposeWorker)
+            {
+                test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic()
+                    .WithLocation(0)
+                    .WithArguments("WorkerHost", "_worker", "PeriodicWorker"));
+            }
+
+            await test.RunAsync(CancellationToken.None);
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
 #pragma warning disable RS0030 // Do not use banned APIs
            => VerifyCS.Diagnostic()
