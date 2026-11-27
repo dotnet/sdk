@@ -2197,6 +2197,24 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             return false;
         }
 
+        private bool IsRecursiveInvocation(IMethodSymbol invokedMethod, ImmutableHashSet<TAnalysisContext> methodsBeingAnalyzed)
+        {
+            if (SymbolEqualityComparer.Default.Equals(invokedMethod, DataFlowAnalysisContext.OwningSymbol))
+            {
+                return true;
+            }
+
+            foreach (var context in methodsBeingAnalyzed)
+            {
+                if (SymbolEqualityComparer.Default.Equals(invokedMethod, context.OwningSymbol))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private TAbstractAnalysisValue PerformInterproceduralAnalysis(
             Func<ControlFlowGraph?> getCfg,
             IMethodSymbol invokedMethod,
@@ -2232,6 +2250,16 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             var currentMethodsBeingAnalyzed = DataFlowAnalysisContext.InterproceduralAnalysisData?.MethodsBeingAnalyzed ?? ImmutableHashSet<TAnalysisContext>.Empty;
             var newMethodsBeingAnalyzed = currentMethodsBeingAnalyzed.Add(DataFlowAnalysisContext);
             if (currentMethodsBeingAnalyzed.Count == newMethodsBeingAnalyzed.Count)
+            {
+                return ResetAnalysisDataAndReturnDefaultValue();
+            }
+
+            // Bail out on a recursive call of a lambda or local function, i.e. when the invoked method is already on the
+            // interprocedural call stack. The context-based check above does not catch recursion, because every recursive
+            // call carries a different analysis state and so creates a new context. Without this check, each recursive
+            // call site is re-analyzed up to the maximum call chain length, at every fixed-point iteration of every
+            // enclosing loop, which makes the cost grow exponentially with the number of recursive call sites.
+            if (isLambdaOrLocalFunction && IsRecursiveInvocation(invokedMethod, currentMethodsBeingAnalyzed))
             {
                 return ResetAnalysisDataAndReturnDefaultValue();
             }
