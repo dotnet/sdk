@@ -342,7 +342,8 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     private PublishMode GetTelemetryPublishMode() => IsAotPublished ? PublishMode.Aot : IsTrimmed ? PublishMode.Trimmed : IsSelfContained ? PublishMode.SelfContained : PublishMode.FrameworkDependent;
     private ProjectType GetTelemetryProjectType() => IsAspNetCoreProject ? ProjectType.AspNetCore : ProjectType.Console;
 
-    private string ParseSemVerToMajorMinor(string semver) => SemanticVersion.Parse(semver).ToString("x.y", VersionFormatter.Instance);
+    private string? ParseSemVerToMajorMinor(string semver) =>
+        NuGetVersion.TryParse(semver, out var version) ? $"{version.Major}.{version.Minor}" : null;
 
     private void LogTelemetryData(InferenceTelemetryData telemetryData)
     {
@@ -374,7 +375,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     /// <param name="PublishMode">Categorizes the publish mode of the app - FDD, SC, Trimmed, AOT in rough order of complexity/container customization</param>
     /// <param name="IsInvariant">We make inference decisions on the invariant-ness of the project, so it's useful to track how often that is used.</param>
     /// <param name="TargetRuntimes">Different RIDs change the inference calculation, so it's useful to know how different RIDs flow into the results of inference.</param>
-    private record class InferenceTelemetryData(bool InferencePerformed, string TargetFramework, string? BaseImage, string? BaseImageTag, string? ContainerFamily, ProjectType ProjectType, PublishMode PublishMode, bool IsInvariant, string[] TargetRuntimes);
+    private record class InferenceTelemetryData(bool InferencePerformed, string? TargetFramework, string? BaseImage, string? BaseImageTag, string? ContainerFamily, ProjectType ProjectType, PublishMode PublishMode, bool IsInvariant, string[] TargetRuntimes);
     private enum ProjectType
     {
         AspNetCore,

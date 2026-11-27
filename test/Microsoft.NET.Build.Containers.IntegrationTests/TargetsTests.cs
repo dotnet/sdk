@@ -324,6 +324,25 @@ public class TargetsTests
         computedTag.Should().EndWith(expectedTag);
     }
 
+    [TestMethod]
+    public void ExplicitBaseImageSupportsFourPartTargetFrameworkVersion()
+    {
+        const string baseImage = "mcr.microsoft.com/dotnet/framework/runtime:4.8.1-windowsservercore-ltsc2022";
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["TargetFrameworkIdentifier"] = ".NETFramework",
+            ["TargetFrameworkVersion"] = "v4.8.1",
+            ["TargetFramework"] = "net481",
+            [ContainerBaseImage] = baseImage,
+            [ContainerRuntimeIdentifier] = "win-x64",
+        });
+        using var _ = d;
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+
+        instance.Build([ComputeContainerBaseImage], [logger], null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        instance.GetPropertyValue(ContainerBaseImage).Should().Be(baseImage);
+    }
+
     [DataRow("v8.0", "linux-x64", null)]
     [DataRow("v8.0", "linux-musl-x64", null)]
     [DataRow("v8.0", "win-x64", "ContainerUser")]
