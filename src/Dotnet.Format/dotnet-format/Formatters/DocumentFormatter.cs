@@ -26,9 +26,9 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         public abstract FixCategory Category { get; }
 
         /// <summary>
-        /// Applies formatting and returns a formatted <see cref="Solution"/>
+        /// Applies formatting and returns a formatted <see cref="Solution"/>.
         /// </summary>
-        public async Task<Solution> FormatAsync(
+        public Task<Solution> FormatAsync(
             Workspace workspace,
             Solution solution,
             ImmutableArray<DocumentId> formattableDocuments,
@@ -36,57 +36,46 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             ILogger logger,
             List<FormattedFile> formattedFiles,
             CancellationToken cancellationToken)
-        {
-            var formattedDocuments = FormatFiles(solution, formattableDocuments, formatOptions, logger, cancellationToken);
-            return await ApplyFileChangesAsync(solution, formattedDocuments, formatOptions, logger, formattedFiles, cancellationToken);
-        }
+            => FormatAsync(ImmutableArray.Create(this), solution, formattableDocuments, formatOptions, logger, formattedFiles, cancellationToken);
 
-        /// <summary>
-        /// Applies formatting and returns the changed <see cref="SourceText"/> for a <see cref="TextDocument"/>.
-        /// </summary>
-        internal abstract Task<SourceText> FormatFileAsync(
-            TextDocument document,
-            SourceText sourceText,
-            AnalyzerConfigOptions analyzerConfigOptions,
-            FormatOptions formatOptions,
-            ILogger logger,
-            CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Applies formatting and returns the changed <see cref="SourceText"/> for each <see cref="TextDocument"/>.
-        /// </summary>
-        private ImmutableArray<(TextDocument, Task<(SourceText originalText, SourceText? formattedText)>)> FormatFiles(
+        internal static async Task<Solution> FormatAsync(
+            ImmutableArray<DocumentFormatter> formatters,
             Solution solution,
             ImmutableArray<DocumentId> formattableDocuments,
             FormatOptions formatOptions,
             ILogger logger,
+            List<FormattedFile> formattedFiles,
             CancellationToken cancellationToken)
         {
-            var formattedDocuments = ImmutableArray.CreateBuilder<(TextDocument, Task<(SourceText originalText, SourceText? formattedText)>)>(formattableDocuments.Length);
+            var results = new (TextDocument document, SourceText originalText, SourceText formattedText)?[formatters.Length, formattableDocuments.Length];
 
-            for (var index = 0; index < formattableDocuments.Length; index++)
-            {
-                TextDocument? document = solution.GetDocument(formattableDocuments[index]);
-                if (document is null)
+            // Bound concurrent formatting while retaining document order for applying and reporting changes.
+            await Parallel.ForEachAsync(Enumerable.Range(0, formattableDocuments.Length),
+                new ParallelOptions
                 {
-                    document = solution.GetAdditionalDocument(formattableDocuments[index]);
-                    if (document is null || !FormatterUtilities.IsRazorDocument(document))
+                    MaxDegreeOfParallelism = Environment.ProcessorCount,
+                    CancellationToken = cancellationToken,
+                },
+                async (index, token) =>
+                {
+                    TextDocument? document = solution.GetDocument(formattableDocuments[index]);
+                    if (document is null)
                     {
-                        continue;
+                        document = solution.GetAdditionalDocument(formattableDocuments[index]);
+                        if (document is null || !FormatterUtilities.IsRazorDocument(document))
+                        {
+                            return;
+                        }
                     }
-                }
 
-                var formatTask = Task.Run(async () =>
-                {
-                    var originalSourceText = await document.GetTextAsync(cancellationToken);
-
+                    var originalText = await document.GetTextAsync(token);
                     AnalyzerConfigOptions? analyzerConfigOptions;
                     if (document is Document sourceDocument)
                     {
-                        var syntaxTree = await sourceDocument.GetSyntaxTreeAsync(cancellationToken);
+                        var syntaxTree = await sourceDocument.GetSyntaxTreeAsync(token);
                         if (syntaxTree is null)
                         {
-                            return (originalSourceText, null);
+                            return;
                         }
 
                         analyzerConfigOptions = sourceDocument.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
@@ -98,77 +87,58 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
                     if (analyzerConfigOptions is null)
                     {
-                        return (originalSourceText, null);
+                        return;
                     }
 
-                    var formattedSourceText = await FormatFileAsync(
-                        document,
-                        originalSourceText,
-                        analyzerConfigOptions,
-                        formatOptions,
-                        logger,
-                        cancellationToken);
-                    return !formattedSourceText.ContentEquals(originalSourceText) ||
-                        !formattedSourceText.Encoding?.Equals(originalSourceText.Encoding) == true
-                            ? (originalSourceText, formattedSourceText)
-                            : (originalSourceText, null);
-                }, cancellationToken);
+                    for (var stage = 0; stage < formatters.Length; stage++)
+                    {
+                        var formattedText = await formatters[stage].FormatFileAsync(document, originalText, analyzerConfigOptions, formatOptions, logger, token);
+                        if (!formattedText.ContentEquals(originalText) || !Equals(formattedText.Encoding, originalText.Encoding))
+                        {
+                            results[stage, index] = (document, originalText, formattedText);
+                        }
 
-                formattedDocuments.Add((document, formatTask));
-            }
+                        originalText = formattedText;
+                    }
+                });
 
-            return formattedDocuments.ToImmutable();
-        }
-
-        /// <summary>
-        /// Applies the changed <see cref="SourceText"/> to each formatted <see cref="TextDocument"/>.
-        /// </summary>
-        private async Task<Solution> ApplyFileChangesAsync(
-            Solution solution,
-            ImmutableArray<(TextDocument, Task<(SourceText originalText, SourceText? formattedText)>)> formattedDocuments,
-            FormatOptions formatOptions,
-            ILogger logger,
-            List<FormattedFile> formattedFiles,
-            CancellationToken cancellationToken)
-        {
             var formattedSolution = solution;
-
-            for (var index = 0; index < formattedDocuments.Length; index++)
+            // Report in formatter-first order without repeating per-document setup.
+            for (var stage = 0; stage < formatters.Length; stage++)
             {
-                var (document, formatTask) = formattedDocuments[index];
-                if (cancellationToken.IsCancellationRequested)
+                var formatter = formatters[stage];
+                for (var index = 0; index < formattableDocuments.Length; index++)
                 {
-                    return formattedSolution;
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (results[stage, index] is not { } value || value.document.FilePath is null)
+                    {
+                        continue;
+                    }
+
+                    var (document, originalText, formattedText) = value;
+                    var fileChanges = FormatterUtilities.GetFileChanges(
+                        document, originalText, formattedText, formatter.Name, formatter.FormatWarningDescription, formatOptions, logger);
+                    formattedFiles.Add(new FormattedFile(document, fileChanges));
+
+                    formattedSolution = document is Document
+                        ? formattedSolution.WithDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity)
+                        : formattedSolution.WithAdditionalDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity);
                 }
-
-                if (document?.FilePath is null)
-                {
-                    continue;
-                }
-
-                var (originalText, formattedText) = await formatTask;
-                if (formattedText is null)
-                {
-                    continue;
-                }
-
-                var fileChanges = FormatterUtilities.GetFileChanges(
-                    document,
-                    originalText,
-                    formattedText,
-                    Name,
-                    FormatWarningDescription,
-                    formatOptions,
-                    logger);
-                formattedFiles.Add(new FormattedFile(document, fileChanges));
-
-                formattedSolution = document is Document
-                    ? formattedSolution.WithDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity)
-                    : formattedSolution.WithAdditionalDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity);
             }
 
             return formattedSolution;
         }
+
+        /// <summary>
+        /// Applies formatting and returns the changed text for a source or Razor document.
+        /// </summary>
+        internal abstract Task<SourceText> FormatFileAsync(
+            TextDocument document,
+            SourceText sourceText,
+            AnalyzerConfigOptions analyzerConfigOptions,
+            FormatOptions formatOptions,
+            ILogger logger,
+            CancellationToken cancellationToken);
 
         protected static async Task<bool> IsSameDocumentAndVersionAsync(Document a, Document b, CancellationToken cancellationToken)
         {
@@ -184,7 +154,6 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
             var aVersion = await a.GetTextVersionAsync(cancellationToken);
             var bVersion = await b.GetTextVersionAsync(cancellationToken);
-
             return aVersion == bVersion;
         }
     }

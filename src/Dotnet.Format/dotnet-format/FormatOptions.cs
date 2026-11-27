@@ -25,6 +25,11 @@ namespace Microsoft.CodeAnalysis.Tools
             bool IncludeGeneratedFiles,
             string? TargetFramework)
     {
+        /// <summary>
+        /// Disables the on-disk formatting cache.
+        /// </summary>
+        public bool NoCache { get; init; } = false;
+
         public static FormatOptions Instance = new(
             WorkspaceFilePath: null!, // must be supplied
             WorkspaceType: default, // must be supplied

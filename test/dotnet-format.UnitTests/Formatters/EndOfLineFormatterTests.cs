@@ -20,6 +20,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         [DataRow("\n", "\r", "cr")]
         [DataRow("\r\n", "\r", "cr")]
         [DataRow("\r", "\r", "cr")]
+        [DataRow("\u0085", "\n", "lf")]
+        [DataRow("\u2028", "\n", "lf")]
+        [DataRow("\u2029", "\n", "lf")]
+        [DataRow("\u0085", "\r", "cr")]
+        [DataRow("\u2028", "\r", "cr")]
+        [DataRow("\u2029", "\r", "cr")]
+        [DataRow("\u0085", "\r\n", "crlf")]
+        [DataRow("\u2028", "\r\n", "crlf")]
+        [DataRow("\u2029", "\r\n", "crlf")]
         public async Task TestEndOfLine_NoFinalNewline(string codeNewline, string expectedNewline, string endOfLine)
         {
             var testCode = $"class C{codeNewline}{{{codeNewline}}}";

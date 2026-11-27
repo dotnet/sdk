@@ -739,7 +739,18 @@ Greeter.Greeter() -> void";
 
             var logger = new TestLogger();
 
-            var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
+            // Match asset-relative patterns without changing the process-wide current directory.
+            var projectsDirectory = TestProjectsPathHelper.GetProjectsDirectory();
+            var fileMatcher = SourceFileMatcher.CreateMatcher(
+                include.Select(ToPattern).ToArray(),
+                exclude.Select(ToPattern).ToArray());
+
+            string ToPattern(string path)
+            {
+                var pattern = Path.GetRelativePath(Environment.CurrentDirectory, Path.GetFullPath(path, projectsDirectory));
+                return Path.EndsInDirectorySeparator(path) ? pattern + Path.DirectorySeparatorChar : pattern;
+            }
+
             var formatOptions = new FormatOptions(
                 workspacePath,
                 workspaceType,

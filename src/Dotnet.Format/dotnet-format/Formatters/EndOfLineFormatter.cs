@@ -30,6 +30,13 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                     return sourceText;
                 }
 
+                // Fast path: when the source already uses the configured line ending for every
+                // line-ending span, avoid building the line map and per-line allocations entirely.
+                if (!NeedsEndOfLineFixes(sourceText, endOfLine))
+                {
+                    return sourceText;
+                }
+
                 var newSourceText = sourceText;
                 var changes = new List<TextChange>();
                 for (var lineIndex = 0; lineIndex < newSourceText.Lines.Count; lineIndex++)
@@ -57,6 +64,49 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
                 return newSourceText;
             });
+        }
+
+        private static bool NeedsEndOfLineFixes(SourceText sourceText, string endOfLine)
+        {
+            var text = sourceText.ToString();
+            // Roslyn also recognizes these Unicode characters as line endings.
+            if (text.Contains('\u0085') || text.Contains('\u2028') || text.Contains('\u2029'))
+            {
+                return true;
+            }
+
+            switch (endOfLine)
+            {
+                case "\n":
+                    // A 'cr' character can only appear as part of a cr or crlf line ending, so
+                    // its absence means every line ending is already a plain 'lf'.
+                    return sourceText.ToString().Contains('\r');
+                case "\r":
+                    return sourceText.ToString().Contains('\n');
+                case "\r\n":
+                    return HasLooseEndOfLine(sourceText.ToString());
+                default:
+                    return true;
+            }
+        }
+
+        private static bool HasLooseEndOfLine(string text)
+        {
+            for (var index = 0; index < text.Length; index++)
+            {
+                var character = text[index];
+                if (character == '\n' && (index == 0 || text[index - 1] != '\r'))
+                {
+                    return true;
+                }
+
+                if (character == '\r' && (index == text.Length - 1 || text[index + 1] != '\n'))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static bool TryGetEndOfLine(AnalyzerConfigOptions analyzerConfigOptions, [NotNullWhen(true)] out string? endOfLine)
