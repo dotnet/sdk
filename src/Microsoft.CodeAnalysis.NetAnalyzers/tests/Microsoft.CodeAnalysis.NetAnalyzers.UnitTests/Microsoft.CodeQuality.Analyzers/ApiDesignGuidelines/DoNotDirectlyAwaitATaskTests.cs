@@ -1161,6 +1161,61 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod, WorkItem(57090, "https://github.com/dotnet/sdk/issues/57090")]
+        public Task CSharpAwaitIAsyncEnumerableWithCancellation_DiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        public async Task Test(IAsyncEnumerable<int> source, CancellationToken cancellationToken)
+                        {
+                            await foreach (var i in [|source|])
+                            {
+                            }
+
+                            await foreach (var i in [|source.WithCancellation(cancellationToken)|])
+                            {
+                            }
+
+                            await foreach (var i in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        public async Task Test(IAsyncEnumerable<int> source, CancellationToken cancellationToken)
+                        {
+                            await foreach (var i in source.ConfigureAwait(false))
+                            {
+                            }
+
+                            await foreach (var i in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+                            {
+                            }
+
+                            await foreach (var i in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync(CancellationToken.None);
+        }
+
         [TestMethod, CombinatorialData]
         [WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
         public Task CSharpAwaitIAsyncEnumerableImplementation_Concrete_DiagnosticAsync(
