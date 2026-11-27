@@ -3,9 +3,13 @@
 
 #nullable disable
 
+using System.ComponentModel;
+using System.Diagnostics;
+
 namespace Microsoft.DotNet.Build.Tasks
 {
-    public sealed class TarGzFileCreateFromDirectory : ToolTask
+    [MSBuildMultiThreadableTask]
+    public sealed class TarGzFileCreateFromDirectory : ToolTask, IMultiThreadableTask
     {
         /// <summary>
         /// The path to the directory to be archived.
@@ -35,11 +39,18 @@ namespace Microsoft.DotNet.Build.Tasks
         public bool NormalizeSourceBuildOwnership { get; set; }
 
         /// <summary>
+        /// Whether to use pigz (parallel gzip) for compression when available on PATH.
+        /// </summary>
+        public bool UsePigz { get; set; } = true;
+
+        /// <summary>
         /// An item group of regular expressions for content to exclude from the archive.
         /// </summary>
         public ITaskItem[] ExcludePatterns { get; set; }
 
         public bool IgnoreExitCode { get; set; }
+
+        internal Func<bool> IsPigzAvailable { get; set; }
 
         protected override int ExecuteTool(string pathToTool, string responseFileCommands, string commandLineCommands)
         {
@@ -59,7 +70,8 @@ namespace Microsoft.DotNet.Build.Tasks
 
             var retVal = true;
 
-            if (File.Exists(DestinationArchive))
+            AbsolutePath destinationArchive = TaskEnvironment.GetAbsolutePath(DestinationArchive);
+            if (File.Exists(destinationArchive))
             {
                 if (OverwriteDestination == true)
                 {
@@ -73,13 +85,13 @@ namespace Microsoft.DotNet.Build.Tasks
                 }
             }
 
-            SourceDirectory = Path.GetFullPath(SourceDirectory);
+            AbsolutePath sourceDirectory = TaskEnvironment.GetAbsolutePath(SourceDirectory);
 
-            SourceDirectory = SourceDirectory.EndsWith(Path.DirectorySeparatorChar.ToString())
-                ? SourceDirectory
-                : SourceDirectory + Path.DirectorySeparatorChar;
+            SourceDirectory = sourceDirectory.Value.EndsWith(Path.DirectorySeparatorChar)
+                ? sourceDirectory.Value
+                : sourceDirectory.Value + Path.DirectorySeparatorChar;
 
-            if (!Directory.Exists(SourceDirectory))
+            if (!Directory.Exists(sourceDirectory))
             {
                 Log.LogError($"SourceDirectory '{SourceDirectory} does not exist.");
 
@@ -103,8 +115,9 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             if (IncludeBaseDirectory)
             {
-                var parentDirectory = Directory.GetParent(SourceDirectory).Parent.FullName;
-                var sourceDirectoryName = Path.GetFileName(Path.GetDirectoryName(SourceDirectory));
+                DirectoryInfo sourceDirectory = new(TaskEnvironment.GetAbsolutePath(SourceDirectory));
+                var parentDirectory = sourceDirectory.Parent.FullName;
+                var sourceDirectoryName = sourceDirectory.Name;
                 return $"--directory {parentDirectory} {sourceDirectoryName}  {GetExcludes()}";
             }
             else
@@ -119,7 +132,45 @@ namespace Microsoft.DotNet.Build.Tasks
                 ? "--numeric-owner --owner=2001 --group=2001 "
                 : string.Empty;
 
-            return $"{ownershipArguments}-czf {DestinationArchive}";
+            string compressionArguments = UsePigz && (IsPigzAvailable?.Invoke() ?? ProbePigz())
+                ? "--use-compress-program=pigz -cf"
+                : "-czf";
+
+            return $"{ownershipArguments}{compressionArguments} {DestinationArchive}";
+        }
+
+        private bool ProbePigz()
+        {
+            try
+            {
+                ProcessStartInfo startInfo = TaskEnvironment.GetProcessStartInfo();
+                startInfo.FileName = "pigz";
+                startInfo.Arguments = "--version";
+                startInfo.UseShellExecute = false;
+                startInfo.CreateNoWindow = true;
+                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
+
+                using var process = new Process { StartInfo = startInfo };
+                if (!process.Start())
+                {
+                    return false;
+                }
+
+                if (!process.WaitForExit(5000))
+                {
+#pragma warning disable MSBuildTask0001 // Only terminates the pigz probe child process started by this task.
+                    try { process.Kill(entireProcessTree: true); } catch { }
+#pragma warning restore MSBuildTask0001
+                    return false;
+                }
+
+                return process.ExitCode == 0;
+            }
+            catch (Exception ex) when (ex is Win32Exception or IOException)
+            {
+                return false;
+            }
         }
 
         private string GetExcludes()
