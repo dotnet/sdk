@@ -379,6 +379,32 @@ test("prepare creates a current-commit manifest and bounded batch without a cach
     assert.equal(manifest.candidates[0].path, "src/Sample.cs");
 });
 
+test("prepare reports C# lexical failures and continues collecting other files", async (t) =>
+{
+    const root = await fixture(t);
+    await writeFile(path.join(root, "src/Disabled.cs"), [
+        "// TODO remove once https://github.com/dotnet/sdk/issues/123 is fixed.",
+        "#if false",
+        "this isn't active C# source",
+        "#endif",
+    ].join("\n"));
+    await promisify(execFile)("git", ["add", "--", "src/Disabled.cs"], { cwd: root });
+    await promisify(execFile)("git", [
+        "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+        "commit", "--quiet", "-m", "Add disabled C# source",
+    ], { cwd: root });
+
+    const warnings = [];
+    const result = await prepare({
+        repoRoot: root,
+        logger: { info() {}, warn(message) { warnings.push(message); } },
+    });
+
+    assert.equal(result.batch.candidates.length, 1);
+    assert.match(warnings.join("\n"),
+        /Skipped C# candidate collection for src\/Disabled\.cs:.*unterminated string or character literal/);
+});
+
 test("malformed cache is diagnosed and recollected, never treated as interpreted", async (t) =>
 {
     const root = await fixture(t);

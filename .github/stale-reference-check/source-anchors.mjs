@@ -3,6 +3,8 @@
 
 import { createHash } from 'node:crypto';
 
+const actionableTextPattern = /\bTODO\b|\bwork[ -]?around\b|\b(remov(e|ed|al)|delet(e|ed|ion)|revisit|re-?enabl(e|ed))\b.*\b(when|once|after|until)\b|\b(temporary|temporarily)\b.*\b(until|fix|hack)\b/i;
+
 function requireSource(condition, message) {
     if (!condition) throw new Error(`Cannot establish comment site identity: ${message}`);
 }
@@ -89,6 +91,108 @@ function* csharpTokens(source) {
         line = endLine;
         start = end;
     }
+}
+
+export function csharpCommentLines(lines) {
+    const comments = new Map();
+    for (const token of csharpTokens(lines.join('\n'))) {
+        if (token.kind !== 'comment') continue;
+        token.value.split('\n').forEach((text, index) => {
+            const line = token.startLine + index;
+            comments.set(line, `${comments.get(line) ?? ''}${text}`);
+        });
+    }
+    return comments;
+}
+
+export function csharpAttributeSites(lines) {
+    const source = lines.join('\n');
+    const tokens = [...csharpTokens(source)];
+    const sites = new Map();
+    const identifier = token => token?.kind === 'code' && /^@?[\p{L}_][\p{L}\p{N}\p{M}_]*$/u.test(token.value);
+    const previousSignificant = index => {
+        while (index >= 0 && tokens[index].kind === 'comment') index--;
+        return tokens[index];
+    };
+    const expressionOperators = new Set(['is', 'as', 'switch', 'with', 'when', 'or', 'and', 'not']);
+    const declarationContinuation = end => {
+        let index = end + 1;
+        const skipComments = () => {
+            while (index < tokens.length && tokens[index].kind === 'comment') index++;
+        };
+        skipComments();
+        while (tokens[index]?.kind === 'code' && tokens[index].value === '[') {
+            let nameIndex = index + 1;
+            while (tokens[nameIndex]?.kind === 'comment') nameIndex++;
+            if (!identifier(tokens[nameIndex])) return false;
+
+            let depth = 1;
+            let next = index + 1;
+            for (; next < tokens.length && depth > 0; next++) {
+                if (tokens[next].kind !== 'code') continue;
+                if (tokens[next].value === '[') depth++;
+                else if (tokens[next].value === ']') depth--;
+            }
+            if (depth !== 0) return false;
+            index = next;
+            skipComments();
+        }
+
+        const next = tokens[index];
+        return identifier(next) && !expressionOperators.has(next.value);
+    };
+    const precedingLine = start => lines.slice(0, start - 1).reverse().find(line => line.trim())?.trim() ?? null;
+    const followingLine = end => lines.slice(end).find(line => line.trim())?.trim() ?? null;
+
+    for (let start = 0; start < tokens.length; start++) {
+        if (tokens[start].kind !== 'code' || tokens[start].value !== '[') continue;
+
+        const previous = previousSignificant(start - 1);
+        if (previous && !(previous.kind === 'code' && ['{', '}', ';', ']', '(', ','].includes(previous.value))) continue;
+
+        let depth = 1;
+        let end = start + 1;
+        for (; end < tokens.length && depth > 0; end++) {
+            if (tokens[end].kind !== 'code') continue;
+            if (tokens[end].value === '[') depth++;
+            else if (tokens[end].value === ']') depth--;
+        }
+        if (depth !== 0) continue;
+        end--;
+        if (['(', ','].includes(previous?.value) && !declarationContinuation(end)) continue;
+
+        let nameIndex = start + 1;
+        if (identifier(tokens[nameIndex]) && tokens[nameIndex + 1]?.value === ':' &&
+            tokens[nameIndex + 2]?.value !== ':') nameIndex += 2;
+        if (!identifier(tokens[nameIndex])) continue;
+        nameIndex++;
+        if (tokens[nameIndex]?.value === ':' && tokens[nameIndex + 1]?.value === ':') {
+            nameIndex += 2;
+            if (!identifier(tokens[nameIndex])) continue;
+            nameIndex++;
+        }
+        while (tokens[nameIndex]?.value === '.' && identifier(tokens[nameIndex + 1])) nameIndex += 2;
+        if (!['(', ',', ']'].includes(tokens[nameIndex]?.value)) continue;
+
+        const matchingLines = new Set();
+        for (const token of tokens.slice(start + 1, end)) {
+            if (token.kind !== 'literal') continue;
+            token.value.split('\n').forEach((text, offset) => {
+                if (actionableTextPattern.test(text)) matchingLines.add(token.startLine + offset);
+            });
+        }
+        if (matchingLines.size === 0) continue;
+
+        const endLine = tokens[end].endLine;
+        const anchor = `csharp attribute: ${createHash('sha256')
+            .update(JSON.stringify([precedingLine(tokens[start].startLine), followingLine(endLine)]))
+            .digest('hex')}`;
+        const site = { anchor, kind: 'attribute' };
+        for (const line of matchingLines) sites.set(line, site);
+        start = end;
+    }
+
+    return sites;
 }
 
 function headerText(tokens) {
@@ -186,7 +290,7 @@ export function ignoredTestDeclaration(lines, seedLine) {
 }
 
 function recordComment(sites, token, anchor) {
-    const site = { anchor };
+    const site = { anchor, kind: 'comment' };
     for (let line = token.startLine; line <= token.endLine; line++) {
         requireSource(!sites.has(line), 'multiple comments share a seed line.');
         sites.set(line, site);
@@ -299,6 +403,9 @@ export function sourceAnchors(lines, path) {
     const source = lines.join('\n');
     const textual = !/\.(?:cs|xml|props|targets|proj|projitems|csproj|vbproj|fsproj|slnx|nuspec|config)$/i.test(path);
     const sites = /\.cs$/i.test(path) ? csharpSites(source) : textual ? textSites(lines) : xmlSites(source);
+    if (/\.cs$/i.test(path)) {
+        for (const [line, site] of csharpAttributeSites(lines)) sites.set(line, site);
+    }
     const identities = new Map();
     const ambiguous = new Set();
     for (const [line, site] of sites) {
@@ -312,8 +419,8 @@ export function sourceAnchors(lines, path) {
     }
     return seedLine => {
         const site = sites.get(seedLine);
-        requireSource(site !== undefined, 'the action seed is not a comment.');
-        requireSource(!ambiguous.has(seedLine), `identical comments have the same ${textual
+        requireSource(site !== undefined, 'the action seed is not a comment or actionable attribute.');
+        requireSource(!ambiguous.has(seedLine), `identical ${site.kind === 'attribute' ? 'attributes' : 'comments'} have the same ${textual
             ? 'source neighborhood' : 'structural anchor'}; defer this candidate.`);
         requireSource(site.anchor.length <= 1024 && !/[\x00-\x1f\x7f]/.test(site.anchor),
             'the structural anchor is not bounded single-line text.');

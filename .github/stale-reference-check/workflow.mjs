@@ -78,6 +78,9 @@ export async function prepare({ repoRoot, refreshCache = false, logger = console
     }
 
     const manifest = await collect(repoRoot, { rulesHash: await rulesHash(repoRoot) });
+    for (const diagnostic of manifest.diagnostics ?? []) {
+        logger.warn(diagnostic);
+    }
     const selected = selectBatch(manifest, cache);
     for (const diagnostic of selected.diagnostics ?? [])
     {

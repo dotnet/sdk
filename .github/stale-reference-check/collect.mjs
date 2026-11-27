@@ -6,9 +6,11 @@ import { createHash } from 'node:crypto';
 import { lstat, readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { referenceUrlPattern, shorthandPattern } from './references.mjs';
+import { csharpAttributeSites, csharpCommentLines } from './source-anchors.mjs';
 
 const ignorePattern = String.raw`(\[|<|,|^[[:space:]]*)[[:space:]]*([[:alnum:]_.]+[.])?Ignore(Attribute)?([[:space:]]*\(|[[:space:]]*\]|[[:space:]]*>|[[:space:]]*$)`;
 const seedPattern = `${ignorePattern}|` + String.raw`\bTODO\b|\bwork[ -]?around\b|\b(remov(e|ed|al)|delet(e|ed|ion)|revisit|re-?enabl(e|ed))\b.*\b(when|once|after|until)\b|\b(temporary|temporarily)\b.*\b(until|fix|hack)\b`;
+const commentSeedPattern = /\bTODO\b|\bwork[ -]?around\b|\b(remov(e|ed|al)|delet(e|ed|ion)|revisit|re-?enabl(e|ed))\b.*\b(when|once|after|until)\b|\b(temporary|temporarily)\b.*\b(until|fix|hack)\b/i;
 const sourceExtension = /\.(cs|fs|fsx|c|cc|cpp|h|hpp|js|mjs|cjs|ts|tsx|jsx|py|ps1|psm1|psd1|sh|bash|cmd|bat|yml|yaml|xml|props|targets|proj|projitems|csproj|vbproj|fsproj|slnx|nuspec|razor|cshtml|config|cmake)$/i;
 const excludedDirectory = /(^|\/)(documentation|docs?|prompts?|memory|skills|agents|instructions|issue_templates?|testassets|testdata|testinputs?|testresources|fixtures|__fixtures__|baselines?|snapshots?|generated|vendor|vendored|third[-_]?party|node_modules|bin|obj|artifacts|template_feed)(\/|$)/i;
 // Keep collection permissive enough to find shorthand references; the validator
@@ -148,12 +150,28 @@ export async function collect(repoRoot, { rulesHash } = {}) {
         hits.get(filePath).push({ seedLine: line, kindHint });
     }
     const candidates = [];
+    const diagnostics = [];
     for (const filePath of [...hits.keys()].sort()) {
         const blobSha = files.get(filePath);
         const lines = sourceLines(await git(repoRoot, ['cat-file', 'blob', blobSha]));
         if (!githubReference.test(lines.join('\n'))) continue;
+        const isCSharp = /\.cs$/i.test(filePath);
+        let comments;
+        let attributeSites;
+        if (isCSharp) {
+            try {
+                comments = csharpCommentLines(lines);
+                attributeSites = csharpAttributeSites(lines);
+            } catch (error) {
+                if (!(error instanceof Error)) throw error;
+                diagnostics.push(`Skipped C# candidate collection for ${filePath}: ${error.message}`);
+                continue;
+            }
+        }
         const windows = [];
         for (const hit of hits.get(filePath).sort((a, b) => a.seedLine - b.seedLine)) {
+            if (comments && hit.kindHint !== 'ignore' &&
+                !commentSeedPattern.test(comments.get(hit.seedLine) ?? '') && !attributeSites.has(hit.seedLine)) continue;
             const startLine = Math.max(1, hit.seedLine - 20);
             const endLine = Math.min(lines.length, hit.seedLine + 20);
             const previous = windows.at(-1);
@@ -176,5 +194,7 @@ export async function collect(repoRoot, { rulesHash } = {}) {
             }
         }
     }
-    return { schemaVersion: 1, headSha, rulesHash, candidates };
+    const manifest = { schemaVersion: 1, headSha, rulesHash, candidates };
+    if (diagnostics.length) manifest.diagnostics = diagnostics;
+    return manifest;
 }

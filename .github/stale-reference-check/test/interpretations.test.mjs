@@ -72,6 +72,29 @@ test('accepts XML workaround conditions and historical irrelevant classification
     assert.equal((await validate(f, [result(candidate)]))[0].status, 'irrelevant');
 });
 
+test('validates C# suppression justification attributes as actionable workaround sites', async t => {
+    const source = [
+        'namespace Sample.Tests;',
+        'class Cases {',
+        `[UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock. Remove when ${url} is fixed.")]`,
+        'public void Run() {}',
+        '}',
+    ].join('\n');
+    const f = await fixture(t, source);
+    const candidate = f.manifest.candidates[0];
+    assert.equal(candidate.kindHint, 'workaround');
+    const validated = await validate(f, [result(candidate, [action(candidate, { anchor: 'Cases.Run' })])]);
+    assert.match(validated[0].actions[0].anchor, /^csharp attribute: [a-f0-9]{64}$/);
+
+    const snapshot = await validateSnapshotInterpretations({ schemaVersion: 1, results: [
+        result(candidate, [action(candidate, { anchor: 'Cases.Run' })]),
+    ] }, f.manifest, {
+        sources: { [candidate.path]: `${source}\n` },
+        expectedCandidateIds: [candidate.id],
+    });
+    assert.deepEqual(snapshot, validated);
+});
+
 test('non-C#/XML comments validate, replay cache and retain source-owned filing identities', async t => {
     for (const [file, comment] of [
         ['eng/check.js', '//'], ['eng/check.ps1', '#'], ['eng/check.py', '#'],
