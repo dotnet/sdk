@@ -3,11 +3,27 @@
 
 #nullable disable
 
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 [TestClass]
 public class LoggingTests : DotNetWatchTestBase
 {
+    [TestMethod]
+    public void BrowserToolsNotSupportedByProjectSettings()
+    {
+        var reporter = new TestReporter(Logger);
+        var logger = new LoggerFactory(reporter, LogLevel.Debug).CreateLogger(DotNetWatchContext.DefaultLogComponentName);
+
+        logger.Log(LogEvents.BrowserToolsNotSupportedByProjectSettings);
+
+        AssertEx.SequenceEqual(
+            [(LogLevel.Warning, "Hot Reload in the browser is not supported due to project settings")],
+            reporter.Messages);
+    }
+
     [TestMethod]
     public async Task BinaryLogs()
     {
