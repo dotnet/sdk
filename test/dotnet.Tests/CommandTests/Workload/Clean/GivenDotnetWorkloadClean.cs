@@ -96,6 +96,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
             var extraAboveBandPackRecordPath = MakePackRecord(installRoot, aboveSdkFeatureBand);
             var extraBelowBandPackRecordPath = MakePackRecord(installRoot, belowSdkFeatureBand);
+            var extraPreviewBandPackRecordPath = MakePackRecord(installRoot, $"{_sdkFeatureVersion}-preview.26568");
             var extraPackPath = MakePack(installRoot);
             var workloadInstallationRecordDirectory = Path.Combine(installRoot, "metadata", "workloads", _sdkFeatureVersion, "InstalledWorkloads");
             var oldWorkloadInstallationRecordDirectory = workloadInstallationRecordDirectory.Replace(_sdkFeatureVersion, belowSdkFeatureBand);
@@ -106,6 +107,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
             AssertExtraneousPacksAreRemoved(extraPackPath, extraBelowBandPackRecordPath, true);
             AssertExtraneousPacksAreRemoved(extraPackPath, extraAboveBandPackRecordPath);
+            AssertExtraneousPacksAreRemoved(extraPackPath, extraPreviewBandPackRecordPath);
             AssertWorkloadInstallationRecordIsRemoved(workloadInstallationRecordDirectory);
             AssertWorkloadInstallationRecordIsRemoved(oldWorkloadInstallationRecordDirectory);
             AssertValidPackCountsMatchExpected(installRoot, expectedPackCount: 0, expectedPackRecordCount: 0);

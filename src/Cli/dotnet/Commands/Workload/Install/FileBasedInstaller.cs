@@ -552,28 +552,28 @@ internal class FileBasedInstaller : IInstaller
         // Garbage collect workload packs
         var featureBandsWithWorkloadInstallationRecords = _installationRecordRepository.GetFeatureBandsWithInstallationRecords();
 
-        Dictionary<(WorkloadPackId packId, string packVersion), List<SdkFeatureBand>> packInstallRecords = GetAllPackInstallRecords();
+        Dictionary<(WorkloadPackId packId, string packVersion), List<(SdkFeatureBand FeatureBand, string Path)>> packInstallRecords = GetAllPackInstallRecords();
         foreach (var (packId, packVersion) in packInstallRecords.Keys)
         {
             var referencingFeatureBands = packInstallRecords[(packId, packVersion)];
-            List<SdkFeatureBand> featureBandsToRemove = [];
-            foreach (var referencingFeatureBand in referencingFeatureBands)
+            List<(SdkFeatureBand FeatureBand, string Path)> featureBandsToRemove = [];
+            foreach (var (referencingFeatureBand, recordPath) in referencingFeatureBands)
             {
                 if (cleanAllPacks)
                 {
                     //  Remove pack record if we're cleaning all packs
-                    featureBandsToRemove.Add(referencingFeatureBand);
+                    featureBandsToRemove.Add((referencingFeatureBand, recordPath));
                 }
                 else if (!installedSdkFeatureBands.Contains(referencingFeatureBand) ||
                          !featureBandsWithWorkloadInstallationRecords.Contains(referencingFeatureBand))
                 {
                     //  Remove pack record if corresponding feature band is not installed, or does not have any workloads installed
-                    featureBandsToRemove.Add(referencingFeatureBand);
+                    featureBandsToRemove.Add((referencingFeatureBand, recordPath));
                 }
                 else if (referencingFeatureBand.Equals(_sdkFeatureBand) && !garbageCollector.PacksToKeep.Contains((packId, packVersion)))
                 {
                     //  For current feature band, garbage collect packs that the garbage collector didn't mark as ones to keep
-                    featureBandsToRemove.Add(referencingFeatureBand);
+                    featureBandsToRemove.Add((referencingFeatureBand, recordPath));
                 }
             }
 
@@ -583,14 +583,14 @@ internal class FileBasedInstaller : IInstaller
             }
 
             // Save the pack info in case we need to delete the pack (the pack type is needed to know the path to the pack and how to delete it)
-            var jsonPackInfo = File.ReadAllText(GetPackInstallRecordPath(packId, packVersion, featureBandsToRemove.First()));
+            var jsonPackInfo = File.ReadAllText(featureBandsToRemove.First().Path);
 
-            foreach (var featureBand in featureBandsToRemove)
+            foreach (var (_, recordPath) in featureBandsToRemove)
             {
-                File.Delete(GetPackInstallRecordPath(packId, packVersion, featureBand));
+                File.Delete(recordPath);
             }
 
-            var installationRecordDirectory = Path.GetDirectoryName(GetPackInstallRecordPath(packId, packVersion, featureBandsToRemove.First()));
+            var installationRecordDirectory = Path.GetDirectoryName(featureBandsToRemove.First().Path);
             if (!Directory.GetFileSystemEntries(installationRecordDirectory).Any())
             {
                 //  There are no installation records for the workload pack anymore, so we can delete the pack
@@ -856,9 +856,9 @@ internal class FileBasedInstaller : IInstaller
     private string GetPackInstallRecordPath(WorkloadPackId packId, string packVersion, SdkFeatureBand featureBand) =>
         Path.Combine(_workloadMetadataDir, InstalledPacksDir, "v1", packId, packVersion, featureBand.ToString());
 
-    private Dictionary<(WorkloadPackId packId, string packVersion), List<SdkFeatureBand>> GetAllPackInstallRecords()
+    private Dictionary<(WorkloadPackId packId, string packVersion), List<(SdkFeatureBand FeatureBand, string Path)>> GetAllPackInstallRecords()
     {
-        Dictionary<(WorkloadPackId packId, string packVersion), List<SdkFeatureBand>> records = [];
+        Dictionary<(WorkloadPackId packId, string packVersion), List<(SdkFeatureBand FeatureBand, string Path)>> records = [];
 
         var installedPacksDir = Path.Combine(_workloadMetadataDir, InstalledPacksDir, "v1");
 
@@ -882,7 +882,7 @@ internal class FileBasedInstaller : IInstaller
                         referencingFeatureBands = [];
                         records[(packId, packVersion)] = referencingFeatureBands;
                     }
-                    referencingFeatureBands.Add(referencingFeatureBand);
+                    referencingFeatureBands.Add((referencingFeatureBand, bandRecord));
                 }
             }
         }

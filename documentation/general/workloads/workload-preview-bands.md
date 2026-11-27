@@ -4,6 +4,8 @@ In .NET 6, the [SDK Band](https://github.com/dotnet/designs/blob/main/accepted/2
 
 Since different previews used the same SDK band, and workloads by default update to the latest manifests available for the SDK band, this made it easy to get a mismatch between the preview version of the SDK and the version of the workloads that were being used.
 
-Because of this, in .NET 7 we are changing the definition of the SDK band to include the first two components of the SDK version prerelease specifier, if present.  So the SDK band for 7.0.100-preview.1.12345 would be 7.0.100-preview.1, and the SDK band for 7.0.100-rc.2.21505.57 would be 7.0.100-rc.2.
+Because of this, in .NET 7 we changed the definition of the SDK band to include the first two components of the SDK version prerelease specifier, if present. So the SDK band for 7.0.100-preview.1.12345 is 7.0.100-preview.1, and the SDK band for 7.0.100-rc.2.21505.57 is 7.0.100-rc.2.
 
-The logic to handle this is primarily in the [SdkFeatureBand class](/src/Resolvers/Microsoft.NET.Sdk.WorkloadManifestReader/SdkFeatureBand.cs).  Additional impacted code is linked in https://github.com/dotnet/sdk/issues/23373.
+Previews identified by an Arcade build number instead of a numbered preview phase share the stable SDK band. For example, `11.0.200-preview.26568.113` uses the `11.0.200` SDK band, while `11.0.200-preview.5.26568.113` uses `11.0.200-preview.5`. The same rule applies when resolving workload-set versions.
+
+The logic to handle this is primarily in the [SdkFeatureBand class](/src/Resolvers/Microsoft.NET.Sdk.WorkloadManifestReader/SdkFeatureBand.cs). Additional impacted code is linked in https://github.com/dotnet/sdk/issues/23373.
