@@ -194,6 +194,10 @@ dependency-flow process so versions, manifests, and feeds remain consistent.
     changes made while it was current.
   - Register the new versioned manifests in
     [`BundledManifests.targets`](../../src/Layout/redist/targets/BundledManifests.targets).
+  - Update Visual Studio workload component resources in
+    [`workloads.csproj`](../../src/Workloads/VSInsertion/workloads.csproj): update the
+    `.Current` workload branding to netN and add net(N-1) runtime and Emscripten component
+    entries.
   - Centralize the previous TFM's workload pack versions through its
     `VersionFeature...ForWorkloads` property in [`eng/Versions.props`](../../eng/Versions.props).
     Use that property in both versioned manifest projects and the `.Current` manifest's
