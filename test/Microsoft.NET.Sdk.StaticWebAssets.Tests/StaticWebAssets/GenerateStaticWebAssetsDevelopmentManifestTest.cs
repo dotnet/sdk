@@ -444,6 +444,45 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [TestMethod]
+        [DataRow(StaticWebAsset.SourceTypes.Discovered, true)]
+        [DataRow(StaticWebAsset.SourceTypes.Computed, false)]
+        public void ComputeDevelopmentManifest_ServesLinkedDiscoveredAssetsFromSourceLocation(string sourceType, bool servedFromSource)
+        {
+            var task = new GenerateStaticWebAssetsDevelopmentManifest()
+            {
+                BuildEngine = new Mock<IBuildEngine>().Object,
+                Source = "CurrentProjectId"
+            };
+
+            var sourceDirectory = Path.Combine(Environment.CurrentDirectory, $"linked-{sourceType}-{Guid.NewGuid():N}");
+            var linkedFile = Path.Combine(sourceDirectory, "appsettings.shared.json");
+            var contentRoot = Path.Combine(Environment.CurrentDirectory, "wwwroot");
+            var expectedManifest = servedFromSource
+                ? CreateExpectedManifest(
+                    CreateIntermediateNode(("config", CreateIntermediateNode(("appsettings.json", CreateMatchNode(0, "appsettings.shared.json"))))),
+                    sourceDirectory)
+                : CreateExpectedManifest(
+                    CreateIntermediateNode(("config", CreateIntermediateNode(("appsettings.json", CreateMatchNode(0, "config/appsettings.json"))))),
+                    contentRoot);
+
+            try
+            {
+                Directory.CreateDirectory(sourceDirectory);
+                File.WriteAllText(linkedFile, "{}");
+                var assets = new[] { CreateAsset(linkedFile, "config/appsettings.json", sourceType: sourceType, contentRoot: contentRoot) };
+
+                var manifest = task.ComputeDevelopmentManifest(assets, []);
+
+                manifest.Should().BeEquivalentTo(expectedManifest);
+            }
+            finally
+            {
+                File.Delete(linkedFile);
+                Directory.Delete(sourceDirectory);
+            }
+        }
+
+        [TestMethod]
         public void ComputeDevelopmentManifest_MapsPatternsFromCurrentProject()
         {
             // Arrange

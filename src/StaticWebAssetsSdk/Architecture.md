@@ -67,6 +67,12 @@ outputs without null entries, as in
 
 ### Identity and Origin
 
+Discovered assets keep their physical identity when a later task updates their metadata.
+For example, a file linked into `wwwroot` retains its source path when Blazor marks it as
+an application settings resource. `DefineStaticWebAssets` caches include
+`DefineStaticWebAssets.CacheVersion`; bump it when unchanged inputs produce different
+outputs so caches from older SDKs are recomputed.
+
 | Property | Type | Description | Invariants |
 |----------|------|-------------|------------|
 | `Identity` | `string` | Absolute path to the file on disk. Serves as the unique key for the asset. | Required. Defaults to the `FullPath` metadata of the original MSBuild item. |
@@ -453,6 +459,10 @@ A tree-structured manifest consumed by the development-time middleware for the d
 - The tree structure matches URL path segments, enabling efficient prefix-based lookup.
 - `Patterns` at each node support runtime file discovery (files added after build).
 - Only includes `Build`-kind assets.
+- An existing `Discovered` file outside its asset's `ContentRoot` (for example, a linked file)
+  is served from its source directory because discovered assets are never copied into their
+  content root. Other assets resolve to `ContentRoot` + `RelativePath`, where the build
+  materializes them.
 
 ## 7. Extension Points
 

@@ -206,6 +206,98 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("17.12")]
+        public void BuildAndPublish_WithLinkedAppSettings_IncludesAndServesSettingsOnce()
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmWithLibrary")
+                .WithProjectChanges((path, project) =>
+                {
+                    if (Path.GetFileName(path) == "blazorwasm.csproj")
+                    {
+                        project.Root.Add(
+                            new XElement("ItemGroup",
+                                new XElement("Content",
+                                    new XAttribute("Include", Path.Combine("..", "appsettings.json")),
+                                    new XAttribute("Link", "wwwroot/appsettings.json"))));
+                    }
+                });
+            var settingsPath = Path.Combine(testInstance.TestRoot, "appsettings.json");
+            const string settingsContent = """{ "Source": "linked" }""";
+            File.WriteAllText(settingsPath, settingsContent);
+
+            var build = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(build).Should().Pass();
+
+            var intermediateDirectory = build.GetIntermediateDirectory(DefaultTfm).ToString();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(
+                File.ReadAllBytes(Path.Combine(intermediateDirectory, "staticwebassets.build.json")));
+            var settings = manifest.Assets.Should().ContainSingle(asset =>
+                asset.AssetRole == StaticWebAsset.AssetRoles.Primary &&
+                asset.ComputePathWithoutTokens(asset.RelativePath) == "appsettings.json").Which;
+            settings.Identity.Should().Be(settingsPath);
+            settings.AssetTraitValue.Should().Be("settings");
+
+            var buildOutputDirectory = build.GetOutputDirectory(DefaultTfm).ToString();
+            var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName);
+            ReadBootJsonData(bootJsonPath).config.Should()
+                .ContainSingle(path => path == "../appsettings.json");
+
+            // The runtime manifest is what the development server uses to resolve requests to files on disk.
+            var servedPath = ResolveRuntimeManifestPath(
+                Path.Combine(buildOutputDirectory, "blazorwasm.staticwebassets.runtime.json"),
+                "appsettings.json");
+            File.ReadAllText(servedPath).Should().Be(settingsContent);
+
+            var publish = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publish).Should().Pass();
+
+            var publishedSettings = Path.Combine(publish.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "appsettings.json");
+            File.ReadAllText(publishedSettings).Should().Be(settingsContent);
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
+        public void Build_WithLinkedAndLocalAppSettings_FailsWithConflict()
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmWithLibrary")
+                .WithProjectChanges((path, project) =>
+                {
+                    if (Path.GetFileName(path) == "blazorwasm.csproj")
+                    {
+                        project.Root.Add(
+                            new XElement("ItemGroup",
+                                new XElement("Content",
+                                    new XAttribute("Include", Path.Combine("..", "appsettings.json")),
+                                    new XAttribute("Link", "wwwroot/appsettings.json"))));
+                    }
+                });
+            var linkedSettings = Path.Combine(testInstance.TestRoot, "appsettings.json");
+            var localSettings = Path.Combine(testInstance.TestRoot, "blazorwasm", "wwwroot", "appsettings.json");
+            File.WriteAllText(linkedSettings, "{}");
+            File.WriteAllText(localSettings, "{}");
+
+            var build = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(build).Should().Fail()
+                .And.HaveStdOutContaining("Two assets found targeting the same path")
+                .And.HaveStdOutContaining(linkedSettings)
+                .And.HaveStdOutContaining(localSettings);
+        }
+
+        private static string ResolveRuntimeManifestPath(string runtimeManifestPath, string requestPath)
+        {
+            using var runtimeManifest = JsonDocument.Parse(File.ReadAllBytes(runtimeManifestPath));
+            var node = runtimeManifest.RootElement.GetProperty("Root");
+            foreach (var segment in requestPath.Split('/'))
+            {
+                node = node.GetProperty("Children").GetProperty(segment);
+            }
+
+            var asset = node.GetProperty("Asset");
+            var contentRoot = runtimeManifest.RootElement.GetProperty("ContentRoots")[asset.GetProperty("ContentRootIndex").GetInt32()].GetString();
+            return Path.Combine(contentRoot, asset.GetProperty("SubPath").GetString());
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_InRelease_ProducesBootJsonDataWithExpectedContent()
         {
             // Arrange
