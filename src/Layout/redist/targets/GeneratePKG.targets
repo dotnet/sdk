@@ -6,7 +6,7 @@
 
       <!-- Properties for pkg build -->
       <!-- Keep in sync with SetOSTargetMinVersions in dotnet/runtime's root Directory.Build.props. -->
-      <MacOSMinimumVersion Condition="'$(MacOSMinimumVersion)' == ''">12.0</MacOSMinimumVersion>
+      <MacOSMinimumVersion Condition="'$(MacOSMinimumVersion)' == ''">14.0</MacOSMinimumVersion>
       <SharedHostComponentId>com.microsoft.dotnet.sharedhost.$(SharedHostVersion).component.osx.$(TargetArchitecture)</SharedHostComponentId>
       <HostFxrComponentId>com.microsoft.dotnet.hostfxr.$(HostFxrVersion).component.osx.$(TargetArchitecture)</HostFxrComponentId>
       <SharedFrameworkComponentId>com.microsoft.dotnet.sharedframework.$(SharedFrameworkNugetName).$(MicrosoftNETCoreAppRuntimePackageVersion).component.osx.$(TargetArchitecture)</SharedFrameworkComponentId>
