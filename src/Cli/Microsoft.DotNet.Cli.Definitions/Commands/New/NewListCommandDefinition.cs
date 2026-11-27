@@ -13,6 +13,7 @@ public sealed class NewListCommandDefinition : Command
     public const bool HasSupportedPackageFilterOption = false;
 
     public const string IgnoreConstraintsOptionName = "--ignore-constraints";
+    public const string FormatOptionName = "--format";
 
     public readonly Argument<string> NameArgument = CreateNameArgument();
 
@@ -21,6 +22,13 @@ public sealed class NewListCommandDefinition : Command
         Description = CommandDefinitionStrings.ListCommand_Option_IgnoreConstraints,
         Arity = ArgumentArity.Zero
     };
+
+    public readonly Option<NewListOutputFormat> FormatOption = new Option<NewListOutputFormat>(FormatOptionName)
+    {
+        Description = CommandDefinitionStrings.FormatDescription,
+        Arity = ArgumentArity.ExactlyOne,
+        DefaultValueFactory = _ => NewListOutputFormat.table
+    }.AcceptOnlyFromAmong(nameof(NewListOutputFormat.table), nameof(NewListOutputFormat.json));
 
     public readonly Option<FileInfo> OutputOption = SharedOptionsFactory.CreateOutputOption();
     public readonly Option<FileInfo> ProjectOption = SharedOptionsFactory.CreateProjectOption();
@@ -58,6 +66,7 @@ public sealed class NewListCommandDefinition : Command
         Options.Add(ProjectOption);
         Options.Add(ColumnsAllOption);
         Options.Add(ColumnsOption);
+        Options.Add(FormatOption);
 
         this.AddNoLegacyUsageValidators(isLegacy ? [.. FilterOptions.AllNames, ColumnsAllOption.Name, ColumnsOption.Name, NewCommandDefinition.ShortNameArgumentName] : []);
 

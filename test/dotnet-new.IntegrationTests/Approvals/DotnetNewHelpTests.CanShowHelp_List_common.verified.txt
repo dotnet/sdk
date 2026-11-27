@@ -17,6 +17,7 @@ Options:
   --project <project>                    The project that should be used for context evaluation.
   --columns-all                          Displays all columns in the output.
   --columns <author|language|tags|type>  Specifies the columns to display in the output.
+  --format <json|table>                  Format the output accordingly. Either `table`, or `json`. The default value is `table`. [default: table]
   -v, --verbosity <LEVEL>                Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic]. [default: normal]
   -d, --diagnostics                      Enables diagnostic output.
   -?, -h, --help                         Show command line help.
