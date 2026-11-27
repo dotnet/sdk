@@ -3,11 +3,128 @@
 
 #nullable disable
 
+using System.Diagnostics;
+using Microsoft.NET.TestFramework.Commands;
+
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 [TestClass]
 public class TerminationTests : DotNetWatchTestBase
 {
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task ForcedTermination_Windows_KillsDescendants(bool isUserApplication)
+    {
+        var testAsset = CopyTestAsset("WatchHotReloadApp", [isUserApplication]);
+        UpdateSourceFile(Path.Combine(testAsset.Path, "Program.cs"), """
+            using System;
+            using System.Diagnostics;
+            using System.Threading;
+
+            Console.CancelKeyPress += (_, e) => e.Cancel = true;
+
+            if (args.Length == 0)
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = Environment.ProcessPath,
+                    Arguments = "child",
+                    UseShellExecute = false,
+                });
+            }
+            else if (args[0] == "child")
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = Environment.ProcessPath,
+                    Arguments = "grandchild",
+                    UseShellExecute = false,
+                });
+                Console.WriteLine($"Child: {Environment.ProcessId}");
+            }
+            else
+            {
+                Console.WriteLine($"Grandchild: {Environment.ProcessId}");
+            }
+
+            Thread.Sleep(Timeout.Infinite);
+            """);
+
+        new DotnetBuildCommand(Logger, testAsset.Path)
+            .Execute()
+            .Should().Pass();
+
+        var childStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var grandchildStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var processSpec = new ProcessSpec
+        {
+            Executable = Path.Combine(testAsset.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "WatchHotReloadApp.exe"),
+            WorkingDirectory = testAsset.Path,
+            IsUserApplication = isUserApplication,
+            OnOutput = line =>
+            {
+                if (line.Content.StartsWith("Child: ", StringComparison.Ordinal))
+                {
+                    childStarted.TrySetResult(int.Parse(line.Content["Child: ".Length..]));
+                }
+                else if (line.Content.StartsWith("Grandchild: ", StringComparison.Ordinal))
+                {
+                    grandchildStarted.TrySetResult(int.Parse(line.Content["Grandchild: ".Length..]));
+                }
+            },
+        };
+        SdkTestContext.Current.AddTestEnvironmentVariables(processSpec.EnvironmentVariables);
+
+        using var terminationSource = new CancellationTokenSource();
+        var runner = new ProcessRunner(processCleanupTimeout: TimeSpan.FromSeconds(1));
+        var runTask = runner.RunAsync(processSpec, new TestLogger(Logger), launchResult: null, terminationSource.Token);
+        Process child = null;
+        Process grandchild = null;
+        try
+        {
+            var childId = await childStarted.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+            child = Process.GetProcessById(childId);
+            var grandchildId = await grandchildStarted.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+            grandchild = Process.GetProcessById(grandchildId);
+            terminationSource.Cancel();
+
+            await runTask.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+            Assert.IsTrue(child.WaitForExit(10_000), "Force termination must not leave the child process running.");
+            Assert.IsTrue(grandchild.WaitForExit(10_000), "Force termination must not leave the grandchild process running.");
+        }
+        finally
+        {
+            terminationSource.Cancel();
+            try
+            {
+                await runTask.WaitAsync(TimeSpan.FromSeconds(30), CancellationToken.None);
+            }
+            finally
+            {
+                foreach (var process in new[] { child, grandchild })
+                {
+                    if (process != null)
+                    {
+                        try
+                        {
+                            if (!process.HasExited)
+                            {
+                                process.Kill(entireProcessTree: true);
+                                await process.WaitForExitAsync(CancellationToken.None);
+                            }
+                        }
+                        finally
+                        {
+                            process.Dispose();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
     public async Task GracefulTermination_Windows()

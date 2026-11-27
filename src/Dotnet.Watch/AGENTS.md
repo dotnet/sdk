@@ -24,6 +24,10 @@ Reload).
   [`ProcessUtilities`](Watch/Utilities/ProcessUtilities.cs) requires a positive process-group ID.
   [Windows does not deliver Ctrl+C to a specified process group](https://learn.microsoft.com/windows/console/generateconsolectrlevent),
   even when the native call reports success. Never broadcast a console signal to group zero.
+  If graceful termination times out,
+  [`ProcessRunner`](Watch/Process/ProcessRunner.cs) must force-kill the entire process
+  tree: killing only `dotnet run` can orphan its application and leave build outputs
+  locked on restart.
 - **Shared source via `.projitems`.** Several folders share code through
   `*.projitems` imported into multiple projects (not NuGet packages). Before
   refactoring shared files, check every importer.
