@@ -78,6 +78,8 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
 
     public override int Execute(CancellationToken cancellationToken)
     {
+        ValidatePackageSources();
+
         if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
         {
             try
