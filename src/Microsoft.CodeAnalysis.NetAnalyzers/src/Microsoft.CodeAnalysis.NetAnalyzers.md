@@ -2850,6 +2850,18 @@ Before quoting was supported, whitespace in a file-based program '#:' directive 
 |CodeFix|True|
 ---
 
+## [CA2269](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2269): Pass the event ID from EventAttribute to WriteEvent
+
+An EventSource event method must pass the same event ID to WriteEvent as the ID specified in its EventAttribute. A mismatched ID causes the event to be written with the wrong metadata or to fail at run time.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
 ## [CA2300](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2300): Do not use insecure deserializer BinaryFormatter
 
 The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect BinaryFormatter deserialization without a SerializationBinder set, then disable rule CA2300, and enable rules CA2301 and CA2302.

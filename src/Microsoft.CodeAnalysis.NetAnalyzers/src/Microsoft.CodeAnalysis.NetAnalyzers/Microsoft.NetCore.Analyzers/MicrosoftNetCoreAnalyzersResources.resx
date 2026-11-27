@@ -2358,4 +2358,20 @@ Widening and user defined conversions are not supported with generic types.</val
     <value>Use ReadOnlySpan&lt;T&gt; property</value>
     <comment>{Locked="ReadOnlySpan&lt;T&gt;"}</comment>
   </data>
+  <data name="UseMatchingEventSourceEventIdTitle" xml:space="preserve">
+    <value>Pass the event ID from EventAttribute to WriteEvent</value>
+    <comment>{Locked="EventAttribute"}{Locked="WriteEvent"}</comment>
+  </data>
+  <data name="UseMatchingEventSourceEventIdMessage" xml:space="preserve">
+    <value>The EventAttribute on this method specifies event ID {0}, but WriteEvent is called with event ID {1}</value>
+    <comment>{Locked="EventAttribute"}{Locked="WriteEvent"}</comment>
+  </data>
+  <data name="UseMatchingEventSourceEventIdDescription" xml:space="preserve">
+    <value>An EventSource event method must pass the same event ID to WriteEvent as the ID specified in its EventAttribute. A mismatched ID causes the event to be written with the wrong metadata or to fail at run time.</value>
+    <comment>{Locked="EventSource"}{Locked="WriteEvent"}{Locked="EventAttribute"}</comment>
+  </data>
+  <data name="UseMatchingEventSourceEventIdCodeFixTitle" xml:space="preserve">
+    <value>Change the WriteEvent event ID to match EventAttribute</value>
+    <comment>{Locked="WriteEvent"}{Locked="EventAttribute"}</comment>
+  </data>
 </root>

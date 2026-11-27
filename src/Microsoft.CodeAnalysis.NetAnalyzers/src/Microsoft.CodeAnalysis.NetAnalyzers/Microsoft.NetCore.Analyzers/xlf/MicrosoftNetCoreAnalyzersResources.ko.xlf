@@ -3348,6 +3348,26 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">Win32 API에 있는 동일한 기능의 관리되는 항목을 사용하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseMatchingEventSourceEventIdCodeFixTitle">
+        <source>Change the WriteEvent event ID to match EventAttribute</source>
+        <target state="new">Change the WriteEvent event ID to match EventAttribute</target>
+        <note>{Locked="WriteEvent"}{Locked="EventAttribute"}</note>
+      </trans-unit>
+      <trans-unit id="UseMatchingEventSourceEventIdDescription">
+        <source>An EventSource event method must pass the same event ID to WriteEvent as the ID specified in its EventAttribute. A mismatched ID causes the event to be written with the wrong metadata or to fail at run time.</source>
+        <target state="new">An EventSource event method must pass the same event ID to WriteEvent as the ID specified in its EventAttribute. A mismatched ID causes the event to be written with the wrong metadata or to fail at run time.</target>
+        <note>{Locked="EventSource"}{Locked="WriteEvent"}{Locked="EventAttribute"}</note>
+      </trans-unit>
+      <trans-unit id="UseMatchingEventSourceEventIdMessage">
+        <source>The EventAttribute on this method specifies event ID {0}, but WriteEvent is called with event ID {1}</source>
+        <target state="new">The EventAttribute on this method specifies event ID {0}, but WriteEvent is called with event ID {1}</target>
+        <note>{Locked="EventAttribute"}{Locked="WriteEvent"}</note>
+      </trans-unit>
+      <trans-unit id="UseMatchingEventSourceEventIdTitle">
+        <source>Pass the event ID from EventAttribute to WriteEvent</source>
+        <target state="new">Pass the event ID from EventAttribute to WriteEvent</target>
+        <note>{Locked="EventAttribute"}{Locked="WriteEvent"}</note>
+      </trans-unit>
       <trans-unit id="UseObjectDisposedExceptionThrowHelperTitle">
         <source>Use ObjectDisposedException throw helper</source>
         <target state="translated">ObjectDisposedException throw 도우미 사용</target>
