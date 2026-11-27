@@ -196,3 +196,7 @@ required checklist for memory, instructions, `AGENTS.md`, skills, agents, contri
 documentation, help, snapshots, and localized resources.
 
 If the change is genuinely internal and unobservable to users, contributors, or agents, no artifact update is needed — but make that a deliberate call, not an oversight.
+
+Correct once: when a task fixes a recurring agent failure, also fix its cause in the harness
+(the owning `AGENTS.md`, skill, memory file, test, or analyzer) so the same correction is not
+needed again; `update-docs` lists where each kind of fix belongs.
