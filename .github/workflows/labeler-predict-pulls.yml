@@ -24,12 +24,17 @@ on:
     branches:
       - main
 
+  # Poll for open pull requests that still need labels every 5 minutes, as a fallback
+  # for pull requests that were not labeled when they were opened
+  schedule:
+    - cron: "*/5 * * * *"
+
   # Allow dispatching the workflow via the Actions UI, specifying ranges of numbers
   workflow_dispatch:
     inputs:
       pulls:
-        description: "Pull Request Numbers (comma-separated list of ranges)."
-        required: true
+        description: "Pull Request Numbers (comma-separated list of ranges). Leave empty to process all open pull requests that need labels."
+        required: false
       cache_key:
         description: "The cache key suffix to use for restoring the model. Defaults to 'ACTIVE'."
         required: true
@@ -37,16 +42,53 @@ on:
 
 env:
   DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
-  # Do not allow failure for jobs triggered automatically (this can block PR merge)
-  ALLOW_FAILURE: ${{ github.event_name == 'workflow_dispatch' }}
+  # Suppress failures on PR events to avoid blocking merges. Scheduled runs must fail so the poll cursor doesn't advance past missed PRs.
+  ALLOW_FAILURE: ${{ github.event_name == 'pull_request_target' }}
 
   LABEL_PREFIX: "Area-"
   THRESHOLD: 0.40
 
 jobs:
-  predict-pull-label:
+  poll-pull-requests:
+    # Poll on schedule, or on manual dispatch without pull request numbers
     # Do not automatically run the workflow on forks outside the 'dotnet' org
-    if: ${{ github.event_name == 'workflow_dispatch' || github.repository_owner == 'dotnet' }}
+    if: ${{ (github.event_name == 'schedule' && github.repository_owner == 'dotnet') || (github.event_name == 'workflow_dispatch' && github.event.inputs.pulls == '') }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pull-requests: read
+    outputs:
+      pulls: ${{ steps.get-pulls.outputs.pulls }}
+    steps:
+      - name: "Get open pull requests needing labels"
+        id: get-pulls
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          WORKFLOW: ${{ github.workflow }}
+        run: |
+          # Scheduled runs only look at pull requests updated since the last successful scheduled run started (with 5 minutes of overlap)
+          # Manual runs and the first scheduled run look at all open pull requests
+          search=""
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            last_run=$(gh run list --workflow "$WORKFLOW" --event schedule --status success --limit 1 --json createdAt --jq '.[0].createdAt // empty')
+            if [ -n "$last_run" ]; then
+              search="updated:>=$(date -u -d "$last_run - 5 minutes" +"%Y-%m-%dT%H:%M:%SZ")"
+            fi
+          fi
+
+          echo "Searching open pull requests: ${search:-all}"
+          pulls=$(gh pr list --state open --limit 1000 --search "$search" --json number,labels \
+            --jq '[.[] | select(.labels | map(.name) | any(startswith(env.LABEL_PREFIX)) | not) | .number] | join(",")')
+
+          echo "Pull requests needing labels: $pulls"
+          echo "pulls=$pulls" >> "$GITHUB_OUTPUT"
+
+  predict-pull-label:
+    needs: poll-pull-requests
+    # Run even when polling is skipped, but only when there are pull requests to label
+    # Do not automatically run the workflow on forks outside the 'dotnet' org
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || github.repository_owner == 'dotnet') && (github.event.inputs.pulls || needs.poll-pull-requests.outputs.pulls || github.event.number) }}
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -56,17 +98,18 @@ jobs:
         uses: dotnet/issue-labeler/restore@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
         with:
           type: pulls
-          fail-on-cache-miss: ${{ env.ALLOW_FAILURE }}
-          quiet: true
+          fail-on-cache-miss: ${{ !fromJSON(env.ALLOW_FAILURE) }}
+          # v2.0.0 only enforces fail-on-cache-miss when quiet is false.
+          quiet: ${{ fromJSON(env.ALLOW_FAILURE) }}
 
       - name: "Predict pull labels"
         id: prediction
         if: ${{ steps.restore-model.outputs.cache-hit == 'true' }}
         uses: dotnet/issue-labeler/predict@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
         with:
-          pulls: ${{ inputs.pulls || github.event.number }}
+          pulls: ${{ github.event.inputs.pulls || needs.poll-pull-requests.outputs.pulls || github.event.number }}
           label_prefix: ${{ env.LABEL_PREFIX }}
           threshold: ${{ env.THRESHOLD }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        continue-on-error: ${{ !env.ALLOW_FAILURE }}
+        continue-on-error: ${{ fromJSON(env.ALLOW_FAILURE) }}
