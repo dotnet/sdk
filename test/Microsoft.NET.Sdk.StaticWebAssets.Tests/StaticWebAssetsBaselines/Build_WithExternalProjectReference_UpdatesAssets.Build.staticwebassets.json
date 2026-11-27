@@ -307,6 +307,30 @@
       "OriginalItemSpec": "wwwroot\\js\\project-transitive-dep.v4.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\HotReload\\hot-reload-settings.json",
+      "SourceId": "AppWithP2PReference",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\HotReload\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet-browser-tools/hot-reload-settings.json",
+      "AssetKind": "Build",
+      "AssetMode": "Local",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\HotReload\\hot-reload-settings.json",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     }
   ],
   "Endpoints": [
@@ -1121,6 +1145,40 @@
         {
           "Name": "label",
           "Value": "js/project-transitive-dep..js"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/dotnet-browser-tools/hot-reload-settings.json",
+      "Order": "-1001",
+      "AssetFile": "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\HotReload\\hot-reload-settings.json",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-store"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
         }
       ]
     }

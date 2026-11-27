@@ -35,7 +35,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_WasmHotReloadTfm Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">$(WasmAgentTargetFrameworkV10)</_WasmHotReloadTfm>
       <_WasmHotReloadPath Condition="'$(_WasmHotReloadTfm)' != ''">$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', 'hotreload', $(_WasmHotReloadTfm)))</_WasmHotReloadPath>
-      <_WasmHotReloadIntermediatePath>$(IntermediateOutputPath)hotreload\</_WasmHotReloadIntermediatePath>
+      <_WasmHotReloadIntermediatePath>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'hotreload'))</_WasmHotReloadIntermediatePath>
     </PropertyGroup>
 
     <!-- Copy the DLL to the intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file.

@@ -487,6 +487,30 @@
       "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\staticwebassets\\_framework\\blazor.web.js.map",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\HotReload\\hot-reload-settings.json",
+      "SourceId": "ComponentApp",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\HotReload\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet-browser-tools/hot-reload-settings.json",
+      "AssetKind": "Build",
+      "AssetMode": "Local",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\${Rid}\\HotReload\\hot-reload-settings.json",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     }
   ],
   "Endpoints": [
@@ -2711,6 +2735,40 @@
         {
           "Name": "label",
           "Value": "_framework/blazor.web.js.map"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/dotnet-browser-tools/hot-reload-settings.json",
+      "Order": "-1001",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\HotReload\\hot-reload-settings.json",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-store"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
         }
       ]
     }

@@ -38,15 +38,16 @@ Reload).
 - **The browser-tools provider owns the browser protocol and replay
   state.** Its fixed `/_framework/dotnet-browser-tools` endpoints live under
   [`HotReloadClient/Web`](HotReloadClient/Web) and are reduced to `connect` (WebSocket)
-  `clear-cache`, and the non-executable `hot-reload-settings.json`; the provider serves no
+  and `clear-cache`; the provider serves no settings response or
   JavaScript, no session descriptor, no protocol version, and no HTTP replay. Most
   application hosts reach it through the
   shared-framework-only [`BrowserToolsForwarder`](Web.Middleware/BrowserToolsForwarder.cs)
   installed by the hosting-startup path. Standalone Blazor WebAssembly is the exception:
   it is served by the Blazor Gateway, a separate YARP host that does not activate ASP.NET
   Core hosting startups, so
-  [`BlazorWebAssemblyAppModel`](Watch/AppModels/BlazorWebAssemblyAppModel.cs) configures a
-  gateway reverse-proxy route through `ReverseProxy__*` environment variables instead. Keep
+  [`BrowserRefreshServer`](HotReloadClient/Web/BrowserRefreshServer.cs) configures
+  gateway reverse-proxy routes for only `/connect` and `/clear-cache` through `ReverseProxy__*`
+  environment variables instead. Never proxy settings to the provider. Keep
   destinations fixed to the trusted loopback provider address, the route root-relative, and
   the encrypted shared-secret WebSocket subprotocol intact. Do not add YARP to arbitrary
   applications.
@@ -64,14 +65,33 @@ Reload).
   that connection's credential, so a provider can never supply the key that authenticates
   it. The existing `EnableHotReloadInRuntimeConfigDevFile` SDK property controls whether
   the build generates the browser-tools assets and defaults to `true` for Debug builds.
-  When present, the initializer fetches the provider-owned
-  `/_framework/dotnet-browser-tools/hot-reload-settings.json` route and starts the client
-  only for `{ "hotReload": true }`; the response is non-executable, contains no key
-  material, and is served with `Cache-Control: no-store`. The ASP.NET Core disabled
-  fallback for non-watch launches is supplied by the runtime/host, not by the SDK or
-  `dotnet watch`. Watch never activates the client by mutating an application file. Hosted
+  When present, the initializer fetches the build-owned
+  `/_framework/dotnet-browser-tools/hot-reload-settings.json` static web asset and starts
+  the client only for `{ "hotReload": true }`. A normal build writes `false` under
+  `obj/<configuration>/<tfm>/HotReload/`; after the build and before launching the app,
+  watch changes it to `true` only if the bytes differ. Watch also restores `true` after a
+  successful in-process rebuild that leaves the application running, and resets it to
+  `false` on graceful shutdown or when launch fails to produce a tracked process, so
+  a subsequent run without building does not activate a missing provider. Watch does
+  not treat changes to this generated file as application edits. The response is non-executable,
+  contains no key material, is uncompressed, and requests `Cache-Control: no-store`.
+  A build-owned marker written after the disabled settings is paired with the
+  settings file in the fast up-to-date check: a watch write makes the settings
+  newer than the marker so an ordinary Visual Studio build runs and resets it.
+  The initializer's `fetch` uses both `cache: 'no-store'` and a fresh random
+  `If-None-Match` validator on every request.
+  It takes precedence over ASP.NET Core's older disabled fallback; removing that fallback
+  belongs to dotnet/aspnetcore, not this repository. Hosted
   WebAssembly uses the client as the browser-tools project even though the server remains
   the launching project.
+  [`BrowserToolsSettings`](HotReloadClient/Web/BrowserToolsSettings.cs) provides
+  write-if-different enable/disable operations in the Hot Reload client source imported
+  by Watch and Visual Studio. Watch selects eligible projects through
+  [`BrowserToolsSettingsExtensions`](Watch/Browser/BrowserToolsSettingsExtensions.cs)
+  and calls the helper at launch/rebuild and shutdown. Visual Studio must call the
+  helper at its own Hot Reload session boundaries to activate browser tools; simply
+  importing the source does not change its session lifecycle. The shared key reader
+  does not own mutable settings.
   Watch reads the evaluated `HotReloadBrowserToolsEnabled` property to discover whether
   that project produces browser keys; it does not reconstruct the build's enablement
   condition from individual properties.

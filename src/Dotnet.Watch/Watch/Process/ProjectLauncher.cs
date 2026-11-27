@@ -51,7 +51,6 @@ internal sealed class ProjectLauncher(
         var appModel = HotReloadAppModel.InferFromProject(context, projectNode);
 
         var clients = await appModel.CreateClientsAsync(clientLogger, agentLogger, cancellationToken);
-
         var processSpec = new ProcessSpec
         {
             Executable = EnvironmentOptions.GetMuxerPath(),
@@ -81,14 +80,29 @@ internal sealed class ProjectLauncher(
 
         processSpec.RedirectOutput(outputObserver, context.ProcessOutputReporter, context.EnvironmentOptions, projectDisplayName);
 
-        return await runningProjectsManager.TrackRunningProjectAsync(
-            projectNode,
-            projectOptions,
-            clients,
-            clientLogger,
-            processSpec,
-            restartOperation,
-            cancellationToken);
+        var browserToolsApp = clients.BrowserRefreshServer != null ? appModel as WebApplicationAppModel : null;
+        browserToolsApp?.EnableBrowserToolsSettings(clientLogger);
+
+        RunningProject? runningProject = null;
+        try
+        {
+            runningProject = await runningProjectsManager.TrackRunningProjectAsync(
+                projectNode,
+                projectOptions,
+                clients,
+                clientLogger,
+                processSpec,
+                restartOperation,
+                cancellationToken);
+            return runningProject;
+        }
+        finally
+        {
+            if (runningProject == null)
+            {
+                browserToolsApp?.DisableBrowserToolsSettings(clientLogger);
+            }
+        }
     }
 
     private static IReadOnlyList<string> GetProcessArguments(ProjectOptions projectOptions, IDictionary<string, string> environmentBuilder)

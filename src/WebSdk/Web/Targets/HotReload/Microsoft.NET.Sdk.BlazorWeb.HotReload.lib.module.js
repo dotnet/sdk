@@ -1,7 +1,7 @@
 // Activates the browser tools client in Blazor apps that render on the server (static SSR or
 // Interactive Server), which the browser refresh TagHelper does not reach.
 //
-// The provider reports its availability over a stable application route. The configuration module
+// The application serves build-owned settings at a stable route. The configuration module
 // is app hosted, so resolving it relative to import.meta.url keeps it correct under any static web
 // asset base path or fingerprinting scheme.
 
@@ -25,7 +25,11 @@ async function isHotReloadEnabled() {
     const timeout = setTimeout(() => controller.abort(), settingsRequestTimeoutMilliseconds);
 
     try {
-        const response = await fetch(settingsPath, { cache: 'no-store', signal: controller.signal });
+        const response = await fetch(settingsPath, {
+            cache: 'no-store',
+            headers: { 'If-None-Match': `"browser-tools-${crypto.randomUUID()}"` },
+            signal: controller.signal
+        });
         if (!response.ok) {
             return false;
         }

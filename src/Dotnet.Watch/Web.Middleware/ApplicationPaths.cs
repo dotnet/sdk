@@ -18,15 +18,12 @@ internal static class ApplicationPaths
     public static PathString BrowserTools { get; } = FrameworkRoot + "/dotnet-browser-tools";
 
     /// <summary>
-    /// The provider exposes the WebSocket endpoint, cache clearing endpoint, and a non-executable
-    /// settings response that reports its availability. Everything executable lives in the
-    /// application's own build output.
+    /// The provider exposes the WebSocket and cache clearing endpoints. The settings response
+    /// and everything executable live in the application's own build output.
     /// </summary>
     public static PathString BrowserToolsConnect { get; } = BrowserTools + "/connect";
 
     public static PathString BrowserToolsClearCache { get; } = BrowserTools + "/clear-cache";
-
-    public static PathString BrowserToolsHotReloadSettings { get; } = BrowserTools + "/hot-reload-settings.json";
 
     /// <summary>
     /// Legacy replay endpoint probed by the .NET 9 WebAssembly runtime.

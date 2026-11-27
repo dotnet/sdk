@@ -103,6 +103,23 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
+        public void Build_HotReloadAgentCopySourceHasAbsoluteIdentity()
+        {
+            ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal");
+            var command = new MSBuildCommand(ProjectDirectory, "_WasmImplicitlyReferenceHotReload");
+            var result = ExecuteCommandWithoutRestore(command, "-getItem:ReferenceCopyLocalPaths");
+            result.Should().Pass();
+
+            using var output = JsonDocument.Parse(result.StdOut);
+            var items = output.RootElement.GetProperty("Items").GetProperty("ReferenceCopyLocalPaths");
+            var agent = items.EnumerateArray().Single(item =>
+                item.GetProperty("Filename").GetString() == "Microsoft.DotNet.HotReload.WebAssembly.Browser");
+            var identity = agent.GetProperty("Identity").GetString();
+            identity.Should().Be(agent.GetProperty("FullPath").GetString());
+            File.Exists(identity).Should().BeTrue();
+        }
+
+        [TestMethod]
         public void Build_DoesNotAddHotReloadInitializer_WhenBrowserToolsAreDisabled()
         {
             ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal");

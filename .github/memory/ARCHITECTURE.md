@@ -95,12 +95,31 @@ none of them. Apps that disable `StaticWebAssetsEnabled`, `JSModulesEnabled` or
 property defaults to `true` for Debug builds and is the only build-time generation gate;
 `dotnet watch` does not inject a browser-tools-specific MSBuild property. When generated,
 the initializer first fetches
-`/_framework/dotnet-browser-tools/hot-reload-settings.json` with `Cache-Control: no-store`
-semantics and imports the configuration module only when the response contains
-`{ "hotReload": true }`. The watch provider owns that enabled response; the ASP.NET Core
-runtime/host owns the disabled fallback for non-watch launches. The SDK and `dotnet watch`
-do not emit that fallback. Watch does not activate the client by mutating an application
-file.
+`/_framework/dotnet-browser-tools/hot-reload-settings.json` from the application with
+`fetch`'s `cache: 'no-store'` option and a fresh UUID-based, non-matching
+`If-None-Match` validator on each settings request; it imports the configuration module
+only when the response contains `{ "hotReload": true }`. The build writes `{ "hotReload": false }` into
+the intermediate output; watch updates that same file to `true` after compilation and
+before each app launch or after an in-process watch rebuild, only if the bytes change.
+Graceful watch shutdown resets the file to `false`, including for a later
+`dotnet run --no-build`; a normal build likewise writes `false`.
+Neither mode modifies user source.
+The [shared Hot Reload client settings helper](../../src/Dotnet.Watch/HotReloadClient/Web/BrowserToolsSettings.cs)
+derives the path from the browser-facing project's evaluated intermediate output and
+provides write-if-different enable/disable operations to both Watch and hosts importing
+the client source. Watch calls it through its
+[project eligibility adapter](../../src/Dotnet.Watch/Watch/Browser/BrowserToolsSettingsExtensions.cs);
+Visual Studio still needs to call it at Hot Reload session start/stop.
+The [build target](../../src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets)
+touches a non-asset completion marker after writing disabled settings; on design-time
+evaluation, it pairs that marker as `UpToDateCheckBuilt` with the settings file in
+`Original`. Under the [Visual Studio fast up-to-date check](https://github.com/dotnet/project-system/blob/main/docs/up-to-date-check.md#transformed-files),
+a newer watch-updated settings file schedules an ordinary build, while a build
+restores the marker's newer timestamp without rewriting unchanged settings. The
+design-time pair stays visible if either file is missing, so a build can recreate it.
+The settings endpoint emits `Cache-Control: no-store` metadata and has order `-1001`
+to precede ASP.NET Core's disabled fallback; removing fallback endpoints in Gateway/Razor
+Components requires a separate dotnet/aspnetcore change.
 
 For hosted WebAssembly applications, the browser-facing client project owns the key,
 initializer and configuration assets. The launching server consumes those referenced
@@ -140,14 +159,14 @@ installs through the hosting-startup path. The forwarder relays the provider's p
 HTTP error status for a rejected WebSocket handshake and reports 502 for everything else,
 including a provider that never answered. Standalone WebAssembly projects need both paths:
 [`BlazorWebAssemblyAppModel`](../../src/Dotnet.Watch/Watch/AppModels/BlazorWebAssemblyAppModel.cs)
-adds a gateway reverse-proxy route to the provider through `ReverseProxy__*`
+adds gateway reverse-proxy routes only for `/connect` and `/clear-cache` through `ReverseProxy__*`
 environment variables, because the Blazor Gateway is a separate YARP host that does not
 activate ASP.NET Core hosting startups, and keeps the inherited hosting-startup
 configuration because older target frameworks are served by `blazor-devserver`, an ordinary
 ASP.NET Core host.
 
-The provider serves no JavaScript. Its HTTP surface is the `/connect` WebSocket,
-`/clear-cache`, and the non-executable `/hot-reload-settings.json` availability response;
+The provider serves no JavaScript or activation settings. Its HTTP surface is the
+`/connect` WebSocket and `/clear-cache`;
 see
 [`BrowserRefreshServer.HandleRequestAsync`](../../src/Dotnet.Watch/HotReloadClient/Web/BrowserRefreshServer.cs).
 There is no session descriptor, protocol version negotiation, HTTP replay endpoint, or wire

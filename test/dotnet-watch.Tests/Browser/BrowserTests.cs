@@ -3,12 +3,30 @@
 
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 [TestClass]
 public class BrowserTests : DotNetWatchTestBase
 {
+    [TestMethod]
+    public async Task GracefulShutdownDisablesBrowserToolsSettings()
+    {
+        var testAsset = CopyTestAsset("WatchRazorWithDeps");
+        var settingsPath = Path.Combine(
+            testAsset.Path, "RazorApp", "obj", "Debug", ToolsetInfo.CurrentTargetFramework,
+            SharedSecretBuildOutputs.DirectoryName, BrowserToolsSettings.FileName);
+
+        App.Start(testAsset, [], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        Assert.AreEqual("{ \"hotReload\": true }" + Environment.NewLine, File.ReadAllText(settingsPath));
+
+        App.SendControlC();
+        await App.Process.WaitUntilOutputCompleted();
+        Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(settingsPath));
+    }
+
     [TestMethod]
     public async Task LaunchesBrowserOnStart()
     {

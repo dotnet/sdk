@@ -38,6 +38,12 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     /// </summary>
     public virtual ProjectGraphNode BrowserToolsProject => LaunchingProject;
 
+    internal void EnableBrowserToolsSettings(ILogger logger)
+        => BrowserToolsSettingsExtensions.FromProject(BrowserToolsProject.ProjectInstance, logger)?.Enable();
+
+    internal void DisableBrowserToolsSettings(ILogger logger)
+        => BrowserToolsSettingsExtensions.FromProject(BrowserToolsProject.ProjectInstance, logger)?.Disable();
+
     protected abstract ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer);
 
     public async sealed override ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)

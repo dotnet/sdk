@@ -185,9 +185,12 @@ public class BrowserRefreshServerTests
             expected.AddRange(
             [
                 "ReverseProxy__Clusters__dotnet-browser-tools__Destinations__provider__Address=http://test.endpoint/",
-                "ReverseProxy__Routes__dotnet-browser-tools__ClusterId=dotnet-browser-tools",
-                "ReverseProxy__Routes__dotnet-browser-tools__Match__Path=/_framework/dotnet-browser-tools/{**catch-all}",
-                "ReverseProxy__Routes__dotnet-browser-tools__Order=-1000",
+                "ReverseProxy__Routes__dotnet-browser-tools-clear-cache__ClusterId=dotnet-browser-tools",
+                "ReverseProxy__Routes__dotnet-browser-tools-clear-cache__Match__Path=/_framework/dotnet-browser-tools/clear-cache",
+                "ReverseProxy__Routes__dotnet-browser-tools-clear-cache__Order=-1000",
+                "ReverseProxy__Routes__dotnet-browser-tools-connect__ClusterId=dotnet-browser-tools",
+                "ReverseProxy__Routes__dotnet-browser-tools-connect__Match__Path=/_framework/dotnet-browser-tools/connect",
+                "ReverseProxy__Routes__dotnet-browser-tools-connect__Order=-1000",
             ]);
         }
 
