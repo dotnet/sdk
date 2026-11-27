@@ -1116,7 +1116,7 @@ namespace Microsoft.NET.Build.Tasks
                         return false;
                     }
 
-                    int compilerNameStart = file.IndexOf(_compilerNameSearchString);
+                    int compilerNameStart = file.IndexOf(_compilerNameSearchString, StringComparison.Ordinal);
                     if (compilerNameStart == -1)
                     {
                         return false;
