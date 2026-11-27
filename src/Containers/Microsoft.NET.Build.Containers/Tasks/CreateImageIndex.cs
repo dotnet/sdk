@@ -72,6 +72,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         var multiArchImage = CreateMultiArchImage(images, destinationImageReference.Kind);
 
         GeneratedImageIndex = multiArchImage.ImageIndex;
+        GeneratedImageIndexDigest = DigestUtils.ComputeSha256Digest(multiArchImage.ImageIndex);
         GeneratedArchiveOutputPath = ArchiveOutputPath;
 
         logger.LogInformation(Strings.BuildingImageIndex, destinationImageReference, string.Join(", ", images.Select(i => i.ManifestDigest)));

@@ -375,6 +375,7 @@
                       BaseImageTag="$(ContainerBaseTag)"
                       BaseImageDigest="$(ContainerBaseDigest)">
       <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
+      <Output TaskParameter="GeneratedImageIndexDigest" PropertyName="GeneratedImageIndexDigest" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
     </CreateImageIndex>
   </Target>
