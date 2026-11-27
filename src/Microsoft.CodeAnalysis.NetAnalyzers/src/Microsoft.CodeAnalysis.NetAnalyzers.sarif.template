@@ -3625,6 +3625,25 @@
             ]
           }
         },
+        "CA1882": {
+          "id": "CA1882",
+          "shortDescription": "Avoid value types that do not implement IEquatable<T> in records",
+          "fullDescription": "The equality members that the compiler generates for a record compare each instance field by using 'EqualityComparer<T>.Default'. For a value type that does not implement 'IEquatable<T>', that comparer falls back to 'Object.Equals(Object)', which boxes the value on every comparison. Implement 'IEquatable<T>' on the value type, or declare 'Equals' on the record yourself.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1882",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidNonEquatableValueTypesInRecordsAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
