@@ -88,9 +88,21 @@ Before suggesting a fix, search the codebase for how similar problems have been 
 1. **Search for analogous conditions**: If the fix is to add a condition like `Condition="'$(PublishAot)' != 'true'"`, search the targets for existing uses of that pattern to confirm it's an established convention.
 2. **Search git history**: Use `git log --all --oneline -S "SearchTerm" -- "**/*.targets"` to find commits that modified related targets.
 3. **Search for related issues/PRs**: Use `gh search issues` or `gh search prs` in the relevant repo to find prior discussions.
-4. **Check official documentation**: Use the `microsoft_docs_search` and `microsoft_docs_fetch` tools to find relevant documentation about the feature area (e.g., NativeAOT publishing, single-file deployment, satellite assembly handling).
+4. **Check official documentation**: Use the `microsoft_docs_search` and `microsoft_docs_fetch` tools to find relevant documentation about the feature area (e.g., NativeAOT publishing, single-file deployment, satellite assembly handling). Note whether the docs describe the observed behavior, omit it, or contradict it; this decides the outcome in Step 6.
 
 ## Step 6: Write the root cause analysis
+
+First classify the outcome:
+
+- **SDK bug** — the behavior is unintended. Use the full template below.
+- **By design, but undocumented or misdocumented** — the SDK behaves as intended, but the
+  official docs omit, contradict, or obscure the behavior the user hit. Do not suggest an
+  SDK code fix. Replace **Suggested fix** with **Documentation gap**: explain the intended
+  behavior and any workaround in user-facing terms, link the doc page that is missing or
+  wrong, and recommend a [dotnet/docs](https://github.com/dotnet/docs) issue (or the
+  `consider-for-documentation` label on the SDK issue). Recommend; do not file issues or
+  apply labels unless asked.
+- **Both** — the behavior is a bug and the docs are also wrong; include both sections.
 
 Produce a markdown document with the following structure:
 
@@ -137,6 +149,7 @@ Before presenting the analysis, verify:
 - [ ] You have identified the specific target/item group/condition that is missing or incorrect.
 - [ ] All GitHub links point to the correct files and line ranges.
 - [ ] The suggested fix follows existing patterns in the codebase.
+- [ ] If the behavior is by design, the analysis names the documentation gap and recommends a dotnet/docs issue instead of a code fix.
 - [ ] The analysis is written in GitHub-flavored markdown suitable for posting as an issue comment.
 
 ## Tips
