@@ -1,11 +1,54 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.HotReload;
+
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 [TestClass]
 public class RuntimeProcessLauncherTests : DotNetWatchTestBase
 {
+    [TestMethod]
+    public async Task FailedLaunchDisablesBrowserToolsSettings()
+    {
+        var testAsset = CopyTestAsset("WatchRazorWithDeps");
+        var projectDirectory = Path.Combine(testAsset.Path, "RazorApp");
+        var project = Directory.GetFiles(projectDirectory, "*.csproj").Single();
+        var settings = Path.Combine(projectDirectory, "obj", "Debug", ToolsetInfo.CurrentTargetFramework,
+            SharedSecretBuildOutputs.DirectoryName, BrowserToolsSettings.FileName);
+        await using var watcher = CreateInProcWatcher(testAsset, ["--non-interactive", "--project", project], projectDirectory);
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        watcher.Observer.RegisterAction(MessageDescriptor.RuntimeProcessLauncherCreatedNotification, () =>
+        {
+            try
+            {
+                var options = new ProjectOptions
+                {
+                    IsMainProject = true,
+                    Representation = new ProjectRepresentation(project, entryPointFilePath: null),
+                    WorkingDirectory = Path.Combine(projectDirectory, "does-not-exist"),
+                    LaunchProfileName = default,
+                    Command = "run",
+                    CommandArguments = ["--project", project],
+                    LaunchEnvironmentVariables = [],
+                };
+                var result = watcher.Service!.ProjectLauncher.TryLaunchProcessAsync(
+                    options, onOutput: null, onExit: null, restartOperation: _ => ValueTask.CompletedTask, watcher.ShutdownSource.Token)
+                    .AsTask().GetAwaiter().GetResult();
+                Assert.IsNull(result);
+                Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(settings));
+                completed.SetResult();
+            }
+            catch (Exception e)
+            {
+                completed.SetException(e);
+            }
+        });
+
+        watcher.Start();
+        await completed.Task.WaitAsync(watcher.ShutdownSource.Token);
+    }
+
     public enum TriggerEvent
     {
         RuntimeProcessLauncherCreated,

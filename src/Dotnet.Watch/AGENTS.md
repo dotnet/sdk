@@ -71,8 +71,9 @@ Reload).
   `obj/<configuration>/<tfm>/HotReload/`; after the build and before launching the app,
   watch changes it to `true` only if the bytes differ. Watch also restores `true` after a
   successful in-process rebuild that leaves the application running, and resets it to
-  `false` on graceful shutdown so a subsequent run without building does not activate
-  a missing provider. The response is non-executable,
+  `false` on graceful shutdown or when launch fails to produce a tracked process, so
+  a subsequent run without building does not activate a missing provider. Watch does
+  not treat changes to this generated file as application edits. The response is non-executable,
   contains no key material, is uncompressed, and requests `Cache-Control: no-store`.
   A build-owned marker written after the disabled settings is paired with the
   settings file in the fast up-to-date check: a watch write makes the settings
