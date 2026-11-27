@@ -52,11 +52,19 @@ namespace Microsoft.DotNet.GenAPI
             return true;
         }
 
-        // Examines the a method to determine if it could be an implicit default constructor that can be removed from source and implicitly provided by the compiler.
-        public static bool IsImplicitDefaultConstructor(this IMethodSymbol method, ISymbolFilter symbolFilter)
+        // Determines whether the declaration can be omitted in favor of a compiler-provided default constructor.
+        public static bool CanBeReplacedByImplicitDefaultConstructor(this IMethodSymbol method, ISymbolFilter symbolFilter)
         {
             // ensure this is a parameterless constructor
             if (method.MethodKind != MethodKind.Constructor || !method.Parameters.IsEmpty)
+            {
+                return false;
+            }
+
+            // An implicit replacement would lose the Version2 unsafe calling requirement.
+#pragma warning disable RSEXPERIMENTAL006
+            if (method.RequiresUnsafeContext)
+#pragma warning restore RSEXPERIMENTAL006
             {
                 return false;
             }
@@ -80,10 +88,23 @@ namespace Microsoft.DotNet.GenAPI
             INamedTypeSymbol? baseType = method.ContainingType.BaseType;
             if (baseType != null)
             {
-                return baseType.InstanceConstructors.Any(c => symbolFilter.Include(c) && c.Parameters.IsEmpty);
+                return method.GetBaseConstructorCandidates(symbolFilter).Any(c => c.Parameters.IsEmpty);
             }
 
             return true;
+        }
+
+        public static IEnumerable<IMethodSymbol> GetBaseConstructorCandidates(this IMethodSymbol method, ISymbolFilter symbolFilter)
+        {
+            IEnumerable<IMethodSymbol> constructors = method.ContainingType.BaseType?.InstanceConstructors.Where(symbolFilter.Include) ?? [];
+#pragma warning disable RSEXPERIMENTAL006
+            if (method.ContainingModule.MemorySafetyRulesVersion == MemorySafetyRulesVersion.Version2 && !method.RequiresUnsafeContext)
+            {
+                // Filter out constructors that require an unsafe context if the current method does not require one.
+                constructors = constructors.Where(c => !c.RequiresUnsafeContext);
+            }
+#pragma warning restore RSEXPERIMENTAL006
+            return constructors;
         }
     }
 }

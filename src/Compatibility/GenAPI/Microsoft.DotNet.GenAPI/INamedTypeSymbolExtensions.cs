@@ -213,11 +213,39 @@ namespace Microsoft.DotNet.GenAPI
                 default,
                 SyntaxFactory.Block());
 
-            // find base constructor to call if it's not implicit.
-            IEnumerable<IMethodSymbol> baseConstructors = namedType.BaseType?.Constructors.Where(symbolFilter.Include) ?? Enumerable.Empty<IMethodSymbol>();
-            if (baseConstructors.Any() && baseConstructors.All(c => !c.Parameters.IsEmpty))
+#pragma warning disable RSEXPERIMENTAL006
+            if (namedType.ContainingModule.MemorySafetyRulesVersion == MemorySafetyRulesVersion.Version2)
             {
-                constructor = constructor.WithInitializer(baseConstructors.First().GenerateBaseConstructorInitializer());
+                // This non-public stub has no public constructor contract to preserve. Prefer a safe
+                // base call; otherwise, unsafe on the constructor permits its base initializer.
+                IMethodSymbol? baseConstructor = namedType.BaseType?.InstanceConstructors
+                    .Where(symbolFilter.Include)
+                    .OrderBy(c => c.RequiresUnsafeContext)
+                    .ThenBy(c => c.Parameters.Length)
+                    .FirstOrDefault();
+
+                if (baseConstructor != null)
+                {
+                    if (baseConstructor.RequiresUnsafeContext)
+                    {
+                        constructor = constructor.AddModifiers(SyntaxFactory.Token(SyntaxKind.UnsafeKeyword));
+                    }
+
+                    if (!baseConstructor.Parameters.IsEmpty)
+                    {
+                        constructor = constructor.WithInitializer(baseConstructor.GenerateBaseConstructorInitializer());
+                    }
+                }
+            }
+#pragma warning restore RSEXPERIMENTAL006
+            else
+            {
+                // find base constructor to call if it's not implicit.
+                IEnumerable<IMethodSymbol> baseConstructors = namedType.BaseType?.Constructors.Where(symbolFilter.Include) ?? Enumerable.Empty<IMethodSymbol>();
+                if (baseConstructors.Any() && baseConstructors.All(c => !c.Parameters.IsEmpty))
+                {
+                    constructor = constructor.WithInitializer(baseConstructors.First().GenerateBaseConstructorInitializer());
+                }
             }
 
             yield return constructor;
