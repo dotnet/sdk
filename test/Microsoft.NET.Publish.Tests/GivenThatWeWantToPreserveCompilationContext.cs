@@ -11,8 +11,7 @@ namespace Microsoft.NET.Publish.Tests
     public class GivenThatWeWantToPreserveCompilationContext : SdkTest
     {
         [TestMethod]
-        // Skip = "https://github.com/dotnet/sdk/issues/53796"
-        //[DataRow("net46", "netstandard1.3", false)]
+        [DataRow("net46", "netstandard1.3", false)]
         [DataRow("netcoreapp2.0", "netstandard2.0", false)]
         [DataRow("netcoreapp2.0", "netstandard2.0", true)]
         [DataRow("netcoreapp3.0", "netstandard2.0", false)]
