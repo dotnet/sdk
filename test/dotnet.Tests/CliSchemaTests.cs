@@ -196,6 +196,23 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
+    "--logger": {
+      "hidden": true,
+      "aliases": [
+        "--l",
+        "-l",
+        "-logger",
+        "/l",
+        "/logger"
+      ],
+      "valueType": "System.Collections.Generic.IEnumerable<System.String>",
+      "hasDefaultValue": false,
+      "arity": {
+        "minimum": 1
+      },
+      "required": false,
+      "recursive": false
+    },
     "--no-logo": {
       "description": "Do not display the startup banner or the copyright message.",
       "hidden": false,
@@ -953,6 +970,23 @@ public class CliSchemaTests : SdkTest
       "arity": {
         "minimum": 0,
         "maximum": 1
+      },
+      "required": false,
+      "recursive": false
+    },
+    "--logger": {
+      "hidden": true,
+      "aliases": [
+        "--l",
+        "-l",
+        "-logger",
+        "/l",
+        "/logger"
+      ],
+      "valueType": "System.Collections.Generic.IEnumerable<System.String>",
+      "hasDefaultValue": false,
+      "arity": {
+        "minimum": 1
       },
       "required": false,
       "recursive": false
