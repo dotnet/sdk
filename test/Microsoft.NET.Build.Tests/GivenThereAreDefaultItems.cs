@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Runtime.CompilerServices;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
@@ -910,6 +911,238 @@ public class Class1
             RemoveGeneratedCompileItems(compileItems);
 
             compileItems.Should().BeEquivalentTo(new[] { Path.Combine("Code", "Class1.cs"), "Helper.cs" });
+        }
+
+        //  Simulates a NuGet-delivered framework such as WinUI, which defines its own default XAML items in a .props file
+        //  (imported before Microsoft.NET.Sdk.DefaultItems.props) and keeps those files out of the implicit None items.
+        private const string WinUIStyleFrameworkProps = """
+            <Project>
+              <PropertyGroup>
+                <DefaultNoneItemExcludes>$(DefaultNoneItemExcludes);**/*.xaml</DefaultNoneItemExcludes>
+              </PropertyGroup>
+              <ItemGroup Condition="'$(EnableDefaultItems)' == 'true'">
+                <Page Include="**/*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+              </ItemGroup>
+            </Project>
+            """;
+
+        //  Simulates a NuGet-delivered framework such as .NET MAUI, which defines its own default items in a .props file (so that
+        //  the project file can still update or remove them) ...
+        private const string MauiStyleFrameworkProps = """
+            <Project>
+              <ItemGroup Condition="'$(EnableDefaultItems)' == 'true'">
+                <MauiXaml Include="**/*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition="'$(EnableDefaultXamlItems)' != 'false'" />
+                <MauiCss Include="**/*.css" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition="'$(EnableDefaultCssItems)' != 'false'" />
+              </ItemGroup>
+            </Project>
+            """;
+
+        //  ... and registers its None exclusions from a .targets file so that they are conditioned on the final values of its own
+        //  default-item opt-out properties. NuGet package .targets files are imported before EnableDefaultItems gets its default
+        //  value, so the exclusions are not conditioned on it: the SDK only applies DefaultNoneItemExcludes when default None
+        //  items are enabled.
+        private const string MauiStyleFrameworkTargets = """
+            <Project>
+              <PropertyGroup Condition="'$(EnableDefaultXamlItems)' != 'false'">
+                <DefaultNoneItemExcludes>$(DefaultNoneItemExcludes);**/*.xaml</DefaultNoneItemExcludes>
+              </PropertyGroup>
+              <PropertyGroup Condition="'$(EnableDefaultCssItems)' != 'false'">
+                <DefaultNoneItemExcludes>$(DefaultNoneItemExcludes);**/*.css</DefaultNoneItemExcludes>
+              </PropertyGroup>
+            </Project>
+            """;
+
+        private (TestAsset testAsset, string projectFolder, TestProject testProject) CreateProjectWithDefaultNoneItemExcludes(
+            string directoryBuildProps,
+            string directoryBuildTargets,
+            Action<XDocument> projectChanges = null,
+            Dictionary<string, string> additionalProperties = null,
+            [CallerMemberName] string callingMethod = "",
+            string identifier = "")
+        {
+            var testProject = new TestProject()
+            {
+                Name = "DefaultNoneItemExcludes",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+
+            if (additionalProperties != null)
+            {
+                foreach (var property in additionalProperties)
+                {
+                    testProject.AdditionalProperties[property.Key] = property.Value;
+                }
+            }
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
+            if (projectChanges != null)
+            {
+                testAsset = testAsset.WithProjectChanges(projectChanges);
+            }
+
+            //  Write the simulated framework imports outside of the project folder so they aren't picked up by default globs.
+            if (directoryBuildProps != null)
+            {
+                File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.props"), directoryBuildProps);
+            }
+
+            if (directoryBuildTargets != null)
+            {
+                File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.targets"), directoryBuildTargets);
+            }
+
+            var projectFolder = Path.Combine(testAsset.TestRoot, testProject.Name);
+            WriteFile(Path.Combine(projectFolder, "MainPage.xaml"), "<Page />");
+            WriteFile(Path.Combine(projectFolder, "Views", "DetailsPage.xaml"), "<Page />");
+            WriteFile(Path.Combine(projectFolder, "Styles", "App.css"), "Label { color: red; }");
+            WriteFile(Path.Combine(projectFolder, "readme.txt"), "readme");
+
+            return (testAsset, projectFolder, testProject);
+        }
+
+        private List<string> GetItems(string projectFolder, TestProject testProject, string itemType)
+        {
+            var command = new GetValuesCommand(Log, projectFolder, testProject.TargetFrameworks, itemType, GetValuesCommand.ValueType.Item)
+            {
+                ShouldCompile = false,
+            };
+            command.Execute().Should().Pass();
+            return command.GetValues();
+        }
+
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("false")]
+        public void It_excludes_DefaultNoneItemExcludes_set_in_props_from_default_None_items_only(string enableDefaultNoneItems)
+        {
+            var additionalProperties = new Dictionary<string, string>();
+            if (enableDefaultNoneItems != null)
+            {
+                additionalProperties["EnableDefaultNoneItems"] = enableDefaultNoneItems;
+            }
+
+            var (_, projectFolder, testProject) = CreateProjectWithDefaultNoneItemExcludes(
+                WinUIStyleFrameworkProps,
+                directoryBuildTargets: null,
+                additionalProperties: additionalProperties,
+                identifier: enableDefaultNoneItems ?? "default");
+
+            //  The framework's own default item type still includes the excluded files.
+            GetItems(projectFolder, testProject, "Page")
+                .Should().BeEquivalentTo(new[] { "MainPage.xaml", Path.Combine("Views", "DetailsPage.xaml") });
+
+            //  Unrelated files are still None items, unless default None items are disabled.
+            var expectedNoneItems = enableDefaultNoneItems == "false"
+                ? Array.Empty<string>()
+                : new[] { Path.Combine("Styles", "App.css"), "readme.txt" };
+            GetItems(projectFolder, testProject, "None")
+                .Should().BeEquivalentTo(expectedNoneItems);
+
+            //  Other default item types are unaffected.
+            var compileItems = GetItems(projectFolder, testProject, "Compile");
+            RemoveGeneratedCompileItems(compileItems);
+            compileItems.Should().BeEquivalentTo(new[] { testProject.Name + ".cs", testProject.Name + "Program.cs" });
+        }
+
+        [TestMethod]
+        [DataRow(null, null)]
+        [DataRow("false", null)]
+        [DataRow(null, "false")]
+        public void It_excludes_DefaultNoneItemExcludes_set_in_targets_only_when_framework_default_items_are_enabled(string enableDefaultXamlItems, string enableDefaultCssItems)
+        {
+            var additionalProperties = new Dictionary<string, string>();
+            if (enableDefaultXamlItems != null)
+            {
+                additionalProperties["EnableDefaultXamlItems"] = enableDefaultXamlItems;
+            }
+            if (enableDefaultCssItems != null)
+            {
+                additionalProperties["EnableDefaultCssItems"] = enableDefaultCssItems;
+            }
+
+            var (_, projectFolder, testProject) = CreateProjectWithDefaultNoneItemExcludes(
+                MauiStyleFrameworkProps,
+                MauiStyleFrameworkTargets,
+                additionalProperties: additionalProperties,
+                identifier: $"{enableDefaultXamlItems ?? "default"}_{enableDefaultCssItems ?? "default"}");
+
+            string[] xamlFiles = ["MainPage.xaml", Path.Combine("Views", "DetailsPage.xaml")];
+            string[] cssFiles = [Path.Combine("Styles", "App.css")];
+
+            bool xamlEnabled = enableDefaultXamlItems != "false";
+            bool cssEnabled = enableDefaultCssItems != "false";
+
+            GetItems(projectFolder, testProject, "MauiXaml").Should().BeEquivalentTo(xamlEnabled ? xamlFiles : Array.Empty<string>());
+            GetItems(projectFolder, testProject, "MauiCss").Should().BeEquivalentTo(cssEnabled ? cssFiles : Array.Empty<string>());
+
+            //  A framework that opts out of its own default items must not exclude those files from None.
+            var expectedNoneItems = new List<string> { "readme.txt" };
+            if (!xamlEnabled)
+            {
+                expectedNoneItems.AddRange(xamlFiles);
+            }
+            if (!cssEnabled)
+            {
+                expectedNoneItems.AddRange(cssFiles);
+            }
+
+            GetItems(projectFolder, testProject, "None").Should().BeEquivalentTo(expectedNoneItems);
+        }
+
+        [TestMethod]
+        public void DefaultNoneItemExcludes_from_multiple_contributors_compose()
+        {
+            //  One framework contributes from .props, another from .targets, and the project itself appends a pattern.
+            var (_, projectFolder, testProject) = CreateProjectWithDefaultNoneItemExcludes(
+                WinUIStyleFrameworkProps,
+                """
+                <Project>
+                  <PropertyGroup>
+                    <DefaultNoneItemExcludes>$(DefaultNoneItemExcludes);**/*.css</DefaultNoneItemExcludes>
+                  </PropertyGroup>
+                </Project>
+                """,
+                additionalProperties: new Dictionary<string, string>
+                {
+                    ["DefaultNoneItemExcludes"] = "$(DefaultNoneItemExcludes);**/*.md",
+                });
+
+            File.WriteAllText(Path.Combine(projectFolder, "notes.md"), "notes");
+
+            GetItems(projectFolder, testProject, "None").Should().BeEquivalentTo(new[] { "readme.txt" });
+        }
+
+        [TestMethod]
+        public void It_does_not_affect_explicit_None_items_when_using_DefaultNoneItemExcludes()
+        {
+            var (testAsset, projectFolder, testProject) = CreateProjectWithDefaultNoneItemExcludes(
+                MauiStyleFrameworkProps,
+                MauiStyleFrameworkTargets,
+                projectChanges: project =>
+                {
+                    //  Reclassify a file that a framework would otherwise compile, so it is copied as-is instead.
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Add(new XElement(ns + "ItemGroup",
+                        new XElement(ns + "MauiXaml", new XAttribute("Remove", "MainPage.xaml")),
+                        new XElement(ns + "None",
+                            new XAttribute("Include", "MainPage.xaml"),
+                            new XAttribute("CopyToOutputDirectory", "PreserveNewest")),
+                        //  None Update only updates existing items, so it does not re-add an excluded file.
+                        new XElement(ns + "None",
+                            new XAttribute("Update", @"Views\DetailsPage.xaml"),
+                            new XAttribute("CopyToOutputDirectory", "PreserveNewest"))));
+                });
+
+            GetItems(projectFolder, testProject, "MauiXaml").Should().BeEquivalentTo(new[] { Path.Combine("Views", "DetailsPage.xaml") });
+            GetItems(projectFolder, testProject, "None").Should().BeEquivalentTo(new[] { "MainPage.xaml", "readme.txt" });
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
+            outputDirectory.Should().HaveFile("MainPage.xaml");
+            new FileInfo(Path.Combine(outputDirectory.FullName, "Views", "DetailsPage.xaml")).Should().NotExist();
         }
 
         void RemoveGeneratedCompileItems(List<string> compileItems)

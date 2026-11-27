@@ -85,3 +85,18 @@ breaks localization or silently collides with another PR.
 - **`.xlf` files are generated**, never hand-edited — regenerate via `/t:UpdateXlf`.
 
 Diagnostics are covered by tests under `test/Microsoft.NET.Build.Tests/`.
+
+## Default item globs
+
+- Default `Compile`/`EmbeddedResource`/`None` globs live in
+  `targets/Microsoft.NET.Sdk.DefaultItems.props` so the project body can still
+  `Update`/`Remove` them; their default switches (`EnableDefaultItems`, etc.) and
+  `DefaultItemExcludes` are set later in `targets/Microsoft.NET.Sdk.DefaultItems.targets`.
+- Other SDKs and NuGet-delivered frameworks keep their files out of implicit `None` items
+  by appending to `$(DefaultNoneItemExcludes)` instead of adding framework-specific
+  `None Remove` rules here. Coverage is in `test/Microsoft.NET.Build.Tests/GivenThereAreDefaultItems.cs`.
+- Property conditions are evaluated in import order, and NuGet package / `Directory.Build`
+  `.targets` are imported (via `$(LanguageTargets)`) **before**
+  `Microsoft.NET.Sdk.DefaultItems.targets` defaults `EnableDefaultItems`. Item conditions
+  see final values, so a `None Remove` and a property-based exclusion are not
+  interchangeable without rechecking their conditions.

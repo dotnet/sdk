@@ -33,8 +33,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Content Include="$(__WindowsAppSdkDefaultImageIncludes)" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition=" '$(EnableDefaultContentItems)' != 'false' And '$(EnableDefaultWindowsAppSdkContentItems)' == 'true' " />
     <PRIResource Include="**/*.resw" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition=" '$(EnableDefaultPRIResourceItems)' != 'false' And '$(EnableDefaultWindowsAppSdkPRIResourceItems)' == 'true' "/>
   </ItemGroup>
+  <!-- DefaultNoneItemExcludes is a semicolon-separated list of globs that are excluded only from the implicit None items.
+       SDKs and NuGet-delivered frameworks (e.g. WinUI, .NET MAUI) can append to it (e.g. $(DefaultNoneItemExcludes);**/*.xaml)
+       to keep files that they include in their own default item types out of None, without removing explicitly declared
+       None items. Always append rather than overwrite so that multiple contributors compose. Because properties are evaluated
+       before items, it can be appended to from either .props or .targets files. It is only applied when EnableDefaultItems and
+       EnableDefaultNoneItems are true, so contributors only need to condition it on their own default-item properties
+       (EnableDefaultItems may not yet have its default value when NuGet package .props/.targets files are evaluated). -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' And '$(EnableDefaultNoneItems)' == 'true' ">
-    <None Include="**/*" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <None Include="**/*" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultNoneItemExcludes)" />
     <None Remove="**/*$(DefaultLanguageSourceExtension)" />
     <None Remove="**/*.resx" />
     <!-- Microsoft.WindowsAppSDK is a NuGet delivered SDK. EnableDefaultWindowsAppSdkContentItems and EnableDefaultWindowsAppSdkPRIResourceItems are overridable properties that the SDK will set to true by default. -->
