@@ -41,8 +41,9 @@ internal static class WorkloadUtilities
     /// </summary>
     /// <remarks>
     /// Use this overload for non-interactive code paths (background operations, info queries)
-    /// where the user has no opportunity to pass <c>--skip-sign-check</c>. This still respects
-    /// the registry policy and dotnet host signing status.
+    /// where the user has no opportunity to pass <c>--skip-sign-check</c>. This follows the
+    /// platform/build default and respects the registry policy and dotnet host signing status
+    /// where applicable.
     /// </remarks>
     /// <returns><see langword="true"/> if signatures of packages and installers should be verified.</returns>
     public static bool ShouldVerifySignatures() => ShouldVerifySignatures(skipSignCheck: false);
@@ -61,7 +62,15 @@ internal static class WorkloadUtilities
     /// <c>verifyMsiSignature</c> to <c>WorkloadInstallerFactory</c>.
     /// </para>
     /// <para>
-    /// Decision tree (Windows only — always returns <see langword="false"/> on other platforms):
+    /// On Linux, verification is requested by Microsoft official builds unless <paramref name="skipSignCheck"/>
+    /// is <see langword="true"/>. Other Linux builds do not request verification. On macOS,
+    /// <c>!skipSignCheck</c> is returned and <c>NuGetPackageDownloader</c> applies its platform gate, which
+    /// disables verification by default but allows it to be enabled with
+    /// <c>DOTNET_NUGET_SIGNATURE_VERIFICATION</c>. There is no host-signing check or administrator policy
+    /// on non-Windows platforms, and only NuGet package verification applies (there are no MSIs).
+    /// </para>
+    /// <para>
+    /// Decision tree on Windows:
     /// <list type="number">
     ///   <item>If the dotnet host binary itself is <b>not</b> Authenticode-signed, return <see langword="false"/>.
     ///         Rationale: if the host is unsigned, the installation is already untrusted, so enforcing downstream
@@ -83,18 +92,19 @@ internal static class WorkloadUtilities
     public static bool ShouldVerifySignatures(bool skipSignCheck)
     {
 #if !TARGET_WINDOWS
-        // Non-Windows: workload signature verification is not currently enforced for three reasons:
-        //   1. SignCheck.IsDotNetSigned() depends on Windows Authenticode APIs (Win32). There is
-        //      no equivalent host-signed check on Linux/macOS to anchor the trust chain.
-        //   2. NuGet signature verification on Linux uses TRP certificate bundles (.pem files)
-        //      shipped as point-in-time snapshots in the SDK. These can lag behind newly-added
-        //      roots, creating windows where verification fails for valid packages.
-        //   3. On non-Windows, workload packs are file-based (no MSI), so there is no second
-        //      verification layer to fall back on.
-        //
-        // Returning false here means NuGetPackageDownloader will also skip verification (its
-        // constructor platform gate only applies when the caller passes verifySignatures: true).
-        return false;
+        // On Linux, request verification only for Microsoft official builds, unless the user opted out.
+        // Other Linux builds commonly install locally-built workload packages.
+        if (OperatingSystem.IsLinux())
+        {
+#if MICROSOFT_OFFICIAL_BUILD
+            return !skipSignCheck;
+#else
+            return false;
+#endif
+        }
+
+        // macOS keeps the NuGetPackageDownloader opt-in behavior.
+        return !skipSignCheck;
 #else
         if (!SignCheck.IsDotNetSigned())
         {

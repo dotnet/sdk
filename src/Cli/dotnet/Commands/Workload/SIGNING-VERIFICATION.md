@@ -6,19 +6,16 @@ Workload commands use **two independent signature verification systems**:
 
 | Layer | What is verified | Technology | Platform |
 |-------|-----------------|------------|----------|
-| **NuGet package signing** | `.nupkg` files from NuGet feeds | `NuGetPackageDownloader` + `FirstPartyNuGetPackageSigningVerifier` | Windows only |
+| **NuGet package signing** | `.nupkg` files from NuGet feeds | `NuGetPackageDownloader` + `FirstPartyNuGetPackageSigningVerifier` | Windows and Linux (Microsoft official builds; macOS opt-in) |
 | **MSI Authenticode signing** | `.msi` files extracted from NuGet packages | `WinVerifyTrust` + Microsoft root cert chain | Windows only |
-
-**Both layers are Windows-only for workloads.** On non-Windows, `ShouldVerifySignatures()`
-returns `false` at compile time and neither layer runs.
 
 For details on how `NuGetPackageDownloader` performs signature verification (platform gate,
 verification modes, TRP certificate bundles), see
 [NUGET-SIGNATURE-VERIFICATION.md](../../NugetPackageDownloader/NUGET-SIGNATURE-VERIFICATION.md).
 
-### Why verification is gated on the host being signed
+### Why verification is gated on the host being signed (Windows)
 
-Signature verification is skipped when the dotnet host (`dotnet.exe`) is unsigned. Unsigned
+On Windows, signature verification is skipped when the dotnet host (`dotnet.exe`) is unsigned. Unsigned
 hosts indicate a locally-built SDK, preview build, or source-build — environments where
 workload packages are also likely to be unsigned. Enforcing downstream signature checks when
 the host itself is unsigned would break these development workflows without providing meaningful
@@ -43,22 +40,21 @@ the dotnet host is Authenticode-signed (via CsWin32 APIs) and respects `--skip-s
 and the `VerifySignatures` registry policy.
 
 ### Linux and macOS
-Workload signature verification is **not enforced**. `ShouldVerifySignatures()` returns `false`
-at compile time (`#if !TARGET_WINDOWS`), so workload callers never request verification.
-Three reasons:
+Workload packs are file-based (no MSI), so only NuGet package verification applies.
+There is no host-signed check (`SignCheck.IsDotNetSigned()` uses Windows Authenticode APIs)
+or administrator policy on these platforms.
 
-1. **No host-signed check.** `SignCheck.IsDotNetSigned()` uses Windows Authenticode APIs
-   (Win32) with no Linux/macOS equivalent. Without this check, there is no trust anchor.
-2. **TRP certificate bundle lag.** On Linux, NuGet verifies signatures using root certificate
-   bundles shipped as point-in-time snapshots in the SDK. These can lag behind newly-added
-   roots, causing verification to fail for valid packages.
-3. **No fallback layer.** On non-Windows, workload packs are file-based (no MSI), so there is
-   no second verification layer.
+- **Linux**: Microsoft official builds request verification by default, unless
+  `--skip-sign-check` is specified. Other builds do not request workload package verification.
+  Official builds use the SDK's Trusted Root Program certificate bundles; set
+  `DOTNET_NUGET_SIGNATURE_VERIFICATION=false` to opt out.
+- **macOS**: not verified by default, because macOS's certificate distrust model overrides
+  NuGet's custom trust roots ([NuGet/Home#11986](https://github.com/NuGet/Home/issues/11986)).
+  Set `DOTNET_NUGET_SIGNATURE_VERIFICATION=true` to opt in.
 
-> The `NuGetPackageDownloader` has its own platform gate that enables verification on Linux
-> (by default) and macOS (opt-in) for non-workload callers like `dotnet tool install`. Workload
-> callers bypass this gate because `ShouldVerifySignatures()` already returned `false`.
-> See [NUGET-SIGNATURE-VERIFICATION.md](../../NugetPackageDownloader/NUGET-SIGNATURE-VERIFICATION.md#platform-gate).
+The certificate bundles are point-in-time snapshots, so a package whose certificate chains to
+a newly added root can fail verification until the SDK ships an updated bundle. See
+[NUGET-SIGNATURE-VERIFICATION.md](../../NugetPackageDownloader/NUGET-SIGNATURE-VERIFICATION.md#platform-gate).
 
 ## Decision Flow
 
@@ -75,7 +71,11 @@ NuGet downloader (as `verifySignatures`) and the installer factory (as `verifyMs
 ```mermaid
 flowchart TD
     Start["ShouldVerifySignatures(skipSignCheck)"] --> Platform{Non-Windows?}
-    Platform -->|Yes| RetFalse1["return false<br/>(compile-time #if !TARGET_WINDOWS)"]
+    Platform -->|Yes| Linux{Linux?}
+    Linux -->|Yes| Official{Microsoft official build?}
+    Official -->|Yes| RetLinux["return !skipSignCheck"]
+    Official -->|No| RetFalseLinux["return false"]
+    Linux -->|No| RetSkip["return !skipSignCheck<br/>(NuGetPackageDownloader platform gate<br/>then applies: macOS off by default)"]
     Platform -->|No| Signed{dotnet.exe<br/>Authenticode-signed?}
     Signed -->|No| RetFalse2["return false<br/>(unsigned host = untrusted)"]
     Signed -->|Yes| Skip{--skip-sign-check<br/>passed?}
@@ -97,8 +97,8 @@ flowchart TD
 ## NuGet Verification (Layer 1)
 
 Workload commands create the NuGet downloader via `CreateForWorkloads(VerifyNuGetSignatures)`.
-When `VerifyNuGetSignatures` is `true` (Windows with signed host), `VerifySigning()` runs after
-each download in **strict** mode — requiring both a valid NuGet signature and a Microsoft
+When `VerifyNuGetSignatures` is `true` and the platform gate allows it, `VerifySigning()` runs
+after each download in **strict** mode — requiring both a valid NuGet signature and a Microsoft
 author certificate. See
 [NUGET-SIGNATURE-VERIFICATION.md](../../NugetPackageDownloader/NUGET-SIGNATURE-VERIFICATION.md)
 for the full verification pipeline.

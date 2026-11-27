@@ -62,6 +62,39 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader.Tests
         }
 
         [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        public void PackageVerificationUsesTheSpecifiedWorkingDirectory(bool requireFirstPartySignature, bool inheritWorkingDirectory)
+        {
+            TestDirectory testDirectory = TestAssetsManager.CreateTestDirectory();
+            string workingDirectory = Path.Combine(testDirectory.Path, "working");
+            Directory.CreateDirectory(workingDirectory);
+
+            string configPath = Path.Combine(workingDirectory, "NuGet.Config");
+            File.WriteAllText(configPath, "<configuration>");
+            CreatePackage(testDirectory.Path, "Test.Package", "1.0.0");
+            var package = new FilePath(Path.Combine(testDirectory.Path, "Test.Package.1.0.0.nupkg"));
+            string? directory = inheritWorkingDirectory ? null : workingDirectory;
+
+            string commandOutput;
+            bool verified = requireFirstPartySignature
+                ? new FirstPartyNuGetPackageSigningVerifier().Verify(package, TestContext.CancellationToken, out commandOutput, directory)
+                : FirstPartyNuGetPackageSigningVerifier.NuGetVerify(package, TestContext.CancellationToken, out commandOutput, directory);
+
+            verified.Should().BeFalse();
+            if (inheritWorkingDirectory)
+            {
+                commandOutput.Should().Contain("NU3004").And.NotContain(configPath);
+            }
+            else
+            {
+                commandOutput.Should().Contain(configPath);
+            }
+        }
+
+        [TestMethod]
         public async Task GetLatestPackageVersionsReturnsAllPreviewVersionsWhenCountIsZero()
         {
             TestDirectory testDirectory = TestAssetsManager.CreateTestDirectory();

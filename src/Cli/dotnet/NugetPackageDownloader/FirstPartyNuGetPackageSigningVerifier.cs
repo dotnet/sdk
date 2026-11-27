@@ -19,13 +19,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader;
 /// <list type="bullet">
 ///   <item><see cref="Verify"/> — <b>Microsoft first-party check</b>: calls <see cref="NuGetVerify"/>
 ///     to validate the signature chain, then calls <see cref="IsFirstParty"/> to verify the
-///     <b>author</b> signing certificate matches known Microsoft thumbprints. Used when package
-///     source mapping is not in use (the default workload path). Workloads are selected from a
-///     Microsoft-provided list, so there is an implicit chain of trust justifying this check.</item>
+///     <b>author</b> signing certificate matches known Microsoft thumbprints. Used for workloads,
+///     which are selected from a Microsoft-provided list.</item>
 ///   <item><see cref="NuGetVerify"/> — <b>Any valid NuGet signature</b>: shells out to
 ///     <c>dotnet nuget verify --all</c> to confirm the package has a valid signature from any trusted
-///     signer (repository or author). Used when package source mapping is enabled, since feed
-///     constraints already limit which packages are accepted.</item>
+///     signer (repository or author). Used when a first-party signature is not required.</item>
 /// </list>
 /// <para>This is distinct from MSI Authenticode verification, which is handled by
 /// <see cref="Installer.Windows.MsiPackageCache"/> for Windows MSI payloads.</para>
@@ -74,10 +72,11 @@ internal class FirstPartyNuGetPackageSigningVerifier : IFirstPartyNuGetPackageSi
     /// </remarks>
     /// <param name="nupkgToVerify">Path to the <c>.nupkg</c> file.</param>
     /// <param name="commandOutput">Diagnostic output from the NuGet verify command.</param>
+    /// <param name="currentWorkingDirectory">Working directory for NuGet verification, or <see langword="null"/> to inherit the process directory.</param>
     /// <returns><see langword="true"/> if the package is validly signed by Microsoft.</returns>
-    public bool Verify(FilePath nupkgToVerify, CancellationToken cancellationToken, out string commandOutput)
+    public bool Verify(FilePath nupkgToVerify, CancellationToken cancellationToken, out string commandOutput, string currentWorkingDirectory)
     {
-        return NuGetVerify(nupkgToVerify, cancellationToken, out commandOutput) &&
+        return NuGetVerify(nupkgToVerify, cancellationToken, out commandOutput, currentWorkingDirectory) &&
             IsFirstParty(nupkgToVerify, cancellationToken);
     }
 
@@ -135,24 +134,29 @@ internal class FirstPartyNuGetPackageSigningVerifier : IFirstPartyNuGetPackageSi
     /// </summary>
     /// <remarks>
     /// This is the <b>relaxed</b> verification mode. It does NOT check whether the signer is Microsoft —
-    /// any trusted signer is accepted. Used when package source mapping is enabled, since the feed
-    /// constraints already limit which packages are accepted.
+    /// any trusted signer is accepted. Used for callers that don't require a first-party signature,
+    /// such as <c>dotnet tool install</c>.
     /// <para>On Linux, the subprocess finds the TRP root certificate bundles shipped with the SDK
     /// automatically. On macOS, verification may fail unless the bundles are present.</para>
     /// </remarks>
     /// <param name="nupkgToVerify">Path to the <c>.nupkg</c> file.</param>
     /// <param name="commandOutput">Combined stdout + stderr from the verify command.</param>
-    /// <param name="currentWorkingDirectory">Working directory for NuGet config resolution (optional).</param>
+    /// <param name="currentWorkingDirectory">Working directory for NuGet verification, or <see langword="null"/> to inherit the process directory.</param>
     /// <returns><see langword="true"/> if the package signature is valid.</returns>
     public static bool NuGetVerify(
         FilePath nupkgToVerify,
         CancellationToken cancellationToken,
         out string commandOutput,
-        string currentWorkingDirectory = null)
+        string currentWorkingDirectory)
     {
         var args = new[] { "verify", "--all", nupkgToVerify.Value };
         var command = new DotNetCommandFactory(alwaysRunOutOfProc: true, currentWorkingDirectory)
             .Create("nuget", args);
+
+        if (currentWorkingDirectory is not null)
+        {
+            command.WorkingDirectory(currentWorkingDirectory);
+        }
 
         var commandResult = command.CaptureStdOut().Execute(cancellationToken);
         commandOutput = commandResult.StdOut + Environment.NewLine + commandResult.StdErr;
