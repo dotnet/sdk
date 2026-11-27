@@ -8,6 +8,8 @@ namespace Microsoft.DotNet.ProjectTools;
 
 internal abstract class LaunchProfile
 {
+    public const string WorkingDirectoryPropertyName = "workingDirectory";
+
     [JsonIgnore]
     public string? LaunchProfileName { get; init; }
 
@@ -16,6 +18,9 @@ internal abstract class LaunchProfile
 
     [JsonPropertyName("commandLineArgs")]
     public string? CommandLineArgs { get; init; }
+
+    [JsonPropertyName("workingDirectory")]
+    public string? WorkingDirectory { get; init; }
 
     [JsonPropertyName("environmentVariables")]
     public ImmutableDictionary<string, string> EnvironmentVariables
