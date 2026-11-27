@@ -20,7 +20,7 @@ env:
 
 jobs:
   backport:
-    uses: dotnet/arcade/.github/workflows/backport-base.yml@9242960db86ae13cccbeb680b2232992c22aff1d # main
+    uses: dotnet/arcade/.github/workflows/backport-base.yml@bca80a2c5b99104b53924456a2d4b025fba1caf0 # main
     with:
         pr_labels: backport
         pr_description_template: |
