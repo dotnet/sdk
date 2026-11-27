@@ -162,6 +162,8 @@ We have some common analyses that you may likely want to consume for your custom
 
     ValueContentAnalysis will compute that variables `c1`, `c2` and `c3` have identical `ValueContentAbstractValue` with a single literal value `0` and `ValueContainsNonLiteralState.No` to indicate it cannot contain a non-literal value. It will compute that `c4` has a different `ValueContentAbstractValue` with a single literal value `0` and `ValueContainsNonLiteralState.Maybe` to indicate that it may contain some non-literal value(s) in some code path(s).
 
+    [ValueContentAbstractValue](../src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/ValueContentAnalysis/ValueContentAbstractValue.cs) bounds each set to 10 distinct literals. Both control-flow merges and binary operations widen to an unknown value when their result exceeds this bound. Binary operations enforce the bound while constructing the result, rather than materializing an unbounded Cartesian product first; repeated results do not count toward the bound.
+
 4. [TaintedDataAnalysis](../src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/TaintedDataAnalysis/TaintedDataAnalysis.cs): Dataflow analysis to track tainted state of AnalysisEntity and IOperation instances.
 
 5. [PropertySetAnalysis](../src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/PropertySetAnalysis/PropertySetAnalysis.cs): Dataflow analysis to track values assigned to one or more properties of an object to identify and flag incorrect/insecure object state. The upstream `Utilities.UnitTests` project, which held its worked examples, did not migrate into `dotnet/sdk`; the security rules under `Microsoft.NetCore.Analyzers/Security` are the live consumers to read instead.

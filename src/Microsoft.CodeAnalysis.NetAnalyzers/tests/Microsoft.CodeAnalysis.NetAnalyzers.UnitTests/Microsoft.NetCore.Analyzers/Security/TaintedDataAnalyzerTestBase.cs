@@ -22,6 +22,42 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         protected virtual IEnumerable<string> AdditionalVisualBasicSources { get; }
 
+        protected static string XorshiftGeneratorWithSink(string sink) => $$"""
+            using System.Text;
+            using System.Security.Cryptography;
+            using System.Security.Cryptography.X509Certificates;
+
+            public static class Repro
+            {
+                public static int Run(int count, SymmetricAlgorithm algorithm, byte[] bytes)
+                {
+                    var state = 0x9E3779B97F4A7C15UL;
+                    var length = 0;
+                    for (var i = 0; i < count; i++)
+                    {
+                        var text = Next(ref state).ToString();
+                        if (Next(ref state) % 2 == 0)
+                        {
+                            text = "-";
+                        }
+
+                        length += Encoding.UTF8.GetBytes(text).Length;
+                    }
+
+                    {{sink}}
+                    return length;
+
+                    static ulong Next(ref ulong state)
+                    {
+                        state ^= state << 13;
+                        state ^= state >> 7;
+                        state ^= state << 17;
+                        return state;
+                    }
+                }
+            }
+            """;
+
         protected static string RepeatedByteArraySourcesWithoutReachableSink()
         {
             string calls = string.Concat(Enumerable.Repeat("            Bytes(1, 2, 3, 4, 5, 6, 7, 8);\n", 64));

@@ -121,10 +121,9 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
                     .Aggregate((first, second) => first.Merge(second));
             var product = Merge(new[] { 2, 3, 5, 7 }).MergeBinaryOperation(
                 Merge(new[] { 11, 13, 17, 19 }), BinaryOperatorKind.Multiply, type, type, type);
-            Assert.HasCount(width * width, product.LiteralValues);
-            var merged = product.Merge(product);
-            Assert.HasCount(expectedCount, merged.LiteralValues);
-            Assert.AreEqual(expectedState, merged.NonLiteralState);
+            Assert.HasCount(expectedCount, product.LiteralValues);
+            Assert.AreEqual(expectedState, product.NonLiteralState);
+            Assert.AreSame(product, product.Merge(product));
         }
 
         [TestMethod]
