@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             _commandOutput = commandOutput;
         }
 
-        public bool Verify(FilePath nupkgToVerify, CancellationToken cancellationToken, out string commandOutput)
+        public bool Verify(FilePath nupkgToVerify, CancellationToken cancellationToken, out string commandOutput, string? currentWorkingDirectory)
         {
             cancellationToken.ThrowIfCancellationRequested();
             commandOutput = _commandOutput;

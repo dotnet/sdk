@@ -356,6 +356,46 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     $"Add {shaFromPackage} to the _firstPartyCertificateThumbprints of FirstPartyNuGetPackageSigningVerifier class. More info https://aka.ms/netsdkinternal-certificate-rotate");
         }
 
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
+        public async Task GivenFirstPartySignatureRequiredItShouldUseFirstPartyVerifierEvenWithSourceMapping()
+        {
+            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
+                new MockFirstPartyNuGetPackageSigningVerifier(verifyResult: false, commandOutput: "not first party"),
+                _logger, restoreActionConfig: new RestoreActionConfig(NoCache: true),
+                verifySignatures: true,
+                shouldUsePackageSourceMapping: true,
+                requireFirstPartySignature: true);
+
+            Func<Task> action = () => nuGetPackageDownloader.DownloadPackageAsync(
+                new PackageId("Microsoft.iOS.Ref"), TestContext.CancellationToken, null, includePreview: true,
+                packageSourceLocation: new PackageSourceLocation(
+                    sourceFeedOverrides: new[] { "https://api.nuget.org/v3/index.json" }));
+
+            (await action.Should().ThrowAsync<NuGetPackageInstallerException>())
+                .And.Message.Should().Contain("not first party");
+        }
+
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
+        public async Task GivenFirstPartySignatureRequiredItShouldVerifyPackagesFromUnsignedRepositories()
+        {
+            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
+                new MockFirstPartyNuGetPackageSigningVerifier(verifyResult: false, commandOutput: "not first party"),
+                _logger, restoreActionConfig: new RestoreActionConfig(NoCache: true),
+                verifySignatures: true,
+                requireFirstPartySignature: true);
+
+            Func<Task> action = () => nuGetPackageDownloader.DownloadPackageAsync(
+                TestPackageId,
+                TestContext.CancellationToken,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+
+            (await action.Should().ThrowAsync<NuGetPackageInstallerException>())
+                .And.Message.Should().Contain("not first party");
+        }
+
         private string DownloadSamplePackage(PackageId packageId)
         {
             NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,

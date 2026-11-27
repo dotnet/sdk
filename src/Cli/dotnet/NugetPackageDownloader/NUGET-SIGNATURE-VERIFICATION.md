@@ -33,9 +33,12 @@ based on the OS and the `DOTNET_NUGET_SIGNATURE_VERIFICATION` environment variab
   Microsoft Trusted Root Program (TRP), shipped as point-in-time snapshots in the SDK. These
   bundles are only updated by installing a newer SDK, so a certificate chaining to a
   newly-added root can fail verification until the bundle catches up.
-- **macOS**: disabled by default. macOS does not fully support the certificate store NuGet uses
-  for verification, causing spurious failures
-  ([#46857](https://github.com/dotnet/sdk/issues/46857)).
+- **macOS**: disabled by default. macOS's certificate distrust model overrides NuGet's custom
+  trust roots, causing spurious failures
+  ([NuGet/Home#11986](https://github.com/NuGet/Home/issues/11986),
+  [#46857](https://github.com/dotnet/sdk/issues/46857)).
+
+This gate applies to workload commands as well as to tools.
 
 When verification is downgraded by this gate, a diagnostic message is logged via `ILogger`.
 
@@ -46,23 +49,26 @@ When verification is downgraded by this gate, a diagnostic message is logged via
 ## Verification Modes
 
 `NuGetPackageDownloader.VerifySigning()` runs after every download when `_verifySignatures`
-is `true`. It supports two modes selected by `_shouldUsePackageSourceMapping`:
+is `true`. It supports two modes selected by the `requireFirstPartySignature` constructor
+parameter:
 
 | Mode | Method | What it checks | When used |
 |------|--------|---------------|-----------|
-| **Strict** | `Verify()` = `NuGetVerify()` + `IsFirstParty()` | Valid signature AND Microsoft author cert | Source mapping NOT used |
-| **Relaxed** | `NuGetVerify()` only | Valid signature from any trusted signer | Source mapping IS used |
+| **Strict** | `Verify()` = `NuGetVerify()` + `IsFirstParty()` | Valid signature AND Microsoft author cert | Workloads (`CreateForWorkloads()`) |
+| **Relaxed** | `NuGetVerify()` only | Valid signature from any trusted signer | Other callers, such as `dotnet tool install` |
 
 - `NuGetVerify()` shells out to `dotnet nuget verify --all`, which finds the SDK's TRP
-  certificate bundles automatically.
+  certificate bundles automatically. When a working directory is supplied, the subprocess
+  uses it to discover NuGet configuration; otherwise it inherits the process directory.
 - `IsFirstParty()` uses the NuGet.Packaging API to extract the signing certificate chain and
   compares the author certificate thumbprint against known Microsoft values
   (`_firstPartyCertificateThumbprints` / `_upperFirstPartyCertificateThumbprints`).
 
-### Repository must require signing
+### Which packages are verified
 
-Verification only runs when the NuGet repository reports `AllRepositorySigned == true`.
-If the repository does not advertise signing, packages are accepted without checks.
+Strict mode (workloads) verifies every package, regardless of the feed it came from. Relaxed
+mode only verifies packages from repositories that report `AllRepositorySigned == true`
+(such as nuget.org); packages from other repositories are accepted without checks.
 
 ## Factory Method: `CreateForWorkloads()`
 
@@ -70,6 +76,7 @@ Workload code uses `CreateForWorkloads()` instead of the constructor directly to
 consistent defaults:
 - Always creates a `FirstPartyNuGetPackageSigningVerifier`
 - `shouldUsePackageSourceMapping = true`
+- `requireFirstPartySignature = true` (strict mode)
 - `NullLogger` and `null` reporter unless overridden
 
 ## Key Files

@@ -42,17 +42,23 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     private readonly bool _shouldUsePackageSourceMapping;
 
     /// <summary>
+    /// When signatures are verified, requires the package to be signed by a known Microsoft
+    /// first-party certificate in addition to having a valid NuGet signature.
+    /// </summary>
+    private readonly bool _requireFirstPartySignature;
+
+    /// <summary>
     /// Controls whether NuGet package (.nupkg) signatures are verified after download.
     /// </summary>
     /// <remarks>
     /// <para>This field is the result of two gating levels:</para>
     /// <list type="number">
     ///   <item><b>Caller decision</b> — the <c>verifySignatures</c> constructor parameter. For workloads,
-    ///     this comes from <c>WorkloadUtilities.ShouldVerifySignatures()</c>, which returns <see langword="false"/>
-    ///     on non-Windows at compile time. For tools, callers typically pass <see langword="true"/>.</item>
+    ///     this comes from <c>WorkloadUtilities.ShouldVerifySignatures()</c>. For tools, callers typically
+    ///     pass <see langword="true"/>.</item>
     ///   <item><b>Platform gate</b> (constructor) — even if the caller requests verification, this field
-    ///     is set to <see langword="false"/> on macOS (unless <c>DOTNET_NUGET_SIGNATURE_VERIFICATION=true</c>)
-    ///     because macOS lacks full support for NuGet's certificate store.</item>
+    ///     is set to <see langword="false"/> on macOS unless <c>DOTNET_NUGET_SIGNATURE_VERIFICATION=true</c>,
+    ///     and on Linux when <c>DOTNET_NUGET_SIGNATURE_VERIFICATION=false</c>.</item>
     /// </list>
     /// <para>MSI Authenticode verification is a separate system controlled by
     /// <c>InstallerBase.VerifyMsiSignature</c> (Windows only).</para>
@@ -72,7 +78,8 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         bool verifySignatures = false,
         bool shouldUsePackageSourceMapping = false,
         VerbosityOptions verbosityOptions = VerbosityOptions.normal,
-        string currentWorkingDirectory = null)
+        string currentWorkingDirectory = null,
+        bool requireFirstPartySignature = false)
     {
         _currentWorkingDirectory = currentWorkingDirectory;
         _packageInstallDir = packageInstallDir;
@@ -90,12 +97,10 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         //   - Windows: always enabled (uses the OS certificate store).
         //   - Linux: enabled by default. Uses TRP root certificate bundles (.pem) shipped with
         //     the SDK. Disable with DOTNET_NUGET_SIGNATURE_VERIFICATION=false.
-        //   - macOS: disabled by default — lacks full certificate store support (#46857).
-        //     Enable with DOTNET_NUGET_SIGNATURE_VERIFICATION=true.
+        //   - macOS: disabled by default — macOS's distrust model overrides NuGet's custom trust
+        //     roots (NuGet/Home#11986, #46857). Enable with DOTNET_NUGET_SIGNATURE_VERIFICATION=true.
         //
-        // For workloads, this gate is moot: ShouldVerifySignatures() returns false on non-Windows,
-        // so verifySignatures is already false before this code runs. This gate primarily affects
-        // non-workload callers (e.g., dotnet tool install).
+        // This gate applies to both workload and non-workload callers (e.g., dotnet tool install).
         _verifySignatures = verifySignatures
             && (OperatingSystem.IsWindows()
                 || (bool.TryParse(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), out var shouldVerifySignature)
@@ -119,6 +124,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         DefaultCredentialServiceUtility.SetupDefaultCredentialService(new NuGetConsoleLogger(),
             !_restoreActionConfig.Interactive);
         _shouldUsePackageSourceMapping = shouldUsePackageSourceMapping;
+        _requireFirstPartySignature = requireFirstPartySignature;
         _verbosityOptions = verbosityOptions;
     }
 
@@ -127,7 +133,9 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     /// </summary>
     /// <remarks>
     /// Centralizes the common construction pattern used by workload commands, ensuring consistent
-    /// defaults for the first-party signing verifier and package source mapping.
+    /// defaults for the first-party signing verifier and package source mapping. Workload packages
+    /// must be signed by Microsoft, so signature verification always uses the first-party check,
+    /// regardless of whether package source mapping is used.
     /// </remarks>
     /// <param name="packageInstallDir">Temporary directory for downloaded packages.</param>
     /// <param name="verifyNuGetSignatures">Whether to verify NuGet package signatures after download.</param>
@@ -154,7 +162,8 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             restoreActionConfig: restoreActionConfig,
             verifySignatures: verifyNuGetSignatures,
             shouldUsePackageSourceMapping: shouldUsePackageSourceMapping,
-            currentWorkingDirectory: currentWorkingDirectory);
+            currentWorkingDirectory: currentWorkingDirectory,
+            requireFirstPartySignature: true);
     }
 
     public async Task<string> DownloadPackageAsync(PackageId packageId,
@@ -242,20 +251,19 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     /// <remarks>
     /// <para>This method is called after every package download. When <c>_verifySignatures</c> is
     /// <see langword="false"/>, it logs a skip message (once) and returns immediately.</para>
-    /// <para>When verification is enabled, there are two modes selected by <c>_shouldUsePackageSourceMapping</c>:</para>
+    /// <para>When verification is enabled, there are two modes selected by <c>_requireFirstPartySignature</c>:</para>
     /// <list type="bullet">
-    ///   <item><b>Without package source mapping</b> (default workload path): calls
+    ///   <item><b>Strict</b> (workloads, via <see cref="CreateForWorkloads"/>): calls
     ///     <see cref="IFirstPartyNuGetPackageSigningVerifier.Verify"/> which requires the NuGet signature
     ///     to be valid AND the signing certificate to match known Microsoft first-party thumbprints.
-    ///     This is the stricter check — it rejects third-party signed packages.</item>
-    ///   <item><b>With package source mapping</b>: calls
+    ///     It rejects third-party signed packages.</item>
+    ///   <item><b>Relaxed</b> (other callers, such as tools): calls
     ///     <see cref="FirstPartyNuGetPackageSigningVerifier.NuGetVerify"/> which only requires a valid
-    ///     NuGet signature (via <c>dotnet nuget verify --all</c>). Any trusted signer is accepted.
-    ///     The rationale is that package source mapping already constrains which feeds are used,
-    ///     so the first-party requirement can be relaxed.</item>
+    ///     NuGet signature (via <c>dotnet nuget verify --all</c>). Any trusted signer is accepted.</item>
     /// </list>
-    /// <para>Verification only runs when the repository reports <c>AllRepositorySigned == true</c>.
-    /// If the repository does not require signing, the package is accepted without signature checks.</para>
+    /// <para>Strict verification runs for every package, regardless of the source. Relaxed verification
+    /// only runs when the repository reports <c>AllRepositorySigned == true</c>; otherwise the package is
+    /// accepted without signature checks.</para>
     /// </remarks>
     /// <param name="nupkgPath">Full path to the downloaded <c>.nupkg</c> file.</param>
     /// <param name="repository">The NuGet source repository the package was downloaded from.</param>
@@ -275,21 +283,20 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             return;
         }
 
-        if (repository is not null &&
-            await repository.GetResourceAsync<RepositorySignatureResource>(cancellationToken).ConfigureAwait(false) is RepositorySignatureResource resource &&
-            resource.AllRepositorySigned)
+        if (_requireFirstPartySignature ||
+            (repository is not null &&
+             await repository.GetResourceAsync<RepositorySignatureResource>(cancellationToken).ConfigureAwait(false) is RepositorySignatureResource resource &&
+             resource.AllRepositorySigned))
         {
             string commandOutput;
 
-            // Two verification modes based on whether package source mapping is in use:
-            //
-            // Without source mapping: Verify() = valid NuGet signature + Microsoft first-party cert
-            //   -> Rejects packages not signed by Microsoft (stricter).
-            //
-            // With source mapping:    NuGetVerify() = valid NuGet signature (any trusted signer)
-            //   -> Package source mapping already constrains feeds, so first-party requirement is relaxed.
-            if ((!_shouldUsePackageSourceMapping && !_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), cancellationToken, out commandOutput)) ||
-                (_shouldUsePackageSourceMapping && !FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), cancellationToken, out commandOutput, _currentWorkingDirectory)))
+            // Strict:  Verify()      = valid NuGet signature + Microsoft first-party cert
+            // Relaxed: NuGetVerify() = valid NuGet signature (any trusted signer)
+            bool isValid = _requireFirstPartySignature
+                ? _firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), cancellationToken, out commandOutput, _currentWorkingDirectory)
+                : FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), cancellationToken, out commandOutput, _currentWorkingDirectory);
+
+            if (!isValid)
             {
                 throw new NuGetPackageInstallerException(string.Format(CliStrings.FailedToValidatePackageSigning, commandOutput));
             }

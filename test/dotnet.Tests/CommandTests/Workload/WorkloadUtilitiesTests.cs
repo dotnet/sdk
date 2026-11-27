@@ -45,16 +45,19 @@ public class WorkloadUtilitiesTests : SdkTest
     }
 
     [TestMethod]
-    public void ShouldVerifySignatures_WithSkipFalse_ReturnsBoolBasedOnPlatformAndSigningState()
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void ShouldVerifySignatures_OnNonWindows_UsesOfficialBuildDefault()
     {
-        // ShouldVerifySignatures(false) should return true only on Windows when dotnet is signed.
-        // On non-Windows, it always returns false.
-        bool result = WorkloadUtilities.ShouldVerifySignatures(skipSignCheck: false);
+        // Linux only requests workload verification in Microsoft official builds. macOS requests
+        // verification so NuGetPackageDownloader can apply its opt-in default.
+#if MICROSOFT_OFFICIAL_BUILD
+        bool expectedOnLinux = true;
+#else
+        bool expectedOnLinux = false;
+#endif
+        bool expected = OperatingSystem.IsLinux() ? expectedOnLinux : true;
 
-        if (!OperatingSystem.IsWindows())
-        {
-            result.Should().BeFalse("Non-Windows platforms always return false");
-        }
-        // On Windows, the result depends on whether dotnet is signed (can be either true or false)
+        WorkloadUtilities.ShouldVerifySignatures(skipSignCheck: false).Should().Be(expected);
+        WorkloadUtilities.ShouldVerifySignatures(skipSignCheck: true).Should().BeFalse();
     }
 }
