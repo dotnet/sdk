@@ -35,11 +35,18 @@ namespace Microsoft.DotNet.Build.Tasks
         public bool NormalizeSourceBuildOwnership { get; set; }
 
         /// <summary>
+        /// Whether to use pigz (parallel gzip) for compression when available on PATH.
+        /// </summary>
+        public bool UsePigz { get; set; } = true;
+
+        /// <summary>
         /// An item group of regular expressions for content to exclude from the archive.
         /// </summary>
         public ITaskItem[] ExcludePatterns { get; set; }
 
         public bool IgnoreExitCode { get; set; }
+
+        internal Func<bool> IsPigzAvailable { get; set; } = () => IsPigzOnPath(Environment.GetEnvironmentVariable("PATH"));
 
         protected override int ExecuteTool(string pathToTool, string responseFileCommands, string commandLineCommands)
         {
@@ -119,7 +126,58 @@ namespace Microsoft.DotNet.Build.Tasks
                 ? "--numeric-owner --owner=2001 --group=2001 "
                 : string.Empty;
 
-            return $"{ownershipArguments}-czf {DestinationArchive}";
+            string compressionArguments = UsePigz && (IsPigzAvailable?.Invoke() ?? false)
+                ? "--use-compress-program=pigz -cf"
+                : "-czf";
+
+            return $"{ownershipArguments}{compressionArguments} {DestinationArchive}";
+        }
+
+        internal static bool IsPigzOnPath(string pathEnvironmentVariable)
+        {
+            if (string.IsNullOrEmpty(pathEnvironmentVariable))
+            {
+                return false;
+            }
+
+            string executableName = OperatingSystem.IsWindows() ? "pigz.exe" : "pigz";
+
+            foreach (string rawDirectory in pathEnvironmentVariable.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+            {
+                string directory = OperatingSystem.IsWindows()
+                    ? rawDirectory.Trim().Trim('"')
+                    : rawDirectory.Trim();
+                if (string.IsNullOrEmpty(directory))
+                {
+                    continue;
+                }
+
+                string candidatePath = Path.Combine(directory, executableName);
+                if (!File.Exists(candidatePath))
+                {
+                    continue;
+                }
+
+                if (OperatingSystem.IsWindows())
+                {
+                    return true;
+                }
+
+                try
+                {
+                    UnixFileMode mode = File.GetUnixFileMode(candidatePath);
+                    if ((mode & (UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute)) != 0)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    continue;
+                }
+            }
+
+            return false;
         }
 
         private string GetExcludes()

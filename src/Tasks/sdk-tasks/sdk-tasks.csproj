@@ -42,6 +42,10 @@
     <Using Include="Microsoft.Build.Utilities.Task" Alias="Task" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="sdk-tasks.Tests" Key="$(MicrosoftAspNetCorePublicKey)" />
+  </ItemGroup>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>
