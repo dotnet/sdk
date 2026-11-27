@@ -3,6 +3,7 @@
 
 namespace Microsoft.DotNet.MSBuildSdkResolver;
 
+// Also compiled into Microsoft.DotNet.SdkResolver for global.json roll-forward matching.
 // Note: This is SemVer 2.0.0 https://semver.org/spec/v2.0.0.html
 // See the original version of this code here: https://github.com/dotnet/core-setup/blob/master/src/corehost/cli/fxr/fx_ver.cpp
 internal sealed class FXVersion(int major, int minor, int patch, string pre = "", string build = "")
