@@ -86,7 +86,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 Log, "CollectUpToDateCheckBuiltDesignTime", build.FullPathProjectFile);
             var result = designTimeBuild.Execute(
                 "-getItem:UpToDateCheckBuilt", "-nologo",
-                "/p:DesignTimeBuild=true", "/p:BuildingInsideVisualStudio=true");
+                "/p:DesignTimeBuild=true", "/p:BuildingInsideVisualStudio=true",
+                "/p:SkipCompilerExecution=true", "/p:ProvideCommandLineArgs=true");
             result.Should().Pass();
 
             using var document = JsonDocument.Parse(result.StdOut);
@@ -728,7 +729,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
         [TestMethod]
         [DataRow("RazorComponentApp", "ComponentApp.csproj")]
-        [DataRow("BlazorWasmTestApp", "BlazorWasmTestApp.csproj")]
+        [DataRow("BlazorWasmMinimal", "blazorwasm-minimal.csproj")]
         public void VisualStudioFastUpToDateCheck_BuildsOnlyAfterSettingsChange(
             string testAsset, string projectName)
         {
@@ -824,7 +825,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             static string[] GetBuiltItems(MSBuildCommand command)
             {
-                var result = command.Execute("-getItem:UpToDateCheckBuilt", "-nologo", "/p:DesignTimeBuild=true");
+                var result = command.Execute("-getItem:UpToDateCheckBuilt", "-nologo",
+                    "/p:DesignTimeBuild=true", "/p:BuildingInsideVisualStudio=true",
+                    "/p:SkipCompilerExecution=true", "/p:ProvideCommandLineArgs=true");
                 result.Should().Pass();
                 using var document = JsonDocument.Parse(result.StdOut);
                 return document.RootElement.GetProperty("Items").GetProperty("UpToDateCheckBuilt")
@@ -833,11 +836,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             var clientItems = GetBuiltItems(new MSBuildCommand(Log, "CollectUpToDateCheckBuiltDesignTime", clientProjectPath));
             clientItems.Should().ContainSingle(path =>
-                path != null && path.EndsWith($"HotReload\\{SettingsBuildMarkerFileName}", StringComparison.Ordinal));
+                path != null && path.EndsWith(Path.Combine("HotReload", SettingsBuildMarkerFileName), StringComparison.Ordinal));
 
             var serverItems = GetBuiltItems(new MSBuildCommand(Log, "CollectUpToDateCheckBuiltDesignTime", serverProjectPath));
             serverItems.Should().NotContain(path =>
-                path != null && path.EndsWith($"HotReload\\{SettingsBuildMarkerFileName}", StringComparison.Ordinal));
+                path != null && path.EndsWith(Path.Combine("HotReload", SettingsBuildMarkerFileName), StringComparison.Ordinal));
         }
 
         /// <summary>
