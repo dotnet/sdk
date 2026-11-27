@@ -115,6 +115,20 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <!-- For .NET 11+, when BlazorFingerprintBlazorJs is enabled, make the package-provided
+     Blazor startup script's fingerprint mandatory so standalone publish uses matching
+     fingerprinted filenames and HTML URLs. -->
+  <Target Name="_FingerprintBlazorWasmFrameworkAssets"
+    Condition="'$(_TargetingNET110OrLater)' == 'true'
+               and '$(BlazorFingerprintBlazorJs)' == 'true'"
+    AfterTargets="ResolveCoreStaticWebAssets">
+    <ItemGroup>
+      <StaticWebAsset Condition="'%(StaticWebAsset.SourceType)' == 'Discovered' and '%(StaticWebAsset.RelativePath)' == '_framework/blazor.webassembly#[.{fingerprint}]?.js'">
+        <RelativePath>_framework/blazor.webassembly#[.{fingerprint}]!.js</RelativePath>
+      </StaticWebAsset>
+    </ItemGroup>
+  </Target>
+
   <!--
     For .NET 11+, blazor.webassembly.js is usually provided as a framework static web asset from the package
     and is automatically materialized by UpdateExistingPackageStaticWebAssets. No custom detection needed.
