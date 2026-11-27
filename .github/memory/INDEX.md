@@ -13,7 +13,7 @@ then load only the files relevant to the task.
 | --- | --- | --- |
 | **`INDEX.md`** | Discovery map for the knowledge base | Always - read first |
 | **`ARCHITECTURE.md`** | Product boundaries, major components, entry points, and build flow | For non-trivial tasks, design work, or ownership questions |
-| **`CONVENTIONS.md`** | Repository-wide code style, framework/build constraints, dependency management, and canonical area sources | When writing or reviewing code |
+| **`CONVENTIONS.md`** | Repository-wide code style, framework/build constraints, error handling and performance, dependency management, and canonical area sources | When writing or reviewing code |
 | **`FILE_MAP.md`** | Significant directories, ownership surfaces, and dependency relationships | When locating code or deciding where a change belongs |
 | **`API_MAP.md`** | User-facing and extension surfaces: CLI, SDK imports, tasks, resolvers, tools, and libraries | When changing a public contract or integration point |
 | **`KNOWN_ISSUES.md`** | Persistent repository gotchas and documented workarounds | For unfamiliar areas, reviews, or failure investigation |
