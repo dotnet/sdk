@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -261,6 +262,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 }
             }
 
+            if (IsAspNetCoreControllerAction(methodSymbol, wellKnownTypeProvider))
+            {
+                return false;
+            }
+
             // We consider that auto-property have the intent to always be instance members so we want to workaround this issue.
             if (methodSymbol.IsAutoPropertyAccessor())
             {
@@ -320,6 +326,33 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
 
             return true;
+        }
+
+        private static bool IsAspNetCoreControllerAction(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider)
+        {
+            if (methodSymbol.DeclaredAccessibility != Accessibility.Public ||
+                methodSymbol.MethodKind != MethodKind.Ordinary ||
+                methodSymbol.IsGenericMethod ||
+                !wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcControllerAttribute, out var controllerAttribute))
+            {
+                return false;
+            }
+
+            var containingType = methodSymbol.ContainingType;
+            if (containingType.TypeKind != TypeKind.Class ||
+                containingType.IsAbstract ||
+                containingType.DeclaredAccessibility != Accessibility.Public ||
+                containingType.ContainingType != null ||
+                containingType.IsGenericType ||
+                containingType.HasDerivedTypeAttribute(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcNonControllerAttribute)) ||
+                (!containingType.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase) &&
+                 !containingType.HasDerivedTypeAttribute(controllerAttribute)))
+            {
+                return false;
+            }
+
+            return !methodSymbol.HasDerivedMethodAttribute(
+                wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcNonActionAttribute));
         }
 
         private static bool IsExplicitlyVisibleFromCom(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider)
