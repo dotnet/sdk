@@ -10,6 +10,7 @@ namespace Microsoft.NET.Build.Containers.Tasks;
 /// <summary>
 /// Computes the base image and Tag for a Microsoft-authored container image based on the project properties and tagging scheme from various SDK versions.
 /// </summary>
+[MSBuildMultiThreadableTask]
 public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Task
 {
     // starting in .NET 8, the container tagging scheme started incorporating the

@@ -7,6 +7,7 @@ using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public class ValidateParameter : Task
     {
         [Required]
