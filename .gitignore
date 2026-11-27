@@ -47,6 +47,7 @@ eng/dotnetup/
 **/MSBuild_Logs/MSBuild_pid-*.failure.txt
 
 # Test results
+BenchmarkDotNet.Artifacts/
 **/*.trx
 /TestResults
 **/TestResults

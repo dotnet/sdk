@@ -223,6 +223,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
                             CurrentSequenceNumber += posedPosition - CurrentBufferPosition;
                             CurrentBufferPosition = posedPosition;
+                            _trie.AdvanceTo(CurrentSequenceNumber);
                             nextSequenceNumberThatCouldBeWritten = CurrentSequenceNumber;
                             skipAdvanceBuffer = true;
                             anyOperationsExecuted = true;
@@ -320,6 +321,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
                             CurrentSequenceNumber += posedPosition - CurrentBufferPosition;
                             CurrentBufferPosition = posedPosition;
+                            _trie.AdvanceTo(CurrentSequenceNumber);
                             nextSequenceNumberThatCouldBeWritten = CurrentSequenceNumber;
                             anyOperationsExecuted = true;
                         }
@@ -547,4 +549,3 @@ namespace Microsoft.TemplateEngine.Core.Util
         }
     }
 }
-

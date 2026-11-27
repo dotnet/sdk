@@ -4,11 +4,53 @@
 using System.Globalization;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
+        [TestMethod]
+        [CombinatorialData]
+        public void VerifyFalseConditionAtEndOfFile(
+            [CombinatorialValues(false, true)] bool xmlStyle,
+            [CombinatorialValues("\n", "\r\n")] string newline,
+            [CombinatorialValues(16, 50, 1024)] int bufferSize,
+            [CombinatorialValues(0, 1, 2)] int trailingNewlines)
+        {
+            string value = xmlStyle
+                ? $"Hello{newline}<!--#if (1.2 > 2.5){newline}#endif -->"
+                : $"Hello{newline}#if (1.2 > 2.5){newline}#endif";
+            string expected = $"Hello{newline}";
+            for (int i = 0; i < trailingNewlines; ++i)
+            {
+                value += newline;
+                if (i > 0)
+                {
+                    expected += newline;
+                }
+            }
+
+            VariableCollection vc = new VariableCollection();
+            IProcessor processor = xmlStyle ? SetupXmlStyleProcessor(vc) : SetupCStyleNoCommentsProcessor(vc);
+            RunAndVerify(value, expected, processor, bufferSize);
+        }
+
+        [TestMethod]
+        public void VerifyFalseConditionAtEndOfFileWithOverlappingToken()
+        {
+            string value = "#if (1.2 > 2.5)\n#endif\n";
+            string replacementToken = value + "X";
+            IOperationProvider[] operations = CStyleNoCommentsConditionalOperations;
+            Array.Resize(ref operations, operations.Length + 1);
+            operations[operations.Length - 1] = new Replacement(replacementToken.TokenConfig(), "replacement", null, true);
+
+            VariableCollection vc = new VariableCollection();
+            IProcessor processor = SetupTestProcessor(operations, vc);
+            RunAndVerify(value, string.Empty, processor, 1024);
+        }
+
         [TestMethod]
         public void VerifyIfEndifTrueCondition()
         {

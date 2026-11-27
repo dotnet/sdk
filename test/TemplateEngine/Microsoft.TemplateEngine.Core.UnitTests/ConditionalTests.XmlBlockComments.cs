@@ -1341,10 +1341,7 @@ Trailing stuff
             }
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
         [TestMethod]
-        [Ignore("https://github.com/dotnet/templating/issues/4988")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
         public void VerifyXMLConditionAtEnd()
         {
             string value = @"Hello
