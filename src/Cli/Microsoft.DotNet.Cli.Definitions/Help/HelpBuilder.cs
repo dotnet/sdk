@@ -174,7 +174,9 @@ public partial class HelpBuilder
     /// <param name="context">The help context.</param>
     public TwoColumnHelpRow GetTwoColumnRow(
         Symbol symbol,
-        HelpContext context)
+        HelpContext context) => GetTwoColumnRow(symbol, context, isInheritedOption: false);
+
+    private TwoColumnHelpRow GetTwoColumnRow(Symbol symbol, HelpContext context, bool isInheritedOption)
     {
         if (symbol is null)
         {
@@ -205,8 +207,11 @@ public partial class HelpBuilder
         {
             var firstColumnText = customization?.GetFirstColumn?.Invoke(context)
                 ?? (symbol is Option option
-                        ? Default.GetOptionUsageLabel(option)
-                        : Default.GetCommandUsageLabel((Command)symbol));
+                        ? Default.GetOptionUsageLabel(option, isInheritedOption ? option.HelpName ?? "" : null)
+                        : Default.GetCommandUsageLabel((Command)symbol, argument =>
+                            _customizationsBySymbol?.TryGetValue(argument, out var argumentCustomization) == true
+                                ? argumentCustomization.GetFirstColumn?.Invoke(context) ?? Default.GetArgumentUsageLabel(argument)
+                                : Default.GetArgumentUsageLabel(argument)));
 
             var customizedSymbolDescription = customization?.GetSecondColumn?.Invoke(context);
 
@@ -330,7 +335,7 @@ public partial class HelpBuilder
         }
     }
 
-    private string FormatArgumentUsage(IList<Argument> arguments)
+    private string FormatArgumentUsage(IList<Argument> arguments, HelpContext context)
     {
         var sb = new StringBuilder(arguments.Count * 100);
 
@@ -350,15 +355,20 @@ public partial class HelpBuilder
                     : "";
 
             var isOptional = IsOptional(argument);
+            string usageLabel = $"<{argument.Name}>";
+            if (_customizationsBySymbol?.TryGetValue(argument, out var customization) == true)
+            {
+                usageLabel = customization.GetFirstColumn?.Invoke(context) ?? usageLabel;
+            }
 
             if (isOptional)
             {
-                sb.Append($"[<{argument.Name}>{arityIndicator}");
+                sb.Append($"[{usageLabel}{arityIndicator}");
                 (end ??= new()).Add(']');
             }
             else
             {
-                sb.Append($"<{argument.Name}>{arityIndicator}");
+                sb.Append($"{usageLabel}{arityIndicator}");
             }
 
             sb.Append(' ');
@@ -384,8 +394,9 @@ public partial class HelpBuilder
             argument.Arity.MinimumNumberOfValues == 0;
     }
 
-    private string GetUsage(Command command)
+    private string GetUsage(HelpContext context)
     {
+        Command command = context.Command;
         return string.Join(" ", GetUsageParts().Where(x => !string.IsNullOrWhiteSpace(x)));
 
         IEnumerable<string> GetUsageParts()
@@ -407,7 +418,7 @@ public partial class HelpBuilder
 
                 if (parentCommand.Arguments.Any())
                 {
-                    yield return FormatArgumentUsage(parentCommand.Arguments);
+                    yield return FormatArgumentUsage(parentCommand.Arguments, context);
                 }
             }
 
@@ -432,10 +443,10 @@ public partial class HelpBuilder
         }
     }
 
-    private IEnumerable<TwoColumnHelpRow> GetCommandArgumentRows(Command command, HelpContext context) =>
+    private IEnumerable<TwoColumnHelpRow> GetCommandArgumentRows(Command command, HelpContext context, bool includeHidden = false) =>
         RecurseWhileNotNull(command, c => c.Parents.OfType<Command>().FirstOrDefault())
             .Reverse()
-            .SelectMany(cmd => cmd.Arguments.Where(a => !a.Hidden))
+            .SelectMany(cmd => cmd.Arguments.Where(a => !a.Hidden || (includeHidden && cmd == command)))
             .Select(a => GetTwoColumnRow(a, context))
             .Distinct();
 

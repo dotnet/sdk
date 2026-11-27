@@ -142,15 +142,24 @@ public class GenericCommandHelpParserTests
         Assert.IsTrue(Parser.TryParseGenericCommandHelp([commandName, "--help"], out ParseResult? parseResult));
 
         Argument packageIdArgument = GetPackageIdArgument(parseResult.RootCommandResult.Command.Subcommands.Single());
+        int completionCalls = 0;
         packageIdArgument.CompletionSources.Clear();
-        packageIdArgument.CompletionSources.Add(_ => [new CompletionItem("Example.Package")]);
+        packageIdArgument.CompletionSources.Add(_ =>
+        {
+            completionCalls++;
+            return [new CompletionItem("Example.Package")];
+        });
 
         (int exitCode, string output, string error) = InvokeWithCapture(parseResult);
 
         Assert.AreEqual(0, exitCode);
-        Assert.Contains("Example.Package", output);
+        Assert.DoesNotContain("Example.Package", output);
+        Assert.AreEqual(0, completionCalls);
         Assert.IsEmpty(error);
         Assert.HasCount(1, packageIdArgument.CompletionSources);
+        Assert.AreSequenceEqual(
+            ["Example.Package"],
+            packageIdArgument.GetCompletions(CompletionContext.Empty).Select(c => c.Label).ToArray());
     }
 
     [TestMethod]
