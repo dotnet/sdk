@@ -186,6 +186,10 @@ class Program
                  .Should()
                  .OnlyHaveFiles(new[] { generateDepsProjectFileName });
 
+            new FileInfo(Path.Combine(Path.GetDirectoryName(toolAssetsFilePath), toolProject.Name + ".genbuilddeps.cache"))
+                .Should()
+                .Exist();
+
             var toolLibrary = toolAssetsFile.Targets
                 .Single()
                 .Libraries.FirstOrDefault(

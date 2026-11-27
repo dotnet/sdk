@@ -18,13 +18,18 @@ namespace Microsoft.NET.Publish.Tests
         };
 
         [TestMethod]
-        [DataRow(true, false)]
-        [DataRow(true, true)]
-        [DataRow(false, false)]
-        public void RunPublishItemsOutputGroupTest(bool specifyRid, bool singleFile)
+        [DataRow(true, false, false)]
+        [DataRow(true, true, false)]
+        [DataRow(false, false, false)]
+        [DataRow(false, false, true)]
+        public void RunPublishItemsOutputGroupTest(bool specifyRid, bool singleFile, bool filterAssets)
         {
             var testProject = SetupProject(specifyRid, singleFile);
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: specifyRid.ToString() + singleFile.ToString());
+            if (filterAssets)
+            {
+                testProject.AdditionalProperties["BundledRuntimeAssetRuntimeIdentifiers"] = "linux-x64";
+            }
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: specifyRid.ToString() + singleFile.ToString() + filterAssets.ToString());
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand
@@ -82,6 +87,12 @@ namespace Microsoft.NET.Publish.Tests
             if (!singleFile)
             {
                 items.Should().ContainSingle(i => i.TargetPath.Equals($"{testProject.Name}.deps.json", StringComparison.OrdinalIgnoreCase));
+                if (filterAssets)
+                {
+                    var depsPath = Path.Combine(testAsset.Path, testProject.Name, "obj", "Debug", testProject.TargetFrameworks, $"{testProject.Name}.deps.json");
+                    items.Should().ContainSingle(i => i.Identity.Equals(depsPath, StringComparison.OrdinalIgnoreCase)
+                        && i.TargetPath.Equals($"{testProject.Name}.deps.json", StringComparison.OrdinalIgnoreCase));
+                }
             }
         }
 
