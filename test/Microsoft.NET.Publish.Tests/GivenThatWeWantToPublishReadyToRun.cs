@@ -709,6 +709,60 @@ public class Program
         [TestMethod]
         [RequiresMSBuildVersion("17.0.0.32901")]
         [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        public void It_recompiles_composite_image_when_an_unrooted_input_changes(string targetFramework)
+        {
+            var projectName = "CrossgenCompositeUnrootedIncremental";
+
+            var testProject = CreateTestProjectForR2RTesting(
+                targetFramework,
+                projectName,
+                "ClassLib");
+
+            testProject.AdditionalProperties["PublishReadyToRun"] = "True";
+            testProject.AdditionalProperties["PublishReadyToRunUseCrossgen2"] = "True";
+            testProject.AdditionalProperties["PublishReadyToRunComposite"] = "True";
+            testProject.SelfContained = "True";
+            // Root only the main assembly so that ClassLib is an unrooted composite input.
+            testProject.AddItem("PublishReadyToRunCompositeRoots", "Include", $"{projectName}.dll");
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var publishCommand = new PublishCommand(testProjectInstance);
+            string r2rDirectory = Path.Combine(
+                publishCommand.GetIntermediateDirectory(targetFramework, "Debug", testProject.RuntimeIdentifier).FullName,
+                "R2R");
+            var compositeImage = new FileInfo(Path.Combine(r2rDirectory, $"{projectName}.r2r.dll"));
+            var component = new FileInfo(Path.Combine(r2rDirectory, "ClassLib.dll"));
+
+            DateTime Publish()
+            {
+                new PublishCommand(testProjectInstance).Execute().Should().Pass();
+                compositeImage.Refresh();
+                return compositeImage.LastWriteTimeUtc;
+            }
+
+            DateTime initial = Publish();
+            Publish().Should().Be(initial, "an unchanged publish should not recompile");
+
+            // A private member doesn't change ClassLib's reference assembly, so the rooted main assembly isn't rebuilt.
+            const string addedMember = "AddedAfterInitialPublish";
+            string classLibSource = Path.Combine(testProjectInstance.TestRoot, "ClassLib", "ClassLib.cs");
+            File.WriteAllText(
+                classLibSource,
+                File.ReadAllText(classLibSource).Replace("public string Func()", $"private static void {addedMember}() {{ }}\n    public string Func()"));
+
+            Publish().Should().NotBe(initial, "a change to an unrooted composite input should recompile the composite image");
+            using FileStream componentStream = File.OpenRead(component.FullName);
+            using PEReader componentReader = new(componentStream);
+            MetadataReader componentMetadata = componentReader.GetMetadataReader();
+            componentMetadata.MethodDefinitions
+                .Select(handle => componentMetadata.GetString(componentMetadata.GetMethodDefinition(handle).Name))
+                .Should().Contain(addedMember, "the rewritten component should contain the updated metadata");
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_passes_PublishReadyToRunInstructionSet_to_crossgen2(string targetFramework)
         {
             var testProject = CreateTestProjectForR2RTesting(
