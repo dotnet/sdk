@@ -45,10 +45,11 @@ public partial class OverrideHtmlAssetPlaceholders : Task
 
     public override bool Execute()
     {
-        var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints).Where(e => e.AssetFile.EndsWith(".js") || e.AssetFile.EndsWith(".mjs"));
-        var resources = CreateResourcesFromEndpoints(endpoints);
+        // A placeholder can reference any asset, such as a stylesheet or an image, while only JavaScript modules go into the import map.
+        var resources = CreateResourcesFromEndpoints(StaticWebAssetEndpoint.FromItemGroup(Endpoints));
+        var moduleResources = resources.Where(r => r.IsJavaScriptModule).ToList();
         var urlMappings = GroupResourcesByLabel(resources);
-        var importMap = CreateImportMapFromResources(resources);
+        var importMap = CreateImportMapFromResources(moduleResources);
 
         var htmlFilesToRemove = new List<ITaskItem>();
         var htmlCandidates = new List<ITaskItem>();
@@ -76,7 +77,7 @@ public partial class OverrideHtmlAssetPlaceholders : Task
                 outputContent = _preloadRegex.Replace(outputContent, e =>
                 {
                     Log.LogMessage("Writing preload links to '{0}'", item.ItemSpec);
-                    return GeneratePreloadLinks(resources, e.Groups["group"]?.Value);
+                    return GeneratePreloadLinks(moduleResources, e.Groups["group"]?.Value);
                 });
 
                 // Fingerprint all assets used in html
@@ -165,6 +166,16 @@ public partial class OverrideHtmlAssetPlaceholders : Task
     {
         var resources = new List<ResourceAsset>();
 
+        // Endpoints of every asset type are converted, so look the assets up by identity instead of scanning them for each endpoint.
+        var relativePathsByIdentity = new Dictionary<string, string>(Assets.Length, OSPath.PathComparer);
+        foreach (var asset in Assets)
+        {
+            if (!relativePathsByIdentity.ContainsKey(asset.ItemSpec))
+            {
+                relativePathsByIdentity[asset.ItemSpec] = asset.GetMetadata("RelativePath");
+            }
+        }
+
         // We are converting a subset of the descriptors to resources and including a subset of the properties exposed by the
         // descriptors that are useful for the resources in the context of Blazor. Specifically, we pass in the `label` property
         // which contains the human-readable identifier for fingerprinted assets, and the integrity, which can be used to apply
@@ -217,12 +228,12 @@ public partial class OverrideHtmlAssetPlaceholders : Task
                     }
                 }
 
-                var asset = Assets.FirstOrDefault(a => a.ItemSpec == endpoint.AssetFile);
-                if (asset != null)
+                if (relativePathsByIdentity.TryGetValue(endpoint.AssetFile, out var relativePath))
                 {
-                    resourceAsset.IsHardFingerprinted = asset.GetMetadata("RelativePath").Contains("#[.{fingerprint}]!");
+                    resourceAsset.IsHardFingerprinted = relativePath.Contains("#[.{fingerprint}]!");
                 }
 
+                resourceAsset.IsJavaScriptModule = endpoint.AssetFile.EndsWith(".js") || endpoint.AssetFile.EndsWith(".mjs");
                 resources.Add(resourceAsset);
             }
         }
@@ -291,6 +302,7 @@ internal sealed class ResourceAsset(string url)
     public string? PreloadCrossorigin { get; set; }
     public int PreloadOrder { get; set; }
     public bool IsHardFingerprinted { get; set; } = true;
+    public bool IsJavaScriptModule { get; set; }
 }
 
 internal class ImportMap(Dictionary<string, string> imports, Dictionary<string, Dictionary<string, string>> scopes, Dictionary<string, string> integrity)
