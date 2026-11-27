@@ -301,6 +301,7 @@
         solaris-x64;
         openbsd-x64;
         openbsd-arm64;
+        freebsd-ppc64le;
         " />
 
       <Net110RuntimePackRids Include="
