@@ -35,4 +35,15 @@
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.vbproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="$(RepoRoot)NuGet.config" Link="NuGet.config" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="AddRuntimeConfigurationOptionForReferenceAssemblies" BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache" DependsOnTargets="ResolveFrameworkReferences">
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Include="ReferenceAssemblies.TargetingPackVersion" Value="@(ResolvedTargetingPack-&gt;WithMetadataValue('Identity', 'Microsoft.NETCore.App')-&gt;WithMetadataValue('TargetFramework', '$(TargetFramework)')-&gt;Metadata('NuGetPackageVersion'))" />
+      <RuntimeHostConfigurationOption Include="ReferenceAssemblies.TargetFramework" Value="$(TargetFramework)" />
+    </ItemGroup>
+  </Target>
+
 </Project>

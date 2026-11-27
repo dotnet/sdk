@@ -78,6 +78,12 @@ the driver already implies them and the combination fails. To regenerate `.xlf` 
   state, and filesystem paths safe for concurrent test methods.
 - Embedded C# test sources default to `LanguageVersion.CSharp7_3`; set `LanguageVersion`
   explicitly when the source uses newer syntax.
+- Tests opting into the build's current reference pack read the TFM and resolved pack
+  version from runtime configuration and explicitly use the copied `NuGet.config`; see
+  [the unit-test project](tests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.csproj)
+  and `CreateCurrentReferenceAssemblies` in the platform guard tests. Populate runtime
+  options before `_GenerateRuntimeConfigurationFilesInputCache` so incremental builds
+  detect changes. Existing tests retain their explicit reference-assembly baselines.
 - `test/ConditionalTests.props` registers a `NetAnalyzers` scope, so PR validation can skip
   these tests when nothing under this directory changed. Shared-infrastructure paths listed
   as global triggers force every scope active, and non-PR CI always runs them.
