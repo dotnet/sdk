@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
@@ -336,7 +337,7 @@ namespace Microsoft.NET.Build.Tasks
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         private const int CacheFormatSignature = ('P' << 0) | ('K' << 8) | ('G' << 16) | ('A' << 24);
-        private const int CacheFormatVersion = 13;
+        private const int CacheFormatVersion = 14;
         private static readonly Encoding TextEncoding = Encoding.UTF8;
         private const int SettingsHashLength = 256 / 8;
         private HashAlgorithm CreateSettingsHash() => SHA256.Create();
@@ -406,19 +407,56 @@ namespace Microsoft.NET.Build.Tasks
 
         private void LogMessagesToMSBuild()
         {
-            if (!EmitAssetsLogMessages)
+            if (!EmitAssetsLogMessages || _logMessages.Length == 0)
             {
                 return;
             }
 
+            var references = (PackageReferences ?? Array.Empty<ITaskItem>())
+                .ToLookup(reference => reference.ItemSpec, StringComparer.OrdinalIgnoreCase);
+
             foreach (var item in _logMessages)
             {
+                string file = ProjectPath;
+                int line = 0;
+                int column = 0;
+
+                // A persisted location proves attribution, not freshness: a no-op restore can leave it stale.
+                // Never infer a direct cause from LibraryId alone for older, unlocated restore messages.
+                var origins = references[item.GetMetadata(MetadataKeys.NuGetPackageId)].ToArray();
+                if (origins.Length == 1)
+                {
+                    var origin = origins[0];
+                    string sourceFile = origin.GetMetadata("_SourceProjectFile");
+                    bool useCapturedLocation = !string.IsNullOrEmpty(sourceFile);
+                    if (!useCapturedLocation)
+                    {
+                        sourceFile = origin.GetMetadata("DefiningProjectFullPath");
+                    }
+                    if (!origin.GetMetadata(MetadataKeys.IsImplicitlyDefined).Equals("true", StringComparison.OrdinalIgnoreCase)
+                        && (!string.IsNullOrEmpty(origin.GetMetadata(MetadataKeys.Version))
+                            || !string.IsNullOrEmpty(origin.GetMetadata("VersionOverride")))
+                        && File.Exists(sourceFile)
+                        && Path.IsPathRooted(sourceFile)
+                        && int.TryParse(origin.GetMetadata(useCapturedLocation ? "_SourceProjectLine" : "DefiningProjectLineNumber"), NumberStyles.None, CultureInfo.InvariantCulture, out int sourceLine)
+                        && sourceLine > 0
+                        && int.TryParse(origin.GetMetadata(useCapturedLocation ? "_SourceProjectColumn" : "DefiningProjectColumnNumber"), NumberStyles.None, CultureInfo.InvariantCulture, out int sourceColumn)
+                        && sourceColumn >= 0)
+                    {
+                        file = sourceFile;
+                        line = sourceLine;
+                        column = sourceColumn;
+                    }
+                }
+
                 Log.Log(
                     new Message(
                         text: item.ItemSpec,
                         level: GetMessageLevel(item.GetMetadata(MetadataKeys.Severity)),
                         code: item.GetMetadata(MetadataKeys.DiagnosticCode),
-                        file: ProjectPath));
+                        file: file,
+                        lineNumber: line,
+                        columnNumber: column));
             }
         }
 
@@ -1348,6 +1386,21 @@ namespace Microsoft.NET.Build.Tasks
                     WriteItem(message.Message);
                     WriteMetadata(MetadataKeys.DiagnosticCode, message.Code.ToString());
                     WriteMetadata(MetadataKeys.Severity, GetSeverity(message.Level));
+                    WriteMetadata(MetadataKeys.FilePath, ProjectCollection.Escape(message.FilePath ?? ""));
+                    WriteMetadata(MetadataKeys.StartLine, message.StartLineNumber.ToString(CultureInfo.InvariantCulture));
+                    WriteMetadata(MetadataKeys.StartColumn, message.StartColumnNumber.ToString(CultureInfo.InvariantCulture));
+
+                    // Only these source-aware diagnostics identify a direct PackageReference cause.
+                    // Keep diagnostics for other graphs, but do not bind them to this inner build's items.
+                    if (message.Code is NuGetLogCode.NU1510 or NuGetLogCode.NU1603 or NuGetLogCode.NU1605
+                        && message.StartLineNumber > 0 && message.StartColumnNumber >= 0
+                        && File.Exists(message.FilePath) && Path.IsPathRooted(message.FilePath)
+                        && message.TargetGraphs?.Any(graph =>
+                            graph.Split(LockFile.DirectorySeparatorChar)[0] == _task.TargetFramework
+                            || _compileTimeTarget.TargetFramework?.Equals(NuGetFramework.Parse(graph.Split(LockFile.DirectorySeparatorChar)[0])) == true) == true)
+                    {
+                        WriteMetadata(MetadataKeys.NuGetPackageId, message.LibraryId);
+                    }
                 }
 
                 WriteAdditionalLogMessages();
