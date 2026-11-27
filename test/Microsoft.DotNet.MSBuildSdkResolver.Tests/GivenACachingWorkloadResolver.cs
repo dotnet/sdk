@@ -106,6 +106,22 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             });
         }
 
+        [TestMethod]
+        public void ItDoesNotResolvePathBasedSdkReferences()
+        {
+            var (dotnetRoot, sdkVersion) = CreateEmptySdk("pathBasedSdk");
+            string sdkReferenceName = Path.Combine("..", "MySdk");
+
+            var result = new CachingWorkloadResolver(enabled: true).Resolve(
+                sdkReferenceName,
+                dotnetRoot,
+                sdkVersion,
+                userProfileDir: null,
+                globalJsonPath: null);
+
+            result.Should().BeOfType<CachingWorkloadResolver.NullResolutionResult>();
+        }
+
         //  One test rather than several, because the shared slot is process-wide state and
         //  separate test methods could run in parallel against it.
         [TestMethod]
