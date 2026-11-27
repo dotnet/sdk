@@ -442,6 +442,7 @@ namespace Analyzer.Utilities
         public const string SystemSingle = "System.Single";
         public const string SystemSpan1 = "System.Span`1";
         public const string SystemStackOverflowException = "System.StackOverflowException";
+        public const string SystemSTAThreadAttribute = "System.STAThreadAttribute";
         public const string SystemString = "System.String";
         public const string SystemStringComparer = "System.StringComparer";
         public const string SystemStringComparison = "System.StringComparison";
@@ -458,6 +459,7 @@ namespace Analyzer.Utilities
         public const string SystemTextRegularExpressionsRegex = "System.Text.RegularExpressions.Regex";
         public const string SystemTextStringBuilder = "System.Text.StringBuilder";
         public const string SystemThreadStaticAttribute = "System.ThreadStaticAttribute";
+        public const string SystemThreadingApartmentState = "System.Threading.ApartmentState";
         public const string SystemThreadingCancellationToken = "System.Threading.CancellationToken";
         public const string SystemThreadingInterlocked = "System.Threading.Interlocked";
         public const string SystemThreadingMonitor = "System.Threading.Monitor";
