@@ -111,7 +111,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
                 }
             }
 
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. args], [.. optionsToUseWhenParsingMSBuildFlags]);
+            var msbuildArgs = AnalyzePhysicalMSBuildArguments(forwardedArgs, args, optionsToUseWhenParsingMSBuildFlags);
             msbuildArgs = transformer?.Invoke(msbuildArgs, otherArgs) ?? msbuildArgs;
             return createPhysicalCommand(msbuildArgs, msbuildPath);
         }
@@ -139,4 +139,10 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
         }
     }
 #endif
+
+    internal static MSBuildArgs AnalyzePhysicalMSBuildArguments(
+        IEnumerable<string> forwardedArgs,
+        IEnumerable<string> args,
+        IEnumerable<Option> optionsToUseWhenParsingMSBuildFlags) =>
+        MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. args], [.. optionsToUseWhenParsingMSBuildFlags]);
 }

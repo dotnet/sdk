@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
@@ -240,6 +241,46 @@ public partial class AotIntegrationTests
         }
 
         return environment;
+    }
+
+    private static Dictionary<string, string> CreateServerEnvironment(string hostPath, string testDirectory)
+    {
+        var environment = CreateRunEnvironment(hostPath);
+        environment["DOTNET_CLI_HOME"] = Path.Join(testDirectory, "home");
+        environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
+        environment["DOTNET_CLI_CONTEXT_VERBOSE"] = "1";
+        environment["DOTNET_CLI_CONTEXT_VERBOSE_TO_STDERR"] = "1";
+        environment["DOTNET_TEST_RUNNER"] = "VSTest";
+        environment["MSBUILDNODEHANDSHAKESALT"] = $"aot-server-commands-{Guid.NewGuid():N}";
+        environment["MSBUILDUSESERVER"] = "1";
+        environment["DOTNET_CLI_USE_MSBUILD_SERVER"] = "1";
+        environment["DOTNET_CLI_RUN_MSBUILD_OUTOFPROC"] = "0";
+        environment["MSBUILD_EXE_PATH"] = "";
+        environment["MSBUILD_LOGGING_ARGS"] = "";
+        environment["MSBUILDDEBUGONSTART"] = "";
+        environment["MSBUILDDUMPPROCESSCOUNTERS"] = "0";
+        environment["MSBUILDENSURESTDOUTFORTASKPROCESSES"] = "0";
+        environment["MSBUILDDISABLENODEREUSE"] = "0";
+        environment["MSBUILDFORCEMULTITHREADED"] = "0";
+        environment["MSBUILDENABLEMULTITHREADED"] = "0";
+        environment["MSBUILDTERMINALLOGGER"] = "";
+        environment["MSBUILDLIVELOGGER"] = "";
+        return environment;
+    }
+
+    private void ShutdownServerAndDeleteTestDirectory(string testDirectory, Dictionary<string, string> environment)
+    {
+        try
+        {
+            var (exitCode, stdout, stderr) = RunDn(
+                ["build-server", "shutdown", "--msbuild"], enableAot: false, timeoutMs: 60_000,
+                extraEnv: environment, workingDirectory: testDirectory);
+            Assert.AreEqual(0, exitCode, $"Could not shut down the test MSBuild server: {stdout}{stderr}");
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
     }
 
     [TestMethod]
@@ -972,7 +1013,7 @@ public partial class AotIntegrationTests
                 projectPath);
 
             var (exitCode, stdout, stderr) = RunDn(
-                ["build", projectPath, "--no-restore", "--verbosity", "minimal", "-nologo"],
+                ["build", projectPath, "--no-restore", "--disable-build-servers", "--verbosity", "minimal", "-nologo"],
                 enableAot: true,
                 workingDirectory: testDirectory);
 
@@ -982,6 +1023,387 @@ public partial class AotIntegrationTests
         finally
         {
             Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DoNotParallelize] // This test uses and shuts down the test SDK's persistent MSBuild server.
+    public void AotBuild_ServerClientMatchesManagedWithoutReplayingBuilds()
+    {
+        SkipIfDnUnavailable();
+
+        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-server-build-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDirectory);
+        string binlogRoot = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_BINLOG_DIRECTORY") ?? testDirectory;
+        string binlogDirectory = Path.Join(binlogRoot, $"aot-server-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(binlogDirectory);
+        string projectPath = Path.Join(testDirectory, "Build.proj");
+        File.WriteAllText(projectPath, """
+            <Project DefaultTargets="Build">
+              <Target Name="Restore">
+                <WriteLinesToFile File="$(EvidencePath)" Lines="restore" Overwrite="false" />
+              </Target>
+              <Target Name="Build">
+                <Message Text="AOT_SERVER_BUILD:$(MSBuildRuntimeType):$(MSBUILDFAILONDRIVEENUMERATINGWILDCARD)" Importance="high" />
+                <WriteLinesToFile File="$(EvidencePath)" Lines="build" Overwrite="false" />
+                <Error Condition="'$(FailBuild)' == 'true'" Text="AOT_SERVER_EXPECTED_FAILURE" />
+              </Target>
+            </Project>
+            """);
+
+        string hostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
+            ?? throw new InvalidOperationException("The test SDK host path is required.");
+        var environment = CreateRunEnvironment(hostPath);
+        environment["DOTNET_CLI_HOME"] = Path.Join(testDirectory, "home");
+        string telemetryLog = Path.Join(testDirectory, "telemetry.json");
+        environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = OperatingSystem.IsWindows() ? "0" : "1";
+        environment["DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT"] = "1";
+        environment["DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER"] = "0";
+        environment["DOTNET_CLI_TELEMETRY_LOG_PATH"] = telemetryLog;
+        foreach (string variable in EnvironmentVariableNames.OtlpExporterEnvVars)
+        {
+            environment[variable] = "";
+        }
+        environment["DOTNET_CLI_CONTEXT_VERBOSE"] = "1";
+        environment["DOTNET_CLI_CONTEXT_VERBOSE_TO_STDERR"] = "1";
+        environment["MSBUILDNODEHANDSHAKESALT"] = $"aot-server-test-{Guid.NewGuid():N}";
+        environment["MSBUILDUSESERVER"] = "1";
+        environment["DOTNET_CLI_USE_MSBUILD_SERVER"] = "1";
+        environment["DOTNET_CLI_RUN_MSBUILD_OUTOFPROC"] = "0";
+        environment["MSBUILD_EXE_PATH"] = "";
+        environment["MSBUILD_LOGGING_ARGS"] = "";
+        environment["MSBUILDDEBUGONSTART"] = "";
+        environment["MSBUILDDUMPPROCESSCOUNTERS"] = "0";
+        environment["MSBUILDENSURESTDOUTFORTASKPROCESSES"] = "0";
+        environment["MSBUILDDISABLENODEREUSE"] = "0";
+        environment["MSBUILDFORCEMULTITHREADED"] = "0";
+        environment["MSBUILDENABLEMULTITHREADED"] = "0";
+        environment["MSBUILDFAILONDRIVEENUMERATINGWILDCARD"] = "";
+
+        try
+        {
+            var (warmupExit, warmupOutput, warmupError) = RunDn(
+                ["--version"], enableAot: false, extraEnv: environment, workingDirectory: testDirectory);
+            Assert.AreEqual(0, warmupExit, warmupOutput + warmupError);
+
+            var native = RunBuild("native", 1, enableAot: true, fail: false);
+            var managed = RunBuild("managed", 2, enableAot: false, fail: false);
+            Assert.AreEqual(managed.exitCode, native.exitCode, native.stdout + native.stderr);
+            Assert.AreEqual(0, native.exitCode, native.stdout + native.stderr);
+            Assert.Contains("AOT_SERVER_BUILD:Core:1", native.stdout);
+            Assert.Contains("AOT_SERVER_BUILD:Core:1", managed.stdout);
+            Assert.Contains("AOT build server client: request completed.", native.stderr);
+            Assert.AreSequenceEqual(new[] { "build" }, File.ReadAllLines(Path.Join(testDirectory, "native.txt")));
+            Assert.AreSequenceEqual(new[] { "build" }, File.ReadAllLines(Path.Join(testDirectory, "managed.txt")));
+
+            if (OperatingSystem.IsWindows())
+            {
+                using JsonDocument telemetry = JsonDocument.Parse(File.ReadAllText(telemetryLog));
+                JsonElement[] buildEvents = telemetry.RootElement.GetProperty("activities").EnumerateArray()
+                    .SelectMany(activity => activity.GetProperty("events").EnumerateArray())
+                    .Where(e => e.GetProperty("name").GetString() == "dotnet/cli/msbuild/build")
+                    .ToArray();
+                Assert.HasCount(2, buildEvents);
+                JsonElement nativeTags = buildEvents[0].GetProperty("tags");
+                Assert.AreEqual("True", nativeTags.GetProperty("BuildSuccess").GetString());
+                Assert.AreEqual("EnvVar", nativeTags.GetProperty("ServerEnableReason").GetString());
+                Assert.AreEqual("False", nativeTags.GetProperty("ResponseFileUsed").GetString());
+                Assert.IsTrue(double.TryParse(nativeTags.GetProperty("BuildDurationInMilliseconds").GetString(),
+                    System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double duration)
+                    && duration > 0);
+                Assert.IsFalse(nativeTags.TryGetProperty("InitialMSBuildServerState", out _));
+            }
+
+            var nativeFailure = RunBuild("native-failure", 3, enableAot: true, fail: true);
+            var managedFailure = RunBuild("managed-failure", 4, enableAot: false, fail: true);
+            Assert.AreEqual(managedFailure.exitCode, nativeFailure.exitCode, nativeFailure.stdout + nativeFailure.stderr);
+            Assert.AreNotEqual(0, nativeFailure.exitCode);
+            Assert.Contains("AOT_SERVER_EXPECTED_FAILURE", nativeFailure.stdout + nativeFailure.stderr);
+            Assert.Contains("AOT build server client: request completed.", nativeFailure.stderr);
+            Assert.AreSequenceEqual(new[] { "build" }, File.ReadAllLines(Path.Join(testDirectory, "native-failure.txt")));
+
+            string separateEvidence = Path.Join(testDirectory, "separate.txt");
+            var separateRestore = RunDn(
+                ["build", projectPath, "--framework", "net8.0", $"-p:EvidencePath={separateEvidence}",
+                    $"-bl:{Path.Join(binlogDirectory, "5-{}.binlog")}"],
+                enableAot: true, timeoutMs: 120_000, extraEnv: environment, workingDirectory: testDirectory);
+            Assert.AreEqual(0, separateRestore.exitCode, separateRestore.stdout + separateRestore.stderr);
+            Assert.AreEqual(2, separateRestore.stderr.Split("AOT build server client: request completed.").Length - 1);
+            Assert.AreSequenceEqual(new[] { "restore", "build" }, File.ReadAllLines(separateEvidence));
+
+            File.WriteAllText(Path.Join(testDirectory, "Directory.Build.rsp"), "-nr:false");
+            var fallback = RunBuild("fallback", 6, enableAot: true, fail: false);
+            Assert.AreEqual(0, fallback.exitCode, fallback.stdout + fallback.stderr);
+            Assert.DoesNotContain("AOT build tier: MSBuildServer.", fallback.stderr);
+            Assert.AreSequenceEqual(new[] { "build" }, File.ReadAllLines(Path.Join(testDirectory, "fallback.txt")));
+        }
+        finally
+        {
+            ShutdownServerAndDeleteTestDirectory(testDirectory, environment);
+        }
+
+        (int exitCode, string stdout, string stderr) RunBuild(string name, int binlogNumber, bool enableAot, bool fail)
+        {
+            string evidence = Path.Join(testDirectory, $"{name}.txt");
+            return RunDn(
+                ["build", projectPath, "--no-restore", "--verbosity", "minimal",
+                    $"-p:EvidencePath={evidence}", $"-p:FailBuild={fail.ToString().ToLowerInvariant()}",
+                    $"-bl:{Path.Join(binlogDirectory, $"{binlogNumber}.binlog")}"],
+                enableAot, timeoutMs: 120_000, extraEnv: environment, workingDirectory: testDirectory);
+        }
+    }
+
+    [TestMethod]
+    public void AotServerCommands_MatchManagedAndDoNotReplay()
+    {
+        SkipIfDnUnavailable();
+
+        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-server-commands-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDirectory);
+        string binlogRoot = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_BINLOG_DIRECTORY") ?? testDirectory;
+        string binlogDirectory = Path.Join(binlogRoot, $"aot-server-commands-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(binlogDirectory);
+        string projectPath = Path.Join(testDirectory, "Commands.proj");
+        File.WriteAllText(projectPath, """
+            <Project>
+              <Target Name="Restore">
+                <WriteLinesToFile File="$(AOT_EVIDENCE)" Lines="restore" Overwrite="false" />
+                <Error Condition="'$(AOT_FAIL)' == '1'" Text="AOT_SERVER_RESTORE_FAILURE" />
+              </Target>
+              <Target Name="Clean">
+                <WriteLinesToFile File="$(AOT_EVIDENCE)" Lines="clean" Overwrite="false" />
+                <Message Condition="'$(CleanMarker)' != ''" Text="AOT_CLEAN_PROPERTY:$(CleanMarker)" Importance="high" />
+                <Error Condition="'$(AOT_FAIL)' == '1'" Text="AOT_SERVER_CLEAN_FAILURE" />
+              </Target>
+              <Target Name="VSTest">
+                <WriteLinesToFile File="$(AOT_EVIDENCE)" Lines="test" Overwrite="false" />
+                <Error Condition="'$(AOT_FAIL)' == '1'" Text="AOT_SERVER_TEST_FAILURE" />
+              </Target>
+            </Project>
+            """);
+
+        string hostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
+            ?? throw new InvalidOperationException("The test SDK host path is required.");
+        var environment = CreateServerEnvironment(hostPath, testDirectory);
+
+        try
+        {
+            var warmup = RunDn(["--version"], enableAot: false, extraEnv: environment, workingDirectory: testDirectory);
+            Assert.AreEqual(0, warmup.exitCode, warmup.stdout + warmup.stderr);
+
+            foreach (string command in new[] { "restore", "clean", "test" })
+            {
+                var native = RunCommand(command, "native", enableAot: true);
+                var managed = RunCommand(command, "managed", enableAot: false);
+                Assert.AreEqual(0, managed.exitCode, managed.stdout + managed.stderr);
+                Assert.AreEqual(managed.exitCode, native.exitCode, native.stdout + native.stderr);
+                Assert.Contains($"AOT {command} tier: MSBuildServer.", native.stderr);
+                Assert.Contains("AOT build server client: request completed.", native.stderr);
+                Assert.AreSequenceEqual(new[] { command }, ReadEvidence(command, "native"));
+                Assert.AreSequenceEqual(ReadEvidence(command, "managed"), ReadEvidence(command, "native"));
+
+                var nativeFailure = RunCommand(command, "native-failure", enableAot: true, fail: true);
+                var managedFailure = RunCommand(command, "managed-failure", enableAot: false, fail: true);
+                Assert.AreEqual(managedFailure.exitCode, nativeFailure.exitCode, nativeFailure.stdout + nativeFailure.stderr);
+                Assert.AreNotEqual(0, nativeFailure.exitCode);
+                Assert.Contains("AOT build server client: request completed.", nativeFailure.stderr);
+                Assert.AreSequenceEqual(new[] { command }, ReadEvidence(command, "native-failure"));
+                Assert.AreSequenceEqual(ReadEvidence(command, "managed-failure"), ReadEvidence(command, "native-failure"));
+            }
+
+            var nativeProperty = RunCommand("clean", "native-property", enableAot: true,
+                extraArgs: ["-p:CleanMarker=property value"]);
+            var managedProperty = RunCommand("clean", "managed-property", enableAot: false,
+                extraArgs: ["-p:CleanMarker=property value"]);
+            Assert.AreEqual(0, nativeProperty.exitCode, nativeProperty.stdout + nativeProperty.stderr);
+            Assert.AreEqual(managedProperty.exitCode, nativeProperty.exitCode);
+            Assert.Contains("AOT clean tier: MSBuildServer.", nativeProperty.stderr);
+            Assert.Contains("AOT_CLEAN_PROPERTY:property value", nativeProperty.stdout);
+            Assert.Contains("AOT_CLEAN_PROPERTY:property value", managedProperty.stdout);
+            Assert.AreSequenceEqual(new[] { "clean" }, ReadEvidence("clean", "native-property"));
+            Assert.AreSequenceEqual(ReadEvidence("clean", "managed-property"), ReadEvidence("clean", "native-property"));
+
+            var separateRestore = RunCommand("test", "separate", enableAot: true,
+                extraArgs: ["--framework", $"net{Product.TargetFrameworkVersion}"], noRestore: false);
+            Assert.AreEqual(0, separateRestore.exitCode, separateRestore.stdout + separateRestore.stderr);
+            Assert.Contains("AOT restore tier: MSBuildServer.", separateRestore.stderr);
+            Assert.Contains("AOT test tier: MSBuildServer.", separateRestore.stderr);
+            Assert.AreSequenceEqual(new[] { "restore", "test" }, ReadEvidence("test", "separate"));
+
+            File.WriteAllText(Path.Join(testDirectory, "Directory.Build.rsp"), "-nr:false");
+            foreach (string command in new[] { "restore", "clean", "test" })
+            {
+                var fallback = RunCommand(command, "fallback", enableAot: true);
+                Assert.AreEqual(0, fallback.exitCode, fallback.stdout + fallback.stderr);
+                Assert.DoesNotContain($"AOT {command} tier: MSBuildServer.", fallback.stderr);
+                Assert.AreSequenceEqual(new[] { command }, ReadEvidence(command, "fallback"));
+            }
+        }
+        finally
+        {
+            ShutdownServerAndDeleteTestDirectory(testDirectory, environment);
+        }
+
+        string[] ReadEvidence(string command, string name)
+            => File.ReadAllLines(Path.Join(testDirectory, $"{command}-{name}.txt"));
+
+        (int exitCode, string stdout, string stderr) RunCommand(
+            string command, string name, bool enableAot, bool fail = false, string[]? extraArgs = null, bool noRestore = true)
+        {
+            var commandEnvironment = new Dictionary<string, string>(environment)
+            {
+                ["AOT_EVIDENCE"] = Path.Join(testDirectory, $"{command}-{name}.txt"),
+                ["AOT_FAIL"] = fail ? "1" : "0",
+            };
+            string[] testArgs = command == "test"
+                ? (noRestore ? ["--no-restore", "--tl:on"] : ["--tl:on"])
+                : [];
+            return RunDn(
+                [command, projectPath, .. testArgs, .. (extraArgs ?? []),
+                    $"-bl:{Path.Join(binlogDirectory, $"{command}-{name}-{{}}.binlog")}"],
+                enableAot, timeoutMs: 120_000, extraEnv: commandEnvironment, workingDirectory: testDirectory);
+        }
+    }
+
+    [TestMethod]
+    public void AotVSTest_ServerRunsRealTestsAndPreservesManagedFallback()
+    {
+        SkipIfDnUnavailable();
+
+        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-vstest-server-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDirectory);
+        string binlogRoot = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_BINLOG_DIRECTORY") ?? testDirectory;
+        string binlogDirectory = Path.Join(binlogRoot, $"aot-vstest-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(binlogDirectory);
+        string projectPath = Path.Join(testDirectory, "ServerTests.csproj");
+        File.WriteAllText(projectPath, $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net{Product.TargetFrameworkVersion}</TargetFramework>
+                <IsTestProject>true</IsTestProject>
+                <IsPackable>false</IsPackable>
+                <UseSharedCompilation>false</UseSharedCompilation>
+              </PropertyGroup>
+              <ItemGroup>
+                <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+                <PackageReference Include="MSTest.TestAdapter" Version="3.4.3" />
+                <PackageReference Include="MSTest.TestFramework" Version="3.4.3" />
+              </ItemGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Join(testDirectory, "ServerTests.cs"), """
+            using System;
+            using System.IO;
+            using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+            [TestClass]
+            public class ServerTests
+            {
+                [TestMethod]
+                public void Pass()
+                    => File.AppendAllText(Environment.GetEnvironmentVariable("AOT_TEST_EVIDENCE")!, "pass\n");
+
+                [TestMethod]
+                public void Fail()
+                {
+                    File.AppendAllText(Environment.GetEnvironmentVariable("AOT_TEST_EVIDENCE")!, "fail\n");
+                    Assert.Fail("AOT_SERVER_EXPECTED_TEST_FAILURE");
+                }
+            }
+            """);
+
+        string hostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
+            ?? throw new InvalidOperationException("The test SDK host path is required.");
+        string nugetConfigPath = Environment.GetEnvironmentVariable("DOTNET_AOT_TEST_NUGET_CONFIG")
+            ?? throw new InvalidOperationException("The test NuGet configuration is required.");
+        var environment = CreateServerEnvironment(hostPath, testDirectory);
+
+        try
+        {
+            var warmup = RunDn(["--version"], enableAot: false, extraEnv: environment, workingDirectory: testDirectory);
+            Assert.AreEqual(0, warmup.exitCode, warmup.stdout + warmup.stderr);
+
+            var restore = RunDn(
+                ["restore", projectPath, "--configfile", nugetConfigPath, Binlog("restore")],
+                enableAot: true, timeoutMs: 120_000, extraEnv: environment, workingDirectory: testDirectory);
+            Assert.AreEqual(0, restore.exitCode, restore.stdout + restore.stderr);
+            Assert.Contains("AOT restore tier: MSBuildServer.", restore.stderr);
+            Assert.IsTrue(File.Exists(Path.Join(testDirectory, "obj", "project.assets.json")));
+
+            var build = RunDn(
+                ["build", projectPath, "--no-restore", Binlog("build")],
+                enableAot: true, timeoutMs: 120_000, extraEnv: environment, workingDirectory: testDirectory);
+            Assert.AreEqual(0, build.exitCode, build.stdout + build.stderr);
+
+            foreach (bool fail in new[] { false, true })
+            {
+                string caseName = fail ? "fail" : "pass";
+                var native = RunTest($"native-{caseName}", enableAot: true, fail, noBuild: fail);
+                var managed = RunTest($"managed-{caseName}", enableAot: false, fail, noBuild: fail);
+                Assert.AreEqual(managed.exitCode, native.exitCode, native.stdout + native.stderr);
+                Assert.AreEqual(fail ? 1 : 0, native.exitCode, native.stdout + native.stderr);
+                Assert.Contains("AOT test tier: MSBuildServer.", native.stderr);
+                Assert.Contains("AOT build server client: request completed.", native.stderr);
+                Assert.AreSequenceEqual(new[] { caseName }, ReadEvidence($"native-{caseName}"));
+                Assert.AreSequenceEqual(ReadEvidence($"managed-{caseName}"), ReadEvidence($"native-{caseName}"));
+                AssertTestResult($"native-{caseName}", fail);
+                AssertTestResult($"managed-{caseName}", fail);
+            }
+
+            var fallback = RunTest("fallback", enableAot: true, fail: false, terminalLogger: "off");
+            Assert.AreEqual(0, fallback.exitCode, fallback.stdout + fallback.stderr);
+            Assert.DoesNotContain("AOT test tier: MSBuildServer.", fallback.stderr);
+            Assert.AreSequenceEqual(new[] { "pass" }, ReadEvidence("fallback"));
+            AssertTestResult("fallback", fail: false);
+
+            string testAssembly = Path.Join(testDirectory, "bin", "Debug", $"net{Product.TargetFrameworkVersion}", "ServerTests.dll");
+            Assert.IsTrue(File.Exists(testAssembly));
+            var nativeClean = RunDn(["clean", projectPath, Binlog("native-clean")],
+                enableAot: true, timeoutMs: 120_000, extraEnv: environment, workingDirectory: testDirectory);
+            Assert.AreEqual(0, nativeClean.exitCode, nativeClean.stdout + nativeClean.stderr);
+            Assert.Contains("AOT clean tier: MSBuildServer.", nativeClean.stderr);
+            Assert.Contains("AOT build server client: request completed.", nativeClean.stderr);
+            Assert.IsFalse(File.Exists(testAssembly));
+
+            var managedBuild = RunDn(["build", projectPath, "--no-restore", Binlog("managed-build")],
+                enableAot: false, timeoutMs: 120_000, extraEnv: environment, workingDirectory: testDirectory);
+            Assert.AreEqual(0, managedBuild.exitCode, managedBuild.stdout + managedBuild.stderr);
+            Assert.IsTrue(File.Exists(testAssembly));
+            var managedClean = RunDn(["clean", projectPath, Binlog("managed-clean")],
+                enableAot: false, timeoutMs: 120_000, extraEnv: environment, workingDirectory: testDirectory);
+            Assert.AreEqual(0, managedClean.exitCode, managedClean.stdout + managedClean.stderr);
+            Assert.IsFalse(File.Exists(testAssembly));
+        }
+        finally
+        {
+            ShutdownServerAndDeleteTestDirectory(testDirectory, environment);
+        }
+
+        string Binlog(string name) => $"-bl:{Path.Join(binlogDirectory, $"{name}-{{}}.binlog")}";
+        string[] ReadEvidence(string name) => File.ReadAllLines(Path.Join(testDirectory, $"{name}.txt"));
+
+        void AssertTestResult(string name, bool fail)
+        {
+            string path = Path.Join(testDirectory, name, "results.trx");
+            Assert.IsTrue(File.Exists(path), $"Missing test result: {path}");
+            XElement counters = XDocument.Load(path).Descendants().Single(element => element.Name.LocalName == "Counters");
+            Assert.AreEqual("1", counters.Attribute("total")?.Value);
+            Assert.AreEqual(fail ? "1" : "0", counters.Attribute("failed")?.Value);
+            Assert.AreEqual(fail ? "0" : "1", counters.Attribute("passed")?.Value);
+        }
+
+        (int exitCode, string stdout, string stderr) RunTest(
+            string name, bool enableAot, bool fail, bool noBuild = true, string terminalLogger = "on")
+        {
+            var testEnvironment = new Dictionary<string, string>(environment)
+            {
+                ["AOT_TEST_EVIDENCE"] = Path.Join(testDirectory, $"{name}.txt"),
+            };
+            return RunDn(
+                ["test", projectPath, noBuild ? "--no-build" : "--no-restore", $"--tl:{terminalLogger}", "--filter",
+                    $"FullyQualifiedName~{(fail ? "Fail" : "Pass")}", "--logger", "trx;LogFileName=results.trx",
+                    "--results-directory", Path.Join(testDirectory, name), Binlog(name)],
+                enableAot, timeoutMs: 120_000, extraEnv: testEnvironment, workingDirectory: testDirectory);
         }
     }
 

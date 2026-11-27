@@ -200,6 +200,11 @@ and binary-size delta.
 - **`dotnet-aot.Tests` uses Microsoft.Testing.Platform.** Invoke the
   [`run-tests`](../run-tests/SKILL.md) skill for a
   focused managed iteration and use `run-aot-tests.ps1` for native execution.
+- **Isolate MSBuild server tests.** Set a unique `MSBUILDNODEHANDSHAKESALT`, as in
+  [`AotIntegrationTests`](../../../test/dotnet-aot.Tests/AotIntegrationTests.cs).
+  Shut down the test server with the same environment. The
+  [native runner](../../../test/dotnet-aot.Tests/run-aot-tests.ps1) stops only the
+  compiler server for its isolated SDK. Do not shut down unrelated build servers.
 - **Existing tests may assert exclusions.** Search before enabling a command; an intentional
   `DoesNotContain` can need a carefully justified inversion.
 - **Completion eligibility is cursor-context-sensitive.** Root command and option labels can come from

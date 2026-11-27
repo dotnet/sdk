@@ -296,7 +296,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
-    internal static void FormatAndSend(ITelemetryClient? telemetry, TelemetryEventArgs args)
+    internal static void FormatAndSend(ITelemetryClient? telemetry, TelemetryEventArgs args, string? parameters = null)
     {
         switch (args.EventName)
         {
@@ -304,7 +304,8 @@ public sealed class MSBuildLogger : INodeLogger
                 TrackEvent(telemetry, $"msbuild/{TargetFrameworkTelemetryEventName}", args.Properties);
                 break;
             case BuildTelemetryEventName:
-                TrackEvent(telemetry, $"msbuild/{BuildTelemetryEventName}", args.Properties,
+                TrackEvent(telemetry, $"msbuild/{BuildTelemetryEventName}",
+                    MSBuildServerTelemetry.CompleteBuildProperties(args.Properties, parameters, DateTime.UtcNow),
                     toBeHashed: ["ProjectPath", "BuildTarget"]
                 );
                 break;
@@ -394,7 +395,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
         else
         {
-            FormatAndSend(_telemetry, args);
+            FormatAndSend(_telemetry, args, Parameters);
         }
     }
 

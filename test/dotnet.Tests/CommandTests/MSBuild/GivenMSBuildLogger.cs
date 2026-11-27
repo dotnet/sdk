@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Utils;
@@ -119,6 +120,71 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
 
             fakeTelemetry.LogEntry.Properties.Should().BeEquivalentTo(telemetryEventArgs.Properties);
+        }
+
+        [TestMethod]
+        public void ItCompletesBuildTelemetryFromTheAotServerClient()
+        {
+            var start = DateTime.UtcNow.AddSeconds(-2);
+            const string logger = "-distributedlogger:Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildLogger,dotnet.dll*Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildForwardingLogger,dotnet.dll";
+            string withParameters = MSBuildServerTelemetry.AddClientStartToLogger(logger, start);
+            string parameters = withParameters[(withParameters.IndexOf(';') + 1)..withParameters.LastIndexOf('*')];
+            var properties = new Dictionary<string, string>
+            {
+                ["BuildSuccess"] = "True",
+                ["ResponseFileUsed"] = "True",
+                ["BuildDurationInMilliseconds"] = "1",
+            };
+            var fakeTelemetry = new FakeTelemetry();
+
+            MSBuildLogger.FormatAndSend(fakeTelemetry, new TelemetryEventArgs
+            {
+                EventName = "build",
+                Properties = properties,
+            }, parameters);
+
+            fakeTelemetry.LogEntry.EventName.Should().Be("msbuild/build");
+            fakeTelemetry.LogEntry.Properties["ServerEnableReason"].Should().Be("EnvVar");
+            fakeTelemetry.LogEntry.Properties["ResponseFileUsed"].Should().Be("True");
+            double.Parse(fakeTelemetry.LogEntry.Properties["BuildDurationInMilliseconds"], CultureInfo.InvariantCulture)
+                .Should().BeGreaterThanOrEqualTo(2000);
+            fakeTelemetry.LogEntry.Properties.Should().NotContainKey("InitialMSBuildServerState");
+            properties["BuildDurationInMilliseconds"].Should().Be("1");
+        }
+
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("")]
+        [DataRow("DotNetSdkAotServerStartTicks=invalid")]
+        [DataRow("DotNetSdkAotServerStartTicks=999999999999999999")]
+        public void ItLeavesBuildTelemetryUnchangedForInvalidClientParameters(string parameters)
+        {
+            var properties = new Dictionary<string, string> { ["BuildSuccess"] = "True" };
+            var fakeTelemetry = new FakeTelemetry();
+
+            MSBuildLogger.FormatAndSend(fakeTelemetry, new TelemetryEventArgs
+            {
+                EventName = "build",
+                Properties = properties,
+            }, parameters);
+
+            fakeTelemetry.LogEntry.Properties.Should().BeEquivalentTo(properties);
+        }
+
+        [TestMethod]
+        public void ItDoesNotAddServerFieldsToOtherTelemetryEvents()
+        {
+            var properties = new Dictionary<string, string> { ["TargetFramework"] = "net8.0" };
+            var fakeTelemetry = new FakeTelemetry();
+            string parameters = $"DotNetSdkAotServerStartTicks={DateTime.UtcNow.Ticks}";
+
+            MSBuildLogger.FormatAndSend(fakeTelemetry, new TelemetryEventArgs
+            {
+                EventName = "targetframeworkeval",
+                Properties = properties,
+            }, parameters);
+
+            fakeTelemetry.LogEntry.Properties.Should().BeEquivalentTo(properties);
         }
 
         [TestMethod]

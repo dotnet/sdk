@@ -342,8 +342,12 @@ public static class Parser
         // reuse a synthetic CSC cache or a validated cached run contract. Other shapes fall back.
         AotRunCommand.ConfigureCommand(rootCommand.RunCommand);
 
+        AotBuildCommand.ConfigureCommand(rootCommand.BuildCommand);
+        AotMSBuildServerCommand.ConfigureCommand(rootCommand.RestoreCommand);
+        AotMSBuildServerCommand.ConfigureCommand(rootCommand.CleanCommand);
+
         // Build-free Microsoft.Testing.Platform invocations over explicit --test-modules run in AOT.
-        // Project, solution, file-based, VSTest, and unsupported option shapes retain managed fallback.
+        // Eligible VSTest project/solution invocations use the MSBuild server; other shapes fall back.
         AotTestCommand.ConfigureCommand(rootCommand.TestCommand);
 
         // Root command and option labels come from the shared command tree. Once the completion

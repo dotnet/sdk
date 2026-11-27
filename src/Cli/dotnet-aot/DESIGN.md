@@ -173,8 +173,8 @@ build a minimal root containing only the selected static command definition. Dyn
 `new`, `test`, and `package` help still defers to the managed CLI. `completions` help
 remains on the full AOT tree because its managed configuration is not in the AOT
 dependency closure. Commands that can run entirely in AOT (`--version`, `--info`,
-root command and option shell completion, the AOT-capable `sln` subcommands, the narrow
-file-based run path, and build-free
+root command and option shell completion, the AOT-capable `sln` subcommands, eligible
+MSBuild server commands, the narrow file-based run path, and build-free
 `test --test-modules` invocations described below) execute immediately and return.
 The [shared completion implementation](../dotnet/Commands/Hidden/Complete/CompleteCommand.cs)
 parses the cursor-normalized input once and falls back before enumerating or writing
@@ -190,8 +190,7 @@ falls through to the managed CLI.
 Before parsing or first-run setup, the bridge applies the same
 `UILanguageOverride` as the managed entry point. The Configurer translations
 come from the deployed satellites in `ExternalLocalized` and from the native image
-in `Embedded`. UI culture is not an AOT eligibility condition; only behavior unavailable in
-the native closure triggers managed fallback.
+in `Embedded`. MSBuild server commands defer if the console cannot represent the UI culture.
 
 **External command path** — When the parsed command is not a built-in
 (`parseResult.RequiresManagedCommandResolution()`), it is either an external
@@ -235,10 +234,32 @@ native path reuses the managed test-module matcher, IPC protocol, terminal repor
 cancellation and policy handling, results-directory layout, and artifact post-processing.
 Eligibility is decided before module discovery or output: only an allowlisted set of
 test-module and orchestration options is accepted, and test-application options must
-follow `--`. VSTest, project/solution/file-based discovery, positional module shorthand,
+follow `--`. MTP project/solution/file-based discovery, positional module shorthand,
 unknown command options, and options that require MSBuild evaluation fall back to the
-managed CLI. This keeps build and project evaluation outside the native path while
-rooting and validating the rest of the test orchestration closure.
+managed CLI. Eligible VSTest requests use the server path described below.
+
+**MSBuild server commands** — `build`, `restore`, `clean`, and VSTest `test` use
+the managed command implementations for eligible physical projects and solutions.
+The native process calls `MSBuildClient.Execute`. A separate managed server runs
+MSBuild. A separate restore also uses the client when a command requires one.
+
+The eligibility check runs before command construction and background maintenance.
+It requires one unambiguous project or solution and accepts only known options.
+It defers for response files, unsupported console cultures, server-disabling settings,
+custom MSBuild paths, multithreaded mode, and unknown or ambiguous arguments.
+VSTest also requires terminal-logger-compatible output. Direct test assemblies,
+runsettings after `--`, and user-specified test environment variables defer to managed.
+MTP project evaluation, `pack`, and `publish` remain managed.
+
+The client forwards a request out of process when the server is unavailable before
+submission. That child can try server selection again, so its diagnostic can differ from
+the first attempt. After submission, the native path returns the client result without
+replaying the request. Cancellation also prevents a fallback retry.
+
+The public client does not supply the managed MSBuild startup telemetry. The SDK logger
+adds `ServerEnableReason` and `ResponseFileUsed` when they are absent. It estimates the
+overall build duration from the client start time. The SDK cannot recover the initial
+server state from this API. This enrichment does not change MSBuild's internal telemetry.
 
 **MSBuild evaluation infrastructure** — The Native AOT closure includes the
 SDK-shipped workload and NuGet SDK resolvers and a reflection-free project evaluator
