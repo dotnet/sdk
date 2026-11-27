@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Build.Tasks;
 
 namespace Microsoft.CoreSdkTasks.Tests;
@@ -80,120 +79,35 @@ public class TarGzFileCreateFromDirectoryTests
     }
 
     [TestMethod]
-    public void ItProbesPathForPigz()
+    public void ItResolvesRelativePathsUsingTaskEnvironment()
     {
-        string tempDir = Path.Combine(Path.GetTempPath(), $"pigz-probe-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(tempDir);
+        string projectDir = Path.Combine(Path.GetTempPath(), $"targz-mt-{Guid.NewGuid():N}");
+        string sourceDir = Path.Combine(projectDir, "content");
+        Directory.CreateDirectory(sourceDir);
 
         try
         {
-            TarGzFileCreateFromDirectory.IsPigzOnPath(null).Should().BeFalse();
-            TarGzFileCreateFromDirectory.IsPigzOnPath(string.Empty).Should().BeFalse();
-            TarGzFileCreateFromDirectory.IsPigzOnPath(tempDir).Should().BeFalse();
-
-            string executableName = OperatingSystem.IsWindows() ? "pigz.exe" : "pigz";
-            string candidatePath = Path.Combine(tempDir, executableName);
-            File.WriteAllText(candidatePath, string.Empty);
-
-            string missingDir = Path.Combine(tempDir, "nonexistent");
-
-            if (OperatingSystem.IsWindows())
+            var taskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir);
+            var task = new TarGzFileCreateFromDirectory
             {
-                TarGzFileCreateFromDirectory.IsPigzOnPath(tempDir).Should().BeTrue();
-                TarGzFileCreateFromDirectory.IsPigzOnPath($"\"{tempDir}\"").Should().BeTrue();
-                TarGzFileCreateFromDirectory.IsPigzOnPath($"{missingDir}{Path.PathSeparator}{tempDir}").Should().BeTrue();
-            }
-            else
-            {
-                File.SetUnixFileMode(candidatePath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
-                TarGzFileCreateFromDirectory.IsPigzOnPath(tempDir).Should().BeFalse();
+                BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = taskEnvironment,
+                DestinationArchive = "out.tar.gz",
+                SourceDirectory = "content",
+                IncludeBaseDirectory = true,
+                IsPigzAvailable = () => false,
+            };
 
-                File.SetUnixFileMode(candidatePath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-                TarGzFileCreateFromDirectory.IsPigzOnPath(tempDir).Should().BeTrue();
-                TarGzFileCreateFromDirectory.IsPigzOnPath($"{missingDir}{Path.PathSeparator}{tempDir}").Should().BeTrue();
-            }
+            ValidateParameters(task).Should().BeTrue();
+            task.SourceDirectory.Should().Be(sourceDir + Path.DirectorySeparatorChar);
+            GetCommandLine(task).Should().Be($"-czf out.tar.gz --directory {projectDir} content  ");
+
+            File.WriteAllText(Path.Combine(projectDir, "out.tar.gz"), string.Empty);
+            ValidateParameters(task).Should().BeFalse();
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
-        }
-    }
-
-    [TestMethod]
-    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-    [UnsupportedOSPlatform("windows")]
-    public void ItPreservesUnixPathEntriesWithoutTrimming()
-    {
-        string tempDir = Path.Combine(Path.GetTempPath(), $"pigz-path-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(tempDir);
-
-        try
-        {
-            string pigzPath = Path.Combine(tempDir, "pigz");
-            File.WriteAllText(pigzPath, string.Empty);
-            File.SetUnixFileMode(pigzPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-
-            TarGzFileCreateFromDirectory.IsPigzOnPath($"{tempDir} ").Should().BeFalse();
-            TarGzFileCreateFromDirectory.IsPigzOnPath($" {tempDir}").Should().BeFalse();
-
-            string spacedDir = Path.Combine(tempDir, "bin ");
-            Directory.CreateDirectory(spacedDir);
-            string spacedPigzPath = Path.Combine(spacedDir, "pigz");
-            File.WriteAllText(spacedPigzPath, string.Empty);
-            File.SetUnixFileMode(spacedPigzPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-
-            TarGzFileCreateFromDirectory.IsPigzOnPath(spacedDir).Should().BeTrue();
-            TarGzFileCreateFromDirectory.IsPigzOnPath(spacedDir.TrimEnd()).Should().BeFalse();
-        }
-        finally
-        {
-            Directory.Delete(tempDir, recursive: true);
-        }
-    }
-
-    [TestMethod]
-    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-    [UnsupportedOSPlatform("windows")]
-    public void ItChecksEffectiveExecuteAccessOnUnix()
-    {
-        string tempDir = Path.Combine(Path.GetTempPath(), $"pigz-access-{Guid.NewGuid():N}");
-        string inaccessibleDir = Path.Combine(tempDir, "inaccessible");
-        string executableDir = Path.Combine(tempDir, "executable");
-        Directory.CreateDirectory(inaccessibleDir);
-        Directory.CreateDirectory(executableDir);
-
-        try
-        {
-            string inaccessiblePigz = Path.Combine(inaccessibleDir, "pigz");
-            File.WriteAllText(inaccessiblePigz, string.Empty);
-
-            // Mode 0641 grants execute only to others; for the owning non-root user, owner bits (rw-) deny execution.
-            File.SetUnixFileMode(
-                inaccessiblePigz,
-                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherExecute);
-
-            if (geteuid() != 0)
-            {
-                TarGzFileCreateFromDirectory.IsPigzOnPath(inaccessibleDir).Should().BeFalse();
-
-                string executablePigz = Path.Combine(executableDir, "pigz");
-                File.WriteAllText(executablePigz, string.Empty);
-                File.SetUnixFileMode(executablePigz, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-
-                TarGzFileCreateFromDirectory.IsPigzOnPath($"{inaccessibleDir}{Path.PathSeparator}{executableDir}").Should().BeTrue();
-            }
-            else
-            {
-                // Root can execute any file with at least one execute bit set, but not one with none.
-                TarGzFileCreateFromDirectory.IsPigzOnPath(inaccessibleDir).Should().BeTrue();
-
-                File.SetUnixFileMode(inaccessiblePigz, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead);
-                TarGzFileCreateFromDirectory.IsPigzOnPath(inaccessibleDir).Should().BeFalse();
-            }
-        }
-        finally
-        {
-            Directory.Delete(tempDir, recursive: true);
+            Directory.Delete(projectDir, recursive: true);
         }
     }
 
@@ -206,6 +120,12 @@ public class TarGzFileCreateFromDirectoryTests
         return (string)method.Invoke(task, null)!;
     }
 
-    [DllImport("libc")]
-    private static extern uint geteuid();
+    private static bool ValidateParameters(TarGzFileCreateFromDirectory task)
+    {
+        MethodInfo method = typeof(TarGzFileCreateFromDirectory).GetMethod(
+            "ValidateParameters",
+            BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+        return (bool)method.Invoke(task, null)!;
+    }
 }

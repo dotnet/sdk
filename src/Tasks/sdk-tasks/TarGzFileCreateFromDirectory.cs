@@ -3,9 +3,13 @@
 
 #nullable disable
 
+using System.ComponentModel;
+using System.Diagnostics;
+
 namespace Microsoft.DotNet.Build.Tasks
 {
-    public sealed partial class TarGzFileCreateFromDirectory : ToolTask
+    [MSBuildMultiThreadableTask]
+    public sealed class TarGzFileCreateFromDirectory : ToolTask, IMultiThreadableTask
     {
         /// <summary>
         /// The path to the directory to be archived.
@@ -46,7 +50,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public bool IgnoreExitCode { get; set; }
 
-        internal Func<bool> IsPigzAvailable { get; set; } = () => IsPigzOnPath(Environment.GetEnvironmentVariable("PATH"));
+        internal Func<bool> IsPigzAvailable { get; set; }
 
         protected override int ExecuteTool(string pathToTool, string responseFileCommands, string commandLineCommands)
         {
@@ -66,7 +70,8 @@ namespace Microsoft.DotNet.Build.Tasks
 
             var retVal = true;
 
-            if (File.Exists(DestinationArchive))
+            AbsolutePath destinationArchive = TaskEnvironment.GetAbsolutePath(DestinationArchive);
+            if (File.Exists(destinationArchive))
             {
                 if (OverwriteDestination == true)
                 {
@@ -80,13 +85,13 @@ namespace Microsoft.DotNet.Build.Tasks
                 }
             }
 
-            SourceDirectory = Path.GetFullPath(SourceDirectory);
+            AbsolutePath sourceDirectory = TaskEnvironment.GetAbsolutePath(SourceDirectory);
 
-            SourceDirectory = SourceDirectory.EndsWith(Path.DirectorySeparatorChar.ToString())
-                ? SourceDirectory
-                : SourceDirectory + Path.DirectorySeparatorChar;
+            SourceDirectory = sourceDirectory.Value.EndsWith(Path.DirectorySeparatorChar)
+                ? sourceDirectory.Value
+                : sourceDirectory.Value + Path.DirectorySeparatorChar;
 
-            if (!Directory.Exists(SourceDirectory))
+            if (!Directory.Exists(sourceDirectory))
             {
                 Log.LogError($"SourceDirectory '{SourceDirectory} does not exist.");
 
@@ -110,8 +115,9 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             if (IncludeBaseDirectory)
             {
-                var parentDirectory = Directory.GetParent(SourceDirectory).Parent.FullName;
-                var sourceDirectoryName = Path.GetFileName(Path.GetDirectoryName(SourceDirectory));
+                DirectoryInfo sourceDirectory = new(TaskEnvironment.GetAbsolutePath(SourceDirectory));
+                var parentDirectory = sourceDirectory.Parent.FullName;
+                var sourceDirectoryName = sourceDirectory.Name;
                 return $"--directory {parentDirectory} {sourceDirectoryName}  {GetExcludes()}";
             }
             else
@@ -126,96 +132,45 @@ namespace Microsoft.DotNet.Build.Tasks
                 ? "--numeric-owner --owner=2001 --group=2001 "
                 : string.Empty;
 
-            string compressionArguments = UsePigz && (IsPigzAvailable?.Invoke() ?? false)
+            string compressionArguments = UsePigz && (IsPigzAvailable?.Invoke() ?? ProbePigz())
                 ? "--use-compress-program=pigz -cf"
                 : "-czf";
 
             return $"{ownershipArguments}{compressionArguments} {DestinationArchive}";
         }
 
-        internal static bool IsPigzOnPath(string pathEnvironmentVariable)
+        private bool ProbePigz()
         {
-            if (string.IsNullOrEmpty(pathEnvironmentVariable))
-            {
-                return false;
-            }
-
-            string executableName = OperatingSystem.IsWindows() ? "pigz.exe" : "pigz";
-
-            foreach (string rawDirectory in pathEnvironmentVariable.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
-            {
-                string directory = OperatingSystem.IsWindows()
-                    ? rawDirectory.Trim().Trim('"')
-                    : rawDirectory;
-                if (string.IsNullOrEmpty(directory))
-                {
-                    continue;
-                }
-
-                string candidatePath = Path.Combine(directory, executableName);
-                if (!File.Exists(candidatePath))
-                {
-                    continue;
-                }
-
-                if (IsExecutableFile(candidatePath))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private static bool IsExecutableFile(string candidatePath)
-        {
-            if (OperatingSystem.IsWindows())
-            {
-                return true;
-            }
-
             try
             {
-                UnixFileMode mode = File.GetUnixFileMode(candidatePath);
-                if ((mode & (UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute)) == 0)
+                ProcessStartInfo startInfo = TaskEnvironment.GetProcessStartInfo();
+                startInfo.FileName = "pigz";
+                startInfo.Arguments = "--version";
+                startInfo.UseShellExecute = false;
+                startInfo.CreateNoWindow = true;
+                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
+
+                using var process = new Process { StartInfo = startInfo };
+                if (!process.Start())
                 {
                     return false;
                 }
+
+                if (!process.WaitForExit(5000))
+                {
+#pragma warning disable MSBuildTask0001 // Only terminates the pigz probe child process started by this task.
+                    try { process.Kill(entireProcessTree: true); } catch { }
+#pragma warning restore MSBuildTask0001
+                    return false;
+                }
+
+                return process.ExitCode == 0;
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            catch (Exception ex) when (ex is Win32Exception or IOException)
             {
                 return false;
             }
-
-            return HasEffectiveExecuteAccess(candidatePath);
-        }
-
-        private static bool HasEffectiveExecuteAccess(string path)
-        {
-            const int X_OK = 1;
-
-            if (OperatingSystem.IsLinux())
-            {
-                const int AT_FDCWD = -100;
-                const int AT_EACCESS = 0x200;
-                return NativeMethods.faccessat(AT_FDCWD, path, X_OK, AT_EACCESS) == 0;
-            }
-
-            if (OperatingSystem.IsMacOS())
-            {
-                const int AT_FDCWD = -2;
-                const int AT_EACCESS = 0x0010;
-                return NativeMethods.faccessat(AT_FDCWD, path, X_OK, AT_EACCESS) == 0;
-            }
-
-            if (OperatingSystem.IsFreeBSD())
-            {
-                const int AT_FDCWD = -100;
-                const int AT_EACCESS = 0x0100;
-                return NativeMethods.faccessat(AT_FDCWD, path, X_OK, AT_EACCESS) == 0;
-            }
-
-            return NativeMethods.access(path, X_OK) == 0;
         }
 
         private string GetExcludes()
@@ -234,14 +189,5 @@ namespace Microsoft.DotNet.Build.Tasks
         }
 
         protected override void LogToolCommand(string message) => base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
-
-        private static partial class NativeMethods
-        {
-            [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
-            internal static partial int faccessat(int dirfd, string pathname, int mode, int flags);
-
-            [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
-            internal static partial int access(string pathname, int mode);
-        }
     }
 }
