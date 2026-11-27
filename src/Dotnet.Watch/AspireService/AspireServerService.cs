@@ -177,6 +177,9 @@ internal partial class AspireServerService : IAsyncDisposable
             sessionId,
             cancelationToken);
 
+    internal bool HasSocketConnection(string dcpId)
+        => _socketConnectionManager.GetSocketConnection(dcpId) is not null;
+
     /// <exception cref="OperationCanceledException"/>
     private async ValueTask SendNotificationAsync<TNotification>(TNotification notification, string dcpId, string sessionId, CancellationToken cancellationToken)
         where TNotification : SessionNotification

@@ -332,7 +332,7 @@ public class AspireServerServiceTests
 
         await aspireServer.NotifyLogMessageAsync(DcpId, "1", isStdErr: false, "My Message", CancellationToken.None);
 
-        var result = await notificationTask.Task;
+        var result = await notificationTask.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual("My Message", result.LogMessage);
         Assert.IsFalse(result.IsStdErr);
@@ -373,16 +373,17 @@ public class AspireServerServiceTests
         try
         {
             await ws.ConnectAsync(new Uri($"wss://{tokens.serverAddress}{RunSessionRequest.Url}{SessionNotification.Url}"), httpClient, TestContext.CancellationToken);
+            await aspireServer.WaitForSocketConnectionAsync(DcpId, TestContext.CancellationToken)
+                .WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         }
         catch (Exception ex)
         {
-            connected.SetResult(false);
             connectException = ex;
         }
 
         if (connectException is not null)
         {
-            Assert.Fail("Could not connect to session update endpoint: " + connectException.ToString());
+            connected.SetException(new AssertFailedException("Could not connect to session update endpoint.", connectException));
             return;
         }
 
@@ -562,5 +563,13 @@ internal static class AspireServerServiceExtensions
     {
         var enVars = aspireServer.GetServerConnectionEnvironment();
         return (enVars[0].Value, enVars[1].Value, enVars[2].Value);
+    }
+
+    public static async Task WaitForSocketConnectionAsync(this AspireServerService aspireServer, string dcpId, CancellationToken cancellationToken)
+    {
+        while (!aspireServer.HasSocketConnection(dcpId))
+        {
+            await Task.Delay(10, cancellationToken);
+        }
     }
 }
