@@ -31,7 +31,8 @@ internal sealed class TestApplication(
     TestApplicationSettings? testApplicationSettings = null,
     InvocationLifetimeCoordinator? invocationLifetimeOwnerCoordinator = null,
     InvocationLifetimeSiblingLaunch? invocationLifetimeSiblingLaunch = null,
-    Task? abortSignal = null) : IDisposable
+    Task? abortSignal = null,
+    InvocationLifetimeCoordinator? invocationLifetimeSiblingCoordinator = null) : IDisposable
 {
     private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
     private static readonly TimeSpan DefaultArtifactPostProcessingTimeout = TimeSpan.FromMinutes(15);
@@ -63,12 +64,15 @@ internal sealed class TestApplication(
     private readonly TestRunPolicy? _testRunPolicy = testRunPolicy;
     private readonly InvocationLifetimeCoordinator? _invocationLifetimeOwnerCoordinator = invocationLifetimeOwnerCoordinator;
     private readonly InvocationLifetimeSiblingLaunch? _invocationLifetimeSiblingLaunch = invocationLifetimeSiblingLaunch;
+    private readonly InvocationLifetimeCoordinator? _invocationLifetimeSiblingCoordinator = invocationLifetimeSiblingCoordinator;
     private readonly Task? _abortSignal = abortSignal;
+    private readonly TaskCompletionSource _incompatibleSiblingAbort = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource<IResponse> _rejectedSiblingHandshake = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private NamedPipeServer? _invocationLifetimeConnection;
     private Task? _invocationLifetimeControlConnectionLoop;
     private ServerControlMessage? _invocationCleanupMessage;
     private bool _sessionCancellationDelivered;
-    private bool _invocationLifetimeParticipationWarned;
+    private volatile bool _invocationLifetimeParticipationRejected;
     private readonly CancellationTokenSource _pipeCancellationTokenSource = new();
     private HttpTestHostGateway? _httpGateway;
     private string? _httpResponseFilePath;
@@ -208,7 +212,7 @@ internal sealed class TestApplication(
                 throw new TimeoutException();
             }
 
-            var exitCode = process.ExitCode;
+            var exitCode = _invocationLifetimeParticipationRejected ? ExitCode.GenericFailure : process.ExitCode;
             string outputToReport = stdOutBuilder.GetOutputToReport();
             string errorToReport = stdErrBuilder.GetOutputToReport();
 
@@ -346,6 +350,7 @@ internal sealed class TestApplication(
                 tasks.Add(_abortSignal);
             }
 
+            tasks.Add(_incompatibleSiblingAbort.Task);
             Task firstCompletedTask = await Task.WhenAny(tasks);
             if (firstCompletedTask == processExitTask)
             {
@@ -353,7 +358,8 @@ internal sealed class TestApplication(
                 return;
             }
 
-            if (firstCompletedTask == _abortSignal && _invocationLifetimeOwnerCoordinator is not null)
+            if (_invocationLifetimeParticipationRejected
+                || (firstCompletedTask == _abortSignal && _invocationLifetimeOwnerCoordinator is not null))
             {
                 // The owner missed an invocation lifetime deadline or violated the protocol.
                 await KillProcessTreeAsync(process, processExitTask);
@@ -945,21 +951,33 @@ internal sealed class TestApplication(
     }
 
     /// <summary>
-    /// The evaluated <c>TestingPlatformInvocationLifetimeCoordinationSupported</c> property can be stale, for example with
-    /// <c>--no-build</c> after a package update. A test host that cannot negotiate the coordination protocol cannot
-    /// recognize the coordinated handlers either and could run them again.
+    /// The evaluated <c>TestingPlatformInvocationLifetimeCoordinationSupported</c> property can be overridden or
+    /// describe a different runnable binary. A host that cannot recognize the coordinated handlers must be stopped
+    /// before its handshake is answered, rather than falling back after owner setup.
     /// </summary>
-    private void WarnIfCoordinatedSiblingCannotParticipate(string negotiatedVersion)
+    private bool AcceptCoordinatedSiblingHandshake(string negotiatedVersion)
     {
         if (_invocationLifetimeSiblingLaunch is not { Kind: InvocationLifetimeSiblingLaunchKind.Coordinated }
-            || _invocationLifetimeParticipationWarned
             || (Version.TryParse(negotiatedVersion, out Version? version) && version >= ProtocolConstants.InvocationLifetimeVersion))
         {
-            return;
+            return true;
         }
 
-        _invocationLifetimeParticipationWarned = true;
-        Reporter.Output.WriteLine(string.Format(CliCommandStrings.InvocationLifetimeSiblingProtocolTooOld, Module.TargetPath).Yellow());
+        if (!_invocationLifetimeParticipationRejected)
+        {
+            _invocationLifetimeParticipationRejected = true;
+            if (_invocationLifetimeSiblingCoordinator is not null)
+            {
+                _invocationLifetimeSiblingCoordinator.OnSiblingHandshakeRejected(Module);
+            }
+            else
+            {
+                Reporter.Error.WriteLine(string.Format(CliCommandStrings.InvocationLifetimeSiblingProtocolTooOld, Module.TargetPath).Red());
+            }
+            _incompatibleSiblingAbort.TrySetResult();
+        }
+
+        return false;
     }
 
     private Task<IResponse> OnRequest(NamedPipeServer? server, IRequest request)
@@ -990,8 +1008,12 @@ internal sealed class TestApplication(
                         // properties, mismatching info, ...) respond with an empty negotiated version so
                         // Microsoft.Testing.Platform stops sending further messages on this connection.
                         bool handshakeAccepted = OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
+                        if (!AcceptCoordinatedSiblingHandshake(handshakeAccepted ? negotiatedVersion : string.Empty))
+                        {
+                            // Do not reply before termination: a legacy host could interpret rejection as Phase 1 fallback.
+                            return _rejectedSiblingHandshake.Task.WaitAsync(_pipeCancellationTokenSource.Token);
+                        }
                         SetNegotiatedProtocolVersion(handshakeAccepted ? negotiatedVersion : string.Empty);
-                        WarnIfCoordinatedSiblingCannotParticipate(handshakeAccepted ? negotiatedVersion : string.Empty);
                         bool invocationLifetimeAccepted = server is not null
                             && _invocationLifetimeConnection is null
                             && _invocationLifetimeOwnerCoordinator is not null

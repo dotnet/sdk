@@ -73,6 +73,7 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
     private State _state = State.Pending;
     private bool _setupSucceeded;
     private bool _ownerControlLost;
+    private bool _siblingHandshakeRejected;
     private string? _coordinatedHandlers;
     private ITimer? _readinessTimer;
     private TestApplication? _detachedOwner;
@@ -131,7 +132,7 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
         {
             lock (_lock)
             {
-                return _state == State.Failed;
+                return _state == State.Failed || _siblingHandshakeRejected;
             }
         }
     }
@@ -313,6 +314,22 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
         }
     }
 
+    public void OnSiblingHandshakeRejected(TestModule sibling)
+    {
+        lock (_lock)
+        {
+            if (_siblingHandshakeRejected)
+            {
+                return;
+            }
+
+            // Keep the owner's lifecycle active: it must still clean up after the rejected sibling is reaped.
+            _siblingHandshakeRejected = true;
+            _reportError(string.Format(CliCommandStrings.InvocationLifetimeSiblingProtocolTooOld, sibling.TargetPath));
+            _siblingAbort.TrySetResult();
+        }
+    }
+
     public void OnCleanupCompleted(InvocationCleanupCompleted message)
     {
         lock (_lock)
@@ -430,7 +447,7 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
         bool failed;
         lock (_lock)
         {
-            failed = cleanupFailed || _state == State.Failed;
+            failed = cleanupFailed || _state == State.Failed || _siblingHandshakeRejected;
             if (failed)
             {
                 _state = State.Failed;
@@ -446,7 +463,7 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
     {
         Task cleanup = _cleanupCompleted.Task;
         Task completed = await WhenAnyWithTimeout(cleanup, ownerRun);
-        if (completed == cleanup)
+        if (completed == cleanup || cleanup.IsCompletedSuccessfully)
         {
             InvocationCleanupCompleted message = await _cleanupCompleted.Task;
             if (message.Succeeded)
@@ -475,10 +492,11 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
 
     private async Task<bool> WaitForOwnerExitAsync(Task<int> ownerRun)
     {
-        if (await WhenAnyWithTimeout(ownerRun) != ownerRun)
+        bool timedOut = await WhenAnyWithTimeout(ownerRun) != ownerRun;
+        if (timedOut)
         {
             _reportError(string.Format(
-                CliCommandStrings.InvocationLifetimeCleanupTimedOut,
+                CliCommandStrings.InvocationLifetimeOwnerShutdownTimedOut,
                 _ownerName,
                 (int)Timeout.TotalSeconds,
                 InvocationLifetimeEnvironmentVariables.TimeoutSeconds));
@@ -487,8 +505,14 @@ internal sealed class InvocationLifetimeCoordinator : IDisposable
 
         try
         {
-            await ownerRun;
-            return true;
+            int exitCode = await ownerRun;
+            if (exitCode != ExitCode.Success && exitCode != await _moduleTestsCompleted.Task)
+            {
+                _reportError(string.Format(CliCommandStrings.InvocationLifetimeOwnerUnexpectedExitCode, _ownerName, exitCode));
+                return false;
+            }
+
+            return !timedOut;
         }
         catch (Exception ex)
         {

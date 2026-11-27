@@ -241,7 +241,8 @@ internal class TestApplicationActionQueue
                         testApplicationSettings: GetEffectiveSettings(module),
                         invocationLifetimeOwnerCoordinator: isOwner ? coordinator : null,
                         invocationLifetimeSiblingLaunch: siblingLaunch,
-                        abortSignal: coordinator is null ? null : isOwner ? coordinator.OwnerAbort : coordinator.SiblingAbort);
+                        abortSignal: coordinator is null ? null : isOwner ? coordinator.OwnerAbort : coordinator.SiblingAbort,
+                        invocationLifetimeSiblingCoordinator: isOwner ? null : coordinator);
                     try
                     {
                         output.TestMapCollectionModuleStarted(module.TargetPath);

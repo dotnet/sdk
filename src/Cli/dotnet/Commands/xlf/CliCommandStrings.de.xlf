@@ -452,6 +452,16 @@
         <target state="new">The test application '{0}' did not request invocation lifetime coordination within {1} seconds. The other test applications run their own handlers. Set the '{2}' environment variable to change the timeout.</target>
         <note>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</note>
       </trans-unit>
+      <trans-unit id="InvocationLifetimeOwnerShutdownTimedOut">
+        <source>The invocation lifetime owner '{0}' did not exit within {1} seconds after invocation cleanup and was stopped. Set the '{2}' environment variable to change the timeout.</source>
+        <target state="new">The invocation lifetime owner '{0}' did not exit within {1} seconds after invocation cleanup and was stopped. Set the '{2}' environment variable to change the timeout.</target>
+        <note>{0} is a test module name. {1} is a timeout in seconds. {2} is an environment variable name.</note>
+      </trans-unit>
+      <trans-unit id="InvocationLifetimeOwnerUnexpectedExitCode">
+        <source>The invocation lifetime owner '{0}' exited with unexpected code {1} after its tests completed.</source>
+        <target state="new">The invocation lifetime owner '{0}' exited with unexpected code {1} after its tests completed.</target>
+        <note>{0} is a test module name. {1} is the process exit code.</note>
+      </trans-unit>
       <trans-unit id="InvocationLifetimeOwnerUnsupportedTransport">
         <source>The invocation lifetime owner '{0}' cannot be coordinated because it does not use the named pipe transport. Each test application runs its own handlers.</source>
         <target state="new">The invocation lifetime owner '{0}' cannot be coordinated because it does not use the named pipe transport. Each test application runs its own handlers.</target>
@@ -468,8 +478,8 @@
         <note>{0} is a test module name. {1} is a number of seconds. {2} is an environment variable name.</note>
       </trans-unit>
       <trans-unit id="InvocationLifetimeSiblingProtocolTooOld">
-        <source>'{0}' does not support invocation lifetime coordination and might run invocation lifetime handlers again. Rebuild it with a Microsoft.Testing.Platform version that supports coordination.</source>
-        <target state="new">'{0}' does not support invocation lifetime coordination and might run invocation lifetime handlers again. Rebuild it with a Microsoft.Testing.Platform version that supports coordination.</target>
+        <source>'{0}' does not support invocation lifetime coordination. Coordinated execution is stopped. Rebuild it with a Microsoft.Testing.Platform version that supports coordination.</source>
+        <target state="new">'{0}' does not support invocation lifetime coordination. Coordinated execution is stopped. Rebuild it with a Microsoft.Testing.Platform version that supports coordination.</target>
         <note>{0} is a test application path. {Locked="Microsoft.Testing.Platform"}</note>
       </trans-unit>
       <trans-unit id="InvocationLifetimeUnexpectedMessage">

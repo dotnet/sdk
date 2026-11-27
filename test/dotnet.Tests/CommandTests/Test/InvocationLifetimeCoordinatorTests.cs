@@ -10,6 +10,8 @@ namespace dotnet.Tests.CommandTests.Test;
 [TestClass]
 public class InvocationLifetimeCoordinatorTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     private readonly List<string> _warnings = [];
     private readonly List<string> _errors = [];
 
@@ -295,6 +297,108 @@ public class InvocationLifetimeCoordinatorTests
     }
 
     [TestMethod]
+    public async Task RejectedSiblingStopsLaunchesWithoutReleasingOwnerBeforeParticipantsDrain()
+    {
+        using InvocationLifetimeCoordinator coordinator = CreateCoordinator();
+        coordinator.OnOwnerHandshake(CreateHandshake("[\"Sql\"]"), "1.5.0", controlPipeAvailable: true);
+        coordinator.OnSetupCompleted(new InvocationSetupCompleted("e", "i", true, null, []));
+
+        coordinator.OnSiblingHandshakeRejected(InvocationLifetimeOwnerSelectorTests.CreateModule("Sibling", ["Sql"]));
+
+        coordinator.HasFailed.Should().BeTrue();
+        coordinator.SiblingAbort.IsCompleted.Should().BeTrue();
+        coordinator.OwnerAbort.IsCompleted.Should().BeFalse();
+        Task reply = coordinator.OnModuleTestsCompleted(new ModuleTestsCompleted("e", "i", ExitCode.Success));
+        reply.IsCompleted.Should().BeFalse();
+        _errors.Should().ContainSingle().Which.Should().Contain("Coordinated execution is stopped");
+
+        (await coordinator.CompleteAsync(ExitCode.Success, isCanceled: false)).Should().Be(ExitCode.GenericFailure);
+        reply.IsCompleted.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public async Task RejectedSiblingStillAllowsOwnerCleanupAfterParticipantsDrain()
+    {
+        using InvocationLifetimeCoordinator coordinator = CreateCoordinator();
+        coordinator.OnOwnerHandshake(CreateHandshake("[\"Sql\"]"), "1.5.0", controlPipeAvailable: true);
+        coordinator.OnSetupCompleted(new InvocationSetupCompleted("e", "i", true, null, []));
+        coordinator.OnSiblingHandshakeRejected(InvocationLifetimeOwnerSelectorTests.CreateModule("Sibling", ["Sql"]));
+        _ = coordinator.OnModuleTestsCompleted(new ModuleTestsCompleted("e", "i", ExitCode.Success));
+        using TestApplication application = TestApplicationLaunchTests.CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+        var ownerRun = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        coordinator.AttachDetachedOwner(application, ownerRun.Task);
+
+        Task<int> completion = coordinator.CompleteAsync(ExitCode.GenericFailure, isCanceled: false);
+        coordinator.IsOwnerCoordinated.Should().BeTrue();
+        coordinator.OnCleanupCompleted(new InvocationCleanupCompleted("e", "i", true, null));
+        ownerRun.SetResult(ExitCode.Success);
+
+        (await completion.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken)).Should().Be(ExitCode.GenericFailure);
+        coordinator.HasFailed.Should().BeTrue();
+        _errors.Should().ContainSingle().Which.Should().Contain("Coordinated execution is stopped");
+    }
+
+    [TestMethod]
+    [DataRow(0, 0, 0, 0)]
+    [DataRow(0, 1, 0, 1)]
+    [DataRow(0, 134, 0, 1)]
+    [DataRow(2, 2, 2, 2)]
+    [DataRow(2, 2, 0, 0)]
+    [DataRow(2, 0, 0, 0)]
+    [DataRow(8, 8, 0, 0)]
+    public async Task FinalOwnerExitPreservesReportedFailuresButRejectsUnexpectedFailures(
+        int moduleExitCode, int processExitCode, int aggregateExitCode, int expectedExitCode)
+    {
+        using InvocationLifetimeCoordinator coordinator = CreateCoordinator();
+        coordinator.OnOwnerHandshake(CreateHandshake("[\"Sql\"]"), "1.5.0", controlPipeAvailable: true);
+        coordinator.OnSetupCompleted(new InvocationSetupCompleted("e", "i", true, null, []));
+        _ = coordinator.OnModuleTestsCompleted(new ModuleTestsCompleted("e", "i", moduleExitCode));
+        using TestApplication application = TestApplicationLaunchTests.CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+        var ownerRun = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        coordinator.AttachDetachedOwner(application, ownerRun.Task);
+
+        Task<int> completion = coordinator.CompleteAsync(aggregateExitCode, isCanceled: false);
+        coordinator.OnCleanupCompleted(new InvocationCleanupCompleted("e", "i", true, null));
+        ownerRun.SetResult(processExitCode);
+
+        (await completion.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken)).Should().Be(expectedExitCode);
+        bool unexpectedFailure = processExitCode != ExitCode.Success && processExitCode != moduleExitCode;
+        coordinator.HasFailed.Should().Be(unexpectedFailure);
+        if (unexpectedFailure)
+        {
+            _errors.Should().ContainSingle().Which.Should().Contain($"unexpected code {processExitCode}");
+        }
+        else
+        {
+            _errors.Should().BeEmpty();
+        }
+    }
+
+    [TestMethod]
+    public async Task OwnerShutdownTimeoutRemainsFailureAfterSuccessfulCleanupAndReaping()
+    {
+        var timeProvider = new ManualTimeProvider();
+        using InvocationLifetimeCoordinator coordinator = CreateCoordinator(timeProvider);
+        coordinator.OnOwnerHandshake(CreateHandshake("[\"Sql\"]"), "1.5.0", controlPipeAvailable: true);
+        coordinator.OnSetupCompleted(new InvocationSetupCompleted("e", "i", true, null, []));
+        _ = coordinator.OnModuleTestsCompleted(new ModuleTestsCompleted("e", "i", ExitCode.Success));
+        using TestApplication application = TestApplicationLaunchTests.CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+        var ownerRun = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        coordinator.AttachDetachedOwner(application, ownerRun.Task);
+
+        Task<int> completion = coordinator.CompleteAsync(ExitCode.Success, isCanceled: false);
+        coordinator.OnCleanupCompleted(new InvocationCleanupCompleted("e", "i", true, null));
+        await timeProvider.SecondTimerCreated.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+        timeProvider.FireTimer();
+        await coordinator.OwnerAbort.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+        ownerRun.SetResult(ExitCode.Success);
+
+        (await completion.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken)).Should().Be(ExitCode.GenericFailure);
+        coordinator.HasFailed.Should().BeTrue();
+        _errors.Should().ContainSingle().Which.Should().Contain("did not exit within 10 seconds");
+    }
+
+    [TestMethod]
     [DataRow(null, 900)]
     [DataRow("abc", 900)]
     [DataRow("-1", 900)]
@@ -346,11 +450,19 @@ public class InvocationLifetimeCoordinatorTests
     {
         private TimerCallback? _callback;
         private object? _state;
+        private int _timerCount;
+        private readonly TaskCompletionSource _secondTimerCreated = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task SecondTimerCreated => _secondTimerCreated.Task;
 
         public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
         {
             _callback = callback;
             _state = state;
+            if (++_timerCount == 2)
+            {
+                _secondTimerCreated.TrySetResult();
+            }
             return new NoopTimer();
         }
 

@@ -552,7 +552,65 @@ public sealed class TestApplicationLaunchTests
         application.HasFailureDuringDispose.Should().BeFalse();
     }
 
-    private static TestApplication CreateApplication(
+    [TestMethod]
+    [DataRow("1.4.0", false)]
+    [DataRow("1.5.0", true)]
+    public async Task CoordinatedSiblingHandshakeRequiresProtocol15AndNeverRepliesWithFallback(string version, bool accepted)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var errors = new List<string>();
+        using var coordinator = new InvocationLifetimeCoordinator(
+            InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"]),
+            TimeSpan.FromSeconds(30),
+            reportWarning: _ => { },
+            reportError: errors.Add);
+        coordinator.OnOwnerHandshake(new HandshakeMessage(new Dictionary<byte, string>
+        {
+            [HandshakeMessagePropertyNames.InvocationLifetimeHandlers] = "[\"Sql\"]",
+        }), "1.5.0", controlPipeAvailable: true);
+        coordinator.OnSetupCompleted(new InvocationSetupCompleted("e", "i", true, null, []));
+        TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            invocationLifetimeSiblingLaunch: await coordinator.WaitForSiblingLaunchAsync(timeout.Token),
+            invocationLifetimeSiblingCoordinator: coordinator);
+        Task loops = application.StartPipeConnectionLoops();
+        var data = new NamedPipeClient(application.PipeName);
+        data.RegisterAllSerializers();
+        await data.ConnectAsync(timeout.Token);
+        Task<HandshakeMessage> handshake = data.RequestReplyAsync<HandshakeMessage, HandshakeMessage>(
+            new HandshakeMessage(new Dictionary<byte, string>
+            {
+                [HandshakeMessagePropertyNames.PID] = "1234",
+                [HandshakeMessagePropertyNames.Architecture] = "x64",
+                [HandshakeMessagePropertyNames.Framework] = ".NET 11.0.0",
+                [HandshakeMessagePropertyNames.OS] = "Windows",
+                [HandshakeMessagePropertyNames.SupportedProtocolVersions] = version,
+                [HandshakeMessagePropertyNames.HostType] = HandshakeMessageHostTypes.TestHost,
+                [HandshakeMessagePropertyNames.ModulePath] = "test.dll",
+                [HandshakeMessagePropertyNames.TargetFramework] = "net11.0",
+                [HandshakeMessagePropertyNames.ExecutionId] = "e",
+                [HandshakeMessagePropertyNames.InstanceId] = "i",
+            }), timeout.Token);
+        if (accepted)
+        {
+            (await handshake.WaitAsync(timeout.Token)).Properties[HandshakeMessagePropertyNames.SupportedProtocolVersions].Should().Be("1.5.0");
+            coordinator.HasFailed.Should().BeFalse();
+            errors.Should().BeEmpty();
+        }
+        else
+        {
+            await coordinator.SiblingAbort.WaitAsync(timeout.Token);
+            coordinator.HasFailed.Should().BeTrue();
+            handshake.IsCompleted.Should().BeFalse();
+            errors.Should().ContainSingle().Which.Should().Contain("Coordinated execution is stopped");
+        }
+
+        data.Dispose();
+        await application.StopPipeConnectionLoopsAsync(loops).WaitAsync(timeout.Token);
+        application.HasFailureDuringDispose.Should().BeFalse();
+    }
+
+    internal static TestApplication CreateApplication(
         TestOptions testOptions,
         IEnumerable<string>? forwardedArguments = null,
         IReadOnlyDictionary<string, string>? environmentVariables = null,
@@ -561,7 +619,8 @@ public sealed class TestApplicationLaunchTests
         ArtifactPostProcessingManager? artifactPostProcessingManager = null,
         bool contextualModuleOutput = false,
         InvocationLifetimeCoordinator? invocationLifetimeOwnerCoordinator = null,
-        InvocationLifetimeSiblingLaunch? invocationLifetimeSiblingLaunch = null)
+        InvocationLifetimeSiblingLaunch? invocationLifetimeSiblingLaunch = null,
+        InvocationLifetimeCoordinator? invocationLifetimeSiblingCoordinator = null)
     {
         var module = new TestModule(
             new RunProperties("dotnet", "test.dll", null, runtimeIdentifier, string.Empty, string.Empty),
@@ -605,6 +664,7 @@ public sealed class TestApplicationLaunchTests
                 ? new ArtifactPostProcessingInvocation("manifest.json")
                 : null,
             invocationLifetimeOwnerCoordinator: invocationLifetimeOwnerCoordinator,
-            invocationLifetimeSiblingLaunch: invocationLifetimeSiblingLaunch);
+            invocationLifetimeSiblingLaunch: invocationLifetimeSiblingLaunch,
+            invocationLifetimeSiblingCoordinator: invocationLifetimeSiblingCoordinator);
     }
 }
