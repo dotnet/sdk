@@ -13,6 +13,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 public partial class DefineStaticWebAssets : Task
 {
+    // Bump when the computed outputs change for unchanged inputs so caches written by older task versions are recomputed.
+    internal const string CacheVersion = "2";
+
     private DefineStaticWebAssetsCache GetOrCreateAssetsCache()
     {
         // Absolutize the cache manifest path relative to the project directory so file I/O in the cache
@@ -33,7 +36,7 @@ public partial class DefineStaticWebAssets : Task
 #else
         var properties = new string[] {
 #endif
-        SourceId, SourceType, BasePath, ContentRoot, RelativePathPattern, RelativePathFilter,
+        CacheVersion, SourceId, SourceType, BasePath, ContentRoot, RelativePathPattern, RelativePathFilter,
             AssetKind, AssetMode, AssetRole, AssetMergeSource, AssetMergeBehavior, RelatedAsset,
             AssetTraitName, AssetTraitValue, CopyToOutputDirectory, CopyToPublishDirectory,
             FingerprintCandidates.ToString()

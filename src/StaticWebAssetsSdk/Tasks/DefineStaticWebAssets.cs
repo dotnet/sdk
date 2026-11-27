@@ -266,7 +266,8 @@ public partial class DefineStaticWebAssets : Task, IMultiThreadableTask
                     relativePathCandidate = StaticWebAsset.Normalize(fingerprintPatternMatcher.AppendFingerprintPattern(matchContext, identity));
                 }
 
-                if (!string.Equals(SourceType, StaticWebAsset.SourceTypes.Discovered, StringComparison.OrdinalIgnoreCase))
+                // Linked discovered assets keep their physical identity even when a later task invocation only updates their metadata.
+                if (!string.Equals(sourceType, StaticWebAsset.SourceTypes.Discovered, StringComparison.OrdinalIgnoreCase))
                 {
                     // We ignore the content root for publish only assets since it doesn't matter.
                     var contentRootPrefix = StaticWebAsset.AssetKinds.IsPublish(assetKind) ? null : contentRoot;

@@ -9,6 +9,7 @@ using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
@@ -874,6 +875,99 @@ for path 'candidate.js'");
             task.Assets[0].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Project");
             task.Assets[0].GetMetadata(nameof(StaticWebAsset.ContentRoot)).Should().Be("/home/user/work/Repo/Project/");
         }
+
+        [TestMethod]
+        public void UpdatingLinkedDiscoveredAssetMetadata_PreservesIdentity()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            var linkedFile = Path.GetFullPath(Path.Combine("Shared", "appsettings.json"));
+            var task = new DefineStaticWebAssets
+            {
+                BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
+                CandidateAssets = [CreateLinkedDiscoveredAsset(linkedFile, "appsettings.json")],
+                RelativePathFilter = "appsettings*.json",
+                AssetTraitName = "WasmResource",
+                AssetTraitValue = "settings",
+            };
+
+            var result = task.Execute();
+
+            result.Should().BeTrue($"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
+            var asset = task.Assets.Should().ContainSingle().Which;
+            asset.ItemSpec.Should().Be(linkedFile);
+            asset.GetMetadata(nameof(StaticWebAsset.AssetTraitValue)).Should().Be("settings");
+            task.CopyCandidates.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void DefineStaticWebAssetsCache_IgnoresOutputsFromPreviousCacheVersion()
+        {
+            var linkedFile = Path.GetFullPath(Path.Combine("Shared", "MyLib.lib.module.js"));
+            var manifestPath = Path.Combine(Environment.CurrentDirectory, $"{nameof(DefineStaticWebAssetsCache_IgnoresOutputsFromPreviousCacheVersion)}-{Guid.NewGuid():N}.json");
+
+            DefineStaticWebAssets CreateTask() => new()
+            {
+                BuildEngine = new Mock<IBuildEngine>().Object,
+                TestResolveFileDetails = _testResolveFileDetails,
+                CandidateAssets = [CreateLinkedDiscoveredAsset(linkedFile, "MyLib.lib.module.js")],
+                RelativePathFilter = "**/MyLib.lib.module.js",
+                AssetTraitName = "JSModule",
+                AssetTraitValue = "JSLibraryModule",
+                PropertyOverrides = ["AssetTraitName", "AssetTraitValue"],
+                CacheManifestPath = manifestPath,
+            };
+
+            try
+            {
+                var task = CreateTask();
+                task.Execute().Should().BeTrue();
+
+                // Simulate a cache written by an older task that synthesized an in-project identity for the linked asset.
+                var staleCache = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(CreateLogger(), manifestPath);
+                string[] legacyProperties =
+                [
+                    task.SourceId, task.SourceType, task.BasePath, task.ContentRoot, task.RelativePathPattern, task.RelativePathFilter,
+                    task.AssetKind, task.AssetMode, task.AssetRole, task.AssetMergeSource, task.AssetMergeBehavior, task.RelatedAsset,
+                    task.AssetTraitName, task.AssetTraitValue, task.CopyToOutputDirectory, task.CopyToPublishDirectory,
+                    task.FingerprintCandidates.ToString()
+                ];
+                staleCache.GlobalPropertiesHash = HashingUtils.ComputeHash(new MemoryStream(), legacyProperties);
+                staleCache.CachedAssets.Values.Single().Identity = Path.GetFullPath(Path.Combine("wwwroot", "MyLib.lib.module.js"));
+                staleCache.WriteCacheManifest();
+
+                var upgradedTask = CreateTask();
+                upgradedTask.Execute().Should().BeTrue();
+
+                upgradedTask.Assets.Should().ContainSingle().Which.ItemSpec.Should().Be(linkedFile);
+            }
+            finally
+            {
+                File.Delete(manifestPath);
+            }
+        }
+
+        private static ITaskItem CreateLinkedDiscoveredAsset(string identity, string relativePath) =>
+            new TaskItem(identity, new Dictionary<string, string>
+            {
+                [nameof(StaticWebAsset.SourceId)] = "MyProject",
+                [nameof(StaticWebAsset.SourceType)] = StaticWebAsset.SourceTypes.Discovered,
+                [nameof(StaticWebAsset.ContentRoot)] = Path.GetFullPath("wwwroot") + Path.DirectorySeparatorChar,
+                [nameof(StaticWebAsset.BasePath)] = "/",
+                [nameof(StaticWebAsset.RelativePath)] = relativePath,
+                [nameof(StaticWebAsset.AssetKind)] = StaticWebAsset.AssetKinds.All,
+                [nameof(StaticWebAsset.AssetMode)] = StaticWebAsset.AssetModes.All,
+                [nameof(StaticWebAsset.AssetRole)] = StaticWebAsset.AssetRoles.Primary,
+                [nameof(StaticWebAsset.CopyToOutputDirectory)] = StaticWebAsset.AssetCopyOptions.Never,
+                [nameof(StaticWebAsset.CopyToPublishDirectory)] = StaticWebAsset.AssetCopyOptions.PreserveNewest,
+                [nameof(StaticWebAsset.OriginalItemSpec)] = identity,
+                [nameof(StaticWebAsset.Integrity)] = "integrity",
+                [nameof(StaticWebAsset.Fingerprint)] = "fingerprint",
+            });
 
         private static TaskLoggingHelper CreateLogger()
         {

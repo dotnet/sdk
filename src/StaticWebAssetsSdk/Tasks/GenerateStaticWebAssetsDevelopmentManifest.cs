@@ -185,14 +185,15 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadable
                 var segment = segments[i];
                 if (segments.Length - 1 == i)
                 {
-                    if (!contentRootIndex.TryGetValue(asset.ContentRoot, out var index))
+                    var (contentRoot, subPath) = ResolveContentRootAndSubPath(asset);
+                    if (!contentRootIndex.TryGetValue(contentRoot, out var index))
                     {
                         index = contentRootIndex.Count;
-                        contentRootIndex.Add(asset.ContentRoot, contentRootIndex.Count);
+                        contentRootIndex.Add(contentRoot, contentRootIndex.Count);
                     }
                     var matchingAsset = new StaticWebAssetMatch
                     {
-                        SubPath = ResolveSubPath(asset),
+                        SubPath = subPath,
                         ContentRootIndex = index
                     };
                     currentNode.Children ??= new Dictionary<string, StaticWebAssetNode>(StringComparer.Ordinal);
@@ -311,7 +312,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadable
             Root = root
         };
 
-        static string ResolveSubPath(StaticWebAsset asset)
+        static (string ContentRoot, string SubPath) ResolveContentRootAndSubPath(StaticWebAsset asset)
         {
             if (File.Exists(asset.Identity))
             {
@@ -321,16 +322,24 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadable
                     // when the asset is defined with an identity that doesn't exist yet, but that will be materialized later
                     // when the asset is copied to the wwwroot folder.
 #if NET9_0_OR_GREATER
-                    return StaticWebAsset.Normalize(asset.Identity[asset.ContentRoot.Length..]);
+                    return (asset.ContentRoot, StaticWebAsset.Normalize(asset.Identity[asset.ContentRoot.Length..]));
 #else
-                    return StaticWebAsset.Normalize(asset.Identity.Substring(asset.ContentRoot.Length));
+                    return (asset.ContentRoot, StaticWebAsset.Normalize(asset.Identity.Substring(asset.ContentRoot.Length)));
 #endif
+                }
+                else if (asset.IsDiscovered())
+                {
+                    // Discovered assets are never copied into their content root, so a discovered asset whose file lives outside
+                    // its content root (for example, a linked file) must be served from its source location.
+                    return (
+                        StaticWebAsset.NormalizeContentRootPath(Path.GetDirectoryName(asset.Identity)),
+                        Path.GetFileName(asset.Identity));
                 }
                 else
                 {
                     // This is a content root that we don't know about, so we can't resolve the subpath based on the identity, and
                     // we need to rely on the assumption that the file will be available at contentRoot + relativePath.
-                    return asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance);
+                    return (asset.ContentRoot, asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance));
                 }
             }
             else
@@ -338,7 +347,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadable
                 // In any other case where the file doesn't exist, we expect the file to end up at the correct final location
                 // which is defined by contentRoot + relativePath, and since the file will be copied there, the tokens will be
                 // replaced as needed so that the file can be found.
-                return asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance);
+                return (asset.ContentRoot, asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance));
             }
         }
     }
