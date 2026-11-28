@@ -18,7 +18,7 @@
     <ItemGroup>
       <_WorkloadManifestValues Include="NetVersion" Value="net12" />
       <_WorkloadManifestValues Include="WorkloadVersion" Value="$(PackageVersion)" />
-      <_WorkloadManifestValues Include="EmsdkVersion" Value="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+      <_WorkloadManifestValues Include="EmsdkVersion" Value="$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)" />
       <_WorkloadManifestValues Include="EmscriptenVersion" Value="$(EmscriptenVersionCurrent)" />
     </ItemGroup>
 
