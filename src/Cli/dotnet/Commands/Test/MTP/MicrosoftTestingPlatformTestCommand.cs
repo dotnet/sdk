@@ -246,6 +246,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 cancellationRequested: false),
             cancellationToken: ctrlC.Token);
         int? exitCode = null;
+        TestRunCancellationReason cancellationReason = TestRunCancellationReason.None;
         try
         {
             var actionQueue = new TestApplicationActionQueue(
@@ -261,46 +262,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 queueCancellation.Token,
                 outputOption,
                 outputOptionSpecified,
-                fallbackTestApplicationSettings);
+                fallbackTestApplicationSettings,
+                ApplyRunPolicies);
             exitCode = testHandler.RunTestApplications(actionQueue);
-            TestRunCancellationReason cancellationReason = testRunPolicy.Complete();
-            exitCode = GetCancellationExitCode(
-                exitCode.Value,
-                ctrlC.Token.IsCancellationRequested,
-                cancellationReason);
-
-            // If all test apps exited with 0 exit code, but we detected that handshake didn't happen correctly, map that to generic failure.
-            if (exitCode == ExitCode.Success && output.HasHandshakeFailure)
-            {
-                exitCode = ExitCode.GenericFailure;
-            }
-
-            if (exitCode == ExitCode.Success &&
-                parseResult.HasOption(definition.MinimumExpectedTestsOption) &&
-                parseResult.GetValue(definition.MinimumExpectedTestsOption) is { } minimumExpectedTests &&
-                output.TotalTests < minimumExpectedTests)
-            {
-                exitCode = ExitCode.MinimumExpectedTestsPolicyViolation;
-            }
-            else if (exitCode == ExitCode.Success &&
-                !isHelp &&
-                !parseResult.HasOption(definition.MinimumExpectedTestsOption) &&
-                ShouldFailForNoExecutedTests(
-                    testOptions.IsAffectedTestsMode,
-                    actionQueue.FailOnAllSkippedTests,
-                    output.TotalTests,
-                    output.SkippedTests))
-            {
-                // Whole-run "zero tests ran" verdict. Individual modules that matched no tests return exit
-                // code 8, but TestApplicationActionQueue normalizes that to success so a single empty module
-                // does not fail the whole run (e.g. with --test-modules or a global --filter). The aggregate
-                // zero-tests case is decided here so it surfaces once at the run level instead of once per
-                // module. A stricter per-module minimum via -- --minimum-expected-tests N still fails that
-                // module with exit code 9. See https://github.com/microsoft/testfx/issues/7457.
-                exitCode = ExitCode.ZeroTests;
-            }
-
-            exitCode = actionQueue.ApplyExitCodeIgnorePolicy(exitCode.Value);
 
             if (artifactPostProcessingManager.IsEnabled && testModuleCount > 0 && !ctrlC.Token.IsCancellationRequested)
             {
@@ -322,6 +286,42 @@ internal partial class MicrosoftTestingPlatformTestCommand
         finally
         {
             output.TestExecutionCompleted(DateTimeOffset.Now, exitCode);
+        }
+
+        int ApplyRunPolicies(TestApplicationActionQueue actionQueue, int aggregateExitCode)
+        {
+            cancellationReason = testRunPolicy.Complete();
+            aggregateExitCode = GetCancellationExitCode(
+                aggregateExitCode,
+                ctrlC.Token.IsCancellationRequested,
+                cancellationReason);
+
+            if (aggregateExitCode == ExitCode.Success && output.HasHandshakeFailure)
+            {
+                aggregateExitCode = ExitCode.GenericFailure;
+            }
+
+            if (aggregateExitCode == ExitCode.Success &&
+                parseResult.HasOption(definition.MinimumExpectedTestsOption) &&
+                parseResult.GetValue(definition.MinimumExpectedTestsOption) is { } minimumExpectedTests &&
+                output.TotalTests < minimumExpectedTests)
+            {
+                aggregateExitCode = ExitCode.MinimumExpectedTestsPolicyViolation;
+            }
+            else if (aggregateExitCode == ExitCode.Success &&
+                !isHelp &&
+                !parseResult.HasOption(definition.MinimumExpectedTestsOption) &&
+                ShouldFailForNoExecutedTests(
+                    testOptions.IsAffectedTestsMode,
+                    actionQueue.FailOnAllSkippedTests,
+                    output.TotalTests,
+                    output.SkippedTests))
+            {
+                // Per-module zero-test exits are normalized by the queue; decide the whole-run verdict before cleanup.
+                aggregateExitCode = ExitCode.ZeroTests;
+            }
+
+            return actionQueue.ApplyExitCodeIgnorePolicy(aggregateExitCode);
         }
     }
 

@@ -3,4 +3,6 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
-internal sealed record ServerControlMessage(byte Kind) : IResponse;
+/// <param name="AggregateExitCode">Only for <see cref="ServerControlKinds.RunInvocationCleanup"/>.</param>
+/// <param name="IsCanceled">Only for <see cref="ServerControlKinds.RunInvocationCleanup"/>.</param>
+internal sealed record ServerControlMessage(byte Kind, int? AggregateExitCode = null, bool? IsCanceled = null) : IResponse;

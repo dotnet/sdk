@@ -826,6 +826,14 @@ internal sealed class TestApplicationHandler
             color,
             cancellationToken);
 
+    internal void ReleaseInvocationLifetimeWorker()
+    {
+        if (_receivedTestHostHandshake && _handshakeInfo.HasValue)
+        {
+            _output.ReleaseInvocationLifetimeWorker(_handshakeInfo.Value.ExecutionId);
+        }
+    }
+
     internal void OnTestProcessExited(int exitCode, string outputData, string errorData)
     {
         if (_options.IsArtifactPostProcessing)

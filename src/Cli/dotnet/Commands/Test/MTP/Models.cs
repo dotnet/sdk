@@ -123,4 +123,8 @@ internal sealed record TestModule(
     bool UseArtifactsOutput = false,
     string? ArtifactsPath = null,
     string? ArtifactsProjectName = null,
-    string? ArtifactsPivots = null);
+    string? ArtifactsPivots = null,
+    IReadOnlyList<string>? InvocationLifetimeHandlers = null,
+    bool IsInvocationLifetimeOwner = false,
+    bool SupportsInvocationLifetimeCoordination = false,
+    bool BuildsProjectReferences = true);

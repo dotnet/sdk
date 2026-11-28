@@ -117,6 +117,13 @@ internal static class HandshakeMessagePropertyNames
 
     // The SDK can receive TestInProgressMessages even when protocol 1.0 is negotiated.
     internal const byte TestInProgressSupported = 22;
+
+    // Protocol 1.5.0: compact JSON string array of the invocation lifetime handler UIDs that the owner enabled.
+    internal const byte InvocationLifetimeHandlers = 23;
+
+    // Protocol 1.5.0, reply-only: 'true' when the SDK commits to coordinating the run through this owner.
+    // The owner must not start invocation setup without it.
+    internal const byte InvocationLifetimeCoordinationAccepted = 24;
 }
 
 internal static class HandshakeMessageExecutionModes
@@ -151,14 +158,35 @@ internal static class ProtocolConstants
     // 1.2.0 adds AzureDevOpsLogMessage (serializer id 11) forwarding.
     // 1.3.0 adds DisplayMessage (serializer id 12) forwarding, including GitHub Actions workflow commands
     // sent at the Information level so the SDK writes their text verbatim without warning/error formatting.
-    // NOTE: 1.4.0 (the reverse server-control pipe / server-initiated cancellation) is intentionally NOT advertised yet:
-    // it is a separate, larger feature that is out of scope here.
-    internal const string SupportedVersions = "1.0.0;1.1.0;1.2.0;1.3.0";
+    // 1.4.0 adds the reverse server-control pipe. Its use is negotiated by the ServerControlPipeName capability,
+    // which the SDK already advertises over the named-pipe transport, so advertising the version changes no behavior.
+    // 1.5.0 adds invocation lifetime coordination (microsoft/testfx RFC 024, Phase 2).
+    internal const string SupportedVersions = "1.0.0;1.1.0;1.2.0;1.3.0;1.4.0;1.5.0";
+
+    internal static readonly Version InvocationLifetimeVersion = new(1, 5, 0);
 }
 
 internal static class ServerControlKinds
 {
     internal const byte CancelSession = 1;
+
+    // 2 (CloseChannel) is used only inside Microsoft.Testing.Platform and is never sent by the SDK.
+
+    // Protocol 1.5.0: asks the invocation lifetime owner to run invocation cleanup.
+    internal const byte RunInvocationCleanup = 3;
+}
+
+internal static class InvocationLifetimeEnvironmentVariables
+{
+    internal const string Role = "TESTINGPLATFORM_INVOCATIONLIFETIME_ROLE";
+    internal const string OwnerRole = "owner";
+    internal const string Coordinated = "TESTINGPLATFORM_INVOCATIONLIFETIME_COORDINATED";
+
+    /// <summary>
+    /// Overrides, in seconds, how long the SDK waits for the owner to finish invocation setup and, separately,
+    /// invocation cleanup. '0' removes the bound. Absent, non-numeric or negative values keep the default.
+    /// </summary>
+    internal const string TimeoutSeconds = "DOTNET_CLI_TEST_INVOCATION_LIFETIME_TIMEOUT_SECONDS";
 }
 
 internal static class ProjectProperties
@@ -183,4 +211,8 @@ internal static class ProjectProperties
     internal const string ArtifactsPath = "ArtifactsPath";
     internal const string ArtifactsProjectName = "ArtifactsProjectName";
     internal const string ArtifactsPivots = "ArtifactsPivots";
+    internal const string InvocationLifetimeHandlerItemName = "TestingPlatformInvocationLifetimeHandler";
+    internal const string InvocationLifetimeOwner = "TestingPlatformInvocationLifetimeOwner";
+    internal const string InvocationLifetimeCoordinationSupported = "TestingPlatformInvocationLifetimeCoordinationSupported";
+    internal const string BuildProjectReferences = "BuildProjectReferences";
 }

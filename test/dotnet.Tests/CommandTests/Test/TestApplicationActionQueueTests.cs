@@ -94,6 +94,137 @@ public class TestApplicationActionQueueTests : SdkTest
     }
 
     [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public void ConfigureInvocationLifetime_IsDisabledForDiscoveryOrNoBuild(bool discovery, bool noBuild)
+    {
+        using var reporter = new TerminalTestReporter(
+            new CapturingConsole(), new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
+        var buildOptions = new BuildOptions(
+            new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+            HasNoRestore: true, HasNoBuild: noBuild, Verbosity: null, NoLaunchProfile: false, NoLaunchProfileArguments: false,
+            TestApplicationArguments: [], MSBuildArgs: [], Device: null, ListDevices: false,
+            EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+        using var ctrlC = new CtrlCCancellationManager(() => { }, subscribeToConsole: false);
+        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: null);
+        var queue = new TestApplicationActionQueue(
+            1, buildOptions, new TestOptions(false, discovery, TestListFormat.Text),
+            TestResultsDirectoryResolver.CreateShared(buildOptions.PathOptions, SdkTestContext.Current.TestExecutionDirectory),
+            reporter, _ => { }, ctrlC, new ArtifactPostProcessingManager(), policy, CancellationToken.None,
+            OutputOptions.Normal, outputOptionSpecified: false, TestApplicationSettings.Default);
+        TestModule owner = InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"], isOwner: true);
+
+        TestModule? selected = queue.ConfigureInvocationLifetime([owner]);
+
+        queue.CompleteEnqueueAndWait();
+        selected.Should().BeSameAs(discovery || noBuild ? null : owner);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void ConfigureInvocationLifetime_IsDisabledWhenAnyModuleSkipsProjectReferences(bool siblingBuildsProjectReferences)
+    {
+        using var reporter = new TerminalTestReporter(
+            new CapturingConsole(), new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
+        var buildOptions = new BuildOptions(
+            new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+            HasNoRestore: true, HasNoBuild: false, Verbosity: null, NoLaunchProfile: false, NoLaunchProfileArguments: false,
+            TestApplicationArguments: [], MSBuildArgs: [], Device: null, ListDevices: false,
+            EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+        using var ctrlC = new CtrlCCancellationManager(() => { }, subscribeToConsole: false);
+        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: null);
+        var queue = new TestApplicationActionQueue(
+            1, buildOptions, new TestOptions(false, false, TestListFormat.Text),
+            TestResultsDirectoryResolver.CreateShared(buildOptions.PathOptions, SdkTestContext.Current.TestExecutionDirectory),
+            reporter, _ => { }, ctrlC, new ArtifactPostProcessingManager(), policy, CancellationToken.None,
+            OutputOptions.Normal, outputOptionSpecified: false, TestApplicationSettings.Default);
+        TestModule owner = InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"], isOwner: true);
+        TestModule sibling = InvocationLifetimeOwnerSelectorTests.CreateModule("Sibling") with
+        {
+            BuildsProjectReferences = siblingBuildsProjectReferences,
+        };
+
+        TestModule? selected = queue.ConfigureInvocationLifetime([owner, sibling]);
+
+        queue.CompleteEnqueueAndWait();
+        selected.Should().BeSameAs(siblingBuildsProjectReferences ? owner : null);
+    }
+
+    [TestMethod]
+    public void DetachedOwner_ReleasesWorkerWithoutLaterRemovingSiblingWorker()
+    {
+        using var reporter = new TerminalTestReporter(
+            new CapturingConsole(), new TerminalTestReporterOptions { AnsiMode = AnsiMode.SimpleAnsi, ShowProgress = true });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.AssemblyRunStarted("Owner.dll", ToolsetInfo.CurrentTargetFramework, null, "owner", "instance");
+
+        reporter.ReleaseInvocationLifetimeWorker("owner");
+        reporter.ReleaseInvocationLifetimeWorker("owner");
+        reporter.AssemblyRunStarted("Sibling.dll", ToolsetInfo.CurrentTargetFramework, null, "sibling", "instance");
+        reporter.AssemblyRunCompleted("owner", 0, null, null);
+        Action oversubscribe = () => reporter.AssemblyRunStarted(
+            "Extra.dll", ToolsetInfo.CurrentTargetFramework, null, "extra", "instance");
+        oversubscribe.Should().Throw<InvalidOperationException>().WithMessage("No empty slot found");
+        reporter.AssemblyRunCompleted("sibling", 0, null, null);
+        reporter.AssemblyRunStarted("Next.dll", ToolsetInfo.CurrentTargetFramework, null, "next", "instance");
+        reporter.AssemblyRunCompleted("next", 0, null, null);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, 0);
+        reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void CompleteEnqueueAndWait_AppliesRunPolicyResultAndPropagatesFailures(bool withOwner, bool policyFails)
+    {
+        using var reporter = new TerminalTestReporter(
+            new CapturingConsole(), new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
+        var buildOptions = new BuildOptions(
+            new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+            HasNoRestore: true, HasNoBuild: false, Verbosity: null, NoLaunchProfile: false, NoLaunchProfileArguments: false,
+            TestApplicationArguments: [], MSBuildArgs: [], Device: null, ListDevices: false,
+            EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+        using var ctrlC = new CtrlCCancellationManager(() => { }, subscribeToConsole: false);
+        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: null);
+        int policyCalls = 0;
+        var queue = new TestApplicationActionQueue(
+            1, buildOptions, new TestOptions(false, false, TestListFormat.Text),
+            TestResultsDirectoryResolver.CreateShared(buildOptions.PathOptions, SdkTestContext.Current.TestExecutionDirectory),
+            reporter, _ => { }, ctrlC, new ArtifactPostProcessingManager(), policy, CancellationToken.None,
+            OutputOptions.Normal, outputOptionSpecified: false, TestApplicationSettings.Default,
+            applyRunPolicies: (_, aggregateExitCode) =>
+            {
+                policyCalls++;
+                aggregateExitCode.Should().Be(TestExitCode.ZeroTests);
+                if (policyFails)
+                {
+                    throw new InvalidOperationException("Run policy failed.");
+                }
+
+                return TestExitCode.MinimumExpectedTestsPolicyViolation;
+            });
+        if (withOwner)
+        {
+            queue.ConfigureInvocationLifetime([InvocationLifetimeOwnerSelectorTests.CreateModule("Owner", ["Sql"], isOwner: true)]);
+        }
+
+        if (policyFails)
+        {
+            Action complete = () => queue.CompleteEnqueueAndWait();
+            complete.Should().Throw<InvalidOperationException>().WithMessage("Run policy failed.");
+        }
+        else
+        {
+            queue.CompleteEnqueueAndWait().Should().Be(TestExitCode.MinimumExpectedTestsPolicyViolation);
+        }
+        policyCalls.Should().Be(1);
+    }
+
+    [TestMethod]
     public void NormalizeExitCode_ZeroTestsWithDisposeFailure_ReturnsGenericFailure()
     {
         using var reporter = new TerminalTestReporter(

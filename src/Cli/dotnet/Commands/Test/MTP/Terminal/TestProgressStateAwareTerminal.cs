@@ -172,7 +172,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
 
     internal void RemoveWorker(int slotIndex)
     {
-        if (_showProgress)
+        if (_showProgress && slotIndex >= 0)
         {
             lock (_lock)
             {
@@ -183,7 +183,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
 
     internal void UpdateWorker(int slotIndex)
     {
-        if (_showProgress)
+        if (_showProgress && slotIndex >= 0)
         {
             // We increase the counter to say that this version of data is newer than what we had before and
             // it should be completely re-rendered. Another approach would be to use timestamps, or to replace the
