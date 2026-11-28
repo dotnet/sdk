@@ -1,0 +1,17 @@
+<!--
+  Helper project used by workloads.csproj (_GetPublishedEmsdkWorkloadMsis) to download the emsdk workload MSI packages
+  if they were already published by a previous build. It is restored out of proc so a missing package isn't a build error.
+  The repo's Directory.Build.* and Directory.Packages.props imports are disabled via global properties by the caller.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The package IDs are passed '|'-separated since ';' and ',' separate properties on the MSBuild command line. -->
+    <PackageDownload Include="$([MSBuild]::Unescape($(EmsdkMsiPackageIds.Replace('|', ';'))))" Version="[$(EmsdkMsiPackageVersion)]" />
+  </ItemGroup>
+
+</Project>

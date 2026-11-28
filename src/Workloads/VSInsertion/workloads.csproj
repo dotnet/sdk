@@ -104,8 +104,29 @@
     <PackageDownload Include="@(EmsdkWorkloadPacksToDownload)" Version="[$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)]" />
   </ItemGroup>
 
+  <Target Name="_GetEmsdkWorkloadMsiPackages">
+    <ItemGroup>
+      <!-- For RID-specific packages, add single MSI with matching architecture -->
+      <EmsdkWorkloadMsiPackages Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.x64"
+                                Condition="$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-x64'))" />
+      <EmsdkWorkloadMsiPackages Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.x86"
+                                Condition="$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-x86'))" />
+      <EmsdkWorkloadMsiPackages Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.arm64"
+                                Condition="$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-arm64'))" />
+
+      <!-- For non-RID-specific packages, add MSI packages for all three architectures -->
+      <EmsdkWorkloadMsiPackages Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.x86"
+                                Condition="!$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-'))" />
+      <EmsdkWorkloadMsiPackages Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.x64"
+                                Condition="!$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-'))" />
+      <EmsdkWorkloadMsiPackages Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.arm64"
+                                Condition="!$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-'))" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="_AddMsiPackageDownloads"
           BeforeTargets="CollectPackageDownloads"
+          DependsOnTargets="_GetEmsdkWorkloadMsiPackages"
           Condition="'$(BuildWorkloads)' == 'true' and '$(DownloadWorkloadMsis)' == 'true'">
     <ItemGroup>
       <!-- MSI packages for RuntimeWorkloadPacksToDownload -->
@@ -132,27 +153,8 @@
                        Condition="!$([System.String]::Copy('%(RuntimeWorkloadPacksToDownload.Identity)').Contains('.win-')) and '%(RuntimeWorkloadPacksToDownload.ExcludeAsMsi)' != 'true'" />
 
       <!-- MSI packages for EmsdkWorkloadPacksToDownload -->
-      <!-- For RID-specific packages, add single MSI with matching architecture -->
-      <PackageDownload Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.x64" 
-                       Version="[$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)]"
-                       Condition="$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-x64'))" />
-      <PackageDownload Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.x86" 
-                       Version="[$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)]"
-                       Condition="$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-x86'))" />
-      <PackageDownload Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.arm64" 
-                       Version="[$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)]"
-                       Condition="$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-arm64'))" />
-      
-      <!-- For non-RID-specific packages, add MSI packages for all three architectures -->
-      <PackageDownload Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.x86" 
-                       Version="[$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)]"
-                       Condition="!$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-'))" />
-      <PackageDownload Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.x64" 
-                       Version="[$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)]"
-                       Condition="!$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-'))" />
-      <PackageDownload Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.arm64" 
-                       Version="[$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)]"
-                       Condition="!$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-'))" />
+      <PackageDownload Include="@(EmsdkWorkloadMsiPackages)"
+                       Version="[$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)]" />
 
       <!-- MSI packages for ManifestPackagesToDownload -->
       <!-- Manifest packages are not RID-specific, add MSI packages for all three architectures -->
@@ -186,6 +188,7 @@
             _CollectDownloadedWorkloadPacks;
             _CollectDownloadedWorkloadMsis;
             _FindMSBuild;
+            _GetPublishedEmsdkWorkloadMsis;
             BuildWorkloadMsis"
           Condition="'$(BuildWorkloads)' == 'true'">
   </Target>
@@ -203,6 +206,54 @@
     <Copy SourceFiles="@(DownloadedWorkloadMsis)"
           DestinationFolder="$(ArtifactsShippingPackagesDir)"
           UseHardlinksIfPossible="true" />
+  </Target>
+
+  <!--
+    The emsdk packs have a fixed version that only changes when emsdk is updated, unlike the runtime packs which get a new
+    version in every build. Their MSI packages use the same version, so rebuilding them in every build produces packages
+    with the same identity but different content, which fails publishing. If a previous build already published the MSI
+    packages for the current emsdk version, CreateVisualStudioWorkload uses the MSIs from those packages for the VS drop
+    instead of building new ones, and we publish the existing packages so the content is identical.
+
+    The restore runs out of proc so that a missing package (i.e. the first build with a new emsdk version) isn't an error.
+  -->
+  <Target Name="_GetPublishedEmsdkWorkloadMsis"
+          DependsOnTargets="_GetEmsdkWorkloadMsiPackages"
+          Condition="'$(BuildWorkloads)' == 'true' and '$(DownloadWorkloadMsis)' != 'true'">
+    <PropertyGroup>
+      <_EmsdkMsisRestoreProject>$(MSBuildThisFileDirectory)emsdk-msis.proj</_EmsdkMsisRestoreProject>
+      <_EmsdkMsisRestoreIntermediatePath>$(WorkloadIntermediateOutputPath)emsdk-msis</_EmsdkMsisRestoreIntermediatePath>
+      <_EmsdkMsisRestoreArgs>-p:EmsdkMsiPackageIds=&quot;@(EmsdkWorkloadMsiPackages, '|')&quot;</_EmsdkMsisRestoreArgs>
+      <_EmsdkMsisRestoreArgs>$(_EmsdkMsisRestoreArgs) -p:EmsdkMsiPackageVersion=$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)</_EmsdkMsisRestoreArgs>
+      <_EmsdkMsisRestoreArgs>$(_EmsdkMsisRestoreArgs) -p:TargetFramework=$(TargetFramework)</_EmsdkMsisRestoreArgs>
+      <_EmsdkMsisRestoreArgs>$(_EmsdkMsisRestoreArgs) -p:ImportDirectoryBuildProps=false -p:ImportDirectoryBuildTargets=false -p:ImportDirectoryPackagesProps=false</_EmsdkMsisRestoreArgs>
+      <_EmsdkMsisRestoreArgs>$(_EmsdkMsisRestoreArgs) -p:BaseIntermediateOutputPath=&quot;$(_EmsdkMsisRestoreIntermediatePath)&quot;</_EmsdkMsisRestoreArgs>
+      <_EmsdkMsisRestoreArgs>$(_EmsdkMsisRestoreArgs) -p:RestorePackagesPath=&quot;$(NuGetPackageRoot.TrimEnd('\/'))&quot;</_EmsdkMsisRestoreArgs>
+      <_EmsdkMsisRestoreArgs Condition="'$(RestoreConfigFile)' != ''">$(_EmsdkMsisRestoreArgs) -p:RestoreConfigFile=&quot;$(RestoreConfigFile)&quot;</_EmsdkMsisRestoreArgs>
+    </PropertyGroup>
+
+    <Exec Command="&quot;$(DotNetTool)&quot; restore &quot;$(_EmsdkMsisRestoreProject)&quot; $(_EmsdkMsisRestoreArgs)"
+          IgnoreExitCode="true"
+          IgnoreStandardErrorWarningFormat="true"
+          StandardOutputImportance="normal">
+      <Output TaskParameter="ExitCode" PropertyName="_EmsdkMsisRestoreExitCode" />
+    </Exec>
+
+    <ItemGroup>
+      <!-- The global packages folder uses lowercase names, restore the casing of the locally built packages. -->
+      <_PublishedEmsdkWorkloadMsis Include="$(NuGetPackageRoot)$([System.String]::Copy('%(EmsdkWorkloadMsiPackages.Identity)').ToLowerInvariant())\$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion.ToLowerInvariant())\*.nupkg"
+                                   DestinationFile="$(ArtifactsShippingPackagesDir)%(EmsdkWorkloadMsiPackages.Identity).$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion).nupkg" />
+    </ItemGroup>
+
+    <Message Importance="high"
+             Text="emsdk workload MSI packages for $(MicrosoftNETRuntimeEmscriptenInternalPackageVersion) are not published yet (restore exit code $(_EmsdkMsisRestoreExitCode)), building them."
+             Condition="'@(_PublishedEmsdkWorkloadMsis)' == ''" />
+    <Message Importance="high"
+             Text="Using previously published emsdk workload MSI package %(_PublishedEmsdkWorkloadMsis.DestinationFile)."
+             Condition="'@(_PublishedEmsdkWorkloadMsis)' != ''" />
+
+    <Copy SourceFiles="@(_PublishedEmsdkWorkloadMsis)"
+          DestinationFiles="@(_PublishedEmsdkWorkloadMsis->'%(DestinationFile)')" />
   </Target>
 
   <Target Name="_FindMSBuild">
@@ -533,6 +584,7 @@
           HeatExe="$(HeatExe)"
           ManifestMsiVersion="$(MsiVersion)"
           PackageSource="$(WorkloadPacksSource)"
+          PrebuiltPackMsiPackages="@(_PublishedEmsdkWorkloadMsis)"
           ShortNames="@(ShortNames)"
           WixExe="$(WixExe)"
           WixExtensions="@(WixExtensions)"
